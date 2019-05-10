@@ -186,8 +186,30 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
      * @throws IOException
      *         if writing fails
      */
-    private static void writeBootstrapPage(
+    private void writeBootstrapPage(
             VaadinResponse response, Element head, String serviceUrl) throws IOException {
+        writeBootstrapPage(CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8, response, head, serviceUrl);
+    }
+
+    /**
+     * Copies the {@link org.jsoup.nodes.Element Elements} found in the given
+     * {@code head} elements into the head of the embedding website using
+     * JavaScript. Drops {@code <base>} element.
+     *
+     * @param contentType
+     *          Content type of the response.
+     * @param response
+     *         {@link com.vaadin.flow.server.VaadinResponse} into which the
+     *         script is written
+     * @param head
+     *         head element of Vaadin Bootstrap page. The child elements are
+     *         copied into the embedding page's head using JavaScript.
+     * @param serviceUrl
+     *         base path to use for the head elements' URLs
+     * @throws IOException
+     *         if writing fails
+     */
+    protected void writeBootstrapPage(String contentType, VaadinResponse response, Element head, String serviceUrl) throws IOException {
         /*
             The elements found in the head are reconstructed using JavaScript and
             document.createElement(...). Since innerHTML and related methods
@@ -196,9 +218,9 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
             and then attributes are copied and innerHTML set, if the element
             has innerHTML. The innerHTMLs are in-lined for easier copying.
         */
-        response.setContentType(CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8);
+        response.setContentType(contentType);
         try (BufferedWriter writer = new BufferedWriter(
-                new OutputStreamWriter(response.getOutputStream(), UTF_8))) {
+            new OutputStreamWriter(response.getOutputStream(), UTF_8))) {
             String varName = "headElem"; // generated head element
             writer.append("var ").append(varName).append("=null;");
             for (Element element : head.children()) {
@@ -212,7 +234,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 String elementHtml = element.html();
                 if (elementHtml != null && elementHtml.length() > 0) {
                     writer.append(varName).append(".innerHTML=\"")
-                            .append(inlineHTML(elementHtml)).append("\";");
+                        .append(inlineHTML(elementHtml)).append("\";");
                 }
                 writer.append("document.head.appendChild(").append(varName).append(");");
             }
