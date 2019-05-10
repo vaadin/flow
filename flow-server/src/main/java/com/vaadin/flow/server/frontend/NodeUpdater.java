@@ -53,7 +53,7 @@ public abstract class NodeUpdater implements Command {
      * they can be correctly separated from {projectDir}/frontend files.
      */
     static final String GENERATED_PREFIX = "GENERATED/";
-    static final String VALUE = "value";
+
     static final String DEPENDENCIES = "dependencies";
     private static final String DEV_DEPENDENCIES = "devDependencies";
 

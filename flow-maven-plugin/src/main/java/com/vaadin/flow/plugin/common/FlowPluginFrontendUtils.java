@@ -27,13 +27,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.frontend.ClassFinder;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
-import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 import org.reflections.Reflections;
 import org.reflections.util.ConfigurationBuilder;
+
+import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.frontend.ClassFinder;
 
 /**
  * Utility methods used by all goals.
@@ -102,17 +102,15 @@ public class FlowPluginFrontendUtils {
      * Check whether the goal should be run in bower mode, by checking the
      * corresponding system property, otherwise the folder structure.
      *
-     * @param log
-     *            logger instance
      * @return true when in bower mode.
      */
-    public static boolean isBowerMode(Log log) {
+    public static boolean isBowerMode() {
         return Boolean.getBoolean("vaadin." + Constants.SERVLET_PARAMETER_BOWER_MODE);
     }
 
     /**
      * Gets a <code>ClassFinder</code> for the maven project.
-     * 
+     *
      * @param project
      *            a maven project instance used as source for the
      *            <code>ClassFinder</code>.

@@ -119,6 +119,19 @@ public class NodeTasks implements Command {
             this.generateEmbeddableWebComponents = true;
         }
 
+        /**
+         * Create a builder instance.
+         *
+         * @param classFinder
+         *         a class finder
+         * @param npmFolder
+         *         folder with the `package.json` file
+         * @param nodeModulesPath
+         *         the path to the {@literal node_modules} directory of the
+         *         project
+         * @param generatedFlowImports
+         *         name of the JS file to update with the imports
+         */
         public Builder(ClassFinder classFinder, File npmFolder, File nodeModulesPath, File generatedFlowImports) {
             this.classFinder = classFinder;
             this.npmFolder = npmFolder;

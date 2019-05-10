@@ -144,9 +144,8 @@ public class PropertyDeploymentConfiguration
 
     @Override
     public boolean isBowerMode() {
-        boolean r =  getBooleanProperty(Constants.SERVLET_PARAMETER_BOWER_MODE, false)
+        return getBooleanProperty(Constants.SERVLET_PARAMETER_BOWER_MODE, false)
                 || isBowerLegacyMode();
-        return r;
     }
 
     protected boolean isBowerLegacyMode() {

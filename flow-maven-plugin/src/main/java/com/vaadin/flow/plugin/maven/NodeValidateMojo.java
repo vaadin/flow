@@ -104,7 +104,7 @@ public class NodeValidateMojo extends AbstractMojo {
     public void execute() {
 
         // Do nothing when bower mode
-        if (FlowPluginFrontendUtils.isBowerMode(getLog())) {
+        if (FlowPluginFrontendUtils.isBowerMode()) {
             getLog().debug(
                     "Skipped 'validate' goal because `vaadin.bowerMode` is set.");
             return;
