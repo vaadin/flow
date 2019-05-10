@@ -12,13 +12,17 @@ const path = require('path');
 const baseDir = path.resolve(__dirname);
 // the folder of app resources (main.js and flow templates)
 const frontendFolder = `${baseDir}/frontend`;
-// the folder that java takes as webapp context
-const webappFolder = `${baseDir}/{{OUTPUT_DIRECTORY}}`;
+
+////////////////////////////////////////
+// IMPORTANT: these two constants are updated when flow-maven-plugin validate goal is run.
+fileNameOfTheFlowGeneratedMainEntryPoint;
+mavenOutputFolderForFlowBundledFiles;
+////////////////////////////////////////
 
 // public path for resources, must match flow that requests /build/index.js /build/stats.json
 const build = 'build';
 // folder for outputting stats.js, index.js bundle, etc.
-const buildFolder = `${webappFolder}/${build}`;
+const buildFolder = `${mavenOutputFolderForFlowBundledFiles}/${build}`;
 // file which is used by flow to read templates for server `@Id` binding
 const statsFile = `${buildFolder}/stats.json`;
 // make sure that build folder exists before outputting anything
@@ -29,23 +33,23 @@ module.exports = {
   mode: 'production',
   context: frontendFolder,
   entry: {
-    index: `${baseDir}/{{GENERATED_FLOW_IMPORTS}}`
+    index: fileNameOfTheFlowGeneratedMainEntryPoint
   },
 
   output: {
     filename: `${build}/[name].js`,
-    path: webappFolder
+    path: mavenOutputFolderForFlowBundledFiles
   },
 
   resolve: {
     alias: {
-      Frontend: path.resolve(__dirname, 'frontend/')
+      Frontend: frontendFolder
     }
   },
 
   devServer: {
     // webpack-dev-server serves ./ ,  webpack-generated,  and java webapp
-    contentBase: [webappFolder, 'src/main/webapp']
+    contentBase: [mavenOutputFolderForFlowBundledFiles, 'src/main/webapp']
   },
 
   module: {
