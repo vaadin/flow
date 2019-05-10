@@ -34,6 +34,7 @@
         <module>test-web-components</module>
         <module>test-web-components-production</module>
         <module>test-web-components-theme-variant</module>
+        <module>web-component-test-assets</module>
     </modules>
 
     <properties>

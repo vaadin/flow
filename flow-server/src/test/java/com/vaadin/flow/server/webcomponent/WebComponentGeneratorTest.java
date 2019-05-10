@@ -112,7 +112,7 @@ public class WebComponentGeneratorTest {
                         "  </template>\n" +
                         "  <script>\n" +
                         "    class Tag extends Polymer.Element {\n" +
-                        // this part is from the webcomponent-script-template
+                        // this part is from the com.vaadin.flow.webcomponent-script-template
                         // .js to verify successful import
                         "      static get is() {\n" +
                         "    return 'tag';\n" +
@@ -140,7 +140,7 @@ public class WebComponentGeneratorTest {
                 "        <slot></slot>\n" +
                 "    `;\n" +
                 "  }\n" +
-                // this part is from the webcomponent-script-template
+                // this part is from the com.vaadin.flow.webcomponent-script-template
                 // .js to verify successful import
                 "    static get is() {\n" +
                 "    return 'tag';\n" +

@@ -13,24 +13,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.webcomponent;
 
 import javax.servlet.annotation.WebServlet;
 
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.server.VaadinServlet;
 
-/**
- * All other ITs are run with `bowerMode=true` and it's not possible to
- * configure each test module with its own value at pom.xml level.
- *
- * It should be possible to add a servlet fragment to each test in the suite,
- * but seems simpler so far to have this here to override default system
- * property just for npm test.
- */
-@WebServlet(urlPatterns = { "/*", "/vaadin/*" })
-public class NpmEnabledVaadinServlet extends VaadinServlet {
-    public NpmEnabledVaadinServlet() {
+@WebServlet(urlPatterns = { "/*", "/vaadin/*"}, asyncSupported = true)
+public class WebComponentVaadinServlet extends VaadinServlet {
+    public WebComponentVaadinServlet() {
         System.clearProperty("vaadin.bowerMode");
     }
 }
