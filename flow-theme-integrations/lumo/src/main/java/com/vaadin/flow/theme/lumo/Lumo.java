@@ -23,6 +23,7 @@ import java.util.Map;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.theme.AbstractTheme;
 
 /**
@@ -34,6 +35,12 @@ import com.vaadin.flow.theme.AbstractTheme;
 @HtmlImport("frontend://bower_components/vaadin-lumo-styles/spacing.html")
 @HtmlImport("frontend://bower_components/vaadin-lumo-styles/style.html")
 @HtmlImport("frontend://bower_components/vaadin-lumo-styles/icons.html")
+@JsModule("@vaadin/vaadin-lumo-styles/color.js")
+@JsModule("@vaadin/vaadin-lumo-styles/typography.js")
+@JsModule("@vaadin/vaadin-lumo-styles/sizing.js")
+@JsModule("@vaadin/vaadin-lumo-styles/spacing.js")
+@JsModule("@vaadin/vaadin-lumo-styles/style.js")
+@JsModule("@vaadin/vaadin-lumo-styles/icons.js")
 public class Lumo implements AbstractTheme {
 
     public static final String LIGHT = "light";

@@ -1,6 +1,9 @@
 package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -9,23 +12,39 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.ReflectionUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
+import elemental.json.JsonObject;
+
+import static com.vaadin.flow.plugin.maven.NodeBuildFrontendMojoTest.getPackageJson;
+import static com.vaadin.flow.plugin.maven.NodeBuildFrontendMojoTest.setProject;
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
+import static com.vaadin.flow.server.frontend.FrontendUtils.getFlowPackage;
 
 public class NodeValidateMojoTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
+
     private final NodeValidateMojo mojo = new NodeValidateMojo();
     private File projectFrontendResourcesDirectory;
     private File nodeModulesPath;
+    private String webpackConfig;
+    private String packageJson;
+    private File importsFile;
+
 
     @Before
     public void setup() throws Exception {
@@ -44,12 +63,23 @@ public class NodeValidateMojoTest {
                         "test_project_resource.js").createNewFile());
 
         nodeModulesPath = new File(projectBase, "node_modules");
+        importsFile = new File(projectBase, "flow-imports.js");
+        webpackConfig = new File(projectBase, WEBPACK_CONFIG).getAbsolutePath();
+        packageJson = new File(projectBase, PACKAGE_JSON).getAbsolutePath();
 
         ReflectionUtils.setVariableValueInObject(mojo, "project", project);
         ReflectionUtils.setVariableValueInObject(mojo, "nodeModulesPath", nodeModulesPath);
         ReflectionUtils.setVariableValueInObject(mojo, "frontendResourcesDirectory", projectFrontendResourcesDirectory);
         ReflectionUtils.setVariableValueInObject(mojo, "jarResourcePathsToCopy", RESOURCES_FRONTEND_DEFAULT);
         ReflectionUtils.setVariableValueInObject(mojo, "includes", "**/*.js,**/*.css");
+        ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", projectBase);
+        ReflectionUtils.setVariableValueInObject(mojo, "nodeModulesPath", nodeModulesPath);
+        ReflectionUtils.setVariableValueInObject(mojo, "webpackTemplate", WEBPACK_CONFIG);
+        ReflectionUtils.setVariableValueInObject(mojo, "generatedFlowImports", importsFile);
+
+
+        Assert.assertTrue(getFlowPackage(nodeModulesPath).mkdirs());
+        setProject(mojo, "war", "war_output");
     }
 
     @Test
@@ -71,6 +101,83 @@ public class NodeValidateMojoTest {
                 "Expected the copied file '%s' to be in the project resources",
                 file), projectFrontendResources.contains(file.getName())));
     }
+
+    @Test
+    public void assertWebpackContent_jar() throws Exception {
+        Assert.assertFalse(FileUtils.fileExists(webpackConfig));
+        final String expectedOutput = "jar_output";
+        setProject(mojo, "jar", expectedOutput);
+
+        mojo.execute();
+
+        Files.lines(Paths.get(webpackConfig))
+                .peek(line -> Assert.assertFalse(line.contains("{{")))
+                .filter(line -> line.contains(expectedOutput))
+                .findAny()
+                .orElseThrow(() -> new AssertionError(String.format(
+                        "Did not find expected output directory '%s' in the resulting webpack config",
+                        expectedOutput)));
+    }
+
+    @Test
+    public void assertWebpackContent_war() throws Exception {
+        Assert.assertFalse(FileUtils.fileExists(webpackConfig));
+        String expectedOutput = "war_output";
+        setProject(mojo, "war", expectedOutput);
+
+        mojo.execute();
+
+        Files.lines(Paths.get(webpackConfig))
+                .peek(line -> Assert.assertFalse(line.contains("{{")))
+                .filter(line -> line.contains(expectedOutput))
+                .findAny()
+                .orElseThrow(() -> new AssertionError(String.format(
+                        "Did not find expected output directory '%s' in the resulting webpack config",
+                        expectedOutput)));
+    }
+
+    @Test
+    public void mavenGoal_when_packageJsonMissing() throws Exception {
+        Assert.assertFalse(FileUtils.fileExists(packageJson));
+        mojo.execute();
+        assertPackageJsonContent();
+        Assert.assertTrue(FileUtils.fileExists(webpackConfig));
+    }
+
+    @Test
+    public void assertWebpackContent_NotWarNotJar() throws Exception {
+        String unexpectedPackaging = "notWarAndNotJar";
+
+        setProject(mojo, unexpectedPackaging, "whatever");
+
+        exception.expect(IllegalStateException.class);
+        exception.expectMessage(unexpectedPackaging);
+        mojo.execute();
+    }
+
+    private void assertPackageJsonContent() throws IOException {
+        JsonObject packageJsonObject = getPackageJson(packageJson);
+        JsonObject dependencies = packageJsonObject.getObject("dependencies");
+
+        Assert.assertTrue("Missing @webcomponents/webcomponentsjs package",
+                dependencies.hasKey("@webcomponents/webcomponentsjs"));
+        Assert.assertTrue("Missing @polymer/polymer package",
+                dependencies.hasKey("@polymer/polymer"));
+
+        JsonObject devDependencies = packageJsonObject.getObject("devDependencies");
+
+        Assert.assertTrue("Missing webpack dev package",
+                devDependencies.hasKey("webpack"));
+        Assert.assertTrue("Missing webpack-cli dev package",
+                devDependencies.hasKey("webpack-cli"));
+        Assert.assertTrue("Missing webpack-dev-server dev package",
+                devDependencies.hasKey("webpack-dev-server"));
+        Assert.assertTrue("Missing webpack-babel-multi-target-plugin dev package",
+                devDependencies.hasKey("webpack-babel-multi-target-plugin"));
+        Assert.assertTrue("Missing copy-webpack-plugin dev package",
+                devDependencies.hasKey("copy-webpack-plugin"));
+    }
+
 
     private List<File> gatherFiles(File root) {
         if (root.isFile()) {

@@ -258,25 +258,46 @@ public class VaadinServletServiceTest {
         }
     }
 
+    private static VaadinService createServiceWithRealAttributes() {
+        /*
+         * Cannot easily use the same service as in other tests in this class
+         * because of the way it uses a @Mock servlet context that doesn't store
+         * attribute values.
+         */
+        return new MockVaadinServletService();
+    }
+
     @Test
     public void getAttributeWithProvider() {
-        String value = service.getAttribute(String.class, VaadinServletServiceTest::testAttributeProvider);
+        VaadinService service = createServiceWithRealAttributes();
+
+        Assert.assertNull(service.getAttribute(String.class));
+
+        String value = service.getAttribute(String.class,
+                VaadinServletServiceTest::testAttributeProvider);
         Assert.assertEquals(testAttributeProvider(), value);
+
+        Assert.assertEquals("Value from provider should be persisted",
+                testAttributeProvider(), service.getAttribute(String.class));
     }
 
     @Test(expected = AssertionError.class)
     public void setNullAttributeNotAllowed() {
+        VaadinService service = createServiceWithRealAttributes();
         service.setAttribute(null);
     }
 
     @Test
-    public void getAttributeWithoutProvider() {
+    public void getMissingAttributeWithoutProvider() {
+        VaadinService service = createServiceWithRealAttributes();
         String value = service.getAttribute(String.class);
         Assert.assertNull(value);
     }
 
     @Test
     public void setAndGetAttribute() {
+        VaadinService service = createServiceWithRealAttributes();
+
         String value = testAttributeProvider();
         service.setAttribute(value);
         String result = service.getAttribute(String.class);
@@ -287,7 +308,10 @@ public class VaadinServletServiceTest {
         result = service.getAttribute(String.class);
         Assert.assertEquals(newValue, result);
         // now the provider should not be called, so value should be still there
-        result = service.getAttribute(String.class, VaadinServletServiceTest::testAttributeProvider);
+        result = service.getAttribute(String.class,
+                () -> {
+                    throw new AssertionError("Should not be called");
+                });
         Assert.assertEquals(newValue, result);
     }
 

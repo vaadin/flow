@@ -20,6 +20,7 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 
+import java.io.File;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -33,7 +34,9 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.shared.ApplicationConstants;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.isBowerLegacyMode;
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
+import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
 
 /**
  * Creates {@link DeploymentConfiguration} filled with all parameters specified
@@ -145,6 +148,12 @@ public final class DeploymentConfigurationFactory implements Serializable {
         } catch (MalformedURLException e) { //NOSONAR
         }
         return false;
+    }
+
+    private static boolean isBowerLegacyMode() {
+        boolean hasNpmConfig = new File(getBaseDir(), PACKAGE_JSON).exists()
+                && new File(getBaseDir(), WEBPACK_CONFIG).exists();
+        return !hasNpmConfig;
     }
 
     private static void readUiFromEnclosingClass(

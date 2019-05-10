@@ -68,7 +68,7 @@ public class CopyProductionFilesMojo extends AbstractMojo {
     @Override
     public void execute() {
         // Do nothing when not in bower mode
-        if (!FlowPluginFrontendUtils.isBowerMode(getLog())) {
+        if (!FlowPluginFrontendUtils.isBowerMode()) {
             getLog().info("Skipped `copy-production-files` goal because `vaadin.bowerMode` is not set.");
             return;
         }

@@ -23,12 +23,11 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.slf4j.LoggerFactory;
-
-import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 
 /**
  * A class for static methods and definitions that might be
@@ -146,20 +145,6 @@ public class FrontendUtils {
     }
 
     /**
-     * Check that the folder structure does not meet a proper npm mode project.
-     * It is useful to run V13 projects in V14 before they have been migrated.
-     *
-     * @return whether the project needs to be run in bower mode
-     */
-    public static boolean isBowerLegacyMode() {
-        boolean hasBowerFrontend = new File(getBaseDir(), "src/main/webapp/frontend").isDirectory();
-        boolean hasNpmFrontend = new File(getBaseDir(), "frontend").isDirectory();
-        boolean hasNpmConfig = new File(getBaseDir(), PACKAGE_JSON).exists()
-                && new File(getBaseDir(), WEBPACK_CONFIG).exists();
-        return hasBowerFrontend && !hasNpmFrontend && !hasNpmConfig ? true : false;
-    }
-
-    /**
      * Locate <code>node</code> executable.
      *
      * @return the full path to the executable
@@ -224,5 +209,39 @@ public class FrontendUtils {
             LoggerFactory.getLogger(FrontendUtils.class).warn("Couldn't close template input stream", exception);
         }
         return ret;
+    }
+
+    /**
+     * Creates a process builder for the given list of program and arguments. If
+     * the program is defined as an absolute path, then the directory that
+     * contains the program is also appended to PATH so that the it can locate
+     * related tools.
+     *
+     * @param command
+     *            a list with the program and arguments
+     * @return a configured process builder
+     */
+    public static ProcessBuilder createProcessBuilder(List<String> command) {
+        ProcessBuilder processBuilder = new ProcessBuilder(command);
+
+        /*
+         * Ensure the location of the command to run is in PATH. This is in some
+         * cases needed by npm to locate a node binary.
+         */
+        File commandFile = new File(command.get(0));
+        if (commandFile.isAbsolute()) {
+            String commandPath = commandFile.getParent();
+
+            Map<String, String> environment = processBuilder.environment();
+            String path = environment.get("PATH");
+            if (path == null || path.isEmpty()) {
+                path = commandPath;
+            } else if (!path.contains(commandPath)) {
+                path += File.pathSeparatorChar + commandPath;
+            }
+            environment.put("PATH", path);
+        }
+
+        return processBuilder;
     }
 }

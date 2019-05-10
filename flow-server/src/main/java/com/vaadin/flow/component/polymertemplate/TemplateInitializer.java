@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.component.polymertemplate;
 
-import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -23,16 +22,13 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
-import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.polymertemplate.TemplateDataAnalyzer.ParserData;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.internal.AnnotationReader;
-import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
@@ -58,7 +54,7 @@ public class TemplateInitializer {
 
     private final ParserData parserData;
 
-    private final Map<String, Element> registeredElementIdToInjected = new HashMap<>();
+    private IdMapper idMapper;
 
     /**
      * Creates a new initializer instance.
@@ -74,6 +70,7 @@ public class TemplateInitializer {
     public TemplateInitializer(PolymerTemplate<?> template,
             TemplateParser parser, VaadinService service) {
         this.template = template;
+        idMapper = new IdMapper(template);
 
         boolean productionMode = service.getDeploymentConfiguration()
                 .isProductionMode();
@@ -100,7 +97,7 @@ public class TemplateInitializer {
      * Initializes child elements.
      */
     public void initChildElements() {
-        registeredElementIdToInjected.clear();
+        idMapper.reset();
         mapComponents();
         createSubTemplates();
     }
@@ -116,11 +113,11 @@ public class TemplateInitializer {
 
     private void doRequestAttachCustomElement(String id, String tag,
             JsonArray path) {
-        if (registeredElementIdToInjected.containsKey(id)) {
+        if (idMapper.isMapped(id)) {
             return;
         }
         // make sure that shadow root is available
-        getShadowRoot();
+        idMapper.getOrCreateShadowRoot();
 
         Element element = new Element(tag);
         VirtualChildrenList list = getElement().getNode()
@@ -155,131 +152,16 @@ public class TemplateInitializer {
                 componentClass -> Component.from(element, componentClass));
     }
 
-    private ShadowRoot getShadowRoot() {
-        return getElement().getShadowRoot()
-                .orElseGet(() -> getElement().attachShadow());
-    }
-
     /* Map declared fields marked @Id */
 
     private void mapComponents() {
-        parserData.forEachInjectedField(this::tryMapComponentOrElement);
-    }
-
-    private void tryMapComponentOrElement(Field field, String id, String tag) {
-        Element element = getElementById(id).orElse(null);
-
-        if (element == null) {
-            injectClientSideElement(tag, id, field);
-        } else {
-            injectServerSideElement(element, field);
-        }
-    }
-
-    private void injectServerSideElement(Element element, Field field) {
-        if (getElement().equals(element)) {
-            throw new IllegalArgumentException(
-                    "Cannot map the root element of the template. "
-                            + "This is always mapped to the template instance itself ("
-                            + templateClass.getName() + ')');
-        } else if (element != null) {
-            injectTemplateElement(element, field);
-        }
-    }
-
-    private void injectClientSideElement(String tagName, String id,
-            Field field) {
-        Class<?> fieldType = field.getType();
-
-        Tag tag = fieldType.getAnnotation(Tag.class);
-        if (tag != null && !tagName.equalsIgnoreCase(tag.value())) {
-            String msg = String.format(
-                    "Class '%s' has field '%s' whose type '%s' is annotated with "
-                            + "tag '%s' but the element defined in the HTML "
-                            + "template with id '%s' has tag name '%s'",
-                    templateClass.getName(), field.getName(),
-                    fieldType.getName(), tag.value(), id, tagName);
-            throw new IllegalStateException(msg);
-        }
-        attachExistingElementById(tagName, id, field);
-    }
-
-    private Optional<Element> getElementById(String id) {
-        return getShadowRoot().getChildren().flatMap(this::flattenChildren)
-                .filter(element -> id.equals(element.getAttribute("id")))
-                .findFirst();
-    }
-
-    private Stream<Element> flattenChildren(Element node) {
-        if (node.getChildCount() > 0) {
-            return node.getChildren().flatMap(this::flattenChildren);
-        }
-        return Stream.of(node);
-    }
-
-    /**
-     * Attaches a child element with the given {@code tagName} and {@code id} to
-     * an existing dom element on the client side with matching data.
-     *
-     * @param tagName
-     *            tag name of element, not {@code null}
-     * @param id
-     *            id of element to attach to
-     * @param field
-     *            field to attach {@code Element} or {@code Component} to
-     */
-    private void attachExistingElementById(String tagName, String id,
-            Field field) {
-        if (tagName == null) {
-            throw new IllegalArgumentException(
-                    "Tag name parameter cannot be null");
-        }
-
-        Element element = registeredElementIdToInjected.get(id);
-        if (element == null) {
-            element = new Element(tagName);
-            VirtualChildrenList list = getElement().getNode()
-                    .getFeature(VirtualChildrenList.class);
-            list.append(element.getNode(), NodeProperties.INJECT_BY_ID, id);
-            registeredElementIdToInjected.put(id, element);
-        }
-        injectTemplateElement(element, field);
+        parserData.forEachInjectedField(
+                (field, id, tag) -> idMapper.mapComponentOrElement(field, id,
+                        tag, this::attachComponentIfUses));
     }
 
     private Element getElement() {
         return template.getElement();
-    }
-
-    @SuppressWarnings("unchecked")
-    private void injectTemplateElement(Element element, Field field) {
-        Class<?> fieldType = field.getType();
-        if (Component.class.isAssignableFrom(fieldType)) {
-            attachComponentIfUses(element);
-            Component component;
-
-            Optional<Component> wrappedComponent = element.getComponent();
-            if (wrappedComponent.isPresent()) {
-                component = wrappedComponent.get();
-            } else {
-                Class<? extends Component> componentType = (Class<? extends Component>) fieldType;
-                component = Component.from(element, componentType);
-            }
-
-            ReflectTools.setJavaFieldValue(template, field, component);
-        } else if (Element.class.isAssignableFrom(fieldType)) {
-            ReflectTools.setJavaFieldValue(template, field, element);
-        } else {
-            String msg = String.format(
-                    "The field '%s' in '%s' has an @'%s' "
-                            + "annotation but the field type '%s' "
-                            + "does not extend neither '%s' nor '%s'",
-                    field.getName(), templateClass.getName(),
-                    Id.class.getSimpleName(), fieldType.getName(),
-                    Component.class.getSimpleName(),
-                    Element.class.getSimpleName());
-
-            throw new IllegalArgumentException(msg);
-        }
     }
 
     private void createSubTemplates() {

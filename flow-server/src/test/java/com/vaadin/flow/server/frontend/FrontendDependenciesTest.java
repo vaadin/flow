@@ -82,6 +82,14 @@ public class FrontendDependenciesTest {
                 "(Lcom/vaadin/flow/component/orderedlayout/FlexComponent$Alignment;[Lcom/vaadin/flow/component/Component;)");
         assertEquals(13, classes.size());
         assertTrue(classes.contains("com.vaadin.flow.component.orderedlayout.FlexComponent$Alignment"));
+        
+        // Apart from proper signature representation, it should handle class names, and class paths
+        visitor.addSignatureToClasses(classes, this.getClass().getName());
+        assertTrue(classes.contains(this.getClass().getName()));
+
+        visitor.addSignatureToClasses(classes, "com/vaadin/flow/server/frontend/FrontendDependenciesTestComponents$AnotherComponent");
+        assertTrue(classes.contains("com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents$AnotherComponent"));
+        
     }
 
     @Test
@@ -189,13 +197,14 @@ public class FrontendDependenciesTest {
 
     @Test
     public void should_resolveComponentFactories() throws Exception {
-
         FrontendDependencies deps = create(ThirdView.class);
 
-        assertEquals(0, deps.getImports().size());
-        assertEquals(1, deps.getModules().size());
-        assertEquals(0, deps.getPackages().size());
-        assertEquals(0, deps.getScripts().size());
-        assertTrue(deps.getModules().contains("./my-component.js"));
+         assertEquals(0, deps.getImports().size());
+         assertEquals(3, deps.getModules().size());
+         assertEquals(0, deps.getPackages().size());
+         assertEquals(0, deps.getScripts().size());
+         assertTrue(deps.getModules().contains("./my-component.js"));
+         assertTrue(deps.getModules().contains("./my-static-factory.js"));
+         assertTrue(deps.getModules().contains("./my-another-component.js"));
     }
 }

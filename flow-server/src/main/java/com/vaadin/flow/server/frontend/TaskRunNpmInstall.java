@@ -28,9 +28,9 @@ import static com.vaadin.flow.server.frontend.NodeUpdater.log;
 /**
  * Run <code>npm install</code> after dependencies have been updated.
  */
-public class NodeNpmInstall implements Command {
+public class TaskRunNpmInstall implements Command {
 
-    private final NodeUpdatePackages packageUpdater;
+    private final NodeUpdater packageUpdater;
 
     /**
      * Create an instance of the command.
@@ -39,7 +39,7 @@ public class NodeNpmInstall implements Command {
      *            package-updater instance used for checking if previous
      *            execution modified the package.json file
      */
-    public NodeNpmInstall(NodeUpdatePackages packageUpdater) {
+    public TaskRunNpmInstall(NodeUpdater packageUpdater) {
         this.packageUpdater = packageUpdater;
     }
 
@@ -70,16 +70,8 @@ public class NodeNpmInstall implements Command {
         List<String> command = new ArrayList<>(FrontendUtils.getNpmExecutable());
         command.add("install");
 
-        ProcessBuilder builder = new ProcessBuilder(command);
+        ProcessBuilder builder = FrontendUtils.createProcessBuilder(command);
         builder.directory(packageUpdater.npmFolder);
-
-        // For a locally installed Node on windows we need to add the node folder
-        // to the path for it to work as expected with NPM
-        if (FrontendUtils.isWindows() && command.get(0).contains("node.exe")) {
-            String nodeExecutable = command.get(0).replace("\\node.exe", "");
-            builder.environment().put("PATH",
-                    System.getenv().get("PATH") + ";" + nodeExecutable);
-        }
 
         Process process = null;
         try {

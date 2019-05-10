@@ -209,7 +209,7 @@ public class PackageForProductionMojo extends AbstractMojo {
     public void execute() {
 
         // Do nothing when not in bower mode
-        if (!FlowPluginFrontendUtils.isBowerMode(getLog())) {
+        if (!FlowPluginFrontendUtils.isBowerMode()) {
             getLog().info("Skipped `package-for-production` goal because `vaadin.bowerMode` is not set.");
             return;
         }

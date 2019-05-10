@@ -138,6 +138,110 @@
           "source": "// Import an element\nimport '@polymer/paper-checkbox/paper-checkbox.js';\n\n// Import the PolymerElement base class and html helper\nimport {PolymerElement, html} from '@polymer/polymer';\n\n// Define an element class\nclass LikeableElement extends PolymerElement {\n\n  // Define public API properties\n  static get properties() { return { liked: Boolean }}\n\n  // Define the element's template\n  static get template() {\n    return html`\n      <style>\n        :host{ \n          margin: 5px; \n        }\n      \n        .response { margin-top: 10px; } \n      </style>\n      <paper-checkbox checked=\"{{liked}}\">I like web components!</paper-checkbox>\n\n      <div id=\"test\" hidden$=\"[[!liked]]\" class=\"response\">Web components like you, too.</div>\n    `;\n  }\n}\n\n// Register the element with the browser\ncustomElements.define('likeable-element', LikeableElement);\n\n"
         },
         {
+          "id": "./frontend/LikeableElementFaultyMethods.js",
+          "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/frontend/LikeableElementFaultyMethods.js",
+          "name": "./frontend/LikeableElementFaultyMethods.js",
+          "index": 3,
+          "index2": 67,
+          "size": 850,
+          "cacheable": true,
+          "built": true,
+          "optional": false,
+          "prefetched": false,
+          "chunks": [
+            "likeable"
+          ],
+          "issuer": "/Volumes/Framework/updates/skeleton-starter-flow/index.js",
+          "issuerId": "./index.js",
+          "issuerName": "./index.js",
+          "issuerPath": [
+            {
+              "id": "./index.js",
+              "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/index.js",
+              "name": "./index.js",
+              "profile": {
+                "factory": 22,
+                "building": 20
+              }
+            }
+          ],
+          "profile": {
+            "factory": 218,
+            "building": 12
+          },
+          "failed": false,
+          "errors": 0,
+          "warnings": 0,
+          "assets": [],
+          "reasons": [
+            {
+              "moduleId": "./index.js",
+              "moduleIdentifier": "/Volumes/Framework/updates/skeleton-starter-flow/index.js",
+              "module": "./index.js",
+              "moduleName": "./index.js",
+              "type": "harmony side effect evaluation",
+              "userRequest": "./frontend/LikeableElementFaultyMethods.js",
+              "loc": "1:0-60"
+            }
+          ],
+          "providedExports": [],
+          "optimizationBailout": [],
+          "depth": 1,
+          "source": "// Import an element\nimport '@polymer/paper-checkbox/paper-checkbox.js';\n\n// Import the PolymerElement base class and html helper\nimport {PolymerElement, html} from '@polymer/polymer';\n\n// Define an element class\nclass LikeableElement extends PolymerElement {\n\n  // Define public API properties\n  static get properties() { return { liked: Boolean }}\n\n  // Define the element's template\n  static get template() {\n    return `\n      <style>\n        :host{ \n          margin: 5px; \n        }\n      \n        .response { margin-top: 10px; } \n      </style>\n      <paper-checkbox checked=\"{{liked}}\">I like web components!</paper-checkbox>\n\n      <div id=\"test\" hidden$=\"[[!liked]]\" class=\"response\">Web components like you, too.</div>\n    `;\n  }\n}\n\n// Register the element with the browser\ncustomElements.define('likeable-element', LikeableElement);\n\n"
+        },
+        {
+          "id": "./frontend/LikeableElementBrokenHtml.js",
+          "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/frontend/LikeableElementBrokenHtml.js",
+          "name": "./frontend/LikeableElementBrokenHtml.js",
+          "index": 2,
+          "index2": 67,
+          "size": 850,
+          "cacheable": true,
+          "built": true,
+          "optional": false,
+          "prefetched": false,
+          "chunks": [
+            "likeable"
+          ],
+          "issuer": "/Volumes/Framework/updates/skeleton-starter-flow/index.js",
+          "issuerId": "./index.js",
+          "issuerName": "./index.js",
+          "issuerPath": [
+            {
+              "id": "./index.js",
+              "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/index.js",
+              "name": "./index.js",
+              "profile": {
+                "factory": 22,
+                "building": 20
+              }
+            }
+          ],
+          "profile": {
+            "factory": 218,
+            "building": 12
+          },
+          "failed": false,
+          "errors": 0,
+          "warnings": 0,
+          "assets": [],
+          "reasons": [
+            {
+              "moduleId": "./index.js",
+              "moduleIdentifier": "/Volumes/Framework/updates/skeleton-starter-flow/index.js",
+              "module": "./index.js",
+              "moduleName": "./index.js",
+              "type": "harmony side effect evaluation",
+              "userRequest": "./frontend/LikeableElementBrokenHtml.js",
+              "loc": "1:0-60"
+            }
+          ],
+          "providedExports": [],
+          "optimizationBailout": [],
+          "depth": 1,
+          "source": "// Import an element\nimport '@polymer/paper-checkbox/paper-checkbox.js';\n\n// Import the PolymerElement base class and html helper\nimport {PolymerElement, html} from '@polymer/polymer';\n\n// Define an element class\nclass LikeableElement extends PolymerElement {\n\n  // Define public API properties\n  static get properties() { return { liked: Boolean }}\n\n  // Define the element's template\n  static get template() {\n    return html`\n      <style>\n        :host{ \n          margin: 5px; \n        }\n      \n        .response { margin-top: 10px; } \n      <paper-checkbox checked=\"{{liked}}\">I like web components!</paper-checkbox>\n\n      <div id=\"test\" hidden$=\"[[!liked]]\" class=\"response\">Web components like you, too.</div>\n    `;\n  }\n}\n\n// Register the element with the browser\ncustomElements.define('likeable-element', LikeableElement);\n\n"
+        },
+        {
           "id": "./index.js",
           "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/index.js",
           "name": "./index.js",
