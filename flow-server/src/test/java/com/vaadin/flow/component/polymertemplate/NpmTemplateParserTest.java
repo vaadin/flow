@@ -124,6 +124,33 @@ public class NpmTemplateParserTest {
     }
 
     @Test
+    public void sourceFileWithFaultyTemplateGetter_shouldJustReturnEmptyTemplateElement() {
+        // If the template getter can not be found it should result in no template element children
+        Mockito.when(configuration.getStringProperty(Mockito.anyString(), Mockito.anyString()))
+                .thenReturn("build/stats.json");
+        TemplateParser.TemplateData templateContent = NpmTemplateParser
+                .getInstance()
+                .getTemplateContent(LikeableFaulty.class, "likeable-element",
+                        service);
+
+        Assert.assertEquals("Faulty template getter should not find elements", 0, templateContent.getTemplateElement().childNodeSize());
+    }
+
+    @Test
+    public void faultyTemplateStyle_shouldReturnEmptyTemplateElement() {
+        // Template with no closing style tag should parse as one big style tag and thus
+        // the document body should have no elements.
+        Mockito.when(configuration.getStringProperty(Mockito.anyString(), Mockito.anyString()))
+                .thenReturn("build/stats.json");
+        TemplateParser.TemplateData templateContent = NpmTemplateParser
+                .getInstance()
+                .getTemplateContent(LikeableBroken.class, "likeable-element",
+                        service);
+
+        Assert.assertEquals("Faulty html should not find elements", 0,templateContent.getTemplateElement().childNodeSize());
+    }
+
+    @Test
     public void bableStats_shouldAlwaysParseCorrectly() {
         Mockito.when(configuration.getStringProperty(Mockito.anyString(), Mockito.anyString()))
                 .thenReturn("build/babel_stats.json");
@@ -154,6 +181,16 @@ public class NpmTemplateParserTest {
     @Tag("likeable-element")
     @JsModule("./frontend/LikeableElement.js")
     public class Likeable extends PolymerTemplate<TemplateModel> {
+    }
+
+    @Tag("likeable-element")
+    @JsModule("./frontend/LikeableElementFaultyMethods.js")
+    public class LikeableFaulty extends PolymerTemplate<TemplateModel> {
+    }
+
+    @Tag("likeable-element")
+    @JsModule("./frontend/LikeableElementBrokenHtml.js")
+    public class LikeableBroken extends PolymerTemplate<TemplateModel> {
     }
 
     @Tag("likeable-element")
