@@ -2,14 +2,18 @@ package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRegistration;
+
 import java.io.File;
+import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 import net.jcip.annotations.NotThreadSafe;
+import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -29,7 +33,6 @@ import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubWebpa
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 @NotThreadSafe
 public class DevModeInitializerTest {
@@ -63,9 +66,16 @@ public class DevModeInitializerTest {
     }
 
     @After
-    public void teardown() {
+    public void teardown() throws Exception, SecurityException {
         System.clearProperty("vaadin." + SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM);
         System.clearProperty("vaadin." + SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS);
+        new File(getBaseDir(), PACKAGE_JSON).delete();
+        new File(getBaseDir(), WEBPACK_CONFIG).delete();
+
+        // Reset unique instance in DevModeHandler
+        Field atomicHandler = DevModeHandler.class.getDeclaredField("atomicHandler");
+        atomicHandler.setAccessible(true);
+        atomicHandler.set(null, new AtomicReference<>());
     }
 
     @Test
@@ -79,10 +89,18 @@ public class DevModeInitializerTest {
     }
 
     @Test
-    public void should_Run_Updaters_when_Enabled() throws Exception {
+    public void should_Not_Run_Updaters_when_NoNodeConfFiles() throws Exception {
         devModeInitializer.onStartup(classes, servletContext);
-        assertTrue(new File(getBaseDir(), PACKAGE_JSON).canRead());
-        assertTrue(new File(getBaseDir(), WEBPACK_CONFIG).canRead());
+        assertNull(DevModeHandler.getDevModeHandler());
+    }
+
+    @Test
+    public void should_Run_Updaters_when_NodeConfFiles() throws Exception {
+        FileUtils.write(new File(getBaseDir(), PACKAGE_JSON), "{}", "UTF-8");
+        new File(getBaseDir(), WEBPACK_CONFIG).createNewFile();
+
+        devModeInitializer.onStartup(classes, servletContext);
         assertNotNull(DevModeHandler.getDevModeHandler());
     }
+
 }

@@ -32,6 +32,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.maven.model.Build;
+import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.ReflectionUtils;
@@ -40,27 +41,24 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.plugin.TestUtils;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
+import static com.vaadin.flow.server.frontend.FrontendUtils.getFlowPackage;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class NodeBuildFrontendMojoTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     private File importsFile;
     private File nodeModulesPath;
@@ -93,16 +91,16 @@ public class NodeBuildFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", tmpRoot);
         ReflectionUtils.setVariableValueInObject(mojo, "nodeModulesPath", nodeModulesPath);
         ReflectionUtils.setVariableValueInObject(mojo, "generateBundle", false);
-        ReflectionUtils.setVariableValueInObject(mojo, "webpackTemplate", WEBPACK_CONFIG);
         ReflectionUtils.setVariableValueInObject(mojo, "runNpmInstall", false);
 
-        Assert.assertTrue(getFlowPackage().mkdirs());
+        Assert.assertTrue(getFlowPackage(nodeModulesPath).mkdirs());
 
-        setProject("war", "war_output");
+        setProject(mojo, "war", "war_output");
 
         // Install all imports used in the tests on node_modules so as we don't
         // need to run `npm install`
         createExpectedImports(frontendDirectory, nodeModulesPath);
+        FileUtils.fileWrite(packageJson, "UTF-8", "{}");
     }
 
     @After
@@ -111,7 +109,7 @@ public class NodeBuildFrontendMojoTest {
         FileUtils.fileDelete(webpackConfig);
     }
 
-    private void setProject(String packaging, String outputDirectory) throws Exception {
+    static void setProject(AbstractMojo mojo, String packaging, String outputDirectory) throws Exception {
         Build buildMock = mock(Build.class);
         when(buildMock.getOutputDirectory()).thenReturn(outputDirectory);
         when(buildMock.getDirectory()).thenReturn(outputDirectory);
@@ -140,8 +138,8 @@ public class NodeBuildFrontendMojoTest {
 
         assertContainsImports(true, expectedLines.toArray(new String[0]));
 
-        Assert.assertTrue(getFlowPackage().exists());
-        Assert.assertTrue(new File(getFlowPackage(), "ExampleConnector.js").exists());
+        Assert.assertTrue(getFlowPackage(nodeModulesPath).exists());
+        Assert.assertTrue(new File(getFlowPackage(nodeModulesPath), "ExampleConnector.js").exists());
     }
 
     @Test
@@ -213,89 +211,28 @@ public class NodeBuildFrontendMojoTest {
     }
 
     @Test
-    public void assertWebpackContent_jar() throws Exception {
-        Assert.assertFalse(FileUtils.fileExists(webpackConfig));
-        final String expectedOutput = "jar_output";
-        setProject("jar", expectedOutput);
-
-        mojo.execute();
-
-        Files.lines(Paths.get(webpackConfig))
-                .peek(line -> Assert.assertFalse(line.contains("{{")))
-                .filter(line -> line.contains(expectedOutput))
-                .findAny()
-                .orElseThrow(() -> new AssertionError(String.format(
-                        "Did not find expected output directory '%s' in the resulting webpack config",
-                        expectedOutput)));
-    }
-
-    @Test
-    public void assertWebpackContent_war() throws Exception {
-        Assert.assertFalse(FileUtils.fileExists(webpackConfig));
-        String expectedOutput = "war_output";
-        setProject("war", expectedOutput);
-
-        mojo.execute();
-
-        Files.lines(Paths.get(webpackConfig))
-                .peek(line -> Assert.assertFalse(line.contains("{{")))
-                .filter(line -> line.contains(expectedOutput))
-                .findAny()
-                .orElseThrow(() -> new AssertionError(String.format(
-                        "Did not find expected output directory '%s' in the resulting webpack config",
-                        expectedOutput)));
-    }
-
-    @Test
-    public void assertWebpackContent_NotWarNotJar() throws Exception {
-        String unexpectedPackaging = "notWarAndNotJar";
-
-        setProject(unexpectedPackaging, "whatever");
-
-        exception.expect(IllegalStateException.class);
-        exception.expectMessage(unexpectedPackaging);
-        mojo.execute();
-    }
-
-    @Test
-    public void mavenGoal_when_packageJsonMissing() throws Exception {
-        Assert.assertFalse(FileUtils.fileExists(packageJson));
-
-        mojo.execute();
-
-        assertPackageJsonContent();
-
-        Assert.assertTrue(FileUtils.fileExists(webpackConfig));
-    }
-
-    @Test
     public void mavenGoal_when_packageJsonExists() throws Exception {
 
         FileUtils.fileWrite(packageJson, "{}");
         long tsPackage1 = FileUtils.getFile(packageJson).lastModified();
-        long tsWebpack1 = FileUtils.getFile(webpackConfig).lastModified();
 
         // need to sleep because timestamp is in seconds
         sleep(1000);
         mojo.execute();
         long tsPackage2 = FileUtils.getFile(packageJson).lastModified();
-        long tsWebpack2 = FileUtils.getFile(webpackConfig).lastModified();
 
         sleep(1000);
         mojo.execute();
         long tsPackage3 = FileUtils.getFile(packageJson).lastModified();
-        long tsWebpack3 = FileUtils.getFile(webpackConfig).lastModified();
 
         Assert.assertTrue(tsPackage1 < tsPackage2);
-        Assert.assertTrue(tsWebpack1 < tsWebpack2);
         Assert.assertEquals(tsPackage2, tsPackage3);
-        Assert.assertEquals(tsWebpack2, tsWebpack3);
 
         assertPackageJsonContent();
     }
 
     private void assertPackageJsonContent() throws IOException {
-        JsonObject packageJsonObject = getPackageJson();
+        JsonObject packageJsonObject = getPackageJson(packageJson);
 
         JsonObject dependencies = packageJsonObject.getObject("dependencies");
 
@@ -412,15 +349,12 @@ public class NodeBuildFrontendMojoTest {
         return new File(root, jsImport);
     }
 
-    private File getFlowPackage() {
-        return FrontendUtils.getFlowPackage(nodeModulesPath);
-    }
 
     static void sleep(int ms) throws InterruptedException {
         Thread.sleep(ms); //NOSONAR
     }
 
-    private JsonObject getPackageJson() throws IOException {
+    static JsonObject getPackageJson(String packageJson) throws IOException {
         if (FileUtils.fileExists(packageJson)) {
             return Json.parse(FileUtils.fileRead(packageJson));
 

@@ -29,8 +29,6 @@ import java.util.stream.Collectors;
 
 import org.slf4j.LoggerFactory;
 
-import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-
 /**
  * A class for static methods and definitions that might be
  * used in different locations.
@@ -144,20 +142,6 @@ public class FrontendUtils {
      */
     public static File getFlowPackage(File nodeModulesPath) {
         return new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME);
-    }
-
-    /**
-     * Check that the folder structure does not meet a proper npm mode project.
-     * It is useful to run V13 projects in V14 before they have been migrated.
-     *
-     * @return whether the project needs to be run in bower mode
-     */
-    public static boolean isBowerLegacyMode() {
-        boolean hasBowerFrontend = new File(getBaseDir(), "src/main/webapp/frontend").isDirectory();
-        boolean hasNpmFrontend = new File(getBaseDir(), "frontend").isDirectory();
-        boolean hasNpmConfig = new File(getBaseDir(), PACKAGE_JSON).exists()
-                && new File(getBaseDir(), WEBPACK_CONFIG).exists();
-        return hasBowerFrontend && !hasNpmFrontend && !hasNpmConfig ? true : false;
     }
 
     /**

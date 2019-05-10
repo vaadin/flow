@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.maven.model.Build;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -35,8 +36,11 @@ import com.vaadin.flow.plugin.common.FlowPluginFrontendUtils;
 import com.vaadin.flow.plugin.common.JarContentsManager;
 import com.vaadin.flow.plugin.production.ProductionModeCopyStep;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.NodeTasks;
 
+import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFinder;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_IMPORTS_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 
 /**
@@ -73,11 +77,34 @@ public class NodeValidateMojo extends AbstractMojo {
     @Parameter(defaultValue = "**/*.js,**/*.css", required = true)
     private String includes;
 
+
+    /**
+     * The folder where `package.json` file is located. Default is project root
+     * dir.
+     */
+    @Parameter(defaultValue = "${project.basedir}")
+    private File npmFolder;
+
+    /**
+     * Copy the `webapp.config.js` from the specified URL if missing. Default is
+     * the template provided by this plugin. Set it to empty string to disable
+     * the feature.
+     */
+    @Parameter(defaultValue = FrontendUtils.WEBPACK_CONFIG)
+    private String webpackTemplate;
+
+    /**
+     * The JavaScript file used as entry point of the application, and which is
+     * automatically updated by flow by reading java annotations.
+     */
+    @Parameter(defaultValue = "${project.build.directory}/" + FLOW_IMPORTS_FILE)
+    private File generatedFlowImports;
+
     @Override
     public void execute() {
 
         // Do nothing when bower mode
-        if (FlowPluginFrontendUtils.isBowerMode(getLog())) {
+        if (FlowPluginFrontendUtils.isBowerMode()) {
             getLog().debug(
                     "Skipped 'validate' goal because `vaadin.bowerMode` is set.");
             return;
@@ -86,10 +113,19 @@ public class NodeValidateMojo extends AbstractMojo {
         FrontendUtils.getNodeExecutable();
         FrontendUtils.getNpmExecutable();
 
+        new NodeTasks.Builder(getClassFinder(project), npmFolder, nodeModulesPath, generatedFlowImports)
+                .withWebpack(getWebpackOutputDirectory(), webpackTemplate)
+                .createMissingPackageJson(true)
+                .enableImportsUpdate(false)
+                .enablePackagesUpdate(false)
+                .runNpmInstall(false)
+                .build().execute();
+
         File flowNodeDirectory = new File(nodeModulesPath,
                 FLOW_NPM_PACKAGE_NAME);
         copyFlowModuleDependencies(flowNodeDirectory);
         copyProjectFrontendResources(flowNodeDirectory);
+
     }
 
     private void copyFlowModuleDependencies(File flowNodeDirectory) {
@@ -130,6 +166,21 @@ public class NodeValidateMojo extends AbstractMojo {
                         frontendDirectory, flowNodeDirectory), e);
                 }
             }
+        }
+    }
+
+    private File getWebpackOutputDirectory() {
+        Build buildInformation = project.getBuild();
+        switch (project.getPackaging()) {
+            case "jar":
+                return new File(buildInformation.getOutputDirectory(),
+                        "META-INF/resources");
+            case "war":
+                return new File(buildInformation.getDirectory(),
+                        buildInformation.getFinalName());
+            default:
+                throw new IllegalStateException(String.format(
+                        "Unsupported packaging '%s'", project.getPackaging()));
         }
     }
 }

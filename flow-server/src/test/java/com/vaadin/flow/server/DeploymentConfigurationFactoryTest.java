@@ -2,6 +2,7 @@ package com.vaadin.flow.server;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -207,30 +208,29 @@ public class DeploymentConfigurationFactoryTest {
     }
 
     @Test
-    public void should_not_SetBowerMode_when_NoBowerFrontendFolder()
+    public void should_SetBowerMode_when_NoPackageAndNoWebpack()
             throws Exception {
-        DeploymentConfiguration config = createConfig(emptyMap());
-        assertFalse(config.isBowerMode());
-    }
-
-    @Test
-    public void should_SetBowerMode_when_BowerFrontendFolder()
-            throws Exception {
-        FileUtils
-                .forceMkdir(new File(getBaseDir(), "src/main/webapp/frontend"));
         DeploymentConfiguration config = createConfig(emptyMap());
         assertTrue(config.isBowerMode());
     }
 
     @Test
-    public void should_not_SetBowerMode_when_BowerFrontendFolderAndNpmFrontendFolder()
+    public void should_SetBowerMode_when_NoPackage()
             throws Exception {
-        FileUtils
-                .forceMkdir(new File(getBaseDir(), "src/main/webapp/frontend"));
-        FileUtils.forceMkdir(new File(getBaseDir(), "frontend"));
+        new File(getBaseDir(), FrontendUtils.WEBPACK_CONFIG).createNewFile();
+        DeploymentConfiguration config = createConfig(emptyMap());
+        assertTrue(config.isBowerMode());
+    }
+
+    @Test
+    public void should_not_SetBowerMode_when_PackageAndWebpack()
+            throws Exception {
+        new File(getBaseDir(), FrontendUtils.WEBPACK_CONFIG).createNewFile();
+        new File(getBaseDir(), Constants.PACKAGE_JSON).createNewFile();
         DeploymentConfiguration config = createConfig(emptyMap());
         assertFalse(config.isBowerMode());
     }
+
 
     @Test
     public void should_not_SetBowerMode_when_BowerFrontendFolderAndPackageAndWebpack()

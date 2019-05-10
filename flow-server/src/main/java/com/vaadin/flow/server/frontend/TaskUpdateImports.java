@@ -47,7 +47,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS
  * classes with {@link JsModule} {@link HtmlImport} and {@link Theme}
  * annotations.
  */
-public class NodeUpdateImports extends NodeUpdater {
+public class TaskUpdateImports extends NodeUpdater {
 
     private final File generatedFlowImports;
     private final File frontendDirectory;
@@ -71,7 +71,7 @@ public class NodeUpdateImports extends NodeUpdater {
      * @param convertHtml
      *         true to enable polymer-2 annotated classes to be considered
      */
-    public NodeUpdateImports(
+    public TaskUpdateImports(
             ClassFinder finder, File frontendDirectory,
             File generatedFrontendDirectory, File generatedFlowImports,
             File npmFolder, File nodeModulesPath, boolean convertHtml) {
@@ -100,7 +100,7 @@ public class NodeUpdateImports extends NodeUpdater {
      * @param convertHtml
      *         true to enable polymer-2 annotated classes to be considered
      */
-    public NodeUpdateImports(
+    public TaskUpdateImports(
             ClassFinder finder, FrontendDependencies frontendDependencies,
             File frontendDirectory, File generatedFrontendDirectory,
             File generatedFlowImports, File npmFolder, File nodeModulesPath,
@@ -128,15 +128,6 @@ public class NodeUpdateImports extends NodeUpdater {
         } catch (Exception e) {
             throw new IllegalStateException(String.format("Failed to update the Flow imports file '%s'", generatedFlowImports), e);
         }
-    }
-
-    private List<String> getExportedJsModules(List<File> exportedWebComponents) {
-        return exportedWebComponents.stream().map(file -> {
-            // get the import part of the file path and replace potential
-            // backward slashes with *nix compatible slashes
-            int index = file.getAbsolutePath().indexOf("@vaadin");
-            return file.getAbsolutePath().substring(index).replace('\\', '/');
-        }).collect(Collectors.toList());
     }
 
     private Set<String> sortModules(Set<String> modules) {

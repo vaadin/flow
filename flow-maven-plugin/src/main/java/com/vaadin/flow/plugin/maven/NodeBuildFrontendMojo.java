@@ -26,7 +26,6 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.maven.model.Build;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -126,18 +125,10 @@ public class NodeBuildFrontendMojo extends AbstractMojo {
     @Parameter(defaultValue = "true")
     private boolean generateEmbeddableWebComponents;
 
-    /**
-     * Copy the `webapp.config.js` from the specified URL if missing. Default is
-     * the template provided by this plugin. Set it to empty string to disable
-     * the feature.
-     */
-    @Parameter(defaultValue = FrontendUtils.WEBPACK_CONFIG)
-    private String webpackTemplate;
-
     @Override
     public void execute() {
         // Do nothing when bower mode
-        if (FlowPluginFrontendUtils.isBowerMode(getLog())) {
+        if (FlowPluginFrontendUtils.isBowerMode()) {
             getLog().info("Skipped 'update-frontend' goal because 'vaadin.bowerMode' is set to true.");
             return;
         }
@@ -186,8 +177,9 @@ public class NodeBuildFrontendMojo extends AbstractMojo {
         new NodeTasks.Builder(getClassFinder(project), frontendDirectory,
                 generatedFrontendDirectory, generatedFlowImports, npmFolder,
                 nodeModulesPath, convertHtml)
-                .withWebpack(getWebpackOutputDirectory(), webpackTemplate)
                 .runNpmInstall(runNpmInstall)
+                .enablePackagesUpdate(true)
+                .enableImportsUpdate(true)
                 .withEmbeddableWebComponents(generateEmbeddableWebComponents)
                 .build().execute();
     }
@@ -242,18 +234,4 @@ public class NodeBuildFrontendMojo extends AbstractMojo {
         }
     }
 
-    private File getWebpackOutputDirectory() {
-        Build buildInformation = project.getBuild();
-        switch (project.getPackaging()) {
-            case "jar":
-                return new File(buildInformation.getOutputDirectory(),
-                        "META-INF/resources");
-            case "war":
-                return new File(buildInformation.getDirectory(),
-                        buildInformation.getFinalName());
-            default:
-                throw new IllegalStateException(String.format(
-                        "Unsupported packaging '%s'", project.getPackaging()));
-        }
-    }
 }
