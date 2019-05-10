@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -32,6 +31,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_IMPORTS_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
@@ -44,6 +44,7 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
     private TaskUpdatePackages packageUpdater;
     private TaskUpdateWebpack webpackUpdater;
+    private TaskCreatePackageJson packageCreator;
     private File packageJson;
     private File webpackConfig;
 
@@ -55,8 +56,13 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
         NodeUpdateTestUtil.createStubNode(true, true);
 
+        packageCreator = new TaskCreatePackageJson(baseDir,
+                new File(baseDir, "node_modules"));
+
         packageUpdater = new TaskUpdatePackages(getClassFinder(), baseDir,
                 new File(baseDir, "node_modules"), true);
+
+
 
         webpackUpdater = new TaskUpdateWebpack(baseDir, baseDir, WEBPACK_CONFIG,
                 new File(baseDir, FLOW_IMPORTS_FILE));
@@ -65,57 +71,43 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
         webpackConfig = new File(baseDir, WEBPACK_CONFIG);
     }
 
-    private void execute() {
-        packageUpdater.execute();
-        webpackUpdater.execute();
-    }
-
     @Test
-    public void executeNpm_packageJsonMissing() throws Exception {
+    public void should_CreatePackageJson() throws Exception {
         Assert.assertFalse(packageJson.exists());
+        packageCreator.execute();
+        Assert.assertTrue(packageJson.exists());
+    }
 
-        execute();
-
-        assertPackageJsonContent();
+    @Test
+    public void should_CreateWebpackConfig() throws Exception {
+        Assert.assertFalse(webpackConfig.exists());
+        webpackUpdater.execute();
         assertWebpackConfigContent();
     }
 
     @Test
-    public void executeNpm_packageJsonExists() throws Exception {
-        FileUtils.write(packageJson, "{}", "UTF-8");
-        long tsPackage1 = FileUtils.getFile(packageJson).lastModified();
-        long tsWebpack1 = FileUtils.getFile(webpackConfig).lastModified();
+    public void should_not_ModifyPackageJson_WhenAlreadyExists() throws Exception {
+        packageCreator.execute();
+        Assert.assertTrue(packageCreator.modified);
 
-        // need to sleep because timestamp is in seconds
-        sleep(1000);
+        packageCreator.execute();
+        Assert.assertFalse(packageCreator.modified);
+    }
 
-        execute();
 
-        long tsPackage2 = FileUtils.getFile(packageJson).lastModified();
-        long tsWebpack2 = FileUtils.getFile(webpackConfig).lastModified();
-
-        sleep(1000);
-
-        execute();
-
-        long tsPackage3 = FileUtils.getFile(packageJson).lastModified();
-        long tsWebpack3 = FileUtils.getFile(webpackConfig).lastModified();
-
-        Assert.assertTrue(tsPackage1 < tsPackage2);
-        Assert.assertTrue(tsWebpack1 < tsWebpack2);
-        Assert.assertEquals(tsPackage2, tsPackage3);
-        Assert.assertEquals(tsWebpack2, tsWebpack3);
-
+    @Test
+    public void should_AddNewDependencies() throws Exception {
+        packageCreator.execute();
+        packageUpdater.execute();
+        Assert.assertTrue(packageCreator.modified);
+        Assert.assertTrue(packageUpdater.modified);
         assertPackageJsonContent();
-        assertWebpackConfigContent();
     }
 
     private void assertPackageJsonContent() throws IOException {
         JsonObject packageJsonObject = packageUpdater.getPackageJson();
 
         JsonObject dependencies = packageJsonObject.getObject("dependencies");
-
-        System.err.println(dependencies.toJson());
 
         Assert.assertTrue("Missing @vaadin/vaadin-button package",
                 dependencies.hasKey("@vaadin/vaadin-button"));

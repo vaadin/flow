@@ -41,6 +41,7 @@ public class TaskCreatePackageJson extends NodeUpdater {
     @Override
     public void execute() {
         try {
+            modified = false;
             JsonObject packageJson = getPackageJson();
             if (packageJson == null) {
                 packageJson = createDefaultJson();
