@@ -14,7 +14,7 @@ const baseDir = path.resolve(__dirname);
 const frontendFolder = `${baseDir}/frontend`;
 
 ////////////////////////////////////////
-// IMPORTANT: these two constants are updated when flow-maven-plugin validate goal is run.
+// IMPORTANT: these two constants are updated when the maven plugin 'validate' goal is run.
 fileNameOfTheFlowGeneratedMainEntryPoint;
 mavenOutputFolderForFlowBundledFiles;
 ////////////////////////////////////////
