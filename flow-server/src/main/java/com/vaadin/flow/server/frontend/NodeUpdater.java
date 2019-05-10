@@ -153,13 +153,13 @@ public abstract class NodeUpdater implements Command {
           flowModules.add(pathWithNoProtocols);
           return FLOW_NPM_PACKAGE_NAME + pathWithNoProtocols;
         }
+
         return pathWithNoProtocols;
     }
 
     private URL getResourceUrl(String resource) {
         resource = RESOURCES_FRONTEND_DEFAULT + "/" + resource.replaceFirst(FLOW_NPM_PACKAGE_NAME, "");
-        URL url = finder.getResource(resource);
-        return url != null && url.getPath().contains(".jar!") ? url : null;
+        return finder.getResource(resource);
     }
 
     private String htmlImportToJsModule(String htmlImport) {
