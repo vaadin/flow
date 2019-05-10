@@ -103,6 +103,8 @@
                     <systemPropertyVariables>
                         <serverPort>${server.port}</serverPort>
                         <webdriver.chrome.driver>${webdriver.chrome.driver}</webdriver.chrome.driver>
+                        <!-- FIXME Spring tests should work without it, see https://github.com/vaadin/spring/issues/433 -->
+                        <vaadin.bowerMode>false</vaadin.bowerMode>
                     </systemPropertyVariables>
                     <excludedGroups>${test.excludegroup}</excludedGroups>
                 </configuration>
@@ -189,6 +191,10 @@
                         <enableAssertions>true</enableAssertions>
                         <parallel>all</parallel>
                         <threadCount>2</threadCount>
+                        <systemPropertyVariables>
+                            <!-- FIXME Spring tests should work without it, see https://github.com/vaadin/spring/issues/433 -->
+                            <vaadin.bowerMode>false</vaadin.bowerMode>
+                        </systemPropertyVariables>
                     </configuration>
                 </plugin>
                 <!--This plugin's configuration is used to store Eclipse
