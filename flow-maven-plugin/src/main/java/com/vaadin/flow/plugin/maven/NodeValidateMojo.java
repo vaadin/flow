@@ -42,6 +42,7 @@ import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFind
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_IMPORTS_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 
 /**
  * Goal checks that node and npm tools are installed, and copies frontend
@@ -52,12 +53,6 @@ public class NodeValidateMojo extends AbstractMojo {
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
-
-    /**
-     * The path to the {@literal node_modules} directory of the project.
-     */
-    @Parameter(defaultValue = "${project.basedir}/node_modules/")
-    private File nodeModulesPath;
 
     @Parameter(defaultValue = "${project.basedir}/src/main/resources/META-INF/resources/frontend")
     private File frontendResourcesDirectory;
@@ -113,7 +108,7 @@ public class NodeValidateMojo extends AbstractMojo {
         FrontendUtils.getNodeExecutable();
         FrontendUtils.getNpmExecutable();
 
-        new NodeTasks.Builder(getClassFinder(project), npmFolder, nodeModulesPath, generatedFlowImports)
+        new NodeTasks.Builder(getClassFinder(project), npmFolder, generatedFlowImports)
                 .withWebpack(getWebpackOutputDirectory(), webpackTemplate)
                 .createMissingPackageJson(true)
                 .enableImportsUpdate(false)
@@ -121,8 +116,8 @@ public class NodeValidateMojo extends AbstractMojo {
                 .runNpmInstall(false)
                 .build().execute();
 
-        File flowNodeDirectory = new File(nodeModulesPath,
-                FLOW_NPM_PACKAGE_NAME);
+        File flowNodeDirectory = new File(npmFolder,
+                NODE_MODULES + FLOW_NPM_PACKAGE_NAME);
         copyFlowModuleDependencies(flowNodeDirectory);
         copyProjectFrontendResources(flowNodeDirectory);
 
