@@ -16,11 +16,15 @@
 
 package com.vaadin.flow.component;
 
+import static org.mockito.Mockito.mock;
+
 import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
@@ -31,7 +35,6 @@ import com.vaadin.flow.server.webcomponent.PropertyData;
 import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 
 import elemental.json.JsonValue;
-import static org.mockito.Mockito.mock;
 
 public class WebComponentExporterTest {
 
@@ -40,12 +43,15 @@ public class WebComponentExporterTest {
     private MyComponentExporter exporter;
     private WebComponentConfiguration<MyComponent> config;
 
+    @Rule
+    public ExpectedException expectedEx = ExpectedException.none();
+
     @Before
     @SuppressWarnings("unchecked")
     public void setUp() {
         exporter = new MyComponentExporter();
-        config = (WebComponentConfiguration<MyComponent>)
-                new WebComponentExporter.WebComponentConfigurationFactory().create(exporter);
+        config = (WebComponentConfiguration<MyComponent>) new WebComponentExporter.WebComponentConfigurationFactory()
+                .create(exporter);
     }
 
     @Test
@@ -141,14 +147,15 @@ public class WebComponentExporterTest {
     public void configuration_bindProxy_withInstanceConfigurator() {
         exporter = new MyComponentExporter() {
             @Override
-            public void configureInstance(WebComponent<MyComponent> webComponent,
-                                          MyComponent component) {
+            public void configureInstance(
+                    WebComponent<MyComponent> webComponent,
+                    MyComponent component) {
                 component.flop();
             }
         };
 
-        config = (WebComponentConfiguration<MyComponent>)
-                new WebComponentExporter.WebComponentConfigurationFactory().create(exporter);
+        config = (WebComponentConfiguration<MyComponent>) new WebComponentExporter.WebComponentConfigurationFactory()
+                .create(exporter);
 
         WebComponentBinding<MyComponent> binding = config
                 .createWebComponentBinding(new MockInstantiator(),
@@ -178,9 +185,8 @@ public class WebComponentExporterTest {
     @SuppressWarnings("unchecked")
     public void configuration_bindProxy_throwsIfExporterSharesTagWithComponent() {
         SharedTagExporter sharedTagExporter = new SharedTagExporter();
-        WebComponentConfiguration<SharedTagComponent> sharedConfig =
-                (WebComponentConfiguration<SharedTagComponent>)
-                        new WebComponentExporter.WebComponentConfigurationFactory().create(sharedTagExporter);
+        WebComponentConfiguration<SharedTagComponent> sharedConfig = (WebComponentConfiguration<SharedTagComponent>) new WebComponentExporter.WebComponentConfigurationFactory()
+                .create(sharedTagExporter);
 
         sharedConfig.createWebComponentBinding(new MockInstantiator(),
                 mock(Element.class));
@@ -201,7 +207,20 @@ public class WebComponentExporterTest {
         Assert.assertFalse(config.hasProperty("does-not-exist"));
     }
 
-    @Test (expected = IllegalStateException.class)
+    @Test
+    public void configuration_callAddProperty_throws() {
+        expectedEx.expect(IllegalStateException.class);
+        expectedEx.expectMessage("'addProperty'");
+
+        AddPropertyInsideConfigureInstance exporter = new AddPropertyInsideConfigureInstance();
+        WebComponentConfiguration<?> config = new WebComponentExporter.WebComponentConfigurationFactory()
+                .create(exporter);
+
+        config.createWebComponentBinding(new MockInstantiator(),
+                mock(Element.class));
+    }
+
+    @Test(expected = IllegalStateException.class)
     public void exporterConstructorThrowsIfNoComponentDefined() {
         NoComponentExporter exporter = new NoComponentExporter();
     }
@@ -264,8 +283,23 @@ public class WebComponentExporterTest {
         }
 
         @Override
-        public void configureInstance(WebComponent<MyComponent> webComponent, MyComponent component) {
+        public void configureInstance(WebComponent<MyComponent> webComponent,
+                MyComponent component) {
 
+        }
+    }
+
+    public static class AddPropertyInsideConfigureInstance
+            extends WebComponentExporter<MyComponent> {
+
+        public AddPropertyInsideConfigureInstance() {
+            super("foo");
+        }
+
+        @Override
+        public void configureInstance(WebComponent<MyComponent> webComponent,
+                MyComponent component) {
+            addProperty("bar", 1);
         }
     }
 
@@ -281,7 +315,9 @@ public class WebComponentExporterTest {
         }
 
         @Override
-        public void configureInstance(WebComponent<SharedTagComponent> webComponent, SharedTagComponent component) {
+        public void configureInstance(
+                WebComponent<SharedTagComponent> webComponent,
+                SharedTagComponent component) {
 
         }
     }
@@ -293,16 +329,18 @@ public class WebComponentExporterTest {
 
         @Override
         public void configureInstance(WebComponent webComponent,
-                                      Component component) { }
+                Component component) {
+        }
     }
 
     private static void assertProperty(WebComponentConfiguration<?> config,
-                                       String property, Object value) {
+            String property, Object value) {
         PropertyData<?> data = config.getPropertyDataSet().stream()
                 .filter(d -> d.getName().equals(property)).findFirst()
                 .orElse(null);
 
-        Assert.assertNotNull("Property " + property + " should not be null", data);
+        Assert.assertNotNull("Property " + property + " should not be null",
+                data);
         Assert.assertEquals(value, data.getDefaultValue());
     }
 }
