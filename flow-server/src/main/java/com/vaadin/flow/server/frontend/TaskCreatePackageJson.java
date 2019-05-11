@@ -31,11 +31,9 @@ public class TaskCreatePackageJson extends NodeUpdater {
      *
      * @param npmFolder
      *            folder with the `package.json` file.
-     * @param nodeModulesPath
-     *            `node_modules` folder.
      */
-    public TaskCreatePackageJson(File npmFolder, File nodeModulesPath) {
-        super(null, null, npmFolder, nodeModulesPath, false);
+    public TaskCreatePackageJson(File npmFolder) {
+        super(null, null, npmFolder, false);
     }
 
     @Override

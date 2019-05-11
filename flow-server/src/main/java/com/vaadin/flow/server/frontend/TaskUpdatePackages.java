@@ -40,40 +40,18 @@ public class TaskUpdatePackages extends NodeUpdater {
      *
      * @param finder
      *            a reusable class finder
-     * @param npmFolder
-     *            folder with the `package.json` file
-     * @param nodeModulesPath
-     *            the path to the {@literal node_modules} directory of the
-     *            project
-     * @param convertHtml
-     *            whether to convert html imports or not during the package
-     *            updates
-     */
-    public TaskUpdatePackages(ClassFinder finder, File npmFolder,
-                              File nodeModulesPath, boolean convertHtml) {
-        this(finder, null, npmFolder, nodeModulesPath, convertHtml);
-    }
-
-    /**
-     * Create an instance of the updater given all configurable parameters.
-     *
-     * @param finder
-     *            a reusable class finder
      * @param frontendDependencies
      *            a reusable frontend dependencies
      * @param npmFolder
      *            folder with the `package.json` file
-     * @param nodeModulesPath
-     *            the path to the {@literal node_modules} directory of the
-     *            project
      * @param convertHtml
      *            whether to convert html imports or not during the package
      *            updates
      */
     public TaskUpdatePackages(ClassFinder finder,
             FrontendDependencies frontendDependencies, File npmFolder,
-            File nodeModulesPath, boolean convertHtml) {
-        super(finder, frontendDependencies, npmFolder, nodeModulesPath, convertHtml);
+            boolean convertHtml) {
+        super(finder, frontendDependencies, npmFolder, convertHtml);
     }
 
     @Override

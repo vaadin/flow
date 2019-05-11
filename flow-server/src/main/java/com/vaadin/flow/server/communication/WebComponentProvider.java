@@ -176,8 +176,8 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
                 contextRootRelativePath, session);
         String polyFillsUri = resolver
                 .resolveVaadinUri(BootstrapHandler.POLYFILLS_JS);
-        // <code>thisScript</code> below allows to refer the currently executing
-        // script
+
+        // `thisScript` below allows to refer the currently executing script
         return getThisScript(tagName)
                 + generateAddPolyfillsScript(polyFillsUri, "thisScript")
                 + generateUiImport("thisScript");

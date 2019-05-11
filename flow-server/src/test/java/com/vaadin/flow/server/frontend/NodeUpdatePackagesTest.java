@@ -56,13 +56,9 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
         NodeUpdateTestUtil.createStubNode(true, true);
 
-        packageCreator = new TaskCreatePackageJson(baseDir,
-                new File(baseDir, "node_modules"));
+        packageCreator = new TaskCreatePackageJson(baseDir);
 
-        packageUpdater = new TaskUpdatePackages(getClassFinder(), baseDir,
-                new File(baseDir, "node_modules"), true);
-
-
+        packageUpdater = new TaskUpdatePackages(getClassFinder(), null, baseDir, true);
 
         webpackUpdater = new TaskUpdateWebpack(baseDir, baseDir, WEBPACK_CONFIG,
                 new File(baseDir, FLOW_IMPORTS_FILE));

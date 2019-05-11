@@ -45,8 +45,8 @@ import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.theme.Theme;
 
 import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFinder;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_GENERATED_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_IMPORTS_FILE;
+import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 
 /**
  * Goal that builds frontend bundle by:
@@ -82,23 +82,11 @@ public class NodeBuildFrontendMojo extends AbstractMojo {
     private File npmFolder;
 
     /**
-     * The path to the {@literal node_modules} directory of the project.
-     */
-    @Parameter(defaultValue = "${project.basedir}/node_modules/")
-    private File nodeModulesPath;
-
-    /**
      * The JavaScript file used as entry point of the application, and which is
      * automatically updated by flow by reading java annotations.
      */
     @Parameter(defaultValue = "${project.build.directory}/" + FLOW_IMPORTS_FILE)
     private File generatedFlowImports;
-
-    /**
-     * A directory for generated frontend source files.
-     */
-    @Parameter(defaultValue = "${project.build.directory}/" + FLOW_GENERATED_FOLDER)
-    private File generatedFrontendDirectory;
 
     /**
      * A directory with project's frontend source files.
@@ -143,7 +131,7 @@ public class NodeBuildFrontendMojo extends AbstractMojo {
             runWebpack();
         }
 
-        long ms = (System.nanoTime() - start) / 1000;
+        long ms = (System.nanoTime() - start) / 1000000;
         getLog().info("update-frontend took " + ms + "ms.");
     }
 
@@ -153,7 +141,7 @@ public class NodeBuildFrontendMojo extends AbstractMojo {
      * {@link com.vaadin.flow.plugin.common.WebComponentModulesGenerator} to
      * generate JavaScript files from the {@code WebComponentExporters}
      * present in the code base. The generated JavaScript files are placed in
-     * {@code ./target/frontend}.
+     * the same folder than the {@link FrontendUtils#FLOW_IMPORTS_FILE}.
      */
     private void generateExportedWebComponents() {
         if (!generateEmbeddableWebComponents) {
@@ -164,6 +152,7 @@ public class NodeBuildFrontendMojo extends AbstractMojo {
                         getClassFinder(project)), false);
 
         try {
+            File generatedFrontendDirectory = generatedFlowImports.getParentFile();
             FileUtils.forceMkdir(generatedFrontendDirectory);
             generator.getExporters().forEach(exporter ->
                     generator.generateModuleFile(exporter, generatedFrontendDirectory));
@@ -175,8 +164,8 @@ public class NodeBuildFrontendMojo extends AbstractMojo {
 
     private void runNodeUpdater() {
         new NodeTasks.Builder(getClassFinder(project), frontendDirectory,
-                generatedFrontendDirectory, generatedFlowImports, npmFolder,
-                nodeModulesPath, convertHtml)
+                generatedFlowImports, npmFolder,
+                convertHtml)
                 .runNpmInstall(runNpmInstall)
                 .enablePackagesUpdate(true)
                 .enableImportsUpdate(true)
@@ -186,7 +175,7 @@ public class NodeBuildFrontendMojo extends AbstractMojo {
 
     private void runWebpack() {
         String webpackCommand = "webpack/bin/webpack.js";
-        File webpackExecutable = new File(nodeModulesPath, webpackCommand);
+        File webpackExecutable = new File(npmFolder, NODE_MODULES + webpackCommand);
         if (!webpackExecutable.isFile()) {
             throw new IllegalStateException(String.format(
                     "Unable to locate webpack executable by path '%s'. Double" +

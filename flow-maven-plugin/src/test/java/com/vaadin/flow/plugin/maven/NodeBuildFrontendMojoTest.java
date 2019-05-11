@@ -50,9 +50,10 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.frontend.FrontendUtils.*;
+import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
-import static com.vaadin.flow.server.frontend.FrontendUtils.getFlowPackage;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -62,7 +63,7 @@ public class NodeBuildFrontendMojoTest {
 
     private File importsFile;
     private File nodeModulesPath;
-
+    private File flowPackagPath;
     private String packageJson;
     private String webpackConfig;
 
@@ -74,10 +75,10 @@ public class NodeBuildFrontendMojoTest {
         Mockito.when(project.getRuntimeClasspathElements()).thenReturn(getClassPath());
 
         File tmpRoot = temporaryFolder.getRoot();
-        importsFile = new File(tmpRoot, "flow-imports.js");
-        nodeModulesPath = new File(tmpRoot, "node_modules");
-        File frontendDirectory = new File(tmpRoot, "frontend");
-        File generatedFrontendDirectory = new File(tmpRoot, "target/frontend");
+        importsFile = new File(tmpRoot, TARGET + FLOW_IMPORTS_FILE);
+        nodeModulesPath = new File(tmpRoot, NODE_MODULES);
+        flowPackagPath = new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME);
+        File frontendDirectory = new File(tmpRoot, FLOW_FRONTEND);
 
         packageJson = new File(tmpRoot, PACKAGE_JSON).getAbsolutePath();
         webpackConfig = new File(tmpRoot, WEBPACK_CONFIG).getAbsolutePath();
@@ -85,15 +86,13 @@ public class NodeBuildFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "project", project);
         ReflectionUtils.setVariableValueInObject(mojo, "generatedFlowImports", importsFile);
         ReflectionUtils.setVariableValueInObject(mojo, "frontendDirectory", frontendDirectory);
-        ReflectionUtils.setVariableValueInObject(mojo, "generatedFrontendDirectory", generatedFrontendDirectory);
         ReflectionUtils.setVariableValueInObject(mojo, "generateEmbeddableWebComponents", false);
         ReflectionUtils.setVariableValueInObject(mojo, "convertHtml", true);
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", tmpRoot);
-        ReflectionUtils.setVariableValueInObject(mojo, "nodeModulesPath", nodeModulesPath);
         ReflectionUtils.setVariableValueInObject(mojo, "generateBundle", false);
         ReflectionUtils.setVariableValueInObject(mojo, "runNpmInstall", false);
 
-        Assert.assertTrue(getFlowPackage(nodeModulesPath).mkdirs());
+        Assert.assertTrue(flowPackagPath.mkdirs());
 
         setProject(mojo, "war", "war_output");
 
@@ -138,12 +137,12 @@ public class NodeBuildFrontendMojoTest {
 
         assertContainsImports(true, expectedLines.toArray(new String[0]));
 
-        Assert.assertTrue(getFlowPackage(nodeModulesPath).exists());
-        Assert.assertTrue(new File(getFlowPackage(nodeModulesPath), "ExampleConnector.js").exists());
+        Assert.assertTrue(new File(flowPackagPath, "ExampleConnector.js").exists());
     }
 
     @Test
     public void shouldNot_UpdateJsFile_when_NoChanges() throws Exception {
+
         mojo.execute();
         long timestamp1 = importsFile.lastModified();
 
