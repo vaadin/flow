@@ -18,14 +18,15 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.Serializable;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 
 import com.vaadin.flow.server.Command;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_FRONTEND;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_IMPORTS_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.MAIN_JS_PARAM;
+import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
 
 /**
@@ -43,11 +44,7 @@ public class NodeTasks implements Command {
 
         private File npmFolder;
 
-        private File nodeModulesPath;
-
         private File frontendDirectory;
-
-        private File generatedFrontendDirectory;
 
         private File generatedFlowImports;
 
@@ -74,15 +71,8 @@ public class NodeTasks implements Command {
          *         a class finder
          */
         public Builder(ClassFinder classFinder) {
-            this(classFinder, new File(getBaseDir(), "frontend"),
-                    new File(getBaseDir(), "target/frontend"),
-                    Paths.get(getBaseDir()).resolve("target")
-                            .resolve(System.getProperty(MAIN_JS_PARAM,
-                                    FLOW_IMPORTS_FILE))
-                            .toFile(),
-                    new File(getBaseDir()),
-                    new File(getBaseDir(), "node_modules"), true);
-
+            this(classFinder, new File(getBaseDir()),
+                    new File(getBaseDir(), System.getProperty(MAIN_JS_PARAM, TARGET + FLOW_IMPORTS_FILE)));
         }
 
         /**
@@ -92,29 +82,21 @@ public class NodeTasks implements Command {
          *         a class finder
          * @param frontendDirectory
          *         a directory with project's frontend files
-         * @param generatedFrontendDirectory
-         *         a directory with project's generated frontend files
          * @param generatedFlowImports
          *         name of the JS file to update with the imports
          * @param npmFolder
          *         folder with the `package.json` file
-         * @param nodeModulesPath
-         *         the path to the {@literal node_modules} directory of the
-         *         project
          * @param convertHtml
          *         <code>true</code> to enable polymer-2 annotated classes to
          *         be considered. Default is <code>true</code>.
          */
         public Builder(ClassFinder classFinder, File frontendDirectory,
-                       File generatedFrontendDirectory,
-                       File generatedFlowImports, File npmFolder, File nodeModulesPath,
+                       File generatedFlowImports, File npmFolder,
                        boolean convertHtml) {
             this.classFinder = classFinder;
             this.frontendDirectory = frontendDirectory;
-            this.generatedFrontendDirectory = generatedFrontendDirectory;
             this.generatedFlowImports = generatedFlowImports;
             this.npmFolder = npmFolder;
-            this.nodeModulesPath = nodeModulesPath;
             this.convertHtml = convertHtml;
             this.generateEmbeddableWebComponents = true;
         }
@@ -126,17 +108,12 @@ public class NodeTasks implements Command {
          *         a class finder
          * @param npmFolder
          *         folder with the `package.json` file
-         * @param nodeModulesPath
-         *         the path to the {@literal node_modules} directory of the
-         *         project
          * @param generatedFlowImports
          *         name of the JS file to update with the imports
          */
-        public Builder(ClassFinder classFinder, File npmFolder, File nodeModulesPath, File generatedFlowImports) {
-            this.classFinder = classFinder;
-            this.npmFolder = npmFolder;
-            this.nodeModulesPath = nodeModulesPath;
-            this.generatedFlowImports = generatedFlowImports;
+        public Builder(ClassFinder classFinder, File npmFolder, File generatedFlowImports) {
+            this(classFinder, new File(getBaseDir(), FLOW_FRONTEND),
+                    generatedFlowImports, npmFolder, true);
         }
 
         /**
@@ -249,14 +226,13 @@ public class NodeTasks implements Command {
         }
 
         if (builder.createMissingPackageJson) {
-            TaskCreatePackageJson packageCreator = new TaskCreatePackageJson(builder.npmFolder, builder.nodeModulesPath);
+            TaskCreatePackageJson packageCreator = new TaskCreatePackageJson(builder.npmFolder);
             commands.add(packageCreator);
         }
 
         if (builder.enablePackagesUpdate) {
             TaskUpdatePackages packageUpdater = new TaskUpdatePackages(classFinder,
-                    frontendDependencies, builder.npmFolder,
-                    builder.nodeModulesPath, builder.convertHtml);
+                    frontendDependencies, builder.npmFolder, builder.convertHtml);
             commands.add(packageUpdater);
 
             if (builder.runNpmInstall) {
@@ -274,11 +250,9 @@ public class NodeTasks implements Command {
         if (builder.enableImportsUpdate) {
             commands.add(new TaskUpdateImports(classFinder,
                     frontendDependencies, builder.frontendDirectory,
-                    builder.generatedFrontendDirectory,
                     builder.generatedFlowImports, builder.npmFolder,
-                    builder.nodeModulesPath, builder.convertHtml));
+                    builder.convertHtml));
         }
-
     }
 
     @Override
