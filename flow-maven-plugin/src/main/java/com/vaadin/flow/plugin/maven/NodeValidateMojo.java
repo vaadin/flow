@@ -40,8 +40,8 @@ import com.vaadin.flow.server.frontend.NodeTasks;
 
 import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFinder;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_IMPORTS_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 
 /**
@@ -89,11 +89,10 @@ public class NodeValidateMojo extends AbstractMojo {
     private String webpackTemplate;
 
     /**
-     * The JavaScript file used as entry point of the application, and which is
-     * automatically updated by flow by reading java annotations.
+     * The folder where flow will put generated files that will be used by webpack.
      */
-    @Parameter(defaultValue = "${project.build.directory}/" + FLOW_IMPORTS_FILE)
-    private File generatedFlowImports;
+    @Parameter(defaultValue = "${project.build.directory}/" + FRONTEND)
+    private File generatedPath;
 
     @Override
     public void execute() {
@@ -108,7 +107,7 @@ public class NodeValidateMojo extends AbstractMojo {
         FrontendUtils.getNodeExecutable();
         FrontendUtils.getNpmExecutable();
 
-        new NodeTasks.Builder(getClassFinder(project), npmFolder, generatedFlowImports)
+        new NodeTasks.Builder(getClassFinder(project), npmFolder, generatedPath)
                 .withWebpack(getWebpackOutputDirectory(), webpackTemplate)
                 .createMissingPackageJson(true)
                 .enableImportsUpdate(false)

@@ -31,7 +31,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_IMPORTS_FILE;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
 
@@ -52,13 +54,16 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
 
         NodeUpdateTestUtil.createStubNode(true, true);
 
-        webpackUpdater = new TaskUpdateWebpack(baseDir, new File(baseDir, "target/classes"), WEBPACK_CONFIG,
-                new File(baseDir, FLOW_IMPORTS_FILE));
+        webpackUpdater = new TaskUpdateWebpack(
+                baseDir,
+                new File(baseDir, TARGET + "classes"),
+                WEBPACK_CONFIG,
+                new File(baseDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME));
 
         webpackConfig = new File(baseDir, WEBPACK_CONFIG);
     }
-    
-    
+
+
     @After
     public void teardown() {
         webpackConfig.delete();
@@ -70,23 +75,23 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
         webpackUpdater.execute();
 
         Assert.assertTrue(webpackConfig.exists());
-        assertWebpackConfigContent("frontend/generated-flow-imports.js", "target/classes");
+        assertWebpackConfigContent("target/frontend/generated-flow-imports.js", "target/classes");
     }
 
     @Test
     public void should_update_Webpack() throws Exception {
         webpackUpdater.execute();
         Assert.assertTrue(webpackConfig.exists());
-        
+
         TaskUpdateWebpack newUpdater = new TaskUpdateWebpack(baseDir, new File(baseDir, "foo"), WEBPACK_CONFIG,
                 new File(baseDir, "bar"));
         newUpdater.execute();
-        
+
         assertWebpackConfigContent("bar", "foo");
     }
 
     private void assertWebpackConfigContent(String entryPoint, String outputFolder) throws IOException {
-        
+
         List<String> webpackContents = Files.lines(webpackConfig.toPath()).collect(Collectors.toList());
 
         Assert.assertFalse(
@@ -94,20 +99,20 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
                 webpackContents.contains("\\\\"));
 
         verifyNoAbsolutePathsPresent(webpackContents);
-        
+
         verifyUpdate(webpackContents, entryPoint, outputFolder);
     }
-    
-    
+
+
     private void verifyUpdate(List<String> webpackContents, String entryPoint, String outputFolder) {
         Assert.assertTrue(
                 "webpack config should update fileNameOfTheFlowGeneratedMainEntryPoint",
                 webpackContents.contains("fileNameOfTheFlowGeneratedMainEntryPoint = require('path').resolve(__dirname, '" + entryPoint + "');"));
-        
+
         Assert.assertTrue(
                 "webpack config should update fileNameOfTheFlowGeneratedMainEntryPoint",
                 webpackContents.contains("mavenOutputFolderForFlowBundledFiles = require('path').resolve(__dirname, '" + outputFolder + "');"));
-        
+
     }
 
     private void verifyNoAbsolutePathsPresent(List<String> webpackContents) {

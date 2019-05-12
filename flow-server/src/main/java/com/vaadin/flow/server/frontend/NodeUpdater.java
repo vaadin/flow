@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.server.Command;
+import com.vaadin.flow.server.Constants;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -58,14 +59,21 @@ public abstract class NodeUpdater implements Command {
     private static final String DEV_DEPENDENCIES = "devDependencies";
 
     /**
-     * Folder with the <code>package.json</code> file.
+     * Base directory for {@link Constants#PACKAGE_JSON},
+     * {@link FrontendUtils#WEBPACK_CONFIG}, {@link FrontendUtils#NODE_MODULES}.
      */
     protected final File npmFolder;
 
     /**
-     * The path to the {@literal node_modules} directory of the project.
+     * The path to the {@link FrontendUtils#NODE_MODULES} directory.
      */
     protected final File nodeModulesPath;
+    
+    
+    /**
+     * Base directory for flow generated files. 
+     */
+    protected final File generatedPath;
 
     /**
      * Enable or disable legacy components annotated only with
@@ -94,17 +102,20 @@ public abstract class NodeUpdater implements Command {
      *            a reusable frontend dependencies
      * @param npmFolder
      *            folder with the `package.json` file
+     * @param generatedPath
+     *            folder where flow generated files will be placed.
      * @param convertHtml
      *            true to enable polymer-2 annotated classes to be considered
      */
     protected NodeUpdater(ClassFinder finder, FrontendDependencies frontendDependencies, File npmFolder,
-            boolean convertHtml) {
+            File generatedPath, boolean convertHtml) {
         this.frontDeps = finder != null && frontendDependencies == null
                 ? new FrontendDependencies(finder)
                 : frontendDependencies;
         this.finder = finder;
         this.npmFolder = npmFolder;
         this.nodeModulesPath = new File(npmFolder, NODE_MODULES);
+        this.generatedPath = generatedPath;
         this.convertHtml = convertHtml;
     }
 

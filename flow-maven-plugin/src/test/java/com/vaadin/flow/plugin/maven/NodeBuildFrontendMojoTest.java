@@ -50,11 +50,11 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_FRONTEND;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_IMPORTS_FILE;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
 import static org.mockito.Mockito.mock;
@@ -65,6 +65,7 @@ public class NodeBuildFrontendMojoTest {
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     private File importsFile;
+    private File generatedFolder;
     private File nodeModulesPath;
     private File flowPackagPath;
     private String packageJson;
@@ -78,16 +79,17 @@ public class NodeBuildFrontendMojoTest {
         Mockito.when(project.getRuntimeClasspathElements()).thenReturn(getClassPath());
 
         File tmpRoot = temporaryFolder.getRoot();
-        importsFile = new File(tmpRoot, TARGET + FLOW_IMPORTS_FILE);
+        generatedFolder = new File(tmpRoot, TARGET);
+        importsFile = new File(generatedFolder, IMPORTS_NAME);
         nodeModulesPath = new File(tmpRoot, NODE_MODULES);
         flowPackagPath = new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME);
-        File frontendDirectory = new File(tmpRoot, FLOW_FRONTEND);
+        File frontendDirectory = new File(tmpRoot, DEFAULT_FRONTEND_DIR);
 
         packageJson = new File(tmpRoot, PACKAGE_JSON).getAbsolutePath();
         webpackConfig = new File(tmpRoot, WEBPACK_CONFIG).getAbsolutePath();
 
         ReflectionUtils.setVariableValueInObject(mojo, "project", project);
-        ReflectionUtils.setVariableValueInObject(mojo, "generatedFlowImports", importsFile);
+        ReflectionUtils.setVariableValueInObject(mojo, "generatedFolder", generatedFolder);
         ReflectionUtils.setVariableValueInObject(mojo, "frontendDirectory", frontendDirectory);
         ReflectionUtils.setVariableValueInObject(mojo, "generateEmbeddableWebComponents", false);
         ReflectionUtils.setVariableValueInObject(mojo, "convertHtml", true);
