@@ -31,9 +31,11 @@ public class TaskCreatePackageJson extends NodeUpdater {
      *
      * @param npmFolder
      *            folder with the `package.json` file.
+     * @param generatedPath
+     *            folder where flow generated files will be placed.
      */
-    public TaskCreatePackageJson(File npmFolder) {
-        super(null, null, npmFolder, false);
+    TaskCreatePackageJson(File npmFolder, File generatedPath) {
+        super(null, null, npmFolder, generatedPath, false);
     }
 
     @Override
