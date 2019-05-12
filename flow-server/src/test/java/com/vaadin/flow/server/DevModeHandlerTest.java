@@ -107,7 +107,7 @@ public class DevModeHandlerTest {
     @Test
     public void should_CreateInstanceAndRunWebPack_When_DevModeAndNpmInstalled() throws Exception {
         assertNotNull(DevModeHandler.start(configuration));
-        assertTrue(new File(getBaseDir(), FrontendUtils.WEBAPP_FOLDER + WEBPACK_TEST_OUT_FILE).canRead());
+        assertTrue(new File(getBaseDir(), FrontendUtils.DEFAULT_NODE_DIR + WEBPACK_TEST_OUT_FILE).canRead());
         assertNull(DevModeHandler.getDevModeHandler().getFailedOutput());
         Thread.sleep(150); //NOSONAR
     }
@@ -156,7 +156,7 @@ public class DevModeHandlerTest {
     @Test
     public void should_RunWebpack_When_WebpackNotListening() throws Exception {
         DevModeHandler.start(configuration);
-        assertTrue(new File(getBaseDir(), FrontendUtils.WEBAPP_FOLDER + WEBPACK_TEST_OUT_FILE).canRead());
+        assertTrue(new File(getBaseDir(), FrontendUtils.DEFAULT_NODE_DIR + WEBPACK_TEST_OUT_FILE).canRead());
         Thread.sleep(150); //NOSONAR
     }
 
@@ -164,7 +164,7 @@ public class DevModeHandlerTest {
     public void shouldNot_RunWebpack_When_WebpackRunning() throws Exception {
         prepareHttpServer(HTTP_OK, "bar");
         DevModeHandler.start(configuration);
-        assertFalse(new File(getBaseDir(), FrontendUtils.WEBAPP_FOLDER + WEBPACK_TEST_OUT_FILE).canRead());
+        assertFalse(new File(getBaseDir(), FrontendUtils.DEFAULT_NODE_DIR + WEBPACK_TEST_OUT_FILE).canRead());
     }
 
     @Test

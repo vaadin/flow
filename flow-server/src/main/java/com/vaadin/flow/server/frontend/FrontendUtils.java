@@ -29,6 +29,8 @@ import java.util.stream.Collectors;
 
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.server.Constants;
+
 /**
  * A class for static methods and definitions that might be
  * used in different locations.
@@ -36,12 +38,33 @@ import org.slf4j.LoggerFactory;
 public class FrontendUtils {
 
     /**
-     * Folder with frontend content. In regular java web projects it is
-     * `src/main/webapp` but in flow we prefer the project root directory so as
-     * we don't pollute sources folders with generated or installed stuff.
+     * Default folder for the node related content. It's the base directory for
+     * {@link Constants#PACKAGE_JSON}, {@link FrontendUtils#WEBPACK_CONFIG},
+     * {@link FrontendUtils#NODE_MODULES}.
      *
+     * By default it's the project root folder.
      */
-    public static final String WEBAPP_FOLDER = "./";
+    public static final String DEFAULT_NODE_DIR = "./";
+
+    /**
+     * Location for the installed node packages. This folder is always
+     * considered by node, even though we define extra folders with the
+     * <code>NODE_PATH</code>.
+     */
+    public static final String NODE_MODULES = "node_modules/";
+
+    /**
+     * Default folder used for source and generated folders.
+     */
+    public static final String FRONTEND = "frontend/";
+
+    /**
+     * Path of the folder containing application frontend source files, it needs
+     * to be relative to the {@link FrontendUtils#DEFAULT_NODE_DIR}
+     *
+     * By default it is <code>/frontend</code> in the project folder.
+     */
+    public static final String DEFAULT_FRONTEND_DIR = DEFAULT_NODE_DIR + FRONTEND;
 
     /**
      * The name of the webpack configuration file.
@@ -49,48 +72,45 @@ public class FrontendUtils {
     public static final String WEBPACK_CONFIG ="webpack.config.js";
 
     /**
-     * NPM package name that will be used for the javascript files present in
-     * jar resources that will to be copied to the npm folder so as they are
+     * The NPM package name that will be used for the javascript files present
+     * in jar resources that will to be copied to the npm folder so as they are
      * accessible to webpack.
      */
     public static final String FLOW_NPM_PACKAGE_NAME = "@vaadin/flow-frontend/";
 
-
     /**
-     * Default location for the installed node packages.
-     */
-    public static final String NODE_MODULES = "node_modules/";
-
-    /**
-     * Relative path to the folder containing application frontend source files.
-     * By default should be <code>/frontend</code> relative to the project
-     * folder.
-     */
-    public static final String FLOW_FRONTEND = "frontend/";
-
-    /**
-     * Target folder.
+     * Default target folder for the java project.
      */
     public static final String TARGET = "target/";
 
     /**
-     * File that contains Flow application imports, javascript, and theme annotations.
+     * Default folder name for flow generated stuff relative to the
+     * {@link FrontendUtils#TARGET}
+     */
+    public static final String DEFAULT_GENERATED_DIR = TARGET + FRONTEND;
+
+    /**
+     * Name of the file that contains application imports, javascript, theme and style annotations.
      * It is also the entry-point for webpack.
-     * It should be relative to the {@link FrontendUtils#TARGET} folder.
+     * It is always generated in the {@link FrontendUtils#DEFAULT_GENERATED_DIR} folder.
      */
-    public static final String FLOW_IMPORTS_FILE = "frontend/generated-flow-imports.js";
+    public static final String IMPORTS_NAME = "generated-flow-imports.js";
 
     /**
-     *
      * A parameter for overriding the
-     * {@link FrontendUtils#FLOW_IMPORTS_FILE} default value for the file
-     * with all Flow project imports.
+     * {@link FrontendUtils#DEFAULT_GENERATED_DIR} folder
      */
-    public static final String MAIN_JS_PARAM = "vaadin.frontend.jsFile";
+    public static final String PARAM_GENERATED_DIR = "vaadin.frontend.generated.folder";
 
     /**
-     * A special prefix to use in the webpack config to tell webpack to look for
-     * the import starting with a prefix in the Flow project frontend directory.
+     * A parameter for overriding the
+     * {@link FrontendUtils#DEFAULT_FRONTEND_DIR} folder
+     */
+    public static final String PARAM_FRONTEND_DIR = "vaadin.frontend.frontend.folder";
+
+    /**
+     * A special prefix used by webpack to map imports placed in the {@link FrontendUtils#DEFAULT_FRONTEND_DIR}.
+     * e.g. <code>import 'Frontend/foo.js';</code> references the file<code>frontend/foo.js</code>
      */
     public static final String WEBPACK_PREFIX_ALIAS = "Frontend/";
 

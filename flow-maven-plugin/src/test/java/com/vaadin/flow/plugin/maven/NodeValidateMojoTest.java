@@ -45,8 +45,6 @@ public class NodeValidateMojoTest {
     private File flowPackagePath;
     private String webpackConfig;
     private String packageJson;
-    private File importsFile;
-
 
     @Before
     public void setup() throws Exception {
@@ -66,7 +64,6 @@ public class NodeValidateMojoTest {
 
         nodeModulesPath = new File(projectBase, NODE_MODULES);
         flowPackagePath = new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME);
-        importsFile = new File(projectBase, "flow-imports.js");
         webpackConfig = new File(projectBase, WEBPACK_CONFIG).getAbsolutePath();
         packageJson = new File(projectBase, PACKAGE_JSON).getAbsolutePath();
 
@@ -76,7 +73,7 @@ public class NodeValidateMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "includes", "**/*.js,**/*.css");
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", projectBase);
         ReflectionUtils.setVariableValueInObject(mojo, "webpackTemplate", WEBPACK_CONFIG);
-        ReflectionUtils.setVariableValueInObject(mojo, "generatedFlowImports", importsFile);
+        ReflectionUtils.setVariableValueInObject(mojo, "generatedPath", projectBase);
 
         Assert.assertTrue(flowPackagePath.mkdirs());
         setProject(mojo, "war", "war_output");
