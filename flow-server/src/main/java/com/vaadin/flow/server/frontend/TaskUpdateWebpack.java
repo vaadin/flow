@@ -55,7 +55,7 @@ public class TaskUpdateWebpack implements Command {
      * @param generatedFlowImports
      *            name of the JS file to update with the Flow project imports
      */
-    public TaskUpdateWebpack(File webpackConfigFolder, File webpackOutputDirectory,
+    TaskUpdateWebpack(File webpackConfigFolder, File webpackOutputDirectory,
             String webpackTemplate, File generatedFlowImports) {
         this.webpackTemplate = webpackTemplate;
         this.webpackOutputDirectory = webpackOutputDirectory.toPath();

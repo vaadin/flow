@@ -45,7 +45,7 @@ import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.theme.Theme;
 
 import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFinder;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_IMPORTS_FILE;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 
 /**
@@ -54,7 +54,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
  * <li>Updating <code>package.json</code> file with the {@link NpmPackage}
  * annotations defined in the classpath,</li>
  * <li>Installing dependencies by running <code>npm install</code></li>
- * <li>Updating the {@link FrontendUtils#FLOW_IMPORTS_FILE} file imports with
+ * <li>Updating the {@link FrontendUtils#FLOW_IMPORTS_NAME} file imports with
  * the {@link JsModule} {@link Theme} and {@link JavaScript} annotations defined
  * in the classpath,</li>
  * <li>creating <code>webpack.config.js</code> if it does not exist yet, or
@@ -85,8 +85,8 @@ public class NodeBuildFrontendMojo extends AbstractMojo {
      * The JavaScript file used as entry point of the application, and which is
      * automatically updated by flow by reading java annotations.
      */
-    @Parameter(defaultValue = "${project.build.directory}/" + FLOW_IMPORTS_FILE)
-    private File generatedFlowImports;
+    @Parameter(defaultValue = "${project.build.directory}/" + DEFAULT_GENERATED_DIR)
+    private File generatedFolder;
 
     /**
      * A directory with project's frontend source files.
@@ -141,7 +141,7 @@ public class NodeBuildFrontendMojo extends AbstractMojo {
      * {@link com.vaadin.flow.plugin.common.WebComponentModulesGenerator} to
      * generate JavaScript files from the {@code WebComponentExporters}
      * present in the code base. The generated JavaScript files are placed in
-     * the same folder as the {@link FrontendUtils#FLOW_IMPORTS_FILE}.
+     * the same folder as the {@link FrontendUtils#FLOW_IMPORTS_NAME}.
      */
     private void generateExportedWebComponents() {
         if (!generateEmbeddableWebComponents) {
@@ -152,10 +152,9 @@ public class NodeBuildFrontendMojo extends AbstractMojo {
                         getClassFinder(project)), false);
 
         try {
-            File generatedFrontendDirectory = generatedFlowImports.getParentFile();
-            FileUtils.forceMkdir(generatedFrontendDirectory);
+            FileUtils.forceMkdir(generatedFolder);
             generator.getExporters().forEach(exporter ->
-                    generator.generateModuleFile(exporter, generatedFrontendDirectory));
+                    generator.generateModuleFile(exporter, generatedFolder));
         } catch (IOException e) {
             getLog().error("Failed to create a directory for generated web " +
                     "components", e);
@@ -163,9 +162,8 @@ public class NodeBuildFrontendMojo extends AbstractMojo {
     }
 
     private void runNodeUpdater() {
-        new NodeTasks.Builder(getClassFinder(project), frontendDirectory,
-                generatedFlowImports, npmFolder,
-                convertHtml)
+        new NodeTasks.Builder(getClassFinder(project),
+                npmFolder, generatedFolder, frontendDirectory, convertHtml)
                 .runNpmInstall(runNpmInstall)
                 .enablePackagesUpdate(true)
                 .enableImportsUpdate(true)
