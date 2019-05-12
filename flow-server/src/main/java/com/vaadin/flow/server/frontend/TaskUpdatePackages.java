@@ -44,14 +44,16 @@ public class TaskUpdatePackages extends NodeUpdater {
      *            a reusable frontend dependencies
      * @param npmFolder
      *            folder with the `package.json` file
+     * @param generatedPath
+     *            folder where flow generated files will be placed.
      * @param convertHtml
      *            whether to convert html imports or not during the package
      *            updates
      */
-    public TaskUpdatePackages(ClassFinder finder,
+    TaskUpdatePackages(ClassFinder finder,
             FrontendDependencies frontendDependencies, File npmFolder,
-            boolean convertHtml) {
-        super(finder, frontendDependencies, npmFolder, convertHtml);
+            File generatedPath, boolean convertHtml) {
+        super(finder, frontendDependencies, npmFolder, generatedPath, convertHtml);
     }
 
     @Override
