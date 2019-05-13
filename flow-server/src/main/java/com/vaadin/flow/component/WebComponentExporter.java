@@ -75,21 +75,21 @@ import elemental.json.JsonValue;
  * </pre>
  *
  * @param <C>
- *         type of the component to export
+ *            type of the component to export
  * @author Vaadin Ltd.
  */
 public abstract class WebComponentExporter<C extends Component>
         implements Serializable {
 
-    private static final List<Class> SUPPORTED_TYPES =
-            Collections.unmodifiableList(Arrays.asList(
-                    Boolean.class, String.class, Integer.class, Double.class,
-                    JsonValue.class));
+    private static final List<Class> SUPPORTED_TYPES = Collections
+            .unmodifiableList(Arrays.asList(Boolean.class, String.class,
+                    Integer.class, Double.class, JsonValue.class));
 
     private final String tag;
     private final Class<C> componentClass;
-    private HashMap<String,
-            PropertyConfigurationImpl<C, ? extends Serializable>> propertyConfigurationMap = new HashMap<>();
+    private HashMap<String, PropertyConfigurationImpl<C, ? extends Serializable>> propertyConfigurationMap = new HashMap<>();
+
+    private boolean isConfigureInstanceCall;
 
     /**
      * Creates a new {@code WebComponentExporter} instance and configures the
@@ -100,8 +100,8 @@ public abstract class WebComponentExporter<C extends Component>
      * this constructor from it.
      *
      * @param tag
-     *         tag name of the web component created by the exporter, cannot be
-     *         {@code null}
+     *            tag name of the web component created by the exporter, cannot
+     *            be {@code null}
      */
     @SuppressWarnings("unchecked")
     protected WebComponentExporter(String tag) {
@@ -114,9 +114,9 @@ public abstract class WebComponentExporter<C extends Component>
                 this.getClass(), WebComponentExporter.class);
 
         if (componentClass == null) {
-            throw new IllegalStateException(String.format("Failed to " +
-                            "determine component type for '%s'. Please " +
-                            "provide a valid type for %s as a type parameter.",
+            throw new IllegalStateException(String.format("Failed to "
+                    + "determine component type for '%s'. Please "
+                    + "provide a valid type for %s as a type parameter.",
                     getClass().getName(),
                     WebComponentExporter.class.getSimpleName()));
         }
@@ -127,6 +127,14 @@ public abstract class WebComponentExporter<C extends Component>
         Objects.requireNonNull(name, "Parameter 'name' cannot be null!");
         Objects.requireNonNull(type, "Parameter 'type' cannot be null!");
 
+        if (isConfigureInstanceCall) {
+            throw new IllegalStateException(
+                    "The 'addProperty' method cannot be called within "
+                            + "the 'configureInstance' method. All properties have "
+                            + "to be configured in the " + getClass().getName()
+                            + " class constructor.");
+        }
+
         if (!isSupportedType(type)) {
             throw new UnsupportedPropertyTypeException(String.format(
                     "PropertyConfiguration "
@@ -136,9 +144,8 @@ public abstract class WebComponentExporter<C extends Component>
                             .collect(Collectors.joining(", "))));
         }
 
-        PropertyConfigurationImpl<C, P> propertyConfigurationImpl =
-                new PropertyConfigurationImpl<>(
-                        componentClass, name, type, defaultValue);
+        PropertyConfigurationImpl<C, P> propertyConfigurationImpl = new PropertyConfigurationImpl<>(
+                componentClass, name, type, defaultValue);
 
         propertyConfigurationMap.put(name, propertyConfigurationImpl);
 
@@ -150,17 +157,17 @@ public abstract class WebComponentExporter<C extends Component>
      * by {@code name}.
      *
      * @param name
-     *         name of the property. While all formats are allowed, names in
-     *         camelCase will be converted to dash-separated form, when property
-     *         update events are generated, using form "property-name-changed",
-     *         if the property is called "propertyName"
+     *            name of the property. While all formats are allowed, names in
+     *            camelCase will be converted to dash-separated form, when
+     *            property update events are generated, using form
+     *            "property-name-changed", if the property is called
+     *            "propertyName"
      * @param defaultValue
-     *         default value of property.
-     * @return fluent {@code PropertyConfiguration} for configuring the
-     *         property
+     *            default value of property.
+     * @return fluent {@code PropertyConfiguration} for configuring the property
      */
-    public final PropertyConfiguration<C, Integer> addProperty(
-            String name, int defaultValue) {
+    public final PropertyConfiguration<C, Integer> addProperty(String name,
+            int defaultValue) {
         return addProperty(name, Integer.class, defaultValue);
     }
 
@@ -169,17 +176,17 @@ public abstract class WebComponentExporter<C extends Component>
      * by {@code name}.
      *
      * @param name
-     *         name of the property. While all formats are allowed, names in
-     *         camelCase will be converted to dash-separated form, when property
-     *         update events are generated, using form "property-name-changed",
-     *         if the property is called "propertyName"
+     *            name of the property. While all formats are allowed, names in
+     *            camelCase will be converted to dash-separated form, when
+     *            property update events are generated, using form
+     *            "property-name-changed", if the property is called
+     *            "propertyName"
      * @param defaultValue
-     *         default value of property.
-     * @return fluent {@code PropertyConfiguration} for configuring the
-     *         property
+     *            default value of property.
+     * @return fluent {@code PropertyConfiguration} for configuring the property
      */
-    public final PropertyConfiguration<C, Double> addProperty(
-            String name, double defaultValue) {
+    public final PropertyConfiguration<C, Double> addProperty(String name,
+            double defaultValue) {
         return addProperty(name, Double.class, defaultValue);
     }
 
@@ -188,17 +195,17 @@ public abstract class WebComponentExporter<C extends Component>
      * by {@code name}.
      *
      * @param name
-     *         name of the property. While all formats are allowed, names in
-     *         camelCase will be converted to dash-separated form, when property
-     *         update events are generated, using form "property-name-changed",
-     *         if the property is called "propertyName"
+     *            name of the property. While all formats are allowed, names in
+     *            camelCase will be converted to dash-separated form, when
+     *            property update events are generated, using form
+     *            "property-name-changed", if the property is called
+     *            "propertyName"
      * @param defaultValue
-     *         default value of property.
-     * @return fluent {@code PropertyConfiguration} for configuring the
-     *         property
+     *            default value of property.
+     * @return fluent {@code PropertyConfiguration} for configuring the property
      */
-    public final PropertyConfiguration<C, String> addProperty(
-            String name, String defaultValue) {
+    public final PropertyConfiguration<C, String> addProperty(String name,
+            String defaultValue) {
         return addProperty(name, String.class, defaultValue);
     }
 
@@ -207,17 +214,17 @@ public abstract class WebComponentExporter<C extends Component>
      * by {@code name}.
      *
      * @param name
-     *         name of the property. While all formats are allowed, names in
-     *         camelCase will be converted to dash-separated form, when property
-     *         update events are generated, using form "property-name-changed",
-     *         if the property is called "propertyName"
+     *            name of the property. While all formats are allowed, names in
+     *            camelCase will be converted to dash-separated form, when
+     *            property update events are generated, using form
+     *            "property-name-changed", if the property is called
+     *            "propertyName"
      * @param defaultValue
-     *         default value of property.
-     * @return fluent {@code PropertyConfiguration} for configuring the
-     *         property
+     *            default value of property.
+     * @return fluent {@code PropertyConfiguration} for configuring the property
      */
-    public final PropertyConfiguration<C, Boolean> addProperty(
-            String name, boolean defaultValue) {
+    public final PropertyConfiguration<C, Boolean> addProperty(String name,
+            boolean defaultValue) {
         return addProperty(name, Boolean.class, defaultValue);
     }
 
@@ -226,17 +233,17 @@ public abstract class WebComponentExporter<C extends Component>
      * identified by {@code name}.
      *
      * @param name
-     *         name of the property. While all formats are allowed, names in
-     *         camelCase will be converted to dash-separated form, when property
-     *         update events are generated, using form "property-name-changed",
-     *         if the property is called "propertyName"
+     *            name of the property. While all formats are allowed, names in
+     *            camelCase will be converted to dash-separated form, when
+     *            property update events are generated, using form
+     *            "property-name-changed", if the property is called
+     *            "propertyName"
      * @param defaultValue
-     *         default value of property.
-     * @return fluent {@code PropertyConfiguration} for configuring the
-     *         property
+     *            default value of property.
+     * @return fluent {@code PropertyConfiguration} for configuring the property
      */
-    public final PropertyConfiguration<C, JsonValue> addProperty(
-            String name, JsonValue defaultValue) {
+    public final PropertyConfiguration<C, JsonValue> addProperty(String name,
+            JsonValue defaultValue) {
         return addProperty(name, JsonValue.class, defaultValue);
     }
 
@@ -246,29 +253,34 @@ public abstract class WebComponentExporter<C extends Component>
      * communication between the {@code component} instance and client-side web
      * component using the {@link WebComponent} instance. The {@code
      * webComponent} and {@code component} are in 1-to-1 relation.
+     * <p>
+     * Note that it's incorrect to call any {@code addProperty} method within
+     * {@link #configureInstance(WebComponent, Component)} method. All
+     * properties have to be configured inside the exporter's constructor.
      *
      * @param webComponent
-     *         instance representing the client-side web component instance
-     *         matching the component
+     *            instance representing the client-side web component instance
+     *            matching the component
      * @param component
-     *         instance of the exported web component
+     *            instance of the exported web component
      */
-    public abstract void configureInstance(
-            WebComponent<C> webComponent, C component);
+    public abstract void configureInstance(WebComponent<C> webComponent,
+            C component);
 
     private static boolean isSupportedType(Class clazz) {
         return SUPPORTED_TYPES.contains(clazz);
     }
 
-    private final static class WebComponentConfigurationImpl<C extends Component> implements WebComponentConfiguration<C> {
+    private final static class WebComponentConfigurationImpl<C extends Component>
+            implements WebComponentConfiguration<C> {
         private WebComponentExporter<C> exporter;
-        private final Map<String, PropertyConfigurationImpl<C,
-                ? extends Serializable>> immutablePropertyMap;
+        private final Map<String, PropertyConfigurationImpl<C, ? extends Serializable>> immutablePropertyMap;
 
-        private WebComponentConfigurationImpl(WebComponentExporter<C> exporter) {
+        private WebComponentConfigurationImpl(
+                WebComponentExporter<C> exporter) {
             this.exporter = exporter;
-            immutablePropertyMap =
-                    Collections.unmodifiableMap(exporter.propertyConfigurationMap);
+            immutablePropertyMap = Collections
+                    .unmodifiableMap(exporter.propertyConfigurationMap);
         }
 
         @Override
@@ -277,7 +289,8 @@ public abstract class WebComponentExporter<C extends Component>
         }
 
         @Override
-        public Class<? extends Serializable> getPropertyType(String propertyName) {
+        public Class<? extends Serializable> getPropertyType(
+                String propertyName) {
             if (hasProperty(propertyName)) {
                 return immutablePropertyMap.get(propertyName).getPropertyData()
                         .getType();
@@ -299,11 +312,12 @@ public abstract class WebComponentExporter<C extends Component>
         }
 
         @Override
-        public WebComponentBinding<C> createWebComponentBinding(Instantiator instantiator, Element element) {
+        public WebComponentBinding<C> createWebComponentBinding(
+                Instantiator instantiator, Element element) {
             assert (instantiator != null);
 
-            final C componentReference =
-                    instantiator.createComponent(this.getComponentClass());
+            final C componentReference = instantiator
+                    .createComponent(this.getComponentClass());
 
             if (componentReference == null) {
                 throw new RuntimeException("Failed to instantiate a new "
@@ -312,9 +326,9 @@ public abstract class WebComponentExporter<C extends Component>
 
             /*
              * The tag check cannot be done before the creation of the Component
-             * being exported. This is due to the unavailability of
-             * Instantiator before VaadinService has been initialized (which
-             * happens after collecting all the exporters).
+             * being exported. This is due to the unavailability of Instantiator
+             * before VaadinService has been initialized (which happens after
+             * collecting all the exporters).
              */
             String componentTag = componentReference.getElement().getTag();
             if (this.exporter.tag.equals(componentTag)) {
@@ -327,14 +341,19 @@ public abstract class WebComponentExporter<C extends Component>
                         this.exporter.tag));
             }
 
-            WebComponentBinding<C> binding =
-                    new WebComponentBinding<>(componentReference);
+            WebComponentBinding<C> binding = new WebComponentBinding<>(
+                    componentReference);
 
-            immutablePropertyMap
-                    .values().forEach(binding::bindProperty);
+            immutablePropertyMap.values().forEach(binding::bindProperty);
 
-            this.exporter.configureInstance(new WebComponent<>(binding, element),
-                    binding.getComponent());
+            exporter.isConfigureInstanceCall = true;
+            try {
+                this.exporter.configureInstance(
+                        new WebComponent<>(binding, element),
+                        binding.getComponent());
+            } finally {
+                exporter.isConfigureInstanceCall = false;
+            }
 
             binding.updatePropertiesToComponent();
 
@@ -349,7 +368,8 @@ public abstract class WebComponentExporter<C extends Component>
         @Override
         @SuppressWarnings("unchecked")
         public Class<? extends WebComponentExporter<C>> getExporterClass() {
-            return (Class<? extends WebComponentExporter<C>>) exporter.getClass();
+            return (Class<? extends WebComponentExporter<C>>) exporter
+                    .getClass();
         }
 
         @Override
@@ -358,8 +378,8 @@ public abstract class WebComponentExporter<C extends Component>
 
             objs[0] = getTag();
             int place = 1;
-            for (PropertyConfiguration configuration :
-                    immutablePropertyMap.values()) {
+            for (PropertyConfiguration configuration : immutablePropertyMap
+                    .values()) {
                 objs[place] = configuration;
                 place++;
             }
@@ -371,12 +391,11 @@ public abstract class WebComponentExporter<C extends Component>
         public boolean equals(Object obj) {
             if (obj instanceof WebComponentConfigurationImpl) {
 
-                WebComponentConfigurationImpl<?> other =
-                        (WebComponentConfigurationImpl<?>) obj;
+                WebComponentConfigurationImpl<?> other = (WebComponentConfigurationImpl<?>) obj;
 
                 boolean isSame = getTag().equals(other.getTag());
-                isSame = isSame && (immutablePropertyMap.size()
-                        == other.immutablePropertyMap.size());
+                isSame = isSame && (immutablePropertyMap
+                        .size() == other.immutablePropertyMap.size());
 
                 if (!isSame) {
                     return false;
@@ -397,41 +416,43 @@ public abstract class WebComponentExporter<C extends Component>
     }
 
     /**
-     * Produces {@link WebComponentConfiguration} instances from either {@link
-     * WebComponentExporter} classes or instances.
+     * Produces {@link WebComponentConfiguration} instances from either
+     * {@link WebComponentExporter} classes or instances.
      *
      * @author Vaadin Ltd
      */
-    public static final class WebComponentConfigurationFactory implements Serializable {
+    public static final class WebComponentConfigurationFactory
+            implements Serializable {
 
         /**
-         * Creates a {@link WebComponentConfiguration} from the provided {@link
-         * WebComponentExporter} class.
+         * Creates a {@link WebComponentConfiguration} from the provided
+         * {@link WebComponentExporter} class.
          *
          * @param clazz
-         *         exporter class, not {@code null}
+         *            exporter class, not {@code null}
          * @return a web component configuration matching the instance of
          *         received {@code clazz}
          * @throws NullPointerException
-         *         when {@code clazz} is {@code null}
+         *             when {@code clazz} is {@code null}
          */
-        public WebComponentConfiguration<? extends Component> create(Class<?
-                extends WebComponentExporter<? extends Component>> clazz) {
+        public WebComponentConfiguration<? extends Component> create(
+                Class<? extends WebComponentExporter<? extends Component>> clazz) {
             Objects.requireNonNull(clazz, "Parameter 'clazz' cannot be null!");
             WebComponentExporter<? extends Component> exporter;
             try {
-                exporter = ReflectTools
-                        .createInstance(clazz);
+                exporter = ReflectTools.createInstance(clazz);
             } catch (IllegalArgumentException e) {
-                if (e.getCause() != null && e.getCause().getClass().equals(InvocationTargetException.class)) {
+                if (e.getCause() != null && e.getCause().getClass()
+                        .equals(InvocationTargetException.class)) {
                     Throwable cause2 = e.getCause().getCause();
-                    if (cause2 != null && cause2.getClass().equals(NullTagException.class)) {
-                        throw new IllegalArgumentException(
-                                String.format("Unable to construct %s! Did " +
-                                                "'%s' give null value to " +
-                                                "super(String) constructor?",
-                                        WebComponentConfiguration.class.getSimpleName(),
-                                        clazz.getCanonicalName()), e);
+                    if (cause2 != null && cause2.getClass()
+                            .equals(NullTagException.class)) {
+                        throw new IllegalArgumentException(String.format(
+                                "Unable to construct %s! Did "
+                                        + "'%s' give null value to "
+                                        + "super(String) constructor?",
+                                WebComponentConfiguration.class.getSimpleName(),
+                                clazz.getCanonicalName()), e);
                     }
                 }
                 // unknown reason, cannot add information
@@ -441,20 +462,20 @@ public abstract class WebComponentExporter<C extends Component>
         }
 
         /**
-         * Creates a {@link WebComponentConfiguration} for the provided {@link
-         * WebComponentExporter} instances.
+         * Creates a {@link WebComponentConfiguration} for the provided
+         * {@link WebComponentExporter} instances.
          *
          * @param exporter
-         *         exporter instance, not {@code null}
+         *            exporter instance, not {@code null}
          * @return a web component configuration matching the instance of
          *         received {@code exporter}
          * @throws NullPointerException
-         *         when {@code exporter} is {@code null}
+         *             when {@code exporter} is {@code null}
          */
-        public WebComponentConfiguration<? extends Component> create(WebComponentExporter<?
-                extends Component> exporter) {
-            Objects.requireNonNull(exporter, "Parameter 'exporter' cannot be " +
-                    "null!");
+        public WebComponentConfiguration<? extends Component> create(
+                WebComponentExporter<? extends Component> exporter) {
+            Objects.requireNonNull(exporter,
+                    "Parameter 'exporter' cannot be " + "null!");
 
             return new WebComponentConfigurationImpl<>(exporter);
         }
