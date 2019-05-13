@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.router;
 
+import com.googlecode.gentyref.GenericTypeReflector;
+import com.vaadin.flow.internal.ReflectTools;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -25,10 +28,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import com.googlecode.gentyref.GenericTypeReflector;
-
-import com.vaadin.flow.internal.ReflectTools;
 
 /**
  * Parameter deserialization utility.
@@ -201,8 +200,8 @@ public final class ParameterDeserializer {
 
         return Stream.of(navigationTarget.getMethods())
                 .filter(m -> methodName.equals(m.getName()))
-                .anyMatch(m -> hasValidParameterTypes(m, parameterClass)
-                        && m.getParameters()[1].isAnnotationPresent(parameterAnnotation));
+                .filter(m -> hasValidParameterTypes(m, parameterClass))
+                .anyMatch(m -> m.getParameters()[1].isAnnotationPresent(parameterAnnotation));
     }
 
     private static boolean hasValidParameterTypes(Method m, Class<?> parameterClass) {
