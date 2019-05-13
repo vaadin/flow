@@ -132,7 +132,8 @@ public abstract class WebComponentExporter<C extends Component>
                     "The 'addProperty' method cannot be called within "
                             + "the 'configureInstance' method. All properties have "
                             + "to be configured in the "
-                            + WebComponentExporter.class.getName() + " class.");
+                            + WebComponentExporter.class.getName()
+                            + " class constructor.");
         }
 
         if (!isSupportedType(type)) {
