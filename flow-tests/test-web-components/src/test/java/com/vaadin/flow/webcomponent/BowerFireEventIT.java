@@ -15,18 +15,7 @@
  */
 package com.vaadin.flow.webcomponent;
 
-import com.vaadin.flow.theme.AbstractTheme;
+import com.vaadin.flow.webcomponent.tests.FireEventIT;
 
-public class MyTheme implements AbstractTheme {
-
-    @Override
-    public String getBaseUrl() {
-        return "src/";
-    }
-
-    @Override
-    public String getThemeUrl() {
-        return "theme/";
-    }
-
+public class BowerFireEventIT extends FireEventIT {
 }

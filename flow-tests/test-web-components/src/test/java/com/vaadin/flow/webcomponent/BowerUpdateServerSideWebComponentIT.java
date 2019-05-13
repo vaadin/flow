@@ -15,13 +15,8 @@
  */
 package com.vaadin.flow.webcomponent;
 
-import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
-import com.vaadin.flow.templatemodel.TemplateModel;
+import com.vaadin.flow.webcomponent.tests.UpdateServerSideWebComponentIT;
 
-@Tag("themed-component")
-@HtmlImport("src/themed-component.html")
-public class ThemedComponent extends PolymerTemplate<TemplateModel> {
-
+public class BowerUpdateServerSideWebComponentIT
+        extends UpdateServerSideWebComponentIT {
 }

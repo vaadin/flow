@@ -22,7 +22,7 @@ import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
 @JsModule("./src/themed-component.js")
-//@HtmlImport("src/themed-component.html")
+@HtmlImport("src/themed-component.html")
 @Tag("themed-component")
 public class ThemedComponent extends PolymerTemplate<TemplateModel> {
 

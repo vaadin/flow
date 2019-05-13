@@ -13,23 +13,9 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.webcomponent;
 
-import com.vaadin.flow.component.WebComponentExporter;
-import com.vaadin.flow.component.webcomponent.WebComponent;
+import com.vaadin.flow.webcomponent.tests.UpdatePropertyIT;
 
-public class ClientSelectExporter
-        extends WebComponentExporter<ClientSelectComponent> {
-
-    public ClientSelectExporter() {
-        super("client-select");
-        addProperty("show", false)
-                .onChange(ClientSelectComponent::setMessageVisible);
-    }
-
-    @Override
-    public void configureInstance(WebComponent<ClientSelectComponent> webComponent, ClientSelectComponent component) {
-
-    }
+public class BowerUpdatePropertyIT extends UpdatePropertyIT {
 }
