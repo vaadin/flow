@@ -16,6 +16,7 @@
 package com.vaadin.flow.router;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Collections;
@@ -200,9 +201,13 @@ public final class ParameterDeserializer {
 
         return Stream.of(navigationTarget.getMethods()).anyMatch(m ->
                 methodName.equals(m.getName())
-                        && m.getParameterCount() == 2
-                        && m.getParameterTypes()[0] == BeforeEvent.class
-                        && m.getParameterTypes()[1].isAssignableFrom(parameterClass)
+                        && hasUrlParameterTypes(m, parameterClass)
                         && m.getParameters()[1].isAnnotationPresent(parameterAnnotation));
+    }
+
+    private static boolean hasUrlParameterTypes(Method m, Class<?> parameterClass) {
+        return m.getParameterCount() == 2
+                && m.getParameterTypes()[0] == BeforeEvent.class
+                && m.getParameterTypes()[1].isAssignableFrom(parameterClass);
     }
 }
