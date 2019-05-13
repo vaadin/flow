@@ -45,7 +45,9 @@ public interface ClassFinder extends Serializable {
          */
         public DefaultClassFinder(Set<Class<?>> classes) {
             this.classes = classes;
-            this.classLoader = getClass().getClassLoader();
+            // take classLoader from the first class in the set, unless empty
+            classLoader = classes.isEmpty() ? getClass().getClassLoader()
+                    : classes.iterator().next().getClassLoader();
         }
 
         /**
