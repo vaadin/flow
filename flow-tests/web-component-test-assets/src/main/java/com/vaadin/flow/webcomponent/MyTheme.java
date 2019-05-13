@@ -28,9 +28,4 @@ public class MyTheme implements AbstractTheme {
     public String getThemeUrl() {
         return "theme/";
     }
-
-    @Override
-    public String translateUrl(String url) {
-        return null;
-    }
 }
