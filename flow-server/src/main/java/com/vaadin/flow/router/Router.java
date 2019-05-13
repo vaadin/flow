@@ -117,7 +117,11 @@ public class Router implements Serializable {
                     .warn("Exception when parsing location path {}", path, iae);
         }
 
-        String encodedPath = path.substring(0, path.indexOf('?'));
+        int index = path.indexOf('?');
+        String encodedPath = path;
+        if (index >= 0) {
+            encodedPath = path.substring(0, path.indexOf('?'));
+        }
         try {
             if (path.startsWith("/")) {
                 encodedPath = URLEncoder.encode(path.substring(1),

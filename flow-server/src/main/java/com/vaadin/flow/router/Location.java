@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.router;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -27,8 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Represents a relative URL made up of path segments and query parameters, but
@@ -316,11 +316,7 @@ public class Location implements Serializable {
             } else if (uri.getPath().startsWith("/")) {
                 throw new IllegalArgumentException(
                         "Relative path cannot start with /");
-            } else if (uri.getRawPath().contains("..%2F")
-                    || uri.getRawPath().endsWith("%2F..")
-                    || uri.getRawPath().equals("..")) {
-                // the actual part that we do not support is '../' so this
-                // shouldn't catch 'el..ement' nor '..element'
+            } else if (hasIncorrectParentSegments(uri.getRawPath())) {
                 throw new IllegalArgumentException(
                         "Relative path cannot contain .. segments");
             }
@@ -329,5 +325,23 @@ public class Location implements Serializable {
         }
 
         // All is OK if we get here
+    }
+
+    private static boolean hasIncorrectParentSegments(String path) {
+        // the actual part that we do not support is '../' so this
+        // shouldn't catch 'el..ement' nor '..element'
+        if (path.startsWith("..%2F")) {
+            return true;
+        }
+        if (path.contains("%2F..%2F")) {
+            return true;
+        }
+        if (path.endsWith("%2F..")) {
+            return true;
+        }
+        if (path.equals("..")) {
+            return true;
+        }
+        return false;
     }
 }
