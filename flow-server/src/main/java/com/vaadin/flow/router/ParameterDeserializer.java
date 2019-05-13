@@ -199,13 +199,13 @@ public final class ParameterDeserializer {
         Class<?> parameterClass = GenericTypeReflector.erase(parameterType);
 
 
-        return Stream.of(navigationTarget.getMethods()).anyMatch(m ->
-                methodName.equals(m.getName())
-                        && hasUrlParameterTypes(m, parameterClass)
+        return Stream.of(navigationTarget.getMethods())
+                .filter(m -> methodName.equals(m.getName()))
+                .anyMatch(m -> hasValidParameterTypes(m, parameterClass)
                         && m.getParameters()[1].isAnnotationPresent(parameterAnnotation));
     }
 
-    private static boolean hasUrlParameterTypes(Method m, Class<?> parameterClass) {
+    private static boolean hasValidParameterTypes(Method m, Class<?> parameterClass) {
         return m.getParameterCount() == 2
                 && m.getParameterTypes()[0] == BeforeEvent.class
                 && m.getParameterTypes()[1].isAssignableFrom(parameterClass);
