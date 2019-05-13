@@ -30,6 +30,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Synchronize;
 import com.vaadin.flow.component.dependency.HtmlImport;
@@ -41,6 +44,7 @@ import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.startup.DevModeInitializer.VisitedClasses;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.shared.util.SharedUtil;
@@ -158,6 +162,16 @@ public class ComponentMetaData {
      */
     private static DependencyInfo findDependencies(VaadinService service,
             Class<? extends Component> componentClass) {
+        VisitedClasses visitedClasses = service
+                .getAttribute(VisitedClasses.class);
+        if (visitedClasses != null
+                && !visitedClasses.allDependenciesVisited(componentClass)) {
+            getLogger().warn(
+                    "Frontend dependencies have not been analyzed for {}."
+                            + " To make the component's frontend dependencies work, you must ensure the component class is directly referenced through an application entry point such as a class annotated with @Route.",
+                    componentClass.getName());
+        }
+
         DependencyInfo dependencyInfo = new DependencyInfo();
         findDependencies(service, componentClass, dependencyInfo,
                 new HashSet<>());
@@ -359,6 +373,10 @@ public class ComponentMetaData {
                 return JsModule.class;
             }
         };
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(ComponentMetaData.class);
     }
 
 }
