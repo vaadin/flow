@@ -24,11 +24,13 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.theme.AbstractTheme;
 
 /**
  * Lumo component theme class implementation.
  */
+@NpmPackage(value = "@vaadin/vaadin-lumo-styles", version = "1.5.0")
 @HtmlImport("frontend://bower_components/vaadin-lumo-styles/color.html")
 @HtmlImport("frontend://bower_components/vaadin-lumo-styles/typography.html")
 @HtmlImport("frontend://bower_components/vaadin-lumo-styles/sizing.html")

@@ -347,11 +347,8 @@ public class ComponentMetaData {
                 ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
 
         String module = value
-                .replaceFirst("^.*bower_components/(vaadin-.*)\\.html",
-                        "/node_modules/@vaadin/$1.js")
-                .replaceFirst("^.*bower_components/((iron|paper)-.*)\\.html",
-                        "/node_modules/@polymer/$1.js")
-                .replaceFirst("^frontend://(.+)\\.html$", "/frontend/$1.js");
+                .replaceFirst("^.*bower_components/(vaadin-.*)\\.html", "@vaadin/$1.js")
+                .replaceFirst("^.*bower_components/((iron|paper)-.*)\\.html", "@polymer/$1.js");
 
         return jsModule(module, htmlImport.loadMode());
     }

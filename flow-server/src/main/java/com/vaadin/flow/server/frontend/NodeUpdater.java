@@ -39,10 +39,10 @@ import elemental.json.JsonObject;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.shared.ApplicationConstants.FRONTEND_PROTOCOL_PREFIX;
+import static elemental.json.impl.JsonUtil.stringify;
 import static java.nio.charset.StandardCharsets.UTF_8;
-
-
 /**
  * Base abstract class for frontend updaters that needs to be run when in
  * dev-mode or from the flow maven plugin.
@@ -90,40 +90,21 @@ public abstract class NodeUpdater implements Command {
      *
      * @param finder
      *            a reusable class finder
-     * @param npmFolder
-     *            folder with the `package.json` file
-     * @param nodeModulesPath
-     *            the path to the {@literal node_modules} directory of the
-     *            project
-     * @param convertHtml
-     *            true to enable polymer-2 annotated classes to be considered
-     */
-    protected NodeUpdater(ClassFinder finder, File npmFolder, File nodeModulesPath, boolean convertHtml) {
-        this(finder, null, npmFolder, nodeModulesPath, convertHtml);
-    }
-
-    /**
-     * Constructor.
-     *
-     * @param finder
-     *            a reusable class finder
      * @param frontendDependencies
      *            a reusable frontend dependencies
      * @param npmFolder
      *            folder with the `package.json` file
-     * @param nodeModulesPath
-     *            the path to the {@literal node_modules} directory of the
-     *            project
      * @param convertHtml
      *            true to enable polymer-2 annotated classes to be considered
      */
-    protected NodeUpdater(ClassFinder finder, FrontendDependencies frontendDependencies, File npmFolder, File nodeModulesPath, boolean convertHtml) {
+    protected NodeUpdater(ClassFinder finder, FrontendDependencies frontendDependencies, File npmFolder,
+            boolean convertHtml) {
         this.frontDeps = finder != null && frontendDependencies == null
                 ? new FrontendDependencies(finder)
                 : frontendDependencies;
         this.finder = finder;
         this.npmFolder = npmFolder;
-        this.nodeModulesPath = nodeModulesPath;
+        this.nodeModulesPath = new File(npmFolder, NODE_MODULES);
         this.convertHtml = convertHtml;
     }
 
@@ -142,7 +123,7 @@ public abstract class NodeUpdater implements Command {
                 .collect(Collectors.toSet());
     }
 
-    Set<String> getTargetFrontendModules(File directory, Set<String> excludes) {
+    Set<String> getGeneratedModules(File directory, Set<String> excludes) {
         if (!directory.exists()) {
             return Collections.emptySet();
         }
@@ -172,13 +153,13 @@ public abstract class NodeUpdater implements Command {
           flowModules.add(pathWithNoProtocols);
           return FLOW_NPM_PACKAGE_NAME + pathWithNoProtocols;
         }
+
         return pathWithNoProtocols;
     }
 
     private URL getResourceUrl(String resource) {
         resource = RESOURCES_FRONTEND_DEFAULT + "/" + resource.replaceFirst(FLOW_NPM_PACKAGE_NAME, "");
-        URL url = finder.getResource(resource);
-        return url != null && url.getPath().contains(".jar!") ? url : null;
+        return finder.getResource(resource);
     }
 
     private String htmlImportToJsModule(String htmlImport) {
@@ -246,7 +227,7 @@ public abstract class NodeUpdater implements Command {
 
     void writePackageFile(JsonObject packageJson) throws IOException {
         File packageFile = new File(npmFolder, PACKAGE_JSON);
-        FileUtils.writeStringToFile(packageFile, packageJson.toJson(), UTF_8.name());
+        FileUtils.writeStringToFile(packageFile, stringify(packageJson, 2), UTF_8.name());
     }
 
     static Logger log() {

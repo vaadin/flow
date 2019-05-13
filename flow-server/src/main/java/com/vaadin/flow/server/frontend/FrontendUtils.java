@@ -55,18 +55,30 @@ public class FrontendUtils {
      */
     public static final String FLOW_NPM_PACKAGE_NAME = "@vaadin/flow-frontend/";
 
+
     /**
-     * Folder that contains generated javascript files used to build the
-     * application.
+     * Default location for the installed node packages.
      */
-    public static final String FLOW_GENERATED_FOLDER = "frontend/";
+    public static final String NODE_MODULES = "node_modules/";
+
+    /**
+     * Relative path to the folder containing application frontend source files.
+     * By default should be <code>/frontend</code> relative to the project
+     * folder.
+     */
+    public static final String FLOW_FRONTEND = "frontend/";
+
+    /**
+     * Target folder.
+     */
+    public static final String TARGET = "target/";
 
     /**
      * File that contains Flow application imports, javascript, and theme annotations.
      * It is also the entry-point for webpack.
+     * It should be relative to the {@link FrontendUtils#TARGET} folder.
      */
-    public static final String FLOW_IMPORTS_FILE =
-            FLOW_GENERATED_FOLDER + "generated-flow-imports.js";
+    public static final String FLOW_IMPORTS_FILE = "frontend/generated-flow-imports.js";
 
     /**
      *
@@ -131,17 +143,6 @@ public class FrontendUtils {
      */
     public static String getBaseDir() {
         return System.getProperty("project.basedir", System.getProperty("user.dir", "."));
-    }
-
-    /**
-     * Gets the flow package inside node_modules.
-     *
-     * @param nodeModulesPath
-     *            path to node_modules.
-     * @return the flow package folder.
-     */
-    public static File getFlowPackage(File nodeModulesPath) {
-        return new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME);
     }
 
     /**
