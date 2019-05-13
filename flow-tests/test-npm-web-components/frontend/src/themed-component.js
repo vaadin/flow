@@ -18,7 +18,12 @@ import {PolymerElement, html} from '@polymer/polymer/polymer-element.js';
 class ThemedComponent extends PolymerElement {
     static get template() {
         return html`
-            <div id="not-themed">Not themed component</div>
+            <style>
+                div:after {
+                    content: var( --after-content-var, "no theme")
+                }
+            </style>
+            <div>Just a div </div>
         `;
     }
 

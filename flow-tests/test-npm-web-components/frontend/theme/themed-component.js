@@ -13,16 +13,5 @@
 * License for the specific language governing permissions and limitations under
 * the License.
 */
-import {PolymerElement, html} from '@polymer/polymer/polymer-element.js';
-
-class ThemedComponent extends PolymerElement {
-    static get template() {
-        return html`
-            <div id="themed">Themed component</div>
-        `;
-    }
-
-    static get is() { return 'themed-component' }
-}
-
-customElements.define(ThemedComponent.is, ThemedComponent);
+import "../src/themed-component.js";
+import "./themed-component-style.js";
