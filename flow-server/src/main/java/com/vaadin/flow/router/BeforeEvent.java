@@ -365,6 +365,15 @@ public abstract class BeforeEvent extends EventObject {
     }
 
     /**
+     * Get the URL parameters of the forward target.
+     *
+     * @return URL parameters of forward target
+     */
+    public Optional<List<String>> getForwardTargetParameters() {
+        return forwardTargetState.getUrlParameters();
+    }
+
+    /**
      * Get the route target for rerouting.
      *
      * @return route target
