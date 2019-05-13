@@ -120,7 +120,7 @@ public class Router implements Serializable {
         int index = path.indexOf('?');
         String encodedPath = path;
         if (index >= 0) {
-            encodedPath = path.substring(0, path.indexOf('?'));
+            encodedPath = path.substring(0, index);
         }
         try {
             if (path.startsWith("/")) {
