@@ -199,14 +199,14 @@ public final class ParameterDeserializer {
 
 
         return Stream.of(navigationTarget.getMethods())
-                .filter(m -> methodName.equals(m.getName()))
-                .filter(m -> hasValidParameterTypes(m, parameterClass))
-                .anyMatch(m -> m.getParameters()[1].isAnnotationPresent(parameterAnnotation));
+                .filter(method -> methodName.equals(method.getName()))
+                .filter(method -> hasValidParameterTypes(method, parameterClass))
+                .anyMatch(method -> method.getParameters()[1].isAnnotationPresent(parameterAnnotation));
     }
 
-    private static boolean hasValidParameterTypes(Method m, Class<?> parameterClass) {
-        return m.getParameterCount() == 2
-                && m.getParameterTypes()[0] == BeforeEvent.class
-                && m.getParameterTypes()[1].isAssignableFrom(parameterClass);
+    private static boolean hasValidParameterTypes(Method method, Class<?> parameterClass) {
+        return method.getParameterCount() == 2
+                && method.getParameterTypes()[0] == BeforeEvent.class
+                && method.getParameterTypes()[1].isAssignableFrom(parameterClass);
     }
 }
