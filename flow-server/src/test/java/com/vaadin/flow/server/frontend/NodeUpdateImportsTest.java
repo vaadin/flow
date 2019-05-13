@@ -38,6 +38,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
 
 public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
@@ -46,9 +48,8 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     private File importsFile;
-    private File nodeModulesPath;
     private File frontendDirectory;
-    private File generatedFrontendDirectory;
+    private File nodeModulesPath;
     private TaskUpdateImports node;
 
     @Before
@@ -56,15 +57,13 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         File tmpRoot = temporaryFolder.getRoot();
         importsFile = new File(tmpRoot, "flow-imports.js");
-        nodeModulesPath = new File(tmpRoot, "node_modules");
         frontendDirectory = new File(tmpRoot, "frontend");
-        generatedFrontendDirectory = new File(tmpRoot, "target/frontend");
+        nodeModulesPath = new File(tmpRoot, NODE_MODULES);
 
-        node = new TaskUpdateImports(getClassFinder(), frontendDirectory,
-                generatedFrontendDirectory, importsFile, tmpRoot,
-                nodeModulesPath, true);
+        node = new TaskUpdateImports(getClassFinder(), null, frontendDirectory,
+                importsFile, tmpRoot, true);
 
-        Assert.assertTrue(getFlowPackage().mkdirs());
+        Assert.assertTrue(nodeModulesPath.mkdirs());
 
         createExpectedImports(frontendDirectory, nodeModulesPath);
     }
@@ -132,8 +131,10 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         assertContainsImports(true, expectedLines.toArray(new String[0]));
 
-        Assert.assertTrue(getFlowPackage().exists());
-        Assert.assertTrue(new File(getFlowPackage(), "ExampleConnector.js")
+        File flowPackage = new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME);
+
+        Assert.assertTrue(flowPackage.exists());
+        Assert.assertTrue(new File(flowPackage, "ExampleConnector.js")
                 .exists());
     }
 
@@ -258,9 +259,4 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         Files.write(Paths.get(importsFile.toURI()),
                 content.getBytes(StandardCharsets.UTF_8), options);
     }
-
-    File getFlowPackage() {
-        return FrontendUtils.getFlowPackage(nodeModulesPath);
-    }
-
 }

@@ -58,57 +58,24 @@ public class TaskUpdateImports extends NodeUpdater {
      *
      * @param finder
      *         a reusable class finder
-     * @param frontendDirectory
-     *         a directory with project's frontend files
-     * @param generatedFrontendDirectory
-     *         a directory with project's generated frontend files
-     * @param generatedFlowImports
-     *         name of the JS file to update with the Flow project imports
-     * @param npmFolder
-     *         folder with the `package.json` file
-     * @param nodeModulesPath
-     *         the path to the {@literal node_modules} directory of the project
-     * @param convertHtml
-     *         true to enable polymer-2 annotated classes to be considered
-     */
-    public TaskUpdateImports(
-            ClassFinder finder, File frontendDirectory,
-            File generatedFrontendDirectory, File generatedFlowImports,
-            File npmFolder, File nodeModulesPath, boolean convertHtml) {
-        this(finder, null, frontendDirectory, generatedFrontendDirectory,
-                generatedFlowImports, npmFolder, nodeModulesPath, convertHtml);
-    }
-
-
-    /**
-     * Create an instance of the updater given all configurable parameters.
-     *
-     * @param finder
-     *         a reusable class finder
      * @param frontendDependencies
      *         a reusable frontend dependencies
      * @param frontendDirectory
      *         a directory with project's frontend files
-     * @param generatedFrontendDirectory
-     *         a directory with project's generated frontend files
      * @param generatedFlowImports
      *         name of the JS file to update with the imports
      * @param npmFolder
      *         folder with the `package.json` file
-     * @param nodeModulesPath
-     *         the path to the {@literal node_modules} directory of the project
      * @param convertHtml
      *         true to enable polymer-2 annotated classes to be considered
      */
-    public TaskUpdateImports(
-            ClassFinder finder, FrontendDependencies frontendDependencies,
-            File frontendDirectory, File generatedFrontendDirectory,
-            File generatedFlowImports, File npmFolder, File nodeModulesPath,
-            boolean convertHtml) {
-        super(finder, frontendDependencies, npmFolder, nodeModulesPath, convertHtml);
+    public TaskUpdateImports(ClassFinder finder,
+            FrontendDependencies frontendDependencies, File frontendDirectory,
+            File generatedFlowImports, File npmFolder, boolean convertHtml) {
+        super(finder, frontendDependencies, npmFolder, convertHtml);
         this.generatedFlowImports = generatedFlowImports;
         this.frontendDirectory = frontendDirectory;
-        this.generatedFrontendDirectory = generatedFrontendDirectory;
+        this.generatedFrontendDirectory = generatedFlowImports.getParentFile();
     }
 
     @Override
@@ -119,8 +86,8 @@ public class TaskUpdateImports extends NodeUpdater {
         }
         modules.addAll(getJavascriptJsModules(frontDeps.getScripts()));
 
-        modules.addAll(getTargetFrontendModules(generatedFrontendDirectory,
-                Collections.singleton(FrontendUtils.FLOW_IMPORTS_FILE)));
+        modules.addAll(getGeneratedModules(generatedFrontendDirectory,
+                Collections.singleton(generatedFlowImports.getName())));
 
         modules = sortModules(modules);
         try {
