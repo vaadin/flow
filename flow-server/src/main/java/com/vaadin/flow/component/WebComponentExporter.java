@@ -131,8 +131,7 @@ public abstract class WebComponentExporter<C extends Component>
             throw new IllegalStateException(
                     "The 'addProperty' method cannot be called within "
                             + "the 'configureInstance' method. All properties have "
-                            + "to be configured in the "
-                            + WebComponentExporter.class.getName()
+                            + "to be configured in the " + getClass().getName()
                             + " class constructor.");
         }
 
