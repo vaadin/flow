@@ -38,9 +38,9 @@ public class TaskUpdateWebpack implements Command {
      * The name of the webpack config file.
      */
     private final String webpackTemplate;
-    private final transient Path webpackOutputDirectory;
-    private final transient Path generatedFlowImports;
-    private final transient Path webpackConfigFolder;
+    private final transient Path webpackOutputPath;
+    private final transient Path flowImportsFilePath;
+    private final transient Path webpackConfigPath;
 
     /**
      * Create an instance of the updater given all configurable parameters.
@@ -58,9 +58,9 @@ public class TaskUpdateWebpack implements Command {
     TaskUpdateWebpack(File webpackConfigFolder, File webpackOutputDirectory,
             String webpackTemplate, File generatedFlowImports) {
         this.webpackTemplate = webpackTemplate;
-        this.webpackOutputDirectory = webpackOutputDirectory.toPath();
-        this.generatedFlowImports = generatedFlowImports.toPath();
-        this.webpackConfigFolder = webpackConfigFolder.toPath();
+        this.webpackOutputPath = webpackOutputDirectory.toPath();
+        this.flowImportsFilePath = generatedFlowImports.toPath();
+        this.webpackConfigPath = webpackConfigFolder.toPath();
     }
 
     @Override
@@ -77,7 +77,7 @@ public class TaskUpdateWebpack implements Command {
             return;
         }
 
-        File configFile = new File(webpackConfigFolder.toFile(),
+        File configFile = new File(webpackConfigPath.toFile(),
                 WEBPACK_CONFIG);
 
         if (!configFile.exists()) {
@@ -92,9 +92,9 @@ public class TaskUpdateWebpack implements Command {
 
             boolean modified = false;
             String outputLine = "mavenOutputFolderForFlowBundledFiles = require('path').resolve(__dirname, '"
-                    + getEscapedRelativeWebpackPath(webpackOutputDirectory) + "');";
+                    + getEscapedRelativeWebpackPath(webpackOutputPath) + "');";
             String mainLine = "fileNameOfTheFlowGeneratedMainEntryPoint = require('path').resolve(__dirname, '"
-                    + getEscapedRelativeWebpackPath(generatedFlowImports) + "');";
+                    + getEscapedRelativeWebpackPath(flowImportsFilePath) + "');";
 
             for (int i = 0; i < lines.size(); i++) {
                 String line = lines.get(i).trim();
@@ -117,7 +117,7 @@ public class TaskUpdateWebpack implements Command {
 
     private String getEscapedRelativeWebpackPath(Path path) {
         Path relativePath = path.isAbsolute()
-                ? webpackConfigFolder.relativize(path)
+                ? webpackConfigPath.relativize(path)
                 : path;
         return relativePath.toString().replaceAll("\\\\", "/");
     }
