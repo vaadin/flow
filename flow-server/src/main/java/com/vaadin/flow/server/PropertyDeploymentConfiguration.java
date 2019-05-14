@@ -22,6 +22,15 @@ import java.util.function.Function;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.shared.communication.PushMode;
 
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_BOWER_MODE;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_REQUEST_TIMING;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_SYNC_ID_CHECK;
+
 /**
  * The property handling implementation of {@link DeploymentConfiguration} based
  * on a base
@@ -138,19 +147,23 @@ public class PropertyDeploymentConfiguration
 
     @Override
     public boolean isProductionMode() {
-        return getBooleanProperty(Constants.SERVLET_PARAMETER_PRODUCTION_MODE,
+        return getBooleanProperty(SERVLET_PARAMETER_PRODUCTION_MODE,
                 false);
     }
 
     @Override
     public boolean isBowerMode() {
-        return getBooleanProperty(Constants.SERVLET_PARAMETER_BOWER_MODE, false)
+        return getBooleanProperty(SERVLET_PARAMETER_BOWER_MODE, false)
                 || isBowerLegacyMode();
     }
 
     protected boolean isBowerLegacyMode() {
-        // User can force mode by setting bowerMode to some string value
-        if (getStringProperty(Constants.SERVLET_PARAMETER_BOWER_MODE, null) != null) {
+        // User can force npm mode by setting bowerMode to some string value
+        if (getStringProperty(SERVLET_PARAMETER_BOWER_MODE, null) != null) {
+            return false;
+        }
+        // User can force npm mode by starting a webpack server manually
+        if (getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, null) != null) {
             return false;
         }
         return isProductionMode() && getBooleanProperty(IS_BOWER_PROD, false)
@@ -159,19 +172,19 @@ public class PropertyDeploymentConfiguration
 
     @Override
     public boolean isRequestTiming() {
-        return getBooleanProperty(Constants.SERVLET_PARAMETER_REQUEST_TIMING,
+        return getBooleanProperty(SERVLET_PARAMETER_REQUEST_TIMING,
                 !isProductionMode());
     }
 
     @Override
     public boolean isXsrfProtectionEnabled() {
         return !getBooleanProperty(
-                Constants.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION, false);
+                SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION, false);
     }
 
     @Override
     public boolean isSyncIdCheckEnabled() {
-        return getBooleanProperty(Constants.SERVLET_PARAMETER_SYNC_ID_CHECK,
+        return getBooleanProperty(SERVLET_PARAMETER_SYNC_ID_CHECK,
                 true);
     }
 
@@ -188,13 +201,13 @@ public class PropertyDeploymentConfiguration
     @Override
     public boolean isSendUrlsAsParameters() {
         return getBooleanProperty(
-                Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS, true);
+                SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS, true);
     }
 
     @Override
     public boolean isCloseIdleSessions() {
         return getBooleanProperty(
-                Constants.SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS, false);
+                SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS, false);
     }
 
     @Override

@@ -154,8 +154,8 @@ public final class Constants implements Serializable {
      * Configuration name for the parameter that indicates the tcp port of a webpack-dev-server
      * already running. This property is automatically defined when
      * {@link DevModeHandler} starts the webpack server. If you have your own
-     * server already running, define this property and {@link DevModeHandler}
-     * will re-use that server.
+     * server already running, define this property, then {@link DevModeHandler}
+     * will re-use that server and will disable updaters.
      */
     public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT = "devmode.webpack.running-port";
 
@@ -186,16 +186,6 @@ public final class Constants implements Serializable {
      * Configuration name for adding extra options to the webpack-dev-server.
      */
     public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS = "devmode.webpack.options";
-
-    /**
-     * Configuration name which disables the node imports updater.
-     */
-    public static final String SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS = "devmode.skip.update-imports";
-
-    /**
-     * Configuration name  which disables the node dependencies updater.
-     */
-    public static final String SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM = "devmode.skip.update-npm-dependencies";
 
     private Constants() {
         // prevent instantiation constants class only

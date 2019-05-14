@@ -45,7 +45,7 @@ public class NodeTasksTest {
         Assert.assertEquals(new File(userDir, DEFAULT_FRONTEND_DIR).getAbsolutePath(),
                 ((File)getFieldValue(builder, "frontendDirectory")).getAbsolutePath());
         Assert.assertEquals(new File(userDir, DEFAULT_GENERATED_DIR).getAbsolutePath(),
-                ((File)getFieldValue(builder, "generatedPath")).getAbsolutePath());
+                ((File)getFieldValue(builder, "generatedFolder")).getAbsolutePath());
 
         builder.build().execute();
         Assert.assertTrue(new File(userDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME).exists());
@@ -65,7 +65,7 @@ public class NodeTasksTest {
         Assert.assertEquals(new File(userDir, "my_custom_sources_folder").getAbsolutePath(),
                 ((File)getFieldValue(builder, "frontendDirectory")).getAbsolutePath());
         Assert.assertEquals(new File(userDir, "my/custom/generated/folder").getAbsolutePath(),
-                ((File)getFieldValue(builder, "generatedPath")).getAbsolutePath());
+                ((File)getFieldValue(builder, "generatedFolder")).getAbsolutePath());
 
         builder.build().execute();
         Assert.assertTrue(new File(userDir, "my/custom/generated/folder/" + IMPORTS_NAME).exists());
