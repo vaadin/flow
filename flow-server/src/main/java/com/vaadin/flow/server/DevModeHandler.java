@@ -203,7 +203,7 @@ public class DevModeHandler implements Serializable {
             return null;
         }
 
-        File directory = new File(getBaseDir(), FrontendUtils.WEBAPP_FOLDER).getAbsoluteFile();
+        File directory = new File(getBaseDir(), FrontendUtils.DEFAULT_NODE_DIR).getAbsoluteFile();
         if (!directory.exists()) {
             getLogger().warn("Instance not created because cannot change to '{}'", directory);
             return null;

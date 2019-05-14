@@ -29,6 +29,7 @@ import org.junit.rules.TemporaryFolder;
 import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
 
 public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
@@ -45,12 +46,13 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
         System.setProperty("user.dir", temporaryFolder.getRoot().getPath());
 
         File baseDir = new File(getBaseDir());
+        File generatedDir = new File(baseDir, DEFAULT_GENERATED_DIR); 
 
         NodeUpdateTestUtil.createStubNode(true, true);
 
-        packageCreator = new TaskCreatePackageJson(baseDir);
+        packageCreator = new TaskCreatePackageJson(baseDir, generatedDir);
 
-        packageUpdater = new TaskUpdatePackages(getClassFinder(), null, baseDir, true);
+        packageUpdater = new TaskUpdatePackages(getClassFinder(), null, baseDir, generatedDir, true);
 
         packageJson = new File(baseDir, PACKAGE_JSON);
     }

@@ -39,7 +39,7 @@ public class TaskRunNpmInstall implements Command {
      *            package-updater instance used for checking if previous
      *            execution modified the package.json file
      */
-    public TaskRunNpmInstall(NodeUpdater packageUpdater) {
+    TaskRunNpmInstall(NodeUpdater packageUpdater) {
         this.packageUpdater = packageUpdater;
     }
 
