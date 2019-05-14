@@ -20,11 +20,15 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
+
 import java.io.File;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.dependency.JsModule;
@@ -35,9 +39,8 @@ import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.server.frontend.NodeTasks;
+import com.vaadin.flow.server.frontend.NodeTasks.Builder;
 import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS;
@@ -122,14 +125,12 @@ public class DevModeInitializer
             return;
         }
 
-        if (
-        // User have a webpack-dev-server in the background
-        config.getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT,
-                null) == null &&
-        // There isn't any of the common dev files in the current folder
-                (!new File(getBaseDir(), PACKAGE_JSON).canRead()
-                        || !new File(getBaseDir(), WEBPACK_CONFIG).canRead())) {
+        Builder builder = new NodeTasks.Builder(new DefaultClassFinder(classes));
 
+        if (config.getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, null) == null
+                && (!new File(builder.npmFolder, PACKAGE_JSON).canRead())
+                || !new File(builder.generatedFolder, PACKAGE_JSON).canRead()
+                || !new File(builder.npmFolder, WEBPACK_CONFIG).canRead()) {
             log().warn(
                     "Skiping DEV MODE because cannot find '{}' or '{}' in '{}' folder",
                     PACKAGE_JSON, WEBPACK_CONFIG, getBaseDir());
@@ -139,12 +140,10 @@ public class DevModeInitializer
         try {
             Set<String> visitedClassNames = new HashSet<>();
 
-            new NodeTasks.Builder(new DefaultClassFinder(classes))
-                    .enablePackagesUpdate(!config.getBooleanProperty(
+            builder.enablePackagesUpdate(!config.getBooleanProperty(
                             SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM, false))
                     .enableImportsUpdate(!config.getBooleanProperty(
-                            SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS,
-                            false))
+                            SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS, false))
                     .runNpmInstall(true)
                     .withEmbeddableWebComponents(true)
                     .collectVisitedClasses(visitedClassNames)
