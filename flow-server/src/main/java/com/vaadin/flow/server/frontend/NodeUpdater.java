@@ -58,6 +58,12 @@ public abstract class NodeUpdater implements Command {
     static final String DEPENDENCIES = "dependencies";
     private static final String DEV_DEPENDENCIES = "devDependencies";
 
+    private static final String DEP_LICENSE_KEY = "license";
+    private static final String DEP_LICENSE_DEFAULT = "UNLICENSED";
+    private static final String DEP_NAME_KEY = "name";
+    private static final String DEP_NAME_DEFAULT = "no-name";
+    private static final String DEP_NAME_FLOW_DEPS = "@vaadin/flow-deps";
+
     /**
      * Base directory for {@link Constants#PACKAGE_JSON},
      * {@link FrontendUtils#WEBPACK_CONFIG}, {@link FrontendUtils#NODE_MODULES}.
@@ -67,13 +73,13 @@ public abstract class NodeUpdater implements Command {
     /**
      * The path to the {@link FrontendUtils#NODE_MODULES} directory.
      */
-    protected final File nodeModulesPath;
-    
-    
+    protected final File nodeModulesFolder;
+
+
     /**
-     * Base directory for flow generated files. 
+     * Base directory for flow generated files.
      */
-    protected final File generatedPath;
+    protected final File generatedFolder;
 
     /**
      * Enable or disable legacy components annotated only with
@@ -114,8 +120,8 @@ public abstract class NodeUpdater implements Command {
                 : frontendDependencies;
         this.finder = finder;
         this.npmFolder = npmFolder;
-        this.nodeModulesPath = new File(npmFolder, NODE_MODULES);
-        this.generatedPath = generatedPath;
+        this.nodeModulesFolder = new File(npmFolder, NODE_MODULES);
+        this.generatedFolder = generatedPath;
         this.convertHtml = convertHtml;
     }
 
@@ -194,15 +200,20 @@ public abstract class NodeUpdater implements Command {
     }
 
     JsonObject createDefaultJson() {
-        log().info("Creating a default {} file ...", PACKAGE_JSON);
         JsonObject packageJson = Json.createObject();
-        updateDefaultDependencies(packageJson);
         return packageJson;
     }
 
-    JsonObject getPackageJson() throws IOException {
+    JsonObject getMainPackageJson() throws IOException {
+        return getPackageJson(new File(npmFolder, PACKAGE_JSON));
+    }
+
+    JsonObject getAppPackageJson() throws IOException {
+        return getPackageJson(new File(generatedFolder, PACKAGE_JSON));
+    }
+
+    JsonObject getPackageJson(File packageFile) throws IOException {
         JsonObject packageJson = null;
-        File packageFile = new File(npmFolder, PACKAGE_JSON);
         if (packageFile.exists()) {
             String fileContent = FileUtils.readFileToString(packageFile, UTF_8.name());
             packageJson = Json.parse(fileContent);
@@ -210,24 +221,37 @@ public abstract class NodeUpdater implements Command {
         return packageJson;
     }
 
-    boolean updateDefaultDependencies(JsonObject packageJson) {
-        boolean added = false;
-        added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack", "4.30.0") || added;
-        added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack-cli", "3.3.0") || added;
-        added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack-dev-server", "3.3.0") || added;
-        added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack-babel-multi-target-plugin", "2.1.0") || added;
-        added = addDependency(packageJson, DEV_DEPENDENCIES, "copy-webpack-plugin", "5.0.3") || added;
-        added = addDependency(packageJson, DEPENDENCIES, "@polymer/polymer", "3.1.0") || added;
-        added = addDependency(packageJson, DEPENDENCIES, "@webcomponents/webcomponentsjs", "2.2.10") || added;
-        return added;
+    void updateMainDefaultDependencies(JsonObject packageJson) {
+        addDependency(packageJson, null, DEP_NAME_KEY, DEP_NAME_DEFAULT);
+        addDependency(packageJson, null, DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT);
+
+
+        addDependency(packageJson, DEPENDENCIES, "@polymer/polymer", "^3.1.0");
+        addDependency(packageJson, DEPENDENCIES, "@webcomponents/webcomponentsjs", "^2.2.10");
+        // dependency for the custom package.json placed in the generated folder.
+        String customPkg = "./" + npmFolder.getAbsoluteFile().toPath()
+                .relativize(generatedFolder.toPath()).toString();
+        addDependency(packageJson, DEPENDENCIES, DEP_NAME_FLOW_DEPS, customPkg);
+
+        addDependency(packageJson, DEV_DEPENDENCIES, "webpack", "^4.30.0");
+        addDependency(packageJson, DEV_DEPENDENCIES, "webpack-cli", "^3.3.0");
+        addDependency(packageJson, DEV_DEPENDENCIES, "webpack-dev-server", "^3.3.0");
+        addDependency(packageJson, DEV_DEPENDENCIES, "webpack-babel-multi-target-plugin", "^2.1.0");
+        addDependency(packageJson, DEV_DEPENDENCIES, "copy-webpack-plugin", "^5.0.3");
+    }
+
+    void updateAppDefaultDependencies(JsonObject packageJson) {
+        addDependency(packageJson, null, DEP_NAME_KEY, DEP_NAME_FLOW_DEPS);
+        addDependency(packageJson, null, DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT);
     }
 
     boolean addDependency(JsonObject json, String key, String pkg, String vers) {
-        if (!json.hasKey(key)) {
-            json.put(key, Json.createObject());
+        if (key != null) {
+            if (!json.hasKey(key)) {
+                json.put(key, Json.createObject());
+            }
+            json = json.get(key);
         }
-        json = json.get(key);
-        vers = vers.startsWith("=") ? vers : ("=" + vers);
         if (!json.hasKey(pkg) || !json.getString(pkg).equals(vers)) {
             json.put(pkg, vers);
             log().info("Added {}@{} dependency.", pkg, vers);
@@ -236,9 +260,18 @@ public abstract class NodeUpdater implements Command {
         return false;
     }
 
-    void writePackageFile(JsonObject packageJson) throws IOException {
-        File packageFile = new File(npmFolder, PACKAGE_JSON);
-        FileUtils.writeStringToFile(packageFile, stringify(packageJson, 2), UTF_8.name());
+    void writeMainPackageFile(JsonObject packageJson) throws IOException {
+        writePackageFile(packageJson, new File(npmFolder, PACKAGE_JSON));
+    }
+
+    void writeAppPackageFile(JsonObject packageJson) throws IOException {
+        writePackageFile(packageJson, new File(generatedFolder, PACKAGE_JSON));
+    }
+
+    void writePackageFile(JsonObject json, File packageFile) throws IOException {
+        log().info("Updating npm {} file ...", packageFile.getAbsolutePath());
+        packageFile.getParentFile().mkdirs();
+        FileUtils.writeStringToFile(packageFile, stringify(json, 2) + "\n", UTF_8.name());
     }
 
     static Logger log() {

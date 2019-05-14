@@ -85,7 +85,7 @@ public class TaskUpdateImports extends NodeUpdater {
         }
         modules.addAll(getJavascriptJsModules(frontDeps.getScripts()));
 
-        modules.addAll(getGeneratedModules(generatedPath,
+        modules.addAll(getGeneratedModules(generatedFolder,
                 Collections.singleton(generatedFlowImports.getName())));
 
         modules = sortModules(modules);
@@ -146,7 +146,7 @@ public class TaskUpdateImports extends NodeUpdater {
             StringBuilder errorMessage = new StringBuilder(String.format(
                     "Failed to resolve the following module imports neither in the node_modules directory '%s' " +
                             "nor in project files in '%s': ",
-                    nodeModulesPath, frontendDirectory)).append("\n");
+                    nodeModulesFolder, frontendDirectory)).append("\n");
 
             unresolvedImports
                     .forEach((originalModulePath, translatedModulePath) -> {
@@ -171,9 +171,9 @@ public class TaskUpdateImports extends NodeUpdater {
 
     private boolean importedFileExists(String jsImport) {
         return new File(frontendDirectory, jsImport).isFile()
-                || new File(nodeModulesPath, jsImport).isFile()
-                || new File(new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME), jsImport).isFile()
-                || new File(generatedPath,
+                || new File(nodeModulesFolder, jsImport).isFile()
+                || new File(new File(nodeModulesFolder, FLOW_NPM_PACKAGE_NAME), jsImport).isFile()
+                || new File(generatedFolder,
                 generatedResourcePathIntoRelativePath(jsImport)).isFile();
     }
 
