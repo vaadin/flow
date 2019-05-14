@@ -128,7 +128,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      * {@link VaadinService#getContextRootRelativePath(VaadinRequest)}.
      */
     public BootstrapHandler() {
-        this(request -> VaadinService.getCurrent().getContextRootRelativePath(request));
+        this(request -> request.getService().getContextRootRelativePath(request));
     }
 
     /**
