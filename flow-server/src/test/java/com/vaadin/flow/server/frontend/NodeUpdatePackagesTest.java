@@ -17,6 +17,9 @@
 
 package com.vaadin.flow.server.frontend;
 
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -27,9 +30,6 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import elemental.json.JsonObject;
-
-import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
 
 public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
@@ -50,7 +50,8 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
         packageCreator = new TaskCreatePackageJson(baseDir);
 
-        packageUpdater = new TaskUpdatePackages(getClassFinder(), null, baseDir, true);
+        packageUpdater = new TaskUpdatePackages(getClassFinder(), null,
+                baseDir);
 
         packageJson = new File(baseDir, PACKAGE_JSON);
     }
@@ -62,16 +63,15 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
         Assert.assertTrue(packageJson.exists());
     }
 
-
     @Test
-    public void should_not_ModifyPackageJson_WhenAlreadyExists() throws Exception {
+    public void should_not_ModifyPackageJson_WhenAlreadyExists()
+            throws Exception {
         packageCreator.execute();
         Assert.assertTrue(packageCreator.modified);
 
         packageCreator.execute();
         Assert.assertFalse(packageCreator.modified);
     }
-
 
     @Test
     public void should_AddNewDependencies() throws Exception {
@@ -91,8 +91,6 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
                 dependencies.hasKey("@vaadin/vaadin-button"));
         Assert.assertTrue("Missing @webcomponents/webcomponentsjs package",
                 dependencies.hasKey("@webcomponents/webcomponentsjs"));
-        Assert.assertTrue("Missing @polymer/iron-icon package",
-                dependencies.hasKey("@polymer/iron-icon"));
 
         JsonObject devDependencies = packageJsonObject
                 .getObject("devDependencies");
