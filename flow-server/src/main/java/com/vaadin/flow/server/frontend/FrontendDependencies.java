@@ -31,6 +31,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import net.bytebuddy.jar.asm.ClassReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
@@ -51,20 +53,6 @@ import static com.vaadin.flow.server.frontend.FrontendClassVisitor.VERSION;
 public class FrontendDependencies implements Serializable {
 
     public static final String LUMO = "com.vaadin.flow.theme.lumo.Lumo";
-
-    private static final String MULTIPLE_VERSIONS =
-            "%n%n======================================================================================================"
-                    + "%nFailed to determine the version for the '%s' npm package."
-                    + "%nFlow found multiple versions: %s"
-                    + "%nPlease visit check your Java dependencies and @NpmModule annotations so as all of them"
-                    + "%nmeet the same version."
-                    + "%n======================================================================================================%n";
-
-    private static final String BAD_VERSIOM =
-            "%n%n======================================================================================================"
-                    + "%nFailed to determine the version for the '%s' npm package."
-                    + "%nVersion '%s' has an invalid format, it should follow pattern 'd.d.d' or 'd.d.d-suffix'"
-                    + "%n======================================================================================================%n";
 
     /**
      * A wrapper for the Theme instance that use reflection for executing its
@@ -327,16 +315,17 @@ public class FrontendDependencies implements Serializable {
         for (String dependency : dependencies) {
             Set<String> versions = npmPackageVisitor.getValuesForKey(VALUE, dependency, VERSION);
             if (versions.size() > 1) {
-                throw new IllegalStateException(String.format(MULTIPLE_VERSIONS, dependency, versions.toString()));
+                log().warn("Multiple npm versions for {} found:  {}",
+                        dependency, versions.toString());
             }
-
-            String version = versions.iterator().next();
-            if (!version.matches("^\\d+\\.\\d+\\.\\d+(-[A-z][\\w]*\\d+)?$")) {
-                throw new IllegalStateException(String.format(BAD_VERSIOM, dependency, version));
-            }
-
-            packages.put(dependency, version);
+            packages.put(dependency, versions.iterator().next());
         }
+    }
+
+
+    private static Logger log() {
+        // Using short prefix so as npm output is more readable
+        return LoggerFactory.getLogger("dev-updater");
     }
 
     /**

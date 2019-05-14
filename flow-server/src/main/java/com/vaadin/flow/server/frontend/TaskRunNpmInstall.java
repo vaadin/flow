@@ -54,8 +54,8 @@ public class TaskRunNpmInstall implements Command {
     }
 
     private boolean shouldRunNpmInstall() {
-        if (packageUpdater.nodeModulesPath.isDirectory()) {
-            File[] installedPackages = packageUpdater.nodeModulesPath.listFiles();
+        if (packageUpdater.nodeModulesFolder.isDirectory()) {
+            File[] installedPackages = packageUpdater.nodeModulesFolder.listFiles();
             return installedPackages == null
                     || (installedPackages.length == 1 && FLOW_NPM_PACKAGE_NAME
                             .startsWith(installedPackages[0].getName()));

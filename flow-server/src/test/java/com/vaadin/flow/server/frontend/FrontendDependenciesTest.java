@@ -82,14 +82,14 @@ public class FrontendDependenciesTest {
                 "(Lcom/vaadin/flow/component/orderedlayout/FlexComponent$Alignment;[Lcom/vaadin/flow/component/Component;)");
         assertEquals(13, classes.size());
         assertTrue(classes.contains("com.vaadin.flow.component.orderedlayout.FlexComponent$Alignment"));
-        
+
         // Apart from proper signature representation, it should handle class names, and class paths
         visitor.addSignatureToClasses(classes, this.getClass().getName());
         assertTrue(classes.contains(this.getClass().getName()));
 
         visitor.addSignatureToClasses(classes, "com/vaadin/flow/server/frontend/FrontendDependenciesTestComponents$AnotherComponent");
         assertTrue(classes.contains("com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents$AnotherComponent"));
-        
+
     }
 
     @Test
@@ -103,17 +103,8 @@ public class FrontendDependenciesTest {
     }
 
     @Test
-    public void should_Fail_when_MultipleVersions() throws Exception {
-        exception.expect(IllegalStateException.class);
-        exception.expectMessage(CoreMatchers.containsString("multiple versions"));
+    public void should_NotFail_when_MultipleVersions() throws Exception {
         create(Component0.class);
-    }
-
-    @Test
-    public void should_Fail_when_BadVersion() throws Exception {
-        exception.expect(IllegalStateException.class);
-        exception.expectMessage(CoreMatchers.containsString("invalid format"));
-        create(Component3.class);
     }
 
     @Test

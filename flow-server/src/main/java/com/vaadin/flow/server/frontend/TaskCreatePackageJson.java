@@ -42,10 +42,18 @@ public class TaskCreatePackageJson extends NodeUpdater {
     public void execute() {
         try {
             modified = false;
-            JsonObject packageJson = getPackageJson();
-            if (packageJson == null) {
-                packageJson = createDefaultJson();
-                writePackageFile(packageJson);
+            JsonObject mainContent = getMainPackageJson();
+            if (mainContent == null) {
+                mainContent = createDefaultJson();
+                updateMainDefaultDependencies(mainContent);
+                writeMainPackageFile(mainContent);
+                modified = true;
+            }
+            JsonObject customContent = getAppPackageJson();
+            if (customContent == null) {
+                customContent = createDefaultJson();
+                updateAppDefaultDependencies(customContent);
+                writeAppPackageFile(customContent);
                 modified = true;
             }
         } catch (IOException e) {

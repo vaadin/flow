@@ -39,7 +39,8 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
     private TaskUpdatePackages packageUpdater;
     private TaskCreatePackageJson packageCreator;
-    private File packageJson;
+    private File mainPackageJson;
+    private File appPackageJson;
 
     @Before
     public void setup() throws Exception {
@@ -54,15 +55,16 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
         packageUpdater = new TaskUpdatePackages(getClassFinder(), null, baseDir,
                 generatedDir);
-
-        packageJson = new File(baseDir, PACKAGE_JSON);
+        mainPackageJson = new File(baseDir, PACKAGE_JSON);
+        appPackageJson = new File(generatedDir, PACKAGE_JSON);
     }
 
     @Test
     public void should_CreatePackageJson() throws Exception {
-        Assert.assertFalse(packageJson.exists());
+        Assert.assertFalse(mainPackageJson.exists());
         packageCreator.execute();
-        Assert.assertTrue(packageJson.exists());
+        Assert.assertTrue(mainPackageJson.exists());
+        Assert.assertTrue(appPackageJson.exists());
     }
 
     @Test
@@ -81,22 +83,20 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
         packageUpdater.execute();
         Assert.assertTrue(packageCreator.modified);
         Assert.assertTrue(packageUpdater.modified);
-        assertPackageJsonContent();
+        assertMainPackageJsonContent();
+        assertAppPackageJsonContent();
     }
 
-    private void assertPackageJsonContent() throws IOException {
-        JsonObject packageJsonObject = packageUpdater.getPackageJson();
+    private void assertMainPackageJsonContent() throws IOException {
+        JsonObject json = packageUpdater.getMainPackageJson();
+        Assert.assertTrue(json.hasKey("name"));
+        Assert.assertTrue(json.hasKey("license"));
 
-        JsonObject dependencies = packageJsonObject.getObject("dependencies");
-
-        Assert.assertTrue("Missing @vaadin/vaadin-button package",
-                dependencies.hasKey("@vaadin/vaadin-button"));
+        JsonObject dependencies = json.getObject("dependencies");
         Assert.assertTrue("Missing @webcomponents/webcomponentsjs package",
                 dependencies.hasKey("@webcomponents/webcomponentsjs"));
 
-        JsonObject devDependencies = packageJsonObject
-                .getObject("devDependencies");
-
+        JsonObject devDependencies = json.getObject("devDependencies");
         Assert.assertTrue("Missing webpack dev package",
                 devDependencies.hasKey("webpack"));
         Assert.assertTrue("Missing webpack-cli dev package",
@@ -108,6 +108,18 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
                 devDependencies.hasKey("webpack-babel-multi-target-plugin"));
         Assert.assertTrue("Missing copy-webpack-plugin dev package",
                 devDependencies.hasKey("copy-webpack-plugin"));
+    }
+    private void assertAppPackageJsonContent() throws IOException {
+        JsonObject json = packageUpdater.getAppPackageJson();
+        Assert.assertTrue(json.hasKey("name"));
+        Assert.assertTrue(json.hasKey("license"));
+
+        JsonObject dependencies = json.getObject("dependencies");
+
+        Assert.assertTrue("Missing @vaadin/vaadin-button package",
+                dependencies.hasKey("@vaadin/vaadin-button"));
+        Assert.assertTrue("Missing @polymer/iron-icon package",
+                dependencies.hasKey("@polymer/iron-icon"));
     }
 
 }
