@@ -32,6 +32,7 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletService;
+import com.vaadin.flow.server.VaadinSession;
 
 /**
  * Spring application context aware Vaadin servlet implementation.
@@ -57,7 +58,8 @@ public class SpringServlet extends VaadinServlet {
             Constants.USE_ORIGINAL_FRONTEND_RESOURCES,
             Constants.FRONTEND_URL_ES5, Constants.FRONTEND_URL_ES6,
             Constants.I18N_PROVIDER,
-            Constants.DISABLE_AUTOMATIC_SERVLET_REGISTRATION);
+            Constants.DISABLE_AUTOMATIC_SERVLET_REGISTRATION,
+            VaadinSession.UI_PARAMETER);
 
     private final ApplicationContext context;
     private final boolean forwardingEnforced;
