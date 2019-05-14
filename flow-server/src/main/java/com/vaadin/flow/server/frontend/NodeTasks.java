@@ -44,10 +44,6 @@ public class NodeTasks implements Command {
 
         private final ClassFinder classFinder;
 
-        private final File npmFolder;
-
-        private final File generatedPath;
-
         private final File frontendDirectory;
 
         private final boolean convertHtml;
@@ -67,6 +63,16 @@ public class NodeTasks implements Command {
         private boolean generateEmbeddableWebComponents;
 
         private Set<String> visitedClasses;
+
+        /**
+         * Directory for for npm and folders and files
+         */
+        public final File npmFolder;
+
+        /**
+         * Directory where generated files are written.
+         */
+        public final File generatedFolder;
 
         /**
          * Create a builder instance, with everything set as default.
@@ -131,7 +137,7 @@ public class NodeTasks implements Command {
             this.npmFolder = npmFolder;
             this.convertHtml = convertHtml;
             this.generateEmbeddableWebComponents = true;
-            this.generatedPath = generatedPath.isAbsolute() ? generatedPath
+            this.generatedFolder = generatedPath.isAbsolute() ? generatedPath
                     : new File(npmFolder, generatedPath.getPath());
             this.frontendDirectory = frontendDirectory.isAbsolute()
                     ? frontendDirectory
@@ -263,14 +269,14 @@ public class NodeTasks implements Command {
 
         if (builder.createMissingPackageJson) {
             TaskCreatePackageJson packageCreator = new TaskCreatePackageJson(
-                    builder.npmFolder, builder.generatedPath);
+                    builder.npmFolder, builder.generatedFolder);
             commands.add(packageCreator);
         }
 
         if (builder.enablePackagesUpdate) {
             TaskUpdatePackages packageUpdater = new TaskUpdatePackages(
                     classFinder, frontendDependencies, builder.npmFolder,
-                    builder.generatedPath);
+                    builder.generatedFolder);
             commands.add(packageUpdater);
 
             if (builder.runNpmInstall) {
@@ -282,13 +288,13 @@ public class NodeTasks implements Command {
                 && !builder.webpackTemplate.isEmpty()) {
             commands.add(new TaskUpdateWebpack(builder.npmFolder,
                     builder.webpackOutputDirectory, builder.webpackTemplate,
-                    new File(builder.generatedPath, IMPORTS_NAME)));
+                    new File(builder.generatedFolder, IMPORTS_NAME)));
         }
 
         if (builder.enableImportsUpdate) {
             commands.add(
                     new TaskUpdateImports(classFinder, frontendDependencies,
-                            builder.npmFolder, builder.generatedPath,
+                            builder.npmFolder, builder.generatedFolder,
                             builder.frontendDirectory, builder.convertHtml));
 
             if (builder.visitedClasses != null) {
