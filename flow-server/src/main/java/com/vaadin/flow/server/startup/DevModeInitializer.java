@@ -23,6 +23,7 @@ import javax.servlet.annotation.HandlesTypes;
 
 import java.io.File;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -43,11 +44,8 @@ import com.vaadin.flow.server.frontend.NodeTasks.Builder;
 import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
-import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
 
 /**
  * Servlet initializer starting node updaters as well as the webpack-dev-mode
@@ -127,23 +125,24 @@ public class DevModeInitializer
 
         Builder builder = new NodeTasks.Builder(new DefaultClassFinder(classes));
 
-        if (config.getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, null) == null
-                && (!new File(builder.npmFolder, PACKAGE_JSON).canRead())
-                || !new File(builder.generatedFolder, PACKAGE_JSON).canRead()
-                || !new File(builder.npmFolder, WEBPACK_CONFIG).canRead()) {
-            log().warn(
-                    "Skiping DEV MODE because cannot find '{}' or '{}' in '{}' folder",
-                    PACKAGE_JSON, WEBPACK_CONFIG, getBaseDir());
-            return;
-        }
+        int runningPort = Integer.parseInt(config.getStringProperty(
+                SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, "0"));
+        // User can run its own webpack server and provide port
+        if (runningPort == 0) {
+            for (File f : Arrays.asList(
+                    new File(builder.npmFolder, PACKAGE_JSON),
+                    new File(builder.generatedFolder, PACKAGE_JSON),
+                    new File(builder.npmFolder, WEBPACK_CONFIG)
+                    )) {
+                if (!f.canRead()) {
+                    log().warn("Skiping DEV MODE because cannot find '{}' file.", f.getPath());
+                    return;
+                }
+            }
 
-        try {
             Set<String> visitedClassNames = new HashSet<>();
-
-            builder.enablePackagesUpdate(!config.getBooleanProperty(
-                            SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM, false))
-                    .enableImportsUpdate(!config.getBooleanProperty(
-                            SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS, false))
+            builder.enablePackagesUpdate(true)
+                    .enableImportsUpdate(true)
                     .runNpmInstall(true)
                     .withEmbeddableWebComponents(true)
                     .collectVisitedClasses(visitedClassNames)
@@ -151,13 +150,9 @@ public class DevModeInitializer
 
             context.setAttribute(VisitedClasses.class.getName(),
                     new VisitedClasses(visitedClassNames));
-
-            DevModeHandler.start(config);
-        } catch (Exception e) {
-            log().warn(
-                    "Failed to start a dev mode, hot reload is disabled. Continuing to start the application.",
-                    e);
         }
+
+        DevModeHandler.start(config, builder.npmFolder);
     }
 
     private Logger log() {
