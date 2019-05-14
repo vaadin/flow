@@ -15,23 +15,22 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.net.URL;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import com.vaadin.flow.component.dependency.NpmPackage;
 
-import elemental.json.Json;
 import elemental.json.JsonObject;
 
-import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-
 /**
- * Updates <code>package.json</code> by visiting {@link NpmPackage} annotations found in
- * the classpath. It also visits classes annotated with {@link NpmPackage}
+ * Updates <code>package.json</code> by visiting {@link NpmPackage} annotations
+ * found in the classpath. It also visits classes annotated with
+ * {@link NpmPackage}
  */
 public class TaskUpdatePackages extends NodeUpdater {
 
@@ -46,14 +45,11 @@ public class TaskUpdatePackages extends NodeUpdater {
      *            folder with the `package.json` file
      * @param generatedPath
      *            folder where flow generated files will be placed.
-     * @param convertHtml
-     *            whether to convert html imports or not during the package
-     *            updates
      */
     TaskUpdatePackages(ClassFinder finder,
             FrontendDependencies frontendDependencies, File npmFolder,
-            File generatedPath, boolean convertHtml) {
-        super(finder, frontendDependencies, npmFolder, generatedPath, convertHtml);
+            File generatedPath) {
+        super(finder, frontendDependencies, npmFolder, generatedPath, false);
     }
 
     @Override
@@ -61,16 +57,13 @@ public class TaskUpdatePackages extends NodeUpdater {
         try {
             JsonObject packageJson = getPackageJson();
             if (packageJson == null) {
-                throw new IllegalStateException("Unable to read '"  + PACKAGE_JSON + "' file in: " + npmFolder) ;
+                throw new IllegalStateException("Unable to read '"
+                        + PACKAGE_JSON + "' file in: " + npmFolder);
             }
 
             Map<String, String> deps = frontDeps.getPackages();
-            if (convertHtml) {
-                addHtmlImportPackages(deps);
-            }
-
             modified = updatePackageJsonDependencies(packageJson, deps);
-            modified = updateDefaultDependencies(packageJson) || modified ;
+            modified = updateDefaultDependencies(packageJson) || modified;
 
             if (modified) {
                 writePackageFile(packageJson);
@@ -82,37 +75,14 @@ public class TaskUpdatePackages extends NodeUpdater {
         }
     }
 
-    private void addHtmlImportPackages(Map<String, String> packages) throws IOException {
-        JsonObject shrink = getShrinkwrapJson().getObject(DEPENDENCIES);
-        for (String pakage : getHtmlImportNpmPackages(frontDeps.getImports())) {
-            if (!packages.containsKey(pakage) && shrink.hasKey(pakage)) {
-                packages.put(pakage, shrink.getObject(pakage).getString("version"));
-            }
-        }
-    }
-
-    private boolean updatePackageJsonDependencies(JsonObject packageJson, Map<String, String> deps) {
+    private boolean updatePackageJsonDependencies(JsonObject packageJson,
+            Map<String, String> deps) {
         boolean added = false;
-        for(Entry<String, String> e : deps.entrySet()) {
-            added = addDependency(packageJson, DEPENDENCIES, e.getKey(), e.getValue()) || added;
+        for (Entry<String, String> e : deps.entrySet()) {
+            added = addDependency(packageJson, DEPENDENCIES, e.getKey(),
+                    e.getValue()) || added;
         }
         return added;
     }
 
-    /**
-     * Get latest vaadin-core-shrinkwrap file so as we can set correctly the
-     * version of legacy elements marked with HtmlImport but not with NpmPackage
-     * or JsImport.
-     *
-     * This is a temporary solution during alpha period until all
-     * flow-components are updated and released
-     *
-     * @return
-     * @throws IOException
-     */
-    private JsonObject getShrinkwrapJson() throws IOException {
-        URL url = new URL("https://raw.githubusercontent.com/vaadin/vaadin-core-shrinkwrap/master/npm-shrinkwrap.json");
-        String content = FrontendUtils.streamToString(url.openStream());
-        return Json.parse(content);
-    }
 }

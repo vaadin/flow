@@ -17,6 +17,10 @@
 
 package com.vaadin.flow.server.frontend;
 
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -27,10 +31,6 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import elemental.json.JsonObject;
-
-import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
 
 public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
@@ -46,13 +46,14 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
         System.setProperty("user.dir", temporaryFolder.getRoot().getPath());
 
         File baseDir = new File(getBaseDir());
-        File generatedDir = new File(baseDir, DEFAULT_GENERATED_DIR); 
+        File generatedDir = new File(baseDir, DEFAULT_GENERATED_DIR);
 
         NodeUpdateTestUtil.createStubNode(true, true);
 
         packageCreator = new TaskCreatePackageJson(baseDir, generatedDir);
 
-        packageUpdater = new TaskUpdatePackages(getClassFinder(), null, baseDir, generatedDir, true);
+        packageUpdater = new TaskUpdatePackages(getClassFinder(), null, baseDir,
+                generatedDir);
 
         packageJson = new File(baseDir, PACKAGE_JSON);
     }
@@ -64,16 +65,15 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
         Assert.assertTrue(packageJson.exists());
     }
 
-
     @Test
-    public void should_not_ModifyPackageJson_WhenAlreadyExists() throws Exception {
+    public void should_not_ModifyPackageJson_WhenAlreadyExists()
+            throws Exception {
         packageCreator.execute();
         Assert.assertTrue(packageCreator.modified);
 
         packageCreator.execute();
         Assert.assertFalse(packageCreator.modified);
     }
-
 
     @Test
     public void should_AddNewDependencies() throws Exception {
@@ -93,8 +93,6 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
                 dependencies.hasKey("@vaadin/vaadin-button"));
         Assert.assertTrue("Missing @webcomponents/webcomponentsjs package",
                 dependencies.hasKey("@webcomponents/webcomponentsjs"));
-        Assert.assertTrue("Missing @polymer/iron-icon package",
-                dependencies.hasKey("@polymer/iron-icon"));
 
         JsonObject devDependencies = packageJsonObject
                 .getObject("devDependencies");
