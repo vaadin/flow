@@ -369,8 +369,9 @@ public abstract class BeforeEvent extends EventObject {
      *
      * @return URL parameters of forward target
      */
-    public Optional<List<String>> getForwardTargetParameters() {
-        return forwardTargetState.getUrlParameters();
+    public List<String> getForwardTargetParameters() {
+        return forwardTargetState.getUrlParameters()
+                .orElse(Collections.emptyList());
     }
 
     /**
