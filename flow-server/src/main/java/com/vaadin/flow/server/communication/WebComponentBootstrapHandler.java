@@ -22,7 +22,6 @@ import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.ServletHelper;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
-import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
@@ -60,10 +59,6 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
     private static final Pattern PATH_PATTERN =
             Pattern.compile(".*" + PATH_PREFIX + "-(ui|bootstrap)\\.(js|html)$");
 
-    public WebComponentBootstrapHandler() {
-        super();
-    }
-
     private static class WebComponentBootstrapContext extends BootstrapContext {
 
         private WebComponentBootstrapContext(VaadinRequest request,
@@ -76,7 +71,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         public <T extends Annotation> Optional<T> getPageConfigurationAnnotation(
                 Class<T> annotationType) {
             WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
-                    .getInstance(VaadinService.getCurrent());
+                    .getInstance(getRequest().getService());
             return registry.getEmbeddedApplicationAnnotation(annotationType);
         }
 
@@ -96,6 +91,11 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         return (PATH_PATTERN.matcher(pathInfo).find());
     }
 
+    /**
+     * Returns the request's base url to use in constructing and initialising ui.
+     * @param request Request to the url for.
+     * @return Request's url.
+     */
     protected String getRequestUrl(VaadinRequest request) {
         return ((VaadinServletRequest)request).getRequestURL().toString();
     }
@@ -108,9 +108,9 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 request, response, session);
         JsonObject config = context.getApplicationParameters();
 
-        String requestURL = this.getRequestUrl(request);
+        String requestURL = getRequestUrl(request);
 
-        if(!this.canHandleRequest(request)) {
+        if(!canHandleRequest(request)) {
             throw new IllegalStateException("Unexpected request URL '"
                     + requestURL + "' in the bootstrap handler for web "
                     + "component UI which should handle path "
@@ -305,6 +305,11 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 .replace("\r", "");
     }
 
+    /**
+     * Returns the service url needed for initialising the UI.
+     * @param request Request.
+     * @return Service url for the given request.
+     */
     protected String getServiceUrl(VaadinRequest request) {
         // get service url from 'url' parameter
         String url = request.getParameter(REQ_PARAM_URL);

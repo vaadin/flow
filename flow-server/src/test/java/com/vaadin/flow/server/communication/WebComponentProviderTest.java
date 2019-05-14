@@ -30,7 +30,6 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.theme.AbstractTheme;
@@ -82,7 +81,7 @@ public class WebComponentProviderTest {
         Mockito.when(service.getDeploymentConfiguration()).thenReturn(configuration);
         Mockito.when(configuration.isBowerMode()).thenReturn(false);
 
-        provider = new WebComponentProvider(r -> ServletHelper.getContextRootRelativePath((VaadinServletRequest)r) + "/");
+        provider = new WebComponentProvider(aRequest -> ServletHelper.getContextRootRelativePath((VaadinServletRequest)aRequest) + "/");
     }
 
     @After

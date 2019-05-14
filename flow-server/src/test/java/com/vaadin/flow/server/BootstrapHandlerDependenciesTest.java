@@ -569,7 +569,7 @@ public class BootstrapHandlerDependenciesTest {
         VaadinServletRequest request = new VaadinServletRequest(createRequest(),
                 service);
         ui.doInit(request, 0);
-        ui.getInternals().setContextRoot(this.contextRootRelativePath(request));
+        ui.getInternals().setContextRoot(contextRootRelativePath(request));
         UI.setCurrent(ui);
         return new BootstrapHandler.BootstrapPageBuilder(this::contextRootRelativePath).getBootstrapPage(
                 new BootstrapContext(request, null, mocks.getSession(), ui, this::contextRootRelativePath));

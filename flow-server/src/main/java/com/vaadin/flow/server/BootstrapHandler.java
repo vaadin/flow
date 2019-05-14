@@ -123,19 +123,36 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     private final Function<VaadinRequest, String> contextRootProvider;
 
+    /**
+     * Creates an instance of the handler using current {@link VaadinService} as information about
+     * {@link VaadinService#getContextRootRelativePath(VaadinRequest)}.
+     */
     public BootstrapHandler() {
         this(request -> VaadinService.getCurrent().getContextRootRelativePath(request));
     }
 
+    /**
+     * Creates an instance of the handler using provided function to obtain context root relative path.
+     * @param contextRootProvider Function to provide context root relative path based on a given {@link VaadinRequest}.
+     */
     public BootstrapHandler(Function<VaadinRequest, String> contextRootProvider) {
         this(new BootstrapPageBuilder(contextRootProvider), contextRootProvider);
     }
 
+    /**
+     * Creates an instance of the handler using provided page builder and function to obtain context root relative path.
+     * @param pageBuilder Page builder to use.
+     * @param contextRootProvider Function to provide context root relative path based on a given {@link VaadinRequest}.
+     */
     protected BootstrapHandler(BootstrapPageBuilder pageBuilder, Function<VaadinRequest, String> contextRootProvider) {
         this.pageBuilder = pageBuilder;
         this.contextRootProvider = contextRootProvider;
     }
 
+    /**
+     * Returns the current page builder object.
+     * @return Page builder in charge of constructing the resulting page.
+     */
     protected BootstrapPageBuilder getPageBuilder() {
         return this.pageBuilder;
     }
@@ -893,7 +910,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             String versionQueryParam = "?v=" + Version.getFullVersion();
 
             // Load client-side dependencies for push support
-            String pushJSPath = this.contextRootRelativePathCallback.apply(request);
+            String pushJSPath = contextRootRelativePathCallback.apply(request);
 
             if (request.getService().getDeploymentConfiguration().isProductionMode()) {
                 pushJSPath += ApplicationConstants.VAADIN_PUSH_JS;

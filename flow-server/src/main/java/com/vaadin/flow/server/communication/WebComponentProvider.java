@@ -22,7 +22,6 @@ import com.vaadin.flow.server.BootstrapHandler.BootstrapUriResolver;
 import com.vaadin.flow.server.SynchronizedRequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
-import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.server.webcomponent.WebComponentGenerator;
@@ -71,6 +70,10 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
     // tag name -> generated html
     private Map<String, String> cache;
 
+    /**
+     * Creates the provider with given function to obtain context root.
+     * @param contextRootProvider Function to get context root from any {@link VaadinRequest}.
+     */
     public WebComponentProvider(Function<VaadinRequest, String> contextRootProvider) {
         this.contextRootProvider = contextRootProvider;
     }
@@ -122,7 +125,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
         }
 
         WebComponentConfigurationRegistry registry =
-                WebComponentConfigurationRegistry.getInstance(VaadinService.getCurrent());
+                WebComponentConfigurationRegistry.getInstance(request.getService());
 
         Optional<WebComponentConfiguration<? extends Component>> optionalWebComponentConfiguration =
                 registry.getConfiguration(componentInfo.tag);
