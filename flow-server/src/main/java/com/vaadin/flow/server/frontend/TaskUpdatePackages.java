@@ -35,7 +35,7 @@ import elemental.json.JsonObject;
  */
 public class TaskUpdatePackages extends NodeUpdater {
 
-    private static List<String> PRO_PACKAGES = Arrays.asList(
+    private static final List<String> PRO_PACKAGES = Arrays.asList(
             "@vaadin/vaadin-board",
             "@vaadin/vaadin-charts",
             "@vaadin/vaadin-confirm-dialog",
@@ -99,7 +99,7 @@ public class TaskUpdatePackages extends NodeUpdater {
         boolean added = false;
         boolean hasVaadin = false;
         boolean hasPro = false;
-        
+
         // Add application dependencies
         for(Entry<String, String> e : deps.entrySet()) {
             String pkg = e.getKey();
@@ -108,7 +108,7 @@ public class TaskUpdatePackages extends NodeUpdater {
             hasPro = hasPro || PRO_PACKAGES.contains(pkg);
             hasVaadin = hasPro || hasVaadin || pkg.startsWith("@vaadin");
 
-            // Add the dependency 
+            // Add the dependency
             added = addDependency(packageJson, DEPENDENCIES, pkg, e.getValue()) || added;
         }
         // Remove obsolete dependencies

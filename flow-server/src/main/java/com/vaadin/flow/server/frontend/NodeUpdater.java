@@ -217,24 +217,24 @@ public abstract class NodeUpdater implements Command {
     }
 
     boolean updateMainDefaultDependencies(JsonObject packageJson) {
-        boolean modified = false;
-        modified = addDependency(packageJson, null, DEP_NAME_KEY, DEP_NAME_DEFAULT) || modified;
-        modified = addDependency(packageJson, null, DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT) || modified;
+        boolean added = false;
+        added = addDependency(packageJson, null, DEP_NAME_KEY, DEP_NAME_DEFAULT) || added;
+        added = addDependency(packageJson, null, DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT) || added;
 
 
-        modified = addDependency(packageJson, DEPENDENCIES, "@polymer/polymer", "^3.1.0") || modified;
-        modified = addDependency(packageJson, DEPENDENCIES, "@webcomponents/webcomponentsjs", "^2.2.10") || modified;
+        added = addDependency(packageJson, DEPENDENCIES, "@polymer/polymer", "^3.1.0") || added;
+        added = addDependency(packageJson, DEPENDENCIES, "@webcomponents/webcomponentsjs", "^2.2.10") || added;
         // dependency for the custom package.json placed in the generated folder.
         String customPkg = "./" + npmFolder.getAbsoluteFile().toPath()
                 .relativize(generatedFolder.toPath()).toString();
-        modified = addDependency(packageJson, DEPENDENCIES, DEP_NAME_FLOW_DEPS, customPkg) || modified;
+        added = addDependency(packageJson, DEPENDENCIES, DEP_NAME_FLOW_DEPS, customPkg) || added;
 
-        modified = addDependency(packageJson, DEV_DEPENDENCIES, "webpack", "^4.30.0") || modified;
-        modified = addDependency(packageJson, DEV_DEPENDENCIES, "webpack-cli", "^3.3.0") || modified;
-        modified = addDependency(packageJson, DEV_DEPENDENCIES, "webpack-dev-server", "^3.3.0") || modified;
-        modified = addDependency(packageJson, DEV_DEPENDENCIES, "webpack-babel-multi-target-plugin", "^2.1.0") || modified;
-        modified = addDependency(packageJson, DEV_DEPENDENCIES, "copy-webpack-plugin", "^5.0.3") || modified;
-        return modified;
+        added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack", "^4.30.0") || added;
+        added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack-cli", "^3.3.0") || added;
+        added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack-dev-server", "^3.3.0") || added;
+        added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack-babel-multi-target-plugin", "^2.1.0") || added;
+        added = addDependency(packageJson, DEV_DEPENDENCIES, "copy-webpack-plugin", "^5.0.3") || added;
+        return added;
     }
 
     void updateAppDefaultDependencies(JsonObject packageJson) {
@@ -267,7 +267,7 @@ public abstract class NodeUpdater implements Command {
 
     void writePackageFile(JsonObject json, File packageFile) throws IOException {
         log().info("Updating npm {} file ...", packageFile.getAbsolutePath());
-        packageFile.getParentFile().mkdirs();
+        assert(packageFile.getParentFile().mkdirs());
         FileUtils.writeStringToFile(packageFile, stringify(json, 2) + "\n", UTF_8.name());
     }
 

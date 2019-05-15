@@ -13,7 +13,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import com.vaadin.flow.server.frontend.ClassFinder.DefaultClassFinder;
-import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Component0;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Component1;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Component2;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.FirstView;
@@ -99,11 +98,6 @@ public class FrontendDependenciesTest {
         assertTrue(deps.getPackages().containsKey("@vaadin/component-2"));
         assertEquals("1.1.1", deps.getPackages().get("@vaadin/component-1"));
         assertEquals("222.222.222", deps.getPackages().get("@vaadin/component-2"));
-    }
-
-    @Test
-    public void should_NotFail_when_MultipleVersions() throws Exception {
-        create(Component0.class);
     }
 
     @Test

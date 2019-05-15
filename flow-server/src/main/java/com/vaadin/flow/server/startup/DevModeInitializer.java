@@ -129,13 +129,13 @@ public class DevModeInitializer
                 SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, "0"));
         // User can run its own webpack server and provide port
         if (runningPort == 0) {
-            for (File f : Arrays.asList(
+            for (File file : Arrays.asList(
                     new File(builder.npmFolder, PACKAGE_JSON),
                     new File(builder.generatedFolder, PACKAGE_JSON),
                     new File(builder.npmFolder, WEBPACK_CONFIG)
                     )) {
-                if (!f.canRead()) {
-                    log().warn("Skiping DEV MODE because cannot find '{}' file.", f.getPath());
+                if (!file.canRead()) {
+                    log().warn("Skiping DEV MODE because cannot find '{}' file.", file.getPath());
                     return;
                 }
             }
