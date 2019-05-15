@@ -94,6 +94,13 @@ public class NodeValidateMojo extends AbstractMojo {
     @Parameter(defaultValue = "${project.build.directory}/" + FRONTEND)
     private File generatedPath;
 
+    /**
+     * The folder where webpack should output index.js and other generated files.
+     * By default the output folder is decided depending on project package type.
+     */
+    @Parameter
+    private File webpackOutputDirectory;
+
     @Override
     public void execute() {
 
@@ -164,6 +171,10 @@ public class NodeValidateMojo extends AbstractMojo {
     }
 
     private File getWebpackOutputDirectory() {
+        if(webpackOutputDirectory != null) {
+            return webpackOutputDirectory;
+        }
+
         Build buildInformation = project.getBuild();
         switch (project.getPackaging()) {
             case "jar":
