@@ -44,7 +44,7 @@ import com.vaadin.flow.server.frontend.NodeTasks.Builder;
 import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT;
+import static com.vaadin.flow.server.Constants.*;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 
 /**
@@ -119,7 +119,15 @@ public class DevModeInitializer
                 .createDeploymentConfiguration(context,
                         registrations.iterator().next(), VaadinServlet.class);
 
-        if (config.isProductionMode() || config.isBowerMode()) {
+        if (config.isProductionMode()) {
+            log().debug("Skiping DEV MODE because PRODUCTION MODE is set.");
+            return;
+        }
+
+        // Not using config.isBowerMode because it checks for npm files, and we
+        // want to do below in order to give the appropriate message to user
+        if (config.getBooleanProperty(SERVLET_PARAMETER_BOWER_MODE, false)) {
+            log().info("Skiping DEV MODE because BOWER MODE is set.");
             return;
         }
 
@@ -129,13 +137,14 @@ public class DevModeInitializer
                 SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, "0"));
         // User can run its own webpack server and provide port
         if (runningPort == 0) {
-            for (File f : Arrays.asList(
+            log().info("Starting dev-mode updaters in {} folder.", builder.npmFolder);
+            for (File file : Arrays.asList(
                     new File(builder.npmFolder, PACKAGE_JSON),
                     new File(builder.generatedFolder, PACKAGE_JSON),
                     new File(builder.npmFolder, WEBPACK_CONFIG)
                     )) {
-                if (!f.canRead()) {
-                    log().warn("Skiping DEV MODE because cannot find '{}' file.", f.getPath());
+                if (!file.canRead()) {
+                    log().warn("Skiping DEV MODE because cannot read '{}' file.", file.getPath());
                     return;
                 }
             }

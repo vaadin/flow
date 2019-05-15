@@ -314,11 +314,13 @@ public class FrontendDependencies implements Serializable {
         Set<String> dependencies = npmPackageVisitor.getValues(VALUE);
         for (String dependency : dependencies) {
             Set<String> versions = npmPackageVisitor.getValuesForKey(VALUE, dependency, VERSION);
+            String version = versions.iterator().next();
             if (versions.size() > 1) {
-                log().warn("Multiple npm versions for {} found:  {}",
-                        dependency, versions.toString());
+                String foundVersions = versions.toString();
+                log().warn("Multiple npm versions for {} found:  {}. First version found '{}' will be considered.",
+                        dependency, foundVersions, version);
             }
-            packages.put(dependency, versions.iterator().next());
+            packages.put(dependency, version);
         }
     }
 

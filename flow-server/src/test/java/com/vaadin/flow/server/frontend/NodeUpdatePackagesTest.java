@@ -118,8 +118,6 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
         Assert.assertTrue("Missing @vaadin/vaadin-button package",
                 dependencies.hasKey("@vaadin/vaadin-button"));
-        Assert.assertTrue("Missing @polymer/iron-icon package",
-                dependencies.hasKey("@polymer/iron-icon"));
     }
 
 }
