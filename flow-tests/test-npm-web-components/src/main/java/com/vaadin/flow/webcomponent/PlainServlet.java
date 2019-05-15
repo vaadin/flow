@@ -40,7 +40,7 @@ public class PlainServlet extends HttpServlet {
             out.println(
                     "<meta http-equiv='Content-Type' content='text/html; charset=UTF-8'>");
             out.println(
-                    "<link rel='import' href='/vaadin/web-component/client-select.html'>");
+                    "<script type='module' src='/vaadin/web-component/client-select.js'></script>");
             out.println("<title>Embedded web component</title></head>");
             out.println("<body>");
             out.println(

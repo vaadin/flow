@@ -19,8 +19,8 @@ class ThemedComponent extends PolymerElement {
     static get template() {
         return html`
             <style>
-                div:after {
-                    content: var( --after-content-var, "no theme")
+                div {
+                    color: var( --after-content-var, rgba(0 0, 0, 1))
                 }
             </style>
             <div>Just a div </div>

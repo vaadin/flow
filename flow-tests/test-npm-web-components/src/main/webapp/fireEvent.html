@@ -17,7 +17,7 @@
 <!doctype html>
 
 <head>
-  <script type='module' src='vaadin/web-component/fire-event.js'></script>
+  <script type='module' src='/vaadin/web-component/fire-event.js'></script>
 </head>
 
 <body>
@@ -73,6 +73,13 @@
     });
     contained.addEventListener("button-event", function(event) {
         containedResult.innerHTML = event.detail;
+    });
+    const time = Date.now();
+    window.addEventListener("load", event => {
+      const newElement = document.createElement("div");
+      newElement.id = "created";
+      newElement.innerText = Date.now() - time;
+      document.body.appendChild(newElement);
     });
   </script>
 

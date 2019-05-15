@@ -75,7 +75,8 @@ public abstract class WebComponentIT extends ChromeBrowserTest {
                         + "contain elements",
                 themedComponent.$("div").exists());
         TestBenchElement contentElement = themedComponent.$("div").first();
-        System.out.println(contentElement.getText());
-        Assert.assertEquals("themed", contentElement.getAttribute("id"));
+        assertThatThemedComponentWasChosen(contentElement);
     }
+
+    public abstract void assertThatThemedComponentWasChosen(TestBenchElement themedElement);
 }

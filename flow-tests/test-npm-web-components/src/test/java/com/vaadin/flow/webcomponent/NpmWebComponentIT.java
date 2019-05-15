@@ -16,7 +16,15 @@
 
 package com.vaadin.flow.webcomponent;
 
+import org.junit.Assert;
+
 import com.vaadin.flow.webcomponent.tests.WebComponentIT;
+import com.vaadin.testbench.TestBenchElement;
 
 public class NpmWebComponentIT extends WebComponentIT {
+
+    @Override
+    public void assertThatThemedComponentWasChosen(TestBenchElement themedElement) {
+        Assert.assertEquals("rgba(255, 0, 0, 1)", themedElement.getCssValue("color"));
+    }
 }
