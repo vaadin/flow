@@ -81,9 +81,10 @@ public class NodeUpdateTestUtil {
             node.createNewFile();
             node.setExecutable(true);
             if (FrontendUtils.isWindows()) {
-                FileUtils.copyFile(new File(
-                        getClassFinder().getClass().getClassLoader().getResource("test_node.exe").getFile()
-                ), node);
+                // Commented out until a node.exe is created that is not flagged by Windows defender.
+//                FileUtils.copyFile(new File(
+//                        getClassFinder().getClass().getClassLoader().getResource("test_node.exe").getFile()
+//                ), node);
             } else {
                 FileUtils.write(node,
                         "#!/bin/sh\n[ \"$1\" = -v ] && echo 8.0.0 || sleep 1\n",
