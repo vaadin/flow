@@ -24,6 +24,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
+import org.slf4j.LoggerFactory;
 
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubNode;
 import static org.hamcrest.Matchers.containsString;
@@ -53,6 +54,10 @@ public class FrontendUtilsTest {
 
     @Test
     public void should_useProjectNodeFirst() throws Exception {
+        if (FrontendUtils.isWindows()) {
+            LoggerFactory.getLogger(FrontendUtilsTest.class).info("Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.");
+            return;
+        }
         createStubNode(true, true);
 
         assertThat(FrontendUtils.getNodeExecutable(),
@@ -65,6 +70,10 @@ public class FrontendUtilsTest {
 
     @Test
     public void should_useProjectNpmFirst() throws Exception {
+        if (FrontendUtils.isWindows()) {
+            LoggerFactory.getLogger(FrontendUtilsTest.class).info("Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.");
+            return;
+        }
         createStubNode(false, true);
 
         assertThat(FrontendUtils.getNodeExecutable(), containsString("node"));
