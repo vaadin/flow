@@ -25,9 +25,8 @@ import java.util.Map.Entry;
 
 import com.vaadin.flow.component.dependency.NpmPackage;
 
+import elemental.json.Json;
 import elemental.json.JsonObject;
-
-import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 
 /**
  * Updates <code>package.json</code> by visiting {@link NpmPackage} annotations
@@ -66,16 +65,12 @@ public class TaskUpdatePackages extends NodeUpdater {
     @Override
     public void execute() {
         try {
-            JsonObject packageJson = getAppPackageJson();
-            if (packageJson == null) {
-                throw new IllegalStateException("Unable to read '"
-                        + PACKAGE_JSON + "' file in: " + generatedFolder);
-            }
+            JsonObject packageJson = Json.createObject();
 
+            // always create and write the file to remove unused dependencies
             Map<String, String> deps = frontDeps.getPackages();
             modified = updatePackageJsonDependencies(packageJson, deps);
 
-            // always write the file so as we remove unused dependencies
             writeAppPackageFile(packageJson);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
