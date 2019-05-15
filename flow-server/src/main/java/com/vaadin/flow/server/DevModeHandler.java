@@ -96,7 +96,7 @@ public class DevModeHandler implements Serializable {
     private int port;
 
     // For testing purposes
-    DevModeHandler(DeploymentConfiguration configuration, int port) {
+    DevModeHandler(int port) {
         this.port = port;
     }
 
@@ -105,7 +105,7 @@ public class DevModeHandler implements Serializable {
 
         this.port = port;
         // If port is defined, means that webpack is already running
-        if (port > 0 ) {
+        if (port > 0) {
             if (checkWebpackConnection()) {
                 getLogger().info("Webpack is running at {}:{}", WEBPACK_HOST, port);
                 return;
@@ -179,6 +179,8 @@ public class DevModeHandler implements Serializable {
      *
      * @param configuration
      *         deployment configuration
+     * @param npmFolder
+     *         folder with npm configuration files
      *
      * @return the instance in case everything is alright, null otherwise
      */
@@ -204,11 +206,11 @@ public class DevModeHandler implements Serializable {
 
         File webpack = null;
         File webpackConfig = null;
-        int port = Integer.parseInt(configuration.getStringProperty(
+        int runningPort = Integer.parseInt(configuration.getStringProperty(
                 SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, "0"));
 
-        // Webpack is already running, not need to check anything
-        if (port == 0) {
+        // Skip checks if we have a webpack-dev-server already running
+        if (runningPort == 0) {
             webpack = new File(npmFolder, WEBPACK_SERVER);
             webpackConfig = new File(npmFolder, FrontendUtils.WEBPACK_CONFIG);
             if (!npmFolder.exists()) {
@@ -218,7 +220,7 @@ public class DevModeHandler implements Serializable {
             if (!webpack.canExecute()) {
                 getLogger().warn("Instance not created because cannot execute '{}'. Did you run `npm install`", webpack);
                 return null;
-            } else if(!webpack.exists()) {
+            } else if (!webpack.exists()) {
                 getLogger().warn("Instance not created because file '{}' doesn't exist. Did you run `npm install`",
                         webpack);
                 return null;
@@ -228,7 +230,7 @@ public class DevModeHandler implements Serializable {
                 return null;
             }
         }
-        return new DevModeHandler(configuration, port, npmFolder, webpack, webpackConfig);
+        return new DevModeHandler(configuration, runningPort, npmFolder, webpack, webpackConfig);
     }
 
     /**

@@ -102,8 +102,9 @@ public class FrontendDependenciesTest {
     }
 
     @Test
-    public void should_NotFail_when_MultipleVersions() throws Exception {
-        create(Component0.class);
+    public void when_MultipleVersions_should_returnFirstVisitedOne() throws Exception {
+        FrontendDependencies deps = create(Component0.class);
+        assertEquals("=2.1.0", deps.getPackages().get("@vaadin/component-0"));
     }
 
     @Test
