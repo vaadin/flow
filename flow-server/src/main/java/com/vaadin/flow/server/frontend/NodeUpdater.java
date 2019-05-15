@@ -209,6 +209,7 @@ public abstract class NodeUpdater implements Command {
     }
 
     JsonObject getAppPackageJson() throws IOException {
+        System.err.println(generatedFolder + " " + PACKAGE_JSON);
         return getPackageJson(new File(generatedFolder, PACKAGE_JSON));
     }
 

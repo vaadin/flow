@@ -16,17 +16,6 @@
  */
 package com.vaadin.flow.plugin.maven;
 
-import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
-import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
-import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -60,6 +49,17 @@ import com.vaadin.flow.plugin.TestUtils;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 public class NodeBuildFrontendMojoTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -68,7 +68,8 @@ public class NodeBuildFrontendMojoTest {
     private File generatedFolder;
     private File nodeModulesPath;
     private File flowPackagPath;
-    private String packageJson;
+    private String mainPackage;
+    private String appPackage;
     private String webpackConfig;
 
     private final NodeBuildFrontendMojo mojo = new NodeBuildFrontendMojo();
@@ -79,15 +80,16 @@ public class NodeBuildFrontendMojoTest {
         Mockito.when(project.getRuntimeClasspathElements())
                 .thenReturn(getClassPath());
 
-        File tmpRoot = temporaryFolder.getRoot();
-        generatedFolder = new File(tmpRoot, TARGET);
+        File npmFolder = temporaryFolder.getRoot();
+        generatedFolder = new File(npmFolder, DEFAULT_GENERATED_DIR);
         importsFile = new File(generatedFolder, IMPORTS_NAME);
-        nodeModulesPath = new File(tmpRoot, NODE_MODULES);
+        nodeModulesPath = new File(npmFolder, NODE_MODULES);
         flowPackagPath = new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME);
-        File frontendDirectory = new File(tmpRoot, DEFAULT_FRONTEND_DIR);
+        File frontendDirectory = new File(npmFolder, DEFAULT_FRONTEND_DIR);
 
-        packageJson = new File(tmpRoot, PACKAGE_JSON).getAbsolutePath();
-        webpackConfig = new File(tmpRoot, WEBPACK_CONFIG).getAbsolutePath();
+        mainPackage = new File(npmFolder, PACKAGE_JSON).getAbsolutePath();
+        appPackage = new File(generatedFolder, PACKAGE_JSON).getAbsolutePath();
+        webpackConfig = new File(npmFolder, WEBPACK_CONFIG).getAbsolutePath();
 
         ReflectionUtils.setVariableValueInObject(mojo, "project", project);
         ReflectionUtils.setVariableValueInObject(mojo, "generatedFolder",
@@ -97,23 +99,26 @@ public class NodeBuildFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo,
                 "generateEmbeddableWebComponents", false);
         ReflectionUtils.setVariableValueInObject(mojo, "convertHtml", true);
-        ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", tmpRoot);
+        ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", npmFolder);
         ReflectionUtils.setVariableValueInObject(mojo, "generateBundle", false);
         ReflectionUtils.setVariableValueInObject(mojo, "runNpmInstall", false);
 
-        Assert.assertTrue(flowPackagPath.mkdirs());
+        flowPackagPath.mkdirs();
+        generatedFolder.mkdirs();
 
         setProject(mojo, "war", "war_output");
 
         // Install all imports used in the tests on node_modules so as we don't
         // need to run `npm install`
         createExpectedImports(frontendDirectory, nodeModulesPath);
-        FileUtils.fileWrite(packageJson, "UTF-8", "{}");
+        FileUtils.fileWrite(mainPackage, "UTF-8", "{}");
+        FileUtils.fileWrite(appPackage, "UTF-8", "{}");
     }
 
     @After
     public void teardown() {
-        FileUtils.fileDelete(packageJson);
+        FileUtils.fileDelete(mainPackage);
+        FileUtils.fileDelete(appPackage);
         FileUtils.fileDelete(webpackConfig);
     }
 
@@ -221,49 +226,25 @@ public class NodeBuildFrontendMojoTest {
 
     @Test
     public void mavenGoal_when_packageJsonExists() throws Exception {
+        FileUtils.fileWrite(appPackage, "{\"dependencies\":{\"foo\":\"bar\"}}");
 
-        FileUtils.fileWrite(packageJson, "{}");
-        long tsPackage1 = FileUtils.getFile(packageJson).lastModified();
-
-        // need to sleep because timestamp is in seconds
-        sleep(1000);
         mojo.execute();
-        long tsPackage2 = FileUtils.getFile(packageJson).lastModified();
-
-        sleep(1000);
-        mojo.execute();
-        long tsPackage3 = FileUtils.getFile(packageJson).lastModified();
-
-        Assert.assertTrue(tsPackage1 < tsPackage2);
-        Assert.assertEquals(tsPackage2, tsPackage3);
-
-        assertPackageJsonContent();
-    }
-
-    private void assertPackageJsonContent() throws IOException {
-        JsonObject packageJsonObject = getPackageJson(packageJson);
-
+        JsonObject packageJsonObject = getPackageJson(appPackage);
         JsonObject dependencies = packageJsonObject.getObject("dependencies");
 
-        Assert.assertTrue("Missing @vaadin/vaadin-button package",
-                dependencies.hasKey("@vaadin/vaadin-button"));
-        Assert.assertTrue("Missing @webcomponents/webcomponentsjs package",
-                dependencies.hasKey("@webcomponents/webcomponentsjs"));
+        assertContainsPackage(dependencies,
+            "@polymer/iron-icon",
+            "@vaadin/vaadin-button",
+            "@vaadin/vaadin-date-picker",
+            "@vaadin/vaadin-element-mixin",
+            "@vaadin/vaadin-core-shrinkwrap");
 
-        JsonObject devDependencies = packageJsonObject
-                .getObject("devDependencies");
+        Assert.assertFalse("Has foo", dependencies.hasKey("foo"));
+    }
 
-        Assert.assertTrue("Missing webpack dev package",
-                devDependencies.hasKey("webpack"));
-        Assert.assertTrue("Missing webpack-cli dev package",
-                devDependencies.hasKey("webpack-cli"));
-        Assert.assertTrue("Missing webpack-dev-server dev package",
-                devDependencies.hasKey("webpack-dev-server"));
-        Assert.assertTrue(
-                "Missing webpack-babel-multi-target-plugin dev package",
-                devDependencies.hasKey("webpack-babel-multi-target-plugin"));
-        Assert.assertTrue("Missing copy-webpack-plugin dev package",
-                devDependencies.hasKey("copy-webpack-plugin"));
+    private void assertContainsPackage(JsonObject dependencies, String... packages) {
+        Arrays.asList(packages)
+            .forEach(s -> Assert.assertTrue("Missing " + s, dependencies.hasKey(s)));
     }
 
     private void assertContainsImports(boolean contains, String... imports)
