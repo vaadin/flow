@@ -242,7 +242,7 @@ public class NodeBuildFrontendMojoTest {
         Assert.assertFalse("Has foo", dependencies.hasKey("foo"));
     }
 
-    private void assertContainsPackage(JsonObject dependencies, String... packages) {
+    static void assertContainsPackage(JsonObject dependencies, String... packages) {
         Arrays.asList(packages)
             .forEach(s -> Assert.assertTrue("Missing " + s, dependencies.hasKey(s)));
     }
