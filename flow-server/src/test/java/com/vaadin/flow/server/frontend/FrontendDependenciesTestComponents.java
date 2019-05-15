@@ -64,12 +64,12 @@ public class FrontendDependenciesTestComponents {
     static class ThemeDefault extends Theme0 {
     }
 
-    @NpmPackage(value = "@vaadin/component-0", version = "2.1.0")
+    @NpmPackage(value = "@vaadin/component-0", version = "=2.1.0")
     @JsModule("./component-0.js")
     @HtmlImport("frontend://component-0.html")
     @JavaScript("frontend://component-0.js")
     @Tag("component-0")
-    @NpmPackage(value = "@vaadin/component-0", version = "1.1.0")
+    @NpmPackage(value = "@vaadin/component-0", version = "^1.1.0")
     @NpmPackage(value="@vaadin/vaadin-foo", version="1.23.114-alpha1")
     static class Component0 extends Component {
     }

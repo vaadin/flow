@@ -65,7 +65,7 @@ public class NodeTasks implements Command {
         private Set<String> visitedClasses;
 
         /**
-         * Directory for for npm and folders and files
+         * Directory for for npm and folders and files.
          */
         public final File npmFolder;
 

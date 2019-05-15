@@ -53,7 +53,7 @@ public class TaskCreatePackageJson extends NodeUpdater {
             }
             JsonObject customContent = getAppPackageJson();
             if (customContent == null) {
-                customContent = Json.createObject();;
+                customContent = Json.createObject();
                 updateAppDefaultDependencies(customContent);
                 writeAppPackageFile(customContent);
                 modified = true;
