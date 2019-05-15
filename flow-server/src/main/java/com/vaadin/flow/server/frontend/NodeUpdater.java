@@ -222,23 +222,25 @@ public abstract class NodeUpdater implements Command {
         return packageJson;
     }
 
-    void updateMainDefaultDependencies(JsonObject packageJson) {
-        addDependency(packageJson, null, DEP_NAME_KEY, DEP_NAME_DEFAULT);
-        addDependency(packageJson, null, DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT);
+    boolean updateMainDefaultDependencies(JsonObject packageJson) {
+        boolean modified = false;
+        modified = addDependency(packageJson, null, DEP_NAME_KEY, DEP_NAME_DEFAULT) || modified;
+        modified = addDependency(packageJson, null, DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT) || modified;
 
 
-        addDependency(packageJson, DEPENDENCIES, "@polymer/polymer", "^3.1.0");
-        addDependency(packageJson, DEPENDENCIES, "@webcomponents/webcomponentsjs", "^2.2.10");
+        modified = addDependency(packageJson, DEPENDENCIES, "@polymer/polymer", "^3.1.0") || modified;
+        modified = addDependency(packageJson, DEPENDENCIES, "@webcomponents/webcomponentsjs", "^2.2.10") || modified;
         // dependency for the custom package.json placed in the generated folder.
         String customPkg = "./" + npmFolder.getAbsoluteFile().toPath()
                 .relativize(generatedFolder.toPath()).toString();
-        addDependency(packageJson, DEPENDENCIES, DEP_NAME_FLOW_DEPS, customPkg);
+        modified = addDependency(packageJson, DEPENDENCIES, DEP_NAME_FLOW_DEPS, customPkg) || modified;
 
-        addDependency(packageJson, DEV_DEPENDENCIES, "webpack", "^4.30.0");
-        addDependency(packageJson, DEV_DEPENDENCIES, "webpack-cli", "^3.3.0");
-        addDependency(packageJson, DEV_DEPENDENCIES, "webpack-dev-server", "^3.3.0");
-        addDependency(packageJson, DEV_DEPENDENCIES, "webpack-babel-multi-target-plugin", "^2.1.0");
-        addDependency(packageJson, DEV_DEPENDENCIES, "copy-webpack-plugin", "^5.0.3");
+        modified = addDependency(packageJson, DEV_DEPENDENCIES, "webpack", "^4.30.0") || modified;
+        modified = addDependency(packageJson, DEV_DEPENDENCIES, "webpack-cli", "^3.3.0") || modified;
+        modified = addDependency(packageJson, DEV_DEPENDENCIES, "webpack-dev-server", "^3.3.0") || modified;
+        modified = addDependency(packageJson, DEV_DEPENDENCIES, "webpack-babel-multi-target-plugin", "^2.1.0") || modified;
+        modified = addDependency(packageJson, DEV_DEPENDENCIES, "copy-webpack-plugin", "^5.0.3") || modified;
+        return modified;
     }
 
     void updateAppDefaultDependencies(JsonObject packageJson) {
