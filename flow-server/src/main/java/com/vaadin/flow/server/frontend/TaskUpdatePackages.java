@@ -68,17 +68,19 @@ public class TaskUpdatePackages extends NodeUpdater {
     @Override
     public void execute() {
         try {
-            JsonObject packageJson = Json.createObject();
-
-            // always create and write the file to remove unused dependencies
             Map<String, String> deps = frontDeps.getPackages();
             if (convertHtml) {
                 addHtmlImportPackages(deps);
             }
 
+            JsonObject packageJson = getAppPackageJson();
+            if (packageJson == null) {
+                packageJson = Json.createObject();
+            }
             modified = updatePackageJsonDependencies(packageJson, deps);
-
-            writeAppPackageFile(packageJson);
+            if (modified) {
+                writeAppPackageFile(packageJson);
+            }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -97,16 +99,31 @@ public class TaskUpdatePackages extends NodeUpdater {
         boolean added = false;
         boolean hasVaadin = false;
         boolean hasPro = false;
+        
+        // Add application dependencies
         for(Entry<String, String> e : deps.entrySet()) {
             String pkg = e.getKey();
+
+            // Check whether the package will require shrinkwrap resolution
             hasPro = hasPro || PRO_PACKAGES.contains(pkg);
             hasVaadin = hasPro || hasVaadin || pkg.startsWith("@vaadin");
+
+            // Add the dependency 
             added = addDependency(packageJson, DEPENDENCIES, pkg, e.getValue()) || added;
         }
-        if (hasPro) {
-            added = addDependency(packageJson, DEPENDENCIES, "@vaadin/vaadin-shrinkwrap", "v14.0.0-alpha3") || added;
-        } else if (hasVaadin) {
-            added = addDependency(packageJson, DEPENDENCIES, "@vaadin/vaadin-core-shrinkwrap", "v14.0.0-alpha3") || added;
+        // Remove obsolete dependencies
+        JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
+        if (dependencies != null) {
+            for (String key : dependencies.keys()) {
+                if (!deps.containsKey(key)) {
+                    dependencies.remove(key);
+                }
+            }
+        }
+        // Add the appropriate shrinkwrap based on which packages we have
+        if (hasVaadin) {
+            String dep = hasPro ? "vaadin-shrinkwrap" : "vaadin-core-shrinkwrap";
+            added = addDependency(packageJson, DEPENDENCIES, "@vaadin/"+ dep, "v14.0.0-alpha3") || added;
         }
         return added;
     }

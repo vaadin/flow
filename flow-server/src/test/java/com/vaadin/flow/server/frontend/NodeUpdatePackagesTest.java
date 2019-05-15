@@ -66,7 +66,6 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
         Assert.assertTrue(appPackageJson.exists());
     }
 
-
     @Test
     public void should_not_ModifyPackageJson_WhenAlreadyExists() throws Exception {
         packageCreator.execute();
