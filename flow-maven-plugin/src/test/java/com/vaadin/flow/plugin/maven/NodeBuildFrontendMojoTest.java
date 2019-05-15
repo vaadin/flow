@@ -16,6 +16,17 @@
  */
 package com.vaadin.flow.plugin.maven;
 
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -49,17 +60,6 @@ import com.vaadin.flow.plugin.TestUtils;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
-import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
-import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 public class NodeBuildFrontendMojoTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -76,7 +76,8 @@ public class NodeBuildFrontendMojoTest {
     @Before
     public void setup() throws Exception {
         MavenProject project = Mockito.mock(MavenProject.class);
-        Mockito.when(project.getRuntimeClasspathElements()).thenReturn(getClassPath());
+        Mockito.when(project.getRuntimeClasspathElements())
+                .thenReturn(getClassPath());
 
         File tmpRoot = temporaryFolder.getRoot();
         generatedFolder = new File(tmpRoot, TARGET);
@@ -89,9 +90,12 @@ public class NodeBuildFrontendMojoTest {
         webpackConfig = new File(tmpRoot, WEBPACK_CONFIG).getAbsolutePath();
 
         ReflectionUtils.setVariableValueInObject(mojo, "project", project);
-        ReflectionUtils.setVariableValueInObject(mojo, "generatedFolder", generatedFolder);
-        ReflectionUtils.setVariableValueInObject(mojo, "frontendDirectory", frontendDirectory);
-        ReflectionUtils.setVariableValueInObject(mojo, "generateEmbeddableWebComponents", false);
+        ReflectionUtils.setVariableValueInObject(mojo, "generatedFolder",
+                generatedFolder);
+        ReflectionUtils.setVariableValueInObject(mojo, "frontendDirectory",
+                frontendDirectory);
+        ReflectionUtils.setVariableValueInObject(mojo,
+                "generateEmbeddableWebComponents", false);
         ReflectionUtils.setVariableValueInObject(mojo, "convertHtml", true);
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", tmpRoot);
         ReflectionUtils.setVariableValueInObject(mojo, "generateBundle", false);
@@ -113,7 +117,8 @@ public class NodeBuildFrontendMojoTest {
         FileUtils.fileDelete(webpackConfig);
     }
 
-    static void setProject(AbstractMojo mojo, String packaging, String outputDirectory) throws Exception {
+    static void setProject(AbstractMojo mojo, String packaging,
+            String outputDirectory) throws Exception {
         Build buildMock = mock(Build.class);
         when(buildMock.getOutputDirectory()).thenReturn(outputDirectory);
         when(buildMock.getDirectory()).thenReturn(outputDirectory);
@@ -132,17 +137,18 @@ public class NodeBuildFrontendMojoTest {
         Assert.assertFalse(importsFile.exists());
 
         List<String> expectedLines = new ArrayList<>(Arrays.asList(
-            "const div = document.createElement('div');",
-            "div.innerHTML = '<custom-style><style include=\"lumo-color lumo-typography\"></style></custom-style>';",
-            "document.head.insertBefore(div.firstElementChild, document.head.firstChild);",
-            "document.body.setAttribute('theme', 'dark');"));
+                "const div = document.createElement('div');",
+                "div.innerHTML = '<custom-style><style include=\"lumo-color lumo-typography\"></style></custom-style>';",
+                "document.head.insertBefore(div.firstElementChild, document.head.firstChild);",
+                "document.body.setAttribute('theme', 'dark');"));
         expectedLines.addAll(getExpectedImports());
 
         mojo.execute();
 
         assertContainsImports(true, expectedLines.toArray(new String[0]));
 
-        Assert.assertTrue(new File(flowPackagPath, "ExampleConnector.js").exists());
+        Assert.assertTrue(
+                new File(flowPackagPath, "ExampleConnector.js").exists());
     }
 
     @Test
@@ -163,8 +169,7 @@ public class NodeBuildFrontendMojoTest {
     public void should_ContainLumoThemeFiles() throws Exception {
         mojo.execute();
 
-        assertContainsImports(true,
-                "@vaadin/vaadin-lumo-styles/color.js",
+        assertContainsImports(true, "@vaadin/vaadin-lumo-styles/color.js",
                 "@vaadin/vaadin-lumo-styles/typography.js",
                 "@vaadin/vaadin-lumo-styles/sizing.js",
                 "@vaadin/vaadin-lumo-styles/spacing.js",
@@ -244,10 +249,9 @@ public class NodeBuildFrontendMojoTest {
                 dependencies.hasKey("@vaadin/vaadin-button"));
         Assert.assertTrue("Missing @webcomponents/webcomponentsjs package",
                 dependencies.hasKey("@webcomponents/webcomponentsjs"));
-        Assert.assertTrue("Missing @polymer/iron-icon package",
-                dependencies.hasKey("@polymer/iron-icon"));
 
-        JsonObject devDependencies = packageJsonObject.getObject("devDependencies");
+        JsonObject devDependencies = packageJsonObject
+                .getObject("devDependencies");
 
         Assert.assertTrue("Missing webpack dev package",
                 devDependencies.hasKey("webpack"));
@@ -255,7 +259,8 @@ public class NodeBuildFrontendMojoTest {
                 devDependencies.hasKey("webpack-cli"));
         Assert.assertTrue("Missing webpack-dev-server dev package",
                 devDependencies.hasKey("webpack-dev-server"));
-        Assert.assertTrue("Missing webpack-babel-multi-target-plugin dev package",
+        Assert.assertTrue(
+                "Missing webpack-babel-multi-target-plugin dev package",
                 devDependencies.hasKey("webpack-babel-multi-target-plugin"));
         Assert.assertTrue("Missing copy-webpack-plugin dev package",
                 devDependencies.hasKey("copy-webpack-plugin"));
@@ -317,45 +322,44 @@ public class NodeBuildFrontendMojoTest {
     }
 
     private List<String> getExpectedImports() {
-        return Arrays.asList(
-            "@polymer/iron-icon/iron-icon.js",
-            "@vaadin/vaadin-lumo-styles/spacing.js",
-            "@vaadin/vaadin-lumo-styles/icons.js",
-            "@vaadin/vaadin-lumo-styles/style.js",
-            "@vaadin/vaadin-lumo-styles/typography.js",
-            "@vaadin/vaadin-lumo-styles/color.js",
-            "@vaadin/vaadin-lumo-styles/sizing.js",
-            "@vaadin/vaadin-date-picker/theme/lumo/vaadin-date-picker.js",
-            "@vaadin/vaadin-date-picker/src/vaadin-month-calendar.js",
-            "@vaadin/vaadin-element-mixin/vaadin-element-mixin.js",
-            "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
-            "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-something-else.js",
-            "@vaadin/flow-frontend/ExampleConnector.js",
-            "./frontend-p3-template.js",
-            "./local-p3-template.js",
-            "./foo.js",
-            "./vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
-            "./local-p2-template.js",
-            "./foo-dir/vaadin-npm-component.js"
-        );
+        return Arrays.asList("@polymer/iron-icon/iron-icon.js",
+                "@vaadin/vaadin-lumo-styles/spacing.js",
+                "@vaadin/vaadin-lumo-styles/icons.js",
+                "@vaadin/vaadin-lumo-styles/style.js",
+                "@vaadin/vaadin-lumo-styles/typography.js",
+                "@vaadin/vaadin-lumo-styles/color.js",
+                "@vaadin/vaadin-lumo-styles/sizing.js",
+                "@vaadin/vaadin-date-picker/theme/lumo/vaadin-date-picker.js",
+                "@vaadin/vaadin-date-picker/src/vaadin-month-calendar.js",
+                "@vaadin/vaadin-element-mixin/vaadin-element-mixin.js",
+                "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
+                "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-something-else.js",
+                "@vaadin/flow-frontend/ExampleConnector.js",
+                "./frontend-p3-template.js", "./local-p3-template.js",
+                "./foo.js",
+                "./vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
+                "./local-p2-template.js", "./foo-dir/vaadin-npm-component.js");
     }
 
-    private void createExpectedImports(File directoryWithImportsJs, File nodeModulesPath) throws IOException {
+    private void createExpectedImports(File directoryWithImportsJs,
+            File nodeModulesPath) throws IOException {
         for (String expectedImport : getExpectedImports()) {
-            File newFile = resolveImportFile(directoryWithImportsJs, nodeModulesPath, expectedImport);
+            File newFile = resolveImportFile(directoryWithImportsJs,
+                    nodeModulesPath, expectedImport);
             newFile.getParentFile().mkdirs();
             Assert.assertTrue(newFile.createNewFile());
         }
     }
 
-    private File resolveImportFile(File directoryWithImportsJs, File nodeModulesPath, String jsImport) {
-        File root = jsImport.startsWith("./") ? directoryWithImportsJs : nodeModulesPath;
+    private File resolveImportFile(File directoryWithImportsJs,
+            File nodeModulesPath, String jsImport) {
+        File root = jsImport.startsWith("./") ? directoryWithImportsJs
+                : nodeModulesPath;
         return new File(root, jsImport);
     }
 
-
     static void sleep(int ms) throws InterruptedException {
-        Thread.sleep(ms); //NOSONAR
+        Thread.sleep(ms); // NOSONAR
     }
 
     static JsonObject getPackageJson(String packageJson) throws IOException {
@@ -369,11 +373,12 @@ public class NodeBuildFrontendMojoTest {
 
     static List<String> getClassPath() {
         // Add folder with test classes
-        List<String> classPaths = new ArrayList<>(Arrays.asList(
-                "target/test-classes",
-                // Add this test jar which has some frontend resources used in tests
-                TestUtils.getTestJar("jar-with-frontend-resources.jar").getPath()
-        ));
+        List<String> classPaths = new ArrayList<>(
+                Arrays.asList("target/test-classes",
+                        // Add this test jar which has some frontend resources
+                        // used in tests
+                        TestUtils.getTestJar("jar-with-frontend-resources.jar")
+                                .getPath()));
 
         // Add other paths already present in the system classpath
         ClassLoader classLoader = ClassLoader.getSystemClassLoader();
