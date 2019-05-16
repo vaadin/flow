@@ -139,6 +139,10 @@ public class DevModeInitializer
             log().debug("Skiping DEV MODE because PRODUCTION MODE is set.");
             return;
         }
+        if (config.isBowerMode()) {
+            log().debug("Skiping DEV MODE because BOWER MODE is set.");
+            return;
+        }
 
         // Not using config.isBowerMode because it checks for npm files, and we
         // want to do below in order to give the appropriate message to user
