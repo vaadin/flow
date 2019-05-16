@@ -15,16 +15,17 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import com.vaadin.flow.component.dependency.NpmPackage;
 
+import elemental.json.Json;
 import elemental.json.JsonObject;
 
 /**
@@ -33,6 +34,15 @@ import elemental.json.JsonObject;
  * {@link NpmPackage}
  */
 public class TaskUpdatePackages extends NodeUpdater {
+
+    private static final List<String> PRO_PACKAGES = Arrays.asList(
+            "@vaadin/vaadin-board",
+            "@vaadin/vaadin-charts",
+            "@vaadin/vaadin-confirm-dialog",
+            "@vaadin/vaadin-cookie-consent",
+            "@vaadin/vaadin-crud",
+            "@vaadin/vaadin-grid-pro",
+            "@vaadin/vaadin-rich-text-editor");
 
     /**
      * Create an instance of the updater given all configurable parameters.
@@ -55,20 +65,14 @@ public class TaskUpdatePackages extends NodeUpdater {
     @Override
     public void execute() {
         try {
-            JsonObject packageJson = getPackageJson();
-            if (packageJson == null) {
-                throw new IllegalStateException("Unable to read '"
-                        + PACKAGE_JSON + "' file in: " + npmFolder);
-            }
-
             Map<String, String> deps = frontDeps.getPackages();
+            JsonObject packageJson = getAppPackageJson();
+            if (packageJson == null) {
+                packageJson = Json.createObject();
+            }
             modified = updatePackageJsonDependencies(packageJson, deps);
-            modified = updateDefaultDependencies(packageJson) || modified;
-
             if (modified) {
-                writePackageFile(packageJson);
-            } else {
-                log().info("No packages to update");
+                writeAppPackageFile(packageJson);
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -78,11 +82,39 @@ public class TaskUpdatePackages extends NodeUpdater {
     private boolean updatePackageJsonDependencies(JsonObject packageJson,
             Map<String, String> deps) {
         boolean added = false;
-        for (Entry<String, String> e : deps.entrySet()) {
-            added = addDependency(packageJson, DEPENDENCIES, e.getKey(),
-                    e.getValue()) || added;
+
+        // Add the appropriate shrink-dependency to the package table
+        addShrinkDependency(deps);
+
+        // Add application dependencies
+        for(Entry<String, String> dep : deps.entrySet()) {
+            added = addDependency(packageJson, DEPENDENCIES, dep.getKey(), dep.getValue()) || added;
+        }
+
+        // Remove obsolete dependencies
+        JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
+        if (dependencies != null) {
+            for (String key : dependencies.keys()) {
+                if (!deps.containsKey(key)) {
+                    dependencies.remove(key);
+                }
+            }
         }
         return added;
+    }
+
+    private void addShrinkDependency(Map<String, String> deps) {
+        boolean hasVaadin = false;
+        boolean hasPro = false;
+        for(Entry<String, String> e : deps.entrySet()) {
+            String pkg = e.getKey();
+            hasPro = hasPro || PRO_PACKAGES.contains(pkg);
+            hasVaadin = hasPro || hasVaadin || pkg.startsWith("@vaadin");
+        }
+        if (hasVaadin) {
+            String dep = hasPro ? "@vaadin/vaadin-shrinkwrap" : "@vaadin/vaadin-core-shrinkwrap";
+            deps.put(dep, "v14.0.0-alpha3");
+        }
     }
 
 }

@@ -1,0 +1,86 @@
+<!--
+  ~ Copyright 2000-2018 Vaadin Ltd.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License"); you may not
+  ~ use this file except in compliance with the License. You may obtain a copy of
+  ~ the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+  ~ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+  ~ License for the specific language governing permissions and limitations under
+  ~ the License.
+  -->
+
+<!doctype html>
+
+<head>
+  <script type='module' src='/vaadin/web-component/fire-event.js'></script>
+</head>
+
+<body>
+  <p>
+    Web components updates property as a response to a button click.
+  </p>
+
+  <fire-event id="calc"></fire-event>
+  <p id="sum">0</p>
+  <p id="error"></p>
+
+  <div id="container">
+      <div id="sub-container">
+          <fire-event id="contained"></fire-event>
+      </div>
+  </div>
+  <p id="contained-result"></p>
+  <p id="inner-result"></p>
+  <p id="outer-result"></p>
+
+  <script>
+    // basic test
+    var calc = document.getElementById("calc");
+    var sum = document.getElementById("sum");
+    var error = document.getElementById("error");
+
+    calc.addEventListener("sum-calculated", function(event) {
+      sum.innerHTML = event.detail;
+    });
+
+    calc.addEventListener("sum-error", function(event) {
+      error.innerHTML = event.detail;
+    });
+
+    // event options test
+    var container = document.getElementById("container");
+    var subContainer = document.getElementById("sub-container");
+    var contained = document.getElementById("contained");
+    var innerResult = document.getElementById("inner-result");
+    var outerResult = document.getElementById("outer-result");
+    var containedResult = document.getElementById("contained-result");
+
+    subContainer.addEventListener("button-event", function(event) {
+        innerResult.innerHTML = event.detail;
+        event.preventDefault();
+    });
+    container.addEventListener("button-event", function(event) {
+        if (event.defaultPrevented) {
+            outerResult.innerHTML = "prevented";
+        } else {
+            outerResult.innerHTML = event.detail;
+        }
+    });
+    contained.addEventListener("button-event", function(event) {
+        containedResult.innerHTML = event.detail;
+    });
+    const time = Date.now();
+    window.addEventListener("load", event => {
+      const newElement = document.createElement("div");
+      newElement.id = "created";
+      newElement.innerText = Date.now() - time;
+      document.body.appendChild(newElement);
+    });
+  </script>
+
+</body>

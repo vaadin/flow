@@ -15,13 +15,13 @@
  */
 package com.vaadin.flow.webcomponent;
 
-import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
-import com.vaadin.flow.templatemodel.TemplateModel;
+import javax.servlet.annotation.WebServlet;
 
-@Tag("themed-component")
-@HtmlImport("src/themed-component.html")
-public class ThemedComponent extends PolymerTemplate<TemplateModel> {
+import com.vaadin.flow.server.VaadinServlet;
 
+@WebServlet(urlPatterns = "/vaadin-push/*", asyncSupported = true)
+public class PushWebComponentServlet extends VaadinServlet {
+    public PushWebComponentServlet() {
+        System.clearProperty("vaadin.bowerMode");
+    }
 }

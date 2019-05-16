@@ -52,7 +52,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 /**
  * Goal that builds the frontend bundle.
  *
- * It performs the following actions:
+ * It performs the following actions when creating a package:
  * <ul>
  * <li>Update {@link Constants#PACKAGE_JSON} file with the {@link NpmPackage}
  * annotations defined in the classpath,</li>
@@ -63,7 +63,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
  * <li>Update {@link FrontendUtils#WEBPACK_CONFIG} file.</li>
  * </ul>
  */
-@Mojo(name = "build-frontend", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PROCESS_CLASSES)
+@Mojo(name = "build-frontend", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
 public class NodeBuildFrontendMojo extends AbstractMojo {
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)

@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.webcomponent;
+package com.vaadin.flow.webcomponent.tests;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -27,7 +27,7 @@ import static com.vaadin.flow.webcomponent.FireEventComponent.OptionsType.Bubble
 import static com.vaadin.flow.webcomponent.FireEventComponent.OptionsType.Bubble_NoCancel;
 import static com.vaadin.flow.webcomponent.FireEventComponent.OptionsType.NoBubble_NoCancel;
 
-public class FireEventIT extends ChromeBrowserTest {
+public abstract class FireEventIT extends ChromeBrowserTest {
     private static final String N1 = "number1";
     private static final String N2 = "number2";
     private static final String SUM = "sum";

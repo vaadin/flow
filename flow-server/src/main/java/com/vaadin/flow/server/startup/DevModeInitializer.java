@@ -20,11 +20,16 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
+
 import java.io.File;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.dependency.JsModule;
@@ -35,16 +40,12 @@ import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.server.frontend.NodeTasks;
+import com.vaadin.flow.server.frontend.NodeTasks.Builder;
 import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT;
+import static com.vaadin.flow.server.Constants.*;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
-import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
 
 /**
  * Servlet initializer starting node updaters as well as the webpack-dev-mode
@@ -134,33 +135,39 @@ public class DevModeInitializer
      */
     public static void initDevModeHandler(Set<Class<?>> classes,
             ServletContext context, DeploymentConfiguration config) {
-        if (config.isProductionMode() || config.isBowerMode()) {
+        if (config.isProductionMode()) {
+            log().debug("Skiping DEV MODE because PRODUCTION MODE is set.");
             return;
         }
 
-        if (
-        // User have a webpack-dev-server in the background
-        config.getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT,
-                null) == null &&
-        // There isn't any of the common dev files in the current folder
-                (!new File(getBaseDir(), PACKAGE_JSON).canRead()
-                        || !new File(getBaseDir(), WEBPACK_CONFIG).canRead())) {
-
-            log().warn(
-                    "Skiping DEV MODE because cannot find '{}' or '{}' in '{}' folder",
-                    PACKAGE_JSON, WEBPACK_CONFIG, getBaseDir());
+        // Not using config.isBowerMode because it checks for npm files, and we
+        // want to do below in order to give the appropriate message to user
+        if (config.getBooleanProperty(SERVLET_PARAMETER_BOWER_MODE, false)) {
+            log().info("Skiping DEV MODE because BOWER MODE is set.");
             return;
         }
 
-        try {
+        Builder builder = new NodeTasks.Builder(new DefaultClassFinder(classes));
+
+        int runningPort = Integer.parseInt(config.getStringProperty(
+                SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, "0"));
+        // User can run its own webpack server and provide port
+        if (runningPort == 0) {
+            log().info("Starting dev-mode updaters in {} folder.", builder.npmFolder);
+            for (File file : Arrays.asList(
+                    new File(builder.npmFolder, PACKAGE_JSON),
+                    new File(builder.generatedFolder, PACKAGE_JSON),
+                    new File(builder.npmFolder, WEBPACK_CONFIG)
+                    )) {
+                if (!file.canRead()) {
+                    log().warn("Skiping DEV MODE because cannot read '{}' file.", file.getPath());
+                    return;
+                }
+            }
+
             Set<String> visitedClassNames = new HashSet<>();
-
-            new NodeTasks.Builder(new DefaultClassFinder(classes))
-                    .enablePackagesUpdate(!config.getBooleanProperty(
-                            SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_NPM, false))
-                    .enableImportsUpdate(!config.getBooleanProperty(
-                            SERVLET_PARAMETER_DEVMODE_SKIP_UPDATE_IMPORTS,
-                            false))
+            builder.enablePackagesUpdate(true)
+                    .enableImportsUpdate(true)
                     .runNpmInstall(true)
                     .withEmbeddableWebComponents(true)
                     .collectVisitedClasses(visitedClassNames)
@@ -168,13 +175,9 @@ public class DevModeInitializer
 
             context.setAttribute(VisitedClasses.class.getName(),
                     new VisitedClasses(visitedClassNames));
-
-            DevModeHandler.start(config);
-        } catch (Exception e) {
-            log().warn(
-                    "Failed to start a dev mode, hot reload is disabled. Continuing to start the application.",
-                    e);
         }
+
+        DevModeHandler.start(config, builder.npmFolder);
     }
 
     private static Logger log() {

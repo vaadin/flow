@@ -48,7 +48,6 @@ import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
-import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 /**
@@ -95,31 +94,32 @@ public class DevModeHandler implements Serializable {
     public static final String WEBPACK_SERVER = "node_modules/webpack-dev-server/bin/webpack-dev-server.js";
 
     private int port;
-    private final DeploymentConfiguration config;
 
     // For testing purposes
-    DevModeHandler(DeploymentConfiguration configuration, int port) {
-        this.config = configuration;
+    DevModeHandler(int port) {
         this.port = port;
     }
 
-    private DevModeHandler(DeploymentConfiguration configuration,
-            File directory, File webpack, File webpackConfig) {
-        this.config = configuration;
+    private DevModeHandler(DeploymentConfiguration config, int runningPort,
+            File npmFolder, File webpack, File webpackConfig) {
 
+        port = runningPort;
         // If port is defined, means that webpack is already running
-        port = Integer.parseInt(config.getStringProperty(
-                SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, "0"));
-        if (port > 0 && checkWebpackConnection()) {
-            getLogger().info("Webpack is running at {}:{}", WEBPACK_HOST, port);
-            return;
+        if (port > 0) {
+            if (checkWebpackConnection()) {
+                getLogger().info("Webpack is running at {}:{}", WEBPACK_HOST, port);
+                return;
+            }
+            throw new IllegalStateException(String.format(
+                    "webpack server port '%s=%d' is defined but it's not working properly",
+                    SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, port));
         }
 
         // We always compute a free port.
         port = getFreePort();
 
         ProcessBuilder processBuilder = new ProcessBuilder()
-                .directory(directory);
+                .directory(npmFolder);
 
         List<String> command = new ArrayList<>();
         command.add(FrontendUtils.getNodeExecutable());
@@ -129,13 +129,12 @@ public class DevModeHandler implements Serializable {
         command.add("--port");
         command.add(String.valueOf(port));
         command.addAll(Arrays.asList(config
-                .getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS,
-                        "-d --hot false")
+                .getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS, "-d --inline=false")
                 .split(" +")));
 
         if (getLogger().isInfoEnabled()) {
-            getLogger().info("Starting Webpack in dev mode\n {}",
-                    String.join(" ", command));
+            getLogger().info("Starting Webpack in dev mode, port: {} dir: {}\n   {}",
+                    port, npmFolder, String.join(" ", command));
         }
 
         processBuilder.command(command);
@@ -179,12 +178,14 @@ public class DevModeHandler implements Serializable {
      *
      * @param configuration
      *         deployment configuration
+     * @param npmFolder
+     *         folder with npm configuration files
      *
      * @return the instance in case everything is alright, null otherwise
      */
-    public static DevModeHandler start(DeploymentConfiguration configuration) {
+    public static DevModeHandler start(DeploymentConfiguration configuration, File npmFolder) {
         atomicHandler.compareAndSet(null,
-                DevModeHandler.createInstance(configuration));
+                DevModeHandler.createInstance(configuration, npmFolder));
         return getDevModeHandler();
     }
 
@@ -197,35 +198,38 @@ public class DevModeHandler implements Serializable {
         return atomicHandler.get();
     }
 
-    private static DevModeHandler createInstance(DeploymentConfiguration configuration) {
-        if (configuration.isBowerMode() || configuration.isProductionMode()) {
-            getLogger().trace("Instance not created because not in npm-dev mode");
+    private static DevModeHandler createInstance(DeploymentConfiguration configuration, File npmFolder) {
+        if (configuration.isProductionMode() || configuration.isBowerMode()) {
             return null;
         }
 
-        File directory = new File(getBaseDir(), FrontendUtils.DEFAULT_NODE_DIR).getAbsoluteFile();
-        if (!directory.exists()) {
-            getLogger().warn("Instance not created because cannot change to '{}'", directory);
-            return null;
-        }
+        File webpack = null;
+        File webpackConfig = null;
+        int runningPort = Integer.parseInt(configuration.getStringProperty(
+                SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, "0"));
 
-        File webpack = new File(getBaseDir(), WEBPACK_SERVER);
-        if (!webpack.canExecute()) {
-            getLogger().warn("Instance not created because cannot execute '{}'. Did you run `npm install`", webpack);
-            return null;
-        } else if(!webpack.exists()) {
-            getLogger().warn("Instance not created because file '{}' doesn't exist. Did you run `npm install`",
-                    webpack);
-            return null;
+        // Skip checks if we have a webpack-dev-server already running
+        if (runningPort == 0) {
+            webpack = new File(npmFolder, WEBPACK_SERVER);
+            webpackConfig = new File(npmFolder, FrontendUtils.WEBPACK_CONFIG);
+            if (!npmFolder.exists()) {
+                getLogger().warn("Instance not created because cannot change to '{}'", npmFolder);
+                return null;
+            }
+            if (!webpack.canExecute()) {
+                getLogger().warn("Instance not created because cannot execute '{}'. Did you run `npm install`", webpack);
+                return null;
+            } else if (!webpack.exists()) {
+                getLogger().warn("Instance not created because file '{}' doesn't exist. Did you run `npm install`",
+                        webpack);
+                return null;
+            }
+            if (!webpackConfig.canRead()) {
+                getLogger().warn("Instance not created because there is not webpack configuration '{}'", webpackConfig);
+                return null;
+            }
         }
-
-        File webpackConfig = new File(getBaseDir(), FrontendUtils.WEBPACK_CONFIG);
-        if (!webpackConfig.canRead()) {
-            getLogger().warn("Instance not created because there is not webpack configuration '{}'", webpackConfig);
-            return null;
-        }
-
-        return new DevModeHandler(configuration, directory, webpack, webpackConfig);
+        return new DevModeHandler(configuration, runningPort, npmFolder, webpack, webpackConfig);
     }
 
     /**
@@ -265,6 +269,7 @@ public class DevModeHandler implements Serializable {
         }
 
         // Send the request
+        getLogger().debug("Requesting resource to webpack {}", connection.getURL());
         int responseCode = connection.getResponseCode();
         if (responseCode == HTTP_NOT_FOUND) {
             getLogger().debug("Resource not served by webpack {}", requestFilename);
@@ -272,7 +277,6 @@ public class DevModeHandler implements Serializable {
             // handle it
             return false;
         }
-
         getLogger().debug("Served resource by webpack: {} {}", responseCode, requestFilename);
 
         // Copies response headers
