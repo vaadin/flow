@@ -32,7 +32,6 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 
 import com.vaadin.flow.plugin.common.ArtifactData;
-import com.vaadin.flow.plugin.common.FlowPluginFrontendUtils;
 import com.vaadin.flow.plugin.common.JarContentsManager;
 import com.vaadin.flow.plugin.production.ProductionModeCopyStep;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -107,6 +106,18 @@ public class PrepareFrontendMojo extends AbstractMojo {
     private String webpackTemplate;
 
     /**
+     * Whether or not we are running in bowerMode.
+     */
+    @Parameter(defaultValue = "${vaadin.bowerMode}")
+    private boolean bowerMode;
+
+    /**
+     * Whether or not we are running in productionMode.
+     */
+    @Parameter(defaultValue = "${vaadin.productionMode}")
+    private boolean productionMode;
+
+    /**
      * The folder where flow will put generated files that will be used by webpack.
      */
     @Parameter(defaultValue = "${project.build.directory}/" + FRONTEND)
@@ -121,9 +132,21 @@ public class PrepareFrontendMojo extends AbstractMojo {
 
     @Override
     public void execute() {
+        // propagate to anything run after this the bower mode flag
+        // It allows that we can use `vaadin.bowerMode` flag as a regular maven
+        // property in the pom instead of having to use
+        // `properties-maven-plugin` to propagate it to other plugins like
+        // the `jetty-maven-plugin`
+        System.setProperty("vaadin.bowerMode", "" + bowerMode);
+        System.setProperty("vaadin.productionMode", "" + productionMode);
+
+        // In the case of running npm dev-mode in a maven multi-module projects,
+        // inform dev-mode server and updaters about the project folder, otherwise
+        // it tries to run in the module parent folder.
+        System.setProperty("project.basedir", npmFolder.getAbsolutePath());
 
         // Do nothing when bower mode
-        if (FlowPluginFrontendUtils.isBowerMode()) {
+        if (bowerMode) {
             getLog().debug(
                     "Skipped 'validate' goal because `vaadin.bowerMode` is set.");
             return;
@@ -144,7 +167,6 @@ public class PrepareFrontendMojo extends AbstractMojo {
                 NODE_MODULES + FLOW_NPM_PACKAGE_NAME);
         copyFlowModuleDependencies(flowNodeDirectory);
         copyProjectFrontendResources(flowNodeDirectory);
-
     }
 
     private void copyFlowModuleDependencies(File flowNodeDirectory) {

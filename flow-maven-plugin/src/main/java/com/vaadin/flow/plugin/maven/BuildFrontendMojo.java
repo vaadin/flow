@@ -37,7 +37,6 @@ import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.plugin.common.AnnotationValuesExtractor;
-import com.vaadin.flow.plugin.common.FlowPluginFrontendUtils;
 import com.vaadin.flow.plugin.common.WebComponentModulesGenerator;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -107,10 +106,16 @@ public class BuildFrontendMojo extends AbstractMojo {
     @Parameter(defaultValue = "true")
     private boolean generateEmbeddableWebComponents;
 
+    /**
+     * Whether or not we are running in bowerMode.
+     */
+    @Parameter(defaultValue = "${vaadin.bowerMode}")
+    private boolean bowerMode;
+
     @Override
     public void execute() {
         // Do nothing when bower mode
-        if (FlowPluginFrontendUtils.isBowerMode()) {
+        if (bowerMode) {
             getLog().info("Skipped 'update-frontend' goal because 'vaadin.bowerMode' is set to true.");
             return;
         }
@@ -179,6 +184,7 @@ public class BuildFrontendMojo extends AbstractMojo {
 
         Process webpackLaunch = null;
         try {
+            getLog().info("Running webpack ...");
             webpackLaunch =  new ProcessBuilder(nodePath,
                     webpackExecutable.getAbsolutePath()).directory(project.getBasedir())
                     .redirectOutput(ProcessBuilder.Redirect.INHERIT).start();

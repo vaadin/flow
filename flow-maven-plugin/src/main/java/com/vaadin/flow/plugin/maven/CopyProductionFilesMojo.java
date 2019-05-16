@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.vaadin.flow.plugin.common.FlowPluginFrontendUtils;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -65,10 +64,16 @@ public class CopyProductionFilesMojo extends AbstractMojo {
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
 
+    /**
+     * Whether or not we are running in bowerMode.
+     */
+    @Parameter(defaultValue = "${vaadin.bowerMode}")
+    private boolean bowerMode;
+
     @Override
     public void execute() {
         // Do nothing when not in bower mode
-        if (!FlowPluginFrontendUtils.isBowerMode()) {
+        if (!bowerMode) {
             getLog().info("Skipped `copy-production-files` goal because `vaadin.bowerMode` is not set.");
             return;
         }
