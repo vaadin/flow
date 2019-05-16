@@ -16,6 +16,7 @@
 package com.vaadin.flow.npmtest.ui;
 
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
@@ -27,6 +28,7 @@ import com.vaadin.flow.templatemodel.TemplateModel;
 @Route(value = "")
 @Tag("my-component")
 @JsModule("./my-component.js")
+@HtmlImport("my-component.html")
 public class IdTestView extends PolymerTemplate<TemplateModel> {
 
     @Id
