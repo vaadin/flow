@@ -13,16 +13,18 @@
   ~ License for the specific language governing permissions and limitations under
   ~ the License.
   -->
-<link rel="import" href="/frontend/bower_components/polymer/polymer-element.html">
 
-<dom-module id="themed-component">
-    <template>
-         <div id="not-themed">Not themed component</div>
-    </template>
-    <script>
-        class ThemedComponent extends Polymer.Element {
-            static get is() { return 'themed-component' }
-        }
-        customElements.define(ThemedComponent.is, ThemedComponent);
-    </script>
-</dom-module>
+<!doctype html>
+
+<head>
+  <script type='module' src='/vaadin/web-component/embedded-push.js'></script>
+</head>
+
+<body>
+  <p>
+    Push in Web components
+  </p>
+
+  <embedded-push></embedded-push>
+
+</body>

@@ -13,16 +13,26 @@
   ~ License for the specific language governing permissions and limitations under
   ~ the License.
   -->
-<link rel="import" href="/frontend/bower_components/polymer/polymer-element.html">
 
-<dom-module id="themed-component">
-    <template>
-         <div id="not-themed">Not themed component</div>
-    </template>
-    <script>
-        class ThemedComponent extends Polymer.Element {
-            static get is() { return 'themed-component' }
-        }
-        customElements.define(ThemedComponent.is, ThemedComponent);
-    </script>
-</dom-module>
+<!doctype html>
+
+<head>
+  <script type='module' src='/vaadin/web-component/client-select.js'></script>
+  <script type='module'
+          src='/vaadin/web-component/themed-web-component.js'></script>
+</head>
+
+<body>
+  <p>
+    Web components implemented using server side Java
+  </p>
+
+  <client-select show="true" id="show-message">Shows message</client-select>
+
+  <div>
+    <client-select id="no-message">No message</client-select>
+  </div>
+  
+  <themed-web-component></themed-web-component>
+
+</body>

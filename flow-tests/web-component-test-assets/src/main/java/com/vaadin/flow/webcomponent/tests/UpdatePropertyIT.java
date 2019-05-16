@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.webcomponent;
+package com.vaadin.flow.webcomponent.tests;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -22,7 +22,7 @@ import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-public class UpdatePropertyIT extends ChromeBrowserTest {
+public abstract class UpdatePropertyIT extends ChromeBrowserTest {
 
     @Override
     protected String getTestPath() {
