@@ -113,8 +113,6 @@ public class FrontendDependenciesTest {
 
         assertEquals(Theme4.class, deps.getThemeDefinition().getTheme());
 
-        assertEquals(0, deps.getImports().size());
-
         assertEquals(1, deps.getModules().size());
         assertTrue(deps.getModules().contains("./theme-4.js"));
 
@@ -130,7 +128,6 @@ public class FrontendDependenciesTest {
 
         assertNull(deps.getThemeDefinition());
 
-        assertEquals(0, deps.getImports().size());
         assertEquals(2, deps.getModules().size());
         assertEquals(0, deps.getPackages().size());
         assertEquals(1, deps.getScripts().size());
@@ -141,7 +138,6 @@ public class FrontendDependenciesTest {
         FrontendDependencies deps = create(RootViewWithLayoutTheme.class);
         assertEquals(Theme1.class, deps.getThemeDefinition().getTheme());
 
-        assertEquals(2, deps.getImports().size());
         assertEquals(8, deps.getModules().size());
         assertEquals(0, deps.getPackages().size());
         assertEquals(6, deps.getScripts().size());
@@ -155,7 +151,6 @@ public class FrontendDependenciesTest {
         assertEquals(Theme2.class, deps.getThemeDefinition().getTheme());
         assertEquals("foo", deps.getThemeDefinition().getVariant());
 
-        assertEquals(2, deps.getImports().size());
         assertEquals(4, deps.getModules().size());
         assertEquals(0, deps.getPackages().size());
         assertEquals(2, deps.getScripts().size());
@@ -167,7 +162,6 @@ public class FrontendDependenciesTest {
 
         assertNull(deps.getThemeDefinition());
 
-        assertEquals(1, deps.getImports().size());
         assertEquals(4, deps.getModules().size());
         assertEquals(0, deps.getPackages().size());
         assertEquals(2, deps.getScripts().size());
@@ -180,7 +174,6 @@ public class FrontendDependenciesTest {
 
         assertEquals(Theme1.class, deps.getThemeDefinition().getTheme());
 
-        assertEquals(2, deps.getImports().size());
         assertEquals(8, deps.getModules().size());
         assertEquals(1, deps.getPackages().size());
         assertEquals(6, deps.getScripts().size());
@@ -190,7 +183,6 @@ public class FrontendDependenciesTest {
     public void should_resolveComponentFactories() throws Exception {
         FrontendDependencies deps = create(ThirdView.class);
 
-         assertEquals(0, deps.getImports().size());
          assertEquals(3, deps.getModules().size());
          assertEquals(0, deps.getPackages().size());
          assertEquals(0, deps.getScripts().size());

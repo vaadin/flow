@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -36,7 +35,6 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
-import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.Route;
@@ -191,25 +189,6 @@ public class FrontendDependencies implements Serializable {
         Set<String> all = new HashSet<>();
         for (FrontendClassVisitor.EndPointData r : endPoints.values()) {
             all.addAll(r.classes);
-        }
-        return all;
-    }
-
-    /**
-     * get all HTML imports used in the application. It excludes imports from
-     * classes that are already annotated with {@link NpmPackage} or {@link
-     * JsModule}
-     *
-     * @return the set of HTML imports
-     */
-    public Set<String> getImports() {
-        Set<String> all = new HashSet<>();
-        for (FrontendClassVisitor.EndPointData r : endPoints.values()) {
-            for (Entry<String, Set<String>> e : r.imports.entrySet()) {
-                if (!r.npmDone.contains(e.getKey())) {
-                    all.addAll(e.getValue());
-                }
-            }
         }
         return all;
     }
