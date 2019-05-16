@@ -181,8 +181,8 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
                 contextRootRelativePath, session);
         String polyFillsUri = resolver
                 .resolveVaadinUri(BootstrapHandler.POLYFILLS_JS);
-        // <code>thisScript</code> below allows to refer the currently executing
-        // script
+
+        // `thisScript` below allows to refer the currently executing script
         return getThisScript(tagName)
                 + generateAddPolyfillsScript(polyFillsUri, "thisScript")
                 + generateUiImport("thisScript");
@@ -269,8 +269,8 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
     }
 
     private static class ComponentInfo implements Serializable {
-        public final String tag;
-        public final String extension;
+        final String tag;
+        final String extension;
 
         private ComponentInfo(String pathInfo) {
             Matcher matcher = TAG_PATTERN.matcher(pathInfo);
@@ -287,19 +287,19 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
             }
         }
 
-        public String getTag() {
+        String getTag() {
             return tag;
         }
 
-        public boolean hasExtension() {
+        boolean hasExtension() {
             return extension != null;
         }
 
-        public boolean isHTML() {
+        boolean isHTML() {
             return HTML_EXTENSION.equals(extension);
         }
 
-        public boolean isJS() {
+        boolean isJS() {
             return JS_EXTENSION.equals(extension);
         }
     }

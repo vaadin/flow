@@ -16,22 +16,19 @@
 
 package com.vaadin.flow.server.frontend;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.stream.Collectors;
+
+import org.apache.commons.io.FileUtils;
 
 import com.vaadin.flow.server.Command;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
-
+import static com.vaadin.flow.server.frontend.NodeUpdater.log;
 /**
  * Updates the webpack config file according with current project settings.
  */
@@ -58,7 +55,7 @@ public class TaskUpdateWebpack implements Command {
      * @param generatedFlowImports
      *            name of the JS file to update with the Flow project imports
      */
-    public TaskUpdateWebpack(File webpackConfigFolder, File webpackOutputDirectory,
+    TaskUpdateWebpack(File webpackConfigFolder, File webpackOutputDirectory,
             String webpackTemplate, File generatedFlowImports) {
         this.webpackTemplate = webpackTemplate;
         this.webpackOutputDirectory = webpackOutputDirectory.toPath();
@@ -83,28 +80,37 @@ public class TaskUpdateWebpack implements Command {
         File configFile = new File(webpackConfigFolder.toFile(),
                 WEBPACK_CONFIG);
 
-        if (configFile.exists()) {
-            NodeUpdater.log().info("{} already exists.", configFile);
-        } else {
+        if (!configFile.exists()) {
             URL resource = this.getClass().getClassLoader()
                     .getResource(webpackTemplate);
-            if (resource == null) {
-                resource = new URL(webpackTemplate);
+            FileUtils.copyURLToFile(resource, configFile);
+            log().info("Created webpack file: " + configFile);
+        }
+
+        if (configFile.exists()) {
+            List<String> lines = FileUtils.readLines(configFile, "UTF-8");
+
+            boolean modified = false;
+            String outputLine = "mavenOutputFolderForFlowBundledFiles = require('path').resolve(__dirname, '"
+                    + getEscapedRelativeWebpackPath(webpackOutputDirectory) + "');";
+            String mainLine = "fileNameOfTheFlowGeneratedMainEntryPoint = require('path').resolve(__dirname, '"
+                    + getEscapedRelativeWebpackPath(generatedFlowImports) + "');";
+
+            for (int i = 0; i < lines.size(); i++) {
+                String line = lines.get(i).trim();
+                if (lines.get(i).startsWith("fileNameOfTheFlowGeneratedMainEntryPoint") && !line.equals(mainLine)) {
+                    lines.set(i, mainLine);
+                    modified = true;
+                }
+                if (lines.get(i).startsWith("mavenOutputFolderForFlowBundledFiles") && !line.equals(outputLine)) {
+                    lines.set(i, outputLine);
+                    modified = true;
+                }
             }
 
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(
-                    resource.openStream(), StandardCharsets.UTF_8))) {
-                List<String> webpackConfigLines = br.lines()
-                        .map(line -> line.replace("{{OUTPUT_DIRECTORY}}",
-                                getEscapedRelativeWebpackPath(
-                                        webpackOutputDirectory)))
-                        .map(line -> line.replace("{{GENERATED_FLOW_IMPORTS}}",
-                                getEscapedRelativeWebpackPath(
-                                        generatedFlowImports)))
-                        .collect(Collectors.toList());
-                Files.write(configFile.toPath(), webpackConfigLines);
-                NodeUpdater.log().info("Created {} from {}", WEBPACK_CONFIG,
-                        resource);
+            if (modified) {
+                FileUtils.writeLines(configFile, lines);
+                log().info("Updated webpack file: " + configFile);
             }
         }
     }

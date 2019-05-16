@@ -38,6 +38,7 @@ import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
 
 /**
@@ -51,64 +52,29 @@ public class TaskUpdateImports extends NodeUpdater {
 
     private final File generatedFlowImports;
     private final File frontendDirectory;
-    private final File generatedFrontendDirectory;
 
     /**
      * Create an instance of the updater given all configurable parameters.
      *
      * @param finder
-     *         a reusable class finder
-     * @param frontendDirectory
-     *         a directory with project's frontend files
-     * @param generatedFrontendDirectory
-     *         a directory with project's generated frontend files
-     * @param generatedFlowImports
-     *         name of the JS file to update with the Flow project imports
-     * @param npmFolder
-     *         folder with the `package.json` file
-     * @param nodeModulesPath
-     *         the path to the {@literal node_modules} directory of the project
-     * @param convertHtml
-     *         true to enable polymer-2 annotated classes to be considered
-     */
-    public TaskUpdateImports(
-            ClassFinder finder, File frontendDirectory,
-            File generatedFrontendDirectory, File generatedFlowImports,
-            File npmFolder, File nodeModulesPath, boolean convertHtml) {
-        this(finder, null, frontendDirectory, generatedFrontendDirectory,
-                generatedFlowImports, npmFolder, nodeModulesPath, convertHtml);
-    }
-
-
-    /**
-     * Create an instance of the updater given all configurable parameters.
-     *
-     * @param finder
-     *         a reusable class finder
+     *            a reusable class finder
      * @param frontendDependencies
-     *         a reusable frontend dependencies
-     * @param frontendDirectory
-     *         a directory with project's frontend files
-     * @param generatedFrontendDirectory
-     *         a directory with project's generated frontend files
-     * @param generatedFlowImports
-     *         name of the JS file to update with the imports
+     *            a reusable frontend dependencies
      * @param npmFolder
-     *         folder with the `package.json` file
-     * @param nodeModulesPath
-     *         the path to the {@literal node_modules} directory of the project
+     *            folder with the `package.json` file
+     * @param generatedPath
+     *            folder where flow generated files will be placed.
+     * @param frontendDirectory
+     *            a directory with project's frontend files
      * @param convertHtml
-     *         true to enable polymer-2 annotated classes to be considered
+     *            true to enable polymer-2 annotated classes to be considered
      */
-    public TaskUpdateImports(
-            ClassFinder finder, FrontendDependencies frontendDependencies,
-            File frontendDirectory, File generatedFrontendDirectory,
-            File generatedFlowImports, File npmFolder, File nodeModulesPath,
-            boolean convertHtml) {
-        super(finder, frontendDependencies, npmFolder, nodeModulesPath, convertHtml);
-        this.generatedFlowImports = generatedFlowImports;
+    TaskUpdateImports(ClassFinder finder,
+            FrontendDependencies frontendDependencies, File npmFolder,
+            File generatedPath, File frontendDirectory, boolean convertHtml) {
+        super(finder, frontendDependencies, npmFolder, generatedPath, convertHtml);
         this.frontendDirectory = frontendDirectory;
-        this.generatedFrontendDirectory = generatedFrontendDirectory;
+        this.generatedFlowImports = new File(generatedPath, IMPORTS_NAME);
     }
 
     @Override
@@ -119,8 +85,8 @@ public class TaskUpdateImports extends NodeUpdater {
         }
         modules.addAll(getJavascriptJsModules(frontDeps.getScripts()));
 
-        modules.addAll(getTargetFrontendModules(generatedFrontendDirectory,
-                Collections.singleton(FrontendUtils.FLOW_IMPORTS_FILE)));
+        modules.addAll(getGeneratedModules(generatedPath,
+                Collections.singleton(generatedFlowImports.getName())));
 
         modules = sortModules(modules);
         try {
@@ -207,7 +173,7 @@ public class TaskUpdateImports extends NodeUpdater {
         return new File(frontendDirectory, jsImport).isFile()
                 || new File(nodeModulesPath, jsImport).isFile()
                 || new File(new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME), jsImport).isFile()
-                || new File(generatedFrontendDirectory,
+                || new File(generatedPath,
                 generatedResourcePathIntoRelativePath(jsImport)).isFile();
     }
 
@@ -224,7 +190,8 @@ public class TaskUpdateImports extends NodeUpdater {
     }
 
     private void updateMainJsFile(List<String> newContent) throws IOException {
-        List<String> oldContent = generatedFlowImports.exists() ? FileUtils.readLines(generatedFlowImports, "UTF-8") : null;
+        List<String> oldContent = generatedFlowImports.exists()
+                ? FileUtils.readLines(generatedFlowImports, "UTF-8") : null;
         if (newContent.equals(oldContent)) {
             log().info("No js modules to update");
         } else {
@@ -233,7 +200,6 @@ public class TaskUpdateImports extends NodeUpdater {
             log().info("Updated {}", generatedFlowImports);
         }
     }
-
 
     private static String generatedResourcePathIntoRelativePath(String path) {
         return path.replace(GENERATED_PREFIX, "./");

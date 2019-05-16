@@ -1220,6 +1220,19 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test
+    public void resolveNavigation_pathContainsDots_dotSegmentIsNotParentReference_noException() {
+        router.resolveNavigationTarget("/.../dsfsdfsdf",
+                Collections.emptyMap());
+        // doesn't throw
+    }
+
+    @Test
+    public void resolveNavigation_pathContainsDots_pathIsRelative_noException() {
+        router.resolveNavigationTarget("/../dsfsdfsdf", Collections.emptyMap());
+        // doesn't throw
+    }
+
+    @Test
     public void page_title_set_from_annotation()
             throws InvalidRouteConfigurationException {
         setNavigationTargets(NavigationTargetWithTitle.class);

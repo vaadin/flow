@@ -28,8 +28,9 @@ import static com.vaadin.flow.plugin.maven.NodeBuildFrontendMojoTest.getPackageJ
 import static com.vaadin.flow.plugin.maven.NodeBuildFrontendMojoTest.setProject;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
-import static com.vaadin.flow.server.frontend.FrontendUtils.getFlowPackage;
 
 public class NodeValidateMojoTest {
     @Rule
@@ -41,10 +42,9 @@ public class NodeValidateMojoTest {
     private final NodeValidateMojo mojo = new NodeValidateMojo();
     private File projectFrontendResourcesDirectory;
     private File nodeModulesPath;
+    private File flowPackagePath;
     private String webpackConfig;
     private String packageJson;
-    private File importsFile;
-
 
     @Before
     public void setup() throws Exception {
@@ -62,23 +62,20 @@ public class NodeValidateMojoTest {
                 new File(projectFrontendResourcesDirectory,
                         "test_project_resource.js").createNewFile());
 
-        nodeModulesPath = new File(projectBase, "node_modules");
-        importsFile = new File(projectBase, "flow-imports.js");
+        nodeModulesPath = new File(projectBase, NODE_MODULES);
+        flowPackagePath = new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME);
         webpackConfig = new File(projectBase, WEBPACK_CONFIG).getAbsolutePath();
         packageJson = new File(projectBase, PACKAGE_JSON).getAbsolutePath();
 
         ReflectionUtils.setVariableValueInObject(mojo, "project", project);
-        ReflectionUtils.setVariableValueInObject(mojo, "nodeModulesPath", nodeModulesPath);
         ReflectionUtils.setVariableValueInObject(mojo, "frontendResourcesDirectory", projectFrontendResourcesDirectory);
         ReflectionUtils.setVariableValueInObject(mojo, "jarResourcePathsToCopy", RESOURCES_FRONTEND_DEFAULT);
         ReflectionUtils.setVariableValueInObject(mojo, "includes", "**/*.js,**/*.css");
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", projectBase);
-        ReflectionUtils.setVariableValueInObject(mojo, "nodeModulesPath", nodeModulesPath);
         ReflectionUtils.setVariableValueInObject(mojo, "webpackTemplate", WEBPACK_CONFIG);
-        ReflectionUtils.setVariableValueInObject(mojo, "generatedFlowImports", importsFile);
+        ReflectionUtils.setVariableValueInObject(mojo, "generatedPath", projectBase);
 
-
-        Assert.assertTrue(getFlowPackage(nodeModulesPath).mkdirs());
+        Assert.assertTrue(flowPackagePath.mkdirs());
         setProject(mojo, "war", "war_output");
     }
 

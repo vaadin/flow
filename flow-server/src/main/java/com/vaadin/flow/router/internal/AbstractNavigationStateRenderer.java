@@ -445,6 +445,12 @@ public abstract class AbstractNavigationStateRenderer
                         "The target component '%s' has no registered route",
                         targetType))));
 
+        if (beforeNavigation.hasForwardTarget()) {
+            List<String> segments = new ArrayList<>(location.getSegments());
+            segments.addAll(beforeNavigation.getForwardTargetParameters());
+            location = new Location(segments);
+        }
+
         return new NavigationEvent(event.getSource(), location, event.getUI(),
                 NavigationTrigger.PROGRAMMATIC);
     }

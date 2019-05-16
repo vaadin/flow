@@ -1,0 +1,8 @@
+Bundle-SymbolicName: ${project.groupId}.flow.dnd
+Bundle-Name: Vaadin Flow DnD Support
+Bundle-Version: ${osgi.bundle.version}
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-License: http://www.apache.org/licenses/LICENSE-2.0
+Import-Package: *
+Export-Package: !com.vaadin.flow.component.dnd.internal*,\
+        com.vaadin.flow.component.dnd*;-noimport:=true

@@ -38,7 +38,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.*;
 
 public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
@@ -46,26 +48,25 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     private File importsFile;
-    private File nodeModulesPath;
+    private File generatedPath;
     private File frontendDirectory;
-    private File generatedFrontendDirectory;
-    private TaskUpdateImports node;
+    private File nodeModulesPath;
+    private TaskUpdateImports updater;
 
     @Before
     public void setup() throws Exception {
 
         File tmpRoot = temporaryFolder.getRoot();
-        importsFile = new File(tmpRoot, "flow-imports.js");
-        nodeModulesPath = new File(tmpRoot, "node_modules");
-        frontendDirectory = new File(tmpRoot, "frontend");
-        generatedFrontendDirectory = new File(tmpRoot, "target/frontend");
 
-        node = new TaskUpdateImports(getClassFinder(), frontendDirectory,
-                generatedFrontendDirectory, importsFile, tmpRoot,
-                nodeModulesPath, true);
+        frontendDirectory = new File(tmpRoot, DEFAULT_FRONTEND_DIR);
+        nodeModulesPath = new File(tmpRoot, NODE_MODULES);
+        generatedPath = new File(tmpRoot, DEFAULT_GENERATED_DIR);
+        importsFile = new File(generatedPath, IMPORTS_NAME);
 
-        Assert.assertTrue(getFlowPackage().mkdirs());
+        updater = new TaskUpdateImports(getClassFinder(), null,
+                tmpRoot, generatedPath, frontendDirectory, true);
 
+        Assert.assertTrue(nodeModulesPath.mkdirs());
         createExpectedImports(frontendDirectory, nodeModulesPath);
     }
 
@@ -75,7 +76,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         boolean exceptionNotThrown = true;
         try {
-            node.execute();
+            updater.execute();
         } catch (IllegalStateException expected) {
             exceptionNotThrown = false;
             String exceptionMessage = expected.getMessage();
@@ -128,23 +129,25 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 "document.body.setAttribute('theme', 'dark');"));
         expectedLines.addAll(getExpectedImports());
 
-        node.execute();
+        updater.execute();
 
         assertContainsImports(true, expectedLines.toArray(new String[0]));
 
-        Assert.assertTrue(getFlowPackage().exists());
-        Assert.assertTrue(new File(getFlowPackage(), "ExampleConnector.js")
+        File flowPackage = new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME);
+
+        Assert.assertTrue(flowPackage.exists());
+        Assert.assertTrue(new File(flowPackage, "ExampleConnector.js")
                 .exists());
     }
 
     @Test
     public void shouldNot_UpdateJsFile_when_NoChanges() throws Exception {
-        node.execute();
+        updater.execute();
         long timestamp1 = importsFile.lastModified();
 
         // need to sleep because timestamp is in seconds
         sleep(1000);
-        node.execute();
+        updater.execute();
         long timestamp2 = importsFile.lastModified();
 
         Assert.assertEquals(timestamp1, timestamp2);
@@ -152,7 +155,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
     @Test
     public void should_ContainLumoThemeFiles() throws Exception {
-        node.execute();
+        updater.execute();
 
         assertContainsImports(true, "@vaadin/vaadin-lumo-styles/color.js",
                 "@vaadin/vaadin-lumo-styles/typography.js",
@@ -164,30 +167,30 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
     @Test
     public void should_AddImports() throws Exception {
-        node.execute();
+        updater.execute();
         removeImports("@vaadin/vaadin-lumo-styles/sizing.js",
                 "./local-p2-template.js");
         assertContainsImports(false, "@vaadin/vaadin-lumo-styles/sizing.js",
                 "./local-p2-template.js");
 
-        node.execute();
+        updater.execute();
         assertContainsImports(true, "@vaadin/vaadin-lumo-styles/sizing.js",
                 "./local-p2-template.js");
     }
 
     @Test
     public void should_removeImports() throws Exception {
-        node.execute();
+        updater.execute();
         addImports("./added-import.js");
         assertContainsImports(true, "./added-import.js");
 
-        node.execute();
+        updater.execute();
         assertContainsImports(false, "./added-import.js");
     }
 
     @Test
     public void should_AddRemove_Imports() throws Exception {
-        node.execute();
+        updater.execute();
 
         removeImports("@vaadin/vaadin-lumo-styles/sizing.js",
                 "./local-p2-template.js");
@@ -197,7 +200,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 "./local-p2-template.js");
         assertContainsImports(true, "./added-import.js");
 
-        node.execute();
+        updater.execute();
 
         assertContainsImports(true, "@vaadin/vaadin-lumo-styles/sizing.js",
                 "./local-p2-template.js");
@@ -258,9 +261,4 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         Files.write(Paths.get(importsFile.toURI()),
                 content.getBytes(StandardCharsets.UTF_8), options);
     }
-
-    File getFlowPackage() {
-        return FrontendUtils.getFlowPackage(nodeModulesPath);
-    }
-
 }
