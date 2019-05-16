@@ -13,7 +13,8 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>test-npm</module>
+        <module>test-npm/pom-npm-production.xml</module>
+        <module>test-npm/pom-npm-devmode.xml</module>
         <module>test-pwa</module>
         <module>test-resources</module>
         <module>test-common</module>
