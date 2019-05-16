@@ -65,6 +65,7 @@ public class NodeTestComponents {
     }
 
     @JsModule("./local-p2-template.js")
+    @JsModule("3rdparty/component.js")
     public static class LocalP2Template extends Component {
     }
 
