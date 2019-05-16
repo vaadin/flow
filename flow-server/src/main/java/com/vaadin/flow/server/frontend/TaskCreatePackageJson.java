@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 
+import elemental.json.Json;
 import elemental.json.JsonObject;
 
 /**
@@ -42,10 +43,19 @@ public class TaskCreatePackageJson extends NodeUpdater {
     public void execute() {
         try {
             modified = false;
-            JsonObject packageJson = getPackageJson();
-            if (packageJson == null) {
-                packageJson = createDefaultJson();
-                writePackageFile(packageJson);
+            JsonObject mainContent = getMainPackageJson();
+            if (mainContent == null) {
+                mainContent = Json.createObject();
+            }
+            modified = updateMainDefaultDependencies(mainContent);
+            if (modified) {
+                writeMainPackageFile(mainContent);
+            }
+            JsonObject customContent = getAppPackageJson();
+            if (customContent == null) {
+                customContent = Json.createObject();
+                updateAppDefaultDependencies(customContent);
+                writeAppPackageFile(customContent);
                 modified = true;
             }
         } catch (IOException e) {
