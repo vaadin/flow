@@ -52,7 +52,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 /**
  * Goal that builds the frontend bundle.
  *
- * It performs the following actions:
+ * It performs the following actions when creating a package:
  * <ul>
  * <li>Update {@link Constants#PACKAGE_JSON} file with the {@link NpmPackage}
  * annotations defined in the classpath,</li>
