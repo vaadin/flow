@@ -39,10 +39,5 @@
             <artifactId>flow-test-util</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.seleniumhq.selenium</groupId>
-            <artifactId>selenium-api</artifactId>
-            <version>3.14.0</version>
-        </dependency>
     </dependencies>
 </project>

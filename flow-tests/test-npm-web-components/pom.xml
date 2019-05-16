@@ -22,11 +22,6 @@
             <version>${project.version}</version>
         </dependency>
 
-<!--        <dependency>-->
-<!--            <groupId>org.webjars.bowergithub.polymer</groupId>-->
-<!--            <artifactId>polymer</artifactId>-->
-<!--        </dependency>-->
-
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-server-production-mode</artifactId>
