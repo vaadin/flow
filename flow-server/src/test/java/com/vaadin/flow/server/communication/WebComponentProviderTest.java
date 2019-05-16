@@ -287,8 +287,11 @@ public class WebComponentProviderTest {
 
         Mockito.when(request.getServletContext()).thenReturn(servletContext);
         Mockito.when(request.getContextPath()).thenReturn("");
-        WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
-                .getInstance(service);
+
+        // this hack is needed, because the OSGiAccess fake servlet context is now not needed
+        WebComponentConfigurationRegistry registry = new WebComponentConfigurationRegistry(){};
+
+        // WebComponentConfigurationRegistry.getInstance(service);
         Mockito.when(servletContext.getAttribute(
                 WebComponentConfigurationRegistry.class.getName()))
                 .thenReturn(registry);
