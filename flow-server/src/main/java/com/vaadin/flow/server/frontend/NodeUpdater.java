@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -87,8 +86,6 @@ public abstract class NodeUpdater implements Command {
 
     private final ClassFinder finder;
 
-    private final Set<String> flowModules = new HashSet<>();
-
     boolean modified;
 
     /**
@@ -140,17 +137,22 @@ public abstract class NodeUpdater implements Command {
     }
 
     private String resolveInFlowFrontendDirectory(String importPath) {
-        if (importPath.startsWith("@")) {
-            return importPath;
-        }
-        String pathWithNoProtocols = importPath.replace(FRONTEND_PROTOCOL_PREFIX, "");
+        String resolved = importPath;
+        if (!importPath.startsWith("@")) {
 
-        if (flowModules.contains(pathWithNoProtocols) || getResourceUrl(pathWithNoProtocols) != null) {
-          flowModules.add(pathWithNoProtocols);
-          return FLOW_NPM_PACKAGE_NAME + pathWithNoProtocols;
-        }
+            if (importPath.startsWith(FRONTEND_PROTOCOL_PREFIX)) {
+                resolved = importPath.replaceFirst(FRONTEND_PROTOCOL_PREFIX, "");
+                log().warn(
+                    "Found frontend prefix in a JsModule value '{}', removing it '{}', please update your component",
+                        importPath, resolved);
+            }
 
-        return pathWithNoProtocols;
+            if (getResourceUrl(resolved) != null) {
+                resolved = FLOW_NPM_PACKAGE_NAME + resolved;
+            }
+
+        }
+        return resolved;
     }
 
     private URL getResourceUrl(String resource) {
