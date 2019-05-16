@@ -129,7 +129,7 @@ public class DevModeHandler implements Serializable {
         command.add("--port");
         command.add(String.valueOf(port));
         command.addAll(Arrays.asList(config
-                .getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS, "-d")
+                .getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS, "-d --inline=false")
                 .split(" +")));
 
         if (getLogger().isInfoEnabled()) {
