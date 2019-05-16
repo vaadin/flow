@@ -121,6 +121,17 @@ public class DevModeInitializer
         initDevModeHandler(classes, context, config);
     }
 
+    /**
+     * Initialize the devmode server if not in production mode or bower
+     * compatibility mode.
+     *
+     * @param classes
+     *         classes to check for npm- and js modules
+     * @param context
+     *         servlet context we are running in
+     * @param config
+     *         deployment configuration
+     */
     public static void initDevModeHandler(Set<Class<?>> classes,
             ServletContext context, DeploymentConfiguration config) {
         if (config.isProductionMode() || config.isBowerMode()) {
