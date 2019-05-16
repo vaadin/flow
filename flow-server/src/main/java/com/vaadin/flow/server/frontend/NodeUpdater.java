@@ -21,7 +21,6 @@ import java.net.URI;
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -30,7 +29,6 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.Constants;
 
@@ -82,12 +80,6 @@ public abstract class NodeUpdater implements Command {
     protected final File generatedFolder;
 
     /**
-     * Enable or disable legacy components annotated only with
-     * {@link HtmlImport}.
-     */
-    protected final boolean convertHtml;
-
-    /**
      * The {@link FrontendDependencies} object representing the application
      * dependencies.
      */
@@ -110,11 +102,9 @@ public abstract class NodeUpdater implements Command {
      *            folder with the `package.json` file
      * @param generatedPath
      *            folder where flow generated files will be placed.
-     * @param convertHtml
-     *            true to enable polymer-2 annotated classes to be considered
      */
     protected NodeUpdater(ClassFinder finder, FrontendDependencies frontendDependencies, File npmFolder,
-            File generatedPath, boolean convertHtml) {
+            File generatedPath) {
         this.frontDeps = finder != null && frontendDependencies == null
                 ? new FrontendDependencies(finder)
                 : frontendDependencies;
@@ -122,17 +112,6 @@ public abstract class NodeUpdater implements Command {
         this.npmFolder = npmFolder;
         this.nodeModulesFolder = new File(npmFolder, NODE_MODULES);
         this.generatedFolder = generatedPath;
-        this.convertHtml = convertHtml;
-    }
-
-    Set<String> getHtmlImportJsModules(Set<String> htmlImports) {
-        return htmlImports.stream().map(this::htmlImportToJsModule).filter(Objects::nonNull)
-                .collect(Collectors.toSet());
-    }
-
-    Set<String> getHtmlImportNpmPackages(Set<String> htmlImports) {
-        return htmlImports.stream().map(this::htmlImportToNpmPackage).filter(Objects::nonNull)
-                .collect(Collectors.toSet());
     }
 
     Set<String> getJavascriptJsModules(Set<String> javascripts) {
@@ -177,26 +156,6 @@ public abstract class NodeUpdater implements Command {
     private URL getResourceUrl(String resource) {
         resource = RESOURCES_FRONTEND_DEFAULT + "/" + resource.replaceFirst(FLOW_NPM_PACKAGE_NAME, "");
         return finder.getResource(resource);
-    }
-
-    private String htmlImportToJsModule(String htmlImport) {
-        String module = resolveInFlowFrontendDirectory( // @formatter:off
-        htmlImport
-          .replaceFirst("^.*bower_components/(vaadin-[^/]*/.*)\\.html$", "@vaadin/$1.js")
-          .replaceFirst("^.*bower_components/((iron|paper)-[^/]*/.*)\\.html$", "@polymer/$1.js")
-          .replaceFirst("\\.html$", ".js")
-        ); // @formatter:on
-        return Objects.equals(module, htmlImport) ? null : module;
-    }
-
-    private String htmlImportToNpmPackage(String htmlImport) {
-        String module = resolveInFlowFrontendDirectory( // @formatter:off
-        htmlImport
-          .replaceFirst("^.*bower_components/(vaadin-[^/]*)/.*\\.html$", "@vaadin/$1")
-          .replaceFirst("^.*bower_components/((iron|paper)-[^/]*)/.*\\.html$", "@polymer/$1")
-          .replaceFirst("\\.html$", ".js")
-        ); // @formatter:on
-        return Objects.equals(module, htmlImport) ? null : module;
     }
 
     JsonObject getMainPackageJson() throws IOException {

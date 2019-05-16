@@ -64,7 +64,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         importsFile = new File(generatedPath, IMPORTS_NAME);
 
         updater = new TaskUpdateImports(getClassFinder(), null,
-                tmpRoot, generatedPath, frontendDirectory, true);
+                tmpRoot, generatedPath, frontendDirectory);
 
         Assert.assertTrue(nodeModulesPath.mkdirs());
         createExpectedImports(frontendDirectory, nodeModulesPath);
@@ -157,7 +157,8 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
     public void should_ContainLumoThemeFiles() throws Exception {
         updater.execute();
 
-        assertContainsImports(true, "@vaadin/vaadin-lumo-styles/color.js",
+        assertContainsImports(true,
+                "@vaadin/vaadin-lumo-styles/color.js",
                 "@vaadin/vaadin-lumo-styles/typography.js",
                 "@vaadin/vaadin-lumo-styles/sizing.js",
                 "@vaadin/vaadin-lumo-styles/spacing.js",
@@ -202,8 +203,6 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         updater.execute();
 
-        assertContainsImports(true, "@vaadin/vaadin-lumo-styles/sizing.js",
-                "./local-p2-template.js");
         assertContainsImports(false, "./added-import.js");
     }
 

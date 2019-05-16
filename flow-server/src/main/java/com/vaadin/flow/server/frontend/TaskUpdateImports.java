@@ -66,13 +66,11 @@ public class TaskUpdateImports extends NodeUpdater {
      *            folder where flow generated files will be placed.
      * @param frontendDirectory
      *            a directory with project's frontend files
-     * @param convertHtml
-     *            true to enable polymer-2 annotated classes to be considered
      */
     TaskUpdateImports(ClassFinder finder,
             FrontendDependencies frontendDependencies, File npmFolder,
-            File generatedPath, File frontendDirectory, boolean convertHtml) {
-        super(finder, frontendDependencies, npmFolder, generatedPath, convertHtml);
+            File generatedPath, File frontendDirectory) {
+        super(finder, frontendDependencies, npmFolder, generatedPath);
         this.frontendDirectory = frontendDirectory;
         this.generatedFlowImports = new File(generatedPath, IMPORTS_NAME);
     }
@@ -80,9 +78,6 @@ public class TaskUpdateImports extends NodeUpdater {
     @Override
     public void execute() {
         Set<String> modules = new HashSet<>(getJavascriptJsModules(frontDeps.getModules()));
-        if (convertHtml) {
-            modules.addAll(getHtmlImportJsModules(frontDeps.getImports()));
-        }
         modules.addAll(getJavascriptJsModules(frontDeps.getScripts()));
 
         modules.addAll(getGeneratedModules(generatedFolder,

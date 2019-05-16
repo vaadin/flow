@@ -16,13 +16,6 @@
 
 package com.vaadin.flow.server.frontend;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
-
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -30,6 +23,13 @@ import java.util.Collection;
 import java.util.Set;
 
 import com.vaadin.flow.server.Command;
+
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
 
 /**
  * An executor that it's run when the servlet context is initialised in dev-mode
@@ -45,8 +45,6 @@ public class NodeTasks implements Command {
         private final ClassFinder classFinder;
 
         private final File frontendDirectory;
-
-        private final boolean convertHtml;
 
         private File webpackOutputDirectory;
 
@@ -111,8 +109,7 @@ public class NodeTasks implements Command {
                 File generatedPath) {
             this(classFinder, npmFolder, generatedPath,
                     new File(npmFolder, System.getProperty(PARAM_FRONTEND_DIR,
-                            DEFAULT_FRONTEND_DIR)),
-                    true);
+                            DEFAULT_FRONTEND_DIR)));
         }
 
         /**
@@ -126,16 +123,11 @@ public class NodeTasks implements Command {
          *            folder where flow generated files will be placed.
          * @param frontendDirectory
          *            a directory with project's frontend files
-         * @param convertHtml
-         *            <code>true</code> to enable polymer-2 annotated classes to
-         *            be considered. Default is <code>true</code>.
          */
         public Builder(ClassFinder classFinder, File npmFolder,
-                File generatedPath, File frontendDirectory,
-                boolean convertHtml) {
+                File generatedPath, File frontendDirectory) {
             this.classFinder = classFinder;
             this.npmFolder = npmFolder;
-            this.convertHtml = convertHtml;
             this.generateEmbeddableWebComponents = true;
             this.generatedFolder = generatedPath.isAbsolute() ? generatedPath
                     : new File(npmFolder, generatedPath.getPath());
@@ -295,7 +287,7 @@ public class NodeTasks implements Command {
             commands.add(
                     new TaskUpdateImports(classFinder, frontendDependencies,
                             builder.npmFolder, builder.generatedFolder,
-                            builder.frontendDirectory, builder.convertHtml));
+                            builder.frontendDirectory));
 
             if (builder.visitedClasses != null) {
                 builder.visitedClasses

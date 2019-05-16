@@ -33,7 +33,6 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
@@ -68,13 +67,6 @@ public class NodeBuildFrontendMojo extends AbstractMojo {
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
-
-    /**
-     * Enable or disable legacy components annotated only with
-     * {@link HtmlImport}.
-     */
-    @Parameter(defaultValue = "true")
-    private boolean convertHtml;
 
     /**
      * The folder where `package.json` file is located. Default is project root
@@ -165,7 +157,7 @@ public class NodeBuildFrontendMojo extends AbstractMojo {
 
     private void runNodeUpdater() {
         new NodeTasks.Builder(getClassFinder(project),
-                npmFolder, generatedFolder, frontendDirectory, convertHtml)
+                npmFolder, generatedFolder, frontendDirectory)
                 .runNpmInstall(runNpmInstall)
                 .enablePackagesUpdate(true)
                 .enableImportsUpdate(true)
