@@ -21,8 +21,8 @@ import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
-import com.vaadin.flow.uitest.ui.AbstractDivView;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.uitest.ui.AbstractDivView;
 
 @Route("com.vaadin.flow.uitest.ui.template.UpgradeElementView")
 public class UpgradeElementView extends AbstractDivView {
@@ -43,10 +43,9 @@ public class UpgradeElementView extends AbstractDivView {
         UpgradeElement template = new UpgradeElement();
         template.setId("template");
 
-        NativeButton button = new NativeButton("Upgrade element",
+        NativeButton button = createButton("Upgrade element", "upgrade",
                 event -> getPage().executeJs(
                         "customElements.define(MyTemplate.is, MyTemplate);"));
-        button.setId("upgrade");
         add(template, button);
     }
 }

@@ -1,13 +1,13 @@
 package com.vaadin.flow.uitest.ui;
 
+import java.util.Arrays;
+
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.data.value.HasValueChangeMode;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
-
-import java.util.Arrays;
 
 @Route(value = "com.vaadin.flow.uitest.ui.ValueChangeModeView", layout = ViewTestLayout.class)
 public class ValueChangeModeView extends AbstractDebounceSynchronizeView {
@@ -25,9 +25,8 @@ public class ValueChangeModeView extends AbstractDebounceSynchronizeView {
 
     private void addButtons(HasValueChangeMode component) {
         Arrays.stream(ValueChangeMode.values()).forEach(mode -> {
-            NativeButton button = new NativeButton(mode.name(),
+            NativeButton button = createButton(mode.name(), mode.name(),
                     event -> component.setValueChangeMode(mode));
-            button.setId(mode.name());
             add(button);
         });
     }

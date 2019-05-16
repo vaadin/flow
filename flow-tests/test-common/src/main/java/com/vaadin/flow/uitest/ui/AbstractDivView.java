@@ -15,8 +15,11 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.component.ClickEvent;
+import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
@@ -42,4 +45,10 @@ public abstract class AbstractDivView extends Div
         return UI.getCurrent().getPage();
     }
 
+    public static NativeButton createButton(String caption, String id,
+            ComponentEventListener<ClickEvent<NativeButton>> listener) {
+        NativeButton button = new NativeButton(caption, listener);
+        button.setId(id);
+        return button;
+    }
 }

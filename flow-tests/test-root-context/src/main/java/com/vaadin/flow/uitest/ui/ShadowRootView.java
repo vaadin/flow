@@ -20,9 +20,9 @@ import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.dom.ShadowRoot;
-import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.router.HasDynamicTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.ShadowRootView", layout = ViewTestLayout.class)
 public class ShadowRootView extends AbstractDivView implements HasDynamicTitle {
@@ -43,10 +43,9 @@ public class ShadowRootView extends AbstractDivView implements HasDynamicTitle {
         shadowLabel.setAttribute("id", "shadow-label");
         shadowRoot.appendChild(shadowLabel);
 
-        NativeButton removeChild = new NativeButton(
-                "Remove the last child from the shadow root",
+        NativeButton removeChild = createButton(
+                "Remove the last child from the shadow root", "remove",
                 event -> shadowRoot.removeChild(shadowLabel));
-        removeChild.setId("remove");
         add(removeChild);
     }
 

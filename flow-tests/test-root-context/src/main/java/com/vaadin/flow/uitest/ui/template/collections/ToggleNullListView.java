@@ -20,14 +20,14 @@ public class ToggleNullListView extends AbstractDivView {
         Div container = new Div();
 
         ServerModelNullListTemplate template = new ServerModelNullListTemplate();
-        NativeButton button = new NativeButton("Toggle template", event -> {
+        NativeButton button = createButton("Toggle template", TOGGLE_BUTTON_ID,
+                event -> {
             if (template.getParent().isPresent()) {
                 container.remove(template);
             } else {
                 container.add(template);
             }
         });
-        button.setId(TOGGLE_BUTTON_ID);
         add(button, container);
     }
 

@@ -22,7 +22,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.EnabledView", layout = ViewTestLayout.class)
-public class EnabledView extends Div {
+public class EnabledView extends AbstractDivView {
 
     public EnabledView() {
         setId("main");
@@ -36,22 +36,20 @@ public class EnabledView extends Div {
         label.setId("nested-label");
         div.add(label);
 
-        NativeButton updateStyle = new NativeButton(
-                "Update target element property", event -> {
+        NativeButton updateStyle = createButton(
+                "Update target element property", "updateProperty", event -> {
                     div.setClassName("foo");
                     label.setClassName("bar");
                 });
-        updateStyle.setId("updateProperty");
         updateStyle.getElement().setEnabled(false);
 
-        NativeButton updateEnableButton = new NativeButton(
-                "Change enable state for buttons", event -> {
+        NativeButton updateEnableButton = createButton(
+                "Change enable state for buttons", "enableButton", event -> {
                     updateStyle.getElement()
                             .setEnabled(!updateStyle.getElement().isEnabled());
                     updateStyle.setClassName("disabled",
                             !updateStyle.getElement().isEnabled());
                 });
-        updateEnableButton.setId("enableButton");
 
         add(div, updateStyle, updateEnableButton);
     }

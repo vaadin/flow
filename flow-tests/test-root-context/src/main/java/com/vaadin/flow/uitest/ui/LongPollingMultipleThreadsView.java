@@ -50,9 +50,8 @@ public class LongPollingMultipleThreadsView extends AbstractDivView {
 
     public LongPollingMultipleThreadsView() {
         this.setId("push-update");
-        NativeButton startButton = new NativeButton("start",
+        NativeButton startButton = createButton("start", "start-button",
                 event -> this.start());
-        startButton.setId("start-button");
         add(startButton, label);
     }
 

@@ -40,26 +40,24 @@ public class InternalErrorView extends AbstractDivView {
         Div message = new Div();
         message.setId("message");
 
-        NativeButton updateMessageButton = new NativeButton("Update",
+        NativeButton updateMessageButton = createButton("Update", "update",
                 event -> message.setText("Updated"));
-        updateMessageButton.setId("update");
 
-        NativeButton closeSessionButton = new NativeButton("Close session",
+        NativeButton closeSessionButton = createButton("Close session",
+                "close-session",
                 event -> VaadinSession.getCurrent().close());
-        closeSessionButton.setId("close-session");
 
-        NativeButton enableNotificationButton = new NativeButton(
-                "Enable session expired notification",
+        NativeButton enableNotificationButton = createButton(
+                "Enable session expired notification", "enable-notification",
                 event -> enableSessionExpiredNotification());
-        enableNotificationButton.setId("enable-notification");
 
-        NativeButton causeExceptionButton = new NativeButton("Cause exception",
+        NativeButton causeExceptionButton = createButton("Cause exception",
+                "cause-exception",
                 event -> showInternalError());
-        causeExceptionButton.setId("cause-exception");
 
-        NativeButton resetSystemMessagesButton = new NativeButton(
-                "Reset system messages", event -> resetSystemMessages());
-        resetSystemMessagesButton.setId("reset-system-messages");
+        NativeButton resetSystemMessagesButton = createButton(
+                "Reset system messages", "reset-system-messages",
+                event -> resetSystemMessages());
 
         add(message, updateMessageButton, closeSessionButton,
                 enableNotificationButton, causeExceptionButton,
