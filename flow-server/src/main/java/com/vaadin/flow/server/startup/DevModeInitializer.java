@@ -33,7 +33,6 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.frontend.ClassFinder;
 import com.vaadin.flow.server.frontend.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
