@@ -44,17 +44,13 @@ public class DefaultDeploymentConfiguration
 
     public static final String WARNING_BOWER_MODE = SEPARATOR
             + "\nVaadin is running in BOWER mode.\n"
-            + "This mode will be unsuported in future Vaadin versions."
+            + "This mode will be unsupported in future Vaadin versions."
             + SEPARATOR;
 
      public static final String WARNING_BOWER_LEGACY = SEPARATOR
-            + "\n** WARNING **  Vaadin is running in BOWER MODE.\n"
-            + "\nBy default Vaadin should run in npm mode but this project is not"
-            + "\nproperly configured.\n"
-            + "\nTo disable this message, migrate your project to 'npm' or set the"
-            + "\nproperty" + " 'vaadin." + SERVLET_PARAMETER_BOWER_MODE + "' to 'true'"
+            + "\nVaadin is running in BOWER MODE.\n"
             + SEPARATOR;
-
+             
     public static final String WARNING_XSRF_PROTECTION_DISABLED = SEPARATOR
             + "\nWARNING: Cross-site request forgery protection is disabled!"
             + SEPARATOR;
