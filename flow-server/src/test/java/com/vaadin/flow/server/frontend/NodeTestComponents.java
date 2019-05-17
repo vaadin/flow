@@ -85,6 +85,7 @@ public class NodeTestComponents {
 
     @JsModule("@vaadin/vaadin-mixed-component/src/vaadin-mixed-component.js")
     @JsModule("@vaadin/vaadin-mixed-component/src/vaadin-something-else.js")
+    @JsModule("@vaadin/vaadin-mixed-component/src/vaadin-something-else")
     public static class TranslatedImports extends Component {
 
     }

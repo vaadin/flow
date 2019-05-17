@@ -101,6 +101,9 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         Assert.assertTrue(importsFile.exists());
 
         assertContainsImports(true, expectedLines.toArray(new String[0]));
+        // An import without `.js` extension
+        assertContainsImports(true, "import '@vaadin/vaadin-mixed-component/theme/lumo/vaadin-something-else'");
+        // An import not found in node_modules
         assertContainsImports(true, "import 'unresolved/component';");
     }
 
