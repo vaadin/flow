@@ -75,6 +75,7 @@ public class WebComponentProviderTest {
     public void init() {
         MockitoAnnotations.initMocks(this);
         Mockito.when(session.getService()).thenReturn(service);
+        Mockito.when(service.getAttribute(WebComponentConfigurationRegistry.class)).thenReturn(new WebComponentConfigurationRegistry(){});
         VaadinService.setCurrent(service);
         Mockito.when(service.getInstantiator())
                 .thenReturn(new MockInstantiator());
