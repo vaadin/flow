@@ -29,6 +29,7 @@ import com.vaadin.flow.server.ServletHelper;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
+import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.communication.PushMode;
@@ -64,7 +65,7 @@ public class WebComponentProviderTest {
     @Mock
     VaadinResponse response;
     @Mock
-    VaadinService service;
+    VaadinServletService service;
     @Mock
     DeploymentConfiguration configuration;
 
@@ -74,6 +75,7 @@ public class WebComponentProviderTest {
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
+        Mockito.when(request.getService()).thenReturn(service);
         Mockito.when(session.getService()).thenReturn(service);
         Mockito.when(service.getAttribute(WebComponentConfigurationRegistry.class)).thenReturn(new WebComponentConfigurationRegistry(){});
         VaadinService.setCurrent(service);
