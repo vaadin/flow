@@ -98,7 +98,6 @@ public class NodeBuildFrontendMojoTest {
                 frontendDirectory);
         ReflectionUtils.setVariableValueInObject(mojo,
                 "generateEmbeddableWebComponents", false);
-        ReflectionUtils.setVariableValueInObject(mojo, "convertHtml", true);
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", npmFolder);
         ReflectionUtils.setVariableValueInObject(mojo, "generateBundle", false);
         ReflectionUtils.setVariableValueInObject(mojo, "runNpmInstall", false);

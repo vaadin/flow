@@ -59,7 +59,7 @@ public class TaskUpdatePackages extends NodeUpdater {
     TaskUpdatePackages(ClassFinder finder,
             FrontendDependencies frontendDependencies, File npmFolder,
             File generatedPath) {
-        super(finder, frontendDependencies, npmFolder, generatedPath, false);
+        super(finder, frontendDependencies, npmFolder, generatedPath);
     }
 
     @Override

@@ -18,7 +18,6 @@ package com.vaadin.flow.server.frontend;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -29,7 +28,6 @@ import net.bytebuddy.jar.asm.MethodVisitor;
 import net.bytebuddy.jar.asm.Opcodes;
 import net.bytebuddy.jar.asm.Type;
 
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.router.Route;
@@ -78,9 +76,7 @@ class FrontendClassVisitor extends ClassVisitor {
         String layout;
         final HashSet<String> classes = new HashSet<>();
         final HashSet<String> modules = new HashSet<>();
-        final HashMap<String, Set<String>> imports = new HashMap<>();
         final HashSet<String> scripts = new HashSet<>();
-        final HashSet<String> npmDone = new HashSet<>();
 
         public EndPointData(Class<?> clazz) {
             this.name = clazz.getName();
@@ -90,15 +86,12 @@ class FrontendClassVisitor extends ClassVisitor {
         @Override
         public String toString() {
             return String.format(
-                    "%n view: %s%n route: %s%n notheme: %b%n theme: %s%n variant: %s%n layout: %s%n imports: %s%n modules: %s%n scripts: %s%n classes: %s%n npmDone: %s%n",
-                    name, route, notheme, theme, variant, layout, hash2Str(imports), col2Str(modules),
-                    col2Str(scripts), col2Str(classes), col2Str(npmDone));
+                    "%n view: %s%n route: %s%n notheme: %b%n theme: %s%n variant: %s%n layout: %s%n modules: %s%n scripts: %s%n classes: %s%n",
+                    name, route, notheme, theme, variant, layout, col2Str(modules),
+                    col2Str(scripts), col2Str(classes));
         }
         private String col2Str(Collection<String> s) {
             return String.join("\n          ", s);
-        }
-        private String hash2Str(HashMap<String, Set<String>> h) {
-            return h.keySet().stream().reduce("", (s, k) -> s + "\n    " + k + "\n          " + col2Str(h.get(k)));
         }
     }
 
@@ -109,7 +102,6 @@ class FrontendClassVisitor extends ClassVisitor {
     private final AnnotationVisitor routeVisitor;
     private final AnnotationVisitor themeRouteVisitor;
     private final AnnotationVisitor themeLayoutVisitor;
-    private final AnnotationVisitor htmlImportVisitor;
     private final AnnotationVisitor jsModuleVisitor;
     private final AnnotationVisitor jScriptVisitor;
     private final Set<String> children = new HashSet<>();
@@ -187,15 +179,6 @@ class FrontendClassVisitor extends ClassVisitor {
                 }
             }
         };
-        // Visitor for @HtmlImport annotations
-        htmlImportVisitor = new RepeatedAnnotationVisitor() {
-            @Override
-            public void visit(String name, Object value) {
-                Set<String> set = endPoint.imports.computeIfAbsent(className,
-                        k -> new HashSet<>());
-                set.add(value.toString());
-            }
-        };
         // Visitor for @JsModule annotations
         jsModuleVisitor = new RepeatedAnnotationVisitor() {
             @Override
@@ -247,11 +230,7 @@ class FrontendClassVisitor extends ClassVisitor {
         if (className.equals(endPoint.name) && cname.contains(Route.class.getName())) {
             return routeVisitor;
         }
-        if (cname.contains(HtmlImport.class.getName())) {
-            return htmlImportVisitor;
-        }
         if (cname.contains(JsModule.class.getName())) {
-            endPoint.npmDone.add(className);
             return jsModuleVisitor;
         }
         if (cname.contains(JavaScript.class.getName())) {

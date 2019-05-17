@@ -25,7 +25,6 @@ import java.util.Map;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
@@ -42,12 +41,12 @@ public class NodeTestComponents {
     class ButtonComponent extends Component {
     }
 
-    @HtmlImport("frontend://bower_components/iron-icon/iron-icon.html")
+    @JsModule("@polymer/iron-icon/iron-icon.js")
     class IconComponent extends Component {
     }
 
-    @HtmlImport("frontend://bower_components/vaadin-date-picker/src/vaadin-date-picker.html")
-    @HtmlImport("frontend://bower_components/vaadin-date-picker/src/vaadin-month-calendar.html")
+    @JsModule("@vaadin/vaadin-date-picker/src/vaadin-date-picker.js")
+    @JsModule("@vaadin/vaadin-date-picker/src/vaadin-month-calendar.js")
     @JavaScript("frontend://ExampleConnector.js")
     public static class VaadinBowerComponent extends Component {
     }
@@ -61,12 +60,11 @@ public class NodeTestComponents {
     public static class VaadinNpmComponent extends Component {
     }
 
-    @HtmlImport("frontend://bower_components/vaadin-date-picker/vaadin-date-picker-light.html")
     @JsModule("vaadin-mixed-component/src/vaadin-mixed-component.js")
     public static class VaadinMixedComponent extends Component {
     }
 
-    @HtmlImport("frontend://local-p2-template.html")
+    @JsModule("./local-p2-template.js")
     public static class LocalP2Template extends Component {
     }
 
@@ -79,7 +77,7 @@ public class NodeTestComponents {
     public static class FrontendP3Template extends Component {
     }
 
-    @HtmlImport("foo.html")
+    @JsModule("./foo.js")
     public static class FlatImport extends Component {
     }
 
@@ -108,12 +106,12 @@ public class NodeTestComponents {
     /**
      * Lumo component theme class implementation.
      */
-    @HtmlImport("frontend://bower_components/vaadin-lumo-styles/color.html")
-    @HtmlImport("frontend://bower_components/vaadin-lumo-styles/typography.html")
-    @HtmlImport("frontend://bower_components/vaadin-lumo-styles/sizing.html")
-    @HtmlImport("frontend://bower_components/vaadin-lumo-styles/spacing.html")
-    @HtmlImport("frontend://bower_components/vaadin-lumo-styles/style.html")
-    @HtmlImport("frontend://bower_components/vaadin-lumo-styles/icons.html")
+    @JsModule("@vaadin/vaadin-lumo-styles/color.js")
+    @JsModule("@vaadin/vaadin-lumo-styles/typography.js")
+    @JsModule("@vaadin/vaadin-lumo-styles/sizing.js")
+    @JsModule("@vaadin/vaadin-lumo-styles/spacing.js")
+    @JsModule("@vaadin/vaadin-lumo-styles/style.js")
+    @JsModule("@vaadin/vaadin-lumo-styles/icons.js")
     public static class LumoTest implements AbstractTheme {
 
         public static final String LIGHT = "light";
