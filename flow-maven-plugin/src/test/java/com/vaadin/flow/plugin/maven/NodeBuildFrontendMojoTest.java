@@ -185,13 +185,13 @@ public class NodeBuildFrontendMojoTest {
     public void should_AddImports() throws Exception {
         mojo.execute();
         removeImports("@vaadin/vaadin-lumo-styles/sizing.js",
-                "./local-p2-template.js");
+                "./local-template.js");
         assertContainsImports(false, "@vaadin/vaadin-lumo-styles/sizing.js",
-                "./local-p2-template.js");
+                "./local-template.js");
 
         mojo.execute();
         assertContainsImports(true, "@vaadin/vaadin-lumo-styles/sizing.js",
-                "./local-p2-template.js");
+                "./local-template.js");
     }
 
     @Test
@@ -209,17 +209,17 @@ public class NodeBuildFrontendMojoTest {
         mojo.execute();
 
         removeImports("@vaadin/vaadin-lumo-styles/sizing.js",
-                "./local-p2-template.js");
+                "./local-template.js");
         addImports("./added-import.js");
 
         assertContainsImports(false, "@vaadin/vaadin-lumo-styles/sizing.js",
-                "./local-p2-template.js");
+                "./local-template.js");
         assertContainsImports(true, "./added-import.js");
 
         mojo.execute();
 
         assertContainsImports(true, "@vaadin/vaadin-lumo-styles/sizing.js",
-                "./local-p2-template.js");
+                "./local-template.js");
         assertContainsImports(false, "./added-import.js");
     }
 
@@ -316,7 +316,7 @@ public class NodeBuildFrontendMojoTest {
                 "./frontend-p3-template.js", "./local-p3-template.js",
                 "./foo.js",
                 "./vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
-                "./local-p2-template.js", "./foo-dir/vaadin-npm-component.js");
+                "./local-template.js", "./foo-dir/vaadin-npm-component.js");
     }
 
     private void createExpectedImports(File directoryWithImportsJs,

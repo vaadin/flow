@@ -142,7 +142,7 @@ public class NodeUpdateTestUtil {
                 "./local-p3-template.js",
                 "./foo.js",
                 "./vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
-                "./local-p2-template.js",
+                "./local-template.js",
                 "./foo-dir/vaadin-npm-component.js");
     }
 
