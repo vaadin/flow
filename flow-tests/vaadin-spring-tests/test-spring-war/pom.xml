@@ -51,6 +51,12 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-server-production-mode</artifactId>
+            <version>${vaadin.flow.version}</version>
+        </dependency>
+
         <!-- Spring -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -120,6 +126,10 @@
                 <groupId>com.vaadin</groupId>
                 <artifactId>flow-maven-plugin</artifactId>
                 <version>${vaadin.flow.version}</version>
+                <!-- Configure the output folder so that spring-boot-maven-plugin gets the generated resources -->
+                <configuration>
+                    <webpackOutputDirectory>${project.build.outputDirectory}/META-INF/resources</webpackOutputDirectory>
+                </configuration>
                 <executions>
                     <execution>
                         <goals>

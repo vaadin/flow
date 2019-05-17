@@ -14,7 +14,7 @@
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
         <skipTests>true</skipTests>
-        <vaadin.upload.version>1.1.0</vaadin.upload.version>
+        <vaadin.upload.version>2.0.0.rc1</vaadin.upload.version>
     </properties>
 
     <dependencies>
