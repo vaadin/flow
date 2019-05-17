@@ -22,7 +22,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.VisibilityView", layout = ViewTestLayout.class)
-public class VisibilityView extends Div {
+public class VisibilityView extends AbstractDivView {
 
     public VisibilityView() {
         setId("main");
@@ -36,21 +36,19 @@ public class VisibilityView extends Div {
         label.setId("nested-label");
         div.add(label);
 
-        NativeButton updateVisibility = new NativeButton("Update visibility",
+        NativeButton updateVisibility = createButton("Update visibility",
+                "updateVisibiity",
                 event -> div.setVisible(!div.isVisible()));
-        updateVisibility.setId("updateVisibiity");
 
-        NativeButton updateLabelVisibility = new NativeButton(
-                "Update label visibility",
+        NativeButton updateLabelVisibility = createButton(
+                "Update label visibility", "updateLabelVisibiity",
                 event -> label.setVisible(!label.isVisible()));
-        updateLabelVisibility.setId("updateLabelVisibiity");
 
-        NativeButton updateStyle = new NativeButton(
-                "Update target element property", event -> {
+        NativeButton updateStyle = createButton(
+                "Update target element property", "updateProperty", event -> {
                     div.setClassName("foo");
                     label.setClassName("bar");
                 });
-        updateStyle.setId("updateProperty");
 
         add(div, updateVisibility, updateStyle, updateLabelVisibility);
     }

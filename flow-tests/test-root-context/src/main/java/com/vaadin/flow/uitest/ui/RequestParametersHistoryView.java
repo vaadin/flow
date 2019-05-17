@@ -34,9 +34,8 @@ public class RequestParametersHistoryView extends AbstractDivView {
     private final Label requestParamLabel;
 
     public RequestParametersHistoryView() {
-        NativeButton backwardButton = new NativeButton("Go back",
+        NativeButton backwardButton = createButton("Go back", BACK_BUTTON_ID,
                 event -> getPage().getHistory().back());
-        backwardButton.setId(BACK_BUTTON_ID);
 
         requestParamLabel = new Label(NO_INPUT_TEXT);
         requestParamLabel.setId(REQUEST_PARAM_ID);

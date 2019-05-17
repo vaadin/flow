@@ -21,8 +21,8 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.internal.JsonUtils;
-import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 import elemental.json.Json;
 
@@ -41,7 +41,8 @@ public class ExecJavaScriptView extends AbstractDivView {
                 JsonUtils.createArray(Json.create("Hello world"),
                         Json.create(true)));
 
-        NativeButton createElementButton = new NativeButton("Create and update element",
+        NativeButton createElementButton = createButton(
+                "Create and update element", "createButton",
                 e -> {
                     Input input = new Input();
                     input.addClassName("newInput");
@@ -49,17 +50,14 @@ public class ExecJavaScriptView extends AbstractDivView {
                             "Value from js");
                     add(input);
                 });
-        createElementButton.setId("createButton");
 
         add(alertButton, focusButton, swapText, logButton, createElementButton);
     }
 
     private NativeButton createJsButton(String text, String id, String script,
             Serializable... arguments) {
-        NativeButton button = new NativeButton(text, e -> UI.getCurrent().getPage()
+        return createButton(text, id,
+                e -> UI.getCurrent().getPage()
                 .executeJs(script, arguments));
-
-        button.setId(id);
-        return button;
     }
 }
