@@ -15,43 +15,51 @@
  */
 package com.vaadin.flow.spring;
 
-import java.lang.annotation.Annotation;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
+import java.lang.annotation.Annotation;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import com.googlecode.gentyref.GenericTypeReflector;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.boot.autoconfigure.AutoConfigurationPackages;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
+import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 
-import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.server.AmbiguousRouteConfigurationException;
+import com.vaadin.flow.server.DeploymentConfigurationFactory;
+import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.startup.AbstractRouteRegistryInitializer;
 import com.vaadin.flow.server.startup.AnnotationValidator;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
+import com.vaadin.flow.server.startup.DevModeInitializer;
 import com.vaadin.flow.server.startup.ServletVerifier;
 import com.vaadin.flow.server.startup.WebComponentConfigurationRegistryInitializer;
 import com.vaadin.flow.server.startup.WebComponentExporterAwareValidator;
@@ -212,6 +220,49 @@ public class VaadinServletContextInitializer
         }
     }
 
+    private class DevModeServletContextListener
+            implements ServletContextListener {
+
+        @Override
+        public void contextInitialized(ServletContextEvent event) {
+            // If we have already initialized the devmodehandler we will not do extra work
+            if (DevModeHandler.getDevModeHandler() != null) {
+                return;
+            }
+
+            ServletRegistrationBean servletRegistrationBean = appContext
+                    .getBean("servletRegistrationBean",
+                            ServletRegistrationBean.class);
+
+            if (servletRegistrationBean == null) {
+                LoggerFactory.getLogger(VaadinServletContextInitializer.class)
+                       .warn("No servlet registration found. DevServer will not be started!");
+                return;
+            }
+
+            DeploymentConfiguration config = StubServletConfig
+                    .createDeploymentConfiguration(event.getServletContext(),
+                            servletRegistrationBean, SpringServlet.class);
+
+            if(config.isBowerMode()) {
+                return;
+            }
+
+            // Handle classes Route.class, NpmPackage.class, WebComponentExporter.class
+            Set<Class<?>> classes = findByAnnotation(getNpmPackages(),
+                    Route.class, NpmPackage.class).collect(Collectors.toSet());
+            classes.addAll(findBySuperType(getNpmPackages(),
+                    WebComponentExporter.class).collect(Collectors.toSet()));
+
+            DevModeInitializer.initDevModeHandler(classes, event.getServletContext(), config);
+        }
+
+        @Override
+        public void contextDestroyed(ServletContextEvent event) {
+            // NO-OP
+        }
+    }
+
     private class WebComponentServletContextListener
             implements ServletContextListener {
 
@@ -288,6 +339,8 @@ public class VaadinServletContextInitializer
         servletContext
                 .addListener(new AnnotationValidatorServletContextListener());
 
+        servletContext.addListener(new DevModeServletContextListener());
+
         // Skip custom web component builders search if registry already
         // initialized
         if (!WebComponentConfigurationRegistry.getInstance(servletContext)
@@ -343,6 +396,10 @@ public class VaadinServletContextInitializer
         return beanClass;
     }
 
+    private Collection<String> getNpmPackages() {
+        return getDefaultPackages();
+    }
+
     private Collection<String> getRoutePackages() {
         return getDefaultPackages();
     }
@@ -386,4 +443,74 @@ public class VaadinServletContextInitializer
         return packagesList;
     }
 
+    /**
+     * Default ServletConfig implementation.
+     */
+    private static class StubServletConfig implements ServletConfig {
+        private final ServletContext context;
+        private final ServletRegistrationBean registration;
+
+        /**
+         * Constructor.
+         *
+         * @param context
+         *         the ServletContext
+         * @param registration
+         *         the ServletRegistration for this ServletConfig instance
+         */
+        private StubServletConfig(ServletContext context,
+                ServletRegistrationBean registration) {
+            this.context = context;
+            this.registration = registration;
+        }
+
+        @Override
+        public String getServletName() {
+            return registration.getServletName();
+        }
+
+        @Override
+        public ServletContext getServletContext() {
+            return context;
+        }
+
+        @Override
+        public String getInitParameter(String name) {
+            return ((Map<String, String>) registration.getInitParameters())
+                    .get(name);
+        }
+
+        @Override
+        public Enumeration<String> getInitParameterNames() {
+            return Collections
+                    .enumeration(registration.getInitParameters().keySet());
+        }
+
+        /**
+         * Creates a DeploymentConfiguration.
+         *
+         * @param context
+         *         the ServletContext
+         * @param registration
+         *         the ServletRegistrationBean to get servlet parameters from
+         * @param servletClass
+         *         the class to look for properties defined with annotations
+         * @return a DeploymentConfiguration instance
+         */
+        public static DeploymentConfiguration createDeploymentConfiguration(
+                ServletContext context, ServletRegistrationBean registration,
+                Class<?> servletClass) {
+            try {
+                ServletConfig servletConfig = new StubServletConfig(context,
+                        registration);
+                return DeploymentConfigurationFactory
+                        .createPropertyDeploymentConfiguration(servletClass,
+                                servletConfig);
+            } catch (ServletException e) {
+                throw new IllegalStateException(String.format(
+                        "Failed to get deployment configuration data for servlet with name '%s' and class '%s'",
+                        registration.getServletName(), servletClass), e);
+            }
+        }
+    }
 }
