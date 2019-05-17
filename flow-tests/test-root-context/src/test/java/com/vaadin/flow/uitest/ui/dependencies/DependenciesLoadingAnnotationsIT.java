@@ -19,9 +19,11 @@ import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.testcategory.IgnoreNPM;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 /**
@@ -41,6 +43,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
  * @see DependenciesLoadingPageApiView
  * @see DependenciesLoadingPageApiIT
  */
+@Category(IgnoreNPM.class)
 public class DependenciesLoadingAnnotationsIT extends ChromeBrowserTest {
     private static final String EAGER_PREFIX = "eager.";
     private static final String INLINE_PREFIX = "inline.";

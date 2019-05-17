@@ -21,6 +21,7 @@ import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.Route;
@@ -46,6 +47,7 @@ public class ClientUpdateModeView extends AbstractDivView {
 
     @Tag("client-update-mode")
     @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/ClientUpdateMode.html")
+    @JsModule("ClientUpdateMode.js")
     public static class ClientUpdateModeTemplate
             extends PolymerTemplate<ClientUpdateModeModel> {
     }

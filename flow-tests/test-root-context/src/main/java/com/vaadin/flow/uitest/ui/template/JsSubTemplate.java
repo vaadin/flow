@@ -17,6 +17,7 @@ package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.templatemodel.AllowClientUpdates;
@@ -24,6 +25,7 @@ import com.vaadin.flow.templatemodel.TemplateModel;
 
 @Tag("js-sub-template")
 @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/JsSubTemplate.html")
+@JsModule("JsSubTemplate.js")
 public class JsSubTemplate
         extends PolymerTemplate<JsSubTemplate.JsSubTemplateModel> {
 
