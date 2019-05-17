@@ -53,7 +53,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.times;
 
 @NotThreadSafe
@@ -78,7 +78,7 @@ public class WebComponentProviderTest {
         MockitoAnnotations.initMocks(this);
         Mockito.when(request.getService()).thenReturn(service);
         Mockito.when(session.getService()).thenReturn(service);
-        Mockito.when(service.getAttribute(WebComponentConfigurationRegistry.class, any())).thenReturn(new WebComponentConfigurationRegistry(){});
+        Mockito.when(service.getAttribute(WebComponentConfigurationRegistry.class, anyObject())).thenReturn(new WebComponentConfigurationRegistry(){});
         VaadinService.setCurrent(service);
         Mockito.when(service.getInstantiator())
                 .thenReturn(new MockInstantiator());
