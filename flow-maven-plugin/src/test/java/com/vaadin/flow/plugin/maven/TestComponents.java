@@ -58,8 +58,8 @@ public class TestComponents {
     public static class VaadinMixedComponent extends Component {
     }
 
-    @JsModule("./local-p2-template.js")
-    public static class LocalP2Template extends Component {
+    @JsModule("./local-template.js")
+    public static class LocalTemplate extends Component {
     }
 
     @JsModule("./local-p3-template.js")
@@ -89,7 +89,7 @@ public class TestComponents {
         VaadinElementMixin vaadinElementMixin;
         VaadinNpmComponent vaadinNpmComponent;
         VaadinMixedComponent vaadinMixedComponent;
-        LocalP2Template localP2Template;
+        LocalTemplate localP2Template;
         LocalP3Template localP3Template;
         FrontendP3Template frontendP3Template;
         FlatImport flatImport;

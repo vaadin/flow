@@ -36,22 +36,30 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.*;
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
 
 public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
+
     private File importsFile;
     private File generatedPath;
     private File frontendDirectory;
     private File nodeModulesPath;
     private TaskUpdateImports updater;
+
 
     @Before
     public void setup() throws Exception {
@@ -68,59 +76,18 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         Assert.assertTrue(nodeModulesPath.mkdirs());
         createExpectedImports(frontendDirectory, nodeModulesPath);
+        Assert.assertTrue(new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME + "ExampleConnector.js").exists());
     }
 
     @Test
     public void should_ThrowException_WhenImportsDoNotExist() {
         deleteExpectedImports(frontendDirectory, nodeModulesPath);
-
-        boolean exceptionNotThrown = true;
-        try {
-            updater.execute();
-        } catch (IllegalStateException expected) {
-            exceptionNotThrown = false;
-            String exceptionMessage = expected.getMessage();
-            Assert.assertTrue(
-                    exceptionMessage.contains(importsFile.getAbsolutePath()));
-
-            String content = null;
-            try {
-                content = FileUtils.readFileToString(importsFile,
-                        Charset.defaultCharset());
-            } catch (IOException e) {
-            }
-
-            String innerMessage = expected.getCause().getMessage();
-            Assert.assertTrue(
-                    innerMessage + " is missing "
-                            + nodeModulesPath.getAbsolutePath()
-                            + "\n While imports file is " + content + "\n",
-                    innerMessage.contains(nodeModulesPath.getAbsolutePath()));
-
-            List<String> expectedImports = new ArrayList<>(
-                    getExpectedImports());
-            expectedImports.remove("@vaadin/flow-frontend/ExampleConnector.js");
-
-            for (String expectedImport : expectedImports) {
-                String normalizedImport = expectedImport.startsWith("./")
-                        ? expectedImport.substring(2)
-                        : expectedImport;
-                Assert.assertTrue(
-                        innerMessage + " is missing " + expectedImport
-                                + "\n While imports file is " + content + "\n",
-                        innerMessage.contains(normalizedImport));
-            }
-        }
-
-        if (exceptionNotThrown) {
-            Assert.fail(
-                    "Expected an exception to be thrown when no imported files exist");
-        }
+        exception.expect(IllegalStateException.class);
+        updater.execute();
     }
 
     @Test
     public void should_UpdateMainJsFile() throws Exception {
-        Assert.assertFalse(importsFile.exists());
 
         List<String> expectedLines = new ArrayList<>(Arrays.asList(
                 "const div = document.createElement('div');",
@@ -129,15 +96,12 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 "document.body.setAttribute('theme', 'dark');"));
         expectedLines.addAll(getExpectedImports());
 
+        Assert.assertFalse(importsFile.exists());
         updater.execute();
+        Assert.assertTrue(importsFile.exists());
 
         assertContainsImports(true, expectedLines.toArray(new String[0]));
-
-        File flowPackage = new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME);
-
-        Assert.assertTrue(flowPackage.exists());
-        Assert.assertTrue(new File(flowPackage, "ExampleConnector.js")
-                .exists());
+        assertContainsImports(true, "import 'unresolved/component';");
     }
 
     @Test
@@ -170,13 +134,13 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
     public void should_AddImports() throws Exception {
         updater.execute();
         removeImports("@vaadin/vaadin-lumo-styles/sizing.js",
-                "./local-p2-template.js");
+                "./local-template.js");
         assertContainsImports(false, "@vaadin/vaadin-lumo-styles/sizing.js",
-                "./local-p2-template.js");
+                "./local-template.js");
 
         updater.execute();
         assertContainsImports(true, "@vaadin/vaadin-lumo-styles/sizing.js",
-                "./local-p2-template.js");
+                "./local-template.js");
     }
 
     @Test
@@ -194,11 +158,11 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         updater.execute();
 
         removeImports("@vaadin/vaadin-lumo-styles/sizing.js",
-                "./local-p2-template.js");
+                "./local-template.js");
         addImports("./added-import.js");
 
         assertContainsImports(false, "@vaadin/vaadin-lumo-styles/sizing.js",
-                "./local-p2-template.js");
+                "./local-template.js");
         assertContainsImports(true, "./added-import.js");
 
         updater.execute();
@@ -210,6 +174,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
             throws IOException {
         String content = FileUtils.readFileToString(importsFile,
                 Charset.defaultCharset());
+
         for (String importString : imports) {
                 if (contains) {
                     Assert.assertTrue(
