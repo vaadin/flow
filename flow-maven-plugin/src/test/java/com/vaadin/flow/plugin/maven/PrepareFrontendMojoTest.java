@@ -24,23 +24,23 @@ import org.mockito.Mockito;
 
 import elemental.json.JsonObject;
 
-import static com.vaadin.flow.plugin.maven.NodeBuildFrontendMojoTest.assertContainsPackage;
-import static com.vaadin.flow.plugin.maven.NodeBuildFrontendMojoTest.getPackageJson;
-import static com.vaadin.flow.plugin.maven.NodeBuildFrontendMojoTest.setProject;
+import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.assertContainsPackage;
+import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.getPackageJson;
+import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.setProject;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 
-public class NodeValidateMojoTest {
+public class PrepareFrontendMojoTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
-    private final NodeValidateMojo mojo = new NodeValidateMojo();
+    private final PrepareFrontendMojo mojo = new PrepareFrontendMojo();
     private File projectFrontendResourcesDirectory;
     private File nodeModulesPath;
     private File flowPackagePath;
