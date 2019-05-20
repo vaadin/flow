@@ -3,7 +3,7 @@ import {html} from '@polymer/polymer/lib/utils/html-tag.js';
 import '@polymer/polymer/lib/elements/dom-repeat.js';
 import '@polymer/polymer/lib/elements/dom-if.js';
 
-class ListInsideListBinding extends Polymer.Element {
+class ListInsideListBinding extends PolymerElement {
     static get is() {
         return 'list-inside-list-binding'
     }

@@ -2,7 +2,7 @@ import {PolymerElement} from '@polymer/polymer/polymer-element.js';
 import {html} from '@polymer/polymer/lib/utils/html-tag.js';
 import '@polymer/polymer/lib/elements/dom-repeat.js';
 
-class ModelList extends Polymer.Element {
+class ModelList extends PolymerElement {
     static get is() {
         return 'model-list';
     }

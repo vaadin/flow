@@ -1,7 +1,7 @@
 import {PolymerElement} from '@polymer/polymer/polymer-element.js';
 import {html} from '@polymer/polymer/lib/utils/html-tag.js';
 
-class ServerModelNullList extends Polymer.Element {
+class ServerModelNullList extends PolymerElement {
     static get is() { return 'server-model-null-list'; }
     
     static get template() {

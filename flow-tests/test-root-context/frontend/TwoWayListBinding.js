@@ -2,7 +2,7 @@ import {PolymerElement} from '@polymer/polymer/polymer-element.js';
 import {html} from '@polymer/polymer/lib/utils/html-tag.js';
 import '@polymer/polymer/lib/elements/dom-repeat.js';
 
-class TwoWayListBinding extends Polymer.Element {
+class TwoWayListBinding extends PolymerElement {
     static get is() {
         return 'two-way-list-binding'
     }

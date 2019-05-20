@@ -14,7 +14,7 @@ class ExistingDomElement extends PolymerElement {
 `;
   }
   static get is() {
-      return 'existing-dom-element''
+      return 'existing-dom-element'
   }
     
 }

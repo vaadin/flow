@@ -1,8 +1,8 @@
 import {PolymerElement} from '@polymer/polymer/polymer-element.js';
 import {html} from '@polymer/polymer/lib/utils/html-tag.js';
-import 'ChildTemplate.js';
+import './ChildTemplate.js';
 
-class ParentTemplate extends Polymer.Element {
+class ParentTemplate extends PolymerElement {
     static get is() { return 'parent-template' }
    
     static get template() {

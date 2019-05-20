@@ -31,7 +31,7 @@ import com.vaadin.flow.uitest.ui.template.HiddenTemplateView;
 @HtmlImport("bower_components/polymer/polymer-element.html")
 @HtmlImport("bower_components/vaadin-development-mode-detector/vaadin-development-mode-detector.html")
 @NpmPackage(value = "@vaadin/vaadin-development-mode-detector", version = "1.1.0")
-@JsModule("@vaadin/vaadin-development-mode-detectorvaadin-development-mode-detector.js")
+@JsModule("@vaadin/vaadin-development-mode-detector/vaadin-development-mode-detector.js")
 @Route(value = "com.vaadin.flow.uitest.ui.frontend.UsageStatisticsView", layout = ViewTestLayout.class)
 public class UsageStatisticsView extends Div {
     public UsageStatisticsView() {

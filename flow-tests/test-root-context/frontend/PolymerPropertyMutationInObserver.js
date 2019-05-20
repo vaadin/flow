@@ -1,7 +1,7 @@
 import {PolymerElement} from '@polymer/polymer/polymer-element.js';
 import {html} from '@polymer/polymer/lib/utils/html-tag.js';
 
-class MyTemplate extends Polymer.Element {
+class MyTemplate extends PolymerElement {
     static get is() { return 'property-mutation-in-observer' }
     
     static get template() {

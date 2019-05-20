@@ -24,7 +24,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.CustomCustomElementView", layout = ViewTestLayout.class)
 @JavaScript("frontend://com/vaadin/flow/uitest/ui/CustomCustomElement.js")
-@JsModule("CustomCustomElement.js")
+@JsModule("com/vaadin/flow/uitest/ui/CustomCustomElement.js")
 public class CustomCustomElementView extends AbstractDivView {
 
     public CustomCustomElementView() {
