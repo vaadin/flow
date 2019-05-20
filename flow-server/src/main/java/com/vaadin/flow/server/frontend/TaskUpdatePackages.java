@@ -18,8 +18,6 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -34,15 +32,6 @@ import elemental.json.JsonObject;
  * {@link NpmPackage}
  */
 public class TaskUpdatePackages extends NodeUpdater {
-
-    private static final List<String> PRO_PACKAGES = Arrays.asList(
-            "@vaadin/vaadin-board",
-            "@vaadin/vaadin-charts",
-            "@vaadin/vaadin-confirm-dialog",
-            "@vaadin/vaadin-cookie-consent",
-            "@vaadin/vaadin-crud",
-            "@vaadin/vaadin-grid-pro",
-            "@vaadin/vaadin-rich-text-editor");
 
     /**
      * Create an instance of the updater given all configurable parameters.
@@ -83,9 +72,6 @@ public class TaskUpdatePackages extends NodeUpdater {
             Map<String, String> deps) {
         boolean added = false;
 
-        // Add the appropriate shrink-dependency to the package table
-        addShrinkDependency(deps);
-
         // Add application dependencies
         for(Entry<String, String> dep : deps.entrySet()) {
             added = addDependency(packageJson, DEPENDENCIES, dep.getKey(), dep.getValue()) || added;
@@ -102,19 +88,4 @@ public class TaskUpdatePackages extends NodeUpdater {
         }
         return added;
     }
-
-    private void addShrinkDependency(Map<String, String> deps) {
-        boolean hasVaadin = false;
-        boolean hasPro = false;
-        for(Entry<String, String> e : deps.entrySet()) {
-            String pkg = e.getKey();
-            hasPro = hasPro || PRO_PACKAGES.contains(pkg);
-            hasVaadin = hasPro || hasVaadin || pkg.startsWith("@vaadin");
-        }
-        if (hasVaadin) {
-            String dep = hasPro ? "@vaadin/vaadin-shrinkwrap" : "@vaadin/vaadin-core-shrinkwrap";
-            deps.put(dep, "v14.0.0-alpha3");
-        }
-    }
-
 }
