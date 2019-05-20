@@ -25,6 +25,7 @@ import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,6 +42,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 
 @NotThreadSafe
@@ -54,6 +57,8 @@ public class WebComponentConfigurationRegistryTest {
     @Before
     public void init() {
         VaadinService service = mock(VaadinService.class);
+        Mockito.when(service.getAttribute(WebComponentConfigurationRegistry.class)).thenReturn(new WebComponentConfigurationRegistry(){});
+        Mockito.when(service.getAttribute(eq(WebComponentConfigurationRegistry.class), anyObject())).thenReturn(new WebComponentConfigurationRegistry(){});
         registry = WebComponentConfigurationRegistry
                 .getInstance(service);
     }
