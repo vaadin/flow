@@ -22,7 +22,6 @@ import com.vaadin.flow.server.startup.EnableOSGiRunner;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -42,10 +41,9 @@ import java.util.stream.IntStream;
 @RunWith(EnableOSGiRunner.class)
 public class OSGiWebComponentConfigurationRegistryTest extends WebComponentConfigurationRegistryTest {
 
-    @Before
     @Override
-    public void init() {
-        super.init();
+    protected WebComponentConfigurationRegistry createRegistry() {
+        return new OSGiWebComponentConfigurationRegistry();
     }
 
     @After
