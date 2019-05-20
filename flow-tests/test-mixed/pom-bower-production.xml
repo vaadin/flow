@@ -27,6 +27,11 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-server-production-mode</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.webjars.bowergithub.polymer</groupId>
             <artifactId>polymer</artifactId>
         </dependency>
@@ -42,7 +47,6 @@
                 <executions>
                     <execution>
                         <goals>
-                            <goal>prepare-frontend</goal>
                             <goal>copy-production-files</goal>
                             <goal>package-for-production</goal>
                         </goals>

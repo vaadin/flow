@@ -33,19 +33,6 @@
 
     <build>
         <plugins>
-            <!--  Run flow plugin to build frontend -->
-            <plugin>
-                <groupId>com.vaadin</groupId>
-                <artifactId>flow-maven-plugin</artifactId>
-                <version>${project.version}</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>prepare-frontend</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>                
             <!-- Run jetty before integration tests, and stop after -->
             <plugin>
                 <groupId>org.eclipse.jetty</groupId>
