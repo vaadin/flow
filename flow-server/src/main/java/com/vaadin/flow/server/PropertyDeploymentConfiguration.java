@@ -24,7 +24,6 @@ import com.vaadin.flow.shared.communication.PushMode;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_BOWER_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_REQUEST_TIMING;
@@ -39,11 +38,8 @@ import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_SYNC_ID_CHECK;
 public class PropertyDeploymentConfiguration
         extends AbstractDeploymentConfiguration {
 
-
     private final Properties initParameters;
     private final Class<?> systemPropertyBaseClass;
-    protected static final String IS_BOWER_DEV = "isBowerDevMode";
-    protected static final String IS_BOWER_PROD = "isBowerProdMode";
 
     /**
      * Create a new property deployment configuration instance.
@@ -153,21 +149,7 @@ public class PropertyDeploymentConfiguration
 
     @Override
     public boolean isBowerMode() {
-        return getBooleanProperty(SERVLET_PARAMETER_BOWER_MODE, false)
-                || isBowerLegacyMode();
-    }
-
-    protected boolean isBowerLegacyMode() {
-        // User can force npm mode by setting bowerMode to some string value
-        if (getStringProperty(SERVLET_PARAMETER_BOWER_MODE, null) != null) {
-            return false;
-        }
-        // User can force npm mode by starting a webpack server manually
-        if (getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, null) != null) {
-            return false;
-        }
-        return isProductionMode() && getBooleanProperty(IS_BOWER_PROD, false)
-                || !isProductionMode() && getBooleanProperty(IS_BOWER_DEV, false);
+        return getBooleanProperty(SERVLET_PARAMETER_BOWER_MODE, true);
     }
 
     @Override
