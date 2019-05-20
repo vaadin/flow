@@ -9,7 +9,7 @@
         <version>2.0-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-bower-dev-mode</artifactId>
-    <name>Flow tests for NPM in development mode</name>
+    <name>Flow tests in bower and development mode</name>
 
     <packaging>war</packaging>
     <properties>
