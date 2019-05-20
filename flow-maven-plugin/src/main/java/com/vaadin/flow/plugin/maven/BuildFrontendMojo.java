@@ -63,7 +63,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
  * </ul>
  */
 @Mojo(name = "build-frontend", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
-public class NodeBuildFrontendMojo extends AbstractMojo {
+public class BuildFrontendMojo extends AbstractMojo {
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;

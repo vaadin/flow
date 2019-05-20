@@ -60,7 +60,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class NodeBuildFrontendMojoTest {
+public class BuildFrontendMojoTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
@@ -72,7 +72,7 @@ public class NodeBuildFrontendMojoTest {
     private String appPackage;
     private String webpackConfig;
 
-    private final NodeBuildFrontendMojo mojo = new NodeBuildFrontendMojo();
+    private final BuildFrontendMojo mojo = new BuildFrontendMojo();
 
     @Before
     public void setup() throws Exception {
