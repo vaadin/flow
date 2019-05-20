@@ -5,7 +5,7 @@ import javax.servlet.ServletContext;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -21,12 +21,10 @@ import org.junit.rules.TemporaryFolder;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.shared.ApplicationConstants;
 
-import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
-import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
+import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
+import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 import static java.util.Collections.emptyMap;
 import static org.easymock.EasyMock.capture;
 import static org.easymock.EasyMock.expect;
@@ -40,8 +38,8 @@ public class DeploymentConfigurationFactoryTest {
 
     @Rule
     public final TemporaryFolder temporaryFolder = new TemporaryFolder();
-
-    ServletContext contextMock;
+    private File tokenFile;
+    private ServletContext contextMock;
 
     private static class NoSettings extends VaadinServlet {
     }
@@ -59,7 +57,12 @@ public class DeploymentConfigurationFactoryTest {
     public void setup() throws IOException {
         System.setProperty("user.dir",
                 temporaryFolder.getRoot().getAbsolutePath());
+        tokenFile = new File(temporaryFolder.getRoot(), PARAM_TOKEN_FILE);
         contextMock = mock(ServletContext.class);
+    }
+
+    public void tearDown() {
+        tokenFile.delete();
     }
 
     @Test
@@ -208,64 +211,26 @@ public class DeploymentConfigurationFactoryTest {
     }
 
     @Test
-    public void should_SetBowerMode_when_NoPackageAndNoWebpack()
+    public void should_beInBowerModeByDefault()
             throws Exception {
         DeploymentConfiguration config = createConfig(emptyMap());
         assertTrue(config.isBowerMode());
+        assertFalse(config.isProductionMode());
     }
 
     @Test
-    public void should_SetBowerMode_when_NoPackage()
+    public void should_readConfigurationFromTokenFile()
             throws Exception {
-        new File(getBaseDir(), FrontendUtils.WEBPACK_CONFIG).createNewFile();
-        DeploymentConfiguration config = createConfig(emptyMap());
-        assertTrue(config.isBowerMode());
-    }
-
-    @Test
-    public void should_not_SetBowerMode_when_PackageAndWebpack()
-            throws Exception {
-        new File(getBaseDir(), FrontendUtils.WEBPACK_CONFIG).createNewFile();
-        new File(getBaseDir(), Constants.PACKAGE_JSON).createNewFile();
+        FileUtils.writeLines(tokenFile, Arrays.asList(
+                "{",
+                "\"bowerMode\": false,",
+                "\"productionMode\": true",
+                "}"));
+        expect(contextMock.getResource("/" + TOKEN_FILE))
+                .andReturn(tokenFile.toURI().toURL()).anyTimes();
         DeploymentConfiguration config = createConfig(emptyMap());
         assertFalse(config.isBowerMode());
-    }
-
-
-    @Test
-    public void should_not_SetBowerMode_when_BowerFrontendFolderAndPackageAndWebpack()
-            throws Exception {
-        FileUtils
-                .forceMkdir(new File(getBaseDir(), "src/main/webapp/frontend"));
-        new File(getBaseDir(), PACKAGE_JSON).createNewFile();
-        new File(getBaseDir(), FrontendUtils.WEBPACK_CONFIG).createNewFile();
-        DeploymentConfiguration config = createConfig(emptyMap());
-        assertFalse(config.isBowerMode());
-    }
-
-    @Test
-    public void should_not_SetBowerMode_when_ProdModeAndNoBundleEs6()
-            throws Exception {
-        Map<String, String> pars = new HashMap<>();
-        pars.put(SERVLET_PARAMETER_PRODUCTION_MODE, Boolean.TRUE.toString());
-        DeploymentConfiguration config = createConfig(pars);
-        assertFalse(config.isBowerMode());
-    }
-
-    @Test
-    public void should_SetBowerMode_when_ProdModeAndBundleEs6()
-            throws Exception {
-        // All get resources return null so now wer return that the bundle-manifest exists
-        expect(contextMock.getResource(
-                "/" + Constants.FRONTEND_URL_ES6_DEFAULT_VALUE
-                        .replace(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX,
-                                "") + "vaadin-flow-bundle-manifest.json"))
-                .andReturn(new URL("http://works")).anyTimes();
-
-        Map<String, String> pars = new HashMap<>();
-        pars.put(SERVLET_PARAMETER_PRODUCTION_MODE, Boolean.TRUE.toString());
-        DeploymentConfiguration config = createConfig(pars);
-        assertTrue(config.isBowerMode());
+        assertTrue(config.isProductionMode());
     }
 
     private DeploymentConfiguration createConfig(Map<String, String> map)
