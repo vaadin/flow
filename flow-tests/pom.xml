@@ -13,10 +13,10 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>test-mixed/pom-bower-production.xml</module>
-        <module>test-mixed/pom-bower-devmode.xml</module>
         <module>test-mixed/pom-npm-production.xml</module>
         <module>test-mixed/pom-npm-devmode.xml</module>
+        <module>test-mixed/pom-bower-production.xml</module>
+        <module>test-mixed/pom-bower-devmode.xml</module>
         <module>test-npm-web-components</module>
         <module>test-pwa</module>
         <module>test-resources</module>

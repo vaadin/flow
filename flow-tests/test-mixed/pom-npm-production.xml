@@ -42,7 +42,7 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>                
+            </plugin>
             <!-- Run jetty before integration tests, and stop after -->
             <plugin>
                 <groupId>org.eclipse.jetty</groupId>
