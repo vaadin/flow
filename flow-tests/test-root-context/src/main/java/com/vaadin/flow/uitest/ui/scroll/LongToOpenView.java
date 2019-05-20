@@ -20,8 +20,8 @@ import java.util.concurrent.TimeUnit;
 
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
-import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
 
 @Route(value = "com.vaadin.flow.uitest.ui.scroll.LongToOpenView", layout = ViewTestLayout.class)
@@ -33,9 +33,8 @@ public class LongToOpenView extends AbstractDivView {
         Div div = new Div();
         div.setText("I am the long to open view");
 
-        NativeButton back = new NativeButton("Back",
+        NativeButton back = createButton("Back", BACK_BUTTON_ID,
                 event -> getPage().getHistory().back());
-        back.setId(BACK_BUTTON_ID);
 
         add(div, back, ScrollView.createAnchorUrl(true, ANCHOR_LINK_ID,
                 ScrollView.ANCHOR_URL, "Anchor url to other view"));

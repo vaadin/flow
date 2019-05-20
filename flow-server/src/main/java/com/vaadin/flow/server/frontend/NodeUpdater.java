@@ -21,7 +21,6 @@ import java.net.URI;
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -30,7 +29,6 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.Constants;
 
@@ -58,6 +56,12 @@ public abstract class NodeUpdater implements Command {
     static final String DEPENDENCIES = "dependencies";
     private static final String DEV_DEPENDENCIES = "devDependencies";
 
+    private static final String DEP_LICENSE_KEY = "license";
+    private static final String DEP_LICENSE_DEFAULT = "UNLICENSED";
+    private static final String DEP_NAME_KEY = "name";
+    private static final String DEP_NAME_DEFAULT = "no-name";
+    private static final String DEP_NAME_FLOW_DEPS = "@vaadin/flow-deps";
+
     /**
      * Base directory for {@link Constants#PACKAGE_JSON},
      * {@link FrontendUtils#WEBPACK_CONFIG}, {@link FrontendUtils#NODE_MODULES}.
@@ -67,19 +71,13 @@ public abstract class NodeUpdater implements Command {
     /**
      * The path to the {@link FrontendUtils#NODE_MODULES} directory.
      */
-    protected final File nodeModulesPath;
-    
-    
-    /**
-     * Base directory for flow generated files. 
-     */
-    protected final File generatedPath;
+    protected final File nodeModulesFolder;
+
 
     /**
-     * Enable or disable legacy components annotated only with
-     * {@link HtmlImport}.
+     * Base directory for flow generated files.
      */
-    protected final boolean convertHtml;
+    protected final File generatedFolder;
 
     /**
      * The {@link FrontendDependencies} object representing the application
@@ -104,29 +102,16 @@ public abstract class NodeUpdater implements Command {
      *            folder with the `package.json` file
      * @param generatedPath
      *            folder where flow generated files will be placed.
-     * @param convertHtml
-     *            true to enable polymer-2 annotated classes to be considered
      */
     protected NodeUpdater(ClassFinder finder, FrontendDependencies frontendDependencies, File npmFolder,
-            File generatedPath, boolean convertHtml) {
+            File generatedPath) {
         this.frontDeps = finder != null && frontendDependencies == null
                 ? new FrontendDependencies(finder)
                 : frontendDependencies;
         this.finder = finder;
         this.npmFolder = npmFolder;
-        this.nodeModulesPath = new File(npmFolder, NODE_MODULES);
-        this.generatedPath = generatedPath;
-        this.convertHtml = convertHtml;
-    }
-
-    Set<String> getHtmlImportJsModules(Set<String> htmlImports) {
-        return htmlImports.stream().map(this::htmlImportToJsModule).filter(Objects::nonNull)
-                .collect(Collectors.toSet());
-    }
-
-    Set<String> getHtmlImportNpmPackages(Set<String> htmlImports) {
-        return htmlImports.stream().map(this::htmlImportToNpmPackage).filter(Objects::nonNull)
-                .collect(Collectors.toSet());
+        this.nodeModulesFolder = new File(npmFolder, NODE_MODULES);
+        this.generatedFolder = generatedPath;
     }
 
     Set<String> getJavascriptJsModules(Set<String> javascripts) {
@@ -173,36 +158,16 @@ public abstract class NodeUpdater implements Command {
         return finder.getResource(resource);
     }
 
-    private String htmlImportToJsModule(String htmlImport) {
-        String module = resolveInFlowFrontendDirectory( // @formatter:off
-        htmlImport
-          .replaceFirst("^.*bower_components/(vaadin-[^/]*/.*)\\.html$", "@vaadin/$1.js")
-          .replaceFirst("^.*bower_components/((iron|paper)-[^/]*/.*)\\.html$", "@polymer/$1.js")
-          .replaceFirst("\\.html$", ".js")
-        ); // @formatter:on
-        return Objects.equals(module, htmlImport) ? null : module;
+    JsonObject getMainPackageJson() throws IOException {
+        return getPackageJson(new File(npmFolder, PACKAGE_JSON));
     }
 
-    private String htmlImportToNpmPackage(String htmlImport) {
-        String module = resolveInFlowFrontendDirectory( // @formatter:off
-        htmlImport
-          .replaceFirst("^.*bower_components/(vaadin-[^/]*)/.*\\.html$", "@vaadin/$1")
-          .replaceFirst("^.*bower_components/((iron|paper)-[^/]*)/.*\\.html$", "@polymer/$1")
-          .replaceFirst("\\.html$", ".js")
-        ); // @formatter:on
-        return Objects.equals(module, htmlImport) ? null : module;
+    JsonObject getAppPackageJson() throws IOException {
+        return getPackageJson(new File(generatedFolder, PACKAGE_JSON));
     }
 
-    JsonObject createDefaultJson() {
-        log().info("Creating a default {} file ...", PACKAGE_JSON);
-        JsonObject packageJson = Json.createObject();
-        updateDefaultDependencies(packageJson);
-        return packageJson;
-    }
-
-    JsonObject getPackageJson() throws IOException {
+    JsonObject getPackageJson(File packageFile) throws IOException {
         JsonObject packageJson = null;
-        File packageFile = new File(npmFolder, PACKAGE_JSON);
         if (packageFile.exists()) {
             String fileContent = FileUtils.readFileToString(packageFile, UTF_8.name());
             packageJson = Json.parse(fileContent);
@@ -210,35 +175,59 @@ public abstract class NodeUpdater implements Command {
         return packageJson;
     }
 
-    boolean updateDefaultDependencies(JsonObject packageJson) {
+    boolean updateMainDefaultDependencies(JsonObject packageJson) {
         boolean added = false;
-        added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack", "4.30.0") || added;
-        added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack-cli", "3.3.0") || added;
-        added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack-dev-server", "3.3.0") || added;
-        added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack-babel-multi-target-plugin", "2.1.0") || added;
-        added = addDependency(packageJson, DEV_DEPENDENCIES, "copy-webpack-plugin", "5.0.3") || added;
-        added = addDependency(packageJson, DEPENDENCIES, "@polymer/polymer", "3.1.0") || added;
-        added = addDependency(packageJson, DEPENDENCIES, "@webcomponents/webcomponentsjs", "2.2.10") || added;
+        added = addDependency(packageJson, null, DEP_NAME_KEY, DEP_NAME_DEFAULT) || added;
+        added = addDependency(packageJson, null, DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT) || added;
+
+
+        added = addDependency(packageJson, DEPENDENCIES, "@polymer/polymer", "^3.1.0") || added;
+        added = addDependency(packageJson, DEPENDENCIES, "@webcomponents/webcomponentsjs", "^2.2.10") || added;
+        // dependency for the custom package.json placed in the generated folder.
+        String customPkg = "./" + npmFolder.getAbsoluteFile().toPath()
+                .relativize(generatedFolder.toPath()).toString();
+        added = addDependency(packageJson, DEPENDENCIES, DEP_NAME_FLOW_DEPS, customPkg) || added;
+
+        added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack", "^4.30.0") || added;
+        added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack-cli", "^3.3.0") || added;
+        added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack-dev-server", "^3.3.0") || added;
+        added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack-babel-multi-target-plugin", "^2.1.0") || added;
+        added = addDependency(packageJson, DEV_DEPENDENCIES, "copy-webpack-plugin", "^5.0.3") || added;
         return added;
     }
 
+    void updateAppDefaultDependencies(JsonObject packageJson) {
+        addDependency(packageJson, null, DEP_NAME_KEY, DEP_NAME_FLOW_DEPS);
+        addDependency(packageJson, null, DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT);
+    }
+
     boolean addDependency(JsonObject json, String key, String pkg, String vers) {
-        if (!json.hasKey(key)) {
-            json.put(key, Json.createObject());
+        if (key != null) {
+            if (!json.hasKey(key)) {
+                json.put(key, Json.createObject());
+            }
+            json = json.get(key);
         }
-        json = json.get(key);
-        vers = vers.startsWith("=") ? vers : ("=" + vers);
         if (!json.hasKey(pkg) || !json.getString(pkg).equals(vers)) {
             json.put(pkg, vers);
-            log().info("Added {}@{} dependency.", pkg, vers);
+            log().info("Added \"{}\": \"{}\" line.", pkg, vers);
             return true;
         }
         return false;
     }
 
-    void writePackageFile(JsonObject packageJson) throws IOException {
-        File packageFile = new File(npmFolder, PACKAGE_JSON);
-        FileUtils.writeStringToFile(packageFile, stringify(packageJson, 2), UTF_8.name());
+    void writeMainPackageFile(JsonObject packageJson) throws IOException {
+        writePackageFile(packageJson, new File(npmFolder, PACKAGE_JSON));
+    }
+
+    void writeAppPackageFile(JsonObject packageJson) throws IOException {
+        writePackageFile(packageJson, new File(generatedFolder, PACKAGE_JSON));
+    }
+
+    void writePackageFile(JsonObject json, File packageFile) throws IOException {
+        log().info("Updated npm {}.", packageFile.getAbsolutePath());
+        FileUtils.forceMkdirParent(packageFile);
+        FileUtils.writeStringToFile(packageFile, stringify(json, 2) + "\n", UTF_8.name());
     }
 
     static Logger log() {

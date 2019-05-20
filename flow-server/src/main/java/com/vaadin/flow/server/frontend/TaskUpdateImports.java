@@ -66,13 +66,11 @@ public class TaskUpdateImports extends NodeUpdater {
      *            folder where flow generated files will be placed.
      * @param frontendDirectory
      *            a directory with project's frontend files
-     * @param convertHtml
-     *            true to enable polymer-2 annotated classes to be considered
      */
     TaskUpdateImports(ClassFinder finder,
             FrontendDependencies frontendDependencies, File npmFolder,
-            File generatedPath, File frontendDirectory, boolean convertHtml) {
-        super(finder, frontendDependencies, npmFolder, generatedPath, convertHtml);
+            File generatedPath, File frontendDirectory) {
+        super(finder, frontendDependencies, npmFolder, generatedPath);
         this.frontendDirectory = frontendDirectory;
         this.generatedFlowImports = new File(generatedPath, IMPORTS_NAME);
     }
@@ -80,12 +78,9 @@ public class TaskUpdateImports extends NodeUpdater {
     @Override
     public void execute() {
         Set<String> modules = new HashSet<>(getJavascriptJsModules(frontDeps.getModules()));
-        if (convertHtml) {
-            modules.addAll(getHtmlImportJsModules(frontDeps.getImports()));
-        }
         modules.addAll(getJavascriptJsModules(frontDeps.getScripts()));
 
-        modules.addAll(getGeneratedModules(generatedPath,
+        modules.addAll(getGeneratedModules(generatedFolder,
                 Collections.singleton(generatedFlowImports.getName())));
 
         modules = sortModules(modules);
@@ -146,7 +141,7 @@ public class TaskUpdateImports extends NodeUpdater {
             StringBuilder errorMessage = new StringBuilder(String.format(
                     "Failed to resolve the following module imports neither in the node_modules directory '%s' " +
                             "nor in project files in '%s': ",
-                    nodeModulesPath, frontendDirectory)).append("\n");
+                    nodeModulesFolder, frontendDirectory)).append("\n");
 
             unresolvedImports
                     .forEach((originalModulePath, translatedModulePath) -> {
@@ -171,9 +166,9 @@ public class TaskUpdateImports extends NodeUpdater {
 
     private boolean importedFileExists(String jsImport) {
         return new File(frontendDirectory, jsImport).isFile()
-                || new File(nodeModulesPath, jsImport).isFile()
-                || new File(new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME), jsImport).isFile()
-                || new File(generatedPath,
+                || new File(nodeModulesFolder, jsImport).isFile()
+                || new File(new File(nodeModulesFolder, FLOW_NPM_PACKAGE_NAME), jsImport).isFile()
+                || new File(generatedFolder,
                 generatedResourcePathIntoRelativePath(jsImport)).isFile();
     }
 

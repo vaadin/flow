@@ -13,20 +13,21 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.webcomponent;
+import {PolymerElement, html} from '@polymer/polymer/polymer-element.js';
 
-import com.vaadin.flow.theme.AbstractTheme;
-
-public class MyTheme implements AbstractTheme {
-
-    @Override
-    public String getBaseUrl() {
-        return "src/";
+class ThemedComponent extends PolymerElement {
+    static get template() {
+        return html`
+            <style>
+                div {
+                    color: var( --after-content-var, rgba(0 0, 0, 1))
+                }
+            </style>
+            <div>Just a div </div>
+        `;
     }
 
-    @Override
-    public String getThemeUrl() {
-        return "theme/";
-    }
-
+    static get is() { return 'themed-component' }
 }
+
+customElements.define(ThemedComponent.is, ThemedComponent);

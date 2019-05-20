@@ -30,7 +30,7 @@ public class SerializeUIView extends AbstractDivView {
         Div label = new Div();
         label.setId("message");
 
-        NativeButton button = new NativeButton("Serialize", event -> {
+        NativeButton button = createButton("Serialize", "serialize", event -> {
             UI ui = UI.getCurrent();
             try {
                 byte[] serialize = SerializationUtils.serialize(ui);
@@ -43,7 +43,6 @@ public class SerializeUIView extends AbstractDivView {
                 label.setText(se.getMessage());
             }
         });
-        button.setId("serialize");
 
         add(label, button);
     }

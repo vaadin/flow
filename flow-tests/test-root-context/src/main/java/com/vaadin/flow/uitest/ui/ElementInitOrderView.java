@@ -28,9 +28,8 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 @HtmlImport("frontend://com/vaadin/flow/uitest/ui/ElementInitOrder.html")
 public class ElementInitOrderView extends AbstractDivView {
     public ElementInitOrderView() {
-        NativeButton reattach = new NativeButton("Reattach components",
+        NativeButton reattach = createButton("Reattach components", "reattach",
                 event -> reattachElements());
-        reattach.setId("reattach");
 
         add(reattach, new Html("<br />"));
 

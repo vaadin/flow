@@ -106,9 +106,7 @@ public class HistoryView extends AbstractDivView {
 
     private static Element createButton(String id,
             ComponentEventListener<ClickEvent<NativeButton>> listener) {
-        NativeButton button = new NativeButton(id, listener);
-        button.setId(id);
-        return button.getElement();
+        return createButton(id, id, listener).getElement();
     }
 
     private static Element createSynchronizedInput(String id) {

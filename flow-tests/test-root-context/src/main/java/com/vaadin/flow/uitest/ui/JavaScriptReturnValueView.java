@@ -82,7 +82,7 @@ public class JavaScriptReturnValueView extends AbstractDivView {
                 (value, resolveOrReject) -> "return new Promise((resolve, reject) => {setTimeout(() => "
                         + resolveOrReject + "(" + value + "), 1000)})");
 
-        NativeButton runButton = new NativeButton("Run", event -> {
+        NativeButton runButton = createButton("Run", "run", event -> {
             statusLabel.setText("Running...");
 
             String scriptToRun = executionSelect.selected
@@ -94,12 +94,10 @@ public class JavaScriptReturnValueView extends AbstractDivView {
             result.then(String.class, statusLabel::setText,
                     error -> statusLabel.setText("Error: " + error));
         });
-        runButton.setId("run");
 
-        NativeButton clearButton = new NativeButton("Clear", event -> {
+        NativeButton clearButton = createButton("Clear", "clear", event -> {
             statusLabel.setText("");
         });
-        clearButton.setId("clear");
 
         add(methodSelect, valueSelect, resolveRejectSelect, executionSelect,
                 runButton, clearButton, statusLabel);

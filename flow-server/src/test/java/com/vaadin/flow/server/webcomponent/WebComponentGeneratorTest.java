@@ -25,6 +25,8 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 
+import static org.hamcrest.core.StringStartsWith.startsWith;
+
 public class WebComponentGeneratorTest {
 
     @Test
@@ -88,6 +90,64 @@ public class WebComponentGeneratorTest {
                 "\"response\":{\"type\":\"String\",\"value\":\"hello\""));
     }
 
+    @Test
+    public void providesHTMLModuleInBowerMode() {
+        String module = WebComponentGenerator.generateModule(MyComponentExporter.class, "",
+                true);
+        // make sure that the test works on windows machines:
+        module = module.replace("\r","");
+        Assert.assertThat(module, startsWith("" +
+                        "<link rel=\"import\" href=\"bower_components/polymer/polymer-element.html\">\n" +
+                        "\n" +
+                        "\n" +
+                        "<dom-module id=\"tag\">\n" +
+                        "  <template>\n" +
+                        "\n" +
+                        "    <style>\n" +
+                        "      :host {\n" +
+                        "        display: inline-block;\n" +
+                        "      }\n" +
+                        "    </style>\n" +
+                        "    <slot></slot>\n" +
+                        "  </template>\n" +
+                        "  <script>\n" +
+                        "    class Tag extends Polymer.Element {\n" +
+                        // this part is from the com.vaadin.flow.webcomponent-script-template
+                        // .js to verify successful import
+                        "      static get is() {\n" +
+                        "    return 'tag';\n" +
+                        "  }"
+                ));
+    }
+
+    @Test
+    public void providesJSModulesInNpmMode() {
+        String module = WebComponentGenerator.generateModule(MyComponentExporter.class, "",
+                false);
+        // make sure that the test works on windows machines:
+        module = module.replace("\r","");
+        Assert.assertThat(module, startsWith("" +
+                "import {PolymerElement, html} from '@polymer/polymer/polymer-element.js';\n" +
+                "\n" +
+                "class Tag extends PolymerElement {\n" +
+                "  static get template() {\n" +
+                "    return html`\n" +
+                "        <style>\n" +
+                "          :host {\n" +
+                "            display: inline-block;\n" +
+                "          }\n" +
+                "        </style>\n" +
+                "        <slot></slot>\n" +
+                "    `;\n" +
+                "  }\n" +
+                // this part is from the com.vaadin.flow.webcomponent-script-template
+                // .js to verify successful import
+                "    static get is() {\n" +
+                "    return 'tag';\n" +
+                "  }"
+        ));
+    }
+
     public static class MyComponent extends Component {
         // these will be initialized by the callbacks (if this was the real
         // world)
@@ -108,7 +168,7 @@ public class WebComponentGeneratorTest {
         }
     }
 
-    private static class MyComponentExporter
+    public static class MyComponentExporter
             extends WebComponentExporter<MyComponent> {
 
         public MyComponentExporter() {

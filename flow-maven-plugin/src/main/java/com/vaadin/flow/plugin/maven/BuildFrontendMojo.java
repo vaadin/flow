@@ -33,7 +33,6 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
@@ -52,7 +51,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 /**
  * Goal that builds the frontend bundle.
  *
- * It performs the following actions:
+ * It performs the following actions when creating a package:
  * <ul>
  * <li>Update {@link Constants#PACKAGE_JSON} file with the {@link NpmPackage}
  * annotations defined in the classpath,</li>
@@ -63,18 +62,11 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
  * <li>Update {@link FrontendUtils#WEBPACK_CONFIG} file.</li>
  * </ul>
  */
-@Mojo(name = "build-frontend", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PROCESS_CLASSES)
-public class NodeBuildFrontendMojo extends AbstractMojo {
+@Mojo(name = "build-frontend", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
+public class BuildFrontendMojo extends AbstractMojo {
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
-
-    /**
-     * Enable or disable legacy components annotated only with
-     * {@link HtmlImport}.
-     */
-    @Parameter(defaultValue = "true")
-    private boolean convertHtml;
 
     /**
      * The folder where `package.json` file is located. Default is project root
@@ -165,7 +157,7 @@ public class NodeBuildFrontendMojo extends AbstractMojo {
 
     private void runNodeUpdater() {
         new NodeTasks.Builder(getClassFinder(project),
-                npmFolder, generatedFolder, frontendDirectory, convertHtml)
+                npmFolder, generatedFolder, frontendDirectory)
                 .runNpmInstall(runNpmInstall)
                 .enablePackagesUpdate(true)
                 .enableImportsUpdate(true)

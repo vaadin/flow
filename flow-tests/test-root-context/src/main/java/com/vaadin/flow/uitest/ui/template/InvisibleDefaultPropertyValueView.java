@@ -16,7 +16,6 @@
 package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
 
@@ -33,15 +32,11 @@ public class InvisibleDefaultPropertyValueView extends AbstractDivView {
         div.setId("email-value");
         add(div);
 
-        NativeButton showEmail = new NativeButton("Show email value",
-                event -> div.setText(template.getEmail()));
-        showEmail.setId("show-email");
-        add(showEmail);
+        add(createButton("Show email value", "show-email",
+                event -> div.setText(template.getEmail())));
 
-        NativeButton setVisible = new NativeButton("Make template visible",
-                event -> template.setVisible(true));
-        setVisible.setId("set-visible");
-        add(setVisible);
+        add(createButton("Make template visible", "set-visible",
+                event -> template.setVisible(true)));
     }
 
 }

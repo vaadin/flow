@@ -25,6 +25,12 @@
             <groupId>org.webjars.bowergithub.polymer</groupId>
             <artifactId>polymer</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-web-component-test-assets</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
     <build>

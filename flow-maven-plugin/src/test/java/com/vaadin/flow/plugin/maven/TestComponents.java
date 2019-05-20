@@ -34,12 +34,12 @@ public class TestComponents {
     class ButtonComponent extends Component {
     }
 
-    @HtmlImport("frontend://bower_components/iron-icon/iron-icon.html")
+    @JsModule("@polymer/iron-icon/iron-icon.js")
     class IconComponent extends Component {
     }
 
-    @HtmlImport("frontend://bower_components/vaadin-date-picker/src/vaadin-date-picker.html")
-    @HtmlImport("frontend://bower_components/vaadin-date-picker/src/vaadin-month-calendar.html")
+    @JsModule("@vaadin/vaadin-date-picker/src/vaadin-date-picker.js")
+    @JsModule("@vaadin/vaadin-date-picker/src/vaadin-month-calendar.js")
     @JavaScript("frontend://ExampleConnector.js")
     public static class VaadinBowerComponent extends Component {
     }
@@ -58,7 +58,7 @@ public class TestComponents {
     public static class VaadinMixedComponent extends Component {
     }
 
-    @HtmlImport("frontend://local-p2-template.html")
+    @JsModule("./local-p2-template.js")
     public static class LocalP2Template extends Component {
     }
 
@@ -70,7 +70,7 @@ public class TestComponents {
     public static class FrontendP3Template extends Component {
     }
 
-    @HtmlImport("foo.html")
+    @JsModule("./foo.js")
     public static class FlatImport extends Component {
     }
 

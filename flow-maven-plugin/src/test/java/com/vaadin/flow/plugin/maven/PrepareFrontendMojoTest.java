@@ -24,22 +24,23 @@ import org.mockito.Mockito;
 
 import elemental.json.JsonObject;
 
-import static com.vaadin.flow.plugin.maven.NodeBuildFrontendMojoTest.getPackageJson;
-import static com.vaadin.flow.plugin.maven.NodeBuildFrontendMojoTest.setProject;
+import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.assertContainsPackage;
+import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.getPackageJson;
+import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.setProject;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 
-public class NodeValidateMojoTest {
+public class PrepareFrontendMojoTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
-    private final NodeValidateMojo mojo = new NodeValidateMojo();
+    private final PrepareFrontendMojo mojo = new PrepareFrontendMojo();
     private File projectFrontendResourcesDirectory;
     private File nodeModulesPath;
     private File flowPackagePath;
@@ -152,27 +153,29 @@ public class NodeValidateMojoTest {
         mojo.execute();
     }
 
+    @Test
+    public void should_keepDependencies_when_packageJsonExists() throws Exception {
+        FileUtils.fileWrite(packageJson, "{\"dependencies\":{\"foo\":\"bar\"}}");
+        mojo.execute();
+        assertPackageJsonContent();
+
+        JsonObject packageJsonObject = getPackageJson(packageJson);
+        assertContainsPackage(packageJsonObject.getObject("dependencies"), "foo");
+    }
+
     private void assertPackageJsonContent() throws IOException {
         JsonObject packageJsonObject = getPackageJson(packageJson);
-        JsonObject dependencies = packageJsonObject.getObject("dependencies");
 
-        Assert.assertTrue("Missing @webcomponents/webcomponentsjs package",
-                dependencies.hasKey("@webcomponents/webcomponentsjs"));
-        Assert.assertTrue("Missing @polymer/polymer package",
-                dependencies.hasKey("@polymer/polymer"));
+        assertContainsPackage(packageJsonObject.getObject("dependencies"),
+                "@webcomponents/webcomponentsjs",
+                "@polymer/polymer");
 
-        JsonObject devDependencies = packageJsonObject.getObject("devDependencies");
-
-        Assert.assertTrue("Missing webpack dev package",
-                devDependencies.hasKey("webpack"));
-        Assert.assertTrue("Missing webpack-cli dev package",
-                devDependencies.hasKey("webpack-cli"));
-        Assert.assertTrue("Missing webpack-dev-server dev package",
-                devDependencies.hasKey("webpack-dev-server"));
-        Assert.assertTrue("Missing webpack-babel-multi-target-plugin dev package",
-                devDependencies.hasKey("webpack-babel-multi-target-plugin"));
-        Assert.assertTrue("Missing copy-webpack-plugin dev package",
-                devDependencies.hasKey("copy-webpack-plugin"));
+        assertContainsPackage(packageJsonObject.getObject("devDependencies"),
+                "webpack",
+                "webpack-cli",
+                "webpack-dev-server",
+                "webpack-babel-multi-target-plugin",
+                "copy-webpack-plugin");
     }
 
 

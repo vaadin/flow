@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.webcomponent;
+package com.vaadin.flow.webcomponent.tests;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -23,7 +23,7 @@ import org.openqa.selenium.WebElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
-public class WebComponentIT extends ChromeBrowserTest {
+public abstract class WebComponentIT extends ChromeBrowserTest {
 
     @Override
     protected String getTestPath() {
@@ -75,6 +75,8 @@ public class WebComponentIT extends ChromeBrowserTest {
                         + "contain elements",
                 themedComponent.$("div").exists());
         TestBenchElement contentElement = themedComponent.$("div").first();
-        Assert.assertEquals("themed", contentElement.getAttribute("id"));
+        assertThatThemedComponentWasChosen(contentElement);
     }
+
+    public abstract void assertThatThemedComponentWasChosen(TestBenchElement themedElement);
 }

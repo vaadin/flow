@@ -26,15 +26,15 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import net.bytebuddy.jar.asm.ClassReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
-import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.Route;
@@ -51,20 +51,6 @@ import static com.vaadin.flow.server.frontend.FrontendClassVisitor.VERSION;
 public class FrontendDependencies implements Serializable {
 
     public static final String LUMO = "com.vaadin.flow.theme.lumo.Lumo";
-
-    private static final String MULTIPLE_VERSIONS =
-            "%n%n======================================================================================================"
-                    + "%nFailed to determine the version for the '%s' npm package."
-                    + "%nFlow found multiple versions: %s"
-                    + "%nPlease visit check your Java dependencies and @NpmModule annotations so as all of them"
-                    + "%nmeet the same version."
-                    + "%n======================================================================================================%n";
-
-    private static final String BAD_VERSIOM =
-            "%n%n======================================================================================================"
-                    + "%nFailed to determine the version for the '%s' npm package."
-                    + "%nVersion '%s' has an invalid format, it should follow pattern 'd.d.d' or 'd.d.d-suffix'"
-                    + "%n======================================================================================================%n";
 
     /**
      * A wrapper for the Theme instance that use reflection for executing its
@@ -208,25 +194,6 @@ public class FrontendDependencies implements Serializable {
     }
 
     /**
-     * get all HTML imports used in the application. It excludes imports from
-     * classes that are already annotated with {@link NpmPackage} or {@link
-     * JsModule}
-     *
-     * @return the set of HTML imports
-     */
-    public Set<String> getImports() {
-        Set<String> all = new HashSet<>();
-        for (FrontendClassVisitor.EndPointData r : endPoints.values()) {
-            for (Entry<String, Set<String>> e : r.imports.entrySet()) {
-                if (!r.npmDone.contains(e.getKey())) {
-                    all.addAll(e.getValue());
-                }
-            }
-        }
-        return all;
-    }
-
-    /**
      * get the {@link ThemeDefinition} of the application.
      *
      * @return the theme definition
@@ -326,17 +293,20 @@ public class FrontendDependencies implements Serializable {
         Set<String> dependencies = npmPackageVisitor.getValues(VALUE);
         for (String dependency : dependencies) {
             Set<String> versions = npmPackageVisitor.getValuesForKey(VALUE, dependency, VERSION);
-            if (versions.size() > 1) {
-                throw new IllegalStateException(String.format(MULTIPLE_VERSIONS, dependency, versions.toString()));
-            }
-
             String version = versions.iterator().next();
-            if (!version.matches("^\\d+\\.\\d+\\.\\d+(-[A-z][\\w]*\\d+)?$")) {
-                throw new IllegalStateException(String.format(BAD_VERSIOM, dependency, version));
+            if (versions.size() > 1) {
+                String foundVersions = versions.toString();
+                log().warn("Multiple npm versions for {} found:  {}. First version found '{}' will be considered.",
+                        dependency, foundVersions, version);
             }
-
             packages.put(dependency, version);
         }
+    }
+
+
+    private static Logger log() {
+        // Using short prefix so as npm output is more readable
+        return LoggerFactory.getLogger("dev-updater");
     }
 
     /**
@@ -454,11 +424,11 @@ public class FrontendDependencies implements Serializable {
         // blacklist of some common name-spaces that would not have components.
         return className != null &&  // @formatter:off
                 !className.matches(
-                        "(^$|"
-                                + ".*(slf4j).*|"
-                                + "^(java|sun|elemental|org.(apache|atmosphere|jsoup|jboss|w3c|spring)|com.(helger|spring|gwt)).*|"
-                                + ".*(Exception)$"
-                                + ")"); // @formatter:on
+                    "(^$|"
+                    + ".*(slf4j).*|"
+                    + "^(java|sun|elemental|org.(apache|atmosphere|jsoup|jboss|w3c|spring)|com.(helger|spring|gwt)).*|"
+                    + ".*(Exception)$"
+                    + ")"); // @formatter:on
     }
 
     private URL getUrl(String className) {

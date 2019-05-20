@@ -19,7 +19,7 @@ import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.html.Div;
 
-public abstract class AbstractErrorHandlerView extends Div {
+public abstract class AbstractErrorHandlerView extends AbstractDivView {
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {

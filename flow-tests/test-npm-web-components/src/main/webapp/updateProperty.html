@@ -1,0 +1,46 @@
+<!--
+  ~ Copyright 2000-2018 Vaadin Ltd.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License"); you may not
+  ~ use this file except in compliance with the License. You may obtain a copy of
+  ~ the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+  ~ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+  ~ License for the specific language governing permissions and limitations under
+  ~ the License.
+  -->
+
+<!doctype html>
+
+<head>
+  <script type='module' src='/vaadin/web-component/property-update.js'></script>
+</head>
+
+<body>
+  <p>
+    Web components updates property as a response to a button click.
+  </p>
+
+  <property-update id="counter" clicks="0"></property-update>
+  <p id="count">0</p>
+  <p id="json">0</p>
+
+  <script>
+    var counter = document.getElementById("counter");
+    var count = document.getElementById("count");
+    var json = document.getElementById("json");
+
+    counter.addEventListener("clicks-changed", function(event) {
+      count.innerHTML = counter.clicks;
+    });
+
+    counter.addEventListener("clicks-json-changed", function(event) {
+      json.innerHTML = counter["clicksJson"].counter;
+    });
+  </script>
+
+</body>

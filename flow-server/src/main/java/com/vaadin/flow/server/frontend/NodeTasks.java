@@ -16,13 +16,6 @@
 
 package com.vaadin.flow.server.frontend;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
-
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -30,6 +23,13 @@ import java.util.Collection;
 import java.util.Set;
 
 import com.vaadin.flow.server.Command;
+
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
 
 /**
  * An executor that it's run when the servlet context is initialised in dev-mode
@@ -44,13 +44,7 @@ public class NodeTasks implements Command {
 
         private final ClassFinder classFinder;
 
-        private final File npmFolder;
-
-        private final File generatedPath;
-
         private final File frontendDirectory;
-
-        private final boolean convertHtml;
 
         private File webpackOutputDirectory;
 
@@ -67,6 +61,16 @@ public class NodeTasks implements Command {
         private boolean generateEmbeddableWebComponents;
 
         private Set<String> visitedClasses;
+
+        /**
+         * Directory for for npm and folders and files.
+         */
+        public final File npmFolder;
+
+        /**
+         * Directory where generated files are written.
+         */
+        public final File generatedFolder;
 
         /**
          * Create a builder instance, with everything set as default.
@@ -105,8 +109,7 @@ public class NodeTasks implements Command {
                 File generatedPath) {
             this(classFinder, npmFolder, generatedPath,
                     new File(npmFolder, System.getProperty(PARAM_FRONTEND_DIR,
-                            DEFAULT_FRONTEND_DIR)),
-                    true);
+                            DEFAULT_FRONTEND_DIR)));
         }
 
         /**
@@ -120,18 +123,13 @@ public class NodeTasks implements Command {
          *            folder where flow generated files will be placed.
          * @param frontendDirectory
          *            a directory with project's frontend files
-         * @param convertHtml
-         *            <code>true</code> to enable polymer-2 annotated classes to
-         *            be considered. Default is <code>true</code>.
          */
         public Builder(ClassFinder classFinder, File npmFolder,
-                File generatedPath, File frontendDirectory,
-                boolean convertHtml) {
+                File generatedPath, File frontendDirectory) {
             this.classFinder = classFinder;
             this.npmFolder = npmFolder;
-            this.convertHtml = convertHtml;
             this.generateEmbeddableWebComponents = true;
-            this.generatedPath = generatedPath.isAbsolute() ? generatedPath
+            this.generatedFolder = generatedPath.isAbsolute() ? generatedPath
                     : new File(npmFolder, generatedPath.getPath());
             this.frontendDirectory = frontendDirectory.isAbsolute()
                     ? frontendDirectory
@@ -263,14 +261,14 @@ public class NodeTasks implements Command {
 
         if (builder.createMissingPackageJson) {
             TaskCreatePackageJson packageCreator = new TaskCreatePackageJson(
-                    builder.npmFolder, builder.generatedPath);
+                    builder.npmFolder, builder.generatedFolder);
             commands.add(packageCreator);
         }
 
         if (builder.enablePackagesUpdate) {
             TaskUpdatePackages packageUpdater = new TaskUpdatePackages(
                     classFinder, frontendDependencies, builder.npmFolder,
-                    builder.generatedPath);
+                    builder.generatedFolder);
             commands.add(packageUpdater);
 
             if (builder.runNpmInstall) {
@@ -282,14 +280,14 @@ public class NodeTasks implements Command {
                 && !builder.webpackTemplate.isEmpty()) {
             commands.add(new TaskUpdateWebpack(builder.npmFolder,
                     builder.webpackOutputDirectory, builder.webpackTemplate,
-                    new File(builder.generatedPath, IMPORTS_NAME)));
+                    new File(builder.generatedFolder, IMPORTS_NAME)));
         }
 
         if (builder.enableImportsUpdate) {
             commands.add(
                     new TaskUpdateImports(classFinder, frontendDependencies,
-                            builder.npmFolder, builder.generatedPath,
-                            builder.frontendDirectory, builder.convertHtml));
+                            builder.npmFolder, builder.generatedFolder,
+                            builder.frontendDirectory));
 
             if (builder.visitedClasses != null) {
                 builder.visitedClasses

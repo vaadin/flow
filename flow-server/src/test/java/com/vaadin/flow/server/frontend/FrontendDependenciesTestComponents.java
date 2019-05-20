@@ -18,7 +18,6 @@ package com.vaadin.flow.server.frontend;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
@@ -50,10 +49,8 @@ public class FrontendDependenciesTestComponents {
         }
     }
 
-    @HtmlImport("frontend://theme-1.html")
     static class Theme1 extends Theme0 {
     }
-    @HtmlImport("frontend://theme-2.html")
     static class Theme2 extends Theme0 {
     }
     @JsModule("./theme-4.js")
@@ -64,18 +61,16 @@ public class FrontendDependenciesTestComponents {
     static class ThemeDefault extends Theme0 {
     }
 
-    @NpmPackage(value = "@vaadin/component-0", version = "2.1.0")
+    @NpmPackage(value = "@vaadin/component-0", version = "=2.1.0")
     @JsModule("./component-0.js")
-    @HtmlImport("frontend://component-0.html")
     @JavaScript("frontend://component-0.js")
     @Tag("component-0")
-    @NpmPackage(value = "@vaadin/component-0", version = "1.1.0")
+    @NpmPackage(value = "@vaadin/component-0", version = "^1.1.0")
     @NpmPackage(value="@vaadin/vaadin-foo", version="1.23.114-alpha1")
     static class Component0 extends Component {
     }
 
     @JsModule("./component-1.js")
-    @HtmlImport("frontend://component-1.html")
     @JavaScript("frontend://component-1.js")
     @Tag("component-1")
     @NpmPackage(value = "@vaadin/component-1", version = "1.1.1")
@@ -83,7 +78,6 @@ public class FrontendDependenciesTestComponents {
     }
 
     @JsModule("./component-2.js")
-    @HtmlImport("frontend://component-2.html")
     @JavaScript("frontend://component-2.js")
     @Tag("component-2")
     @NpmPackage(value = "@vaadin/component-2", version = "222.222.222")
@@ -91,7 +85,6 @@ public class FrontendDependenciesTestComponents {
     }
 
     @JsModule("./component-3.js")
-    @HtmlImport("frontend://component-3.html")
     @JavaScript("frontend://component-3.js")
     @Tag("component-3")
     @NpmPackage(value = "@vaadin/component-3", version = "~2.1.0")

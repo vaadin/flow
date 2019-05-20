@@ -18,7 +18,6 @@ package com.vaadin.flow.uitest.ui;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
-import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
@@ -37,11 +36,8 @@ public class InMemoryChildrenView extends AbstractDivView {
         Div target = new Div();
         target.setId("target");
         add(target);
-        NativeButton button = new NativeButton(
-                "Add copy of in-memory element to the target",
+        add(createButton("Add copy of in-memory element to the target", "copy",
                 event -> getElement().callJsFunction("useInMemoryElement",
-                        target));
-        button.setId("copy");
-        add(button);
+                        target)));
     }
 }

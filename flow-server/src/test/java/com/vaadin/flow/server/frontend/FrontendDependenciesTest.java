@@ -6,11 +6,16 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.commons.lang3.reflect.FieldUtils;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+
 import com.vaadin.flow.server.frontend.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Component0;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Component1;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Component2;
-import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Component3;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.FirstView;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.RootViewWithLayoutTheme;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.RootViewWithMultipleTheme;
@@ -21,12 +26,6 @@ import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Theme1
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Theme2;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Theme4;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.ThirdView;
-import org.apache.commons.lang3.reflect.FieldUtils;
-import org.hamcrest.CoreMatchers;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -82,14 +81,14 @@ public class FrontendDependenciesTest {
                 "(Lcom/vaadin/flow/component/orderedlayout/FlexComponent$Alignment;[Lcom/vaadin/flow/component/Component;)");
         assertEquals(13, classes.size());
         assertTrue(classes.contains("com.vaadin.flow.component.orderedlayout.FlexComponent$Alignment"));
-        
+
         // Apart from proper signature representation, it should handle class names, and class paths
         visitor.addSignatureToClasses(classes, this.getClass().getName());
         assertTrue(classes.contains(this.getClass().getName()));
 
         visitor.addSignatureToClasses(classes, "com/vaadin/flow/server/frontend/FrontendDependenciesTestComponents$AnotherComponent");
         assertTrue(classes.contains("com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents$AnotherComponent"));
-        
+
     }
 
     @Test
@@ -103,17 +102,9 @@ public class FrontendDependenciesTest {
     }
 
     @Test
-    public void should_Fail_when_MultipleVersions() throws Exception {
-        exception.expect(IllegalStateException.class);
-        exception.expectMessage(CoreMatchers.containsString("multiple versions"));
-        create(Component0.class);
-    }
-
-    @Test
-    public void should_Fail_when_BadVersion() throws Exception {
-        exception.expect(IllegalStateException.class);
-        exception.expectMessage(CoreMatchers.containsString("invalid format"));
-        create(Component3.class);
+    public void when_MultipleVersions_should_returnFirstVisitedOne() throws Exception {
+        FrontendDependencies deps = create(Component0.class);
+        assertEquals("=2.1.0", deps.getPackages().get("@vaadin/component-0"));
     }
 
     @Test
@@ -121,8 +112,6 @@ public class FrontendDependenciesTest {
         FrontendDependencies deps = create(RootViewWithTheme.class);
 
         assertEquals(Theme4.class, deps.getThemeDefinition().getTheme());
-
-        assertEquals(0, deps.getImports().size());
 
         assertEquals(1, deps.getModules().size());
         assertTrue(deps.getModules().contains("./theme-4.js"));
@@ -139,7 +128,6 @@ public class FrontendDependenciesTest {
 
         assertNull(deps.getThemeDefinition());
 
-        assertEquals(0, deps.getImports().size());
         assertEquals(2, deps.getModules().size());
         assertEquals(0, deps.getPackages().size());
         assertEquals(1, deps.getScripts().size());
@@ -150,7 +138,6 @@ public class FrontendDependenciesTest {
         FrontendDependencies deps = create(RootViewWithLayoutTheme.class);
         assertEquals(Theme1.class, deps.getThemeDefinition().getTheme());
 
-        assertEquals(2, deps.getImports().size());
         assertEquals(8, deps.getModules().size());
         assertEquals(0, deps.getPackages().size());
         assertEquals(6, deps.getScripts().size());
@@ -164,7 +151,6 @@ public class FrontendDependenciesTest {
         assertEquals(Theme2.class, deps.getThemeDefinition().getTheme());
         assertEquals("foo", deps.getThemeDefinition().getVariant());
 
-        assertEquals(2, deps.getImports().size());
         assertEquals(4, deps.getModules().size());
         assertEquals(0, deps.getPackages().size());
         assertEquals(2, deps.getScripts().size());
@@ -176,7 +162,6 @@ public class FrontendDependenciesTest {
 
         assertNull(deps.getThemeDefinition());
 
-        assertEquals(1, deps.getImports().size());
         assertEquals(4, deps.getModules().size());
         assertEquals(0, deps.getPackages().size());
         assertEquals(2, deps.getScripts().size());
@@ -189,7 +174,6 @@ public class FrontendDependenciesTest {
 
         assertEquals(Theme1.class, deps.getThemeDefinition().getTheme());
 
-        assertEquals(2, deps.getImports().size());
         assertEquals(8, deps.getModules().size());
         assertEquals(1, deps.getPackages().size());
         assertEquals(6, deps.getScripts().size());
@@ -199,7 +183,6 @@ public class FrontendDependenciesTest {
     public void should_resolveComponentFactories() throws Exception {
         FrontendDependencies deps = create(ThirdView.class);
 
-         assertEquals(0, deps.getImports().size());
          assertEquals(3, deps.getModules().size());
          assertEquals(0, deps.getPackages().size());
          assertEquals(0, deps.getScripts().size());

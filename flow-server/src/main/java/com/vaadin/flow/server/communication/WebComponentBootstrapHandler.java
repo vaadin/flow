@@ -293,6 +293,8 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         // one-liner to .innerHTML="{html}", since we cannot use
         // ES6 back-ticks (``) for multi-line text
         return html
+                // escape backslashes
+                .replace("\\", "\\\\")
                 // escape quotes
                 .replace("\"", "\\\"")
                 // change CDATA comment style for one-lining
