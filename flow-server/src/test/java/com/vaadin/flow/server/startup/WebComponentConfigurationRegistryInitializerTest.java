@@ -16,13 +16,14 @@
 
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import java.security.InvalidParameterException;
-import java.util.Collections;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.webcomponent.WebComponent;
+import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.server.InvalidCustomElementNameException;
+import com.vaadin.flow.server.MockInstantiator;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import net.jcip.annotations.NotThreadSafe;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
@@ -36,15 +37,14 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.WebComponentExporter;
-import com.vaadin.flow.component.webcomponent.WebComponent;
-import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.server.InvalidCustomElementNameException;
-import com.vaadin.flow.server.MockInstantiator;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import java.util.Collections;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 
 @NotThreadSafe
@@ -64,6 +64,9 @@ public class WebComponentConfigurationRegistryInitializerTest {
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
+        Mockito.when(vaadinService.getAttribute(WebComponentConfigurationRegistry.class)).thenReturn(registry);
+        Mockito.when(vaadinService.getAttribute(eq(WebComponentConfigurationRegistry.class), anyObject())).thenReturn(registry);
+
         initializer = new WebComponentConfigurationRegistryInitializer();
         when(servletContext.getAttribute(
                 WebComponentConfigurationRegistry.class.getName()))
