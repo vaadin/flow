@@ -74,7 +74,7 @@ public class PrepareFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "includes", "**/*.js,**/*.css");
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", projectBase);
         ReflectionUtils.setVariableValueInObject(mojo, "webpackTemplate", WEBPACK_CONFIG);
-        ReflectionUtils.setVariableValueInObject(mojo, "generatedPath", projectBase);
+        ReflectionUtils.setVariableValueInObject(mojo, "generatedFolder", projectBase);
 
         Assert.assertTrue(flowPackagePath.mkdirs());
         setProject(mojo, "war", "war_output");
