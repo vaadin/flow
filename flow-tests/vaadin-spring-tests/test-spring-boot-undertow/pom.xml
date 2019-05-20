@@ -170,18 +170,16 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <executions>
-                    <!-- start and stop jetty (running our app) when running
+                    <!-- start and stop application when running
                         integration tests -->
                     <execution>
-                        <id>start-app</id>
-                        <phase>pre-integration-test</phase>
+                        <id>pre-integration-test</id>
                         <goals>
                             <goal>start</goal>
                         </goals>
                     </execution>
                     <execution>
-                        <id>stop-app</id>
-                        <phase>post-integration-test</phase>
+                        <id>post-integration-test</id>
                         <goals>
                             <goal>stop</goal>
                         </goals>

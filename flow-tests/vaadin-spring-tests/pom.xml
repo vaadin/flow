@@ -9,21 +9,6 @@
     </parent>
     <artifactId>vaadin-spring-tests</artifactId>
     <name>Vaadin Spring tests</name>
-    <modules>
-        <module>test-spring-boot</module>
-        <!--
-        Disabled as the resource scanner does not work with Undertow
-        <module>test-spring-boot-undertow</module>
-        -->
-        <module>test-spring-boot-scan</module>
-        <!-- Skipping deployable module as it behaves strangely right now -->
-        <module>test-spring-war</module>
-<!--        <module>test-spring</module>-->
-        <module>test-spring-common</module>
-        <module>test-spring-boot-contextpath</module>
-        <!-- nexus-staging-maven-plugin requires the last module to be not skipped for deployment -->
-        <module>dummy-module</module>
-    </modules>
     <description>Test modules for Spring integration</description>
 
     <packaging>pom</packaging>
@@ -316,6 +301,48 @@
     </build>
 
     <profiles>
+        <profile>
+            <id>npm</id>
+            <activation>
+                <property>
+                    <name>!bowerMode</name>
+                </property>
+            </activation>
+            <modules>
+                <module>test-spring-common</module>
+                <module>test-spring-boot</module>
+                <!--
+                Disabled as the resource scanner does not work with Undertow
+                <module>test-spring-boot-undertow</module>
+                -->
+                <module>test-spring-boot-scan</module>
+                <!-- Skipping deployable module as it behaves strangely right now -->
+                <module>test-spring-war</module>
+                <!--        <module>test-spring</module>-->
+                <module>test-spring-boot-contextpath</module>
+
+                <!-- nexus-staging-maven-plugin requires the last module to be not skipped for deployment -->
+                <module>dummy-module</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>bower</id>
+            <activation>
+                <property>
+                    <name>bowerMode</name>
+                </property>
+            </activation>
+            <modules>
+                <module>test-spring-common</module>
+
+                <!-- bower mode tests -->
+                <module>test-spring-boot/pom-bower-mode.xml</module>
+                <module>test-spring-boot-scan/pom-bower-mode.xml</module>
+                <module>test-spring-war/pom-bower-mode.xml</module>
+                <module>test-spring/pom-bower-mode.xml</module>
+                <module>test-spring-boot-contextpath/pom-bower-mode.xml</module>
+            </modules>
+        </profile>
         <profile>
             <id>eclipse</id>
             <build>

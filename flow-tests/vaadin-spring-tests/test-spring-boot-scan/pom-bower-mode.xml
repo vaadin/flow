@@ -8,8 +8,8 @@
         <artifactId>vaadin-spring-tests</artifactId>
         <version>12.0-SNAPSHOT</version>
     </parent>
-    <artifactId>vaadin-test-spring-boot-scan</artifactId>
-    <name>Vaadin Spring Boot integration tests with custom packages to scan</name>
+    <artifactId>vaadin-test-spring-boot-scan-bower-mode</artifactId>
+    <name>Vaadin Spring Boot integration tests with custom packages to scan in bower mode</name>
     <packaging>jar</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
@@ -120,15 +120,23 @@
 
         <plugins>
             <plugin>
-                <groupId>com.vaadin</groupId>
-                <artifactId>flow-maven-plugin</artifactId>
-                <version>${vaadin.flow.version}</version>
+                <!-- Set the bowerMode flag -->
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>properties-maven-plugin</artifactId>
+                <version>1.0.0</version>
                 <executions>
                     <execution>
                         <goals>
-                            <goal>validate</goal>
-                            <goal>build-frontend</goal>
+                            <goal>set-system-properties</goal>
                         </goals>
+                        <configuration>
+                            <properties>
+                                <property>
+                                    <name>vaadin.bowerMode</name>
+                                    <value>true</value>
+                                </property>
+                            </properties>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

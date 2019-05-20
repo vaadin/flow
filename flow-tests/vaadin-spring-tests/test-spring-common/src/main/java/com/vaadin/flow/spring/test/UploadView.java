@@ -26,6 +26,7 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MultiFileMemoryBuffer;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.Route;
 
 @Route("multipart-upload")
 public class UploadView extends Div {
