@@ -8,14 +8,14 @@
         <groupId>com.vaadin</groupId>
         <version>2.0-SNAPSHOT</version>
     </parent>
-    <artifactId>flow-test</artifactId>
+    <artifactId>flow-test-bower-prod-mode</artifactId>
     <name>Flow tests for BOWER in production mode</name>
 
     <packaging>war</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
         <transpilation.output>${project.build.directory}/build</transpilation.output>
-        <!-- BOWER-MODE + DEV-MODE -->
+        <!-- BOWER-MODE + PROD-MODE -->
         <vaadin.bowerMode>true</vaadin.bowerMode>
         <vaadin.productionMode>true</vaadin.productionMode>
     </properties>
@@ -42,7 +42,7 @@
                 <executions>
                     <execution>
                         <goals>
-                            <goal>validate</goal>
+                            <goal>prepare-frontend</goal>
                             <goal>copy-production-files</goal>
                             <goal>package-for-production</goal>
                         </goals>

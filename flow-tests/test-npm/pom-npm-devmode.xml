@@ -37,8 +37,8 @@
                 <executions>
                     <execution>
                         <goals>
-                            <!-- only need validate because we run tests in dev mode -->
-                            <goal>validate</goal>
+                            <!-- only need prepare because we run tests in dev mode -->
+                            <goal>prepare-frontend</goal>
                         </goals>
                     </execution>
                 </executions>

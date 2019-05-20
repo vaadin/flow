@@ -13,6 +13,8 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>test-npm/pom-bower-production.xml</module>
+        <module>test-npm/pom-bower-devmode.xml</module>
         <module>test-npm/pom-npm-production.xml</module>
         <module>test-npm/pom-npm-devmode.xml</module>
         <module>test-npm-web-components</module>
