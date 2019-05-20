@@ -57,7 +57,7 @@ public class NodeUpdateTestUtil {
 
         // Add other paths already present in the system classpath
         ClassLoader classLoader = ClassLoader.getSystemClassLoader();
-        URL[] urls = ((URLClassLoader) classLoader).getURLs();
+        URL[] urls = URLClassLoader.newInstance(new URL[]{}, classLoader).getURLs();
         for (URL url : urls) {
             classPaths.add(url);
         }
