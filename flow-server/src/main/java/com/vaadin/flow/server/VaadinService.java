@@ -65,6 +65,7 @@ import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.LocaleUtil;
 import com.vaadin.flow.internal.ReflectionCache;
+import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.ServletHelper.RequestType;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
@@ -284,11 +285,18 @@ public abstract class VaadinService implements Serializable {
                     .collect(Collectors.toList());
         });
 
-        if (!getDeploymentConfiguration().isProductionMode()) {
+        DeploymentConfiguration configuration = getDeploymentConfiguration();
+        if (!configuration.isProductionMode()) {
             Logger logger = getLogger();
             logger.debug("The application has the following routes: ");
             getRouteRegistry().getRegisteredRoutes().stream()
                     .map(Object::toString).forEach(logger::debug);
+
+            if (configuration.isBowerMode()) {
+                UsageStatistics.markAsUsed("flow/Bower", null);
+            } else {
+                UsageStatistics.markAsUsed("flow/npm", null);
+            }
         }
 
         htmlImportDependencyCache = new DependencyTreeCache<>(path -> {
