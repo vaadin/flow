@@ -57,6 +57,7 @@ public class WebComponentConfigurationRegistryTest {
     @Before
     public void init() {
         VaadinService service = mock(VaadinService.class);
+        VaadinService.setCurrent(service);
         Mockito.when(service.getAttribute(WebComponentConfigurationRegistry.class)).thenReturn(new WebComponentConfigurationRegistry(){});
         Mockito.when(service.getAttribute(eq(WebComponentConfigurationRegistry.class), anyObject())).thenReturn(new WebComponentConfigurationRegistry(){});
         registry = WebComponentConfigurationRegistry

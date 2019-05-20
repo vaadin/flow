@@ -46,8 +46,6 @@ public class OSGiWebComponentConfigurationRegistryTest extends WebComponentConfi
     @Override
     public void init() {
         super.init();
-//        registry = WebComponentConfigurationRegistry
-//                .getInstance(VaadinService.getCurrent());
     }
 
     @After
