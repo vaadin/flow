@@ -8,8 +8,8 @@
         <groupId>com.vaadin</groupId>
         <version>2.0-SNAPSHOT</version>
     </parent>
-    <artifactId>flow-test</artifactId>
-    <name>Flow tests for NPM in production mode</name>
+    <artifactId>flow-test-bower-dev-mode</artifactId>
+    <name>Flow tests in bower and development mode</name>
 
     <packaging>war</packaging>
     <properties>
