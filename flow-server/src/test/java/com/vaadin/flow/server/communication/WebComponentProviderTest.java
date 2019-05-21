@@ -85,9 +85,10 @@ public class WebComponentProviderTest {
         Mockito.when(service.getInstantiator())
                 .thenReturn(new MockInstantiator());
         Mockito.when(service.getDeploymentConfiguration()).thenReturn(configuration);
+        Mockito.when(service.getContextRootRelativePath(anyObject())).then(invocationOnMock -> ServletHelper.getContextRootRelativePath(((VaadinServletRequest)invocationOnMock.getArguments()[0]))+"/");
         Mockito.when(configuration.isBowerMode()).thenReturn(false);
 
-        provider = new WebComponentProvider(aRequest -> ServletHelper.getContextRootRelativePath((VaadinServletRequest)aRequest) + "/");
+        provider = new WebComponentProvider();
     }
 
     @After
