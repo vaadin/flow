@@ -108,6 +108,14 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <systemProperties>
+                        <systemProperty>
+                            <name>vaadin.bowerMode</name>
+                            <value>true</value>
+                        </systemProperty>
+                    </systemProperties>                
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -348,6 +356,12 @@
                                     <resourceBase>${transpilation.output}</resourceBase>
                                 </resourceBases>
                             </webAppConfig>
+                            <systemProperties>
+                                <systemProperty>
+                                    <name>vaadin.bowerMode</name>
+                                    <value>true</value>
+                                </systemProperty>
+                            </systemProperties>
                         </configuration>
                     </plugin>
                 </plugins>
