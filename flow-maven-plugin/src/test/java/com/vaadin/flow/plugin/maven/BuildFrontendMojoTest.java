@@ -101,6 +101,7 @@ public class BuildFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", npmFolder);
         ReflectionUtils.setVariableValueInObject(mojo, "generateBundle", false);
         ReflectionUtils.setVariableValueInObject(mojo, "runNpmInstall", false);
+        ReflectionUtils.setVariableValueInObject(mojo, "bowerMode", "false");
 
         flowPackagPath.mkdirs();
         generatedFolder.mkdirs();

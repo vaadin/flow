@@ -14,9 +14,6 @@
     <packaging>war</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
-        <!-- BOWER-MODE + DEV-MODE -->
-        <vaadin.bowerMode>true</vaadin.bowerMode>
-        <vaadin.productionMode>false</vaadin.productionMode>
     </properties>
 
     <dependencies>
@@ -33,36 +30,18 @@
 
     <build>
         <plugins>
+            <!-- Clean lib before running jetty -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+            </plugin>
             <!-- Run jetty before integration tests, and stop after -->
             <plugin>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>start-jetty</id>
-                        <phase>pre-integration-test</phase>
-                        <goals>
-                            <goal>start</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>stop-jetty</id>
-                        <phase>post-integration-test</phase>
-                        <goals>
-                            <goal>stop</goal>
-                        </goals>
-                    </execution>
-                </executions>
-
                 <configuration>
                     <!-- Use war output directory instead of default src/main/webapp to get the webpack bundles  -->
                     <webAppSourceDirectory>${project.build.directory}/${project.build.finalName}</webAppSourceDirectory>
-                    <systemProperties>
-                        <systemProperty>
-                            <name>vaadin.bowerMode</name>
-                            <value>true</value>
-                        </systemProperty>
-                    </systemProperties>
                 </configuration>
             </plugin>
         </plugins>

@@ -15,9 +15,6 @@
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
         <transpilation.output>${project.build.directory}/build</transpilation.output>
-        <!-- BOWER-MODE + PROD-MODE -->
-        <vaadin.bowerMode>true</vaadin.bowerMode>
-        <vaadin.productionMode>true</vaadin.productionMode>
     </properties>
 
     <dependencies>
@@ -60,22 +57,6 @@
             <plugin>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>start-jetty</id>
-                        <phase>pre-integration-test</phase>
-                        <goals>
-                            <goal>start</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>stop-jetty</id>
-                        <phase>post-integration-test</phase>
-                        <goals>
-                            <goal>stop</goal>
-                        </goals>
-                    </execution>
-                </executions>
                 <configuration>
                     <webAppConfig>
                         <resourceBases>
