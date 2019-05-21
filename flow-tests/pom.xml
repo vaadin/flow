@@ -13,12 +13,15 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>test-mixed/pom-npm-production.xml</module>
+        <module>test-resources</module>
+<!--  Not working yet
         <module>test-mixed/pom-npm-devmode.xml</module>
-<!--
+-->
+        <module>test-mixed/pom-npm-production.xml</module>
+        <module>test-mixed/pom-bower-devmode.xml</module>
+        <module>test-mixed/pom-bower-production.xml</module>
         <module>test-npm-web-components</module>
         <module>test-pwa</module>
-        <module>test-resources</module>
         <module>test-common</module>
         <module>test-root-context</module>
         <module>test-dev-mode</module>
@@ -37,7 +40,6 @@
         <module>test-web-components-production</module>
         <module>test-web-components-theme-variant</module>
         <module>web-component-test-assets</module>
--->
     </modules>
 
     <properties>
@@ -167,12 +169,6 @@
                         <stopPort>${server.stop.port}</stopPort>
                         <stopKey>foo</stopKey>
                         <stopWait>5</stopWait>
-                        <systemProperties>
-                            <systemProperty>
-                                <name>vaadin.bowerMode</name>
-                                <value>true</value>
-                            </systemProperty>
-                        </systemProperties>
                     </configuration>
                 </plugin>
             </plugins>

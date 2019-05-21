@@ -33,19 +33,6 @@
 
     <build>
         <plugins>
-            <!--  Run flow plugin to build frontend -->
-            <plugin>
-                <groupId>com.vaadin</groupId>
-                <artifactId>flow-maven-plugin</artifactId>
-                <version>${project.version}</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>validate</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>                
             <!-- Run jetty before integration tests, and stop after -->
             <plugin>
                 <groupId>org.eclipse.jetty</groupId>
@@ -66,10 +53,17 @@
                         </goals>
                     </execution>
                 </executions>
+
                 <configuration>
                     <!-- Use war output directory instead of default src/main/webapp to get the webpack bundles  -->
                     <webAppSourceDirectory>${project.build.directory}/${project.build.finalName}</webAppSourceDirectory>
-                </configuration>                
+                    <systemProperties>
+                        <systemProperty>
+                            <name>vaadin.bowerMode</name>
+                            <value>true</value>
+                        </systemProperty>
+                    </systemProperties>
+                </configuration>
             </plugin>
         </plugins>
     </build>
