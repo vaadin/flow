@@ -31,6 +31,8 @@ import java.util.Optional;
 import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -154,9 +156,26 @@ public final class DeploymentConfigurationFactory implements Serializable {
             if (json == null) {
                 URL resource = context.getResource("/" + TOKEN_FILE);
                 if (resource != null) {
+                    tokenLocation = resource.getPath();
                     json = FrontendUtils.streamToString(resource.openStream());
                 }
             }
+
+            Logger logger = LoggerFactory.getLogger(DeploymentConfiguration.class);
+            if (logger.isDebugEnabled()) {
+                logger.debug(String.format("Computing deployment configuration%n"
+                        + "System.properties:%n"
+                        + " productionMode: %s%n boweMode: %s%n webpackPort: %s%n project.basedir: %s%n"
+                        + "Token file: %s%n"
+                        + "Token content: %s%n",
+                        System.getProperty("vaadin.productionMode"),
+                        System.getProperty("vaadin.bowerMode"),
+                        System.getProperty("vaadin.devmode.webpack.running-port"),
+                        System.getProperty("project.basedir"),
+                        tokenLocation,
+                        json));
+            }
+
             // Read the json and set the appropriate system properties if not already set.
             if (json != null) {
                 JsonObject buildInfo = JsonUtil.parse(json);

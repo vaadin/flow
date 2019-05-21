@@ -26,7 +26,6 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -62,7 +61,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
  * </ul>
  */
 @Mojo(name = "build-frontend", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
-public class BuildFrontendMojo extends AbstractMojo {
+public class BuildFrontendMojo extends FlowModeAbstractMojo {
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
@@ -106,16 +105,12 @@ public class BuildFrontendMojo extends AbstractMojo {
     @Parameter(defaultValue = "true")
     private boolean generateEmbeddableWebComponents;
 
-    /**
-     * Whether or not we are running in bowerMode.
-     */
-    @Parameter(defaultValue = "${vaadin.bowerMode}")
-    private boolean bowerMode;
-
     @Override
     public void execute() {
+        super.execute();
+
         // Do nothing when bower mode
-        if (bowerMode) {
+        if (bower) {
             getLog().info("Skipped 'update-frontend' goal because 'vaadin.bowerMode' is set to true.");
             return;
         }

@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -39,7 +38,7 @@ import com.vaadin.flow.plugin.production.ProductionModeCopyStep;
  * for details.
  */
 @Mojo(name = "copy-production-files", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.GENERATE_RESOURCES)
-public class CopyProductionFilesMojo extends AbstractMojo {
+public class CopyProductionFilesMojo extends FlowModeAbstractMojo {
 
     /**
      * Target directory where the files that are used for the production build
@@ -64,16 +63,12 @@ public class CopyProductionFilesMojo extends AbstractMojo {
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
 
-    /**
-     * Whether or not we are running in bowerMode.
-     */
-    @Parameter(defaultValue = "${vaadin.bowerMode}")
-    private boolean bowerMode;
-
     @Override
     public void execute() {
+        super.execute();
+
         // Do nothing when not in bower mode
-        if (!bowerMode) {
+        if (!bower) {
             getLog().info("Skipped `copy-production-files` goal because `vaadin.bowerMode` is not set.");
             return;
         }

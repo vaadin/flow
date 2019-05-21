@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 
 import com.github.eirslett.maven.plugins.frontend.lib.ProxyConfig;
 import org.apache.maven.execution.MavenSession;
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -51,7 +50,7 @@ import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFind
  * mode: minifies, transpiles and bundles them.
  */
 @Mojo(name = "package-for-production", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PROCESS_CLASSES)
-public class PackageForProductionMojo extends AbstractMojo {
+public class PackageForProductionMojo extends FlowModeAbstractMojo {
     /**
      * Directory where the source files to use for transpilation are located.
      * <b>Note!</b> This should match <code>copyOutputDirectory</code>
@@ -205,16 +204,12 @@ public class PackageForProductionMojo extends AbstractMojo {
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
 
-    /**
-     * Whether or not we are running in bowerMode.
-     */
-    @Parameter(defaultValue = "${vaadin.bowerMode}")
-    private boolean bowerMode;
-
     @Override
     public void execute() {
+        super.execute();
+
         // Do nothing when not in bower mode
-        if (!bowerMode) {
+        if (!bower) {
             getLog().info("Skipped `package-for-production` goal because `vaadin.bowerMode` is not set.");
             return;
         }
