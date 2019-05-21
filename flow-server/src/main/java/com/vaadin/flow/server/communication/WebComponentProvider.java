@@ -35,7 +35,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -65,18 +64,8 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
             .compile(".*/(([\\w&&[^_]]+-)+([\\w&&[^_]]+))\\." +
                     "(" + JS_EXTENSION + "|" + HTML_EXTENSION + ")$");
 
-    private final Function<VaadinRequest, String> contextRootProvider;
-
     // tag name -> generated html
     private Map<String, String> cache;
-
-    /**
-     * Creates the provider with given function to obtain context root.
-     * @param contextRootProvider Function to get context root from any {@link VaadinRequest}.
-     */
-    public WebComponentProvider(Function<VaadinRequest, String> contextRootProvider) {
-        this.contextRootProvider = contextRootProvider;
-    }
 
     @Override
     public boolean synchronizedHandleRequest(
@@ -175,7 +164,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
 
     private String generateCompiledUIDeclaration(
             VaadinSession session, VaadinRequest request, String tagName) {
-        String contextRootRelativePath = contextRootProvider.apply(request);
+        String contextRootRelativePath = request.getService().getContextRootRelativePath(request);
 
         BootstrapUriResolver resolver = new BootstrapUriResolver(
                 contextRootRelativePath, session);

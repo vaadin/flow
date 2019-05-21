@@ -332,7 +332,7 @@ public abstract class VaadinService implements Serializable {
      * @param request Request.
      * @return Relative context root path for that request.
      */
-    protected abstract String getContextRootRelativePath(VaadinRequest request);
+    public abstract String getContextRootRelativePath(VaadinRequest request);
 
     /**
      * Called during initialization to add the request handlers for the service.
@@ -358,7 +358,7 @@ public abstract class VaadinService implements Serializable {
                 && pwaRegistry.getPwaConfiguration().isEnabled()) {
             handlers.add(new PwaHandler(pwaRegistry));
         }
-        handlers.add(new WebComponentProvider(this::getContextRootRelativePath));
+        handlers.add(new WebComponentProvider());
         handlers.add(new WebComponentBootstrapHandler());
         return handlers;
     }
