@@ -18,9 +18,7 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URL;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -87,8 +85,6 @@ public abstract class NodeUpdater implements Command {
 
     private final ClassFinder finder;
 
-    private final Set<String> flowModules = new HashSet<>();
-
     boolean modified;
 
     /**
@@ -140,23 +136,33 @@ public abstract class NodeUpdater implements Command {
     }
 
     private String resolveInFlowFrontendDirectory(String importPath) {
-        if (importPath.startsWith("@")) {
-            return importPath;
-        }
-        String pathWithNoProtocols = importPath.replace(FRONTEND_PROTOCOL_PREFIX, "");
+        String resolved = importPath;
+        if (!importPath.startsWith("@")) {
 
-        if (flowModules.contains(pathWithNoProtocols) || getResourceUrl(pathWithNoProtocols) != null) {
-          flowModules.add(pathWithNoProtocols);
-          return FLOW_NPM_PACKAGE_NAME + pathWithNoProtocols;
-        }
+            // This can be removed when all flow components annotated with @JsModule have
+            // the './' prefix intead of the 'frontend://'
+            if (importPath.startsWith(FRONTEND_PROTOCOL_PREFIX)) {
+                resolved = importPath.replaceFirst(FRONTEND_PROTOCOL_PREFIX, "./");
+                log().warn(
+                    "Do not use the '{}' protocol in '@JsModule', changing '{}' to '{}', please update your component.",
+                    FRONTEND_PROTOCOL_PREFIX, importPath, resolved);
+            }
 
-        return pathWithNoProtocols;
+            // We only should check here those paths starting with './' when all flow components
+            // have the './' prefix
+            String resource = resolved.replaceFirst("^./+", "");
+            if (finder.getResource(RESOURCES_FRONTEND_DEFAULT + "/" + resource) != null) {
+                if (!resolved.startsWith("./")) {
+                    log().warn(
+                            "Use the './' prefix for resources in JAR files: '{}', please update your component.",
+                            importPath);
+                }
+                resolved = FLOW_NPM_PACKAGE_NAME + resource;
+            }
+        }
+        return resolved;
     }
 
-    private URL getResourceUrl(String resource) {
-        resource = RESOURCES_FRONTEND_DEFAULT + "/" + resource.replaceFirst(FLOW_NPM_PACKAGE_NAME, "");
-        return finder.getResource(resource);
-    }
 
     JsonObject getMainPackageJson() throws IOException {
         return getPackageJson(new File(npmFolder, PACKAGE_JSON));

@@ -20,12 +20,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -37,6 +34,7 @@ import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
@@ -52,6 +50,7 @@ public class TaskUpdateImports extends NodeUpdater {
 
     private final File generatedFlowImports;
     private final File frontendDirectory;
+    private static final String IMPORT = "import '%s';";
 
     /**
      * Create an instance of the updater given all configurable parameters.
@@ -119,7 +118,8 @@ public class TaskUpdateImports extends NodeUpdater {
 
     private List<String> modulesToImports(Set<String> modules, AbstractTheme theme) {
         List<String> imports = new ArrayList<>(modules.size());
-        Map<String, String> unresolvedImports = new HashMap<>(modules.size());
+        Set<String> resourceNotFound = new HashSet<>();
+        Set<String> npmNotFound = new HashSet<>();
 
         for (String originalModulePath : modules) {
             String translatedModulePath = originalModulePath;
@@ -127,49 +127,55 @@ public class TaskUpdateImports extends NodeUpdater {
                 translatedModulePath = theme.translateUrl(translatedModulePath);
             }
             if (importedFileExists(translatedModulePath)) {
-                imports.add("import '" + toValidBrowserImport(
-                        translatedModulePath) + "';");
+                imports.add(String.format(IMPORT, toValidBrowserImport(translatedModulePath)));
             } else if (importedFileExists(originalModulePath)) {
-                imports.add("import '" + toValidBrowserImport(
-                        originalModulePath) + "';");
+                imports.add(String.format(IMPORT, toValidBrowserImport(originalModulePath)));
+            } else if (originalModulePath.startsWith("./")) {
+                resourceNotFound.add(originalModulePath);
             } else {
-                unresolvedImports.put(originalModulePath, translatedModulePath);
+                npmNotFound.add(originalModulePath);
+                imports.add(String.format(IMPORT, originalModulePath));
             }
         }
 
-        if (!unresolvedImports.isEmpty()) {
-            StringBuilder errorMessage = new StringBuilder(String.format(
-                    "Failed to resolve the following module imports neither in the node_modules directory '%s' " +
-                            "nor in project files in '%s': ",
-                    nodeModulesFolder, frontendDirectory)).append("\n");
-
-            unresolvedImports
-                    .forEach((originalModulePath, translatedModulePath) -> {
-                        errorMessage.append(
-                                String.format("'%s'", translatedModulePath));
-                        if (!Objects.equals(originalModulePath,
-                                translatedModulePath)) {
-                            errorMessage.append(String.format(
-                                    " (the import was translated by Flow from the path '%s')",
-                                    originalModulePath));
-                        }
-                        errorMessage.append("\n");
-                    });
-
-            errorMessage.append("Double check that those files exist in the project structure.");
-
+        if (!resourceNotFound.isEmpty()) {
+            StringBuilder errorMessage = new StringBuilder(
+                    "\n\n  Failed to resolve the following files either:"
+                    + "\n   · in the `/frontend` sources folder"
+                    + "\n   · or as a `META-INF/resources/frontend` resource in some JAR. \n       ➜ ");
+            errorMessage.append(String.join("\n       ➜ ", resourceNotFound));
+            errorMessage.append("\n  Please, double check that those files exist.\n");
             throw new IllegalStateException(errorMessage.toString());
+        }
+
+        if (!npmNotFound.isEmpty()) {
+            String message =
+                    "\n\n  Failed to find the following imports in the `node_modules` tree:\n      ➜ "
+                    + String.join("\n       ➜ ", npmNotFound)
+                    + "\n  If the build fails, check that npm packages are installed.\n";
+            log().info(message);
         }
 
         return imports;
     }
 
     private boolean importedFileExists(String jsImport) {
-        return new File(frontendDirectory, jsImport).isFile()
-                || new File(nodeModulesFolder, jsImport).isFile()
-                || new File(new File(nodeModulesFolder, FLOW_NPM_PACKAGE_NAME), jsImport).isFile()
-                || new File(generatedFolder,
-                generatedResourcePathIntoRelativePath(jsImport)).isFile();
+        // file is in /frontend
+        boolean found = isFile(frontendDirectory, jsImport);
+        // file is a flow resource e.g. /node_modules/@vaadin/flow-frontend/gridConnector.js
+        found = found || isFile(nodeModulesFolder, FLOW_NPM_PACKAGE_NAME, jsImport);
+        // full path import e.g /node_modules/@vaadin/vaadin-grid/vaadin-grid-column.js
+        found = found || isFile(nodeModulesFolder, jsImport);
+        // omitted the .js extension e.g. /node_modules/@vaadin/vaadin-grid/vaadin-grid-column
+        found = found || isFile(nodeModulesFolder, jsImport + ".js");
+        // has a package.json file e.g. /node_modules/package-name/package.json
+        found = found || isFile(nodeModulesFolder, jsImport, PACKAGE_JSON );
+        // file was generated by flow
+        return found || isFile(generatedFolder, generatedResourcePathIntoRelativePath(jsImport));
+    }
+
+    private boolean isFile(File base, String ...path) {
+        return new File(base, String.join("/", path)).isFile();
     }
 
     private String toValidBrowserImport(String s) {
