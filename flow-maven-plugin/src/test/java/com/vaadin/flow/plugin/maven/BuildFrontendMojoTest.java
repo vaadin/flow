@@ -233,8 +233,7 @@ public class BuildFrontendMojoTest {
 
         assertContainsPackage(dependencies,
             "@vaadin/vaadin-button",
-            "@vaadin/vaadin-element-mixin",
-            "@vaadin/vaadin-core-shrinkwrap");
+            "@vaadin/vaadin-element-mixin");
 
         Assert.assertFalse("Has foo", dependencies.hasKey("foo"));
     }
