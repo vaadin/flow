@@ -774,13 +774,13 @@ public class UIInternals implements Serializable {
      *            theme class to set, may be {@code null}
      */
     public void setTheme(Class<? extends AbstractTheme> themeClass) {
-        AbstractTheme result = null;
-        if (themeClass != null) {
+        if (themeClass == null) {
+            setTheme((AbstractTheme) null);
+        } else {
             if (theme == null || !theme.getClass().equals(themeClass)) {
-                result = Instantiator.get(getUI()).getOrCreate(themeClass);
+                setTheme(Instantiator.get(getUI()).getOrCreate(themeClass));
             }
         }
-        setTheme(result);
     }
 
     /**
