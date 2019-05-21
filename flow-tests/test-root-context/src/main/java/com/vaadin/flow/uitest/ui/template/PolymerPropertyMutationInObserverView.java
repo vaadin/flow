@@ -17,16 +17,18 @@ package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
-import com.vaadin.flow.uitest.ui.AbstractDivView;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.uitest.ui.AbstractDivView;
 
 @Route("com.vaadin.flow.uitest.ui.template.PolymerPropertyMutationInObserverView")
 public class PolymerPropertyMutationInObserverView extends AbstractDivView {
 
     @Tag("property-mutation-in-observer")
     @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/PolymerPropertyMutationInObserver.html")
+    @JsModule("PolymerPropertyMutationInObserver.js")
     public static class PolymerPropertyMutationInObserver
             extends PolymerTemplate<Message> {
 

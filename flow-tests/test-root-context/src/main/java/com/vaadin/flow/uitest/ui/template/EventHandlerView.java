@@ -21,17 +21,19 @@ import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.templatemodel.TemplateModel;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.EventHandlerView", layout = ViewTestLayout.class)
 @Tag("event-handler")
 @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/EventHandler.html")
+@JsModule("EventHandler.js")
 public class EventHandlerView extends PolymerTemplate<TemplateModel> {
     public EventHandlerView() {
         setId("template");

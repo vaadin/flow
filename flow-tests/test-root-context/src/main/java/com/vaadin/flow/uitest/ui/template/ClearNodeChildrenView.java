@@ -19,6 +19,7 @@ import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.polymertemplate.Id;
@@ -31,6 +32,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 @Route(value = "com.vaadin.flow.uitest.ui.template.ClearNodeChildrenView", layout = ViewTestLayout.class)
 @Tag("clear-node-children")
 @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/ClearNodeChildren.html")
+@JsModule("ClearNodeChildren.js")
 public class ClearNodeChildrenView extends PolymerTemplate<TemplateModel>
         implements HasComponents, HasText {
 

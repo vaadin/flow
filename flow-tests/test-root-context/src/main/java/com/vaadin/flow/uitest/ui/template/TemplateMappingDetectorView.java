@@ -20,6 +20,7 @@ import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.polymertemplate.Id;
@@ -57,6 +58,7 @@ public class TemplateMappingDetectorView extends AbstractDivView {
 
     @Tag("template-mapping-detector")
     @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/TemplateMappingDetector.html")
+    @JsModule("TemplateMappingDetector.js")
     public static class TemplateMappingDetectorContainer
             extends PolymerTemplate<TemplateModel> {
         @Id
@@ -84,6 +86,7 @@ public class TemplateMappingDetectorView extends AbstractDivView {
 
     @Tag("template-mapping-detector-parent")
     @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/TemplateMappingDetectorParent.html")
+    @JsModule("TemplateMappingDetectorParent.js")
     public static class TemplateMappingDetectorContainerParent
             extends PolymerTemplate<TemplateModel> {
         @Id

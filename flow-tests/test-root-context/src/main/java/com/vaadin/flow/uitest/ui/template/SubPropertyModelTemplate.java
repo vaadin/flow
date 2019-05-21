@@ -18,6 +18,7 @@ package com.vaadin.flow.uitest.ui.template;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
 import com.vaadin.flow.component.polymertemplate.ModelItem;
@@ -27,6 +28,7 @@ import com.vaadin.flow.uitest.ui.template.SubPropertyModelTemplate.SubPropertyMo
 
 @Tag("sub-property-model")
 @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/SubPropertyModel.html")
+@JsModule("SubPropertyModel.js")
 public class SubPropertyModelTemplate
         extends PolymerTemplate<SubPropertyModel> {
 

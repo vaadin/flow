@@ -20,12 +20,14 @@ import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Synchronize;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.templatemodel.TemplateModel;
 import com.vaadin.flow.uitest.ui.template.PolymerDefaultPropertyValue.MyModel;
 
 @Tag("default-property")
 @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/PolymerDefaultPropertyValue.html")
+@JsModule("PolymerDefaultPropertyValue.js")
 public class PolymerDefaultPropertyValue extends PolymerTemplate<MyModel> {
 
     public interface MyModel extends TemplateModel {
