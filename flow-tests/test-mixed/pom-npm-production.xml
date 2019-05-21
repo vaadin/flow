@@ -14,9 +14,6 @@
     <packaging>war</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
-        <!-- NPM-MODE + PROD-MODE -->
-        <vaadin.bowerMode>false</vaadin.bowerMode>
-        <vaadin.productionMode>true</vaadin.productionMode>
     </properties>
 
     <dependencies>
@@ -29,26 +26,10 @@
 
     <build>
         <plugins>
-            <!-- Remove libs before ITs to avoid scan complaining about classes in multiple locations -->
+            <!-- Clean lib before running jetty -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
-                <version>1.8</version>
-                <executions>
-                    <execution>
-                        <phase>pre-integration-test</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <tasks>
-                                <delete>
-                                    <fileset dir="${project.build.directory}/${project.build.finalName}/WEB-INF/lib" includes="*.jar" />
-                                </delete>
-                            </tasks>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
             <!--  Run flow plugin to build frontend -->
             <plugin>
@@ -63,27 +44,15 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <bowerMode>false</bowerMode>
+                    <productionMode>true</productionMode>
+                </configuration>
             </plugin>
             <!-- Run jetty before integration tests, and stop after -->
             <plugin>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>start-jetty</id>
-                        <phase>pre-integration-test</phase>
-                        <goals>
-                            <goal>start</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>stop-jetty</id>
-                        <phase>post-integration-test</phase>
-                        <goals>
-                            <goal>stop</goal>
-                        </goals>
-                    </execution>
-                </executions>
                 <configuration>
                     <!-- Use war output directory instead of default src/main/webapp to get the webpack bundles  -->
                     <webAppSourceDirectory>${project.build.directory}/${project.build.finalName}</webAppSourceDirectory>

@@ -75,6 +75,7 @@ public class PrepareFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", projectBase);
         ReflectionUtils.setVariableValueInObject(mojo, "webpackTemplate", WEBPACK_CONFIG);
         ReflectionUtils.setVariableValueInObject(mojo, "generatedFolder", projectBase);
+        ReflectionUtils.setVariableValueInObject(mojo, "bowerMode", "false");
 
         Assert.assertTrue(flowPackagePath.mkdirs());
         setProject(mojo, "war", "war_output");
