@@ -37,8 +37,8 @@
                 <executions>
                     <execution>
                         <goals>
-                            <!-- only need validate because we run tests in dev mode -->
-                            <goal>validate</goal>
+                            <!-- only need prepare-frontend because we run tests in dev mode -->
+                            <goal>prepare-frontend</goal>
                         </goals>
                     </execution>
                 </executions>
@@ -64,6 +64,8 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <!-- Use war output directory instead of default src/main/webapp to get the webpack bundles  -->
+                    <webAppSourceDirectory>${project.build.directory}/${project.build.finalName}</webAppSourceDirectory>                        
                     <systemProperties>
                         <systemProperty>
                             <!-- this avoids an issue in chrome not loading the components 
@@ -85,7 +87,6 @@
                                 <include>frontend/main.js</include>
                                 <include>package*.json</include>
                                 <include>webpack.config.js</include>
-                                <include>node_modules/**</include>
                             </includes>
                         </fileset>
                     </filesets>

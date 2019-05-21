@@ -149,6 +149,7 @@ public final class DeploymentConfigurationFactory implements Serializable {
                     json = FileUtils.readFileToString(tokenFile, "UTF-8");
                 }
             }
+
             // token file is in the resources context
             if (json == null) {
                 URL resource = context.getResource("/" + TOKEN_FILE);
@@ -159,19 +160,23 @@ public final class DeploymentConfigurationFactory implements Serializable {
             // Read the json and set the appropriate system properties if not already set.
             if (json != null) {
                 JsonObject buildInfo = JsonUtil.parse(json);
-                if (!Boolean.valueOf("vaadin." + SERVLET_PARAMETER_PRODUCTION_MODE)
-                        && buildInfo.hasKey(SERVLET_PARAMETER_PRODUCTION_MODE)) {
-                    System.setProperty("vaadin." + SERVLET_PARAMETER_PRODUCTION_MODE, String.valueOf(
+                if (buildInfo.hasKey(SERVLET_PARAMETER_PRODUCTION_MODE)) {
+                    initParameters.setProperty(SERVLET_PARAMETER_PRODUCTION_MODE, String.valueOf(
                             buildInfo.getBoolean(SERVLET_PARAMETER_PRODUCTION_MODE)));
+                    // Need to be sure that we remove the system property, because
+                    // it has priority in the configuration getter
+                    System.clearProperty("vaadin." + SERVLET_PARAMETER_PRODUCTION_MODE);
                 }
-                if (!Boolean.valueOf("vaadin." + SERVLET_PARAMETER_BOWER_MODE)
-                        && buildInfo.hasKey(SERVLET_PARAMETER_BOWER_MODE)) {
-                    System.setProperty("vaadin." + SERVLET_PARAMETER_BOWER_MODE, String.valueOf(
+                if (buildInfo.hasKey(SERVLET_PARAMETER_BOWER_MODE)) {
+                    initParameters.setProperty(SERVLET_PARAMETER_BOWER_MODE, String.valueOf(
                             buildInfo.getBoolean(SERVLET_PARAMETER_BOWER_MODE)));
+                    // Need to be sure that we remove the system property, because
+                    // it has priority in the configuration getter
+                    System.clearProperty("vaadin." + SERVLET_PARAMETER_BOWER_MODE);
                 }
-                if (System.getProperty("vaadin." + SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT) == null
-                        && buildInfo.hasKey("webpackPort")) {
-                    System.setProperty("vaadin." + SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, "webpackPort");
+                if (buildInfo.hasKey("webpackPort")) {
+                    System.setProperty("vaadin." + SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT,
+                            String.valueOf(buildInfo.getBoolean("webpackPort")));
                 }
                 if (System.getProperty("project.basedir") == null && buildInfo.hasKey("npmFolder")) {
                     System.setProperty("project.basedir", buildInfo.getString("npmFolder"));

@@ -188,11 +188,11 @@ public abstract class NodeUpdater implements Command {
                 .relativize(generatedFolder.toPath()).toString();
         added = addDependency(packageJson, DEPENDENCIES, DEP_NAME_FLOW_DEPS, customPkg) || added;
 
-        added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack", "^4.30.0") || added;
-        added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack-cli", "^3.3.0") || added;
-        added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack-dev-server", "^3.3.0") || added;
-        added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack-babel-multi-target-plugin", "^2.1.0") || added;
-        added = addDependency(packageJson, DEV_DEPENDENCIES, "copy-webpack-plugin", "^5.0.3") || added;
+        added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack", "4.30.0") || added;
+        added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack-cli", "3.3.0") || added;
+        added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack-dev-server", "3.3.0") || added;
+        added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack-babel-multi-target-plugin", "2.1.0") || added;
+        added = addDependency(packageJson, DEV_DEPENDENCIES, "copy-webpack-plugin", "5.0.3") || added;
         return added;
     }
 

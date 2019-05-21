@@ -64,7 +64,7 @@ public class PrepareFrontendMojo extends AbstractMojo {
      * This goal checks that node and npm tools are installed, copies frontend
      * resources available inside `.jar` dependencies to `node_modules`, and creates
      * or updates `package.json` and `webpack.config.json` files.
-     * 
+     *
      * @deprecated use {@link PrepareFrontendMojo} instead
      */
     @Deprecated
@@ -169,10 +169,6 @@ public class PrepareFrontendMojo extends AbstractMojo {
     }
 
     private void propagateBuildInfo() {
-        // Propagate modes to everything run after this goal via System.properties
-        // this allows not having to use specific configuration in other plugins.
-        System.setProperty("vaadin." + SERVLET_PARAMETER_BOWER_MODE, String.valueOf(bowerMode));
-        System.setProperty("vaadin." + SERVLET_PARAMETER_PRODUCTION_MODE, String.valueOf(bowerMode));
         // In the case of running npm dev-mode in a maven multi-module projects,
         // inform dev-mode server and updaters about the actual project folder.
         System.setProperty("project.basedir", npmFolder.getAbsolutePath());
