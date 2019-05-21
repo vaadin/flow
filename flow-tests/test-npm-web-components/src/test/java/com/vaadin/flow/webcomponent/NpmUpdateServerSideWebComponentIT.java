@@ -18,5 +18,14 @@ package com.vaadin.flow.webcomponent;
 
 import com.vaadin.flow.webcomponent.tests.UpdateServerSideWebComponentIT;
 
+import org.junit.Ignore;
+import org.junit.Test;
+
 public class NpmUpdateServerSideWebComponentIT extends UpdateServerSideWebComponentIT {
+
+    @Ignore("remove when #5732 fixed")
+    @Test
+    public void pushUpdatesEmbeddedWebComponent() {
+        super.pushUpdatesEmbeddedWebComponent();
+    }
 }
