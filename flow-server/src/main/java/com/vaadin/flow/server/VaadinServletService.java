@@ -377,7 +377,7 @@ public class VaadinServletService extends VaadinService {
     }
 
     @Override
-    protected String getContextRootRelativePath(VaadinRequest request) {
+    public String getContextRootRelativePath(VaadinRequest request) {
         assert request instanceof VaadinServletRequest;
         return ServletHelper.getContextRootRelativePath((VaadinServletRequest) request) + "/";
     }
