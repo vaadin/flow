@@ -24,7 +24,7 @@ import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.model.Build;
-import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -58,7 +58,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
  * or updates `package.json` and `webpack.config.json` files.
  */
 @Mojo(name = "prepare-frontend", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PROCESS_RESOURCES)
-public class PrepareFrontendMojo extends AbstractMojo {
+public class PrepareFrontendMojo extends FlowModeAbstractMojo {
 
     /**
      * This goal checks that node and npm tools are installed, copies frontend
@@ -114,18 +114,6 @@ public class PrepareFrontendMojo extends AbstractMojo {
     private String webpackTemplate;
 
     /**
-     * Whether or not we are running in bowerMode.
-     */
-    @Parameter(defaultValue = "${vaadin.bowerMode}")
-    private boolean bowerMode;
-
-    /**
-     * Whether or not we are running in productionMode.
-     */
-    @Parameter(defaultValue = "${vaadin.productionMode}")
-    private boolean productionMode;
-
-    /**
      * The folder where flow will put generated files that will be used by webpack.
      */
     @Parameter(defaultValue = "${project.build.directory}/" + FRONTEND)
@@ -140,12 +128,15 @@ public class PrepareFrontendMojo extends AbstractMojo {
 
     @Override
     public void execute() {
+        super.execute();
+
         webpackOutputDirectory = getWebpackOutputDirectory();
+
         // propagate info via System properties and token file
         propagateBuildInfo();
 
         // Do nothing when bower mode
-        if (bowerMode) {
+        if (bower) {
             getLog().debug(
                     "Skipped 'validate' goal because `vaadin.bowerMode` is set.");
             return;
@@ -169,15 +160,11 @@ public class PrepareFrontendMojo extends AbstractMojo {
     }
 
     private void propagateBuildInfo() {
-        // In the case of running npm dev-mode in a maven multi-module projects,
-        // inform dev-mode server and updaters about the actual project folder.
-        System.setProperty("project.basedir", npmFolder.getAbsolutePath());
-
         // For forked processes not accessing to System.properties we leave a
         // token file with the information about the build
         File token = new File(webpackOutputDirectory, TOKEN_FILE);
         JsonObject buildInfo = Json.createObject();
-        buildInfo.put(SERVLET_PARAMETER_BOWER_MODE, bowerMode);
+        buildInfo.put(SERVLET_PARAMETER_BOWER_MODE, bower);
         buildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, productionMode);
         buildInfo.put("npmFolder", npmFolder.getAbsolutePath());
         buildInfo.put("generatedFolder", generatedFolder.getAbsolutePath());
@@ -191,11 +178,37 @@ public class PrepareFrontendMojo extends AbstractMojo {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+
+        // Enable debug to find out problems related with flow modes
+        Log log = getLog();
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("%n>>> Running prepare-package in %s project%nSystem.properties:%n"
+                    + " productionMode: %s%n boweMode: %s%n webpackPort: %s%n project.basedir: %s%n"
+                    + "Goal parameters:%n productionMode: %s%n bowerMode: %s%n bower: %b%n npmFolder: %s%n"
+                    + "Token file: %s%n"
+                    + "Token content: %s%n",
+                    project.getName(),
+                    System.getProperty("vaadin.productionMode"),
+                    System.getProperty("vaadin.bowerMode"),
+                    System.getProperty("vaadin.devmode.webpack.running-port"),
+                    System.getProperty("project.basedir"),
+                    productionMode,
+                    bowerMode,
+                    bower,
+                    npmFolder,
+                    token.getAbsolutePath(),
+                    buildInfo.toJson()));
+        }
+
         // We still pass the location of the file via System.property, this fixes
         // cases e.g. jetty with `webAppSourceDirectory` not correctly configured
         System.setProperty(PARAM_TOKEN_FILE, token.getAbsolutePath());
-    }
 
+        // In the case of running npm dev-mode in a maven multi-module projects,
+        // inform dev-mode server and updaters about the actual project folder.
+        System.setProperty("project.basedir", npmFolder.getAbsolutePath());
+    }
+    
     private void copyFlowModuleDependencies(File flowNodeDirectory) {
         List<ArtifactData> projectArtifacts = project.getArtifacts().stream()
                 .filter(artifact -> "jar".equals(artifact.getType()))
