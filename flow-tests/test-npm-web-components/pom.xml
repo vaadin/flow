@@ -71,16 +71,6 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <systemProperties>
-                        <systemProperty>
-                            <name>vaadin.devmode.webpack.options</name>
-                            <value>--debug</value>
-                        </systemProperty>
-                        <systemProperty>
-                            <name>project.basedir</name>
-                            <value>${project.basedir}</value>
-                        </systemProperty>
-                    </systemProperties>
                     <!-- Use war output directory to get the webpack files -->
                     <webAppConfig>
                         <allowDuplicateFragmentNames>true</allowDuplicateFragmentNames>
@@ -91,13 +81,22 @@
                 </configuration>
             </plugin>
 
-            <!--
-                Copy webpack compiled stuff to final distributable
-            -->
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-war-plugin</artifactId>
-                <version>${maven.war.plugin.version}</version>
+                <groupId>com.vaadin</groupId>
+                <artifactId>flow-maven-plugin</artifactId>
+                <version>${project.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-frontend</goal>
+                            <goal>build-frontend</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                   <bowerMode>false</bowerMode>
+                   <productionMode>true</productionMode>
+                </configuration>
             </plugin>
 
             <!--
@@ -113,7 +112,6 @@
                                 <include>frontend/main.js</include>
                                 <include>package*.json</include>
                                 <include>webpack.config.js</include>
-                                <include>node_modules/**</include>
                             </includes>
                         </fileset>
                     </filesets>
@@ -147,33 +145,6 @@
                                 <phase>pre-integration-test</phase>
                                 <goals>
                                     <goal>selenium</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-        <!-- Update npm deps and imports and build frontend when not in bower mode -->
-        <profile>
-            <id>npm-build</id>
-            <activation>
-                <property>
-                    <name>!vaadin.bowerMode</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>com.vaadin</groupId>
-                        <artifactId>flow-maven-plugin</artifactId>
-                        <version>${project.version}</version>
-                        <executions>
-                            <execution>
-                                <goals>
-                                    <goal>validate</goal>
-                                    <goal>build-frontend</goal>
                                 </goals>
                             </execution>
                         </executions>

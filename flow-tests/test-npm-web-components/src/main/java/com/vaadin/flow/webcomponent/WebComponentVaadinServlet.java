@@ -22,7 +22,4 @@ import com.vaadin.flow.server.VaadinServlet;
 
 @WebServlet(urlPatterns = { "/*", "/vaadin/*"}, asyncSupported = true)
 public class WebComponentVaadinServlet extends VaadinServlet {
-    public WebComponentVaadinServlet() {
-        System.clearProperty("vaadin.bowerMode");
-    }
 }
