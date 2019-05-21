@@ -24,4 +24,3 @@ class MyTemplate extends PolymerElement {
       }
 }
 customElements.define(MyTemplate.is, MyTemplate);
-        
