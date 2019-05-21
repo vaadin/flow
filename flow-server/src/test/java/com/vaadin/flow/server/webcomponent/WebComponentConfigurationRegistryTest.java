@@ -70,7 +70,7 @@ public class WebComponentConfigurationRegistryTest {
 
     @Test
     public void assertWebComponentRegistry() {
-        Assert.assertTrue(WebComponentConfigurationRegistry.class.isInstance(registry));
+        Assert.assertNotNull(registry);
     }
 
     @Test
