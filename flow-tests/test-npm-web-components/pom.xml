@@ -43,27 +43,6 @@
 
     <build>
         <plugins>
-            <!-- Remove libs before ITs to avoid scan complaining about classes in multiple locations -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <version>1.8</version>
-                <executions>
-                    <execution>
-                        <phase>pre-integration-test</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <tasks>
-                                <delete>
-                                    <fileset dir="${project.build.directory}/${project.build.finalName}/WEB-INF/lib" includes="*.jar" />
-                                </delete>
-                            </tasks>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>            
             <!--
                This is executed with vaadin.productionMode set to true because of the
                `flow-server-production-mode` dependency above.
@@ -92,16 +71,6 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <systemProperties>
-                        <systemProperty>
-                            <name>vaadin.devmode.webpack.options</name>
-                            <value>--debug</value>
-                        </systemProperty>
-                        <systemProperty>
-                            <name>project.basedir</name>
-                            <value>${project.basedir}</value>
-                        </systemProperty>
-                    </systemProperties>
                     <!-- Use war output directory to get the webpack files -->
                     <webAppConfig>
                         <allowDuplicateFragmentNames>true</allowDuplicateFragmentNames>
@@ -112,13 +81,22 @@
                 </configuration>
             </plugin>
 
-            <!--
-                Copy webpack compiled stuff to final distributable
-            -->
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-war-plugin</artifactId>
-                <version>${maven.war.plugin.version}</version>
+                <groupId>com.vaadin</groupId>
+                <artifactId>flow-maven-plugin</artifactId>
+                <version>${project.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-frontend</goal>
+                            <goal>build-frontend</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                   <bowerMode>false</bowerMode>
+                   <productionMode>true</productionMode>
+                </configuration>
             </plugin>
 
             <!--
@@ -170,37 +148,6 @@
                                 </goals>
                             </execution>
                         </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-        <!-- Update npm deps and imports and build frontend when not in bower mode -->
-        <profile>
-            <id>npm-build</id>
-            <activation>
-                <property>
-                    <name>!vaadin.bowerMode</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>com.vaadin</groupId>
-                        <artifactId>flow-maven-plugin</artifactId>
-                        <version>${project.version}</version>
-                        <executions>
-                            <execution>
-                                <goals>
-                                    <goal>prepare-frontend</goal>
-                                    <!-- <goal>build-frontend</goal> -->
-                                </goals>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <vaadin.bowerMode>false</vaadin.bowerMode>
-                            <vaadin.productionMode>false</vaadin.productionMode>
-                        </configuration>
                     </plugin>
                 </plugins>
             </build>

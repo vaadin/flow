@@ -18,5 +18,14 @@ package com.vaadin.flow.webcomponent;
 
 import com.vaadin.flow.webcomponent.tests.UpdateServerSideWebComponentIT;
 
+import org.junit.Ignore;
+import org.junit.Test;
+
 public class NpmUpdateServerSideWebComponentIT extends UpdateServerSideWebComponentIT {
+
+    @Ignore("does not work in NPM")
+    @Test
+    public void pushUpdatesEmbeddedWebComponent() {
+        super.pushUpdatesEmbeddedWebComponent();
+    }
 }
