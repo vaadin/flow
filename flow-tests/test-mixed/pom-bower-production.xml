@@ -15,7 +15,7 @@
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
         <transpilation.output>${project.build.directory}/build</transpilation.output>
-        <!-- BOWER-MODE + DEV-MODE -->
+        <!-- BOWER-MODE + PROD-MODE -->
         <vaadin.bowerMode>true</vaadin.bowerMode>
         <vaadin.productionMode>true</vaadin.productionMode>
     </properties>
@@ -30,6 +30,11 @@
             <groupId>org.webjars.bowergithub.polymer</groupId>
             <artifactId>polymer</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-server-production-mode</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -42,7 +47,6 @@
                 <executions>
                     <execution>
                         <goals>
-                            <goal>validate</goal>
                             <goal>copy-production-files</goal>
                             <goal>package-for-production</goal>
                         </goals>
@@ -51,7 +55,7 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>            
+            </plugin>
             <!-- Run jetty before integration tests, and stop after -->
             <plugin>
                 <groupId>org.eclipse.jetty</groupId>
@@ -79,7 +83,7 @@
                             <resourceBase>${project.basedir}/src/main/webapp</resourceBase>
                         </resourceBases>
                     </webAppConfig>
-                </configuration>                
+                </configuration>
             </plugin>
         </plugins>
     </build>
