@@ -43,7 +43,7 @@ public class FrontendDependenciesTest {
         // TODO: This is not working yet, need to be fixed and adjust the test //NOSONAR
         Field field = FieldUtils.getDeclaredField(FrontendDependencies.class, "LUMO", true);
         FieldUtils.removeFinalModifier(field, true);
-        FieldUtils.writeStaticField(field, "com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.ThemeDefault");
+        FieldUtils.writeStaticField(field, "com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.ThemeDefault", true);
     }
 
     private FrontendDependencies create(Class<?> ...classes) throws Exception {
