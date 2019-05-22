@@ -100,4 +100,10 @@ public class CopyProductionFilesMojo extends FlowModeAbstractMojo {
                 .copyWebApplicationFiles(copyOutputDirectory,
                         frontendWorkingDirectory, excludes);
     }
+
+    @Override
+    boolean isDefaultBower() {
+        return true;
+    }
+    
 }

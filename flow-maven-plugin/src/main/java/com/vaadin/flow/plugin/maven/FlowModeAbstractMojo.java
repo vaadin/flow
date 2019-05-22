@@ -16,10 +16,12 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo{
     public boolean productionMode;
 
     public boolean bower;
-    
+
     @Override
     public void execute() {
         // Default mode for V14 is bower true
-        bower = bowerMode != null ? Boolean.valueOf(bowerMode) : true;
+        bower = bowerMode != null ? Boolean.valueOf(bowerMode) : isDefaultBower();
     }
+
+    abstract boolean isDefaultBower();
 }
