@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.npmtest.ui;
+package com.vaadin.flow.mixedtest.ui;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -44,7 +44,7 @@ public class MissingDependenciesView extends Div {
         try {
             Component unreferenced = (Component) Class
                     .forName(
-                            "com.vaadin.flow.npmtest.ui.MissingDependenciesView$Unreferenced")
+                            "com.vaadin.flow.mixedtest.ui.MissingDependenciesView$Unreferenced")
                     .newInstance();
 
             // Uncomment to test behavior when the component is referenced

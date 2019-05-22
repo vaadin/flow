@@ -8,11 +8,13 @@
         <groupId>com.vaadin</groupId>
         <version>2.0-SNAPSHOT</version>
     </parent>
-    <artifactId>flow-test-npm-web-components</artifactId>
-    <name>Flow WebComponent tests (under NPM)</name>
+    <artifactId>flow-test-bower-prod-mode</artifactId>
+    <name>Flow tests in bower and production mode</name>
+
     <packaging>war</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
+        <transpilation.output>${project.build.directory}/build</transpilation.output>
     </properties>
 
     <dependencies>
@@ -21,43 +23,20 @@
             <artifactId>flow-test-resources</artifactId>
             <version>${project.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.webjars.bowergithub.polymer</groupId>
+            <artifactId>polymer</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-server-production-mode</artifactId>
             <version>${project.version}</version>
         </dependency>
-
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>flow-web-component-test-assets</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>flow-client</artifactId>
-            <version>2.0-SNAPSHOT</version>
-        </dependency>
     </dependencies>
 
     <build>
         <plugins>
-            <!-- Run jetty before ITs -->
-            <plugin>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-maven-plugin</artifactId>
-                <configuration>
-                    <!-- Use war output directory to get the webpack files -->
-                    <webAppConfig>
-                        <allowDuplicateFragmentNames>true</allowDuplicateFragmentNames>
-                        <resourceBases>
-                            <resourceBase>${project.build.directory}/${project.build.finalName}</resourceBase>
-                        </resourceBases>
-                    </webAppConfig>
-                </configuration>
-            </plugin>
-
+            <!--  Run flow plugin to build frontend -->
             <plugin>
                 <groupId>com.vaadin</groupId>
                 <artifactId>flow-maven-plugin</artifactId>
@@ -65,14 +44,26 @@
                 <executions>
                     <execution>
                         <goals>
-                            <goal>prepare-frontend</goal>
-                            <goal>build-frontend</goal>
+                            <goal>copy-production-files</goal>
+                            <goal>package-for-production</goal>
                         </goals>
+                        <configuration>
+                            <transpileOutputDirectory>${transpilation.output}</transpileOutputDirectory>
+                        </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <!-- Run jetty before integration tests, and stop after -->
+            <plugin>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-maven-plugin</artifactId>
                 <configuration>
-                   <bowerMode>false</bowerMode>
-                   <productionMode>true</productionMode>
+                    <webAppConfig>
+                        <resourceBases>
+                            <resourceBase>${transpilation.output}</resourceBase>
+                            <resourceBase>${project.basedir}/src/main/webapp</resourceBase>
+                        </resourceBases>
+                    </webAppConfig>
                 </configuration>
             </plugin>
         </plugins>

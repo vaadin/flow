@@ -48,6 +48,7 @@ import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
+import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 /**
@@ -169,7 +170,7 @@ public class DevModeHandler implements Serializable {
         }
 
         System.setProperty(
-                "vaadin." + SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT,
+                VAADIN_PREFIX + SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT,
                 String.valueOf(port));
     }
 
@@ -289,10 +290,10 @@ public class DevModeHandler implements Serializable {
         if (responseCode == HTTP_OK) {
             // Copies response payload
             writeStream(response.getOutputStream(), connection.getInputStream());
+        } else {
+            // Copies response code
+            response.sendError(responseCode);
         }
-
-        // Copies response code
-        response.sendError(responseCode);
 
         // Close request to avoid issues in CI and Chrome
         response.getOutputStream().close();

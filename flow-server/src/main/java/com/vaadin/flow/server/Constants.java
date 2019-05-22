@@ -29,6 +29,12 @@ public final class Constants implements Serializable {
     // Keep the version number in sync with flow-push/pom.xml
     public static final String REQUIRED_ATMOSPHERE_RUNTIME_VERSION = "2.4.30.vaadin1";
 
+
+    /**
+     * The prefix used for System property parameters.
+     */
+    public static final String VAADIN_PREFIX = "vaadin.";
+
     public static final String SERVLET_PARAMETER_PRODUCTION_MODE = "productionMode";
 
     /** enable it if your project is a Polymer 2.0 one, should be removed in V15 */

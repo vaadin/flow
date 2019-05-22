@@ -21,23 +21,32 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
+import java.io.UncheckedIOException;
 import java.lang.reflect.Method;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.Optional;
 import java.util.Properties;
 
+import org.apache.commons.io.FileUtils;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
-import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 
-import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
-import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
+import elemental.json.JsonObject;
+import elemental.json.impl.JsonUtil;
 
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_BOWER_MODE;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
+import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
+import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
+import static com.vaadin.flow.server.frontend.FrontendUtils.PROJECT_BASEDIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 /**
  * Creates {@link DeploymentConfiguration} filled with all parameters specified
  * by the framework users.
@@ -127,33 +136,58 @@ public final class DeploymentConfigurationFactory implements Serializable {
                     servletConfig.getInitParameter(name));
         }
 
-        if (isBowerLegacyMode()) {
-            initParameters.setProperty(PropertyDeploymentConfiguration.IS_BOWER_DEV, Boolean.TRUE.toString());
-        }
-
-        if (isBowerLegacyProdMode(servletConfig.getServletContext())) {
-            initParameters.setProperty(PropertyDeploymentConfiguration.IS_BOWER_PROD, Boolean.TRUE.toString());
-        }
-
+        readBuildInfo(servletConfig.getServletContext(), initParameters);
         return initParameters;
     }
 
-    private static boolean isBowerLegacyProdMode(ServletContext context) {
+    private static void readBuildInfo(ServletContext context, Properties initParameters) { //NOSONAR
         try {
-            URL resource = context.getResource("/" + Constants.FRONTEND_URL_ES6_DEFAULT_VALUE.replace(
-                    ApplicationConstants.CONTEXT_PROTOCOL_PREFIX, "")+ "vaadin-flow-bundle-manifest.json");
-            if (resource != null) {
-                return true;
+            String json = null;
+            // token file location passed via System property
+            String tokenLocation = System.getProperty(PARAM_TOKEN_FILE);
+            if (tokenLocation != null) {
+                File tokenFile = new File(tokenLocation);
+                if (tokenFile != null && tokenFile.canRead()) {
+                    json = FileUtils.readFileToString(tokenFile, "UTF-8");
+                }
             }
-        } catch (MalformedURLException e) { //NOSONAR
-        }
-        return false;
-    }
 
-    private static boolean isBowerLegacyMode() {
-        boolean hasNpmConfig = new File(getBaseDir(), PACKAGE_JSON).exists()
-                && new File(getBaseDir(), WEBPACK_CONFIG).exists();
-        return !hasNpmConfig;
+            // token file is in the resources context
+            if (json == null) {
+                URL resource = context.getResource("/" + TOKEN_FILE);
+                if (resource != null) {
+                    json = FrontendUtils.streamToString(resource.openStream());
+                }
+            }
+
+            // Read the json and set the appropriate system properties if not already set.
+            if (json != null) {
+                JsonObject buildInfo = JsonUtil.parse(json);
+                if (buildInfo.hasKey(SERVLET_PARAMETER_PRODUCTION_MODE)) {
+                    initParameters.setProperty(SERVLET_PARAMETER_PRODUCTION_MODE, String.valueOf(
+                            buildInfo.getBoolean(SERVLET_PARAMETER_PRODUCTION_MODE)));
+                    // Need to be sure that we remove the system property, because
+                    // it has priority in the configuration getter
+                    System.clearProperty(VAADIN_PREFIX + SERVLET_PARAMETER_PRODUCTION_MODE);
+                }
+                if (buildInfo.hasKey(SERVLET_PARAMETER_BOWER_MODE)) {
+                    initParameters.setProperty(SERVLET_PARAMETER_BOWER_MODE, String.valueOf(
+                            buildInfo.getBoolean(SERVLET_PARAMETER_BOWER_MODE)));
+                    // Need to be sure that we remove the system property, because
+                    // it has priority in the configuration getter
+                    System.clearProperty("vaadin." + SERVLET_PARAMETER_BOWER_MODE);
+                }
+                if (buildInfo.hasKey("webpackPort")) {
+                    System.setProperty(VAADIN_PREFIX  + SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT,
+                            String.valueOf(buildInfo.getNumber("webpackPort")));
+                }
+                if (System.getProperty(PROJECT_BASEDIR) == null && buildInfo.hasKey("npmFolder")) {
+                    System.setProperty(PROJECT_BASEDIR, buildInfo.getString("npmFolder"));
+                }
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     private static void readUiFromEnclosingClass(

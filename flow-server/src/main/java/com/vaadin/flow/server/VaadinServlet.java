@@ -51,7 +51,7 @@ import com.vaadin.flow.shared.JsonConstants;
 public class VaadinServlet extends HttpServlet {
     private VaadinServletService servletService;
     private StaticFileHandler staticFileHandler;
-    private DevModeHandler devmodeHandler = DevModeHandler.getDevModeHandler();
+    private DevModeHandler devmodeHandler;
     private WebJarServer webJarServer;
 
     /**
@@ -82,6 +82,7 @@ public class VaadinServlet extends HttpServlet {
         if (deploymentConfiguration.areWebJarsEnabled()) {
             webJarServer = new WebJarServer(deploymentConfiguration);
         }
+        devmodeHandler = DevModeHandler.getDevModeHandler();
 
         // Sets current service even though there are no request and response
         servletService.setCurrentInstances(null, null);
