@@ -46,10 +46,11 @@ public class PrepareFrontendMojoTest {
     private File flowPackagePath;
     private String webpackConfig;
     private String packageJson;
+    private File projectBase;
 
     @Before
     public void setup() throws Exception {
-        File projectBase = temporaryFolder.getRoot();
+        projectBase = temporaryFolder.getRoot();
 
         MavenProject project = Mockito.mock(MavenProject.class);
         Mockito.when(project.getBasedir()).thenReturn(projectBase);
@@ -77,7 +78,7 @@ public class PrepareFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "generatedFolder", projectBase);
 
         Assert.assertTrue(flowPackagePath.mkdirs());
-        setProject(mojo, "war", "war_output");
+        setProject(mojo, projectBase, "war", "war_output");
     }
 
     @Test
@@ -104,7 +105,7 @@ public class PrepareFrontendMojoTest {
     public void assertWebpackContent_jar() throws Exception {
         Assert.assertFalse(FileUtils.fileExists(webpackConfig));
         final String expectedOutput = "jar_output";
-        setProject(mojo, "jar", expectedOutput);
+        setProject(mojo, projectBase, "jar", expectedOutput);
 
         mojo.execute();
 
@@ -121,7 +122,7 @@ public class PrepareFrontendMojoTest {
     public void assertWebpackContent_war() throws Exception {
         Assert.assertFalse(FileUtils.fileExists(webpackConfig));
         String expectedOutput = "war_output";
-        setProject(mojo, "war", expectedOutput);
+        setProject(mojo, projectBase, "war", expectedOutput);
 
         mojo.execute();
 
@@ -146,7 +147,7 @@ public class PrepareFrontendMojoTest {
     public void assertWebpackContent_NotWarNotJar() throws Exception {
         String unexpectedPackaging = "notWarAndNotJar";
 
-        setProject(mojo, unexpectedPackaging, "whatever");
+        setProject(mojo, projectBase, unexpectedPackaging, "whatever");
 
         exception.expect(IllegalStateException.class);
         exception.expectMessage(unexpectedPackaging);

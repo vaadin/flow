@@ -29,6 +29,7 @@ import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_REQUEST_TIMING;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_SYNC_ID_CHECK;
+import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
 
 /**
  * The property handling implementation of {@link DeploymentConfiguration} based
@@ -115,7 +116,7 @@ public class PropertyDeploymentConfiguration
         }
 
         // version prefixed with just "vaadin."
-        val = System.getProperty("vaadin." + parameterName);
+        val = System.getProperty(VAADIN_PREFIX + parameterName);
 
         return val;
     }
