@@ -108,6 +108,9 @@ public class DevModeInitializerTest {
         FileUtils.write(appPackageFile, "{}", "UTF-8");
         webpackFile.createNewFile();
         devModeInitializer = new DevModeInitializer();
+
+        // Default is Bower Mode, change to Npm Mode
+        System.setProperty("vaadin." + SERVLET_PARAMETER_BOWER_MODE, "false");
     }
 
     @After
@@ -164,7 +167,7 @@ public class DevModeInitializerTest {
 
     @Test
     public void should_Not_Run_Updaters_inBowerMode() throws Exception {
-        System.setProperty("vaadin." + SERVLET_PARAMETER_BOWER_MODE, "true");
+        System.clearProperty("vaadin." + SERVLET_PARAMETER_BOWER_MODE);
         devModeInitializer = new DevModeInitializer();
         devModeInitializer.onStartup(classes, servletContext);
         assertNull(DevModeHandler.getDevModeHandler());

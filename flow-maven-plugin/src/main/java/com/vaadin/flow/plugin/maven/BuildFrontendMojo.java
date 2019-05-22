@@ -26,7 +26,6 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -37,16 +36,19 @@ import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.plugin.common.AnnotationValuesExtractor;
-import com.vaadin.flow.plugin.common.FlowPluginFrontendUtils;
 import com.vaadin.flow.plugin.common.WebComponentModulesGenerator;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.theme.Theme;
 
+import elemental.json.JsonObject;
+import elemental.json.impl.JsonUtil;
+
 import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFinder;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
 
 /**
  * Goal that builds the frontend bundle.
@@ -63,7 +65,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
  * </ul>
  */
 @Mojo(name = "build-frontend", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
-public class BuildFrontendMojo extends AbstractMojo {
+public class BuildFrontendMojo extends FlowModeAbstractMojo {
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
@@ -109,9 +111,11 @@ public class BuildFrontendMojo extends AbstractMojo {
 
     @Override
     public void execute() {
+        super.execute();
+
         // Do nothing when bower mode
-        if (FlowPluginFrontendUtils.isBowerMode()) {
-            getLog().info("Skipped 'update-frontend' goal because 'vaadin.bowerMode' is set to true.");
+        if (bower) {
+            getLog().info("Skipped 'build-frontend' goal because 'vaadin.bowerMode' is set to true.");
             return;
         }
 
@@ -179,6 +183,7 @@ public class BuildFrontendMojo extends AbstractMojo {
 
         Process webpackLaunch = null;
         try {
+            getLog().info("Running webpack ...");
             webpackLaunch =  new ProcessBuilder(nodePath,
                     webpackExecutable.getAbsolutePath()).directory(project.getBasedir())
                     .redirectOutput(ProcessBuilder.Redirect.INHERIT).start();
@@ -215,4 +220,20 @@ public class BuildFrontendMojo extends AbstractMojo {
         }
     }
 
+    @Override
+    boolean isDefaultBower() {
+        String tokenFile = System.getProperty(PARAM_TOKEN_FILE);
+        if (tokenFile == null) {
+            getLog().warn("'build-frontend' goal was called without previously calling 'prepare-package'");
+            return true;
+        }
+        try {
+            String json = FileUtils.readFileToString(new File(tokenFile), "UTF-8");
+            JsonObject buildInfo = JsonUtil.parse(json);
+            return buildInfo.hasKey("bowerMode") ? buildInfo.getBoolean("bowerMode") : true;
+        } catch (IOException e) {
+            getLog().warn("Unable to read token file", e);
+            return true;
+        }
+    }
 }

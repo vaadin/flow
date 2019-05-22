@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.npmtest.ui;
+package com.vaadin.flow.mixedtest.ui;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -42,7 +42,7 @@ public class IdTestIT extends ChromeBrowserTest {
 
         // wait for polymer initalisation
         waitUntillWithMessage(driver -> getCommandExecutor().executeScript(
-                "return arguments[0].constructor.polymerElementVersion !== undefined",
+                "return !!window.Polymer || !!arguments[0].constructor.polymerElementVersion",
                 myComponent),
                 "Failed to load constructor.polymerElementVersion for 'my-component'");
 

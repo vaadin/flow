@@ -25,10 +25,6 @@ import java.io.PrintWriter;
 
 @WebServlet(urlPatterns = { "/items/*"}, asyncSupported = true)
 public class PlainServlet extends HttpServlet {
-    public PlainServlet() {
-        System.clearProperty("vaadin.bowerMode");
-    }
-
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse response)
             throws ServletException, IOException {

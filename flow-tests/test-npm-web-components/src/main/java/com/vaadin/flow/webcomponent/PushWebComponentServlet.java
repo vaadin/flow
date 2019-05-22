@@ -21,7 +21,4 @@ import com.vaadin.flow.server.VaadinServlet;
 
 @WebServlet(urlPatterns = "/vaadin-push/*", asyncSupported = true)
 public class PushWebComponentServlet extends VaadinServlet {
-    public PushWebComponentServlet() {
-        System.clearProperty("vaadin.bowerMode");
-    }
 }

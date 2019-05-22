@@ -101,11 +101,12 @@ public class BuildFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", npmFolder);
         ReflectionUtils.setVariableValueInObject(mojo, "generateBundle", false);
         ReflectionUtils.setVariableValueInObject(mojo, "runNpmInstall", false);
+        ReflectionUtils.setVariableValueInObject(mojo, "bowerMode", "false");
 
         flowPackagPath.mkdirs();
         generatedFolder.mkdirs();
 
-        setProject(mojo, "war", "war_output");
+        setProject(mojo, npmFolder, "war", "war_output");
 
         // Install all imports used in the tests on node_modules so as we don't
         // need to run `npm install`
@@ -121,15 +122,16 @@ public class BuildFrontendMojoTest {
         FileUtils.fileDelete(webpackConfig);
     }
 
-    static void setProject(AbstractMojo mojo, String packaging,
+    static void setProject(AbstractMojo mojo, File baseFolder, String packaging,
             String outputDirectory) throws Exception {
+        String out = new File(baseFolder, outputDirectory).getPath();
         Build buildMock = mock(Build.class);
-        when(buildMock.getOutputDirectory()).thenReturn(outputDirectory);
-        when(buildMock.getDirectory()).thenReturn(outputDirectory);
+        when(buildMock.getOutputDirectory()).thenReturn(out);
+        when(buildMock.getDirectory()).thenReturn(out);
         when(buildMock.getFinalName()).thenReturn("finalName");
 
         MavenProject project = mock(MavenProject.class);
-        when(project.getBasedir()).thenReturn(new File("."));
+        when(project.getBasedir()).thenReturn(baseFolder);
         when(project.getPackaging()).thenReturn(packaging);
         when(project.getBuild()).thenReturn(buildMock);
         when(project.getRuntimeClasspathElements()).thenReturn(getClassPath());

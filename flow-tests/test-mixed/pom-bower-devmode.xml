@@ -8,8 +8,9 @@
         <groupId>com.vaadin</groupId>
         <version>2.0-SNAPSHOT</version>
     </parent>
-    <artifactId>flow-test-npm-web-components</artifactId>
-    <name>Flow WebComponent tests (under NPM)</name>
+    <artifactId>flow-test-bower-dev-mode</artifactId>
+    <name>Flow tests in bower and development mode</name>
+
     <packaging>war</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
@@ -21,58 +22,26 @@
             <artifactId>flow-test-resources</artifactId>
             <version>${project.version}</version>
         </dependency>
-
         <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>flow-server-production-mode</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>flow-web-component-test-assets</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>flow-client</artifactId>
-            <version>2.0-SNAPSHOT</version>
+            <groupId>org.webjars.bowergithub.polymer</groupId>
+            <artifactId>polymer</artifactId>
         </dependency>
     </dependencies>
 
     <build>
         <plugins>
-            <!-- Run jetty before ITs -->
+            <!-- Clean lib before running jetty -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+            </plugin>
+            <!-- Run jetty before integration tests, and stop after -->
             <plugin>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
                 <configuration>
-                    <!-- Use war output directory to get the webpack files -->
-                    <webAppConfig>
-                        <allowDuplicateFragmentNames>true</allowDuplicateFragmentNames>
-                        <resourceBases>
-                            <resourceBase>${project.build.directory}/${project.build.finalName}</resourceBase>
-                        </resourceBases>
-                    </webAppConfig>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>com.vaadin</groupId>
-                <artifactId>flow-maven-plugin</artifactId>
-                <version>${project.version}</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>prepare-frontend</goal>
-                            <goal>build-frontend</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                   <bowerMode>false</bowerMode>
-                   <productionMode>true</productionMode>
+                    <!-- Use war output directory instead of default src/main/webapp to get the webpack bundles  -->
+                    <webAppSourceDirectory>${project.build.directory}/${project.build.finalName}</webAppSourceDirectory>
                 </configuration>
             </plugin>
         </plugins>
