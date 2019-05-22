@@ -290,10 +290,10 @@ public class DevModeHandler implements Serializable {
         if (responseCode == HTTP_OK) {
             // Copies response payload
             writeStream(response.getOutputStream(), connection.getInputStream());
+        } else {
+            // Copies response code
+            response.sendError(responseCode);
         }
-
-        // Copies response code
-        response.sendError(responseCode);
 
         // Close request to avoid issues in CI and Chrome
         response.getOutputStream().close();
