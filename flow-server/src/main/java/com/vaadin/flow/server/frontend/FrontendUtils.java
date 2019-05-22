@@ -37,6 +37,8 @@ import com.vaadin.flow.server.Constants;
  */
 public class FrontendUtils {
 
+    public static final String PROJECT_BASEDIR = "project.basedir";
+
     /**
      * Default folder for the node related content. It's the base directory for
      * {@link Constants#PACKAGE_JSON}, {@link FrontendUtils#WEBPACK_CONFIG},
@@ -120,7 +122,7 @@ public class FrontendUtils {
     public static final String TOKEN_FILE = "build/flow-build-info.json";
 
     /**
-     * A parameter informing about the location of the {@link FrontendUtils#TOKEN_FILE}
+     * A parameter informing about the location of the {@link FrontendUtils#TOKEN_FILE}.
      */
     public static final String PARAM_TOKEN_FILE = "vaadin.frontend.token.file";
 
@@ -172,7 +174,7 @@ public class FrontendUtils {
      * @return folder location
      */
     public static String getBaseDir() {
-        return System.getProperty("project.basedir", System.getProperty("user.dir", "."));
+        return System.getProperty(PROJECT_BASEDIR, System.getProperty("user.dir", "."));
     }
 
     /**
