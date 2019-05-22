@@ -296,4 +296,9 @@ public class PackageForProductionMojo extends FlowModeAbstractMojo {
                 proxy.getHost(), proxy.getPort(), proxy.getUsername(),
                 proxy.getPassword(), proxy.getNonProxyHosts());
     }
+
+    @Override
+    boolean isDefaultBower() {
+        return true;
+    }
 }

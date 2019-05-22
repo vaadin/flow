@@ -138,7 +138,7 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         // Do nothing when bower mode
         if (bower) {
             getLog().debug(
-                    "Skipped 'validate' goal because `vaadin.bowerMode` is set.");
+                    "Skipped 'prepare-frontend' goal because `vaadin.bowerMode` is set.");
             return;
         }
 
@@ -208,7 +208,7 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         // inform dev-mode server and updaters about the actual project folder.
         System.setProperty("project.basedir", npmFolder.getAbsolutePath());
     }
-    
+
     private void copyFlowModuleDependencies(File flowNodeDirectory) {
         List<ArtifactData> projectArtifacts = project.getArtifacts().stream()
                 .filter(artifact -> "jar".equals(artifact.getType()))
@@ -267,5 +267,10 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
                 throw new IllegalStateException(String.format(
                         "Unsupported packaging '%s'", project.getPackaging()));
         }
+    }
+
+    @Override
+    boolean isDefaultBower() {
+        return false;
     }
 }
