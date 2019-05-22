@@ -31,8 +31,6 @@ import java.util.Optional;
 import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -45,7 +43,9 @@ import elemental.json.impl.JsonUtil;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_BOWER_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
+import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
+import static com.vaadin.flow.server.frontend.FrontendUtils.PROJECT_BASEDIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 /**
  * Creates {@link DeploymentConfiguration} filled with all parameters specified
@@ -140,7 +140,7 @@ public final class DeploymentConfigurationFactory implements Serializable {
         return initParameters;
     }
 
-    private static void readBuildInfo(ServletContext context, Properties initParameters) {
+    private static void readBuildInfo(ServletContext context, Properties initParameters) { //NOSONAR
         try {
             String json = null;
             // token file location passed via System property
@@ -156,24 +156,8 @@ public final class DeploymentConfigurationFactory implements Serializable {
             if (json == null) {
                 URL resource = context.getResource("/" + TOKEN_FILE);
                 if (resource != null) {
-                    tokenLocation = resource.getPath();
                     json = FrontendUtils.streamToString(resource.openStream());
                 }
-            }
-
-            Logger logger = LoggerFactory.getLogger(DeploymentConfiguration.class);
-            if (logger.isDebugEnabled()) {
-                logger.debug(String.format("Computing deployment configuration%n"
-                        + "System.properties:%n"
-                        + " productionMode: %s%n boweMode: %s%n webpackPort: %s%n project.basedir: %s%n"
-                        + "Token file: %s%n"
-                        + "Token content: %s%n",
-                        System.getProperty("vaadin.productionMode"),
-                        System.getProperty("vaadin.bowerMode"),
-                        System.getProperty("vaadin.devmode.webpack.running-port"),
-                        System.getProperty("project.basedir"),
-                        tokenLocation,
-                        json));
             }
 
             // Read the json and set the appropriate system properties if not already set.
@@ -184,7 +168,7 @@ public final class DeploymentConfigurationFactory implements Serializable {
                             buildInfo.getBoolean(SERVLET_PARAMETER_PRODUCTION_MODE)));
                     // Need to be sure that we remove the system property, because
                     // it has priority in the configuration getter
-                    System.clearProperty("vaadin." + SERVLET_PARAMETER_PRODUCTION_MODE);
+                    System.clearProperty(VAADIN_PREFIX + SERVLET_PARAMETER_PRODUCTION_MODE);
                 }
                 if (buildInfo.hasKey(SERVLET_PARAMETER_BOWER_MODE)) {
                     initParameters.setProperty(SERVLET_PARAMETER_BOWER_MODE, String.valueOf(
@@ -194,11 +178,11 @@ public final class DeploymentConfigurationFactory implements Serializable {
                     System.clearProperty("vaadin." + SERVLET_PARAMETER_BOWER_MODE);
                 }
                 if (buildInfo.hasKey("webpackPort")) {
-                    System.setProperty("vaadin." + SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT,
+                    System.setProperty(VAADIN_PREFIX  + SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT,
                             String.valueOf(buildInfo.getNumber("webpackPort")));
                 }
-                if (System.getProperty("project.basedir") == null && buildInfo.hasKey("npmFolder")) {
-                    System.setProperty("project.basedir", buildInfo.getString("npmFolder"));
+                if (System.getProperty(PROJECT_BASEDIR) == null && buildInfo.hasKey("npmFolder")) {
+                    System.setProperty(PROJECT_BASEDIR, buildInfo.getString("npmFolder"));
                 }
             }
         } catch (IOException e) {
