@@ -60,7 +60,7 @@
       } else if (flowRoot && flowRoot.$server) {
           this.$server.reconnect();
       }
-      console.log('connected', this);
+      console.debug('connected', this);
   }
 
   _registerElement(flowRoot) {
@@ -99,9 +99,7 @@ _TagCamel_.rootId = null;
 _TagCamel_.id = 0;
 
 function addRootElementEventListener(){
-    console.log("addRootElementEventListener");
     document.body.addEventListener('root-element', function(event) {
-        console.log("root-element found, with id " + event.detail);
         _TagCamel_.rootId = event.detail;
     });
 }
