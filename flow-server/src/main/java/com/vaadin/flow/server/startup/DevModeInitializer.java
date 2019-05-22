@@ -44,7 +44,6 @@ import com.vaadin.flow.server.frontend.NodeTasks.Builder;
 import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.Constants.*;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 
 /**
@@ -144,29 +143,23 @@ public class DevModeInitializer
             return;
         }
 
-        // Not using config.isBowerMode because it checks for npm files, and we
-        // want to do below in order to give the appropriate message to user
-        if (config.getBooleanProperty(SERVLET_PARAMETER_BOWER_MODE, false)) {
+        if (config.isBowerMode()) {
             log().info("Skiping DEV MODE because BOWER MODE is set.");
             return;
         }
 
         Builder builder = new NodeTasks.Builder(new DefaultClassFinder(classes));
 
-        int runningPort = Integer.parseInt(config.getStringProperty(
-                SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, "0"));
         // User can run its own webpack server and provide port
-        if (runningPort == 0) {
-            log().info("Starting dev-mode updaters in {} folder.", builder.npmFolder);
-            for (File file : Arrays.asList(
-                    new File(builder.npmFolder, PACKAGE_JSON),
-                    new File(builder.generatedFolder, PACKAGE_JSON),
-                    new File(builder.npmFolder, WEBPACK_CONFIG)
-                    )) {
-                if (!file.canRead()) {
-                    log().warn("Skiping DEV MODE because cannot read '{}' file.", file.getPath());
-                    return;
-                }
+        log().info("Starting dev-mode updaters in {} folder.", builder.npmFolder);
+        for (File file : Arrays.asList(
+                new File(builder.npmFolder, PACKAGE_JSON),
+                new File(builder.generatedFolder, PACKAGE_JSON),
+                new File(builder.npmFolder, WEBPACK_CONFIG)
+                )) {
+            if (!file.canRead()) {
+                log().warn("Skiping DEV MODE because cannot read '{}' file.", file.getPath());
+                return;
             }
 
             Set<String> visitedClassNames = new HashSet<>();

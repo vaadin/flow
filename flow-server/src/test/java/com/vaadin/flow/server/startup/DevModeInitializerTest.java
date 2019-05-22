@@ -181,18 +181,6 @@ public class DevModeInitializerTest {
         assertNull(DevModeHandler.getDevModeHandler());
     }
 
-
-    @Test
-    public void should_Fail_when_skipUpdaters_and_portNotListening() throws Exception {
-        webpackFile.delete();
-        mainPackageFile.delete();
-        appPackageFile.delete();
-        System.setProperty("vaadin." + SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, "1234");
-
-        exception.expect(IllegalStateException.class);
-        new DevModeInitializer().onStartup(classes, servletContext);
-    }
-
     @Test
     public void visitedDependencies() {
         VisitedClasses visited = new VisitedClasses(new HashSet<>(Arrays
