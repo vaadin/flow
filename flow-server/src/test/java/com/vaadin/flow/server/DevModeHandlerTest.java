@@ -136,8 +136,9 @@ public class DevModeHandlerTest {
         configuration.setApplicationOrSystemProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT, "100");
         createStubWebpackServer("Failed to compile", 300);
         assertNotNull(DevModeHandler.start(configuration, npmFolder));
-        assertNotNull(DevModeHandler.getDevModeHandler().getFailedOutput());
+        // Wait for server to stop running before checking the output stream
         Thread.sleep(350); //NOSONAR
+        assertNotNull("Got no output for the failed output even though expected output.", DevModeHandler.getDevModeHandler().getFailedOutput());
     }
 
     @Test
