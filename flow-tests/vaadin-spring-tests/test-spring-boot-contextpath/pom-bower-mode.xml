@@ -118,27 +118,6 @@
         </pluginManagement>
 
         <plugins>
-            <plugin>
-                <!-- Set the bowerMode flag -->
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>properties-maven-plugin</artifactId>
-                <version>1.0.0</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>set-system-properties</goal>
-                        </goals>
-                        <configuration>
-                            <properties>
-                                <property>
-                                    <name>vaadin.bowerMode</name>
-                                    <value>true</value>
-                                </property>
-                            </properties>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
             <!-- unpack common tests to run it in the project -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
