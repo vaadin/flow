@@ -48,7 +48,6 @@ import com.vaadin.flow.plugin.TestUtils;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
@@ -57,6 +56,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
+import static java.io.File.pathSeparator;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -117,9 +117,15 @@ public class BuildFrontendMojoTest {
 
     @After
     public void teardown() {
-        FileUtils.fileDelete(mainPackage);
-        FileUtils.fileDelete(appPackage);
-        FileUtils.fileDelete(webpackConfig);
+        if (FileUtils.fileExists(mainPackage)) {
+            FileUtils.fileDelete(mainPackage);
+        }
+        if (FileUtils.fileExists(appPackage)) {
+            FileUtils.fileDelete(appPackage);
+        }
+        if (FileUtils.fileExists(webpackConfig)) {
+            FileUtils.fileDelete(webpackConfig);
+        }
     }
 
     static void setProject(AbstractMojo mojo, File baseFolder, String packaging,
@@ -361,11 +367,18 @@ public class BuildFrontendMojoTest {
 
         // Add other paths already present in the system classpath
         ClassLoader classLoader = ClassLoader.getSystemClassLoader();
-        URL[] urls = ((URLClassLoader) classLoader).getURLs();
-        for (URL url : urls) {
-            classPaths.add(url.getFile());
+        if (classLoader instanceof URLClassLoader) {
+            URL[] urls = ((URLClassLoader) classLoader).getURLs();
+            for (URL url : urls) {
+                classPaths.add(url.getFile());
+            }
+        } else {
+            String[] paths = System.getProperty("java.class.path")
+                    .split(pathSeparator);
+            for (String path : paths) {
+                classPaths.add(path);
+            }
         }
-
         return classPaths;
     }
 }
