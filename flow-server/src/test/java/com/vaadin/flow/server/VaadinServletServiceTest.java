@@ -271,26 +271,26 @@ public class VaadinServletServiceTest {
     public void getAttributeWithProvider() {
         VaadinService service = createServiceWithRealAttributes();
 
-        Assert.assertNull(service.getAttribute(String.class));
+        Assert.assertNull(service.getContext().getAttribute(String.class));
 
-        String value = service.getAttribute(String.class,
+        String value = service.getContext().getAttribute(String.class,
                 VaadinServletServiceTest::testAttributeProvider);
         Assert.assertEquals(testAttributeProvider(), value);
 
         Assert.assertEquals("Value from provider should be persisted",
-                testAttributeProvider(), service.getAttribute(String.class));
+                testAttributeProvider(), service.getContext().getAttribute(String.class));
     }
 
     @Test(expected = AssertionError.class)
     public void setNullAttributeNotAllowed() {
         VaadinService service = createServiceWithRealAttributes();
-        service.setAttribute(null);
+        service.getContext().setAttribute(null);
     }
 
     @Test
     public void getMissingAttributeWithoutProvider() {
         VaadinService service = createServiceWithRealAttributes();
-        String value = service.getAttribute(String.class);
+        String value = service.getContext().getAttribute(String.class);
         Assert.assertNull(value);
     }
 
@@ -299,16 +299,16 @@ public class VaadinServletServiceTest {
         VaadinService service = createServiceWithRealAttributes();
 
         String value = testAttributeProvider();
-        service.setAttribute(value);
-        String result = service.getAttribute(String.class);
+        service.getContext().setAttribute(value);
+        String result = service.getContext().getAttribute(String.class);
         Assert.assertEquals(value, result);
         // overwrite
         String newValue = "this is a new value";
-        service.setAttribute(newValue);
-        result = service.getAttribute(String.class);
+        service.getContext().setAttribute(newValue);
+        result = service.getContext().getAttribute(String.class);
         Assert.assertEquals(newValue, result);
         // now the provider should not be called, so value should be still there
-        result = service.getAttribute(String.class,
+        result = service.getContext().getAttribute(String.class,
                 () -> {
                     throw new AssertionError("Should not be called");
                 });
