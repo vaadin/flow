@@ -21,6 +21,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
+
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Collections;
@@ -53,7 +54,6 @@ import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.server.AmbiguousRouteConfigurationException;
 import com.vaadin.flow.server.DeploymentConfigurationFactory;
-import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.startup.AbstractRouteRegistryInitializer;
@@ -184,7 +184,6 @@ public class VaadinServletContextInitializer
             implements ServletContextListener {
 
         @Override
-        @SuppressWarnings("unchecked")
         public void contextInitialized(ServletContextEvent event) {
             AnnotationValidator annotationValidator = new AnnotationValidator();
             validateAnnotations(annotationValidator, event.getServletContext(),
@@ -223,12 +222,9 @@ public class VaadinServletContextInitializer
     private class DevModeServletContextListener
             implements ServletContextListener {
 
+        @SuppressWarnings({ "unchecked", "rawtypes" })
         @Override
         public void contextInitialized(ServletContextEvent event) {
-            // If we have already initialized the devmodehandler we will not do extra work
-            if (DevModeHandler.getDevModeHandler() != null) {
-                return;
-            }
 
             ServletRegistrationBean servletRegistrationBean = appContext
                     .getBean("servletRegistrationBean",
@@ -244,13 +240,14 @@ public class VaadinServletContextInitializer
                     .createDeploymentConfiguration(event.getServletContext(),
                             servletRegistrationBean, SpringServlet.class);
 
-            if(config.isBowerMode()) {
+            if (config.isBowerMode()) {
                 return;
             }
 
             // Handle classes Route.class, NpmPackage.class, WebComponentExporter.class
             Set<Class<?>> classes = findByAnnotation(getNpmPackages(),
                     Route.class, NpmPackage.class).collect(Collectors.toSet());
+
             classes.addAll(findBySuperType(getNpmPackages(),
                     WebComponentExporter.class).collect(Collectors.toSet()));
 
@@ -266,7 +263,6 @@ public class VaadinServletContextInitializer
     private class WebComponentServletContextListener
             implements ServletContextListener {
 
-        @SuppressWarnings("unchecked")
         @Override
         public void contextInitialized(ServletContextEvent event) {
             WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
@@ -314,6 +310,7 @@ public class VaadinServletContextInitializer
     @Override
     public void onStartup(ServletContext servletContext)
             throws ServletException {
+
         // Verify servlet version also for SpringBoot.
         ServletVerifier.verifyServletVersion();
 
@@ -356,7 +353,6 @@ public class VaadinServletContextInitializer
         return findByAnnotation(packages, Stream.of(annotations));
     }
 
-    @SuppressWarnings("unchecked")
     private Stream<Class<?>> findByAnnotation(Collection<String> packages,
             Stream<Class<? extends Annotation>> annotations) {
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(
@@ -446,6 +442,7 @@ public class VaadinServletContextInitializer
     /**
      * Default ServletConfig implementation.
      */
+    @SuppressWarnings("rawtypes")
     private static class StubServletConfig implements ServletConfig {
         private final ServletContext context;
         private final ServletRegistrationBean registration;
@@ -474,12 +471,14 @@ public class VaadinServletContextInitializer
             return context;
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public String getInitParameter(String name) {
             return ((Map<String, String>) registration.getInitParameters())
                     .get(name);
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public Enumeration<String> getInitParameterNames() {
             return Collections
