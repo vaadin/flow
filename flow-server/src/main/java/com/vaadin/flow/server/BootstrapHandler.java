@@ -16,6 +16,8 @@
 
 package com.vaadin.flow.server;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -76,8 +78,6 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Request handler which handles bootstrapping of the application, i.e. the
@@ -1221,7 +1221,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         VaadinSession session = ui.getSession();
         if (session.getConfiguration().isXsrfProtectionEnabled()) {
-            writeSecurityKeyUIDL(json, session);
+            writeSecurityKeyUIDL(json, ui);
         }
         writePushIdUIDL(json, session);
         if (getLogger().isDebugEnabled()) {
@@ -1236,12 +1236,11 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      *
      * @param response
      *            the response JSON object to write security key into
-     * @param session
-     *            the vaadin session to which the security key belongs
+     * @param ui
+     *            the UI to which the security key belongs
      */
-    private static void writeSecurityKeyUIDL(JsonObject response,
-            VaadinSession session) {
-        String seckey = session.getCsrfToken();
+    private static void writeSecurityKeyUIDL(JsonObject response, UI ui) {
+        String seckey = ui.getCsrfToken();
         response.put(ApplicationConstants.UIDL_SECURITY_TOKEN_ID, seckey);
     }
 
