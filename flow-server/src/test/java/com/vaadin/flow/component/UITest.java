@@ -1,14 +1,19 @@
 package com.vaadin.flow.component;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
@@ -57,11 +62,6 @@ import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
 
 public class UITest {
 
@@ -789,4 +789,12 @@ public class UITest {
         assertEquals("Handler should have run once", 1, runCount.get());
     }
 
+    @Test
+    public void uniqueCsrfToken() {
+        String token1 = new UI().getCsrfToken();
+        String token2 = new UI().getCsrfToken();
+
+        Assert.assertNotEquals("Each UI should have a unique CSRF token",
+                token1, token2);
+    }
 }

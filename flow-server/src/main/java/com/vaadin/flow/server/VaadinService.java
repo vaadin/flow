@@ -1848,7 +1848,7 @@ public abstract class VaadinService implements Serializable {
 
     /**
      * Verifies that the given CSRF token (aka double submit cookie) is valid
-     * for the given session. This is used to protect against Cross Site Request
+     * for the given UI. This is used to protect against Cross Site Request
      * Forgery attacks.
      * <p>
      * This protection is enabled by default, but it might need to be disabled
@@ -1856,8 +1856,8 @@ public abstract class VaadinService implements Serializable {
      * disabled by setting the init parameter
      * <code>disable-xsrf-protection</code> to <code>true</code>.
      *
-     * @param session
-     *            the vaadin session for which the check should be done
+     * @param ui
+     *            the UI for which the check should be done
      * @param requestToken
      *            the CSRF token provided in the request
      * @return <code>true</code> if the token is valid or if the protection is
@@ -1865,14 +1865,14 @@ public abstract class VaadinService implements Serializable {
      *         token is invalid
      * @see DeploymentConfiguration#isXsrfProtectionEnabled()
      */
-    public static boolean isCsrfTokenValid(VaadinSession session,
+    public static boolean isCsrfTokenValid(UI ui,
             String requestToken) {
 
-        if (session.getService().getDeploymentConfiguration()
+        if (ui.getSession().getService().getDeploymentConfiguration()
                 .isXsrfProtectionEnabled()) {
-            String sessionToken = session.getCsrfToken();
+            String uiToken = ui.getCsrfToken();
 
-            if (sessionToken == null || !sessionToken.equals(requestToken)) {
+            if (uiToken == null || !uiToken.equals(requestToken)) {
                 return false;
             }
         }

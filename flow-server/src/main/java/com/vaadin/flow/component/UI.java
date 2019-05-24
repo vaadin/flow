@@ -21,7 +21,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.Future;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.component.page.LoadingIndicatorConfiguration;
@@ -62,8 +66,6 @@ import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
 import com.vaadin.flow.theme.ThemeUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * The topmost component in any component hierarchy. There is one UI for every
@@ -110,6 +112,14 @@ public class UI extends Component
     private final UIInternals internals = new UIInternals(this);
 
     private final Page page = new Page(this);
+
+    /*
+     * Despite section 6 of RFC 4122, this particular use of UUID *is* adequate
+     * for security capabilities. Type 4 UUIDs contain 122 bits of random data,
+     * and UUID.randomUUID() is defined to use a cryptographically secure random
+     * generator.
+     */
+    private final String csrfToken = UUID.randomUUID().toString();
 
     /**
      * Creates a new empty UI.
@@ -1094,7 +1104,7 @@ public class UI extends Component
      * <p>
      * <em>NOTE: the generic drag and drop feature for Flow is available in
      * another artifact, {@code flow-dnd} for now.</em>
-     * 
+     *
      * @return Extension of the drag source component if the drag event is
      *         active and originated from this UI, {@literal null} otherwise.
      * @since 2.0
@@ -1102,4 +1112,16 @@ public class UI extends Component
     public Component getActiveDragSourceComponent() {
         return getInternals().getActiveDragSourceComponent();
     }
+
+    /**
+     * Gets the CSRF token (aka double submit cookie) that is used to protect
+     * against Cross Site Request Forgery attacks.
+     *
+     * @return the csrf token string
+     * @since 2.0
+     */
+    public String getCsrfToken() {
+        return csrfToken;
+    }
+
 }
