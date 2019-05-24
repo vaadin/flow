@@ -239,8 +239,7 @@ public class ServerRpcHandler implements Serializable {
 
         // Security: double cookie submission pattern unless disabled by
         // property
-        if (!VaadinService.isCsrfTokenValid(ui.getSession(),
-                rpcRequest.getCsrfToken())) {
+        if (!VaadinService.isCsrfTokenValid(ui, rpcRequest.getCsrfToken())) {
             throw new InvalidUIDLSecurityKeyException();
         }
 
