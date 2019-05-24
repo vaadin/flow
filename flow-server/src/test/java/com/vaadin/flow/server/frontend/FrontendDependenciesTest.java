@@ -26,11 +26,16 @@ import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Theme1
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Theme2;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Theme4;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.ThirdView;
+import static com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.ThemeExporter;
+import static com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.NoThemeExporter;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 public class FrontendDependenciesTest {
 
@@ -40,14 +45,20 @@ public class FrontendDependenciesTest {
     @Before
     public void setup() throws NoSuchFieldException, IllegalAccessException {
 
-        // TODO: This is not working yet, need to be fixed and adjust the test //NOSONAR
-        Field field = FieldUtils.getDeclaredField(FrontendDependencies.class, "LUMO", true);
+        // TODO: This is not working yet, need to be fixed and adjust the test
+        // //NOSONAR
+        Field field = FieldUtils.getDeclaredField(FrontendDependencies.class,
+                "LUMO", true);
         FieldUtils.removeFinalModifier(field, true);
-        FieldUtils.writeStaticField(field, "com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.ThemeDefault", true);
+        FieldUtils.writeStaticField(field,
+                "com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.ThemeDefault",
+                true);
     }
 
-    private FrontendDependencies create(Class<?> ...classes) throws Exception {
-        FrontendDependencies frontendDependencies = new FrontendDependencies(new DefaultClassFinder(new HashSet<Class<?>>(new ArrayList<>(Arrays.asList(classes)))));
+    private FrontendDependencies create(Class<?>... classes) throws Exception {
+        FrontendDependencies frontendDependencies = new FrontendDependencies(
+                new DefaultClassFinder(new HashSet<Class<?>>(
+                        new ArrayList<>(Arrays.asList(classes)))));
         return frontendDependencies;
     }
 
@@ -59,18 +70,12 @@ public class FrontendDependenciesTest {
         visitor.addSignatureToClasses(classes,
                 "(Lcom/vaadin/flow/component/tabs/Tabs;Ljava/lang/String;Ljava/lang/Character;CLjava/lang/Integer;ILjava/lang/Long;JLjava/lang/Double;DLjava/lang/Float;FLjava/lang/Byte;BLjava/lang/Boolean;Z)Lcom/vaadin/flow/component/button/Button;");
         assertEquals(11, classes.size());
-        assertArrayEquals(new String [] {
-                "",
-                "java.lang.Float",
+        assertArrayEquals(new String[] { "", "java.lang.Float",
                 "com.vaadin.flow.component.button.Button",
-                "java.lang.Character",
-                "java.lang.Long",
-                "java.lang.Double",
-                "java.lang.Boolean",
-                "com.vaadin.flow.component.tabs.Tabs",
-                "java.lang.String",
-                "java.lang.Byte",
-                "java.lang.Integer"}, classes.toArray());
+                "java.lang.Character", "java.lang.Long", "java.lang.Double",
+                "java.lang.Boolean", "com.vaadin.flow.component.tabs.Tabs",
+                "java.lang.String", "java.lang.Byte", "java.lang.Integer" },
+                classes.toArray());
 
         visitor.addSignatureToClasses(classes,
                 "([Lcom/vaadin/flow/component/Component;)V");
@@ -80,14 +85,18 @@ public class FrontendDependenciesTest {
         visitor.addSignatureToClasses(classes,
                 "(Lcom/vaadin/flow/component/orderedlayout/FlexComponent$Alignment;[Lcom/vaadin/flow/component/Component;)");
         assertEquals(13, classes.size());
-        assertTrue(classes.contains("com.vaadin.flow.component.orderedlayout.FlexComponent$Alignment"));
+        assertTrue(classes.contains(
+                "com.vaadin.flow.component.orderedlayout.FlexComponent$Alignment"));
 
-        // Apart from proper signature representation, it should handle class names, and class paths
+        // Apart from proper signature representation, it should handle class
+        // names, and class paths
         visitor.addSignatureToClasses(classes, this.getClass().getName());
         assertTrue(classes.contains(this.getClass().getName()));
 
-        visitor.addSignatureToClasses(classes, "com/vaadin/flow/server/frontend/FrontendDependenciesTestComponents$AnotherComponent");
-        assertTrue(classes.contains("com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents$AnotherComponent"));
+        visitor.addSignatureToClasses(classes,
+                "com/vaadin/flow/server/frontend/FrontendDependenciesTestComponents$AnotherComponent");
+        assertTrue(classes.contains(
+                "com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents$AnotherComponent"));
 
     }
 
@@ -98,11 +107,13 @@ public class FrontendDependenciesTest {
         assertTrue(deps.getPackages().containsKey("@vaadin/component-1"));
         assertTrue(deps.getPackages().containsKey("@vaadin/component-2"));
         assertEquals("1.1.1", deps.getPackages().get("@vaadin/component-1"));
-        assertEquals("222.222.222", deps.getPackages().get("@vaadin/component-2"));
+        assertEquals("222.222.222",
+                deps.getPackages().get("@vaadin/component-2"));
     }
 
     @Test
-    public void when_MultipleVersions_should_returnFirstVisitedOne() throws Exception {
+    public void when_MultipleVersions_should_returnFirstVisitedOne()
+            throws Exception {
         FrontendDependencies deps = create(Component0.class);
         assertEquals("=2.1.0", deps.getPackages().get("@vaadin/component-0"));
     }
@@ -143,7 +154,6 @@ public class FrontendDependenciesTest {
         assertEquals(6, deps.getScripts().size());
     }
 
-
     @Test
     public void should_takeThemeFromView_when_MultipleTheme() throws Exception {
         FrontendDependencies deps = create(RootViewWithMultipleTheme.class);
@@ -167,7 +177,6 @@ public class FrontendDependenciesTest {
         assertEquals(2, deps.getScripts().size());
     }
 
-
     @Test
     public void should_summarize_when_MultipleViews() throws Exception {
         FrontendDependencies deps = create(SecondView.class, FirstView.class);
@@ -183,11 +192,43 @@ public class FrontendDependenciesTest {
     public void should_resolveComponentFactories() throws Exception {
         FrontendDependencies deps = create(ThirdView.class);
 
-         assertEquals(3, deps.getModules().size());
-         assertEquals(0, deps.getPackages().size());
-         assertEquals(0, deps.getScripts().size());
-         assertTrue(deps.getModules().contains("./my-component.js"));
-         assertTrue(deps.getModules().contains("./my-static-factory.js"));
-         assertTrue(deps.getModules().contains("./my-another-component.js"));
+        assertEquals(3, deps.getModules().size());
+        assertEquals(0, deps.getPackages().size());
+        assertEquals(0, deps.getScripts().size());
+        assertTrue(deps.getModules().contains("./my-component.js"));
+        assertTrue(deps.getModules().contains("./my-static-factory.js"));
+        assertTrue(deps.getModules().contains("./my-another-component.js"));
+    }
+
+    @Test
+    public void should_takeTheme_from_exporter_if_defined() throws Exception {
+        FrontendDependencies deps = create(ThemeExporter.class);
+
+        assertEquals(Theme2.class, deps.getThemeDefinition().getTheme());
+    }
+
+    @Test
+    public void should_default_to_Lumo_theme_when_no_theme_defined_by_exporter()
+            throws Exception {
+
+        // RootViewWithTheme is added to the list just to make sure exporter
+        // handles theming default, not the other crawlers
+        DefaultClassFinder finder = spy(new DefaultClassFinder(new HashSet<Class<?>>(
+                new ArrayList<>(Arrays.asList(NoThemeExporter.class,
+                        RootViewWithTheme.class)))));
+
+        FrontendDependencies deps = new FrontendDependencies(finder);
+
+        verify(finder, times(1)).loadClass(FrontendDependencies.LUMO);
+    }
+
+    @Test // flow#5715
+    public void should_not_attempt_to_override_theme_if_no_exporters() throws ClassNotFoundException {
+        DefaultClassFinder finder = spy(new DefaultClassFinder(new HashSet<Class<?>>(
+                new ArrayList<>(Arrays.asList(RootViewWithTheme.class)))));
+
+        FrontendDependencies deps = new FrontendDependencies(finder);
+
+        verify(finder, times(0)).loadClass(FrontendDependencies.LUMO);
     }
 }

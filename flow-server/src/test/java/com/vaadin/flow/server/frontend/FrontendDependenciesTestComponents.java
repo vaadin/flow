@@ -18,9 +18,11 @@ package com.vaadin.flow.server.frontend;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLayout;
@@ -199,6 +201,29 @@ public class FrontendDependenciesTestComponents {
     public static class AnotherComponent {
         public static AnotherComponent createMyComponent(String label)  {
             return new AnotherComponent();
+        }
+    }
+
+    public static class NoThemeExporter extends WebComponentExporter<RootViewWithTheme> {
+        public NoThemeExporter() {
+            super("root-view");
+        }
+
+        @Override
+        public void configureInstance(WebComponent<RootViewWithTheme> webComponent, RootViewWithTheme component) {
+
+        }
+    }
+
+    @Theme(Theme2.class)
+    public static class ThemeExporter extends WebComponentExporter<RootViewWithTheme> {
+        public ThemeExporter() {
+            super("root-view");
+        }
+
+        @Override
+        public void configureInstance(WebComponent<RootViewWithTheme> webComponent, RootViewWithTheme component) {
+
         }
     }
 }
