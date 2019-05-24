@@ -60,7 +60,7 @@ public class VaadinServletService extends VaadinService {
      */
     public VaadinServletService(VaadinServlet servlet,
             DeploymentConfiguration deploymentConfiguration) {
-        super(deploymentConfiguration, new VaadinServletContext(servlet.getServletContext()));
+        super(deploymentConfiguration);
         this.servlet = servlet;
     }
 
@@ -355,6 +355,8 @@ public class VaadinServletService extends VaadinService {
                 .flatMap(server -> server.getWebJarResourcePath(path));
     }
 
-
-
+    @Override
+    protected VaadinContext constructVaadinContext() {
+        return new VaadinServletContext(getServlet().getServletContext());
+    }
 }

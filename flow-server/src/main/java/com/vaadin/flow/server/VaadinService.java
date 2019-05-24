@@ -197,7 +197,7 @@ public abstract class VaadinService implements Serializable {
 
     private Registration htmlImportDependencyCacheClearRegistration;
 
-    private final VaadinContext vaadinContext;
+    private VaadinContext vaadinContext;
 
     /**
      * Creates a new vaadin service based on a deployment configuration.
@@ -205,9 +205,8 @@ public abstract class VaadinService implements Serializable {
      * @param deploymentConfiguration
      *            the deployment configuration for the service
      */
-    public VaadinService(DeploymentConfiguration deploymentConfiguration, VaadinContext vaadinContext) {
+    public VaadinService(DeploymentConfiguration deploymentConfiguration) {
         this.deploymentConfiguration = deploymentConfiguration;
-        this.vaadinContext = vaadinContext;
 
         final String classLoaderName = getDeploymentConfiguration()
                 .getClassLoaderName();
@@ -2262,13 +2261,23 @@ public abstract class VaadinService implements Serializable {
     }
 
     /**
+     * Constructs {@link VaadinContext} for this service.
+     *
+     * This method will be called only once, upon first call to {@link #getContext()}.
+     * @return Context. This may never be {@code null}.
+     */
+    protected abstract VaadinContext constructVaadinContext();
+
+    /**
      * Returns {@link VaadinContext} for this service.
      * @return A non-null context instance.
      */
     public VaadinContext getContext() {
+        if(vaadinContext == null) {
+            vaadinContext = constructVaadinContext();
+        }
         return vaadinContext;
     }
-
     /**
      *
      * Executes a {@code runnable} with a {@link VaadinService} available in the
