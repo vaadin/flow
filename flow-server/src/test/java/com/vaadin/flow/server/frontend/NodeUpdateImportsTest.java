@@ -96,15 +96,16 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 "document.body.setAttribute('theme', 'dark');"));
         expectedLines.addAll(getExpectedImports());
 
+        // An import without `.js` extension
+        expectedLines.add("import '@vaadin/vaadin-mixed-component/theme/lumo/vaadin-something-else'");
+        // An import not found in node_modules
+        expectedLines.add("import 'unresolved/component';");
+
         Assert.assertFalse(importsFile.exists());
         updater.execute();
         Assert.assertTrue(importsFile.exists());
 
         assertContainsImports(true, expectedLines.toArray(new String[0]));
-        // An import without `.js` extension
-        assertContainsImports(true, "import '@vaadin/vaadin-mixed-component/theme/lumo/vaadin-something-else'");
-        // An import not found in node_modules
-        assertContainsImports(true, "import 'unresolved/component';");
     }
 
     @Test

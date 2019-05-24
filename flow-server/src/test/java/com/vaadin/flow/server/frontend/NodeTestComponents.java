@@ -56,7 +56,7 @@ public class NodeTestComponents {
     public static class VaadinElementMixin extends Component {
     }
 
-    @JsModule("foo-dir/vaadin-npm-component.js")
+    @JsModule("./foo-dir/vaadin-npm-component.js")
     public static class VaadinNpmComponent extends Component {
     }
 
