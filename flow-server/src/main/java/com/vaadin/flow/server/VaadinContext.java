@@ -1,5 +1,6 @@
 package com.vaadin.flow.server;
 
+import java.io.Serializable;
 import java.util.function.Supplier;
 
 /**
@@ -10,7 +11,7 @@ import java.util.function.Supplier;
  * @author miki
  * @since 14.0.0
  */
-public interface VaadinContext {
+public interface VaadinContext extends Serializable {
 
     /**
      * Returns value of the specified attribute, creating a default value if not
