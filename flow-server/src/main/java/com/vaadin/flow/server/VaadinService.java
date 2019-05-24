@@ -78,6 +78,7 @@ import com.vaadin.flow.server.communication.WebComponentBootstrapHandler;
 import com.vaadin.flow.server.communication.WebComponentProvider;
 import com.vaadin.flow.server.startup.BundleFilterFactory;
 import com.vaadin.flow.server.startup.FakeBrowser;
+import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
@@ -360,9 +361,32 @@ public abstract class VaadinService implements Serializable {
                 && pwaRegistry.getPwaConfiguration().isEnabled()) {
             handlers.add(new PwaHandler(pwaRegistry));
         }
-        handlers.add(new WebComponentProvider());
-        handlers.add(new WebComponentBootstrapHandler());
+
+        if (hasWebComponentConfigurations(this)) {
+            handlers.add(new WebComponentProvider());
+            handlers.add(new WebComponentBootstrapHandler());
+        }
+
         return handlers;
+    }
+
+    private static boolean hasWebComponentConfigurations(
+            VaadinService service) {
+        /*
+         * Should be updated to use
+         * WebComponentConfigurationRegistry.getInstance(VaadinService) once
+         * https://github.com/vaadin/flow/pull/5657 has been merged
+         */
+        if (service instanceof VaadinServletService) {
+            ServletContext servletContext = ((VaadinServletService) service)
+                    .getServlet().getServletContext();
+            WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
+                    .getInstance(servletContext);
+
+            return registry.hasConfigurations();
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -1349,8 +1373,7 @@ public abstract class VaadinService implements Serializable {
      */
     private int getUidlRequestTimeout(VaadinSession session) {
         return getDeploymentConfiguration().isCloseIdleSessions()
-                ? session.getSession().getMaxInactiveInterval()
-                : -1;
+                ? session.getSession().getMaxInactiveInterval() : -1;
     }
 
     /**
