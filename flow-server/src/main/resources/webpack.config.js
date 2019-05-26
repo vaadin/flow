@@ -19,7 +19,7 @@ fileNameOfTheFlowGeneratedMainEntryPoint;
 mavenOutputFolderForFlowBundledFiles;
 ////////////////////////////////////////
 
-// public path for resources, must match flow that requests /build/index.js /build/stats.json
+// public path for resources, must match the request used in flow to get the /build/stats.json file
 const build = 'build';
 // folder for outputting stats.js, index.js bundle, etc.
 const buildFolder = `${mavenOutputFolderForFlowBundledFiles}/${build}`;
@@ -37,7 +37,7 @@ module.exports = {
   },
 
   output: {
-    filename: `${build}/[name].js`,
+    filename: `${build}/[name]-[contenthash].cache.js`,
     path: mavenOutputFolderForFlowBundledFiles
   },
 

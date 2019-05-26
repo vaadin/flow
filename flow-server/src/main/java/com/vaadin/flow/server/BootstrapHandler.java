@@ -64,6 +64,7 @@ import com.vaadin.flow.server.BootstrapUtils.ThemeSettings;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.PushConnectionFactory;
 import com.vaadin.flow.server.communication.UidlWriter;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.VaadinUriResolver;
 import com.vaadin.flow.shared.communication.PushMode;
@@ -673,7 +674,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             JsonObject initialUIDL, BootstrapContext context) {
         inlineEs6Collections(head, context);
 
-        DeploymentConfiguration conf = context.getSession().getConfiguration();
+        VaadinService service = context.getSession().getService();
+        DeploymentConfiguration conf = service.getDeploymentConfiguration();
 
         if (conf.isBowerMode()) {
             appendWebComponentsPolyfills(head, context);
@@ -681,10 +683,18 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             BootstrapUriResolver resolver = context.getUriResolver();
             conf.getPolyfills().forEach(polyfill -> head.appendChild(createJavaScriptElement(resolver.resolveVaadinUri(polyfill), false)));
 
-            String bundleUrl = resolver.resolveVaadinUri(conf.getJsModuleBundle());
-            String es5BundleUrl = resolver.resolveVaadinUri(conf.getJsModuleBundleEs5());
-            head.appendChild(createJavaScriptElement(bundleUrl).attr("type", "module"));
-            head.appendChild(createJavaScriptElement(es5BundleUrl).attr("nomodule", true));
+
+            try {
+                String content = FrontendUtils.getStatsContent(service);
+                JsonObject stats = Json.parse(content);
+                JsonObject chunks = stats.getObject("assetsByChunkName");
+                String bundleUrl = resolver.resolveVaadinUri(chunks.getString("index"));
+                String es5BundleUrl = resolver.resolveVaadinUri(chunks.getString("index.es5"));
+                head.appendChild(createJavaScriptElement(bundleUrl).attr("type", "module"));
+                head.appendChild(createJavaScriptElement(es5BundleUrl).attr("nomodule", true));
+            } catch (IOException e) {
+                throw new BootstrapException("Unable to read webpack stats file.", e);
+            }
         }
 
         if (context.getPushMode().isEnabled()) {
