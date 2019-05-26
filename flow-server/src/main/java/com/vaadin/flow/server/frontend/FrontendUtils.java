@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
@@ -27,9 +28,16 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.VaadinService;
+
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON;
+import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 
 /**
  * A class for static methods and definitions that might be
@@ -276,5 +284,52 @@ public class FrontendUtils {
         }
 
         return processBuilder;
+    }
+
+
+    public static String getStatsContent(VaadinService service) throws IOException {
+        DeploymentConfiguration config = service.getDeploymentConfiguration();
+        String stats = config
+                .getStringProperty(SERVLET_PARAMETER_STATISTICS_JSON, STATISTICS_JSON_DEFAULT)
+                // Remove absolute
+                .replaceFirst("^/", "");
+
+        // Try stats as a resource from the class path
+        InputStream content = config.getClass().getClassLoader().getResourceAsStream(stats);
+        if (content != null) {
+            getLogger().debug("Found stats file as a resource file '{}'.", stats);
+        } else {
+            URL statsUrl = null;
+            if (!config.isProductionMode()) {
+                String port = config.getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, null);
+                if (port != null && !port.isEmpty()) {
+                    statsUrl = new URL("http://localhost:" + port + "/" + stats);
+                }
+                if (statsUrl == null) {
+                    statsUrl = service.getStaticResource("/" + stats);
+                    if (statsUrl == null) {
+                        getLogger().warn(
+                                "Cannot get the stats file through webpack-dev-server. "
+                                + "The webpack port is unavailable via '{}' property. ",
+                                SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT);
+                    } else {
+                        getLogger().debug("Cannot get the stats file through webpack-dev-server, "
+                                + "however it was found in the web contenxt, which means that the application was build previously. "
+                                + "To disable this message run the application in PRODUCTION mode.");
+                    }
+                }
+            } else {
+                statsUrl = service.getStaticResource("/" + stats);
+            }
+            if (statsUrl != null) {
+                getLogger().debug("Found stats file at url '{}'", statsUrl);
+                content = statsUrl.openStream();
+            }
+        }
+        return content != null ? streamToString(content) : null;
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(FrontendUtils.class);
     }
 }
