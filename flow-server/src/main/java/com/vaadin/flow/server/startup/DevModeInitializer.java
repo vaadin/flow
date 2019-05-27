@@ -216,7 +216,7 @@ public class DevModeInitializer
             } else {
                 log().error("Script path {} doesn't match {} regex.",
                         buildScript, DEV_MODE_MAPPING_REGEX);
-                return Collections.EMPTY_SET;
+                return Collections.emptySet();
             }
         }
         return mappings;
