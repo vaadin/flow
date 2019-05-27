@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
@@ -21,6 +22,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Matchers;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.dependency.JsModule;
@@ -36,6 +39,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubNode;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubWebpackServer;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -132,8 +136,27 @@ public class DevModeInitializerTest {
 
     @Test
     public void should_Run_Updaters() throws Exception {
+        ServletRegistration.Dynamic servletRegistration = Mockito
+                .mock(ServletRegistration.Dynamic.class);
+
+        Mockito.when(servletContext.addServlet(DevModeServlet.class.getName(),
+                DevModeServlet.class)).thenReturn(servletRegistration);
+
+        ArgumentCaptor<String> mappingCaptor = ArgumentCaptor
+                .forClass(String.class);
+
         devModeInitializer.onStartup(classes, servletContext);
         assertNotNull(DevModeHandler.getDevModeHandler());
+
+        Mockito.verify(servletRegistration).addMapping(mappingCaptor.capture());
+
+        List<String> mappingValues = mappingCaptor.getAllValues();
+        assertEquals("There should be 2 mappings for DevModeServlet", 2,
+                mappingValues.size());
+        assertTrue("Missing DevModeServlet mapping to /build/*",
+                mappingValues.contains("/build/*"));
+        assertTrue("Missing DevModeServlet mapping to /build/webcomponentsjs/*",
+                mappingValues.contains("/build/webcomponentsjs/*"));
     }
 
     @Test

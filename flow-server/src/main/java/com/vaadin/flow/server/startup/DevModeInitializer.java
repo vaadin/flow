@@ -165,9 +165,9 @@ public class DevModeInitializer
             }
         }
 
-        Set<String> mappings = getDevModeMappings(config);
+        Set<String> mapping = getDevModeMapping(config);
 
-        if (mappings == null || mappings.isEmpty()) {
+        if (mapping == null || mapping.isEmpty()) {
             log().warn(
                     "Skipping DEV MODE because DevModeServlet mapping can't be determined. Please make sure "
                             + SERVLET_PARAMETER_JSBUNDLE + " and "
@@ -192,14 +192,12 @@ public class DevModeInitializer
         // Register DevModeServlet.
         ServletRegistration.Dynamic registration = context.addServlet(DevModeServlet.class.getName(), DevModeServlet.class);
         registration.setAsyncSupported(true);
-        for (String mapping : mappings) {
-            registration.addMapping("/" + mapping + "/*");
-        }
+        registration.addMapping(mapping.toArray(new String[mapping.size()]));
 
-        log().info("DevModeServlet registered to {}.", mappings);
+        log().info("DevModeServlet mapped to {}.", mapping);
     }
 
-    private static Set<String> getDevModeMappings(DeploymentConfiguration config) {
+    private static Set<String> getDevModeMapping(DeploymentConfiguration config) {
         List<String> polyfills = config.getPolyfills();
         Set<String> buildScripts = new HashSet<>(polyfills.size() + 2);
         buildScripts.addAll(polyfills);
@@ -214,7 +212,7 @@ public class DevModeInitializer
             Matcher matcher = pattern.matcher(buildScript);
 
             if (matcher.find()) {
-                mappings.add(matcher.group(1));
+                mappings.add("/" + matcher.group(1) + "/*");
             } else {
                 log().error("Script path " + buildScript + " doesn't match " + DEV_MODE_MAPPING_REGEX + " regex.");
                 return null;
