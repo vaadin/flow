@@ -121,32 +121,19 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     private final BootstrapPageBuilder pageBuilder;
 
-    private final Function<VaadinRequest, String> contextRootProvider;
-
     /**
-     * Creates an instance of the handler using current {@link VaadinService} as information about
-     * {@link VaadinService#getContextRootRelativePath(VaadinRequest)}.
+     * Creates an instance of the handler with default {@link BootstrapPageBuilder}.
      */
     public BootstrapHandler() {
-        this(request -> request.getService().getContextRootRelativePath(request));
+        this(new BootstrapPageBuilder());
     }
 
     /**
-     * Creates an instance of the handler using provided function to obtain context root relative path.
-     * @param contextRootProvider Function to provide context root relative path based on a given {@link VaadinRequest}.
-     */
-    public BootstrapHandler(Function<VaadinRequest, String> contextRootProvider) {
-        this(new BootstrapPageBuilder(contextRootProvider), contextRootProvider);
-    }
-
-    /**
-     * Creates an instance of the handler using provided page builder and function to obtain context root relative path.
+     * Creates an instance of the handler using provided page builder.
      * @param pageBuilder Page builder to use.
-     * @param contextRootProvider Function to provide context root relative path based on a given {@link VaadinRequest}.
      */
-    protected BootstrapHandler(BootstrapPageBuilder pageBuilder, Function<VaadinRequest, String> contextRootProvider) {
+    protected BootstrapHandler(BootstrapPageBuilder pageBuilder) {
         this.pageBuilder = pageBuilder;
-        this.contextRootProvider = contextRootProvider;
     }
 
     /**
@@ -467,14 +454,18 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
     }
 
+    /**
+     * Builds bootstrap pages.
+     *
+     * Do not subclass this, unless you really know why you are doing it.
+     */
     protected static final class BootstrapPageBuilder {
 
-        private final Function<VaadinRequest, String> contextRootRelativePathCallback;
-
-        public BootstrapPageBuilder(Function<VaadinRequest, String> contextRootRelativePathCallback) {
-            this.contextRootRelativePathCallback = contextRootRelativePathCallback;
-        }
-
+        /**
+         * Returns the bootstrap page for the given context.
+         * @param context Context to generate bootstrap page for.
+         * @return A document with the corresponding HTML page.
+         */
         public Document getBootstrapPage(BootstrapContext context) {
             DeploymentConfiguration config = context.getSession().getConfiguration();
 
@@ -573,7 +564,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
             if (themeSettings.getHtmlAttributes() != null) {
                 Element html = document.body().parent();
-                assert html.tagName().equalsIgnoreCase("html");
+                assert "html".equalsIgnoreCase(html.tagName());
                 themeSettings.getHtmlAttributes().forEach(html::attr);
             }
         }
@@ -699,6 +690,29 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
             head.appendChild(getBootstrapScript(initialUIDL, context));
             head.appendChild(createJavaScriptElement(getClientEngineUrl(context)));
+        }
+
+        private String getClientEngineUrl(BootstrapContext context) {
+            // use nocache version of client engine if it
+            // has been compiled by SDM or eclipse
+            // In production mode, this should really be loaded by the static block
+            // so emit a warning if we get here (tests will always get here)
+            final boolean productionMode = context.getSession().getConfiguration()
+                                               .isProductionMode();
+
+            boolean resolveNow = !productionMode || getClientEngine() == null;
+            if (resolveNow && ClientResourcesUtils.getResource(
+                "/META-INF/resources/" + CLIENT_ENGINE_NOCACHE_FILE) != null) {
+                return context.getUriResolver().resolveVaadinUri(
+                    "context://" + CLIENT_ENGINE_NOCACHE_FILE);
+            }
+
+            if (getClientEngine() == null) {
+                throw new BootstrapException(
+                    "Client engine file name has not been resolved during initialization");
+            }
+            return context.getUriResolver()
+                       .resolveVaadinUri("context://" + getClientEngine());
         }
 
         private void inlineEs6Collections(Element head, BootstrapContext context) {
@@ -872,7 +886,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 throw new IllegalStateException("Unsupported dependency type: " + type);
             }
 
-            if (inlineElement) {
+            if (inlineElement && dependencyElement != null) {
                 dependencyElement.appendChild(new DataNode(dependency.getString(Dependency.KEY_CONTENTS), dependencyElement.baseUri()));
             }
 
@@ -910,7 +924,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             String versionQueryParam = "?v=" + Version.getFullVersion();
 
             // Load client-side dependencies for push support
-            String pushJSPath = contextRootRelativePathCallback.apply(request);
+            String pushJSPath = context.getRequest().getService().getContextRootRelativePath(request);
 
             if (request.getService().getDeploymentConfiguration().isProductionMode()) {
                 pushJSPath += ApplicationConstants.VAADIN_PUSH_JS;
@@ -983,6 +997,11 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             this.contextCallback = contextCallback;
         }
 
+        /**
+         * Creates application parameters for the provided {@link BootstrapContext}.
+         * @param context Non-null context to provide application parameters for.
+         * @return A non-null {@link JsonObject} with application parameters.
+         */
         public JsonObject getApplicationParameters(BootstrapContext context) {
             JsonObject appConfig = getApplicationParameters(context.getRequest(),
                 context.getSession());
@@ -1108,7 +1127,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             VaadinRequest request, VaadinResponse response,
             VaadinSession session) {
         UI ui = ReflectTools.createInstance(uiClass);
-        ui.getInternals().setContextRoot(contextRootProvider.apply(request));
+        ui.getInternals().setContextRoot(request.getService().getContextRootRelativePath(request));
 
         PushConfiguration pushConfiguration = ui.getPushConfiguration();
 
@@ -1116,7 +1135,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         ui.setLocale(session.getLocale());
 
         BootstrapContext context = createBootstrapContext(request, response,
-                ui, this.contextRootProvider);
+                ui, request.getService()::getContextRootRelativePath);
 
         Optional<Push> push = context
                 .getPageConfigurationAnnotation(Push.class);
@@ -1242,29 +1261,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
     }
 
-    private static String getClientEngineUrl(BootstrapContext context) {
-        // use nocache version of client engine if it
-        // has been compiled by SDM or eclipse
-        // In production mode, this should really be loaded by the static block
-        // so emit a warning if we get here (tests will always get here)
-        final boolean productionMode = context.getSession().getConfiguration()
-                .isProductionMode();
-
-        boolean resolveNow = !productionMode || getClientEngine() == null;
-        if (resolveNow && ClientResourcesUtils.getResource(
-                "/META-INF/resources/" + CLIENT_ENGINE_NOCACHE_FILE) != null) {
-            return context.getUriResolver().resolveVaadinUri(
-                    "context://" + CLIENT_ENGINE_NOCACHE_FILE);
-        }
-
-        if (getClientEngine() == null) {
-            throw new BootstrapException(
-                    "Client engine file name has not been resolved during initialization");
-        }
-        return context.getUriResolver()
-                .resolveVaadinUri("context://" + getClientEngine());
-    }
-
     /**
      * Returns the UI class mapped for servlet that handles the given request.
      * <p>
@@ -1310,33 +1306,34 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
     }
 
-    private static String readClientEngine() {
-        // read client engine file name
-        try (InputStream prop = ClientResourcesUtils.getResource(
-                "/META-INF/resources/" + ApplicationConstants.CLIENT_ENGINE_PATH
-                        + "/compile.properties")) {
-            // null when running SDM or tests
-            if (prop != null) {
-                Properties properties = new Properties();
-                properties.load(prop);
-                return ApplicationConstants.CLIENT_ENGINE_PATH + "/"
-                        + properties.getProperty("jsFile");
-            } else {
-                getLogger().warn(
-                        "No compile.properties available on initialization, "
-                                + "could not read client engine file name.");
-            }
-        } catch (IOException e) {
-            throw new ExceptionInInitializerError(e);
-        }
-        return null;
-    }
-
     private static String getClientEngine() {
         return clientEngineFile.get();
     }
 
     private static class LazyClientEngineInit {
         private static final String CLIENT_ENGINE_FILE = readClientEngine();
+
+        private static String readClientEngine() {
+            // read client engine file name
+            try (InputStream prop = ClientResourcesUtils.getResource(
+                "/META-INF/resources/" + ApplicationConstants.CLIENT_ENGINE_PATH
+                    + "/compile.properties")) {
+                // null when running SDM or tests
+                if (prop != null) {
+                    Properties properties = new Properties();
+                    properties.load(prop);
+                    return ApplicationConstants.CLIENT_ENGINE_PATH + "/"
+                               + properties.getProperty("jsFile");
+                } else {
+                    getLogger().warn(
+                        "No compile.properties available on initialization, "
+                            + "could not read client engine file name.");
+                }
+            } catch (IOException e) {
+                throw new ExceptionInInitializerError(e);
+            }
+            return null;
+        }
+
     }
 }

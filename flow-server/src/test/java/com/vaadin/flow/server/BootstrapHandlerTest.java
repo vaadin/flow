@@ -377,7 +377,7 @@ public class BootstrapHandlerTest {
     private WebBrowser browser;
     private VaadinServlet servlet;
     private MockServletServiceSessionSetup mocks;
-    private BootstrapHandler.BootstrapPageBuilder pageBuilder = new BootstrapHandler.BootstrapPageBuilder(this::contextRootRelativePath);
+    private BootstrapHandler.BootstrapPageBuilder pageBuilder = new BootstrapHandler.BootstrapPageBuilder();
 
     @Before
     public void setup() throws Exception {

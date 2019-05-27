@@ -34,7 +34,6 @@ import java.net.URL;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Supplier;
 
 /**
  * A service implementation connected to a {@link VaadinServlet}.
@@ -79,7 +78,7 @@ public class VaadinServletService extends VaadinService {
             throws ServiceException {
         List<RequestHandler> handlers = super.createRequestHandlers();
         handlers.add(0, new FaviconHandler());
-        handlers.add(0, new BootstrapHandler(this::getContextRootRelativePath));
+        handlers.add(0, new BootstrapHandler());
         if (isAtmosphereAvailable()) {
             try {
                 handlers.add(new PushRequestHandler(this));
