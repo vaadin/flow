@@ -2,17 +2,17 @@ package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 import com.vaadin.flow.server.DevModeHandler;
-import com.vaadin.flow.server.VaadinServlet;
 
 /**
  * Serves js bundle files and polyfills during development mode.
  */
-public class DevModeServlet extends VaadinServlet {
+public class DevModeServlet extends HttpServlet {
 
     private DevModeHandler devmodeHandler;
 
@@ -24,13 +24,12 @@ public class DevModeServlet extends VaadinServlet {
     }
 
     @Override
-    protected boolean serveStaticOrWebJarRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
+    protected void service(HttpServletRequest request,
+            HttpServletResponse response) throws IOException {
         if (devmodeHandler != null && devmodeHandler.isDevModeRequest(request)
                 && devmodeHandler.serveDevModeRequest(request, response)) {
-            return true;
         }
 
-        return super.serveStaticOrWebJarRequest(request, response);
     }
+
 }

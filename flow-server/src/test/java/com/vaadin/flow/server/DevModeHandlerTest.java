@@ -32,6 +32,7 @@ import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.sun.net.httpserver.HttpServer;
+import com.vaadin.flow.server.startup.DevModeServlet;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Before;
@@ -239,10 +240,10 @@ public class DevModeHandlerTest {
 
     @Test(expected = ConnectException.class)
     public void servlet_should_ThrowAnException_When_WebpackNotListening() throws Exception {
-        VaadinServlet servlet = prepareServlet();
         HttpServletRequest request = prepareRequest("/foo.js");
         HttpServletResponse response = prepareResponse();
-        servlet.service(request, response);
+
+        prepareServlet().service(request, response);
         Thread.sleep(150); //NOSONAR
     }
 
@@ -256,9 +257,9 @@ public class DevModeHandlerTest {
         assertEquals(HTTP_OK, responseStatus);
     }
 
-    private VaadinServlet prepareServlet() throws ServletException {
+    private DevModeServlet prepareServlet() throws ServletException {
         DevModeHandler.start(configuration, npmFolder);
-        VaadinServlet servlet = new VaadinServlet();
+        DevModeServlet servlet = new DevModeServlet();
         ServletConfig cfg = mock(ServletConfig.class);
         ServletContext ctx = mock(ServletContext.class);
         Mockito.doAnswer(invocation -> ctx).when(cfg).getServletContext();

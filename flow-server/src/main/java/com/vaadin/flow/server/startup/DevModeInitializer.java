@@ -140,7 +140,7 @@ public class DevModeInitializer
      * @param config
      *         deployment configuration
      */
-    private static void initDevModeHandler(Set<Class<?>> classes,
+    public static void initDevModeHandler(Set<Class<?>> classes,
                                            ServletContext context, DeploymentConfiguration config) {
         if (config.isProductionMode()) {
             log().debug("Skipping DEV MODE because PRODUCTION MODE is set.");
@@ -199,14 +199,14 @@ public class DevModeInitializer
 
     private static Set<String> getDevModeMapping(DeploymentConfiguration config) {
         List<String> polyfills = config.getPolyfills();
-        Set<String> buildScripts = new HashSet<>(polyfills.size() + 2);
+        Set<String> buildScripts = new HashSet<>();
         buildScripts.addAll(polyfills);
         buildScripts.add(config.getJsModuleBundle());
         buildScripts.add(config.getJsModuleBundleEs5());
 
         Pattern pattern = Pattern.compile(DEV_MODE_MAPPING_REGEX);
 
-        Set<String> mappings = new HashSet<>(1);
+        Set<String> mappings = new HashSet<>();
         for (String buildScript : buildScripts) {
 
             Matcher matcher = pattern.matcher(buildScript);
