@@ -275,8 +275,7 @@ public class DevModeHandler implements Serializable {
         int responseCode = connection.getResponseCode();
         if (responseCode == HTTP_NOT_FOUND) {
             getLogger().debug("Resource not served by webpack {}", requestFilename);
-            // webpack cannot access the resource, return false so as flow can
-            // handle it
+            // Webpack cannot access the resource.
             response.sendError(HTTP_NOT_FOUND);
 
         } else {
