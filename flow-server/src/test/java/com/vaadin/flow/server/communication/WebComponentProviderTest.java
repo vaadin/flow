@@ -276,7 +276,8 @@ public class WebComponentProviderTest {
                 .getEmbeddedApplicationAnnotation(Push.class).get().value());
     }
 
-    private WebComponentConfigurationRegistry setupConfigurations(
+    @SafeVarargs
+    private final WebComponentConfigurationRegistry setupConfigurations(
             Class<? extends WebComponentExporter<? extends Component>>... exporters) {
         WebComponentConfigurationRegistry registry = setUpRegistry();
 
@@ -294,19 +295,8 @@ public class WebComponentProviderTest {
     }
 
     private WebComponentConfigurationRegistry setUpRegistry() {
-        ServletContext servletContext = Mockito.mock(ServletContext.class);
-
-        Mockito.when(request.getServletContext()).thenReturn(servletContext);
-        Mockito.when(request.getContextPath()).thenReturn("");
-
         // this hack is needed, because the OSGiAccess fake servlet context is now not needed
-        WebComponentConfigurationRegistry registry = new WebComponentConfigurationRegistry(){};
-
-        // WebComponentConfigurationRegistry.getInstance(service);
-        Mockito.when(servletContext.getAttribute(
-                WebComponentConfigurationRegistry.class.getName()))
-                .thenReturn(registry);
-        return registry;
+        return new WebComponentConfigurationRegistry(){};
     }
 
     @Tag("my-component")
