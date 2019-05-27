@@ -27,9 +27,7 @@ import com.vaadin.flow.server.WrappedSession;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.communication.PushMode;
 
-import static com.vaadin.flow.server.Constants.JSBUNDLE_DEFAULT_VALUE;
 import static com.vaadin.flow.server.Constants.POLYFILLS_DEFAULT_VALUE;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_JSBUNDLE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_POLYFILLS;
 
 /**
@@ -345,34 +343,6 @@ public interface DeploymentConfiguration extends Serializable {
     default String getCompiledWebComponentsPath() {
         return getStringProperty(Constants.COMPILED_WEB_COMPONENTS_PATH,
                 "vaadin-web-components");
-    }
-
-    /**
-     * Determines the main application file to load when starting the
-     * application for browsers supporting ES6 imports.
-     *
-     * The default value is <code>build/index.js</code> but it can be changed by
-     * setting the {@link Constants#SERVLET_PARAMETER_JSBUNDLE}.
-     *
-     * @return the ES6 bundle path
-     */
-    default String getJsModuleBundle() {
-        return getStringProperty(SERVLET_PARAMETER_JSBUNDLE, JSBUNDLE_DEFAULT_VALUE);
-    }
-
-    /**
-     * Determines the main application file to load when starting the
-     * application for browsers supporting ES6 imports
-     *
-     * It returns the value returned by
-     * {@link DeploymentConfiguration#getJsModuleBundle()} but adding the
-     * <code>.es5</code> fragment before the extension, so by default it will
-     * return <code>build/index.es5.js</code>
-     *
-     * @return the ES5 bundle path
-     */
-    default String getJsModuleBundleEs5() {
-        return getJsModuleBundle().replaceFirst("(\\.[^\\.]+)$", ".es5$1");
     }
 
     /**
