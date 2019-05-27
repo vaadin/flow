@@ -688,10 +688,15 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 String content = FrontendUtils.getStatsContent(service);
                 JsonObject stats = Json.parse(content);
                 JsonObject chunks = stats.getObject("assetsByChunkName");
-                String bundleUrl = resolver.resolveVaadinUri(chunks.getString("index"));
-                String es5BundleUrl = resolver.resolveVaadinUri(chunks.getString("index.es5"));
-                head.appendChild(createJavaScriptElement(bundleUrl).attr("type", "module"));
-                head.appendChild(createJavaScriptElement(es5BundleUrl).attr("nomodule", true));
+                
+                for (String key: chunks.keys()) {
+                    String url = resolver.resolveVaadinUri(chunks.getString(key));
+                    if (key.endsWith(".es5")) {
+                        head.appendChild(createJavaScriptElement(url).attr("nomodule", true));
+                    } else {
+                        head.appendChild(createJavaScriptElement(url).attr("type", "module"));
+                    }
+                }
             } catch (IOException e) {
                 throw new BootstrapException("Unable to read webpack stats file.", e);
             }
