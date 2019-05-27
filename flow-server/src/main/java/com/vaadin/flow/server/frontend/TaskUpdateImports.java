@@ -178,16 +178,18 @@ public class TaskUpdateImports extends NodeUpdater {
         return new File(base, String.join("/", path)).isFile();
     }
 
-    private String toValidBrowserImport(String s) {
-        if (s.startsWith(GENERATED_PREFIX)) {
-            return generatedResourcePathIntoRelativePath(s);
-        } else if (s.startsWith("./")) {
-            return WEBPACK_PREFIX_ALIAS + s.substring(2);
-        } else if (Character.isAlphabetic(s.charAt(0))
-                && !s.startsWith(WEBPACK_PREFIX_ALIAS)) {
-            return WEBPACK_PREFIX_ALIAS + s;
+    private String toValidBrowserImport(String jsImport) {
+        if (jsImport.startsWith(GENERATED_PREFIX)) {
+            return generatedResourcePathIntoRelativePath(jsImport);
+        } else if (isFile(frontendDirectory, jsImport)) {
+            if (!jsImport.startsWith("./")) {
+                log().warn(
+                        "Use the './' prefix for files in the 'frontend' folder: '{}', please update your annotations.",
+                        jsImport);
+            }
+            return WEBPACK_PREFIX_ALIAS + jsImport.replaceFirst("^\\./", "");
         }
-        return s;
+        return jsImport;
     }
 
     private void updateMainJsFile(List<String> newContent) throws IOException {
