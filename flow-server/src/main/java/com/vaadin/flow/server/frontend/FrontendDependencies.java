@@ -334,7 +334,14 @@ public class FrontendDependencies implements Serializable {
         Class<WebComponentExporter<? extends Component>> exporterClass =
                 finder.loadClass(WebComponentExporter.class.getName());
         HashSet<EndPointData> themedEndPoints = new HashSet<>();
-        for (Class<?> exporter : finder.getSubTypesOf(exporterClass)) {
+        Set<? extends Class<? extends WebComponentExporter<? extends Component>>> exporterClasses =
+                finder.getSubTypesOf(exporterClass);
+        // if no exporters in the project, return
+        if (exporterClasses.isEmpty()) {
+            return;
+        }
+
+        for (Class<?> exporter : exporterClasses) {
             String exporterClassName = exporter.getName();
             EndPointData exporterData = new EndPointData(exporter);
             endPoints.put(exporterClassName, visitClass(exporterClassName, exporterData));
