@@ -51,6 +51,8 @@ import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK
 import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
+import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
+
 /**
  * Handles getting resources from <code>webpack-dev-server</code>.
  * <p>
@@ -251,11 +253,10 @@ public class DevModeHandler implements Serializable {
      *            the servlet request
      * @param response
      *            the servlet response
-     * @return false if webpack returned a not found, true otherwise
      * @throws IOException
      *             in the case something went wrong like connection refused
      */
-    public boolean serveDevModeRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public void serveDevModeRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String requestFilename = getRequestFilename(request);
 
         HttpURLConnection connection = prepareConnection(requestFilename, request.getMethod());
@@ -276,29 +277,29 @@ public class DevModeHandler implements Serializable {
             getLogger().debug("Resource not served by webpack {}", requestFilename);
             // webpack cannot access the resource, return false so as flow can
             // handle it
-            return false;
-        }
-        getLogger().debug("Served resource by webpack: {} {}", responseCode, requestFilename);
+            response.sendError(HTTP_NOT_FOUND);
 
-        // Copies response headers
-        connection.getHeaderFields().forEach((header, values) -> {
-            if (header != null) {
-                response.addHeader(header, values.get(0));
-            }
-        });
-
-        if (responseCode == HTTP_OK) {
-            // Copies response payload
-            writeStream(response.getOutputStream(), connection.getInputStream());
         } else {
-            // Copies response code
-            response.sendError(responseCode);
+            getLogger().debug("Served resource by webpack: {} {}", responseCode, requestFilename);
+
+            // Copies response headers
+            connection.getHeaderFields().forEach((header, values) -> {
+                if (header != null) {
+                    response.addHeader(header, values.get(0));
+                }
+            });
+
+            if (responseCode == HTTP_OK) {
+                // Copies response payload
+                writeStream(response.getOutputStream(), connection.getInputStream());
+            } else {
+                // Copies response code
+                response.sendError(responseCode);
+            }
         }
 
         // Close request to avoid issues in CI and Chrome
         response.getOutputStream().close();
-
-        return true;
     }
 
     private boolean checkWebpackConnection() {
