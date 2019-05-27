@@ -672,31 +672,19 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     private static void setupFrameworkLibraries(Element head,
             JsonObject initialUIDL, BootstrapContext context) {
-        inlineEs6Collections(head, context);
 
         VaadinService service = context.getSession().getService();
         DeploymentConfiguration conf = service.getDeploymentConfiguration();
 
         if (conf.isBowerMode()) {
+            inlineEs6Collections(head, context);
             appendWebComponentsPolyfills(head, context);
         } else {
             BootstrapUriResolver resolver = context.getUriResolver();
-            conf.getPolyfills().forEach(polyfill -> head.appendChild(createJavaScriptElement(resolver.resolveVaadinUri(polyfill), false)));
-
-
+            conf.getPolyfills().forEach(polyfill -> head.appendChild(
+                    createJavaScriptElement(resolver.resolveVaadinUri(polyfill), false)));
             try {
-                String content = FrontendUtils.getStatsContent(service);
-                JsonObject stats = Json.parse(content);
-                JsonObject chunks = stats.getObject("assetsByChunkName");
-                
-                for (String key: chunks.keys()) {
-                    String url = resolver.resolveVaadinUri(chunks.getString(key));
-                    if (key.endsWith(".es5")) {
-                        head.appendChild(createJavaScriptElement(url).attr("nomodule", true));
-                    } else {
-                        head.appendChild(createJavaScriptElement(url).attr("type", "module"));
-                    }
-                }
+                appendNpmBundle(head, resolver, service);
             } catch (IOException e) {
                 throw new BootstrapException("Unable to read webpack stats file.", e);
             }
@@ -708,6 +696,22 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         head.appendChild(getBootstrapScript(initialUIDL, context));
         head.appendChild(createJavaScriptElement(getClientEngineUrl(context)));
+    }
+
+    private static void appendNpmBundle(Element head, BootstrapUriResolver resolver, VaadinService service) throws IOException {
+        String content = FrontendUtils.getStatsContent(service);
+        JsonObject chunks = Json.parse(content).getObject("assetsByChunkName");
+
+        for (String key: chunks.keys()) {
+            Element script = createJavaScriptElement(
+                    resolver.resolveVaadinUri(chunks.getString(key)));
+
+            if (key.endsWith(".es5")) {
+                head.appendChild(script.attr("nomodule", true));
+            } else {
+                head.appendChild(script.attr("type", "module"));
+            }
+        }
     }
 
 

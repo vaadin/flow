@@ -287,6 +287,14 @@ public class FrontendUtils {
     }
 
 
+    /**
+     * Gets the content of the <code>stats.json</code> file produced by webpack.
+     *
+     * @param service
+     *            the vaadin service.
+     * @return the content of the file as a string, null if not found.
+     * @throws IOException
+     */
     public static String getStatsContent(VaadinService service) throws IOException {
         DeploymentConfiguration config = service.getDeploymentConfiguration();
         String stats = config
