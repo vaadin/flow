@@ -16,45 +16,6 @@
 
 package com.vaadin.flow.server;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.Serializable;
-import java.lang.reflect.Constructor;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.ServiceLoader;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-
-import javax.servlet.Servlet;
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletResponse;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.DependencyTreeCache;
 import com.vaadin.flow.component.internal.HtmlImportParser;
@@ -84,11 +45,46 @@ import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.theme.AbstractTheme;
-
 import elemental.json.Json;
 import elemental.json.JsonException;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.servlet.Servlet;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.Serializable;
+import java.lang.reflect.Constructor;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.ServiceLoader;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * An abstraction of the underlying technology, e.g. servlets, for handling
@@ -202,6 +198,8 @@ public abstract class VaadinService implements Serializable {
 
     private Registration htmlImportDependencyCacheClearRegistration;
 
+    private VaadinContext vaadinContext;
+
     /**
      * Creates a new vaadin service based on a deployment configuration.
      *
@@ -238,12 +236,13 @@ public abstract class VaadinService implements Serializable {
      * Creates a service. This method is for use by dependency injection
      * frameworks etc. and must be followed by a call to
      * {@link #setClassLoader(ClassLoader)} or {@link #setDefaultClassLoader()}
-     * before use. Furthermore {@link #getDeploymentConfiguration()} should be
-     * overridden (or otherwise intercepted) so it does not return
+     * before use. Furthermore {@link #getDeploymentConfiguration()} and {@link #getContext()} should be
+     * overridden (or otherwise intercepted) not to return
      * <code>null</code>.
      */
     protected VaadinService() {
         deploymentConfiguration = null;
+        vaadinContext = null;
     }
 
     /**
@@ -2284,40 +2283,23 @@ public abstract class VaadinService implements Serializable {
     }
 
     /**
-     * Returns value of the specified attribute, creating a default value if not
-     * present.
+     * Constructs {@link VaadinContext} for this service.
      *
-     * @param type
-     *            Type of the attribute.
-     * @param defaultValueSupplier
-     *            {@link Supplier} of the default value, called when there is no
-     *            value already present. May be {@code null}.
-     * @return Value of the specified attribute.
+     * This method will be called only once, upon first call to {@link #getContext()}.
+     * @return Context. This may never be {@code null}.
      */
-    public abstract <T> T getAttribute(Class<T> type,
-            Supplier<T> defaultValueSupplier);
+    protected abstract VaadinContext constructVaadinContext();
 
     /**
-     * Returns value of the specified attribute.
-     *
-     * @param type
-     *            Type of the attribute.
-     * @return Value of the specified attribute.
+     * Returns {@link VaadinContext} for this service.
+     * @return A non-null context instance.
      */
-    public <T> T getAttribute(Class<T> type) {
-        return getAttribute(type, null);
+    public VaadinContext getContext() {
+        if(vaadinContext == null) {
+            vaadinContext = constructVaadinContext();
+        }
+        return vaadinContext;
     }
-
-    /**
-     * Sets the attribute value, overriding previously existing one. Values are
-     * based on exact type, meaning only one attribute of given type is possible
-     * at any given time.
-     *
-     * @param value
-     *            Value of the attribute. May not be {@code null}.
-     */
-    public abstract <T> void setAttribute(T value);
-
     /**
      *
      * Executes a {@code runnable} with a {@link VaadinService} available in the

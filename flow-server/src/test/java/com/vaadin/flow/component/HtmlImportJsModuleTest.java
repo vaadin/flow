@@ -17,17 +17,6 @@
 
 package com.vaadin.flow.component;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.internal.DependencyTreeCache;
@@ -36,9 +25,21 @@ import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.startup.DevModeInitializer;
 import com.vaadin.flow.shared.ui.LoadMode;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class HtmlImportJsModuleTest {
 
@@ -46,6 +47,7 @@ public class HtmlImportJsModuleTest {
     private DeploymentConfiguration configuration;
     private UI ui;
     private Page page;
+    private DevModeInitializer.VisitedClasses visitedClasses;
 
     @Before
     public void setupMocks() {
@@ -53,6 +55,11 @@ public class HtmlImportJsModuleTest {
         configuration = Mockito.mock(DeploymentConfiguration.class);
 
         VaadinService service = Mockito.mock(VaadinService.class);
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+
+        Mockito.when(service.getContext()).thenReturn(context);
+        Mockito.when(context.getAttribute(DevModeInitializer.VisitedClasses.class)).thenReturn(visitedClasses);
+        Mockito.doAnswer(invocationOnMock -> visitedClasses = (DevModeInitializer.VisitedClasses) invocationOnMock.getArguments()[0]).when(context).setAttribute(Mockito.any(DevModeInitializer.VisitedClasses.class));
 
         Mockito.when(session.getService()).thenReturn(service);
         Mockito.when(session.getConfiguration()).thenReturn(configuration);
