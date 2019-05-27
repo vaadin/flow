@@ -25,7 +25,7 @@ import java.util.function.Supplier;
  */
 public class VaadinServletContext implements VaadinContext {
 
-    private final transient ServletContext context;
+    private transient ServletContext context;
 
     /**
      * Creates an instance of this context with given {@link ServletContext}.
@@ -43,9 +43,22 @@ public class VaadinServletContext implements VaadinContext {
         return context;
     }
 
+    /**
+     * Ensures there is a valid instance of {@link ServletContext}.
+     */
+    private void ensureServletContext() {
+        if(context == null && VaadinService.getCurrent() instanceof VaadinServletService) {
+            context = ((VaadinServletService)VaadinService.getCurrent()).getServlet().getServletContext();
+        }
+        else if(context == null) {
+            throw new IllegalStateException("The underlying ServletContext of VaadinServletContext is null and there is no VaadinServletService to obtain it from.");
+        }
+    }
+
     @Override
     public <T> T getAttribute(Class<T> type, Supplier<T> defaultValueSupplier) {
-        synchronized (context) {
+        ensureServletContext();
+        synchronized (this) {
             Object result = context.getAttribute(type.getName());
             if (result == null && defaultValueSupplier != null) {
                 result = defaultValueSupplier.get();
@@ -58,8 +71,8 @@ public class VaadinServletContext implements VaadinContext {
     @Override
     public <T> void setAttribute(T value) {
         assert value != null;
+        ensureServletContext();
         context.setAttribute(value.getClass().getName(), value);
     }
-
 
 }
