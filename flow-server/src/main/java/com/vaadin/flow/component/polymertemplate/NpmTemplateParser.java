@@ -92,7 +92,7 @@ public class NpmTemplateParser implements TemplateParser {
             String source = getSourcesFromTemplate(tag, url);
             if (source == null) {
                 try {
-                    source = getSourcesFromStats(service, tag, url);
+                    source = getSourcesFromStats(service, url);
                 } catch (IOException e) {
                     throw new UncheckedIOException(e);
                 }
@@ -127,7 +127,7 @@ public class NpmTemplateParser implements TemplateParser {
         return null;
     }
 
-    private String getSourcesFromStats(VaadinService service, String tag, String url) throws IOException  {
+    private String getSourcesFromStats(VaadinService service, String url) throws IOException  {
         String content = FrontendUtils.getStatsContent(service);
         if (content != null) {
             updateCache(url, content);
