@@ -190,6 +190,13 @@ public class BuildFrontendMojoTest {
     }
 
     @Test
+    public void shouldNot_ContainExternalUrls() throws Exception {
+        mojo.execute();
+
+        assertContainsImports(false, "https://foo.com/bar.js");
+    }
+
+    @Test
     public void should_AddImports() throws Exception {
         mojo.execute();
         removeImports("@vaadin/vaadin-lumo-styles/sizing.js",
@@ -239,16 +246,16 @@ public class BuildFrontendMojoTest {
         JsonObject packageJsonObject = getPackageJson(appPackage);
         JsonObject dependencies = packageJsonObject.getObject("dependencies");
 
-        assertContainsPackage(dependencies,
-            "@vaadin/vaadin-button",
-            "@vaadin/vaadin-element-mixin");
+        assertContainsPackage(dependencies, "@vaadin/vaadin-button",
+                "@vaadin/vaadin-element-mixin");
 
         Assert.assertFalse("Has foo", dependencies.hasKey("foo"));
     }
 
-    static void assertContainsPackage(JsonObject dependencies, String... packages) {
-        Arrays.asList(packages)
-            .forEach(dep -> Assert.assertTrue("Missing " + dep, dependencies.hasKey(dep)));
+    static void assertContainsPackage(JsonObject dependencies,
+            String... packages) {
+        Arrays.asList(packages).forEach(dep -> Assert
+                .assertTrue("Missing " + dep, dependencies.hasKey(dep)));
     }
 
     private void assertContainsImports(boolean contains, String... imports)

@@ -76,17 +76,25 @@ public class TaskUpdateImports extends NodeUpdater {
 
     @Override
     public void execute() {
-        Set<String> modules = new HashSet<>(getJavascriptJsModules(frontDeps.getModules()));
+        Set<String> modules = new HashSet<>(
+                getJavascriptJsModules(frontDeps.getModules()));
         modules.addAll(getJavascriptJsModules(frontDeps.getScripts()));
 
         modules.addAll(getGeneratedModules(generatedFolder,
                 Collections.singleton(generatedFlowImports.getName())));
 
+        // filter out external URLs (including "://")
+        modules = modules.stream().filter(module -> !module.contains("://"))
+                .collect(Collectors.toSet());
+
         modules = sortModules(modules);
         try {
             updateMainJsFile(getMainJsContent(modules));
         } catch (Exception e) {
-            throw new IllegalStateException(String.format("Failed to update the Flow imports file '%s'", generatedFlowImports), e);
+            throw new IllegalStateException(
+                    String.format("Failed to update the Flow imports file '%s'",
+                            generatedFlowImports),
+                    e);
         }
     }
 
@@ -103,12 +111,15 @@ public class TaskUpdateImports extends NodeUpdater {
             if (!theme.getHeaderInlineContents().isEmpty()) {
                 lines.add("const div = document.createElement('div');");
                 theme.getHeaderInlineContents().forEach(html -> {
-                    lines.add("div.innerHTML = '" + html.replaceAll("(?m)(^\\s+|\\s?\n)", "") + "';");
-                    lines.add("document.head.insertBefore(div.firstElementChild, document.head.firstChild);");
+                    lines.add("div.innerHTML = '"
+                            + html.replaceAll("(?m)(^\\s+|\\s?\n)", "") + "';");
+                    lines.add(
+                            "document.head.insertBefore(div.firstElementChild, document.head.firstChild);");
                 });
             }
-            theme.getHtmlAttributes(themeDef.getVariant())
-                    .forEach((key, value) -> lines.add("document.body.setAttribute('" + key + "', '" + value + "');"));
+            theme.getHtmlAttributes(themeDef.getVariant()).forEach(
+                    (key, value) -> lines.add("document.body.setAttribute('"
+                            + key + "', '" + value + "');"));
         }
 
         lines.addAll(modulesToImports(modules, theme));
@@ -116,20 +127,24 @@ public class TaskUpdateImports extends NodeUpdater {
         return lines;
     }
 
-    private List<String> modulesToImports(Set<String> modules, AbstractTheme theme) {
+    private List<String> modulesToImports(Set<String> modules,
+            AbstractTheme theme) {
         List<String> imports = new ArrayList<>(modules.size());
         Set<String> resourceNotFound = new HashSet<>();
         Set<String> npmNotFound = new HashSet<>();
 
         for (String originalModulePath : modules) {
             String translatedModulePath = originalModulePath;
-            if (theme != null && translatedModulePath.contains(theme.getBaseUrl())) {
+            if (theme != null
+                    && translatedModulePath.contains(theme.getBaseUrl())) {
                 translatedModulePath = theme.translateUrl(translatedModulePath);
             }
             if (importedFileExists(translatedModulePath)) {
-                imports.add(String.format(IMPORT, toValidBrowserImport(translatedModulePath)));
+                imports.add(String.format(IMPORT,
+                        toValidBrowserImport(translatedModulePath)));
             } else if (importedFileExists(originalModulePath)) {
-                imports.add(String.format(IMPORT, toValidBrowserImport(originalModulePath)));
+                imports.add(String.format(IMPORT,
+                        toValidBrowserImport(originalModulePath)));
             } else if (originalModulePath.startsWith("./")) {
                 resourceNotFound.add(originalModulePath);
             } else {
@@ -141,16 +156,16 @@ public class TaskUpdateImports extends NodeUpdater {
         if (!resourceNotFound.isEmpty()) {
             StringBuilder errorMessage = new StringBuilder(
                     "\n\n  Failed to resolve the following files either:"
-                    + "\n   · in the `/frontend` sources folder"
-                    + "\n   · or as a `META-INF/resources/frontend` resource in some JAR. \n       ➜ ");
+                            + "\n   · in the `/frontend` sources folder"
+                            + "\n   · or as a `META-INF/resources/frontend` resource in some JAR. \n       ➜ ");
             errorMessage.append(String.join("\n       ➜ ", resourceNotFound));
-            errorMessage.append("\n  Please, double check that those files exist.\n");
+            errorMessage.append(
+                    "\n  Please, double check that those files exist.\n");
             throw new IllegalStateException(errorMessage.toString());
         }
 
         if (!npmNotFound.isEmpty()) {
-            String message =
-                    "\n\n  Failed to find the following imports in the `node_modules` tree:\n      ➜ "
+            String message = "\n\n  Failed to find the following imports in the `node_modules` tree:\n      ➜ "
                     + String.join("\n       ➜ ", npmNotFound)
                     + "\n  If the build fails, check that npm packages are installed.\n";
             log().info(message);
@@ -162,19 +177,24 @@ public class TaskUpdateImports extends NodeUpdater {
     private boolean importedFileExists(String jsImport) {
         // file is in /frontend
         boolean found = isFile(frontendDirectory, jsImport);
-        // file is a flow resource e.g. /node_modules/@vaadin/flow-frontend/gridConnector.js
-        found = found || isFile(nodeModulesFolder, FLOW_NPM_PACKAGE_NAME, jsImport);
-        // full path import e.g /node_modules/@vaadin/vaadin-grid/vaadin-grid-column.js
+        // file is a flow resource e.g.
+        // /node_modules/@vaadin/flow-frontend/gridConnector.js
+        found = found
+                || isFile(nodeModulesFolder, FLOW_NPM_PACKAGE_NAME, jsImport);
+        // full path import e.g
+        // /node_modules/@vaadin/vaadin-grid/vaadin-grid-column.js
         found = found || isFile(nodeModulesFolder, jsImport);
-        // omitted the .js extension e.g. /node_modules/@vaadin/vaadin-grid/vaadin-grid-column
+        // omitted the .js extension e.g.
+        // /node_modules/@vaadin/vaadin-grid/vaadin-grid-column
         found = found || isFile(nodeModulesFolder, jsImport + ".js");
         // has a package.json file e.g. /node_modules/package-name/package.json
-        found = found || isFile(nodeModulesFolder, jsImport, PACKAGE_JSON );
+        found = found || isFile(nodeModulesFolder, jsImport, PACKAGE_JSON);
         // file was generated by flow
-        return found || isFile(generatedFolder, generatedResourcePathIntoRelativePath(jsImport));
+        return found || isFile(generatedFolder,
+                generatedResourcePathIntoRelativePath(jsImport));
     }
 
-    private boolean isFile(File base, String ...path) {
+    private boolean isFile(File base, String... path) {
         return new File(base, String.join("/", path)).isFile();
     }
 
@@ -194,12 +214,14 @@ public class TaskUpdateImports extends NodeUpdater {
 
     private void updateMainJsFile(List<String> newContent) throws IOException {
         List<String> oldContent = generatedFlowImports.exists()
-                ? FileUtils.readLines(generatedFlowImports, "UTF-8") : null;
+                ? FileUtils.readLines(generatedFlowImports, "UTF-8")
+                : null;
         if (newContent.equals(oldContent)) {
             log().info("No js modules to update");
         } else {
             FileUtils.forceMkdir(generatedFlowImports.getParentFile());
-            FileUtils.writeStringToFile(generatedFlowImports, String.join("\n", newContent), "UTF-8");
+            FileUtils.writeStringToFile(generatedFlowImports,
+                    String.join("\n", newContent), "UTF-8");
             log().info("Updated {}", generatedFlowImports);
         }
     }
