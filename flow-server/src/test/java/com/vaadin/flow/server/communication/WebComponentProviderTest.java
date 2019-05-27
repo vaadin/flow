@@ -21,6 +21,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.webcomponent.WebComponent;
+import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
@@ -50,10 +51,12 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
@@ -76,15 +79,19 @@ public class WebComponentProviderTest {
 
     WebComponentProvider provider;
 
+    WebComponentConfigurationRegistry registry;
 
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
+        registry = setUpRegistry(); // same code as used for local variables in some tests
         Mockito.when(request.getService()).thenReturn(service);
         Mockito.when(session.getService()).thenReturn(service);
         Mockito.when(service.getContext()).thenReturn(context);
-        Mockito.when(context.getAttribute(WebComponentConfigurationRegistry.class)).thenReturn(new WebComponentConfigurationRegistry(){});
-        Mockito.when(context.getAttribute(eq(WebComponentConfigurationRegistry.class), anyObject())).thenReturn(new WebComponentConfigurationRegistry(){});
+        Mockito.when(context.getAttribute(WebComponentConfigurationRegistry.class)).thenReturn(registry);
+        Mockito.when(context.getAttribute(eq(WebComponentConfigurationRegistry.class), anyObject())).thenReturn(registry);
+        Mockito.doAnswer(invocationOnMock -> registry = (WebComponentConfigurationRegistry)invocationOnMock.getArguments()[0])
+            .when(context).setAttribute(any(WebComponentConfigurationRegistry.class));
         VaadinService.setCurrent(service);
         Mockito.when(service.getInstantiator())
                 .thenReturn(new MockInstantiator());
@@ -296,7 +303,14 @@ public class WebComponentProviderTest {
 
     private WebComponentConfigurationRegistry setUpRegistry() {
         // this hack is needed, because the OSGiAccess fake servlet context is now not needed
-        return new WebComponentConfigurationRegistry(){};
+        return new WebComponentConfigurationRegistry(){
+            @Override
+            public Optional<WebComponentConfiguration<? extends Component>> getConfiguration(String tag) {
+                if(tag == null)
+                    throw new IllegalStateException("oh noes, tag is null");
+                return super.getConfiguration(tag);
+            }
+        };
     }
 
     @Tag("my-component")
