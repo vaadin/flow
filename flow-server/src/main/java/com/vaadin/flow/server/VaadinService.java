@@ -26,6 +26,7 @@ import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.LocaleUtil;
 import com.vaadin.flow.internal.ReflectionCache;
+import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.ServletHelper.RequestType;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
@@ -38,6 +39,7 @@ import com.vaadin.flow.server.communication.WebComponentBootstrapHandler;
 import com.vaadin.flow.server.communication.WebComponentProvider;
 import com.vaadin.flow.server.startup.BundleFilterFactory;
 import com.vaadin.flow.server.startup.FakeBrowser;
+import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
@@ -78,7 +80,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -197,6 +198,8 @@ public abstract class VaadinService implements Serializable {
 
     private Registration htmlImportDependencyCacheClearRegistration;
 
+    private VaadinContext vaadinContext;
+
     /**
      * Creates a new vaadin service based on a deployment configuration.
      *
@@ -233,12 +236,13 @@ public abstract class VaadinService implements Serializable {
      * Creates a service. This method is for use by dependency injection
      * frameworks etc. and must be followed by a call to
      * {@link #setClassLoader(ClassLoader)} or {@link #setDefaultClassLoader()}
-     * before use. Furthermore {@link #getDeploymentConfiguration()} should be
-     * overridden (or otherwise intercepted) so it does not return
+     * before use. Furthermore {@link #getDeploymentConfiguration()} and {@link #getContext()} should be
+     * overridden (or otherwise intercepted) not to return
      * <code>null</code>.
      */
     protected VaadinService() {
         deploymentConfiguration = null;
+        vaadinContext = null;
     }
 
     /**
@@ -281,11 +285,18 @@ public abstract class VaadinService implements Serializable {
                     .collect(Collectors.toList());
         });
 
-        if (!getDeploymentConfiguration().isProductionMode()) {
+        DeploymentConfiguration configuration = getDeploymentConfiguration();
+        if (!configuration.isProductionMode()) {
             Logger logger = getLogger();
             logger.debug("The application has the following routes: ");
             getRouteRegistry().getRegisteredRoutes().stream()
                     .map(Object::toString).forEach(logger::debug);
+
+            if (configuration.isBowerMode()) {
+                UsageStatistics.markAsUsed("flow/Bower", null);
+            } else {
+                UsageStatistics.markAsUsed("flow/npm", null);
+            }
         }
 
         htmlImportDependencyCache = new DependencyTreeCache<>(path -> {
@@ -358,9 +369,31 @@ public abstract class VaadinService implements Serializable {
                 && pwaRegistry.getPwaConfiguration().isEnabled()) {
             handlers.add(new PwaHandler(pwaRegistry));
         }
-        handlers.add(new WebComponentProvider());
-        handlers.add(new WebComponentBootstrapHandler());
+
+        if (hasWebComponentConfigurations()) {
+            handlers.add(new WebComponentProvider());
+            handlers.add(new WebComponentBootstrapHandler());
+        }
+
         return handlers;
+    }
+
+    private boolean hasWebComponentConfigurations() {
+        /*
+         * Should be updated to use
+         * WebComponentConfigurationRegistry.getInstance(VaadinService) once
+         * https://github.com/vaadin/flow/pull/5657 has been merged
+         */
+        if (this instanceof VaadinServletService) {
+            ServletContext servletContext = ((VaadinServletService) this)
+                    .getServlet().getServletContext();
+            WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
+                    .getInstance(servletContext);
+
+            return registry.hasConfigurations();
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -1347,8 +1380,7 @@ public abstract class VaadinService implements Serializable {
      */
     private int getUidlRequestTimeout(VaadinSession session) {
         return getDeploymentConfiguration().isCloseIdleSessions()
-                ? session.getSession().getMaxInactiveInterval()
-                : -1;
+                ? session.getSession().getMaxInactiveInterval() : -1;
     }
 
     /**
@@ -1846,7 +1878,7 @@ public abstract class VaadinService implements Serializable {
 
     /**
      * Verifies that the given CSRF token (aka double submit cookie) is valid
-     * for the given session. This is used to protect against Cross Site Request
+     * for the given UI. This is used to protect against Cross Site Request
      * Forgery attacks.
      * <p>
      * This protection is enabled by default, but it might need to be disabled
@@ -1854,8 +1886,8 @@ public abstract class VaadinService implements Serializable {
      * disabled by setting the init parameter
      * <code>disable-xsrf-protection</code> to <code>true</code>.
      *
-     * @param session
-     *            the vaadin session for which the check should be done
+     * @param ui
+     *            the UI for which the check should be done
      * @param requestToken
      *            the CSRF token provided in the request
      * @return <code>true</code> if the token is valid or if the protection is
@@ -1863,14 +1895,13 @@ public abstract class VaadinService implements Serializable {
      *         token is invalid
      * @see DeploymentConfiguration#isXsrfProtectionEnabled()
      */
-    public static boolean isCsrfTokenValid(VaadinSession session,
-            String requestToken) {
+    public static boolean isCsrfTokenValid(UI ui, String requestToken) {
 
-        if (session.getService().getDeploymentConfiguration()
+        if (ui.getSession().getService().getDeploymentConfiguration()
                 .isXsrfProtectionEnabled()) {
-            String sessionToken = session.getCsrfToken();
+            String uiToken = ui.getCsrfToken();
 
-            if (sessionToken == null || !sessionToken.equals(requestToken)) {
+            if (uiToken == null || !uiToken.equals(requestToken)) {
                 return false;
             }
         }
@@ -2260,40 +2291,23 @@ public abstract class VaadinService implements Serializable {
     }
 
     /**
-     * Returns value of the specified attribute, creating a default value if not
-     * present.
+     * Constructs {@link VaadinContext} for this service.
      *
-     * @param type
-     *            Type of the attribute.
-     * @param defaultValueSupplier
-     *            {@link Supplier} of the default value, called when there is no
-     *            value already present. May be {@code null}.
-     * @return Value of the specified attribute.
+     * This method will be called only once, upon first call to {@link #getContext()}.
+     * @return Context. This may never be {@code null}.
      */
-    public abstract <T> T getAttribute(Class<T> type,
-            Supplier<T> defaultValueSupplier);
+    protected abstract VaadinContext constructVaadinContext();
 
     /**
-     * Returns value of the specified attribute.
-     *
-     * @param type
-     *            Type of the attribute.
-     * @return Value of the specified attribute.
+     * Returns {@link VaadinContext} for this service.
+     * @return A non-null context instance.
      */
-    public <T> T getAttribute(Class<T> type) {
-        return getAttribute(type, null);
+    public VaadinContext getContext() {
+        if(vaadinContext == null) {
+            vaadinContext = constructVaadinContext();
+        }
+        return vaadinContext;
     }
-
-    /**
-     * Sets the attribute value, overriding previously existing one. Values are
-     * based on exact type, meaning only one attribute of given type is possible
-     * at any given time.
-     *
-     * @param value
-     *            Value of the attribute. May not be {@code null}.
-     */
-    public abstract <T> void setAttribute(T value);
-
     /**
      *
      * Executes a {@code runnable} with a {@link VaadinService} available in the

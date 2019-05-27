@@ -48,7 +48,6 @@ import com.vaadin.flow.plugin.TestUtils;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
@@ -57,6 +56,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
+import static java.io.File.pathSeparator;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -101,11 +101,12 @@ public class BuildFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", npmFolder);
         ReflectionUtils.setVariableValueInObject(mojo, "generateBundle", false);
         ReflectionUtils.setVariableValueInObject(mojo, "runNpmInstall", false);
+        ReflectionUtils.setVariableValueInObject(mojo, "bowerMode", "false");
 
         flowPackagPath.mkdirs();
         generatedFolder.mkdirs();
 
-        setProject(mojo, "war", "war_output");
+        setProject(mojo, npmFolder, "war", "war_output");
 
         // Install all imports used in the tests on node_modules so as we don't
         // need to run `npm install`
@@ -116,20 +117,27 @@ public class BuildFrontendMojoTest {
 
     @After
     public void teardown() {
-        FileUtils.fileDelete(mainPackage);
-        FileUtils.fileDelete(appPackage);
-        FileUtils.fileDelete(webpackConfig);
+        if (FileUtils.fileExists(mainPackage)) {
+            FileUtils.fileDelete(mainPackage);
+        }
+        if (FileUtils.fileExists(appPackage)) {
+            FileUtils.fileDelete(appPackage);
+        }
+        if (FileUtils.fileExists(webpackConfig)) {
+            FileUtils.fileDelete(webpackConfig);
+        }
     }
 
-    static void setProject(AbstractMojo mojo, String packaging,
+    static void setProject(AbstractMojo mojo, File baseFolder, String packaging,
             String outputDirectory) throws Exception {
+        String out = new File(baseFolder, outputDirectory).getPath();
         Build buildMock = mock(Build.class);
-        when(buildMock.getOutputDirectory()).thenReturn(outputDirectory);
-        when(buildMock.getDirectory()).thenReturn(outputDirectory);
+        when(buildMock.getOutputDirectory()).thenReturn(out);
+        when(buildMock.getDirectory()).thenReturn(out);
         when(buildMock.getFinalName()).thenReturn("finalName");
 
         MavenProject project = mock(MavenProject.class);
-        when(project.getBasedir()).thenReturn(new File("."));
+        when(project.getBasedir()).thenReturn(baseFolder);
         when(project.getPackaging()).thenReturn(packaging);
         when(project.getBuild()).thenReturn(buildMock);
         when(project.getRuntimeClasspathElements()).thenReturn(getClassPath());
@@ -185,13 +193,13 @@ public class BuildFrontendMojoTest {
     public void should_AddImports() throws Exception {
         mojo.execute();
         removeImports("@vaadin/vaadin-lumo-styles/sizing.js",
-                "./local-p2-template.js");
+                "./local-template.js");
         assertContainsImports(false, "@vaadin/vaadin-lumo-styles/sizing.js",
-                "./local-p2-template.js");
+                "./local-template.js");
 
         mojo.execute();
         assertContainsImports(true, "@vaadin/vaadin-lumo-styles/sizing.js",
-                "./local-p2-template.js");
+                "./local-template.js");
     }
 
     @Test
@@ -209,17 +217,17 @@ public class BuildFrontendMojoTest {
         mojo.execute();
 
         removeImports("@vaadin/vaadin-lumo-styles/sizing.js",
-                "./local-p2-template.js");
+                "./local-template.js");
         addImports("./added-import.js");
 
         assertContainsImports(false, "@vaadin/vaadin-lumo-styles/sizing.js",
-                "./local-p2-template.js");
+                "./local-template.js");
         assertContainsImports(true, "./added-import.js");
 
         mojo.execute();
 
         assertContainsImports(true, "@vaadin/vaadin-lumo-styles/sizing.js",
-                "./local-p2-template.js");
+                "./local-template.js");
         assertContainsImports(false, "./added-import.js");
     }
 
@@ -233,8 +241,7 @@ public class BuildFrontendMojoTest {
 
         assertContainsPackage(dependencies,
             "@vaadin/vaadin-button",
-            "@vaadin/vaadin-element-mixin",
-            "@vaadin/vaadin-core-shrinkwrap");
+            "@vaadin/vaadin-element-mixin");
 
         Assert.assertFalse("Has foo", dependencies.hasKey("foo"));
     }
@@ -316,7 +323,7 @@ public class BuildFrontendMojoTest {
                 "./frontend-p3-template.js", "./local-p3-template.js",
                 "./foo.js",
                 "./vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
-                "./local-p2-template.js", "./foo-dir/vaadin-npm-component.js");
+                "./local-template.js", "./foo-dir/vaadin-npm-component.js");
     }
 
     private void createExpectedImports(File directoryWithImportsJs,
@@ -360,11 +367,18 @@ public class BuildFrontendMojoTest {
 
         // Add other paths already present in the system classpath
         ClassLoader classLoader = ClassLoader.getSystemClassLoader();
-        URL[] urls = ((URLClassLoader) classLoader).getURLs();
-        for (URL url : urls) {
-            classPaths.add(url.getFile());
+        if (classLoader instanceof URLClassLoader) {
+            URL[] urls = ((URLClassLoader) classLoader).getURLs();
+            for (URL url : urls) {
+                classPaths.add(url.getFile());
+            }
+        } else {
+            String[] paths = System.getProperty("java.class.path")
+                    .split(pathSeparator);
+            for (String path : paths) {
+                classPaths.add(path);
+            }
         }
-
         return classPaths;
     }
 }

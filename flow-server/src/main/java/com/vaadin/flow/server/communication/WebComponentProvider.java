@@ -15,6 +15,23 @@
  */
 package com.vaadin.flow.server.communication;
 
+import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8;
+import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8;
+
+import java.io.IOException;
+import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.io.IOUtils;
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.server.BootstrapHandler;
@@ -37,9 +54,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8;
-import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8;
 
 /**
  * Request handler that supplies the script/html of the web component matching
@@ -68,8 +82,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
     private Map<String, String> cache;
 
     @Override
-    public boolean synchronizedHandleRequest(
-            VaadinSession session, VaadinRequest request, VaadinResponse response) throws IOException {
+    protected boolean canHandleRequest(VaadinRequest request) {
         String pathInfo = request.getPathInfo();
 
         if (pathInfo == null || pathInfo.isEmpty()) {
@@ -79,6 +92,15 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
         if (!pathInfo.startsWith(PATH_PREFIX)) {
             return false;
         }
+
+        return true;
+    }
+
+    @Override
+    public boolean synchronizedHandleRequest(VaadinSession session,
+            VaadinRequest request, VaadinResponse response) throws IOException {
+        VaadinServletRequest servletRequest = (VaadinServletRequest) request;
+        String pathInfo = servletRequest.getPathInfo();
 
         final boolean bowerMode =
                 session.getService().getDeploymentConfiguration().isBowerMode();

@@ -108,6 +108,9 @@ public class DevModeInitializerTest {
         FileUtils.write(appPackageFile, "{}", "UTF-8");
         webpackFile.createNewFile();
         devModeInitializer = new DevModeInitializer();
+
+        // Default is Bower Mode, change to Npm Mode
+        System.setProperty("vaadin." + SERVLET_PARAMETER_BOWER_MODE, "false");
     }
 
     @After
@@ -164,7 +167,7 @@ public class DevModeInitializerTest {
 
     @Test
     public void should_Not_Run_Updaters_inBowerMode() throws Exception {
-        System.setProperty("vaadin." + SERVLET_PARAMETER_BOWER_MODE, "true");
+        System.clearProperty("vaadin." + SERVLET_PARAMETER_BOWER_MODE);
         devModeInitializer = new DevModeInitializer();
         devModeInitializer.onStartup(classes, servletContext);
         assertNull(DevModeHandler.getDevModeHandler());
@@ -176,18 +179,6 @@ public class DevModeInitializerTest {
         devModeInitializer = new DevModeInitializer();
         devModeInitializer.onStartup(classes, servletContext);
         assertNull(DevModeHandler.getDevModeHandler());
-    }
-
-
-    @Test
-    public void should_Fail_when_skipUpdaters_and_portNotListening() throws Exception {
-        webpackFile.delete();
-        mainPackageFile.delete();
-        appPackageFile.delete();
-        System.setProperty("vaadin." + SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, "1234");
-
-        exception.expect(IllegalStateException.class);
-        new DevModeInitializer().onStartup(classes, servletContext);
     }
 
     @Test

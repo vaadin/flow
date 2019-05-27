@@ -57,7 +57,7 @@ public class NodeUpdateTestUtil {
 
         // Add other paths already present in the system classpath
         ClassLoader classLoader = ClassLoader.getSystemClassLoader();
-        URL[] urls = ((URLClassLoader) classLoader).getURLs();
+        URL[] urls = URLClassLoader.newInstance(new URL[]{}, classLoader).getURLs();
         for (URL url : urls) {
             classPaths.add(url);
         }
@@ -137,11 +137,12 @@ public class NodeUpdateTestUtil {
                 "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
                 "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-something-else.js",
                 "@vaadin/flow-frontend/ExampleConnector.js",
+                "3rdparty/component.js",
                 "./frontend-p3-template.js",
                 "./local-p3-template.js",
                 "./foo.js",
                 "./vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
-                "./local-p2-template.js",
+                "./local-template.js",
                 "./foo-dir/vaadin-npm-component.js");
     }
 

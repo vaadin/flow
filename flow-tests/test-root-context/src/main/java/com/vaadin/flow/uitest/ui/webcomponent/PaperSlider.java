@@ -21,10 +21,14 @@ import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.shared.Registration;
 
 @Tag("paper-slider")
 @HtmlImport("bower_components/paper-slider/paper-slider.html")
+@NpmPackage(value = "@polymer/paper-slider", version = "3.0.1")
+@JsModule("@polymer/paper-slider/paper-slider.js")
 public class PaperSlider extends Component implements HasValue {
     @DomEvent("value-change")
     public static class ValueChangeEvent extends ComponentEvent<PaperSlider> {

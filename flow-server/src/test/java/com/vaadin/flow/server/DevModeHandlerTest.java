@@ -136,8 +136,9 @@ public class DevModeHandlerTest {
         configuration.setApplicationOrSystemProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT, "100");
         createStubWebpackServer("Failed to compile", 300);
         assertNotNull(DevModeHandler.start(configuration, npmFolder));
-        assertNotNull(DevModeHandler.getDevModeHandler().getFailedOutput());
+        // Wait for server to stop running before checking the output stream
         Thread.sleep(350); //NOSONAR
+        assertNotNull("Got no output for the failed output even though expected output.", DevModeHandler.getDevModeHandler().getFailedOutput());
     }
 
     @Test
@@ -223,7 +224,7 @@ public class DevModeHandlerTest {
         int port = prepareHttpServer(HTTP_NOT_FOUND, "");
 
         assertFalse(new DevModeHandler(port).serveDevModeRequest(request, response));
-        assertEquals(0, responseStatus);
+        assertEquals(200, responseStatus);
     }
 
     @Test
@@ -281,7 +282,7 @@ public class DevModeHandlerTest {
     }
 
     private HttpServletResponse prepareResponse() throws IOException {
-        responseStatus = 0;
+        responseStatus = 200; // The default response code is 200
         HttpServletResponse response = mock(HttpServletResponse.class);
         ServletOutputStream output = mock(ServletOutputStream.class);
         Mockito.doAnswer(invocation -> output).when(response).getOutputStream();

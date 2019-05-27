@@ -24,14 +24,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.github.eirslett.maven.plugins.frontend.lib.ProxyConfig;
-import com.vaadin.flow.plugin.common.AnnotationValuesExtractor;
-import com.vaadin.flow.plugin.common.FlowPluginFrontendUtils;
-import com.vaadin.flow.plugin.common.FrontendDataProvider;
-import com.vaadin.flow.plugin.common.FrontendToolsManager;
-import com.vaadin.flow.plugin.common.RunnerManager;
-import com.vaadin.flow.plugin.production.TranspilationStep;
 import org.apache.maven.execution.MavenSession;
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -43,6 +36,12 @@ import org.apache.maven.settings.crypto.DefaultSettingsDecryptionRequest;
 import org.apache.maven.settings.crypto.SettingsDecrypter;
 import org.apache.maven.settings.crypto.SettingsDecryptionResult;
 
+import com.vaadin.flow.plugin.common.AnnotationValuesExtractor;
+import com.vaadin.flow.plugin.common.FrontendDataProvider;
+import com.vaadin.flow.plugin.common.FrontendToolsManager;
+import com.vaadin.flow.plugin.common.RunnerManager;
+import com.vaadin.flow.plugin.production.TranspilationStep;
+
 import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFinder;
 
 /**
@@ -51,7 +50,7 @@ import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFind
  * mode: minifies, transpiles and bundles them.
  */
 @Mojo(name = "package-for-production", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PROCESS_CLASSES)
-public class PackageForProductionMojo extends AbstractMojo {
+public class PackageForProductionMojo extends FlowModeAbstractMojo {
     /**
      * Directory where the source files to use for transpilation are located.
      * <b>Note!</b> This should match <code>copyOutputDirectory</code>
@@ -207,9 +206,10 @@ public class PackageForProductionMojo extends AbstractMojo {
 
     @Override
     public void execute() {
+        super.execute();
 
         // Do nothing when not in bower mode
-        if (!FlowPluginFrontendUtils.isBowerMode()) {
+        if (!bower) {
             getLog().info("Skipped `package-for-production` goal because `vaadin.bowerMode` is not set.");
             return;
         }
@@ -295,5 +295,10 @@ public class PackageForProductionMojo extends AbstractMojo {
         return new ProxyConfig.Proxy(proxy.getId(), proxy.getProtocol(),
                 proxy.getHost(), proxy.getPort(), proxy.getUsername(),
                 proxy.getPassword(), proxy.getNonProxyHosts());
+    }
+
+    @Override
+    boolean isDefaultBower() {
+        return true;
     }
 }

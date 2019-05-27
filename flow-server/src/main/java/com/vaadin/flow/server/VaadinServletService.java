@@ -67,8 +67,8 @@ public class VaadinServletService extends VaadinService {
 
     /**
      * Creates a servlet service. This method is for use by dependency injection
-     * frameworks etc. {@link #getServlet()} should be overridden (or otherwise
-     * intercepted) so it does not return <code>null</code>.
+     * frameworks etc. {@link #getServlet()} and {@link #getContext()} should be overridden (or otherwise
+     * intercepted) to not return <code>null</code>.
      */
     protected VaadinServletService() {
         servlet = null;
@@ -236,26 +236,6 @@ public class VaadinServletService extends VaadinService {
         return Optional.empty();
     }
 
-    @Override
-    public <T> T getAttribute(Class<T> type, Supplier<T> defaultValueSupplier) {
-        ServletContext context = getServlet().getServletContext();
-        synchronized (context) {
-            Object result = context.getAttribute(type.getName());
-            if (result == null && defaultValueSupplier != null) {
-                result = defaultValueSupplier.get();
-                context.setAttribute(type.getName(), result);
-            }
-            return type.cast(result);
-        }
-    }
-
-    @Override
-    public <T> void setAttribute(T value) {
-        assert value != null;
-        getServlet().getServletContext()
-            .setAttribute(value.getClass().getName(), value);
-    }
-
     /**
      * Resolves the given {@code url} resource and tries to find a themed or raw
      * version.
@@ -380,5 +360,10 @@ public class VaadinServletService extends VaadinService {
     public String getContextRootRelativePath(VaadinRequest request) {
         assert request instanceof VaadinServletRequest;
         return ServletHelper.getContextRootRelativePath((VaadinServletRequest) request) + "/";
+    }
+
+    @Override
+    protected VaadinContext constructVaadinContext() {
+        return new VaadinServletContext(getServlet().getServletContext());
     }
 }

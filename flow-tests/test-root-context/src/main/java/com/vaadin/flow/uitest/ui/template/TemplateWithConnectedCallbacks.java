@@ -18,9 +18,11 @@ package com.vaadin.flow.uitest.ui.template;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.JsModule;
 
 @Tag("template-with-connected-callbacks")
 @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/TemplateWithConnectedCallbacks.html")
+@JsModule("TemplateWithConnectedCallbacks.js")
 public class TemplateWithConnectedCallbacks extends Component {
 
     public TemplateWithConnectedCallbacks() {

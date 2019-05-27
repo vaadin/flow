@@ -280,7 +280,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
             } else {
                 String path = attribute.getValue();
                 if ("src".equals(attribute.getKey())) {
-                    path = URI.create(basePath + path).getPath();
+                    path = URI.create(basePath + path).toString();
                 }
                 writer.append("'").append(path).append("'");
             }

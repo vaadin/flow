@@ -37,6 +37,8 @@ import com.vaadin.flow.server.Constants;
  */
 public class FrontendUtils {
 
+    public static final String PROJECT_BASEDIR = "project.basedir";
+
     /**
      * Default folder for the node related content. It's the base directory for
      * {@link Constants#PACKAGE_JSON}, {@link FrontendUtils#WEBPACK_CONFIG},
@@ -114,13 +116,23 @@ public class FrontendUtils {
      */
     public static final String WEBPACK_PREFIX_ALIAS = "Frontend/";
 
+    /**
+     * File used to enable npm mode.
+     */
+    public static final String TOKEN_FILE = "build/flow-build-info.json";
+
+    /**
+     * A parameter informing about the location of the {@link FrontendUtils#TOKEN_FILE}.
+     */
+    public static final String PARAM_TOKEN_FILE = "vaadin.frontend.token.file";
+
     private static final String NOT_FOUND =
             "%n%n======================================================================================================"
             + "%nFailed to determine '%s' tool."
             + "%nPlease install it either:"
             + "%n  - by following the https://nodejs.org/en/download/ guide to install it globally"
             + "%n  - or by running the frontend-maven-plugin goal to install it in this project:"
-            + "%n  $ mvn com.github.eirslett:frontend-maven-plugin:LATEST:install-node-and-npm -DnodeVersion=v11.6.0 "
+            + "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.7.6:install-node-and-npm -DnodeVersion=\"v11.6.0\" "
             + "%n======================================================================================================%n";
 
     private static FrontendToolsLocator frontendToolsLocator = new FrontendToolsLocator();
@@ -162,7 +174,7 @@ public class FrontendUtils {
      * @return folder location
      */
     public static String getBaseDir() {
-        return System.getProperty("project.basedir", System.getProperty("user.dir", "."));
+        return System.getProperty(PROJECT_BASEDIR, System.getProperty("user.dir", "."));
     }
 
     /**

@@ -21,6 +21,7 @@ import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
@@ -33,6 +34,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 @Tag("updatable-model-properties")
 @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/UpdatableModelProperties.html")
 @Route(value = "com.vaadin.flow.uitest.ui.template.UpdatableModelPropertiesView", layout = ViewTestLayout.class)
+@JsModule("UpdatableModelProperties.js")
 public class UpdatableModelPropertiesView extends
         PolymerTemplate<UpdatableModelPropertiesView.UpdatablePropertiesModel>
         implements HasComponents {

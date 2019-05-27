@@ -47,7 +47,7 @@ public class NodeTestComponents {
 
     @JsModule("@vaadin/vaadin-date-picker/src/vaadin-date-picker.js")
     @JsModule("@vaadin/vaadin-date-picker/src/vaadin-month-calendar.js")
-    @JavaScript("frontend://ExampleConnector.js")
+    @JavaScript("ExampleConnector.js")
     public static class VaadinBowerComponent extends Component {
     }
 
@@ -56,7 +56,7 @@ public class NodeTestComponents {
     public static class VaadinElementMixin extends Component {
     }
 
-    @JsModule("foo-dir/vaadin-npm-component.js")
+    @JsModule("./foo-dir/vaadin-npm-component.js")
     public static class VaadinNpmComponent extends Component {
     }
 
@@ -64,8 +64,9 @@ public class NodeTestComponents {
     public static class VaadinMixedComponent extends Component {
     }
 
-    @JsModule("./local-p2-template.js")
-    public static class LocalP2Template extends Component {
+    @JsModule("./local-template.js")
+    @JsModule("3rdparty/component.js")
+    public static class LocalTemplate extends Component {
     }
 
     @JsModule("./local-p3-template.js")
@@ -74,6 +75,7 @@ public class NodeTestComponents {
     }
 
     @JsModule("frontend://frontend-p3-template.js")
+    @JsModule("unresolved/component")
     public static class FrontendP3Template extends Component {
     }
 
@@ -83,6 +85,7 @@ public class NodeTestComponents {
 
     @JsModule("@vaadin/vaadin-mixed-component/src/vaadin-mixed-component.js")
     @JsModule("@vaadin/vaadin-mixed-component/src/vaadin-something-else.js")
+    @JsModule("@vaadin/vaadin-mixed-component/src/vaadin-something-else")
     public static class TranslatedImports extends Component {
 
     }
@@ -96,7 +99,7 @@ public class NodeTestComponents {
         VaadinElementMixin vaadinElementMixin;
         VaadinNpmComponent vaadinNpmComponent;
         VaadinMixedComponent vaadinMixedComponent;
-        LocalP2Template localP2Template;
+        LocalTemplate localP2Template;
         LocalP3Template localP3Template;
         FrontendP3Template frontendP3Template;
         FlatImport flatImport;

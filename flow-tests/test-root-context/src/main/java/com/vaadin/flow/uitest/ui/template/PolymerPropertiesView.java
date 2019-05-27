@@ -15,16 +15,18 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
-import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.PolymerPropertiesView", layout = ViewTestLayout.class)
 @Tag("template-properties")
 @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/TemplateProperties.html")
+@JsModule("TemplateProperties.js")
 public class PolymerPropertiesView extends PolymerTemplate<Message> {
 
     public PolymerPropertiesView() {
