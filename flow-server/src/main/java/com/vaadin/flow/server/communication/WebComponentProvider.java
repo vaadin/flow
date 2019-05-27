@@ -148,7 +148,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
                     StandardCharsets.UTF_8);
         } else {
             response.sendError(HttpServletResponse.SC_NOT_FOUND,
-                    "No such web component");
+                    "No web component for "+Optional.ofNullable(componentInfo.tag).orElse("<null>"));
         }
 
         return true;
