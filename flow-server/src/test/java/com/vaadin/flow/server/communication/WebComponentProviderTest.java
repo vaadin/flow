@@ -88,8 +88,8 @@ public class WebComponentProviderTest {
         Mockito.when(request.getService()).thenReturn(service);
         Mockito.when(session.getService()).thenReturn(service);
         Mockito.when(service.getContext()).thenReturn(context);
-        Mockito.when(context.getAttribute(WebComponentConfigurationRegistry.class)).thenReturn(registry);
-        Mockito.when(context.getAttribute(eq(WebComponentConfigurationRegistry.class), anyObject())).thenReturn(registry);
+        Mockito.when(context.getAttribute(WebComponentConfigurationRegistry.class)).then(invocationOnMock -> registry);
+        Mockito.when(context.getAttribute(eq(WebComponentConfigurationRegistry.class), anyObject())).then(invocationOnMock -> registry);
         Mockito.doAnswer(invocationOnMock -> registry = (WebComponentConfigurationRegistry)invocationOnMock.getArguments()[0])
             .when(context).setAttribute(any(WebComponentConfigurationRegistry.class));
         VaadinService.setCurrent(service);
@@ -156,13 +156,12 @@ public class WebComponentProviderTest {
         Assert.assertTrue("Provider should handle web-component request",
                 provider.handleRequest(session, request, response));
         Mockito.verify(response).sendError(HttpServletResponse.SC_NOT_FOUND,
-                "No such web component");
+                "No web component for my-component");
     }
 
     @Test
     public void webComponentGenerator_responseGetsResult() throws IOException {
-        WebComponentConfigurationRegistry registry = setupConfigurations(
-                MyComponentExporter.class);
+        registry = setupConfigurations(MyComponentExporter.class);
 
         ByteArrayOutputStream out = Mockito.mock(ByteArrayOutputStream.class);
 
@@ -188,7 +187,7 @@ public class WebComponentProviderTest {
             throws IOException {
         ArgumentCaptor<byte[]> captor = ArgumentCaptor.forClass(byte[].class);
 
-        WebComponentConfigurationRegistry registry = setupConfigurations(
+        registry = setupConfigurations(
                 MyComponentExporter.class, OtherComponentExporter.class);
 
         ByteArrayOutputStream out = Mockito.mock(ByteArrayOutputStream.class);
