@@ -9,6 +9,8 @@ import java.io.IOException;
 
 import com.vaadin.flow.server.DevModeHandler;
 
+import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
+
 /**
  * Serves js bundle files and polyfills during development mode.
  */
@@ -25,10 +27,13 @@ public class DevModeServlet extends HttpServlet {
 
     @Override
     protected void service(HttpServletRequest request,
-            HttpServletResponse response) throws IOException {
-        if (devmodeHandler != null && devmodeHandler.isDevModeRequest(request)) {
-            devmodeHandler.serveDevModeRequest(request, response);
+                           HttpServletResponse response) throws IOException {
+        if (!(devmodeHandler != null && devmodeHandler.isDevModeRequest(request)
+                && devmodeHandler.serveDevModeRequest(request, response))) {
+
+            response.sendError(SC_NOT_FOUND);
         }
+
     }
 
 }
