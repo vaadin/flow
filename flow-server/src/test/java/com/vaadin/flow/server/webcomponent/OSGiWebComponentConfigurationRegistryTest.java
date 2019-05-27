@@ -62,7 +62,7 @@ public class OSGiWebComponentConfigurationRegistryTest extends WebComponentConfi
     @Test
     public void assertOsgiRegistryIsServedAsASingleton() {
         Assert.assertEquals(registry, WebComponentConfigurationRegistry
-                .getInstance(VaadinService.getCurrent()));
+                .getInstance(VaadinService.getCurrent().getContext()));
     }
 
     @Override

@@ -20,6 +20,7 @@ import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.osgi.OSGiAccess;
 import com.vaadin.flow.theme.Theme;
@@ -216,19 +217,20 @@ public class WebComponentConfigurationRegistry implements Serializable {
     /**
      * Get WebComponentRegistry instance for given servlet context.
      *
-     * @param service
+     * @param context
      *         {@link VaadinService} to keep the instance in
      * @return WebComponentRegistry instance
      */
     public static WebComponentConfigurationRegistry getInstance(
-            VaadinService service) {
-        assert service != null;
+            VaadinContext context) {
+        assert context != null;
 
-        WebComponentConfigurationRegistry attribute = service.getAttribute(WebComponentConfigurationRegistry.class, WebComponentConfigurationRegistry::createRegistry);
+        WebComponentConfigurationRegistry attribute =
+            context.getAttribute(WebComponentConfigurationRegistry.class, WebComponentConfigurationRegistry::createRegistry);
 
         if (attribute == null) {
             throw new IllegalStateException(
-                    "Null WebComponentConfigurationRegistry obtained from VaadinService of type " + service.getClass().getName());
+                    "Null WebComponentConfigurationRegistry obtained from VaadinContext of type " + context.getClass().getName());
         }
 
         return attribute;

@@ -18,9 +18,9 @@ package com.vaadin.flow.server.startup;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.DeploymentConfigurationFactory;
-import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletConfiguration;
+import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -193,7 +193,7 @@ public class ServletDeployer implements ServletContextListener {
                 .hasNavigationTargets();
 
         createServlet = createServlet || WebComponentConfigurationRegistry
-                .getInstance(VaadinService.getCurrent()).hasConfigurations();
+                .getInstance(new VaadinServletContext(context)).hasConfigurations();
 
         if (!createServlet) {
             getLogger().info(

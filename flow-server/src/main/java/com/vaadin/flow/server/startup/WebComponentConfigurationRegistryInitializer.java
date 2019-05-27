@@ -20,7 +20,7 @@ import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.internal.CustomElementNameValidator;
 import com.vaadin.flow.server.InvalidCustomElementNameException;
-import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 
 import javax.servlet.ServletContainerInitializer;
@@ -52,7 +52,7 @@ public class WebComponentConfigurationRegistryInitializer
     public void onStartup(Set<Class<?>> set, ServletContext servletContext)
             throws ServletException {
         WebComponentConfigurationRegistry instance = WebComponentConfigurationRegistry
-                .getInstance(VaadinService.getCurrent());
+                .getInstance(new VaadinServletContext(servletContext));
 
         if (set == null || set.isEmpty()) {
             instance.setConfigurations(Collections.emptySet());

@@ -26,7 +26,6 @@ import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
@@ -202,6 +201,6 @@ public class WebComponentUI extends UI {
 
     private WebComponentConfigurationRegistry getConfigurationRegistry() {
         return WebComponentConfigurationRegistry
-                .getInstance(VaadinService.getCurrent());
+                .getInstance(getSession().getService().getContext());
     }
 }

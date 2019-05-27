@@ -28,6 +28,7 @@ import com.vaadin.flow.server.MockInstantiator;
 import com.vaadin.flow.server.ServletHelper;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
@@ -69,6 +70,8 @@ public class WebComponentProviderTest {
     @Mock
     VaadinServletService service;
     @Mock
+    VaadinServletContext context;
+    @Mock
     DeploymentConfiguration configuration;
 
     WebComponentProvider provider;
@@ -79,8 +82,9 @@ public class WebComponentProviderTest {
         MockitoAnnotations.initMocks(this);
         Mockito.when(request.getService()).thenReturn(service);
         Mockito.when(session.getService()).thenReturn(service);
-        Mockito.when(service.getAttribute(WebComponentConfigurationRegistry.class)).thenReturn(new WebComponentConfigurationRegistry(){});
-        Mockito.when(service.getAttribute(eq(WebComponentConfigurationRegistry.class), anyObject())).thenReturn(new WebComponentConfigurationRegistry(){});
+        Mockito.when(service.getContext()).thenReturn(context);
+        Mockito.when(context.getAttribute(WebComponentConfigurationRegistry.class)).thenReturn(new WebComponentConfigurationRegistry(){});
+        Mockito.when(context.getAttribute(eq(WebComponentConfigurationRegistry.class), anyObject())).thenReturn(new WebComponentConfigurationRegistry(){});
         VaadinService.setCurrent(service);
         Mockito.when(service.getInstantiator())
                 .thenReturn(new MockInstantiator());

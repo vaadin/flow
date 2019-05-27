@@ -379,21 +379,9 @@ public abstract class VaadinService implements Serializable {
     }
 
     private boolean hasWebComponentConfigurations() {
-        /*
-         * Should be updated to use
-         * WebComponentConfigurationRegistry.getInstance(VaadinService) once
-         * https://github.com/vaadin/flow/pull/5657 has been merged
-         */
-        if (this instanceof VaadinServletService) {
-            ServletContext servletContext = ((VaadinServletService) this)
-                    .getServlet().getServletContext();
             WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
-                    .getInstance(servletContext);
-
+                    .getInstance(this.getContext());
             return registry.hasConfigurations();
-        } else {
-            return false;
-        }
     }
 
     /**

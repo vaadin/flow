@@ -71,7 +71,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         public <T extends Annotation> Optional<T> getPageConfigurationAnnotation(
                 Class<T> annotationType) {
             WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
-                    .getInstance(getRequest().getService());
+                    .getInstance(getRequest().getService().getContext());
             return registry.getEmbeddedApplicationAnnotation(annotationType);
         }
 

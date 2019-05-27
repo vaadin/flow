@@ -20,6 +20,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
@@ -61,11 +62,13 @@ public class WebComponentConfigurationRegistryTest {
     @Before
     public void init() {
         VaadinService service = mock(VaadinService.class);
+        VaadinContext context = mock(VaadinContext.class);
         VaadinService.setCurrent(service);
-        Mockito.when(service.getAttribute(WebComponentConfigurationRegistry.class)).thenReturn(createRegistry());
-        Mockito.when(service.getAttribute(eq(WebComponentConfigurationRegistry.class), anyObject())).thenReturn(createRegistry());
+        Mockito.when(service.getContext()).thenReturn(context);
+        Mockito.when(context.getAttribute(WebComponentConfigurationRegistry.class)).thenReturn(createRegistry());
+        Mockito.when(context.getAttribute(eq(WebComponentConfigurationRegistry.class), anyObject())).thenReturn(createRegistry());
         registry = WebComponentConfigurationRegistry
-                .getInstance(service);
+                .getInstance(context);
     }
 
     @Test

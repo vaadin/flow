@@ -22,6 +22,7 @@ import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.InvalidCustomElementNameException;
 import com.vaadin.flow.server.MockInstantiator;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import net.jcip.annotations.NotThreadSafe;
@@ -58,14 +59,17 @@ public class WebComponentConfigurationRegistryInitializerTest {
     private ServletContext servletContext;
     @Mock
     private VaadinService vaadinService;
+    @Mock
+    private VaadinContext context;
     @Rule
     public ExpectedException expectedEx = ExpectedException.none();
 
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
-        Mockito.when(vaadinService.getAttribute(WebComponentConfigurationRegistry.class)).thenReturn(registry);
-        Mockito.when(vaadinService.getAttribute(eq(WebComponentConfigurationRegistry.class), anyObject())).thenReturn(registry);
+        Mockito.when(vaadinService.getContext()).thenReturn(context);
+        Mockito.when(context.getAttribute(WebComponentConfigurationRegistry.class)).thenReturn(registry);
+        Mockito.when(context.getAttribute(eq(WebComponentConfigurationRegistry.class), anyObject())).thenReturn(registry);
 
         initializer = new WebComponentConfigurationRegistryInitializer();
         when(servletContext.getAttribute(
