@@ -225,7 +225,7 @@ public class DevModeHandlerTest {
         int port = prepareHttpServer(HTTP_NOT_FOUND, "");
 
         assertFalse(new DevModeHandler(port).serveDevModeRequest(request, response));
-        assertEquals(200, responseStatus);
+        assertEquals(HTTP_NOT_FOUND, responseStatus);
     }
 
     @Test
