@@ -64,6 +64,7 @@ import com.vaadin.flow.server.BootstrapUtils.ThemeSettings;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.PushConnectionFactory;
 import com.vaadin.flow.server.communication.UidlWriter;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.VaadinUriResolver;
 import com.vaadin.flow.shared.communication.PushMode;
@@ -671,20 +672,22 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     private static void setupFrameworkLibraries(Element head,
             JsonObject initialUIDL, BootstrapContext context) {
-        inlineEs6Collections(head, context);
 
-        DeploymentConfiguration conf = context.getSession().getConfiguration();
+        VaadinService service = context.getSession().getService();
+        DeploymentConfiguration conf = service.getDeploymentConfiguration();
 
         if (conf.isBowerMode()) {
+            inlineEs6Collections(head, context);
             appendWebComponentsPolyfills(head, context);
         } else {
             BootstrapUriResolver resolver = context.getUriResolver();
-            conf.getPolyfills().forEach(polyfill -> head.appendChild(createJavaScriptElement(resolver.resolveVaadinUri(polyfill), false)));
-
-            String bundleUrl = resolver.resolveVaadinUri(conf.getJsModuleBundle());
-            String es5BundleUrl = resolver.resolveVaadinUri(conf.getJsModuleBundleEs5());
-            head.appendChild(createJavaScriptElement(bundleUrl).attr("type", "module"));
-            head.appendChild(createJavaScriptElement(es5BundleUrl).attr("nomodule", true));
+            conf.getPolyfills().forEach(polyfill -> head.appendChild(
+                    createJavaScriptElement(resolver.resolveVaadinUri(polyfill), false)));
+            try {
+                appendNpmBundle(head, resolver, service);
+            } catch (IOException e) {
+                throw new BootstrapException("Unable to read webpack stats file.", e);
+            }
         }
 
         if (context.getPushMode().isEnabled()) {
@@ -693,6 +696,22 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         head.appendChild(getBootstrapScript(initialUIDL, context));
         head.appendChild(createJavaScriptElement(getClientEngineUrl(context)));
+    }
+
+    private static void appendNpmBundle(Element head, BootstrapUriResolver resolver, VaadinService service) throws IOException {
+        String content = FrontendUtils.getStatsContent(service);
+        JsonObject chunks = Json.parse(content).getObject("assetsByChunkName");
+
+        for (String key: chunks.keys()) {
+            Element script = createJavaScriptElement(
+                    resolver.resolveVaadinUri(chunks.getString(key)));
+
+            if (key.endsWith(".es5")) {
+                head.appendChild(script.attr("nomodule", true));
+            } else {
+                head.appendChild(script.attr("type", "module"));
+            }
+        }
     }
 
 

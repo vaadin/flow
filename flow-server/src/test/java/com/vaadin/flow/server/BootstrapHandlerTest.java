@@ -1,10 +1,6 @@
 package com.vaadin.flow.server;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import javax.servlet.http.HttpServletRequest;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,8 +14,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
-
-import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.io.IOUtils;
 import org.hamcrest.CoreMatchers;
@@ -65,7 +59,14 @@ import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
 public class BootstrapHandlerTest {
+
 
     static final String UI_TITLE = "UI_TITLE";
 
@@ -1097,13 +1098,13 @@ public class BootstrapHandlerTest {
                 "index.js should be added to head for ES6 browsers. (deferred and type module)",
                 allElements.stream().map(Object::toString)
                         .anyMatch(element -> element.equals(
-                                "<script type=\"module\" defer src=\"./build/index.js\"></script>")));
+                                "<script type=\"module\" defer src=\"build/index-1111.cache.js\"></script>")));
 
         Assert.assertTrue(
                 "index.js should be added to head for ES5 browsers. (deferred and nomodule)",
                 allElements.stream().map(Object::toString)
                         .anyMatch(element -> element.equals(
-                                "<script type=\"text/javascript\" defer src=\"./build/index.es5.js\" nomodule></script>")));
+                                "<script type=\"text/javascript\" defer src=\"build/index.es5-2222.cache.js\" nomodule></script>")));
     }
 
     @Test // 3333
