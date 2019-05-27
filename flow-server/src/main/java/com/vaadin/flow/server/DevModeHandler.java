@@ -253,10 +253,11 @@ public class DevModeHandler implements Serializable {
      *            the servlet request
      * @param response
      *            the servlet response
+     * @return false if webpack returned a not found, true otherwise
      * @throws IOException
      *             in the case something went wrong like connection refused
      */
-    public void serveDevModeRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public boolean serveDevModeRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String requestFilename = getRequestFilename(request);
 
         HttpURLConnection connection = prepareConnection(requestFilename, request.getMethod());
@@ -275,8 +276,13 @@ public class DevModeHandler implements Serializable {
         int responseCode = connection.getResponseCode();
         if (responseCode == HTTP_NOT_FOUND) {
             getLogger().debug("Resource not served by webpack {}", requestFilename);
-            // Webpack cannot access the resource.
+            // Webpack cannot access the resource
             response.sendError(HTTP_NOT_FOUND);
+
+            // Close request to avoid issues in CI and Chrome
+            response.getOutputStream().close();
+
+            return false;
 
         } else {
             getLogger().debug("Served resource by webpack: {} {}", responseCode, requestFilename);
@@ -295,10 +301,12 @@ public class DevModeHandler implements Serializable {
                 // Copies response code
                 response.sendError(responseCode);
             }
-        }
 
-        // Close request to avoid issues in CI and Chrome
-        response.getOutputStream().close();
+            // Close request to avoid issues in CI and Chrome
+            response.getOutputStream().close();
+
+            return true;
+        }
     }
 
     private boolean checkWebpackConnection() {
