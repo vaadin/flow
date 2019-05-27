@@ -14,10 +14,6 @@ import java.nio.charset.StandardCharsets;
 
 public class VaadinServletServiceTest {
 
-    private static String testAttributeProvider() {
-        return "RELAX_THIS_IS_A_TEST";
-    }
-
     private final class TestTheme implements AbstractTheme {
         @Override
         public String getBaseUrl() {
@@ -258,61 +254,5 @@ public class VaadinServletServiceTest {
         }
     }
 
-    private static VaadinService createServiceWithRealAttributes() {
-        /*
-         * Cannot easily use the same service as in other tests in this class
-         * because of the way it uses a @Mock servlet context that doesn't store
-         * attribute values.
-         */
-        return new MockVaadinServletService();
-    }
-
-    @Test
-    public void getAttributeWithProvider() {
-        VaadinService service = createServiceWithRealAttributes();
-
-        Assert.assertNull(service.getContext().getAttribute(String.class));
-
-        String value = service.getContext().getAttribute(String.class,
-                VaadinServletServiceTest::testAttributeProvider);
-        Assert.assertEquals(testAttributeProvider(), value);
-
-        Assert.assertEquals("Value from provider should be persisted",
-                testAttributeProvider(), service.getContext().getAttribute(String.class));
-    }
-
-    @Test(expected = AssertionError.class)
-    public void setNullAttributeNotAllowed() {
-        VaadinService service = createServiceWithRealAttributes();
-        service.getContext().setAttribute(null);
-    }
-
-    @Test
-    public void getMissingAttributeWithoutProvider() {
-        VaadinService service = createServiceWithRealAttributes();
-        String value = service.getContext().getAttribute(String.class);
-        Assert.assertNull(value);
-    }
-
-    @Test
-    public void setAndGetAttribute() {
-        VaadinService service = createServiceWithRealAttributes();
-
-        String value = testAttributeProvider();
-        service.getContext().setAttribute(value);
-        String result = service.getContext().getAttribute(String.class);
-        Assert.assertEquals(value, result);
-        // overwrite
-        String newValue = "this is a new value";
-        service.getContext().setAttribute(newValue);
-        result = service.getContext().getAttribute(String.class);
-        Assert.assertEquals(newValue, result);
-        // now the provider should not be called, so value should be still there
-        result = service.getContext().getAttribute(String.class,
-                () -> {
-                    throw new AssertionError("Should not be called");
-                });
-        Assert.assertEquals(newValue, result);
-    }
 
 }
