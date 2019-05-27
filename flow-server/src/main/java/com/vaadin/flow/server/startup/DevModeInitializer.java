@@ -26,7 +26,10 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +47,10 @@ import com.vaadin.flow.server.frontend.NodeTasks.Builder;
 import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_JSBUNDLE;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_POLYFILLS;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
+import static com.vaadin.flow.shared.ApplicationConstants.CONTEXT_PROTOCOL_PREFIX;
 
 /**
  * Servlet initializer starting node updaters as well as the webpack-dev-mode
@@ -53,6 +59,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 @HandlesTypes({ Route.class, NpmPackage.class, WebComponentExporter.class })
 public class DevModeInitializer
         implements ServletContainerInitializer, Serializable {
+
+    private static final String DEV_MODE_MAPPING_REGEX = "^" + CONTEXT_PROTOCOL_PREFIX + "(.+)/.*\\.js$";
 
     /**
      * The classes that were visited when determining which frontend resources
@@ -132,29 +140,40 @@ public class DevModeInitializer
      * @param config
      *         deployment configuration
      */
-    public static void initDevModeHandler(Set<Class<?>> classes,
-            ServletContext context, DeploymentConfiguration config) {
+    private static void initDevModeHandler(Set<Class<?>> classes,
+                                           ServletContext context, DeploymentConfiguration config) {
         if (config.isProductionMode()) {
-            log().debug("Skiping DEV MODE because PRODUCTION MODE is set.");
+            log().debug("Skipping DEV MODE because PRODUCTION MODE is set.");
             return;
         }
         if (config.isBowerMode()) {
-            log().debug("Skiping DEV MODE because BOWER MODE is set.");
+            log().debug("Skipping DEV MODE because BOWER MODE is set.");
             return;
         }
 
         Builder builder = new NodeTasks.Builder(new DefaultClassFinder(classes));
 
-        log().info("Starting dev-mode updaters in {} folder.", builder.npmFolder);
+        log().info("Starting DEV MODE updaters in {} folder.", builder.npmFolder);
         for (File file : Arrays.asList(
                 new File(builder.npmFolder, PACKAGE_JSON),
                 new File(builder.generatedFolder, PACKAGE_JSON),
                 new File(builder.npmFolder, WEBPACK_CONFIG)
-                )) {
+        )) {
             if (!file.canRead()) {
-                log().warn("Skiping DEV MODE because cannot read '{}' file.", file.getPath());
+                log().warn("Skipping DEV MODE because cannot read '{}' file.", file.getPath());
                 return;
             }
+        }
+
+        Set<String> mappings = getDevModeMappings(config);
+
+        if (mappings == null || mappings.isEmpty()) {
+            log().warn(
+                    "Skipping DEV MODE because DevModeServlet mapping can't be determined. Please make sure "
+                            + SERVLET_PARAMETER_JSBUNDLE + " and "
+                            + SERVLET_PARAMETER_POLYFILLS
+                            + " servlet parameters are correctly configured.");
+            return;
         }
 
         Set<String> visitedClassNames = new HashSet<>();
@@ -169,7 +188,41 @@ public class DevModeInitializer
                 new VisitedClasses(visitedClassNames));
 
         DevModeHandler.start(config, builder.npmFolder);
+
+        // Register DevModeServlet.
+        ServletRegistration.Dynamic registration = context.addServlet(DevModeServlet.class.getName(), DevModeServlet.class);
+        registration.setAsyncSupported(true);
+        for (String mapping : mappings) {
+            registration.addMapping("/" + mapping + "/*");
+        }
+
+        log().info("DevModeServlet registered to {}.", mappings);
     }
+
+    private static Set<String> getDevModeMappings(DeploymentConfiguration config) {
+        List<String> polyfills = config.getPolyfills();
+        Set<String> buildScripts = new HashSet<>(polyfills.size() + 2);
+        buildScripts.addAll(polyfills);
+        buildScripts.add(config.getJsModuleBundle());
+        buildScripts.add(config.getJsModuleBundleEs5());
+
+        Pattern pattern = Pattern.compile(DEV_MODE_MAPPING_REGEX);
+
+        Set<String> mappings = new HashSet<>(1);
+        for (String buildScript : buildScripts) {
+
+            Matcher matcher = pattern.matcher(buildScript);
+
+            if (matcher.find()) {
+                mappings.add(matcher.group(1));
+            } else {
+                log().error("Script path " + buildScript + " doesn't match " + DEV_MODE_MAPPING_REGEX + " regex.");
+                return null;
+            }
+        }
+        return mappings;
+    }
+
 
     private static Logger log() {
         return LoggerFactory.getLogger(DevModeInitializer.class);
