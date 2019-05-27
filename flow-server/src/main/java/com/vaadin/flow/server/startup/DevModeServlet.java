@@ -26,10 +26,9 @@ public class DevModeServlet extends HttpServlet {
     @Override
     protected void service(HttpServletRequest request,
             HttpServletResponse response) throws IOException {
-        if (devmodeHandler != null && devmodeHandler.isDevModeRequest(request)
-                && devmodeHandler.serveDevModeRequest(request, response)) {
+        if (devmodeHandler != null && devmodeHandler.isDevModeRequest(request)) {
+            devmodeHandler.serveDevModeRequest(request, response);
         }
-
     }
 
 }

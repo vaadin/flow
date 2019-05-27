@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -167,12 +168,10 @@ public class DevModeInitializer
 
         Set<String> mapping = getDevModeMapping(config);
 
-        if (mapping == null || mapping.isEmpty()) {
+        if (mapping.isEmpty()) {
             log().warn(
-                    "Skipping DEV MODE because DevModeServlet mapping can't be determined. Please make sure "
-                            + SERVLET_PARAMETER_JSBUNDLE + " and "
-                            + SERVLET_PARAMETER_POLYFILLS
-                            + " servlet parameters are correctly configured.");
+                    "Skipping DEV MODE because DevModeServlet mapping can't be determined. Please make sure {} and {} servlet parameters are correctly configured.",
+                    SERVLET_PARAMETER_JSBUNDLE, SERVLET_PARAMETER_POLYFILLS);
             return;
         }
 
@@ -190,7 +189,8 @@ public class DevModeInitializer
         DevModeHandler.start(config, builder.npmFolder);
 
         // Register DevModeServlet.
-        ServletRegistration.Dynamic registration = context.addServlet(DevModeServlet.class.getName(), DevModeServlet.class);
+        ServletRegistration.Dynamic registration = context.addServlet(
+                DevModeServlet.class.getName(), DevModeServlet.class);
         registration.setAsyncSupported(true);
         registration.addMapping(mapping.toArray(new String[mapping.size()]));
 
@@ -214,8 +214,9 @@ public class DevModeInitializer
             if (matcher.find()) {
                 mappings.add("/" + matcher.group(1) + "/*");
             } else {
-                log().error("Script path " + buildScript + " doesn't match " + DEV_MODE_MAPPING_REGEX + " regex.");
-                return null;
+                log().error("Script path {} doesn't match {} regex.",
+                        buildScript, DEV_MODE_MAPPING_REGEX);
+                return Collections.EMPTY_SET;
             }
         }
         return mappings;
