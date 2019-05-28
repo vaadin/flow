@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import net.bytebuddy.jar.asm.AnnotationVisitor;
@@ -70,13 +71,35 @@ class FrontendClassVisitor extends ClassVisitor {
     static class EndPointData implements Serializable {
         final String name;
         String route = "";
-        boolean notheme = false;
-        String theme;
-        String variant;
         String layout;
+        ThemeData theme = new ThemeData();
         final HashSet<String> classes = new HashSet<>();
         final HashSet<String> modules = new HashSet<>();
         final HashSet<String> scripts = new HashSet<>();
+
+        /**
+         * A container for Theme information when scanning the class path.
+         * It overrides equals and hashCode in order to use HashSet to eliminate duplicates.
+         */
+        static class ThemeData {
+            String name;
+            String variant = "";
+            boolean notheme;
+
+            @Override
+            public boolean equals(Object other) {
+                ThemeData that = (ThemeData) other;
+                // For our provate case comparing hash is enough
+                return this.hashCode() == that.hashCode();
+            }
+
+            @Override
+            public int hashCode() {
+                // We might need to add variant when we wanted to fail in the case of
+                // same theme class with different variant, which was right in v13
+                return Objects.hash(name, notheme);
+            }
+        }
 
         public EndPointData(Class<?> clazz) {
             this.name = clazz.getName();
@@ -87,7 +110,7 @@ class FrontendClassVisitor extends ClassVisitor {
         public String toString() {
             return String.format(
                     "%n view: %s%n route: %s%n notheme: %b%n theme: %s%n variant: %s%n layout: %s%n modules: %s%n scripts: %s%n classes: %s%n",
-                    name, route, notheme, theme, variant, layout, col2Str(modules),
+                    name, route, theme.notheme, theme.name, theme.variant, layout, col2Str(modules),
                     col2Str(scripts), col2Str(classes));
         }
         private String col2Str(Collection<String> s) {
@@ -158,12 +181,10 @@ class FrontendClassVisitor extends ClassVisitor {
             @Override
             public void visit(String name, Object value) {
                 if (VALUE.equals(name)) {
-                    endPoint.theme = ((Type) value).getClassName();
-                    children.add(endPoint.theme);
-                    endPoint.variant = "";
-                }
-                if (VARIANT.equals(name)) {
-                    endPoint.variant = value.toString();
+                    endPoint.theme.name = ((Type) value).getClassName();
+                    children.add(endPoint.theme.name);
+                } else if (VARIANT.equals(name)) {
+                    endPoint.theme.variant = value.toString();
                 }
             }
         };
@@ -171,11 +192,10 @@ class FrontendClassVisitor extends ClassVisitor {
         themeLayoutVisitor = new RepeatedAnnotationVisitor() {
             @Override
             public void visit(String name, Object value) {
-                if (VALUE.equals(name) && endPoint.theme == null) {
-                    endPoint.theme = ((Type) value).getClassName();
-                }
-                if (VARIANT.equals(name) && endPoint.variant == null) {
-                    endPoint.variant = value.toString();
+                if (VALUE.equals(name) && endPoint.theme.name == null) {
+                    themeRouteVisitor.visit(name, value);
+                } else if (VARIANT.equals(name) && endPoint.theme.variant == null) {
+                    themeRouteVisitor.visit(name, value);
                 }
             }
         };
@@ -238,7 +258,7 @@ class FrontendClassVisitor extends ClassVisitor {
         }
         if (cname.contains(NoTheme.class.getName())) {
             if (className.equals(endPoint.name)) {
-                endPoint.notheme = true;
+                endPoint.theme.notheme = true;
             }
             return null;
         }

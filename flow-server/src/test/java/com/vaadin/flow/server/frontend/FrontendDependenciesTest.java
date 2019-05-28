@@ -136,12 +136,11 @@ public class FrontendDependenciesTest {
     @Test
     public void should_not_takeTheme_when_NoTheme() throws Exception {
         FrontendDependencies deps = create(RootViewWithoutTheme.class);
-
         assertNull(deps.getThemeDefinition());
 
         assertEquals(2, deps.getModules().size());
         assertEquals(0, deps.getPackages().size());
-        assertEquals(1, deps.getScripts().size());
+        assertEquals(2, deps.getScripts().size());
     }
 
     @Test
@@ -228,8 +227,7 @@ public class FrontendDependenciesTest {
                 new ArrayList<>(Arrays.asList(NoThemeExporter.class,
                         RootViewWithTheme.class)))));
 
-        FrontendDependencies deps = new FrontendDependencies(finder);
-
+        new FrontendDependencies(finder);
         verify(finder, times(1)).loadClass(FrontendDependencies.LUMO);
     }
 
@@ -238,8 +236,7 @@ public class FrontendDependenciesTest {
         DefaultClassFinder finder = spy(new DefaultClassFinder(new HashSet<Class<?>>(
                 new ArrayList<>(Arrays.asList(RootViewWithTheme.class)))));
 
-        FrontendDependencies deps = new FrontendDependencies(finder);
-
+        new FrontendDependencies(finder);
         verify(finder, times(0)).loadClass(FrontendDependencies.LUMO);
     }
 }

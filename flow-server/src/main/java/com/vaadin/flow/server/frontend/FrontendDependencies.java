@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import net.bytebuddy.jar.asm.ClassReader;
 import org.slf4j.Logger;
@@ -38,6 +39,7 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.frontend.FrontendClassVisitor.EndPointData;
+import com.vaadin.flow.server.frontend.FrontendClassVisitor.EndPointData.ThemeData;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
@@ -225,10 +227,6 @@ public class FrontendDependencies implements Serializable {
      */
     private void computeEndpoints()
             throws ClassNotFoundException, IOException, InstantiationException, IllegalAccessException {
-
-        Set<String> themes = new HashSet<>();
-        String variant = null;
-
         // Because of different classLoaders we need compare against class
         // references loaded by the specific class finder loader
         Class<? extends Annotation> routeClass = finder.loadClass(Route.class.getName());
@@ -236,48 +234,51 @@ public class FrontendDependencies implements Serializable {
             String className = route.getName();
             EndPointData data = new EndPointData(route);
             endPoints.put(className, visitClass(className, data));
-
-            String themeVariant = computeTheme(themes, data);
-            variant = variant != null ? variant : themeVariant;
         }
-        setTheme(themes, variant);
-    }
 
-    private String computeTheme(Set<String> themes, EndPointData data) {
-        if (data.notheme) {
-            themes.add(NoTheme.class.getName());
-        } else if (data.theme != null) {
-            themes.add(data.theme);
-            return data.variant;
-        }
-        return null;
+        computeApplicationTheme(endPoints);
     }
 
 
-    private void setTheme(Set<String> themes, String variant)
+    // Visit all end-points and compute the theme for the application.
+    // It fails in the case that there are multiple themes for the application or in the
+    // case of Theme and NoTheme found in the application.
+    // If no theme is found, it uses lumo if found in the class-path
+    private void computeApplicationTheme(HashMap<String, EndPointData> endPoints)
             throws ClassNotFoundException, InstantiationException, IllegalAccessException {
 
-        // We do not support multiple themes
+        Set<ThemeData> themes = endPoints.values().stream()
+                // consider only endPoints with theme information
+                .filter(data -> data.theme.name != null || data.theme.notheme).map(data -> data.theme)
+                // Remove duplicates by returning a set
+                .collect(Collectors.toSet());
+
         if (themes.size() > 1) {
+            String names = String.join(", ",
+                    themes.stream().map(data -> data.notheme ? NoTheme.class.getName() : data.name).collect(Collectors.toSet()));
             throw new IllegalStateException(
-                    "Multiple themes configuration is not supported: " + String.join(", " , themes));
+                    "Multiple themes configuration is not supported: " + names);
         }
 
         Class<? extends AbstractTheme> theme = null;
+        String variant = "";
         if (themes.isEmpty()) {
             // No theme annotation found by the scanner
             theme = getLumoTheme();
         } else {
-            // Found one annotation
-            String themeName = themes.iterator().next();
-            if (!NoTheme.class.getName().equals(themeName)) {
-                theme = finder.loadClass(themeName);
+
+            // we have a proper theme or no-theme for the app
+            ThemeData themeData = themes.iterator().next();
+            if (!themeData.notheme) {
+                variant = themeData.variant;
+                theme = finder.loadClass(themeData.name);
             }
+
         }
 
+        // theme could be null when lumo is not found or when a NoTheme found
         if (theme != null) {
-            themeDefinition = new ThemeDefinition(theme,
-                    variant != null ? variant : "");
+            themeDefinition = new ThemeDefinition(theme, variant);
             themeInstance = new ThemeWrapper(theme);
         }
     }
@@ -350,13 +351,12 @@ public class FrontendDependencies implements Serializable {
             return;
         }
 
-        Set<String> themes = new HashSet<>();
-        String variant = null;
+        HashMap<String, EndPointData> exportedPoints = new HashMap<>();
 
         for (Class<?> exporter : exporterClasses) {
             String exporterClassName = exporter.getName();
             EndPointData exporterData = new EndPointData(exporter);
-            endPoints.put(exporterClassName, visitClass(exporterClassName, exporterData));
+            exportedPoints.put(exporterClassName, visitClass(exporterClassName, exporterData));
 
             if (!Modifier.isAbstract(exporter.getModifiers())) {
                 Class<? extends Component> componentClass =
@@ -366,16 +366,14 @@ public class FrontendDependencies implements Serializable {
                     String componentClassName = componentClass.getName();
                     EndPointData configurationData =
                             new EndPointData(componentClass);
-                    endPoints.put(componentClassName,
+                    exportedPoints.put(componentClassName,
                             visitClass(componentClassName, configurationData));
                 }
             }
-
-            String themeVariant = computeTheme(themes, exporterData);
-            variant = variant != null ? variant : themeVariant;
         }
 
-        setTheme(themes, variant);
+        computeApplicationTheme(exportedPoints);
+        endPoints.putAll(exportedPoints);
     }
 
     /**
@@ -410,9 +408,9 @@ public class FrontendDependencies implements Serializable {
         }
 
         boolean isRootLevel = className.equals(endPoint.name) && endPoint.route.isEmpty();
-        boolean hasTheme = !endPoint.notheme && endPoint.theme != null;
+        boolean hasTheme = !endPoint.theme.notheme && endPoint.theme.name != null;
         if (isRootLevel && hasTheme) {
-            visitClass(endPoint.theme, endPoint);
+            visitClass(endPoint.theme.name, endPoint);
         }
 
         return endPoint;
