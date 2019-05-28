@@ -31,6 +31,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
@@ -42,6 +43,7 @@ import com.vaadin.flow.server.frontend.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.server.frontend.NodeTasks.Builder;
 import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
+import com.vaadin.flow.server.webcomponent.WebComponentModulesWriter;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
@@ -149,13 +151,16 @@ public class DevModeInitializer
         for (File file : Arrays.asList(
                 new File(builder.npmFolder, PACKAGE_JSON),
                 new File(builder.generatedFolder, PACKAGE_JSON),
-                new File(builder.npmFolder, WEBPACK_CONFIG)
+                new File(builder.npmFolder, WEBPACK_CONFIG),
+                builder.generatedFolder
                 )) {
             if (!file.canRead()) {
                 log().warn("Skiping DEV MODE because cannot read '{}' file.", file.getPath());
                 return;
             }
         }
+
+//        generateExportedWebComponents(classes, builder.generatedFolder);
 
         Set<String> visitedClassNames = new HashSet<>();
         builder.enablePackagesUpdate(true)
@@ -170,6 +175,14 @@ public class DevModeInitializer
 
         DevModeHandler.start(config, builder.npmFolder);
     }
+
+//    private static void generateExportedWebComponents(Set<Class<?>> classes,
+//                                                      File outputDirectory) {
+//        Set<Class<? extends WebComponentExporter<? extends Component>>> exporterClasses =
+//                WebComponentModulesWriter.filterConcreteExporters(classes);
+//        WebComponentModulesWriter.writeWebComponentsToDirectory(exporterClasses,
+//                outputDirectory, false);
+//    }
 
     private static Logger log() {
         return LoggerFactory.getLogger(DevModeInitializer.class);

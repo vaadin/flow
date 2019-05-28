@@ -93,6 +93,12 @@ public class FlowPluginFrontendUtils {
         public <T> Set<Class<? extends T>> getSubTypesOf(Class<T> type) {
             return reflections.getSubTypesOf(type);
         }
+
+        @Override
+        public <T> Set<Class<? extends T>> getSubTypesOf(String name) throws ClassNotFoundException {
+            Class<T> parent = loadClass(name);
+            return reflections.getSubTypesOf(parent);
+        }
     }
 
     private FlowPluginFrontendUtils() {
