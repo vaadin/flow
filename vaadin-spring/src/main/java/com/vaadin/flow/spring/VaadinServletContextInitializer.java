@@ -23,6 +23,7 @@ import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -245,10 +246,11 @@ public class VaadinServletContextInitializer
             }
 
             // Handle classes Route.class, NpmPackage.class, WebComponentExporter.class
-            Set<Class<?>> classes = findByAnnotation(getNpmPackages(),
+            Collection<String> npmPackages = getNpmPackages();
+            Set<Class<?>> classes = findByAnnotation(npmPackages,
                     Route.class, NpmPackage.class).collect(Collectors.toSet());
 
-            classes.addAll(findBySuperType(getNpmPackages(),
+            classes.addAll(findBySuperType(npmPackages,
                     WebComponentExporter.class).collect(Collectors.toSet()));
 
             DevModeInitializer.initDevModeHandler(classes, event.getServletContext(), config);
@@ -358,6 +360,7 @@ public class VaadinServletContextInitializer
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(
                 false);
         scanner.setResourceLoader(appContext);
+
         annotations.forEach(annotation -> scanner
                 .addIncludeFilter(new AnnotationTypeFilter(annotation)));
 
@@ -393,7 +396,10 @@ public class VaadinServletContextInitializer
     }
 
     private Collection<String> getNpmPackages() {
-        return getDefaultPackages();
+        List<String> npmPackages = new ArrayList(getDefaultPackages());
+        // By default we should always check the com.vaadin.flow packages for npm
+        npmPackages.add("com.vaadin.flow.component");
+        return npmPackages;
     }
 
     private Collection<String> getRoutePackages() {
