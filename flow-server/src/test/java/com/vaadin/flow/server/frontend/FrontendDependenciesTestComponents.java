@@ -55,8 +55,6 @@ public class FrontendDependenciesTestComponents {
     }
     static class Theme2 extends Theme0 {
     }
-    static class Theme3 extends Theme0 {
-    }
     @JsModule("./theme-4.js")
     static class Theme4 extends Theme0 {
     }
@@ -228,45 +226,4 @@ public class FrontendDependenciesTestComponents {
 
         }
     }
-
-
-    @Theme(Theme1.class)
-    public class MLayout1 extends RouterLayout1 {
-    }
-
-    @Theme(Theme1.class)
-    public class MLayout2 extends RouterLayout1 {
-    }
-
-    @Theme(Theme2.class)
-    public class MLayout3 extends RouterLayout1 {
-    }
-
-
-    @Route(value = "route-1", layout = MLayout1.class)
-    public static class MRoute1 {
-    }
-    @Route(value = "route-1", layout = MLayout2.class)
-    public static class MRoute2 {
-    }
-    @Route(value = "route-1", layout = MLayout2.class)
-    public static class MRoute3 {
-    }
-
-
-    @Route(value = "route-1")
-    @Theme(Theme1.class)
-    public static class RouteA {
-    }
-    @Route(value = "route-2")
-    @Theme(Theme2.class)
-    public static class RouteB {
-    }
-    @Route(value = "route-3")
-    @Theme(Theme3.class)
-    public static class RouteC {
-    }
-
-
-
 }
