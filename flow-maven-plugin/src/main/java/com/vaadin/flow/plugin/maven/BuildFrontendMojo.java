@@ -44,7 +44,6 @@ import com.vaadin.flow.theme.Theme;
 
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
-
 import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFinder;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
@@ -121,7 +120,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
 
         long start = System.nanoTime();
 
-        generateExportedWebComponents();
+//        generateExportedWebComponents();
 
         runNodeUpdater();
 
@@ -139,7 +138,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
      * {@link com.vaadin.flow.plugin.common.WebComponentModulesGenerator} to
      * generate JavaScript files from the {@code WebComponentExporters}
      * present in the code base. The generated JavaScript files are placed in
-     * the same folder as the {@link FrontendUtils#FLOW_IMPORTS_NAME}.
+     * {@link FrontendUtils#DEFAULT_GENERATED_DIR} folder.
      */
     private void generateExportedWebComponents() {
         if (!generateEmbeddableWebComponents) {
@@ -151,8 +150,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
 
         try {
             FileUtils.forceMkdir(generatedFolder);
-            generator.getExporters().forEach(exporter ->
-                    generator.generateModuleFile(exporter, generatedFolder));
+            generator.generateWebComponentModules(generatedFolder);
         } catch (IOException e) {
             getLog().error("Failed to create a directory for generated web " +
                     "components", e);

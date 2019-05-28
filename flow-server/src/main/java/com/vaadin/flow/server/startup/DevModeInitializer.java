@@ -180,7 +180,8 @@ public class DevModeInitializer
         for (File file : Arrays.asList(
                 new File(builder.npmFolder, PACKAGE_JSON),
                 new File(builder.generatedFolder, PACKAGE_JSON),
-                new File(builder.npmFolder, WEBPACK_CONFIG))) {
+                new File(builder.npmFolder, WEBPACK_CONFIG),
+                builder.generatedFolder)) {
             if (!file.canRead()) {
                 log().warn("Skiping DEV MODE because cannot read '{}' file.",
                         file.getPath());
