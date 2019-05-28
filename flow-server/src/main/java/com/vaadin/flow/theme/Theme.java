@@ -40,6 +40,9 @@ import com.vaadin.flow.router.RouterLayout;
  * {@link RouterLayout} or to the top level @{@link Route}.
  *
  * <p>
+ * Defining different Themes for different views will end throwing an exception.
+ *
+ * <p>
  * Here are examples:
  *
  * <ul>
