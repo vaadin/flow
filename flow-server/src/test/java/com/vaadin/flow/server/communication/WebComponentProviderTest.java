@@ -21,7 +21,6 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.webcomponent.WebComponent;
-import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
@@ -51,7 +50,6 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -302,14 +300,7 @@ public class WebComponentProviderTest {
 
     private WebComponentConfigurationRegistry setUpRegistry() {
         // this hack is needed, because the OSGiAccess fake servlet context is now not needed
-        return new WebComponentConfigurationRegistry(){
-            @Override
-            public Optional<WebComponentConfiguration<? extends Component>> getConfiguration(String tag) {
-                if(tag == null)
-                    throw new IllegalStateException("oh noes, tag is null");
-                return super.getConfiguration(tag);
-            }
-        };
+        return new WebComponentConfigurationRegistry(){};
     }
 
     @Tag("my-component")

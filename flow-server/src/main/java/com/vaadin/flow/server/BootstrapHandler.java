@@ -59,6 +59,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -460,7 +461,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      *
      * Do not subclass this, unless you really know why you are doing it.
      */
-    protected static final class BootstrapPageBuilder {
+    protected static final class BootstrapPageBuilder implements Serializable {
 
         /**
          * Returns the bootstrap page for the given context.
@@ -509,6 +510,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             context.getSession().getService().modifyBootstrapPage(response);
 
             return document;
+        }
+
+        private String getClientEngine() {
+            return clientEngineFile.get();
         }
 
         private void checkWebpackStatus(Document document) {
@@ -1149,6 +1154,17 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return appConfig;
         }
 
+        private void putValueOrNull(JsonObject object, String key,
+            String value) {
+            assert object != null;
+            assert key != null;
+            if (value == null) {
+                object.put(key, Json.createNull());
+            } else {
+                object.put(key, value);
+            }
+        }
+
     }
 
 
@@ -1270,17 +1286,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
     }
 
-    private static void putValueOrNull(JsonObject object, String key,
-            String value) {
-        assert object != null;
-        assert key != null;
-        if (value == null) {
-            object.put(key, Json.createNull());
-        } else {
-            object.put(key, value);
-        }
-    }
-
     /**
      * Returns the UI class mapped for servlet that handles the given request.
      * <p>
@@ -1326,12 +1331,12 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
     }
 
-    private static String getClientEngine() {
-        return clientEngineFile.get();
-    }
-
     private static class LazyClientEngineInit {
         private static final String CLIENT_ENGINE_FILE = readClientEngine();
+
+        private LazyClientEngineInit() {
+            // this is a utility class, instances should not be created
+        }
 
         private static String readClientEngine() {
             // read client engine file name
