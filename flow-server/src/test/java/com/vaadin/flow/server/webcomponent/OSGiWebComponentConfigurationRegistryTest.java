@@ -16,7 +16,6 @@
 
 package com.vaadin.flow.server.webcomponent;
 
-import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.osgi.OSGiAccess;
 import com.vaadin.flow.server.startup.EnableOSGiRunner;
 import net.jcip.annotations.NotThreadSafe;
@@ -57,12 +56,6 @@ public class OSGiWebComponentConfigurationRegistryTest extends WebComponentConfi
     public void assertWebComponentRegistry() {
         Assert.assertEquals(OSGiWebComponentConfigurationRegistry.class.getName(),
                 registry.getClass().getName());
-    }
-
-    @Test
-    public void assertOsgiRegistryIsServedAsASingleton() {
-        Assert.assertSame(registry, WebComponentConfigurationRegistry
-                .getInstance(VaadinService.getCurrent().getContext()));
     }
 
     @Override
