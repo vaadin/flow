@@ -254,10 +254,13 @@ public class FrontendDependencies implements Serializable {
                 .collect(Collectors.toSet());
 
         if (themes.size() > 1) {
-            String names = String.join(", ",
-                    themes.stream().map(data -> data.notheme ? NoTheme.class.getName() : data.name).collect(Collectors.toSet()));
+            String names = String.join("\n      ",
+                    endPoints.values().stream().filter(data -> data.theme.name != null || data.theme.notheme)
+                            .map(data -> "found '" + (data.theme.notheme ? NoTheme.class.getName() : data.theme.name)
+                                    + "' in '" + data.name + "'")
+                            .collect(Collectors.toList()));
             throw new IllegalStateException(
-                    "Multiple themes configuration is not supported: " + names);
+                    "\n Multiple Theme configuration is not supported:\n      " + names);
         }
 
         Class<? extends AbstractTheme> theme = null;

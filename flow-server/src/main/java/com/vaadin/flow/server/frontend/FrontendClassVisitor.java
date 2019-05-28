@@ -81,16 +81,18 @@ class FrontendClassVisitor extends ClassVisitor {
          * A container for Theme information when scanning the class path.
          * It overrides equals and hashCode in order to use HashSet to eliminate duplicates.
          */
-        static class ThemeData {
+        static class ThemeData implements Serializable {
             String name;
             String variant = "";
             boolean notheme;
 
             @Override
             public boolean equals(Object other) {
-                ThemeData that = (ThemeData) other;
-                // For our provate case comparing hash is enough
-                return this.hashCode() == that.hashCode();
+                if (other == null || !(other instanceof ThemeData)) {
+                    return false;
+                }
+                // For our private case comparing hash is enough
+                return this.hashCode() == ((ThemeData)other).hashCode();
             }
 
             @Override
@@ -109,9 +111,9 @@ class FrontendClassVisitor extends ClassVisitor {
         @Override
         public String toString() {
             return String.format(
-                    "%n view: %s%n route: %s%n notheme: %b%n theme: %s%n variant: %s%n layout: %s%n modules: %s%n scripts: %s%n classes: %s%n",
+                    "%n view: %s%n route: %s%n notheme: %b%n theme: %s%n variant: %s%n layout: %s%n modules: %s%n scripts: %s%n",
                     name, route, theme.notheme, theme.name, theme.variant, layout, col2Str(modules),
-                    col2Str(scripts), col2Str(classes));
+                    col2Str(scripts));
         }
         private String col2Str(Collection<String> s) {
             return String.join("\n          ", s);
