@@ -44,11 +44,11 @@ public class VaadinAutowiredDependencies extends Div {
         currentUi.setId("ui-current");
 
         Div sessionDiv = new Div();
-        sessionDiv.setText(session.getCsrfToken() + session.hashCode());
+        sessionDiv.setText(ui.getCsrfToken() + session.hashCode());
         sessionDiv.setId("session-injected");
 
         Div sessionCurrent = new Div();
-        sessionCurrent.setText(VaadinSession.getCurrent().getCsrfToken()
+        sessionCurrent.setText(UI.getCurrent().getCsrfToken()
                 + VaadinSession.getCurrent().hashCode());
         sessionCurrent.setId("session-current");
 
