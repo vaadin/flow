@@ -237,17 +237,22 @@ public class FrontendDependencies implements Serializable {
             EndPointData data = new EndPointData(route);
             endPoints.put(className, visitClass(className, data));
 
-            if (data.notheme) {
-                themes.add(NoTheme.class.getName());
-            } else if (data.theme != null) {
-                themes.add(data.theme);
-                if (variant == null) {
-                    variant = data.variant;
-                }
-            }
+            String themeVariant = computeTheme(themes, data);
+            variant = variant != null ? variant : themeVariant;
         }
         setTheme(themes, variant);
     }
+
+    private String computeTheme(Set<String> themes, EndPointData data) {
+        if (data.notheme) {
+            themes.add(NoTheme.class.getName());
+        } else if (data.theme != null) {
+            themes.add(data.theme);
+            return data.variant;
+        }
+        return null;
+    }
+
 
     private void setTheme(Set<String> themes, String variant)
             throws ClassNotFoundException, InstantiationException, IllegalAccessException {
@@ -259,7 +264,7 @@ public class FrontendDependencies implements Serializable {
         }
 
         Class<? extends AbstractTheme> theme = null;
-        if (themes.size() == 0) {
+        if (themes.isEmpty()) {
             // No theme annotation found by the scanner
             theme = getLumoTheme();
         } else {
@@ -366,14 +371,8 @@ public class FrontendDependencies implements Serializable {
                 }
             }
 
-            if (exporterData.notheme) {
-                themes.add(null);
-            } else if (exporterData.theme != null) {
-                themes.add(exporterData.theme);
-                if (variant == null) {
-                    variant = exporterData.variant;
-                }
-            }
+            String themeVariant = computeTheme(themes, exporterData);
+            variant = variant != null ? variant : themeVariant;
         }
 
         setTheme(themes, variant);
