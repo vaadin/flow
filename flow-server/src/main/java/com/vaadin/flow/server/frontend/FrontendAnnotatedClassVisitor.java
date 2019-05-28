@@ -16,6 +16,7 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,27 +42,15 @@ class FrontendAnnotatedClassVisitor extends ClassVisitor {
     private final List<HashMap<String, Object>> data = new ArrayList<>();
     private final ClassFinder finder;
 
-
-    /**
-     * Visit recursively a class to find annotations.
-     *
-     * @param name
-     *            the class name
-     * @throws IOException
-     */
-    public void visitClass(String name) throws IOException {
-        if (name != null) {
-            URL url = finder.getResource(name.replace(".", "/") + ".class");
-            ClassReader cr = new ClassReader(url.openStream());
-            cr.accept(this, 0);
-        }
-    }
-
     /**
      * Create a new {@link ClassVisitor} that will be used for visiting a
      * specific class to get the data of an annotation.
      *
+     * @param finder
+     *            The class finder to use
+     * 
      * @param annotationName
+     *            The annotation class name to visit
      */
     FrontendAnnotatedClassVisitor(ClassFinder finder, String annotationName) {
         super(Opcodes.ASM6);
@@ -69,15 +58,33 @@ class FrontendAnnotatedClassVisitor extends ClassVisitor {
         this.annotationName = annotationName;
     }
 
+    /**
+     * Visit recursively a class to find annotations.
+     *
+     * @param name
+     *            the class name
+     * @throws IOException
+     *             when the class name is not found
+     */
+    public void visitClass(String name) {
+        if (name == null) {
+            return;
+        }
+        try {
+            ClassReader cr;
+            URL url = finder.getResource(name.replace(".", "/") + ".class");
+            cr = new ClassReader(url.openStream());
+            cr.accept(this, 0);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
 
     // Executed for the class definition info.
     @Override
     public void visit(int version, int access, String name, String signature, String superName,
             String[] interfaces) {
-        try {
-            visitClass(superName);
-        } catch (IOException ignore) { //NOSONAR
-        }
+        visitClass(superName);
     }
 
     @Override
