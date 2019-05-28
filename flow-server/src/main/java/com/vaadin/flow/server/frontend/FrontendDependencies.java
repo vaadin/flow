@@ -282,10 +282,10 @@ public class FrontendDependencies implements Serializable {
      * @throws IOException
      */
     private void computePackages() throws ClassNotFoundException, IOException {
-        FrontendAnnotatedClassVisitor npmPackageVisitor = new FrontendAnnotatedClassVisitor(NpmPackage.class.getName());
+        FrontendAnnotatedClassVisitor npmPackageVisitor = new FrontendAnnotatedClassVisitor(finder, NpmPackage.class.getName());
 
         for (Class<?> component : finder.getAnnotatedClasses(NpmPackage.class.getName())) {
-            componentVisitor(npmPackageVisitor, component);
+            npmPackageVisitor.visitClass(component.getName());
         }
 
         Set<String> dependencies = npmPackageVisitor.getValues(VALUE);
@@ -298,17 +298,6 @@ public class FrontendDependencies implements Serializable {
                         dependency, foundVersions, version);
             }
             packages.put(dependency, version);
-        }
-    }
-
-    private void componentVisitor(
-            FrontendAnnotatedClassVisitor npmPackageVisitor, Class<?> component)
-            throws IOException {
-        URL url = getUrl(component.getName());
-        ClassReader cr = new ClassReader(url.openStream());
-        cr.accept(npmPackageVisitor, 0);
-        if(!component.getSuperclass().equals(Object.class)) {
-            componentVisitor(npmPackageVisitor, component.getSuperclass());
         }
     }
 
