@@ -111,6 +111,17 @@ public class FrontendDependenciesTest {
                 deps.getPackages().get("@vaadin/component-2"));
     }
 
+
+    @Test
+    public void should_visitSuperNpmPakageAnnotations() throws Exception {
+        FrontendDependencies deps = create(
+                FrontendDependenciesTestComponents.ComponentExtending.class);
+        assertEquals(1, deps.getPackages().size());
+        assertTrue(deps.getPackages().containsKey("@vaadin/component-extended"));
+
+        assertEquals("2.1.0", deps.getPackages().get("@vaadin/component-extended"));
+    }
+
     @Test
     public void when_MultipleVersions_should_returnFirstVisitedOne()
             throws Exception {

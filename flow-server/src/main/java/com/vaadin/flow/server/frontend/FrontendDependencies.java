@@ -285,9 +285,7 @@ public class FrontendDependencies implements Serializable {
         FrontendAnnotatedClassVisitor npmPackageVisitor = new FrontendAnnotatedClassVisitor(NpmPackage.class.getName());
 
         for (Class<?> component : finder.getAnnotatedClasses(NpmPackage.class.getName())) {
-            URL url = getUrl(component.getName());
-            ClassReader cr = new ClassReader(url.openStream());
-            cr.accept(npmPackageVisitor, 0);
+            componentVisitor(npmPackageVisitor, component);
         }
 
         Set<String> dependencies = npmPackageVisitor.getValues(VALUE);
@@ -303,6 +301,16 @@ public class FrontendDependencies implements Serializable {
         }
     }
 
+    private void componentVisitor(
+            FrontendAnnotatedClassVisitor npmPackageVisitor, Class<?> component)
+            throws IOException {
+        URL url = getUrl(component.getName());
+        ClassReader cr = new ClassReader(url.openStream());
+        cr.accept(npmPackageVisitor, 0);
+        if(!component.getSuperclass().equals(Object.class)) {
+            componentVisitor(npmPackageVisitor, component.getSuperclass());
+        }
+    }
 
     private static Logger log() {
         // Using short prefix so as npm output is more readable
