@@ -146,7 +146,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
         }
         WebComponentModulesGenerator generator =
                 new WebComponentModulesGenerator(new AnnotationValuesExtractor(
-                        getClassFinder(project)), false);
+                        getClassFinder(project)));
 
         try {
             FileUtils.forceMkdir(generatedFolder);
