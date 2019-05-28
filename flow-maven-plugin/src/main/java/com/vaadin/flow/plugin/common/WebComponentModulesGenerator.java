@@ -29,8 +29,7 @@ import com.vaadin.flow.server.webcomponent.WebComponentModulesWriter;
 public class WebComponentModulesGenerator extends ClassPathIntrospector {
     private final Class<?> writerClass;
 
-    public WebComponentModulesGenerator(ClassPathIntrospector introspector,
-                                        boolean bowerMode) {
+    public WebComponentModulesGenerator(ClassPathIntrospector introspector) {
         super(introspector);
         writerClass = loadClassInProjectClassLoader(
                 WebComponentModulesWriter.class.getName());
