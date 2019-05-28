@@ -17,6 +17,7 @@ package com.vaadin.flow.uitest.ui.theme;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.Theme;
@@ -25,6 +26,7 @@ import com.vaadin.flow.theme.Theme;
 @Theme(MyTheme.class)
 @Tag("npm-themed-component")
 @JsModule("./src/npm-themed-component.js")
+@HtmlImport("frontend://src/npm-themed-component.html")
 public class NpmThemedComponentView extends Component {
 
 }
