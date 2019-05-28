@@ -27,7 +27,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import net.bytebuddy.jar.asm.ClassReader;
 import org.slf4j.Logger;
@@ -40,6 +39,7 @@ import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.frontend.FrontendClassVisitor.EndPointData;
 import com.vaadin.flow.theme.AbstractTheme;
+import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
 import static com.vaadin.flow.server.frontend.FrontendClassVisitor.VALUE;
@@ -223,9 +223,11 @@ public class FrontendDependencies implements Serializable {
      * @throws InstantiationException
      * @throws IllegalAccessException
      */
-    private void computeEndpoints() throws ClassNotFoundException, IOException, InstantiationException, IllegalAccessException {
+    private void computeEndpoints()
+            throws ClassNotFoundException, IOException, InstantiationException, IllegalAccessException {
 
-        EndPointData rootData = null;
+        Set<String> themes = new HashSet<>();
+        String variant = null;
 
         // Because of different classLoaders we need compare against class
         // references loaded by the specific class finder loader
@@ -235,36 +237,37 @@ public class FrontendDependencies implements Serializable {
             EndPointData data = new EndPointData(route);
             endPoints.put(className, visitClass(className, data));
 
-            // if this is the root level view, use its theme for the app
-            if (rootData == null && data.route.isEmpty()) {
-                rootData = data;
+            if (data.notheme) {
+                themes.add(NoTheme.class.getName());
+            } else if (data.theme != null) {
+                themes.add(data.theme);
+                if (variant == null) {
+                    variant = data.variant;
+                }
             }
         }
-
-        setTheme(rootData);
+        setTheme(themes, variant);
     }
 
-    private void setTheme(EndPointData rootData) throws ClassNotFoundException,
-            InstantiationException, IllegalAccessException {
+    private void setTheme(Set<String> themes, String variant)
+            throws ClassNotFoundException, InstantiationException, IllegalAccessException {
 
-        Class<? extends AbstractTheme> theme = null;
-        String variant = null;
-
-        if (rootData != null) {
-
-            if (rootData.notheme) {
-                return;
-            }
-
-            if (rootData.theme != null) {
-                theme = finder.loadClass(rootData.theme);
-                variant = rootData.variant;
-            }
+        // We do not support multiple themes
+        if (themes.size() > 1) {
+            throw new IllegalStateException(
+                    "Multiple themes configuration is not supported: " + String.join(", " , themes));
         }
 
-        if (theme == null) {
+        Class<? extends AbstractTheme> theme = null;
+        if (themes.size() == 0) {
+            // No theme annotation found by the scanner
             theme = getLumoTheme();
-            variant = null;
+        } else {
+            // Found one annotation
+            String themeName = themes.iterator().next();
+            if (!NoTheme.class.getName().equals(themeName)) {
+                theme = finder.loadClass(themeName);
+            }
         }
 
         if (theme != null) {
@@ -273,6 +276,7 @@ public class FrontendDependencies implements Serializable {
             themeInstance = new ThemeWrapper(theme);
         }
     }
+
 
     /**
      * Visit all classes annotated with {@link NpmPackage} and update the list
@@ -333,13 +337,16 @@ public class FrontendDependencies implements Serializable {
         Class<? extends Annotation> routeClass = finder.loadClass(Route.class.getName());
         Class<WebComponentExporter<? extends Component>> exporterClass =
                 finder.loadClass(WebComponentExporter.class.getName());
-        HashSet<EndPointData> themedEndPoints = new HashSet<>();
         Set<? extends Class<? extends WebComponentExporter<? extends Component>>> exporterClasses =
                 finder.getSubTypesOf(exporterClass);
+
         // if no exporters in the project, return
         if (exporterClasses.isEmpty()) {
             return;
         }
+
+        Set<String> themes = new HashSet<>();
+        String variant = null;
 
         for (Class<?> exporter : exporterClasses) {
             String exporterClassName = exporter.getName();
@@ -358,21 +365,18 @@ public class FrontendDependencies implements Serializable {
                             visitClass(componentClassName, configurationData));
                 }
             }
-            // any theme found on an exporter should be fine
-            if (exporterData.theme != null || exporterData.notheme) {
-                themedEndPoints.add(exporterData);
+
+            if (exporterData.notheme) {
+                themes.add(null);
+            } else if (exporterData.theme != null) {
+                themes.add(exporterData.theme);
+                if (variant == null) {
+                    variant = exporterData.variant;
+                }
             }
         }
 
-        if (themedEndPoints.size() > 1) {
-            throw new IllegalStateException("WebComponentExporters should " +
-                    "define only 1 theme. Instead, found " + themedEndPoints.size() +
-                    " different themes: " + themedEndPoints.stream()
-                    .map(endpoint -> endpoint.theme)
-                    .collect(Collectors.joining(", ")));
-        } else {
-            setTheme(themedEndPoints.stream().findAny().orElse(null));
-        }
+        setTheme(themes, variant);
     }
 
     /**
