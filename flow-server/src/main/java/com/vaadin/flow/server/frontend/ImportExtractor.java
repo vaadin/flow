@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -25,7 +26,7 @@ import java.util.regex.Pattern;
  * @author Vaadin Ltd
  *
  */
-class ImportExtractor {
+class ImportExtractor implements Serializable {
 
     private static final String IMPORT = "import";
     private static final String FROM = "from";
