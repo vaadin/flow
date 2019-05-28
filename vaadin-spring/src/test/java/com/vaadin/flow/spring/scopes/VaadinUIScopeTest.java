@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.spring.scopes;
 
+import javax.servlet.ServletContext;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -31,7 +34,9 @@ import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.spring.SpringVaadinSession;
 
@@ -197,6 +202,18 @@ public class VaadinUIScopeTest extends AbstractScopeTest {
                         new Properties()));
         when(service.getMainDivId(Mockito.any(), Mockito.any()))
                 .thenReturn(" - ");
+
+        final Map<String, Object> attributeMap = new HashMap<>();
+
+        ServletContext servletContext = Mockito.mock(ServletContext.class);
+        Mockito.when(servletContext.getAttribute(Mockito.anyString())).then(invocationOnMock -> attributeMap.get(invocationOnMock.getArguments()[0].toString()));
+        Mockito.doAnswer(invocationOnMock -> attributeMap.put(
+                invocationOnMock.getArguments()[0].toString(),
+                invocationOnMock.getArguments()[1]
+        )).when(servletContext).setAttribute(Mockito.anyString(), Mockito.any());
+
+        VaadinServletContext context = new VaadinServletContext(servletContext);
+        Mockito.when(service.getContext()).thenReturn(context);
 
         UI ui = new UI();
         ui.getInternals().setSession(session);
