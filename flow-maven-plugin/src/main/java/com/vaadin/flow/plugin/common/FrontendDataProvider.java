@@ -356,7 +356,7 @@ public class FrontendDataProvider {
             AnnotationValuesExtractor annotationValuesExtractor) {
         if (outputDir.isFile()) {
             throw new IllegalStateException(String.format(
-                    "The path '%s' already exists and it is not a diretory",
+                    "The path '%s' already exists and it is not a directory",
                     outputDir));
         }
         if (!outputDir.exists()) {
@@ -364,8 +364,6 @@ public class FrontendDataProvider {
         }
         WebComponentModulesGenerator generator = getWebComponentGenerator(
                 annotationValuesExtractor);
-        return generator.getExporters().map(
-                exporter -> generator.generateModuleFile(exporter, outputDir))
-                .collect(Collectors.toList());
+        return generator.generateWebComponentModules(outputDir);
     }
 }

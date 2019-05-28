@@ -17,6 +17,7 @@ package com.vaadin.flow.server.webcomponent;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -25,7 +26,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -43,7 +43,7 @@ import com.vaadin.flow.component.WebComponentExporter;
  * @author Vaadin Ltd
  * @since
  */
-public final class WebComponentModulesWriter {
+public final class WebComponentModulesWriter implements Serializable {
     private static final Logger LOGGER = LoggerFactory
             .getLogger(WebComponentModulesWriter.class);
 
@@ -54,13 +54,12 @@ public final class WebComponentModulesWriter {
      * @param outputFolder
      * @return
      */
-    public static Map<Class<? extends WebComponentExporter<? extends Component>>, File> writeWebComponentsToDirectory(
+    public static Set<File> writeWebComponentsToDirectory(
             Set<Class<? extends WebComponentExporter<? extends Component>>> exporterClasses,
             File outputFolder, boolean bowerMode) {
         return filterConcreteExporters(exporterClasses)
-                .collect(Collectors.toMap(clazz -> clazz,
-                        clazz -> writeWebComponentToDirectory(clazz,
-                                outputFolder, bowerMode)));
+                .map(clazz -> writeWebComponentToDirectory(clazz,
+                        outputFolder, bowerMode)).collect(Collectors.toSet());
     }
 
     /**
@@ -125,10 +124,13 @@ public final class WebComponentModulesWriter {
         return exporterTagExtractor.apply(exporterClass);
     }
 
-    public static class ReflectionUsage {
+    /**
+     *
+     */
+    public static class ReflectionUsage implements Serializable {
         private static final String WRITE_MODULES_METHOD = "writeWebComponentsToDirectory";
 
-        public static void reflectiveWriteWebComponentsToDirectory(
+        public static Set<File> reflectiveWriteWebComponentsToDirectory(
                 Class<?> writer, Object exporterClasses, Object outputFolder,
                 Object bowerMode) {
             Objects.requireNonNull(writer, "Writer cannot be null!");
@@ -136,19 +138,20 @@ public final class WebComponentModulesWriter {
                     .equals(writer.getName())) {
                 // very bad
             }
-            generateWebComponentModules(writer, exporterClasses, outputFolder,
+            return generateWebComponentModules(writer, exporterClasses,
+                    outputFolder,
                     bowerMode);
         }
 
-        private static void generateWebComponentModules(Class<?> writerClass,
+        @SuppressWarnings("unchecked")
+        private static Set<File> generateWebComponentModules(Class<?> writerClass,
                 Object exporterClasses, Object outputFolder, Object bowerMode) {
             Method writeMethod = getMethod(writerClass, WRITE_MODULES_METHOD)
                     .orElseThrow(() -> new IllegalStateException(
                             "We went to hell!"));
-
             try {
-                writeMethod.invoke(null, exporterClasses, outputFolder,
-                        bowerMode);
+                return ((Set<File>) writeMethod.invoke(null, exporterClasses,
+                        outputFolder, bowerMode));
             } catch (IllegalAccessException | InvocationTargetException e) {
                 throw new RuntimeException(
                         "Could not write exported web " + "component modules!",
