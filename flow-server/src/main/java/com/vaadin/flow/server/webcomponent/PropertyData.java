@@ -45,7 +45,7 @@ public final class PropertyData<P extends Serializable> implements Serializable 
      *         default value for the property
      */
     public PropertyData(String name, Class<P> type, boolean readOnly,
-                        P defaultValue) {
+            P defaultValue) {
         Objects.requireNonNull(name, "Parameter 'name' must not be null!");
         Objects.requireNonNull(type, "Parameter 'type' must not be null!");
         this.name = name;
