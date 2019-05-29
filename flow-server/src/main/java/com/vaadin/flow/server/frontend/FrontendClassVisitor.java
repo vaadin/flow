@@ -72,7 +72,7 @@ class FrontendClassVisitor extends ClassVisitor {
         final String name;
         String route = "";
         String layout;
-        ThemeData theme = new ThemeData();
+        private ThemeData theme = new ThemeData();
         final HashSet<String> classes = new HashSet<>();
         final HashSet<String> modules = new HashSet<>();
         final HashSet<String> scripts = new HashSet<>();
@@ -82,9 +82,19 @@ class FrontendClassVisitor extends ClassVisitor {
          * It overrides equals and hashCode in order to use HashSet to eliminate duplicates.
          */
         static class ThemeData implements Serializable {
-            String name;
-            String variant = "";
-            boolean notheme;
+            private String name;
+            private String variant = "";
+            private boolean notheme;
+
+            String getName() {
+                return name;
+            }
+            String getVariant() {
+                return variant;
+            }
+            boolean isNotheme() {
+                return notheme;
+            }
 
             @Override
             public boolean equals(Object other) {
@@ -110,6 +120,9 @@ class FrontendClassVisitor extends ClassVisitor {
 
         public EndPointData(Class<?> clazz) {
             this.name = clazz.getName();
+        }
+        public ThemeData getTheme() {
+            return theme;
         }
 
         // For debugging

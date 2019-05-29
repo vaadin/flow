@@ -249,16 +249,18 @@ public class FrontendDependencies implements Serializable {
 
         Set<ThemeData> themes = endPoints.values().stream()
                 // consider only endPoints with theme information
-                .filter(data -> data.theme.name != null || data.theme.notheme).map(data -> data.theme)
+                .filter(data -> data.getTheme().getName() != null || data.getTheme().isNotheme())
+                .map(data -> data.getTheme())
                 // Remove duplicates by returning a set
                 .collect(Collectors.toSet());
 
         if (themes.size() > 1) {
-            String names = String.join("\n      ",
-                    endPoints.values().stream().filter(data -> data.theme.name != null || data.theme.notheme)
-                            .map(data -> "found '" + (data.theme.notheme ? NoTheme.class.getName() : data.theme.name)
-                                    + "' in '" + data.name + "'")
-                            .collect(Collectors.toList()));
+            String names = String.join("\n      ", endPoints.values().stream()
+                    .filter(data -> data.getTheme().getName() != null || data.getTheme().isNotheme())
+                    .map(data -> "found '"
+                            + (data.getTheme().isNotheme() ? NoTheme.class.getName() : data.getTheme().getName())
+                            + "' in '" + data.name + "'")
+                    .collect(Collectors.toList()));
             throw new IllegalStateException(
                     "\n Multiple Theme configuration is not supported:\n      " + names);
         }
@@ -272,9 +274,9 @@ public class FrontendDependencies implements Serializable {
 
             // we have a proper theme or no-theme for the app
             ThemeData themeData = themes.iterator().next();
-            if (!themeData.notheme) {
-                variant = themeData.variant;
-                theme = finder.loadClass(themeData.name);
+            if (!themeData.isNotheme()) {
+                variant = themeData.getVariant();
+                theme = finder.loadClass(themeData.getName());
             }
 
         }
@@ -411,9 +413,9 @@ public class FrontendDependencies implements Serializable {
         }
 
         boolean isRootLevel = className.equals(endPoint.name) && endPoint.route.isEmpty();
-        boolean hasTheme = !endPoint.theme.notheme && endPoint.theme.name != null;
+        boolean hasTheme = !endPoint.getTheme().isNotheme() && endPoint.getTheme().getName() != null;
         if (isRootLevel && hasTheme) {
-            visitClass(endPoint.theme.name, endPoint);
+            visitClass(endPoint.getTheme().getName(), endPoint);
         }
 
         return endPoint;
