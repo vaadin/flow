@@ -110,11 +110,6 @@ public abstract class NodeUpdater implements Command {
         this.generatedFolder = generatedPath;
     }
 
-    Set<String> getJavascriptJsModules(Set<String> javascripts) {
-        return javascripts.stream().map(this::resolveInFlowFrontendDirectory)
-                .collect(Collectors.toSet());
-    }
-
     Set<String> getGeneratedModules(File directory, Set<String> excludes) {
         if (!directory.exists()) {
             return Collections.emptySet();
@@ -135,17 +130,24 @@ public abstract class NodeUpdater implements Command {
                 .collect(Collectors.toSet());
     }
 
-    private String resolveInFlowFrontendDirectory(String importPath) {
+    Set<String> resolveModules(Set<String> modules, boolean isJsModule) {
+        return modules.stream().map(module -> resolveResource(module, isJsModule))
+                .collect(Collectors.toSet());
+    }
+
+    private String resolveResource(String importPath, boolean isJsModule) {
         String resolved = importPath;
         if (!importPath.startsWith("@")) {
 
-            // This can be removed when all flow components annotated with @JsModule have
-            // the './' prefix intead of the 'frontend://'
             if (importPath.startsWith(FRONTEND_PROTOCOL_PREFIX)) {
                 resolved = importPath.replaceFirst(FRONTEND_PROTOCOL_PREFIX, "./");
-                log().warn(
-                    "Do not use the '{}' protocol in '@JsModule', changing '{}' to '{}', please update your component.",
-                    FRONTEND_PROTOCOL_PREFIX, importPath, resolved);
+                if (isJsModule) {
+                    // Remove this when all flow components annotated with
+                    // @JsModule have the './' prefix instead of 'frontend://'
+                    log().warn(
+                            "Do not use the '{}' protocol in '@JsModule', changing '{}' to '{}', please update your component.",
+                            FRONTEND_PROTOCOL_PREFIX, importPath, resolved);
+                }
             }
 
             // We only should check here those paths starting with './' when all flow components
