@@ -18,6 +18,11 @@ package com.vaadin.flow.server.webcomponent;
 import java.io.Serializable;
 import java.util.Objects;
 
+import com.vaadin.flow.shared.util.SharedUtil;
+
+import elemental.json.JsonArray;
+import elemental.json.JsonValue;
+
 /**
  * Value object containing information of a web component's property field.
  *
@@ -26,7 +31,7 @@ import java.util.Objects;
  * @author Vaadin Ltd.
  */
 public final class PropertyData<P extends Serializable>
-        implements Serializable {
+implements Serializable {
     private final String name;
     private final Class<P> type;
     private final P defaultValue;
@@ -115,5 +120,35 @@ public final class PropertyData<P extends Serializable>
             return name.equals(other.name) && type.equals(other.type);
         }
         return false;
+    }
+
+    /**
+     * Gets the name used when setting the value through an attribute.
+     *
+     * @return the attribute name used for setting the value
+     */
+    public String getAttributeName() {
+        return SharedUtil.camelCaseToDashSeparated(getName());
+    }
+
+    /**
+     * Gets the type used in generated JavaScript code
+     *
+     * @return the type for JS
+     */
+    public String getJSType() {
+        if (getType() == Boolean.class) {
+            return "Boolean";
+        } else if (getType() == Double.class || getType() == Integer.class) {
+            return "Number";
+        } else if (getType() == String.class) {
+            return "String";
+        } else if (JsonArray.class.isAssignableFrom(getType())) {
+            return "Array";
+        } else if (JsonValue.class.isAssignableFrom(getType())) {
+            return "Object";
+        } else {
+            throw new IllegalStateException("Unsupported type: " + getType());
+        }
     }
 }
