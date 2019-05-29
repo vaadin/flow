@@ -12,7 +12,7 @@
     <packaging>war</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
-        <test.excludegroup>com.vaadin.flow.testcategory.IgnoreNPM</test.excludegroup>
+        <exclude.it.tests>ThemedTemplateIT, CustomStylesIT, HtmlParserThemeTemplateIT, MyThemeIT</exclude.it.tests>
     </properties>
 
     <dependencies>
