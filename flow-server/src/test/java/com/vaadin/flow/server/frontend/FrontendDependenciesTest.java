@@ -103,12 +103,27 @@ public class FrontendDependenciesTest {
     @Test
     public void should_visitNpmPakageAnnotations() throws Exception {
         FrontendDependencies deps = create(Component1.class, Component2.class);
-        assertEquals(2, deps.getPackages().size());
+        assertEquals(4, deps.getPackages().size());
         assertTrue(deps.getPackages().containsKey("@vaadin/component-1"));
         assertTrue(deps.getPackages().containsKey("@vaadin/component-2"));
+        assertTrue(deps.getPackages().containsKey("@vaadin/component-0"));
+        assertTrue(deps.getPackages().containsKey("@vaadin/vaadin-foo"));
         assertEquals("1.1.1", deps.getPackages().get("@vaadin/component-1"));
         assertEquals("222.222.222",
                 deps.getPackages().get("@vaadin/component-2"));
+        assertEquals("=2.1.0", deps.getPackages().get("@vaadin/component-0"));
+        assertEquals("1.23.114-alpha1", deps.getPackages().get("@vaadin/vaadin-foo"));
+    }
+
+
+    @Test
+    public void should_visitSuperNpmPakageAnnotations() throws Exception {
+        FrontendDependencies deps = create(
+                FrontendDependenciesTestComponents.ComponentExtending.class);
+        assertEquals(1, deps.getPackages().size());
+        assertTrue(deps.getPackages().containsKey("@vaadin/component-extended"));
+
+        assertEquals("2.1.0", deps.getPackages().get("@vaadin/component-extended"));
     }
 
     @Test
@@ -150,8 +165,11 @@ public class FrontendDependenciesTest {
         assertEquals(Theme1.class, deps.getThemeDefinition().getTheme());
 
         assertEquals(8, deps.getModules().size());
-        assertEquals(0, deps.getPackages().size());
+        assertEquals(1, deps.getPackages().size());
         assertEquals(6, deps.getScripts().size());
+        
+        assertTrue(deps.getPackages().containsKey("@foo/first-view"));
+        assertEquals("0.0.1", deps.getPackages().get("@foo/first-view"));
     }
 
     @Test

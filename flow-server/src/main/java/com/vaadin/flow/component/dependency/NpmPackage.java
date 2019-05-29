@@ -17,6 +17,7 @@ package com.vaadin.flow.component.dependency;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -39,6 +40,7 @@ import com.vaadin.flow.component.Component;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
+@Inherited
 @Repeatable(NpmPackage.Container.class)
 public @interface NpmPackage {
 
@@ -69,6 +71,7 @@ public @interface NpmPackage {
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.TYPE)
     @Documented
+    @Inherited
     @interface Container {
 
         /**
