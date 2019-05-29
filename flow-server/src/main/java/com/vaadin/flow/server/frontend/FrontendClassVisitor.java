@@ -91,8 +91,9 @@ class FrontendClassVisitor extends ClassVisitor {
                 if (other == null || !(other instanceof ThemeData)) {
                     return false;
                 }
-                // For our private case comparing hash is enough
-                return this.hashCode() == ((ThemeData)other).hashCode();
+                ThemeData that = (ThemeData)other;
+                return notheme == that.notheme
+                        && (name != null && name.equals(that.name) || name == null && that.name == null);
             }
 
             @Override
@@ -100,6 +101,11 @@ class FrontendClassVisitor extends ClassVisitor {
                 // We might need to add variant when we wanted to fail in the case of
                 // same theme class with different variant, which was right in v13
                 return Objects.hash(name, notheme);
+            }
+
+            @Override
+            public String toString() {
+                return " notheme: " + notheme + "\n name:" + name + "\n variant: " + variant;
             }
         }
 
@@ -111,8 +117,8 @@ class FrontendClassVisitor extends ClassVisitor {
         @Override
         public String toString() {
             return String.format(
-                    "%n view: %s%n route: %s%n notheme: %b%n theme: %s%n variant: %s%n layout: %s%n modules: %s%n scripts: %s%n",
-                    name, route, theme.notheme, theme.name, theme.variant, layout, col2Str(modules),
+                    "%n view: %s%n route: %s%n%s%n layout: %s%n modules: %s%n scripts: %s%n",
+                    name, route, theme, layout, col2Str(modules),
                     col2Str(scripts));
         }
         private String col2Str(Collection<String> s) {
