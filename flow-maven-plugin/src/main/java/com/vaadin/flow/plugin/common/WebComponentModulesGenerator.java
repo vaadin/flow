@@ -23,24 +23,55 @@ import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.server.webcomponent.WebComponentModulesWriter;
 
 /**
- * @author Vaadin Ltd
- * @since
+ * Generates embeddable web component files in bower production mode, hiding the
+ * * complexity caused by using a different class loader.
+ *
+ * Uses {@link com.vaadin.flow.server.webcomponent.WebComponentModulesWriter} to
+ * generate web component modules files from
+ * {@link com.vaadin.flow.component.WebComponentExporter} implementations found
+ * by {@link com.vaadin.flow.plugin.common.ClassPathIntrospector}.
+ * 
+ * @author Vaadin Ltd.
  */
 public class WebComponentModulesGenerator extends ClassPathIntrospector {
     private final Class<?> writerClass;
 
+    /**
+     * Creates a new instances and stores the {@code introspector} to be used
+     * for locating
+     * {@link com.vaadin.flow.server.webcomponent.WebComponentModulesWriter} and
+     * {@link com.vaadin.flow.component.WebComponentExporter} classes.
+     *
+     * @param introspector
+     *            {@link com.vaadin.flow.plugin.common.ClassPathIntrospector}
+     *            implementation to use as a base.
+     */
     public WebComponentModulesGenerator(ClassPathIntrospector introspector) {
         super(introspector);
         writerClass = loadClassInProjectClassLoader(
                 WebComponentModulesWriter.class.getName());
     }
 
-
+    /**
+     * Collects
+     * {@link com.vaadin.flow.server.webcomponent.WebComponentModulesWriter}
+     * class and classes that extend
+     * {@link com.vaadin.flow.component.WebComponentExporter} using {@code
+     * inspector}. Generates web component modules and places the into the
+     * {@code outputDirectory}.
+     *
+     * @param outputDirectory
+     *            target directory for the web component module files
+     * @return generated files
+     * @throws java.lang.IllegalStateException
+     *             if {@code inspector} cannot locate required classes
+     */
     public Set<File> generateWebComponentModules(File outputDirectory) {
-        Set<Class<?>> exporterClasses =
-                getSubtypes(WebComponentExporter.class).collect(Collectors.toSet());
+        Set<Class<?>> exporterClasses = getSubtypes(WebComponentExporter.class)
+                .collect(Collectors.toSet());
 
-        return WebComponentModulesWriter.ReflectionUsage.reflectiveWriteWebComponentsToDirectory(
-                    writerClass, exporterClasses, outputDirectory, true);
+        return WebComponentModulesWriter.DirectoryWriter
+                .generateWebComponentsToDirectory(writerClass, exporterClasses,
+                        outputDirectory, true);
     }
 }

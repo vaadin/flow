@@ -120,8 +120,6 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
 
         long start = System.nanoTime();
 
-//        generateExportedWebComponents();
-
         runNodeUpdater();
 
         if (generateBundle) {
@@ -132,30 +130,6 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
         getLog().info("update-frontend took " + ms + "ms.");
     }
 
-
-    /**
-     * Uses
-     * {@link com.vaadin.flow.plugin.common.WebComponentModulesGenerator} to
-     * generate JavaScript files from the {@code WebComponentExporters}
-     * present in the code base. The generated JavaScript files are placed in
-     * {@link FrontendUtils#DEFAULT_GENERATED_DIR} folder.
-     */
-    private void generateExportedWebComponents() {
-        if (!generateEmbeddableWebComponents) {
-            return;
-        }
-        WebComponentModulesGenerator generator =
-                new WebComponentModulesGenerator(new AnnotationValuesExtractor(
-                        getClassFinder(project)));
-
-        try {
-            FileUtils.forceMkdir(generatedFolder);
-            generator.generateWebComponentModules(generatedFolder);
-        } catch (IOException e) {
-            getLog().error("Failed to create a directory for generated web " +
-                    "components", e);
-        }
-    }
 
     private void runNodeUpdater() {
         new NodeTasks.Builder(getClassFinder(project),

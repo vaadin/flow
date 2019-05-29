@@ -24,26 +24,60 @@ import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.server.webcomponent.WebComponentModulesWriter;
 
 /**
+ * Generates embeddable web component files in npm mode, hiding the complexity
+ * caused by using a different class loader.
  *
+ * Uses {@link com.vaadin.flow.server.webcomponent.WebComponentModulesWriter} to
+ * generate web component modules files from
+ * {@link com.vaadin.flow.component.WebComponentExporter} implementations found
+ * by {@link ClassFinder}.
+ * 
+ * @author Vaadin Ltd.
  */
 public class FrontendWebComponentGenerator implements Serializable {
     private final ClassFinder finder;
 
+    /**
+     * Creates a new instances and stores the {@code finder} to be used for
+     * locating
+     * {@link com.vaadin.flow.server.webcomponent.WebComponentModulesWriter} and
+     * {@link com.vaadin.flow.component.WebComponentExporter} classes.
+     * 
+     * @param finder
+     *            {@link com.vaadin.flow.server.frontend.ClassFinder}
+     *            implementation
+     */
     public FrontendWebComponentGenerator(ClassFinder finder) {
         this.finder = finder;
     }
 
-    public void generateWebComponents(File outputDirectory) {
-        Set<Class<?>> exporterClasses;
+    /**
+     * Collects
+     * {@link com.vaadin.flow.server.webcomponent.WebComponentModulesWriter}
+     * class and classes that extend
+     * {@link com.vaadin.flow.component.WebComponentExporter} using {@code
+     * finder}. Generates web component modules and places the into the {@code
+     * outputDirectory}.
+     * 
+     * @param outputDirectory
+     *            target directory for the web component module files
+     * @return generated files
+     * @throws java.lang.IllegalStateException
+     *             if {@code finder} cannot locate required classes
+     */
+    public Set<File> generateWebComponents(File outputDirectory) {
         try {
-            exporterClasses = finder
+            final Class<?> writerClass = finder
+                    .loadClass(WebComponentModulesWriter.class.getName());
+            final Set<Class<?>> exporterClasses = finder
                     .getSubTypesOf(WebComponentExporter.class.getName());
-
-            WebComponentModulesWriter.ReflectionUsage.reflectiveWriteWebComponentsToDirectory(
-                    finder.loadClass(WebComponentModulesWriter.class.getName()),
-                    exporterClasses, outputDirectory, false);
+            return WebComponentModulesWriter.DirectoryWriter
+                    .generateWebComponentsToDirectory(writerClass,
+                            exporterClasses, outputDirectory, false);
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            throw new IllegalStateException(
+                    "Unable to locate a required class using custom class " +
+                            "loader", e);
         }
     }
 }
