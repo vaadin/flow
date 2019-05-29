@@ -103,7 +103,7 @@ public class WebComponentModulesGeneratorTest {
     }
 
 
-@Test
+    @Test
     public void generateModuleFile_fileIsGenerated() throws IOException, ClassNotFoundException {
         // prepare
         ClassFinder finder =
@@ -125,23 +125,20 @@ public class WebComponentModulesGeneratorTest {
 
         // verify
         Assert.assertThat(
-                "Generated module doesn't contain 'age' property definition",
-                content,
-                CoreMatchers.containsString("\"age\":{\"type\":\"Integer\""));
+                "Generated module doesn't contain 'age' property default",
+                content, CoreMatchers.containsString("this['_age'] = 1;"));
 
-        Assert.assertThat(
-                "Generated module doesn't contain polymer-element import",
-                content, CoreMatchers.containsString(
-                        "bower_components/polymer/polymer-element.html"));
+        Assert.assertThat("Generated module doesn't contain 'age' setter",
+                content,
+                CoreMatchers.containsString(
+                        "set ['age'](value) {\n  if (this['_age'] === value)\n    return;\n  this['_age'] = value;"));
 
         Assert.assertThat(
                 "Generated module doesn't contain element registration",
                 content,
                 CoreMatchers.allOf(
-                        CoreMatchers
-                                .containsString("<dom-module id=\"wc-foo\">"),
                         CoreMatchers.containsString(
-                                "customElements.define(WcFoo.is, WcFoo);"),
+                                "customElements.define('wc-foo', WcFoo);"),
                         CoreMatchers.containsString("class WcFoo extends")));
 
         Assert.assertThat("Generated module contains UI import", content,
