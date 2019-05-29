@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.CoreMatchers;
@@ -32,10 +34,16 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.Mockito;
 
-import com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.ReflectionsClassFinder;
+import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.plugin.samplecode.AbstractExporter;
+import com.vaadin.flow.plugin.samplecode.BarExporter;
 import com.vaadin.flow.plugin.samplecode.FooExporter;
 import com.vaadin.flow.server.frontend.ClassFinder;
+import com.vaadin.flow.server.webcomponent.WebComponentModulesWriter;
+
+import static org.mockito.Mockito.mock;
 
 public class WebComponentModulesGeneratorTest {
 
@@ -49,7 +57,7 @@ public class WebComponentModulesGeneratorTest {
     private WebComponentModulesGenerator generator;
 
     @Before
-    public void init() {
+    public void init() throws ClassNotFoundException {
         List<URL> urls = new ArrayList<>();
         for (String path : getRawClasspathEntries()) {
             if (path.contains("api")
@@ -67,34 +75,50 @@ public class WebComponentModulesGeneratorTest {
             }
         }
 
-        ClassFinder finder = new ReflectionsClassFinder(
-                urls.toArray(new URL[0]));
+        ClassFinder finder =
+                getMockFinderWithExporterClasses(FooExporter.class);
 
-        introspector = new ClassPathIntrospector(finder) {
-        };
+        introspector = new ClassPathIntrospector(finder) {};
+
         generator = new WebComponentModulesGenerator(introspector);
     }
 
-//    @Test
-//    public void getExporters_exportersAreDiscovered() throws IOException {
-//        Set<String> exporterFQNs = generator.getExporters()
-//                .filter(clazz -> clazz.getPackage().getName()
-//                        .equals(AbstractExporter.class.getPackage().getName()))
-//                .map(Class::getName).collect(Collectors.toSet());
-//
-//        Assert.assertEquals(2, exporterFQNs.size());
-//
-//        Assert.assertTrue(
-//                "FooExporter class is not discovered as an exporter class",
-//                exporterFQNs.contains(FOO_EXPORTER_FQN));
-//        Assert.assertTrue(
-//                "BarExporter class is not discovered as an exporter class",
-//                exporterFQNs.contains(BarExporter.class.getName()));
-//    }
 
     @Test
-    public void generateModuleFile_fileIsGenerated() throws IOException {
+    public void getExporters_exportersAreDiscovered() throws IOException, ClassNotFoundException {
+        // prepare
+        ClassFinder finder =
+                getMockFinderWithExporterClasses(FooExporter.class,
+                        BarExporter.class, AbstractExporter.class);
 
+        introspector = new ClassPathIntrospector(finder) {};
+        generator = new WebComponentModulesGenerator(introspector);
+
+        // act
+        Set<File> files =
+                generator.generateWebComponentModules(temporaryFolder.getRoot());
+
+        // verify
+        Assert.assertEquals(2, files.size());
+
+        Assert.assertTrue(
+                "FooExporter class is not discovered as an exporter class",
+                files.stream().anyMatch(file -> file.getName().contains("wc-foo")));
+        Assert.assertTrue(
+                "BarExporter class is not discovered as an exporter class",
+                files.stream().anyMatch(file -> file.getName().contains("wc-bar")));
+    }
+
+
+@Test
+    public void generateModuleFile_fileIsGenerated() throws IOException, ClassNotFoundException {
+        // prepare
+        ClassFinder finder =
+                getMockFinderWithExporterClasses(FooExporter.class);
+        introspector = new ClassPathIntrospector(finder) {};
+        generator = new WebComponentModulesGenerator(introspector);
+
+        // act
         Set<File> files =
                 generator.generateWebComponentModules(temporaryFolder.getRoot());
 
@@ -106,6 +130,7 @@ public class WebComponentModulesGeneratorTest {
         String content = FileUtils.readFileToString(generateFile,
                 StandardCharsets.UTF_8);
 
+        // verify
         Assert.assertThat(
                 "Generated module doesn't contain 'age' property definition",
                 content,
@@ -144,5 +169,17 @@ public class WebComponentModulesGeneratorTest {
 
         String[] split = classpath.split(pathSep);
         return Arrays.asList(split);
+    }
+
+    private static ClassFinder getMockFinderWithExporterClasses(Class<?
+            extends WebComponentExporter>... exporters) throws ClassNotFoundException {
+        ClassFinder finder = mock(ClassFinder.class);
+        Mockito.when(finder.loadClass(WebComponentModulesWriter.class.getName()))
+                .thenReturn((Class)WebComponentModulesWriter.class);
+        Mockito.when(finder.loadClass(WebComponentExporter.class.getName()))
+                .thenReturn((Class) WebComponentExporter.class);
+        Mockito.when(finder.getSubTypesOf(WebComponentExporter.class))
+                .thenReturn(Stream.of(exporters).collect(Collectors.toSet()));
+        return finder;
     }
 }
