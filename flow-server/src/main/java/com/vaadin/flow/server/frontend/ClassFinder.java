@@ -41,7 +41,8 @@ public interface ClassFinder extends Serializable {
         /**
          * It uses current classloader for getting resources or loading classes.
          *
-         * @param classes The classes.
+         * @param classes
+         *            The classes.
          */
         public DefaultClassFinder(Set<Class<?>> classes) {
             this.classes = classes;
@@ -94,11 +95,12 @@ public interface ClassFinder extends Serializable {
         public <T> Set<Class<? extends T>> getSubTypesOf(Class<T> type) {
             return this.classes.stream()
                     .filter(cl -> type.isAssignableFrom(cl) && !type.equals(cl))
-                    .map(cl -> (Class<T>)cl).collect(Collectors.toSet());
+                    .map(cl -> (Class<T>) cl).collect(Collectors.toSet());
         }
 
         @Override
-        public <T> Set<Class<? extends T>> getSubTypesOf(String name) throws ClassNotFoundException {
+        public <T> Set<Class<? extends T>> getSubTypesOf(String name)
+                throws ClassNotFoundException {
             Class<T> parent = loadClass(name);
             return getSubTypesOf(parent);
         }
@@ -116,7 +118,8 @@ public interface ClassFinder extends Serializable {
         /**
          * It uses specified classFinder and caches scanned annotation.
          *
-         * @param classFinder A real classFinder.
+         * @param classFinder
+         *            A real classFinder.
          */
         public CachedClassFinder(ClassFinder classFinder) {
             this.classFinder = classFinder;
@@ -146,7 +149,8 @@ public interface ClassFinder extends Serializable {
         }
 
         @Override
-        public <T> Set<Class<? extends T>> getSubTypesOf(String name) throws ClassNotFoundException {
+        public <T> Set<Class<? extends T>> getSubTypesOf(String name)
+                throws ClassNotFoundException {
             return classFinder.getSubTypesOf(name);
         }
     }
@@ -154,7 +158,8 @@ public interface ClassFinder extends Serializable {
     /**
      * Get annotated classes in the classloader.
      *
-     * @param clazz the annotation
+     * @param clazz
+     *            the annotation
      * @return a set with all classes that are annotated
      */
     Set<Class<?>> getAnnotatedClasses(Class<? extends Annotation> clazz);
@@ -168,14 +173,16 @@ public interface ClassFinder extends Serializable {
      * @throws ClassNotFoundException
      *             when the class not found
      */
-    default Set<Class<?>> getAnnotatedClasses(String className) throws ClassNotFoundException{
+    default Set<Class<?>> getAnnotatedClasses(String className)
+            throws ClassNotFoundException {
         return getAnnotatedClasses(loadClass(className));
     }
 
     /**
      * Get a resource from the classpath.
      *
-     * @param name class literal
+     * @param name
+     *            class literal
      * @return the resource
      */
     URL getResource(String name);
@@ -194,12 +201,25 @@ public interface ClassFinder extends Serializable {
     /**
      * Gets all subtypes in hierarchy of a given type.
      *
-     * @param type the type to search for the subtypes for
-     * @param <T> the class of the type
+     * @param type
+     *            the type to search for the subtypes for
+     * @param <T>
+     *            the class of the type
      * @return set of the subtypes of the given class
      */
     <T> Set<Class<? extends T>> getSubTypesOf(final Class<T> type);
 
-
-    <T> Set<Class<? extends T>> getSubTypesOf(final String name) throws ClassNotFoundException;
+    /**
+     * Gets all subtypes in hierarchy of a given type, using FQN string.
+     * 
+     * @param name
+     *            Fully qualified name of the type to search subtypes of
+     * @param <T>
+     *            the class of the type
+     * @return set of the subtypes of the given class
+     * @throws ClassNotFoundException
+     *             when the parent class is not in the classpath
+     */
+    <T> Set<Class<? extends T>> getSubTypesOf(final String name)
+            throws ClassNotFoundException;
 }
