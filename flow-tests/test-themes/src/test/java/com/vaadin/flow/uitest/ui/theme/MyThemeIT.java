@@ -17,14 +17,11 @@ package com.vaadin.flow.uitest.ui.theme;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.testcategory.IgnoreNPM;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-@Category(IgnoreNPM.class)
 public class MyThemeIT extends ChromeBrowserTest {
 
     @Test
