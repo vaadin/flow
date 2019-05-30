@@ -241,11 +241,15 @@ public class DevModeHandler implements Serializable {
      * @return true if the request should be forwarded to webpack
      */
     public boolean isDevModeRequest(HttpServletRequest request) {
-        return getRequestFilename(request).matches(".+\\.js");
+        return request.getPathInfo().matches(".+\\.js");
     }
 
     /**
      * Serve a file by proxying to webpack.
+     *
+     * Note: it considers the {@link HttpServletRequest#getPathInfo} that will
+     * be the path passed to the 'webpack-dev-server' which is running in the
+     * context root folder of the application.
      *
      * @param request
      *            the servlet request
@@ -256,7 +260,7 @@ public class DevModeHandler implements Serializable {
      *             in the case something went wrong like connection refused
      */
     public boolean serveDevModeRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String requestFilename = getRequestFilename(request);
+        String requestFilename = request.getPathInfo();
 
         HttpURLConnection connection = prepareConnection(requestFilename, request.getMethod());
 
@@ -389,11 +393,6 @@ public class DevModeHandler implements Serializable {
         while ((bytes = inputStream.read(buffer)) >= 0) {
             outputStream.write(buffer, 0, bytes);
         }
-    }
-
-    private String getRequestFilename(HttpServletRequest request) {
-        return request.getPathInfo() == null ? request.getServletPath()
-                : request.getServletPath() + request.getPathInfo();
     }
 
     private static Logger getLogger() {
