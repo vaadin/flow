@@ -76,9 +76,9 @@ public class TaskUpdateImports extends NodeUpdater {
 
     @Override
     public void execute() {
-        Set<String> modules = new HashSet<>(getJavascriptJsModules(frontDeps.getModules()));
-        modules.addAll(getJavascriptJsModules(frontDeps.getScripts()));
-
+        Set<String> modules = new HashSet<>();
+        modules.addAll(resolveModules(frontDeps.getModules(), true));
+        modules.addAll(resolveModules(frontDeps.getScripts(), false));
         modules.addAll(getGeneratedModules(generatedFolder,
                 Collections.singleton(generatedFlowImports.getName())));
 

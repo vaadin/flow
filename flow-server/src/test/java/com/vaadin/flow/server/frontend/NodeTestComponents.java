@@ -57,6 +57,7 @@ public class NodeTestComponents {
     }
 
     @JsModule("./foo-dir/vaadin-npm-component.js")
+    @JavaScript("frontend://foo-dir/javascript-lib.js")
     public static class VaadinNpmComponent extends Component {
     }
 
