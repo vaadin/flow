@@ -17,12 +17,9 @@
 
 package com.vaadin.flow.server.frontend;
 
-import javax.annotation.concurrent.NotThreadSafe;
-
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
+import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -36,12 +33,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
+import org.slf4j.impl.SimpleLogger;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
@@ -53,7 +52,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 
-@NotThreadSafe
 public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
     @Rule
@@ -66,16 +64,20 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
     private File generatedPath;
     private File frontendDirectory;
     private File nodeModulesPath;
+    private File loggerFile;
     private TaskUpdateImports updater;
-
-    static final PrintStream originalOut = System.out;
-    static final PrintStream originalErr = System.err;
-    ByteArrayOutputStream capturedOut;
-
 
     @Before
     public void setup() throws Exception {
         File tmpRoot = temporaryFolder.getRoot();
+
+        // Use a file for logs so as tests can assert the warnings shown to the user.
+        loggerFile = new File(tmpRoot, "test.log");
+        loggerFile.createNewFile();
+        // Setting a system property we make SimpleLogger to output to a file
+        System.setProperty(SimpleLogger.LOG_FILE_KEY, loggerFile.getAbsolutePath());
+        // re-init logger to get new configuration
+        initLogger();
 
         frontendDirectory = new File(tmpRoot, DEFAULT_FRONTEND_DIR);
         nodeModulesPath = new File(tmpRoot, NODE_MODULES);
@@ -88,21 +90,20 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         Assert.assertTrue(nodeModulesPath.mkdirs());
         createExpectedImports(frontendDirectory, nodeModulesPath);
         Assert.assertTrue(new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME + "ExampleConnector.js").exists());
-
     }
 
-    // Use this always in a `try ... finally` block
-    private void prepareOutputForCapture() {
-        capturedOut = new ByteArrayOutputStream();
-        PrintStream capturedStream = new PrintStream(capturedOut);
-        System.setOut(capturedStream);
-        System.setErr(capturedStream);
+    @After
+    public void tearDown() throws Exception  {
+        // re-init logger to reset to default
+        System.clearProperty(SimpleLogger.LOG_FILE_KEY);
+        initLogger();
     }
-    // Use this always in the finally statement
-    private String restoreCapturedOutput() {
-        System.setOut(originalOut);
-        System.setErr(originalErr);
-        return capturedOut.toString();
+
+    private void initLogger() throws Exception, SecurityException {
+        // init method is protected
+        Method method = SimpleLogger.class.getDeclaredMethod("init");
+        method.setAccessible(true);
+        method.invoke(null);
     }
 
     @Test
@@ -127,17 +128,14 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         expectedLines.add("import 'unresolved/component';");
         assertFalse(importsFile.exists());
 
-        String output;
-        try {
-            prepareOutputForCapture();
-            updater.execute();
-        } finally {
-            output = restoreCapturedOutput();
-        }
 
+        updater.execute();
         assertTrue(importsFile.exists());
+
         assertContainsImports(true, expectedLines.toArray(new String[0]));
 
+        assertTrue(loggerFile.exists());
+        String output = FileUtils.readFileToString(loggerFile, "UTF-8");
         assertContains(output, true,
                 "changing 'frontend://frontend-p3-template.js' to './frontend-p3-template.js'",
                 "Use the './' prefix for resources in JAR files: 'ExampleConnector.js'",
@@ -150,6 +148,8 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         assertContains(output, false,
                 "changing 'frontend://foo-dir/javascript-lib.js' to './foo-dir/javascript-lib.js'");
     }
+
+
 
     @Test
     public void shouldNot_UpdateJsFile_when_NoChanges() throws Exception {
