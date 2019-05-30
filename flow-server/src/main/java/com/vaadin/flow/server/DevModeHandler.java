@@ -241,7 +241,7 @@ public class DevModeHandler implements Serializable {
      * @return true if the request should be forwarded to webpack
      */
     public boolean isDevModeRequest(HttpServletRequest request) {
-        return request.getPathInfo().matches(".+\\.js");
+        return request.getPathInfo() != null && request.getPathInfo().matches(".+\\.js");
     }
 
     /**
