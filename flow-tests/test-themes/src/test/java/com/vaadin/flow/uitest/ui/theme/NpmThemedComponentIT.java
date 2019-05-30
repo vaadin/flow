@@ -54,4 +54,17 @@ public class NpmThemedComponentIT extends ChromeBrowserTest {
         Assert.assertEquals("The server side component is not themed", "themed",
                 divInClientSideComponent.getAttribute("id"));
     }
+
+    @Override
+    protected String getTestPath() {
+        String path = super.getTestPath();
+        String view = "view/";
+        String result;
+        if (path.startsWith("/")) {
+            result = path.substring(view.length() + 1);
+        }
+        result = path.substring(view.length());
+        return result;
+    }
+
 }
