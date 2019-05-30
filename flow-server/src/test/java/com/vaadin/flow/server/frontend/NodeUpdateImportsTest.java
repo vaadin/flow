@@ -17,8 +17,12 @@
 
 package com.vaadin.flow.server.frontend;
 
+import javax.annotation.concurrent.NotThreadSafe;
+
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -45,7 +49,11 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAM
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
+
+@NotThreadSafe
 public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
     @Rule
@@ -60,10 +68,13 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
     private File nodeModulesPath;
     private TaskUpdateImports updater;
 
+    static final PrintStream originalOut = System.out;
+    static final PrintStream originalErr = System.err;
+    ByteArrayOutputStream capturedOut;
+
 
     @Before
     public void setup() throws Exception {
-
         File tmpRoot = temporaryFolder.getRoot();
 
         frontendDirectory = new File(tmpRoot, DEFAULT_FRONTEND_DIR);
@@ -77,6 +88,20 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         Assert.assertTrue(nodeModulesPath.mkdirs());
         createExpectedImports(frontendDirectory, nodeModulesPath);
         Assert.assertTrue(new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME + "ExampleConnector.js").exists());
+
+    }
+
+    private void prepareOutputForCapture() {
+        capturedOut = new ByteArrayOutputStream();
+        PrintStream capturedStream = new PrintStream(capturedOut);
+        System.setOut(capturedStream);
+        System.setErr(capturedStream);
+    }
+
+    private String getCapturedOutput() {
+        System.setOut(originalOut);
+        System.setErr(originalErr);
+        return capturedOut.toString();
     }
 
     @Test
@@ -88,7 +113,6 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
     @Test
     public void should_UpdateMainJsFile() throws Exception {
-
         List<String> expectedLines = new ArrayList<>(Arrays.asList(
                 "const div = document.createElement('div');",
                 "div.innerHTML = '<custom-style><style include=\"lumo-color lumo-typography\"></style></custom-style>';",
@@ -100,12 +124,26 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         expectedLines.add("import '@vaadin/vaadin-mixed-component/theme/lumo/vaadin-something-else'");
         // An import not found in node_modules
         expectedLines.add("import 'unresolved/component';");
+        assertFalse(importsFile.exists());
 
-        Assert.assertFalse(importsFile.exists());
+        prepareOutputForCapture();
         updater.execute();
-        Assert.assertTrue(importsFile.exists());
 
+        assertTrue(importsFile.exists());
         assertContainsImports(true, expectedLines.toArray(new String[0]));
+
+        String output = getCapturedOutput();
+        assertContains(output, true,
+                "changing 'frontend://frontend-p3-template.js' to './frontend-p3-template.js'",
+                "Use the './' prefix for resources in JAR files: 'ExampleConnector.js'",
+                "Use the './' prefix for files in the 'frontend' folder: 'vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js'");
+
+        // Using regex match because of the ➜ character in TC
+        assertTrue(output.matches(
+                "(?s).*Failed to find the following imports in the `node_modules` tree:\\n      . unresolved/component.*"));
+
+        assertContains(output, false,
+                "changing 'frontend://foo-dir/javascript-lib.js' to './foo-dir/javascript-lib.js'");
     }
 
     @Test
@@ -178,19 +216,21 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
             throws IOException {
         String content = FileUtils.readFileToString(importsFile,
                 Charset.defaultCharset());
+        for (String line : imports) {
+            assertContains(content, contains, addWebpackPrefix(line));
+        }
+    }
 
-        for (String importString : imports) {
-                if (contains) {
-                    Assert.assertTrue(
-                        importString + " not found in:\n" + content,
-                        content.contains(addWebpackPrefix(importString)));
-                } else {
-                    Assert.assertFalse(
-                        importString + " not found in:\n" + content,
-                        content.contains(addWebpackPrefix(importString)));
-                }
+    private void assertContains(String content, boolean contains, String... checks) {
+        for (String importString : checks) {
+            boolean result = content.contains(importString);
+            String message = "\n  " + (contains ? "NOT " : "") + "FOUND '" + importString + " IN: \n" + content;
+            if (contains) {
+                assertTrue(message, result);
+            } else {
+                assertFalse(message, result);
             }
-
+        }
     }
 
     private String addWebpackPrefix(String s) {
