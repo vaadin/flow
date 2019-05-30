@@ -14,7 +14,6 @@
     <packaging>war</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
-        <transpilation.output>${project.build.directory}/build</transpilation.output>
     </properties>
 
     <dependencies>
@@ -36,6 +35,24 @@
 
     <build>
         <plugins>
+            <!-- Auto run clean to remove previous mode compilation -->
+            <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <!-- autoclean modules to prevent files of previous builds breaking tests -->
+                <executions>
+                    <execution>
+                        <id>auto-clean</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- Clean lib before running jetty -->
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+            </plugin>
             <!--  Run flow plugin to build frontend -->
             <plugin>
                 <groupId>com.vaadin</groupId>
@@ -47,9 +64,6 @@
                             <goal>copy-production-files</goal>
                             <goal>package-for-production</goal>
                         </goals>
-                        <configuration>
-                            <transpileOutputDirectory>${transpilation.output}</transpileOutputDirectory>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -58,12 +72,11 @@
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
                 <configuration>
-                    <webAppConfig>
-                        <resourceBases>
-                            <resourceBase>${transpilation.output}</resourceBase>
-                            <resourceBase>${project.basedir}/src/main/webapp</resourceBase>
-                        </resourceBases>
-                    </webAppConfig>
+                    <webAppSourceDirectory>${project.build.directory}/${project.build.finalName}</webAppSourceDirectory>
+                    <webApp>
+                        <!-- Deploy the app with a context in the servlet container -->
+                        <contextPath>/context-path</contextPath>
+                    </webApp>
                 </configuration>
             </plugin>
         </plugins>
