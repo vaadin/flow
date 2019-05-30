@@ -241,12 +241,12 @@ public class DevModeHandler implements Serializable {
      * @return true if the request should be forwarded to webpack
      */
     public boolean isDevModeRequest(HttpServletRequest request) {
-        return request.getPathInfo().matches(".+\\.js");
+        return request.getPathInfo() != null && request.getPathInfo().matches(".+\\.js");
     }
 
     /**
      * Serve a file by proxying to webpack.
-     *
+     * <p>
      * Note: it considers the {@link HttpServletRequest#getPathInfo} that will
      * be the path passed to the 'webpack-dev-server' which is running in the
      * context root folder of the application.

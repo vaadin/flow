@@ -30,6 +30,20 @@
 
     <build>
         <plugins>
+            <!-- Auto run clean to remove previous mode compilation -->
+            <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <!-- autoclean modules to prevent files of previous builds breaking tests -->
+                <executions>
+                    <execution>
+                        <id>auto-clean</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <!-- Clean lib before running jetty -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -40,8 +54,10 @@
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
                 <configuration>
-                    <!-- Use war output directory instead of default src/main/webapp to get the webpack bundles  -->
-                    <webAppSourceDirectory>${project.build.directory}/${project.build.finalName}</webAppSourceDirectory>
+                    <webApp>
+                        <!-- Deploy the app with a context in the servlet container -->
+                        <contextPath>/context-path</contextPath>
+                    </webApp>
                 </configuration>
             </plugin>
         </plugins>

@@ -71,7 +71,6 @@ import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.theme.ThemeDefinition;
-import static com.vaadin.flow.shared.ApplicationConstants.*;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -79,6 +78,7 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
 
+import static com.vaadin.flow.shared.ApplicationConstants.CONTEXT_PROTOCOL_PREFIX;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**

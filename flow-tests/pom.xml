@@ -34,16 +34,19 @@
         <module>test-web-components-production</module>
         <module>test-web-components-theme-variant</module>
 
+
         <!-- tests migrated to NPM -->
         <module>web-component-test-assets</module>
         <module>test-mixed</module>
         <module>test-mixed/pom-npm-production.xml</module>
         <module>test-mixed/pom-bower-devmode.xml</module>
         <module>test-mixed/pom-bower-production.xml</module>
+
         <!-- temporary because TC <module>test-npm-web-components</module> -->
 
         <!-- This test fails in local -->
         <module>test-root-context</module>
+
     </modules>
 
     <properties>
