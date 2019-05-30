@@ -27,7 +27,6 @@
         <module>test-memory-leaks</module>
         <module>test-servlet</module>
         <module>test-themes</module>
-        <module>test-themes/pom-npm.xml</module>
         <module>test-lumo-theme</module>
         <module>test-material-theme</module>
         <module>servlet-containers</module>
@@ -38,6 +37,7 @@
         <!-- tests migrated to NPM -->
         <module>web-component-test-assets</module>
         <module>test-mixed/pom-npm-devmode.xml</module>
+        <module>test-themes/pom-npm.xml</module>
         <module>test-mixed/pom-npm-production.xml</module>
         <module>test-mixed/pom-bower-devmode.xml</module>
         <module>test-mixed/pom-bower-production.xml</module>
