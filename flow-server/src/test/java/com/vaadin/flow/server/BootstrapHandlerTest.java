@@ -377,8 +377,6 @@ public class BootstrapHandlerTest {
     private VaadinSession session;
     private TestVaadinServletService service;
     private MockDeploymentConfiguration deploymentConfiguration;
-    private WebBrowser browser;
-    private VaadinServlet servlet;
     private MockServletServiceSessionSetup mocks;
 
     @Before
@@ -391,7 +389,6 @@ public class BootstrapHandlerTest {
 
         deploymentConfiguration = mocks.getDeploymentConfiguration();
 
-        servlet = mocks.getServlet();
         service = mocks.getService();
         service.setRouteRegistry(routeRegistry);
         service.setRouter(new Router(routeRegistry) {
@@ -1092,7 +1089,7 @@ public class BootstrapHandlerTest {
                 "webcomponents-loader.js should be added to head. (not deferred)",
                 allElements.stream().map(Object::toString)
                         .anyMatch(element -> element.equals(
-                                "<script type=\"text/javascript\" src=\"./build/webcomponentsjs/webcomponents-loader.js\"></script>")));
+                                "<script type=\"text/javascript\" src=\"build/webcomponentsjs/webcomponents-loader.js\"></script>")));
 
         Assert.assertTrue(
                 "index.js should be added to head for ES6 browsers. (deferred and type module)",
