@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
+import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -126,11 +127,20 @@ public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void should_ContainLumoThemeFiles() throws Exception {
+    public void themedClientSideModulesAreWrittenIntpoImportsFile()
+            throws Exception {
         updater.execute();
 
         String content = FileUtils.readFileToString(importsFile,
                 Charset.defaultCharset());
+        Assert.assertThat(content, CoreMatchers.allOf(
+                CoreMatchers.containsString(
+                        "import 'Frontend/theme/myTheme/main-template.js';"),
+                CoreMatchers.containsString(
+                        "import 'Frontend/theme/myTheme/client-side-template.js';"),
+                CoreMatchers.containsString(
+                        "import 'Frontend/theme/myTheme/subfolder/sub-template.js';"
+                                + "")));
     }
 
     private void createImport(String path, String content) throws IOException {
