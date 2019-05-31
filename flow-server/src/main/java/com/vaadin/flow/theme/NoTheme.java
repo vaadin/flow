@@ -32,7 +32,7 @@ import java.lang.annotation.Target;
  * defined by it is used.
  * <li>If a {@link NoTheme}  annotation is found at the root navigation level, theming
  * is disabled.
- * <li>If the {@link com.vaadin.flow.theme.lumo.Lumo} class is available in the
+ * <li>If the <code>com.vaadin.flow.theme.lumo.Lumo</code> class is available in the
  * classpath (which comes from the vaadin-lumo-theme project), then it is used
  * as the default theme.
  * </ul>
