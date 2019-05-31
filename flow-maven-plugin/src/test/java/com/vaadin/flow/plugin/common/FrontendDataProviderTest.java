@@ -271,12 +271,7 @@ public class FrontendDataProviderTest {
     @Test
     public void createShellFile_fileContainsGeneratedWebModuleAndRegularHtmlImport()
             throws IOException {
-//        Mockito.when(generator.getExporters())
-//                .thenReturn(Stream.of(TestExporter.class));
-//
         File webModule = new File(sourceDirectory, "bar/web-module-gen.html");
-//        Mockito.when(generator.generateModuleFile(TestExporter.class,
-//                new File(sourceDirectory, "bar"))).thenReturn(webModule);
 
         Mockito.when(generator.generateWebComponentModules(any(File.class)))
                 .thenReturn(Collections.singleton(webModule));
