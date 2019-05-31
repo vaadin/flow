@@ -41,9 +41,25 @@ public class ImportExtractorTest {
     }
 
     @Test
+    public void removeComments_blockCommentInsideImport() {
+        ImportExtractor extractor = new ImportExtractor(
+                "import from /*fdg \n */'foo.js';");
+        Assert.assertEquals("import from 'foo.js';",
+                extractor.removeComments());
+    }
+
+    @Test
+    public void removeComments_lineCommentInsideImport() {
+        ImportExtractor extractor = new ImportExtractor(
+                "import from // xcvxcvcx\n//vcbcvbcv\n 'foo.js';");
+        Assert.assertEquals("import from \n\n 'foo.js';",
+                extractor.removeComments());
+    }
+
+    @Test
     public void getImportsWithBlockComment() {
         ImportExtractor extractor = new ImportExtractor(
-                "/* comment \n sdf \n \n */ import 'foo.js';");
+                "/* comment \n sdf \n \n */ import /* ddddddd*/'foo.js';");
         List<String> importedPaths = extractor.getImportedPaths();
         Assert.assertEquals(1, importedPaths.size());
         Assert.assertEquals("foo.js", importedPaths.get(0));
@@ -52,7 +68,7 @@ public class ImportExtractorTest {
     @Test
     public void getImportsWithLineComments() {
         ImportExtractor extractor = new ImportExtractor(
-                "// sdfdsf \n  import from 'foo.js';\n //xxxxx \n import {A}  from bar.js;");
+                "// sdfdsf \n  import from 'foo.js';\n //xxxxx \n import {A} // sdfsf\n from bar.js;");
         List<String> importedPaths = extractor.getImportedPaths();
         Assert.assertEquals(2, importedPaths.size());
         Assert.assertEquals("foo.js", importedPaths.get(0));
