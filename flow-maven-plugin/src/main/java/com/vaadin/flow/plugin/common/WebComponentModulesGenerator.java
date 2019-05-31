@@ -34,7 +34,7 @@ import com.vaadin.flow.server.webcomponent.WebComponentModulesWriter;
  * @author Vaadin Ltd.
  */
 public class WebComponentModulesGenerator extends ClassPathIntrospector {
-    private final Class<?> writerClass;
+    private Class<?> writerClass;
 
     /**
      * Creates a new instances and stores the {@code introspector} to be used
@@ -48,8 +48,6 @@ public class WebComponentModulesGenerator extends ClassPathIntrospector {
      */
     public WebComponentModulesGenerator(ClassPathIntrospector introspector) {
         super(introspector);
-        writerClass = loadClassInProjectClassLoader(
-                WebComponentModulesWriter.class.getName());
     }
 
     /**
@@ -71,7 +69,15 @@ public class WebComponentModulesGenerator extends ClassPathIntrospector {
                 .collect(Collectors.toSet());
 
         return WebComponentModulesWriter.DirectoryWriter
-                .generateWebComponentsToDirectory(writerClass, exporterClasses,
-                        outputDirectory, true);
+                .generateWebComponentsToDirectory(getWriterClass(),
+                        exporterClasses, outputDirectory, true);
+    }
+
+    private Class<?> getWriterClass() {
+        if (writerClass == null) {
+            writerClass = loadClassInProjectClassLoader(
+                    WebComponentModulesWriter.class.getName());
+        }
+        return writerClass;
     }
 }

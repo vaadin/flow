@@ -33,12 +33,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
-import com.vaadin.flow.function.SerializableSupplier;
 
 /**
  * Writes web components generated from
@@ -73,9 +70,10 @@ public final class WebComponentModulesWriter implements Serializable {
      * @throws java.lang.IllegalArgumentException
      *             if {@code outputDirectory} is not a directory
      */
-    private static Set<File> writeWebComponentsToDirectory(
+    private static Set<File> writeWebComponentsToDirectory( // NOSONAR
             Set<Class<? extends WebComponentExporter<? extends Component>>> exporterClasses,
             File outputDirectory, boolean bowerMode) {
+        // this method is used via reflection by DirectoryWriter
         Objects.requireNonNull(exporterClasses,
                 "Parameter 'exporterClasses' must not be null");
         Objects.requireNonNull(outputDirectory,
@@ -93,7 +91,6 @@ public final class WebComponentModulesWriter implements Serializable {
                 .collect(Collectors.toSet());
     }
 
-    @SuppressWarnings("unchecked")
     private static Stream<Class<? extends WebComponentExporter<? extends Component>>> filterConcreteExporters(
             Set<Class<? extends WebComponentExporter<? extends Component>>> exporterClasses) {
         return exporterClasses.stream()
@@ -225,7 +222,7 @@ public final class WebComponentModulesWriter implements Serializable {
             if (!WebComponentModulesWriter.class.getName()
                     .equals(writerClass.getName())) { // NOSONAR
                 throw new IllegalArgumentException(
-                        "Argument 'writer' should " + "be a class of '"
+                        "Argument 'writer' should be a class of '"
                                 + WebComponentModulesWriter.class.getName()
                                 + "' but it is '" + writerClass.getName() + "'");
             }
@@ -242,7 +239,7 @@ public final class WebComponentModulesWriter implements Serializable {
                         outputDirectory, bowerMode));
                 writeMethod.setAccessible(accessible);
                 return files;
-            } catch (IllegalAccessException | InvocationTargetException e) {
+            } catch (IllegalAccessException | InvocationTargetException | NullPointerException e) {
                 throw new RuntimeException(
                         "Could not write exported web component module!", e);
             }
