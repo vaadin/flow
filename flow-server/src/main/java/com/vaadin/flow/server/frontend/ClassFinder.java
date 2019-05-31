@@ -97,13 +97,6 @@ public interface ClassFinder extends Serializable {
                     .filter(cl -> type.isAssignableFrom(cl) && !type.equals(cl))
                     .map(cl -> (Class<T>) cl).collect(Collectors.toSet());
         }
-
-        @Override
-        public <T> Set<Class<? extends T>> getSubTypesOf(String name)
-                throws ClassNotFoundException {
-            Class<T> parent = loadClass(name);
-            return getSubTypesOf(parent);
-        }
     }
 
     /**
@@ -146,12 +139,6 @@ public interface ClassFinder extends Serializable {
         @Override
         public <T> Set<Class<? extends T>> getSubTypesOf(Class<T> type) {
             return classFinder.getSubTypesOf(type);
-        }
-
-        @Override
-        public <T> Set<Class<? extends T>> getSubTypesOf(String name)
-                throws ClassNotFoundException {
-            return classFinder.getSubTypesOf(name);
         }
     }
 
@@ -220,6 +207,9 @@ public interface ClassFinder extends Serializable {
      * @throws ClassNotFoundException
      *             when the parent class is not in the classpath
      */
-    <T> Set<Class<? extends T>> getSubTypesOf(final String name)
-            throws ClassNotFoundException;
+    default <T> Set<Class<? extends T>> getSubTypesOf(final String name)
+            throws ClassNotFoundException {
+        Class<T> parent = loadClass(name);
+        return getSubTypesOf(parent);
+    }
 }
