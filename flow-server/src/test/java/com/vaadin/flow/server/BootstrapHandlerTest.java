@@ -59,6 +59,7 @@ import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
+import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_MAPPING;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -796,6 +797,7 @@ public class BootstrapHandlerTest {
     public void css_body_size_overrides_annotated_body_size()
             throws InvalidRouteConfigurationException {
 
+
         initUI(testUI, createVaadinRequest(),
                 Collections.singleton(BodySizeAnnotatedAndCss.class));
 
@@ -1089,19 +1091,25 @@ public class BootstrapHandlerTest {
                 "webcomponents-loader.js should be added to head. (not deferred)",
                 allElements.stream().map(Object::toString)
                         .anyMatch(element -> element.equals(
-                                "<script type=\"text/javascript\" src=\"build/webcomponentsjs/webcomponents-loader.js\"></script>")));
+                                "<script type=\"text/javascript\" src=\"./"
+                                        + VAADIN_MAPPING
+                                        + "build/webcomponentsjs/webcomponents-loader.js\"></script>")));
 
         Assert.assertTrue(
                 "index.js should be added to head for ES6 browsers. (deferred and type module)",
                 allElements.stream().map(Object::toString)
                         .anyMatch(element -> element.equals(
-                                "<script type=\"module\" defer src=\"build/index-1111.cache.js\"></script>")));
+                                "<script type=\"module\" defer src=\"./"
+                                        + VAADIN_MAPPING
+                                        + "build/index-1111.cache.js\"></script>")));
 
         Assert.assertTrue(
                 "index.js should be added to head for ES5 browsers. (deferred and nomodule)",
                 allElements.stream().map(Object::toString)
                         .anyMatch(element -> element.equals(
-                                "<script type=\"text/javascript\" defer src=\"build/index.es5-2222.cache.js\" nomodule></script>")));
+                                "<script type=\"text/javascript\" defer src=\"./"
+                                        + VAADIN_MAPPING
+                                        + "build/index.es5-2222.cache.js\" nomodule></script>")));
     }
 
     @Test // 3333
@@ -1616,7 +1624,7 @@ public class BootstrapHandlerTest {
         initUI(testUI, createVaadinRequest(),
                 Collections.singleton(MetaAnnotationsContainsNull.class));
 
-        Document page = BootstrapHandler.getBootstrapPage(
+        BootstrapHandler.getBootstrapPage(
                 new BootstrapContext(request, null, session, testUI));
     }
 
@@ -1631,7 +1639,7 @@ public class BootstrapHandlerTest {
         initUI(testUI, createVaadinRequest(),
                 Collections.singleton(MetaAnnotationsWithoutRoute.class));
 
-        Document page = BootstrapHandler.getBootstrapPage(
+        BootstrapHandler.getBootstrapPage(
                 new BootstrapContext(request, null, session, testUI));
     }
 
@@ -1733,7 +1741,7 @@ public class BootstrapHandlerTest {
 
         initUI(testUI, createVaadinRequest(),
                 Collections.singleton(InitialPageConfiguratorRoute.class));
-        Document page = BootstrapHandler.getBootstrapPage(
+        BootstrapHandler.getBootstrapPage(
                 new BootstrapContext(request, null, session, testUI));
 
         Assert.assertFalse("Default indicator theme is not themed anymore",

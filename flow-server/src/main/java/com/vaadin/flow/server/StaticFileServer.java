@@ -28,7 +28,8 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.ResponseWriter;
-import com.vaadin.flow.shared.ApplicationConstants;
+
+import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_MAPPING;
 
 /**
  * Handles sending of resources from the WAR root (web content) or
@@ -72,7 +73,7 @@ public class StaticFileServer implements StaticFileHandler {
             return false;
         }
         if (requestFilename.startsWith(
-                "/" + ApplicationConstants.VAADIN_STATIC_FILES_PATH)) {
+                "/" + VAADIN_MAPPING)) {
             // The path is reserved for internal static resources only
             // We rather serve 404 than let it fall through
             return true;
@@ -85,9 +86,10 @@ public class StaticFileServer implements StaticFileHandler {
     @Override
     public boolean serveStaticResource(HttpServletRequest request,
             HttpServletResponse response) throws IOException {
-        String filenameWithPath = getRequestFilename(request);
-        URL resourceUrl = servletService.getStaticResource(filenameWithPath);
 
+        String filenameWithPath = getRequestFilename(request);
+
+        URL resourceUrl = servletService.getStaticResource(filenameWithPath);
         if (resourceUrl == null) {
             // Not found in webcontent or in META-INF/resources in some JAR
             response.sendError(HttpServletResponse.SC_NOT_FOUND);

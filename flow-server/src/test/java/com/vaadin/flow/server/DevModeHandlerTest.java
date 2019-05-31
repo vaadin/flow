@@ -201,7 +201,7 @@ public class DevModeHandlerTest {
         assertFalse(new DevModeHandler(0).isDevModeRequest(request));
     }
 
-    @Test(expected = ConnectException.class)
+    @Test(expected = IllegalStateException.class)
     public void should_ThrowAnException_When_WebpackNotListening() throws IOException {
         HttpServletRequest request = prepareRequest("/foo.js");
         new DevModeHandler(0).serveDevModeRequest(request, null);
@@ -237,7 +237,7 @@ public class DevModeHandlerTest {
         assertEquals(HTTP_UNAUTHORIZED, responseStatus);
     }
 
-    @Test(expected = ConnectException.class)
+    @Test(expected = IllegalStateException.class)
     public void servlet_should_ThrowAnException_When_WebpackNotListening() throws Exception {
         VaadinServlet servlet = prepareServlet();
         HttpServletRequest request = prepareRequest("/foo.js");
@@ -261,6 +261,7 @@ public class DevModeHandlerTest {
         VaadinServlet servlet = new VaadinServlet();
         ServletConfig cfg = mock(ServletConfig.class);
         ServletContext ctx = mock(ServletContext.class);
+        Mockito.doAnswer(invocation -> ctx.getClass().getClassLoader()).when(ctx).getClassLoader();
         Mockito.doAnswer(invocation -> ctx).when(cfg).getServletContext();
         Mockito.doAnswer(invocation -> Collections.enumeration(Collections.emptyList())).when(cfg)
                 .getInitParameterNames();

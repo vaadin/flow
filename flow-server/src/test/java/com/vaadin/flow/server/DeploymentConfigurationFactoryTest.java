@@ -5,6 +5,8 @@ import javax.servlet.ServletContext;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -23,8 +25,9 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
-import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
+import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_MAPPING;
+import static com.vaadin.flow.shared.ApplicationConstants.META_INF;
 import static java.util.Collections.emptyMap;
 import static org.easymock.EasyMock.capture;
 import static org.easymock.EasyMock.expect;
@@ -57,7 +60,7 @@ public class DeploymentConfigurationFactoryTest {
     public void setup() throws IOException {
         System.setProperty("user.dir",
                 temporaryFolder.getRoot().getAbsolutePath());
-        tokenFile = new File(temporaryFolder.getRoot(), PARAM_TOKEN_FILE);
+        tokenFile = new File(temporaryFolder.getRoot(), META_INF + VAADIN_MAPPING + TOKEN_FILE);
         contextMock = mock(ServletContext.class);
     }
 
@@ -221,13 +224,14 @@ public class DeploymentConfigurationFactoryTest {
     @Test
     public void should_readConfigurationFromTokenFile()
             throws Exception {
+
         FileUtils.writeLines(tokenFile, Arrays.asList(
                 "{",
                 "\"bowerMode\": false,",
                 "\"productionMode\": true",
                 "}"));
-        expect(contextMock.getResource("/" + TOKEN_FILE))
-                .andReturn(tokenFile.toURI().toURL()).anyTimes();
+
+
         DeploymentConfiguration config = createConfig(emptyMap());
         assertFalse(config.isBowerMode());
         assertTrue(config.isProductionMode());
@@ -243,8 +247,13 @@ public class DeploymentConfigurationFactoryTest {
     private ServletConfig createServletConfigMock(
             Map<String, String> servletConfigParameters,
             Map<String, String> servletContextParameters) throws Exception {
+
+        URLClassLoader classLoader = new URLClassLoader(new URL[] {temporaryFolder.getRoot().toURI().toURL()});
+
         expect(contextMock.getInitParameterNames()).andAnswer(() -> Collections
                 .enumeration(servletContextParameters.keySet())).anyTimes();
+        expect(contextMock.getClassLoader())
+                .andReturn(classLoader).anyTimes();
         Capture<String> initParameterNameCapture = EasyMock.newCapture();
         expect(contextMock.getInitParameter(capture(initParameterNameCapture)))
                 .andAnswer(() -> servletContextParameters

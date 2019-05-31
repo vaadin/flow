@@ -31,6 +31,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.ServletHelper.RequestType;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.webjar.WebJarServer;
 import com.vaadin.flow.shared.JsonConstants;
 
@@ -225,6 +226,7 @@ public class VaadinServlet extends HttpServlet {
     @Override
     protected void service(HttpServletRequest request,
             HttpServletResponse response) throws ServletException, IOException {
+
         // Handle context root request without trailing slash, see #9921
         if (handleContextOrServletRootWithoutSlash(request, response)) {
             return;
@@ -283,6 +285,10 @@ public class VaadinServlet extends HttpServlet {
             return true;
         }
 
+        if (isSensitiveFile(request)) {
+            return false;
+        }
+
         if (staticFileHandler.isStaticResourceRequest(request)) {
             staticFileHandler.serveStaticResource(request, response);
             return true;
@@ -290,6 +296,11 @@ public class VaadinServlet extends HttpServlet {
 
         return webJarServer != null
                 && webJarServer.tryServeWebJarResource(request, response);
+    }
+
+    private boolean isSensitiveFile(HttpServletRequest request) {
+        String file = request.getPathInfo().replaceFirst("^/+", "");
+        return Constants.STATISTICS_JSON_DEFAULT.equals(file) || FrontendUtils.TOKEN_FILE.equals(file);
     }
 
     /**

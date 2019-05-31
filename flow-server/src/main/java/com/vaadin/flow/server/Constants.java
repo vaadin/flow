@@ -143,7 +143,7 @@ public final class Constants implements Serializable {
      * Default path for the WebPack profile statistics json file. It can be
      * modifyied by setting the system property "statistics.file.path".
      */
-    public static final String STATISTICS_JSON_DEFAULT = "/build/stats.json";
+    public static final String STATISTICS_JSON_DEFAULT = "build/stats.json";
 
     /**
      * Name of the <code>npm</code> main file.

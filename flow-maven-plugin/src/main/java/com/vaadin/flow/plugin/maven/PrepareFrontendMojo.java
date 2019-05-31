@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.maven.model.Build;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -51,6 +50,9 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
+import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_MAPPING;
+import static com.vaadin.flow.shared.ApplicationConstants.META_INF;
+import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_STATIC_FILES_PATH;
 
 /**
  * This goal checks that node and npm tools are installed, copies frontend
@@ -121,16 +123,13 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
 
     /**
      * The folder where webpack should output index.js and other generated files.
-     * By default the output folder is decided depending on project package type.
      */
-    @Parameter
+    @Parameter(defaultValue = "${project.build.outputDirectory}/" + META_INF + VAADIN_MAPPING)
     private File webpackOutputDirectory;
 
     @Override
     public void execute() {
         super.execute();
-
-        webpackOutputDirectory = getWebpackOutputDirectory();
 
         // propagate info via System properties and token file
         propagateBuildInfo();
@@ -247,25 +246,6 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
                         frontendDirectory, flowNodeDirectory), e);
                 }
             }
-        }
-    }
-
-    private File getWebpackOutputDirectory() {
-        if(webpackOutputDirectory != null) {
-            return webpackOutputDirectory;
-        }
-
-        Build buildInformation = project.getBuild();
-        switch (project.getPackaging()) {
-            case "jar":
-                return new File(buildInformation.getOutputDirectory(),
-                        "META-INF/resources");
-            case "war":
-                return new File(buildInformation.getDirectory(),
-                        buildInformation.getFinalName());
-            default:
-                throw new IllegalStateException(String.format(
-                        "Unsupported packaging '%s'", project.getPackaging()));
         }
     }
 

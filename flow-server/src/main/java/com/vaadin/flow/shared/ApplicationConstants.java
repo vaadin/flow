@@ -66,9 +66,20 @@ public class ApplicationConstants implements Serializable {
     public static final String CONTEXT_ROOT_URL = "contextRootUrl";
 
     /**
+     * The path used in the vaadin servlet for handling static resources.
+     */
+    public static final String VAADIN_MAPPING = "VAADIN/";
+
+    /**
+     * The path used in the vaadin servlet for handling static resources.
+     */
+    public static final String META_INF = "META-INF/";
+
+    /**
      * The prefix used for all internal static files, relative to context root.
      */
-    public static final String VAADIN_STATIC_FILES_PATH = "VAADIN/static/";
+    public static final String VAADIN_STATIC_FILES_PATH = VAADIN_MAPPING + "static/";
+
     /**
      * The name of the javascript containing push support.
      */

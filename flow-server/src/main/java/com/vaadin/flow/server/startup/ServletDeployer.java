@@ -15,18 +15,18 @@
  */
 package com.vaadin.flow.server.startup;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.Optional;
-
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +37,8 @@ import com.vaadin.flow.server.DeploymentConfigurationFactory;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletConfiguration;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
+
+import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_MAPPING;
 
 /**
  * Context listener that automatically registers Vaadin servlets.
@@ -151,10 +153,13 @@ public class ServletDeployer implements ServletContextListener {
         }
 
         if (enableServlets) {
-            createAppServlet(context);
+            ServletRegistration registration = createAppServlet(context);
             if (hasDevelopmentMode) {
                 createServletIfNotExists(context, "frontendFilesServlet",
                         "/frontend/*");
+            }
+            if (registration != null) {
+                registration.addMapping("/" + VAADIN_MAPPING + "*");
             }
         }
     }
@@ -189,7 +194,7 @@ public class ServletDeployer implements ServletContextListener {
         }
     }
 
-    private void createAppServlet(ServletContext context) {
+    private ServletRegistration createAppServlet(ServletContext context) {
         boolean createServlet = ApplicationRouteRegistry.getInstance(context)
                 .hasNavigationTargets();
 
@@ -201,7 +206,7 @@ public class ServletDeployer implements ServletContextListener {
                     "{} there are no navigation targets registered to the "
                             + "route registry and there are no web component exporters",
                     SKIPPING_AUTOMATIC_SERVLET_REGISTRATION_BECAUSE);
-            return;
+            return null;
         }
 
         ServletRegistration vaadinServlet = findVaadinServlet(context);
@@ -210,13 +215,13 @@ public class ServletDeployer implements ServletContextListener {
                     "{} there is already a Vaadin servlet with the name {}",
                     SKIPPING_AUTOMATIC_SERVLET_REGISTRATION_BECAUSE,
                     vaadinServlet.getName());
-            return;
+            return vaadinServlet;
         }
 
-        createServletIfNotExists(context, getClass().getName(), "/*");
+        return createServletIfNotExists(context, getClass().getName(), "/*");
     }
 
-    private void createServletIfNotExists(ServletContext context, String name,
+    private ServletRegistration createServletIfNotExists(ServletContext context, String name,
             String path) {
         ServletRegistration existingServlet = findServletByPathPart(context,
                 path);
@@ -225,7 +230,7 @@ public class ServletDeployer implements ServletContextListener {
                     "{} there is already a {} servlet with the name {} for path {} given",
                     SKIPPING_AUTOMATIC_SERVLET_REGISTRATION_BECAUSE,
                     existingServlet, existingServlet.getName(), path);
-            return;
+            return existingServlet;
         }
 
         ServletRegistration.Dynamic registration = context.addServlet(name,
@@ -234,7 +239,7 @@ public class ServletDeployer implements ServletContextListener {
             // Not expected to ever happen
             getLogger().info("{} there is already a servlet with the name {}",
                     SKIPPING_AUTOMATIC_SERVLET_REGISTRATION_BECAUSE, name);
-            return;
+            return null;
         }
 
         getLogger().info(
@@ -243,6 +248,7 @@ public class ServletDeployer implements ServletContextListener {
 
         registration.setAsyncSupported(true);
         registration.addMapping(path);
+        return registration;
     }
 
     private ServletRegistration findServletByPathPart(ServletContext context,

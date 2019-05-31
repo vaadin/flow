@@ -79,6 +79,8 @@ import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
 
 import static com.vaadin.flow.shared.ApplicationConstants.CONTEXT_PROTOCOL_PREFIX;
+import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_MAPPING;
+import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_STATIC_FILES_PATH;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -683,8 +685,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         } else {
             BootstrapUriResolver resolver = context.getUriResolver();
             conf.getPolyfills().forEach(polyfill -> head.appendChild(
-                    createJavaScriptElement(
-                            resolvePath(polyfill, conf, resolver), false)));
+                    createJavaScriptElement(resolver.resolveVaadinUri(
+                            CONTEXT_PROTOCOL_PREFIX + VAADIN_MAPPING + polyfill), false)));
             try {
                 appendNpmBundle(head, resolver, service);
             } catch (IOException e) {
@@ -703,29 +705,16 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static void appendNpmBundle(Element head, BootstrapUriResolver resolver, VaadinService service) throws IOException {
         String content = FrontendUtils.getStatsContent(service);
         JsonObject chunks = Json.parse(content).getObject("assetsByChunkName");
-        DeploymentConfiguration conf = service.getDeploymentConfiguration();
 
         for (String key: chunks.keys()) {
-            Element script = createJavaScriptElement(
-                    resolvePath(chunks.getString(key), conf, resolver));
+            Element script = createJavaScriptElement(resolver.resolveVaadinUri(
+                    CONTEXT_PROTOCOL_PREFIX + VAADIN_MAPPING + chunks.getString(key)));
             if (key.endsWith(".es5")) {
                 head.appendChild(script.attr("nomodule", true));
             } else {
                 head.appendChild(script.attr("type", "module"));
             }
         }
-    }
-
-    private static String resolvePath(String path, DeploymentConfiguration conf, BootstrapUriResolver resolver) {
-        // When in dev-mode we return the relative path to the bootstrap page so
-        // as the request comes again to the VaadinServlet that will handle it
-        // in order to be sent to webpack.
-        // Otherwise, in prod-mode we return to the root context of the
-        // application, so as files are served as static
-        if (conf.isProductionMode()) {
-            path = resolver.resolveVaadinUri(CONTEXT_PROTOCOL_PREFIX + path);
-        }
-        return path;
     }
 
     private static void inlineEs6Collections(Element head,

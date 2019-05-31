@@ -38,6 +38,8 @@ import com.vaadin.flow.server.VaadinService;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
+import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_MAPPING;
+import static com.vaadin.flow.shared.ApplicationConstants.META_INF;
 
 /**
  * A class for static methods and definitions that might be
@@ -286,7 +288,6 @@ public class FrontendUtils {
         return processBuilder;
     }
 
-
     /**
      * Gets the content of the <code>stats.json</code> file produced by webpack.
      *
@@ -298,12 +299,13 @@ public class FrontendUtils {
     public static String getStatsContent(VaadinService service) throws IOException {
         DeploymentConfiguration config = service.getDeploymentConfiguration();
         String stats = config
-                .getStringProperty(SERVLET_PARAMETER_STATISTICS_JSON, STATISTICS_JSON_DEFAULT)
+                .getStringProperty(SERVLET_PARAMETER_STATISTICS_JSON,
+                        META_INF + VAADIN_MAPPING + STATISTICS_JSON_DEFAULT)
                 // Remove absolute
                 .replaceFirst("^/", "");
 
         // Try stats as a resource from the class path
-        InputStream content = config.getClass().getClassLoader().getResourceAsStream(stats);
+        InputStream content = service.getClassLoader().getResourceAsStream(stats);
         if (content != null) {
             getLogger().debug("Found stats file as a resource file '{}'.", stats);
         } else {

@@ -246,7 +246,7 @@ public class DevModeHandler implements Serializable {
 
     /**
      * Serve a file by proxying to webpack.
-     * <p>
+     *
      * Note: it considers the {@link HttpServletRequest#getPathInfo} that will
      * be the path passed to the 'webpack-dev-server' which is running in the
      * context root folder of the application.
@@ -275,7 +275,15 @@ public class DevModeHandler implements Serializable {
 
         // Send the request
         getLogger().debug("Requesting resource to webpack {}", connection.getURL());
-        int responseCode = connection.getResponseCode();
+        int responseCode;
+        try {
+            responseCode = connection.getResponseCode();
+        } catch (Exception e) {
+            throw new IllegalStateException(
+                    String.format("%n  Unable to get bundle '%s' from webpack server.%n  Please verify that 'webpack-dev-server' is running.",
+                            connection.getURL(), e));
+        }
+
         if (responseCode == HTTP_NOT_FOUND) {
             getLogger().debug("Resource not served by webpack {}", requestFilename);
             // webpack cannot access the resource, return false so as flow can

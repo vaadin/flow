@@ -47,6 +47,8 @@ import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PROJECT_BASEDIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
+import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_MAPPING;
+import static com.vaadin.flow.shared.ApplicationConstants.META_INF;
 /**
  * Creates {@link DeploymentConfiguration} filled with all parameters specified
  * by the framework users.
@@ -152,9 +154,10 @@ public final class DeploymentConfigurationFactory implements Serializable {
                 }
             }
 
-            // token file is in the resources context
+            // token file is in the class-path of the application
             if (json == null) {
-                URL resource = context.getResource("/" + TOKEN_FILE);
+                URL resource = context.getClassLoader()
+                        .getResource(META_INF + VAADIN_MAPPING + TOKEN_FILE);
                 if (resource != null) {
                     json = FrontendUtils.streamToString(resource.openStream());
                 }
