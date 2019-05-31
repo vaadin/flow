@@ -131,7 +131,6 @@ public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
 
         String content = FileUtils.readFileToString(importsFile,
                 Charset.defaultCharset());
-        System.out.println("xxxxxxxxx " + content);
     }
 
     private void createImport(String path, String content) throws IOException {
