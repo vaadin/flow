@@ -60,7 +60,10 @@ module.exports = {
       }
     ]
   },
-
+  performance: {
+    maxEntrypointSize: 2097152, // 2MB
+    maxAssetSize: 2097152 // 2MB
+  },
   plugins: [
     // Transpile with babel, and produce different bundles per browser
     new BabelMultiTargetPlugin({
