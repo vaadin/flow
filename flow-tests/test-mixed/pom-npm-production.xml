@@ -67,10 +67,10 @@
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
                 <configuration>
-                    <!-- Use war output directory instead of default src/main/webapp to get the webpack bundles  -->
-                    <webAppSourceDirectory>${project.build.directory}/${project.build.finalName}</webAppSourceDirectory>
                     <webApp>
-                        <!-- Deploy the app with a context in the servlet container -->
+                        <!-- We deploy the app with a context in the servlet container in order to test
+                             that bootstrap code resolves correctly the application context and do
+                             not render absolute references to the root path -->
                         <contextPath>/context-path</contextPath>
                     </webApp>
                 </configuration>

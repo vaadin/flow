@@ -55,7 +55,9 @@
                 <artifactId>jetty-maven-plugin</artifactId>
                 <configuration>
                     <webApp>
-                        <!-- Deploy the app with a context in the servlet container -->
+                        <!-- We deploy the app with a context in the servlet container in order to test
+                             that bootstrap code resolves correctly the application context and do
+                             not render absolute references to the root path -->
                         <contextPath>/context-path</contextPath>
                     </webApp>
                 </configuration>
