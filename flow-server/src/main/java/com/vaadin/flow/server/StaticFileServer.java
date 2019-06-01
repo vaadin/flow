@@ -29,8 +29,8 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.ResponseWriter;
 
+import static com.vaadin.flow.server.communication.StreamRequestHandler.DYN_RES_PREFIX;
 import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_MAPPING;
-
 /**
  * Handles sending of resources from the WAR root (web content) or
  * META-INF/resources in the case that {@link VaadinServlet} is mapped using
@@ -72,8 +72,9 @@ public class StaticFileServer implements StaticFileHandler {
             // least with Jetty
             return false;
         }
-        if (requestFilename.startsWith(
-                "/" + VAADIN_MAPPING)) {
+        if (requestFilename.startsWith("/" + VAADIN_MAPPING) &&
+            // Exclude dynamic requests
+           !requestFilename.startsWith("/" + VAADIN_MAPPING + DYN_RES_PREFIX)) {
             // The path is reserved for internal static resources only
             // We rather serve 404 than let it fall through
             return true;

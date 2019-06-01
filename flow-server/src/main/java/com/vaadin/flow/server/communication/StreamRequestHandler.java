@@ -16,6 +16,7 @@
 package com.vaadin.flow.server.communication;
 
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -23,6 +24,7 @@ import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +36,8 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
+
+import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_MAPPING;
 
 /**
  * Handles {@link StreamResource} and {@link StreamReceiver} instances
@@ -49,7 +53,7 @@ public class StreamRequestHandler implements RequestHandler {
     /**
      * Dynamic resource URI prefix.
      */
-    static final String DYN_RES_PREFIX = "VAADIN/dynamic/resource/";
+    public static final String DYN_RES_PREFIX = "dynamic/resource/";
 
     private StreamResourceHandler resourceHandler = new StreamResourceHandler();
     private StreamReceiverHandler receiverHandler = new StreamReceiverHandler();
@@ -62,13 +66,29 @@ public class StreamRequestHandler implements RequestHandler {
         if (pathInfo == null) {
             return false;
         }
+
         // remove leading '/'
         assert pathInfo.startsWith(Character.toString(PATH_SEPARATOR));
         pathInfo = pathInfo.substring(1);
 
+        // Requests coming here could have two patterns
+        // - `/servlet-path/route-path/VAADIN/dynamic/resource/` when handled
+        //    by the regular VaadinServlet mapping
+        // - `/dynamic/resource/` when handled by the VAADIN mapping
+        //
+        // removing everything until VAADIN/ mapping and adding it latter
+        int index = pathInfo.indexOf(VAADIN_MAPPING + DYN_RES_PREFIX);
+        if (index >= 0) {
+            pathInfo = pathInfo.substring(index + VAADIN_MAPPING.length());
+        }
+
         if (!pathInfo.startsWith(DYN_RES_PREFIX)) {
             return false;
         }
+
+        // add VAADIN mapping so as the request matches with the stream
+        // registered
+        pathInfo = VAADIN_MAPPING + pathInfo;
 
         Optional<AbstractStreamResource> abstractStreamResource;
         session.lock();
@@ -130,7 +150,7 @@ public class StreamRequestHandler implements RequestHandler {
      * @return generated URI string
      */
     public static String generateURI(String name, String id) {
-        StringBuilder builder = new StringBuilder(DYN_RES_PREFIX);
+        StringBuilder builder = new StringBuilder(VAADIN_MAPPING + DYN_RES_PREFIX);
 
         try {
             builder.append(UI.getCurrent().getUIId()).append(PATH_SEPARATOR);
