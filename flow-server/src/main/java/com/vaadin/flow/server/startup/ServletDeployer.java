@@ -153,14 +153,13 @@ public class ServletDeployer implements ServletContextListener {
         }
 
         if (enableServlets) {
-            ServletRegistration registration = createAppServlet(context);
+            createAppServlet(context);
             if (hasDevelopmentMode) {
                 createServletIfNotExists(context, "frontendFilesServlet",
                         "/frontend/*");
             }
-            if (registration != null) {
-                registration.addMapping("/" + VAADIN_MAPPING + "*");
-            }
+            createServletIfNotExists(context, "vaadinBundleServlet",
+                    "/" + VAADIN_MAPPING + "*");
         }
     }
 

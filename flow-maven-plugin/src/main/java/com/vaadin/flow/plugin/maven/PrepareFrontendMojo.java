@@ -52,7 +52,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_MAPPING;
 import static com.vaadin.flow.shared.ApplicationConstants.META_INF;
-import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_STATIC_FILES_PATH;
 
 /**
  * This goal checks that node and npm tools are installed, copies frontend
