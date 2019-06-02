@@ -54,6 +54,11 @@ import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_MAPPING;
  * mode or has
  * {@link com.vaadin.flow.server.Constants#USE_ORIGINAL_FRONTEND_RESOURCES}
  * parameter set to {@code true}.</li>
+ * <li>Static files servlet, mapped to '/VAADIN/static' responsible to resolve
+ * files placed in the '[webcontext]/VAADIN/static' folder or in the
+ * '[classpath]/META-INF/static' location. It prevents sensible files like
+ * 'stats.json' and 'flow-build-info.json' to be served. It manages cache
+ * headers based on the '.cache.' and '.nocache.' fragment in the file name.</li>
  * </ul>
  *
  * In addition to the rules above, a servlet won't be registered, if any servlet
@@ -153,14 +158,13 @@ public class ServletDeployer implements ServletContextListener {
         }
 
         if (enableServlets) {
-            ServletRegistration registration = createAppServlet(context);
+            createAppServlet(context);
             if (hasDevelopmentMode) {
                 createServletIfNotExists(context, "frontendFilesServlet",
                         "/frontend/*");
             }
-            if (registration != null) {
-                registration.addMapping("/" + VAADIN_MAPPING + "*");
-            }
+            createServletIfNotExists(context, "vaadinBundleServlet",
+                    "/" + VAADIN_MAPPING + "*");
         }
     }
 

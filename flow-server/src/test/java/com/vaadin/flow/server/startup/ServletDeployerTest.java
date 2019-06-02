@@ -34,6 +34,7 @@ import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 
+import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_MAPPING;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
@@ -98,16 +99,17 @@ public class ServletDeployerTest {
     public void hasRoutes_automaticallyRegisterTwoServletsWhenNoServletsPresent() throws Exception {
         deployer.contextInitialized(getContextEvent(true, false));
 
-        assertMappingsCount(2, 3);
+        assertMappingsCount(3, 3);
         assertMappingIsRegistered(ServletDeployer.class.getName(), "/*");
         assertMappingIsRegistered("frontendFilesServlet", "/frontend/*");
+        assertMappingIsRegistered("vaadinBundleServlet", "/" + VAADIN_MAPPING + "*");
     }
 
     @Test
     public void hasWebComponents_automaticallyRegisterTwoServletsWhenNoServletsPresent() throws Exception {
         deployer.contextInitialized(getContextEvent(false, true));
 
-        assertMappingsCount(2, 3);
+        assertMappingsCount(3, 3);
         assertMappingIsRegistered(ServletDeployer.class.getName(), "/*");
         assertMappingIsRegistered("frontendFilesServlet", "/frontend/*");
     }
@@ -128,8 +130,9 @@ public class ServletDeployerTest {
     public void noRoutes_noWebComponents_mainServletIsNotRegistered() throws Exception {
         deployer.contextInitialized(getContextEvent(false, false));
 
-        assertMappingsCount(1, 1);
+        assertMappingsCount(2, 2);
         assertMappingIsRegistered("frontendFilesServlet", "/frontend/*");
+        assertMappingIsRegistered("vaadinBundleServlet", "/" + VAADIN_MAPPING + "*");
     }
 
     @Test
@@ -138,8 +141,9 @@ public class ServletDeployerTest {
                 getServletRegistration("testServlet", TestVaadinServlet.class,
                         singletonList("/test/*"), emptyMap())));
 
-        assertMappingsCount(1, 1);
+        assertMappingsCount(2, 2);
         assertMappingIsRegistered("frontendFilesServlet", "/frontend/*");
+        assertMappingIsRegistered("vaadinBundleServlet", "/" + VAADIN_MAPPING + "*");
     }
 
     @Test
@@ -151,8 +155,9 @@ public class ServletDeployerTest {
                                 Constants.SERVLET_PARAMETER_PRODUCTION_MODE,
                                 "true"))));
 
-        assertMappingsCount(1, 2);
+        assertMappingsCount(2, 2);
         assertMappingIsRegistered(ServletDeployer.class.getName(), "/*");
+        assertMappingIsRegistered("vaadinBundleServlet", "/" + VAADIN_MAPPING + "*");
     }
 
     @Test
@@ -168,9 +173,10 @@ public class ServletDeployerTest {
                                 Constants.SERVLET_PARAMETER_PRODUCTION_MODE,
                                 "false"))));
 
-        assertMappingsCount(2, 3);
+        assertMappingsCount(3, 3);
         assertMappingIsRegistered(ServletDeployer.class.getName(), "/*");
         assertMappingIsRegistered("frontendFilesServlet", "/frontend/*");
+        assertMappingIsRegistered("vaadinBundleServlet", "/" + VAADIN_MAPPING + "*");
     }
 
     @Test
@@ -183,9 +189,10 @@ public class ServletDeployerTest {
                 getContextEvent(true, true, getServletRegistration("test",
                         TestServlet.class, emptyList(), params)));
 
-        assertMappingsCount(2, 3);
+        assertMappingsCount(3, 3);
         assertMappingIsRegistered(ServletDeployer.class.getName(), "/*");
         assertMappingIsRegistered("frontendFilesServlet", "/frontend/*");
+        assertMappingIsRegistered("vaadinBundleServlet", "/" + VAADIN_MAPPING + "*");
     }
 
     @Test
@@ -194,8 +201,9 @@ public class ServletDeployerTest {
                 getServletRegistration("test", TestServlet.class,
                         singletonList("/*"), Collections.emptyMap())));
 
-        assertMappingsCount(1, 1);
+        assertMappingsCount(2, 2);
         assertMappingIsRegistered("frontendFilesServlet", "/frontend/*");
+        assertMappingIsRegistered("vaadinBundleServlet", "/" + VAADIN_MAPPING + "*");
     }
 
     @Test
@@ -204,20 +212,23 @@ public class ServletDeployerTest {
                 getServletRegistration("test", TestServlet.class,
                         singletonList("/frontend/*"), Collections.emptyMap())));
 
-        assertMappingsCount(1, 2);
+        assertMappingsCount(2, 2);
         assertMappingIsRegistered(ServletDeployer.class.getName(), "/*");
+        assertMappingIsRegistered("vaadinBundleServlet", "/" + VAADIN_MAPPING + "*");
     }
 
     private void assertMappingsCount(int numServlets, int numMappings) {
         assertEquals(
                 String.format(
-                        "Expected to have exactly '%d' mappings, but got: '%s'",
-                        numServlets, servletNames.getValues()),
+                        "Expected to have exactly '%d' servlets, but got '%d': '%s'",
+                        numServlets, servletNames.getValues().size(),
+                        servletNames.getValues()),
                 servletNames.getValues().size(), numServlets);
         assertEquals(
                 String.format(
-                        "Expected to have exactly '%d' mappings, but got: '%s'",
-                        numMappings, servletMappings.getValues()),
+                        "Expected to have exactly '%d' mappings, but got '%d': '%s'",
+                        numMappings, servletMappings.getValues().size(),
+                        servletMappings.getValues()),
                 servletMappings.getValues().size(), numMappings);
     }
 

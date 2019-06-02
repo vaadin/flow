@@ -72,10 +72,11 @@ public class StaticFileServer implements StaticFileHandler {
             // least with Jetty
             return false;
         }
+
         if (requestFilename.startsWith("/" + VAADIN_MAPPING) &&
             // Exclude dynamic requests
            !requestFilename.startsWith("/" + VAADIN_MAPPING + DYN_RES_PREFIX)) {
-            // The path is reserved for internal static resources only
+            // The path is reserved for internal resources only
             // We rather serve 404 than let it fall through
             return true;
         }
@@ -89,7 +90,6 @@ public class StaticFileServer implements StaticFileHandler {
             HttpServletResponse response) throws IOException {
 
         String filenameWithPath = getRequestFilename(request);
-
         URL resourceUrl = servletService.getStaticResource(filenameWithPath);
         if (resourceUrl == null) {
             // Not found in webcontent or in META-INF/resources in some JAR
@@ -197,9 +197,14 @@ public class StaticFileServer implements StaticFileHandler {
         // http://localhost:8888/context/servlet/folder/file.js
         // ->
         // /servlet/folder/file.js
+        //
+        // http://localhost:8888/context/VAADIN/folder/file.js
+        // ->
+        // /VAADIN/folder/file.js
 
         return request.getPathInfo() == null ? request.getServletPath()
-                : request.getServletPath() + request.getPathInfo();
+                : request.getPathInfo().startsWith("/" + VAADIN_MAPPING) ? request.getPathInfo()
+                        : request.getServletPath() + request.getPathInfo();
     }
 
     /**

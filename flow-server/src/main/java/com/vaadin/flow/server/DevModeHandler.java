@@ -281,7 +281,7 @@ public class DevModeHandler implements Serializable {
         } catch (Exception e) {
             throw new IllegalStateException(
                     String.format("%n  Unable to get bundle '%s' from webpack server.%n  Please verify that 'webpack-dev-server' is running.",
-                            connection.getURL(), e));
+                            connection.getURL()), e);
         }
 
         if (responseCode == HTTP_NOT_FOUND) {

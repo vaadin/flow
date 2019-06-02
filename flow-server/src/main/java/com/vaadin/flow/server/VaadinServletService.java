@@ -37,6 +37,8 @@ import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.theme.AbstractTheme;
 
+import static com.vaadin.flow.shared.ApplicationConstants.META_INF;
+
 /**
  * A service implementation connected to a {@link VaadinServlet}.
  *
@@ -206,7 +208,9 @@ public class VaadinServletService extends VaadinService {
         try {
             URL resource = getServlet().getServletContext().getResource(path);
             if (resource == null) {
-                resource = getServlet().getServletContext().getClassLoader().getResource(path);
+                // Do not serve anything from classpath that is not prefixed with META-INF
+                String metaPath = path.startsWith(META_INF) ? path : META_INF + path;
+                resource = getServlet().getServletContext().getClassLoader().getResource(metaPath);
             }
             return resource;
         } catch (MalformedURLException e) {
