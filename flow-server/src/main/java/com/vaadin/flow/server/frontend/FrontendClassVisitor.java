@@ -44,6 +44,7 @@ class FrontendClassVisitor extends ClassVisitor {
     private static final String LAYOUT = "layout";
     static final String VALUE = "value";
     static final String VERSION = "version";
+    static final Set<String> invalidClasses = new HashSet<>();
 
     /**
      * An annotation visitor implementation that enables repeated annotations.
@@ -76,6 +77,12 @@ class FrontendClassVisitor extends ClassVisitor {
         final HashSet<String> classes = new HashSet<>();
         final HashSet<String> modules = new HashSet<>();
         final HashSet<String> scripts = new HashSet<>();
+
+
+        boolean hasData() {
+            return theme.name != null || theme.notheme || layout != null
+                    || modules.size() > 0 || scripts.size() > 0;
+        }
 
         /**
          * A container for Theme information when scanning the class path.

@@ -112,6 +112,7 @@ public class FrontendDependencies implements Serializable {
     private ThemeDefinition themeDefinition;
     private AbstractTheme themeInstance;
     private final HashMap<String, String> packages = new HashMap<>();
+    private final Set<String> irrelevantClasses = new HashSet<>();
 
     /**
      * Default Constructor.
@@ -136,6 +137,7 @@ public class FrontendDependencies implements Serializable {
      */
     public FrontendDependencies(ClassFinder finder,
                                 boolean generateEmbeddableWebComponents) {
+        log().info("Scanning classes to find frontend configurations and dependencies...");
         this.finder = finder;
         try {
             computeEndpoints();
@@ -235,7 +237,6 @@ public class FrontendDependencies implements Serializable {
             EndPointData data = new EndPointData(route);
             endPoints.put(className, visitClass(className, data));
         }
-
         computeApplicationTheme(endPoints);
     }
 
@@ -389,9 +390,10 @@ public class FrontendDependencies implements Serializable {
     private EndPointData visitClass(String className, FrontendClassVisitor.EndPointData endPoint)
             throws IOException {
 
-        if (endPoint.classes.contains(className)) {
+        if (!isVisitable(className) || endPoint.classes.contains(className)) {
             return endPoint;
         }
+
         endPoint.classes.add(className);
 
         URL url = getUrl(className);
@@ -404,15 +406,17 @@ public class FrontendDependencies implements Serializable {
         cr.accept(visitor, ClassReader.EXPAND_FRAMES);
 
         for (String s : visitor.getChildren()) {
-            if (isVisitable(s)) {
-                visitClass(s, endPoint);
-            }
+            visitClass(s, endPoint);
         }
 
         boolean isRootLevel = className.equals(endPoint.name) && endPoint.route.isEmpty();
         boolean hasTheme = !endPoint.getTheme().isNotheme() && endPoint.getTheme().getName() != null;
         if (isRootLevel && hasTheme) {
             visitClass(endPoint.getTheme().getName(), endPoint);
+        }
+
+        if (!endPoint.hasData()) {
+            irrelevantClasses.add(className);
         }
 
         return endPoint;
@@ -433,6 +437,7 @@ public class FrontendDependencies implements Serializable {
         // syntaxes like using factories. This is the reason of having just a
         // blacklist of some common name-spaces that would not have components.
         return className != null &&  // @formatter:off
+                !irrelevantClasses.contains(className) &&
                 !className.matches(
                     "(^$|"
                     + ".*(slf4j).*|"
