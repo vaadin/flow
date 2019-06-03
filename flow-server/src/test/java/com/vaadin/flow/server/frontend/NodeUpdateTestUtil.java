@@ -138,6 +138,7 @@ public class NodeUpdateTestUtil {
                 "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-something-else.js",
                 "@vaadin/flow-frontend/ExampleConnector.js",
                 "3rdparty/component.js",
+                "./foo-dir/javascript-lib.js",
                 "./frontend-p3-template.js",
                 "./local-p3-template.js",
                 "./foo.js",

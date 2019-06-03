@@ -17,6 +17,7 @@ import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Compon
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Component1;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Component2;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.FirstView;
+import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.NoThemeExporter;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.RootViewWithLayoutTheme;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.RootViewWithMultipleTheme;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.RootViewWithTheme;
@@ -25,9 +26,8 @@ import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Second
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Theme1;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Theme2;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Theme4;
+import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.ThemeExporter;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.ThirdView;
-import static com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.ThemeExporter;
-import static com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.NoThemeExporter;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -103,12 +103,27 @@ public class FrontendDependenciesTest {
     @Test
     public void should_visitNpmPakageAnnotations() throws Exception {
         FrontendDependencies deps = create(Component1.class, Component2.class);
-        assertEquals(2, deps.getPackages().size());
+        assertEquals(4, deps.getPackages().size());
         assertTrue(deps.getPackages().containsKey("@vaadin/component-1"));
         assertTrue(deps.getPackages().containsKey("@vaadin/component-2"));
+        assertTrue(deps.getPackages().containsKey("@vaadin/component-0"));
+        assertTrue(deps.getPackages().containsKey("@vaadin/vaadin-foo"));
         assertEquals("1.1.1", deps.getPackages().get("@vaadin/component-1"));
         assertEquals("222.222.222",
                 deps.getPackages().get("@vaadin/component-2"));
+        assertEquals("=2.1.0", deps.getPackages().get("@vaadin/component-0"));
+        assertEquals("1.23.114-alpha1", deps.getPackages().get("@vaadin/vaadin-foo"));
+    }
+
+
+    @Test
+    public void should_visitSuperNpmPakageAnnotations() throws Exception {
+        FrontendDependencies deps = create(
+                FrontendDependenciesTestComponents.ComponentExtending.class);
+        assertEquals(1, deps.getPackages().size());
+        assertTrue(deps.getPackages().containsKey("@vaadin/component-extended"));
+
+        assertEquals("2.1.0", deps.getPackages().get("@vaadin/component-extended"));
     }
 
     @Test
@@ -119,7 +134,7 @@ public class FrontendDependenciesTest {
     }
 
     @Test
-    public void should_takeThemeFromView() throws Exception {
+    public void should_takeThemeFromTheView() throws Exception {
         FrontendDependencies deps = create(RootViewWithTheme.class);
 
         assertEquals(Theme4.class, deps.getThemeDefinition().getTheme());
@@ -136,12 +151,11 @@ public class FrontendDependenciesTest {
     @Test
     public void should_not_takeTheme_when_NoTheme() throws Exception {
         FrontendDependencies deps = create(RootViewWithoutTheme.class);
-
         assertNull(deps.getThemeDefinition());
 
         assertEquals(2, deps.getModules().size());
         assertEquals(0, deps.getPackages().size());
-        assertEquals(1, deps.getScripts().size());
+        assertEquals(2, deps.getScripts().size());
     }
 
     @Test
@@ -150,14 +164,16 @@ public class FrontendDependenciesTest {
         assertEquals(Theme1.class, deps.getThemeDefinition().getTheme());
 
         assertEquals(8, deps.getModules().size());
-        assertEquals(0, deps.getPackages().size());
+        assertEquals(1, deps.getPackages().size());
         assertEquals(6, deps.getScripts().size());
+        
+        assertTrue(deps.getPackages().containsKey("@foo/first-view"));
+        assertEquals("0.0.1", deps.getPackages().get("@foo/first-view"));
     }
 
     @Test
-    public void should_takeThemeFromView_when_MultipleTheme() throws Exception {
+    public void should_takeThemeWhenMultipleTheme() throws Exception {
         FrontendDependencies deps = create(RootViewWithMultipleTheme.class);
-
         assertEquals(Theme2.class, deps.getThemeDefinition().getTheme());
         assertEquals("foo", deps.getThemeDefinition().getVariant());
 
@@ -167,14 +183,26 @@ public class FrontendDependenciesTest {
     }
 
     @Test
-    public void should_not_takeTheme_when_NoRootView() throws Exception {
+    public void should_takeTheme_when_AnyRouteValue() throws Exception {
         FrontendDependencies deps = create(SecondView.class);
 
-        assertNull(deps.getThemeDefinition());
+        assertEquals(Theme1.class, deps.getThemeDefinition().getTheme());
 
         assertEquals(4, deps.getModules().size());
         assertEquals(0, deps.getPackages().size());
         assertEquals(2, deps.getScripts().size());
+    }
+
+    @Test
+    public void should_throw_when_MultipleThemes() throws Exception {
+        exception.expect(IllegalStateException.class);
+        create(RootViewWithMultipleTheme.class, FirstView.class);
+    }
+
+    @Test
+    public void should_throw_when_ThemeAndNoTheme() throws Exception {
+        exception.expect(IllegalStateException.class);
+        create(FirstView.class, RootViewWithoutTheme.class);
     }
 
     @Test
@@ -217,8 +245,7 @@ public class FrontendDependenciesTest {
                 new ArrayList<>(Arrays.asList(NoThemeExporter.class,
                         RootViewWithTheme.class)))));
 
-        FrontendDependencies deps = new FrontendDependencies(finder);
-
+        new FrontendDependencies(finder);
         verify(finder, times(1)).loadClass(FrontendDependencies.LUMO);
     }
 
@@ -227,8 +254,7 @@ public class FrontendDependenciesTest {
         DefaultClassFinder finder = spy(new DefaultClassFinder(new HashSet<Class<?>>(
                 new ArrayList<>(Arrays.asList(RootViewWithTheme.class)))));
 
-        FrontendDependencies deps = new FrontendDependencies(finder);
-
+        new FrontendDependencies(finder);
         verify(finder, times(0)).loadClass(FrontendDependencies.LUMO);
     }
 }
