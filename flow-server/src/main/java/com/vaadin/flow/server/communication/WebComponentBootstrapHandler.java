@@ -82,6 +82,21 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         }
     }
 
+    /**
+     * Creates a new bootstrap handler with default page builder.
+     */
+    public WebComponentBootstrapHandler() {
+        super();
+    }
+
+    /**
+     * Creates a new bootstrap handler, allowing to use custom page builder.
+     * @param pageBuilder Page builder to use.
+     */
+    protected WebComponentBootstrapHandler(BootstrapPageBuilder pageBuilder) {
+        super(pageBuilder);
+    }
+
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
         String pathInfo = request.getPathInfo();
