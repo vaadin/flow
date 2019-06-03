@@ -29,8 +29,9 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.ResponseWriter;
 
-import static com.vaadin.flow.server.communication.StreamRequestHandler.DYN_RES_PREFIX;
 import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_MAPPING;
+import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_STATIC_FILES_PATH;
+
 /**
  * Handles sending of resources from the WAR root (web content) or
  * META-INF/resources in the case that {@link VaadinServlet} is mapped using
@@ -73,9 +74,7 @@ public class StaticFileServer implements StaticFileHandler {
             return false;
         }
 
-        if (requestFilename.startsWith("/" + VAADIN_MAPPING) &&
-            // Exclude dynamic requests
-           !requestFilename.startsWith("/" + VAADIN_MAPPING + DYN_RES_PREFIX)) {
+        if (requestFilename.startsWith("/" + VAADIN_STATIC_FILES_PATH) || requestFilename.startsWith("/" + VAADIN_MAPPING + "build/")) {
             // The path is reserved for internal resources only
             // We rather serve 404 than let it fall through
             return true;
@@ -197,13 +196,7 @@ public class StaticFileServer implements StaticFileHandler {
         // http://localhost:8888/context/servlet/folder/file.js
         // ->
         // /servlet/folder/file.js
-        //
-        // http://localhost:8888/context/VAADIN/folder/file.js
-        // ->
-        // /VAADIN/folder/file.js
-
         return request.getPathInfo() == null ? request.getServletPath()
-                : request.getPathInfo().startsWith("/" + VAADIN_MAPPING) ? request.getPathInfo()
                         : request.getServletPath() + request.getPathInfo();
     }
 

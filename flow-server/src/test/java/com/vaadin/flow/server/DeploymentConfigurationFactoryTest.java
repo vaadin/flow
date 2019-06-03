@@ -2,7 +2,6 @@ package com.vaadin.flow.server;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -25,9 +24,10 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
+import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
-import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_MAPPING;
 import static com.vaadin.flow.shared.ApplicationConstants.META_INF;
+import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_MAPPING;
 import static java.util.Collections.emptyMap;
 import static org.easymock.EasyMock.capture;
 import static org.easymock.EasyMock.expect;
@@ -222,17 +222,17 @@ public class DeploymentConfigurationFactoryTest {
     }
 
     @Test
-    public void should_readConfigurationFromTokenFile()
-            throws Exception {
+    public void should_readConfigurationFromTokenFile() throws Exception {
+        FileUtils.writeLines(tokenFile,
+                Arrays.asList(
+                        "{",
+                        "\"bowerMode\": false,",
+                        "\"productionMode\": true",
+                        "}"
+                ));
 
-        FileUtils.writeLines(tokenFile, Arrays.asList(
-                "{",
-                "\"bowerMode\": false,",
-                "\"productionMode\": true",
-                "}"));
 
-
-        DeploymentConfiguration config = createConfig(emptyMap());
+        DeploymentConfiguration config = createConfig(Collections.singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
         assertFalse(config.isBowerMode());
         assertTrue(config.isProductionMode());
     }

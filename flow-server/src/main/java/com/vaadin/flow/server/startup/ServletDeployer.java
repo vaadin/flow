@@ -38,8 +38,6 @@ import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletConfiguration;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 
-import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_MAPPING;
-
 /**
  * Context listener that automatically registers Vaadin servlets.
  *
@@ -163,8 +161,6 @@ public class ServletDeployer implements ServletContextListener {
                 createServletIfNotExists(context, "frontendFilesServlet",
                         "/frontend/*");
             }
-            createServletIfNotExists(context, "vaadinBundleServlet",
-                    "/" + VAADIN_MAPPING + "*");
         }
     }
 

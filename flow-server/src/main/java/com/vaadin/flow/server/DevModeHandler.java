@@ -18,7 +18,6 @@ package com.vaadin.flow.server;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -49,6 +48,7 @@ import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
 import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
+import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_MAPPING;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 /**
@@ -259,10 +259,15 @@ public class DevModeHandler implements Serializable {
      * @throws IOException
      *             in the case something went wrong like connection refused
      */
-    public boolean serveDevModeRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String requestFilename = request.getPathInfo();
+    public boolean serveDevModeRequest(HttpServletRequest request,
+            HttpServletResponse response) throws IOException {
+        // Requests in devmode should come to /VAADIN/build/index....js where as
+        // webpack has the filed in /build/index....js so we need to drop the /VAADIN
+        String requestFilename = request.getPathInfo()
+                .replace(VAADIN_MAPPING, "");
 
-        HttpURLConnection connection = prepareConnection(requestFilename, request.getMethod());
+        HttpURLConnection connection = prepareConnection(requestFilename,
+                request.getMethod());
 
         // Copies all the headers from the original request
         Enumeration<String> headerNames = request.getHeaderNames();
@@ -270,7 +275,9 @@ public class DevModeHandler implements Serializable {
             String header = headerNames.nextElement();
             connection.setRequestProperty(header,
                     // Exclude keep-alive
-                    "Connect".equals(header) ? "close" : request.getHeader(header));
+                    "Connect".equals(header) ?
+                            "close" :
+                            request.getHeader(header));
         }
 
         // Send the request

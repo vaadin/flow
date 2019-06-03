@@ -20,7 +20,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -278,14 +277,14 @@ public class VaadinServlet extends HttpServlet {
      *                if the HTTP request cannot be handled
      */
     protected boolean serveStaticOrWebJarRequest(HttpServletRequest request,
-            HttpServletResponse response) throws ServletException, IOException {
+            HttpServletResponse response) throws IOException {
 
         if (devmodeHandler != null && devmodeHandler.isDevModeRequest(request)
                 && devmodeHandler.serveDevModeRequest(request, response)) {
             return true;
         }
 
-        if (isSensitiveFile(request)) {
+        if (isInternalFile(request)) {
             return false;
         }
 
@@ -298,9 +297,18 @@ public class VaadinServlet extends HttpServlet {
                 && webJarServer.tryServeWebJarResource(request, response);
     }
 
-    private boolean isSensitiveFile(HttpServletRequest request) {
-        String file = request.getPathInfo().replaceFirst("^/+", "");
-        return Constants.STATISTICS_JSON_DEFAULT.equals(file) || FrontendUtils.TOKEN_FILE.equals(file);
+    /**
+     * Files that we shouldn't serve for requests as they should be only used
+     * internally.
+     *
+     * @param request
+     *         the http request to handle
+     * @return true if we should not serve the requested file
+     */
+    private boolean isInternalFile(HttpServletRequest request) {
+        String file = request.getPathInfo();
+        return file.endsWith(Constants.STATISTICS_JSON_DEFAULT) || file
+                .endsWith(FrontendUtils.TOKEN_FILE);
     }
 
     /**

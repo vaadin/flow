@@ -49,7 +49,7 @@ public class StreamRequestHandler implements RequestHandler {
     /**
      * Dynamic resource URI prefix.
      */
-    public static final String DYN_RES_PREFIX = "VAADIN/dynamic/resource/";
+    static final String DYN_RES_PREFIX = "VAADIN/dynamic/resource/";
 
     private StreamResourceHandler resourceHandler = new StreamResourceHandler();
     private StreamReceiverHandler receiverHandler = new StreamReceiverHandler();

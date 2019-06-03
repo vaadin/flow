@@ -125,28 +125,28 @@ public final class DeploymentConfigurationFactory implements Serializable {
         // Read default parameters from server.xml
         final ServletContext context = servletConfig.getServletContext();
         for (final Enumeration<String> e = context.getInitParameterNames(); e
-                .hasMoreElements();) {
+                .hasMoreElements(); ) {
             final String name = e.nextElement();
             initParameters.setProperty(name, context.getInitParameter(name));
         }
 
         // Override with application config from web.xml
         for (final Enumeration<String> e = servletConfig
-                .getInitParameterNames(); e.hasMoreElements();) {
+                .getInitParameterNames(); e.hasMoreElements(); ) {
             final String name = e.nextElement();
             initParameters.setProperty(name,
                     servletConfig.getInitParameter(name));
         }
 
-        readBuildInfo(servletConfig.getServletContext(), initParameters);
+        readBuildInfo(initParameters);
         return initParameters;
     }
 
-    private static void readBuildInfo(ServletContext context, Properties initParameters) { //NOSONAR
+    private static void readBuildInfo(Properties initParameters) { //NOSONAR
         try {
             String json = null;
-            // token file location passed via System property
-            String tokenLocation = System.getProperty(PARAM_TOKEN_FILE);
+            // token file location passed via init parameter property
+            String tokenLocation = initParameters.getProperty(PARAM_TOKEN_FILE);
             if (tokenLocation != null) {
                 File tokenFile = new File(tokenLocation);
                 if (tokenFile != null && tokenFile.canRead()) {
@@ -156,7 +156,8 @@ public final class DeploymentConfigurationFactory implements Serializable {
 
             // token file is in the class-path of the application
             if (json == null) {
-                URL resource = context.getClassLoader()
+                URL resource = DeploymentConfigurationFactory.class
+                        .getClassLoader()
                         .getResource(META_INF + VAADIN_MAPPING + TOKEN_FILE);
                 if (resource != null) {
                     json = FrontendUtils.streamToString(resource.openStream());
