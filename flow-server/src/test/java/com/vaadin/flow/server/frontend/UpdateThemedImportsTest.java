@@ -127,7 +127,7 @@ public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void themedClientSideModulesAreWrittenIntpoImportsFile()
+    public void themedClientSideModulesAreWrittenIntoImportsFile()
             throws Exception {
         updater.execute();
 
