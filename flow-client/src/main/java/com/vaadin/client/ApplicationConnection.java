@@ -184,7 +184,7 @@ public class ApplicationConnection {
             return ur.@com.vaadin.client.URIResolver::resolveVaadinUri(Ljava/lang/String;)(uriToResolve);
         });
     
-        $wnd.Vaadin.Flow.sendEventMessage = $entry(function(nodeId, eventType, eventData) {
+        client.sendEventMessage = $entry(function(nodeId, eventType, eventData) {
             var sc = ap.@ApplicationConnection::registry.@com.vaadin.client.Registry::getServerConnector()();
             sc.@com.vaadin.client.communication.ServerConnector::sendEventMessage(ILjava/lang/String;Lelemental/json/JsonObject;)(nodeId,eventType,eventData);
         });
