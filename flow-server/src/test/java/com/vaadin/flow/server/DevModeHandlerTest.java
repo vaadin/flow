@@ -282,7 +282,7 @@ public class DevModeHandlerTest {
     }
 
     @Test
-    public void stopDevMode_devModeHanlderNull() {
+    public void stopDevMode_devModeHanlderNull() throws InterruptedException {
         DevModeHandler handler = DevModeHandler.start(configuration, npmFolder);
         handler.stop();
         assertNull(DevModeHandler.getDevModeHandler());
