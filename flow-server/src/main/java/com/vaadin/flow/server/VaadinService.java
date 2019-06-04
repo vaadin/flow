@@ -337,6 +337,15 @@ public abstract class VaadinService implements Serializable {
     protected abstract PwaRegistry getPwaRegistry();
 
     /**
+     * Returns relative context path for given request.
+     * Override this method in subclasses.
+     *
+     * @param request Request.
+     * @return Relative context root path for that request.
+     */
+    public abstract String getContextRootRelativePath(VaadinRequest request);
+
+    /**
      * Called during initialization to add the request handlers for the service.
      * Note that the returned list will be reversed so the last handler will be
      * called first. This enables overriding this method and using add on the
@@ -370,21 +379,9 @@ public abstract class VaadinService implements Serializable {
     }
 
     private boolean hasWebComponentConfigurations() {
-        /*
-         * Should be updated to use
-         * WebComponentConfigurationRegistry.getInstance(VaadinService) once
-         * https://github.com/vaadin/flow/pull/5657 has been merged
-         */
-        if (this instanceof VaadinServletService) {
-            ServletContext servletContext = ((VaadinServletService) this)
-                    .getServlet().getServletContext();
             WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
-                    .getInstance(servletContext);
-
+                    .getInstance(this.getContext());
             return registry.hasConfigurations();
-        } else {
-            return false;
-        }
     }
 
     /**
