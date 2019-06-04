@@ -92,7 +92,7 @@ module.exports = {
 
     // Generates the stats file for flow `@Id` binding.
     function (compiler) {
-      compiler.plugin('after-emit', function (compilation, done) {
+      compiler.hooks.afterEmit.tapAsync("FlowIdPlugin", (compilation, done) => {
         console.log("Emitted " + statsFile)
         fs.writeFile(statsFile, JSON.stringify(compilation.getStats().toJson(), null, 1), done);
       });

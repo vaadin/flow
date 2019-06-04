@@ -51,6 +51,7 @@ import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
 import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_MAPPING;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
+
 /**
  * Handles getting resources from <code>webpack-dev-server</code>.
  * <p>
@@ -67,8 +68,10 @@ public class DevModeHandler implements Serializable {
     // Non final because tests need to reset this during teardown.
     private static AtomicReference<DevModeHandler> atomicHandler = new AtomicReference<>();
 
-    // It's not possible to know whether webpack is ready unless reading output messages.
-    // When webpack finishes, it writes either a `Compiled` or a `Failed` in  the last line
+    // It's not possible to know whether webpack is ready unless reading output
+    // messages.
+    // When webpack finishes, it writes either a `Compiled` or a `Failed` in the
+    // last line
     private static final String DEFAULT_OUTPUT_PATTERN = ": Compiled.";
     private static final String DEFAULT_ERROR_PATTERN = ": Failed to compile.";
     private static final String FAILED_MSG = "\n------------------ 🚫  Frontend compilation failed. 🚫 -----------------";
@@ -77,8 +80,10 @@ public class DevModeHandler implements Serializable {
     private static final String RED = "\u001b[38;5;196m{}\u001b[0m";
     private static final String GREEN = "\u001b[38;5;35m{}\u001b[0m";
 
-    // If after this time in millisecs, the pattern was not found, we unlock the process
-    // and continue. It might happen if webpack changes their output without advise.
+    // If after this time in millisecs, the pattern was not found, we unlock the
+    // process
+    // and continue. It might happen if webpack changes their output without
+    // advise.
     private static final String DEFAULT_TIMEOUT_FOR_PATTERN = "60000";
 
     private static final int DEFAULT_BUFFER_SIZE = 32 * 1024;
@@ -88,6 +93,8 @@ public class DevModeHandler implements Serializable {
     private boolean notified = false;
 
     private String failedOutput;
+
+    private final Runnable stopProcess;
 
     /**
      * The local installation path of the webpack-dev-server node script.
@@ -99,6 +106,7 @@ public class DevModeHandler implements Serializable {
     // For testing purposes
     DevModeHandler(int port) {
         this.port = port;
+        stopProcess = null;
     }
 
     private DevModeHandler(DeploymentConfiguration config, int runningPort,
@@ -107,8 +115,10 @@ public class DevModeHandler implements Serializable {
         port = runningPort;
         // If port is defined, means that webpack is already running
         if (port > 0) {
+            stopProcess = null;
             if (checkWebpackConnection()) {
-                getLogger().info("Webpack is running at {}:{}", WEBPACK_HOST, port);
+                getLogger().info("Webpack is running at {}:{}", WEBPACK_HOST,
+                        port);
                 return;
             }
             throw new IllegalStateException(String.format(
@@ -130,19 +140,26 @@ public class DevModeHandler implements Serializable {
         command.add("--port");
         command.add(String.valueOf(port));
         command.addAll(Arrays.asList(config
-                .getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS, "-d --inline=false")
+                .getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS,
+                        "-d --inline=false")
                 .split(" +")));
 
         if (getLogger().isInfoEnabled()) {
-            getLogger().info("Starting Webpack in dev mode, port: {} dir: {}\n   {}",
+            getLogger().info(
+                    "Starting Webpack in dev mode, port: {} dir: {}\n   {}",
                     port, npmFolder, String.join(" ", command));
         }
 
         processBuilder.command(command);
+        Runnable stopCallback = null;
         try {
             Process webpackProcess = processBuilder
                     .redirectError(ProcessBuilder.Redirect.PIPE)
                     .redirectErrorStream(true).start();
+            stopCallback = () -> {
+                webpackProcess.destroy();
+                atomicHandler.set(null);
+            };
             Runtime.getRuntime()
                     .addShutdownHook(new Thread(webpackProcess::destroy));
 
@@ -169,6 +186,8 @@ public class DevModeHandler implements Serializable {
             getLogger().error("Failed to start the webpack process", e);
         }
 
+        stopProcess = stopCallback;
+
         System.setProperty(
                 VAADIN_PREFIX + SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT,
                 String.valueOf(port));
@@ -178,16 +197,26 @@ public class DevModeHandler implements Serializable {
      * Start the dev mode handler if none has been started yet.
      *
      * @param configuration
-     *         deployment configuration
+     *            deployment configuration
      * @param npmFolder
-     *         folder with npm configuration files
+     *            folder with npm configuration files
      *
      * @return the instance in case everything is alright, null otherwise
      */
-    public static DevModeHandler start(DeploymentConfiguration configuration, File npmFolder) {
+    public static DevModeHandler start(DeploymentConfiguration configuration,
+            File npmFolder) {
         atomicHandler.compareAndSet(null,
                 DevModeHandler.createInstance(configuration, npmFolder));
         return getDevModeHandler();
+    }
+
+    /**
+     * Stops the dev server.
+     */
+    public void stop() {
+        if (stopProcess != null) {
+            stopProcess.run();
+        }
     }
 
     /**
@@ -199,7 +228,8 @@ public class DevModeHandler implements Serializable {
         return atomicHandler.get();
     }
 
-    private static DevModeHandler createInstance(DeploymentConfiguration configuration, File npmFolder) {
+    private static DevModeHandler createInstance(
+            DeploymentConfiguration configuration, File npmFolder) {
         if (configuration.isProductionMode() || configuration.isBowerMode()) {
             return null;
         }
@@ -214,23 +244,31 @@ public class DevModeHandler implements Serializable {
             webpack = new File(npmFolder, WEBPACK_SERVER);
             webpackConfig = new File(npmFolder, FrontendUtils.WEBPACK_CONFIG);
             if (!npmFolder.exists()) {
-                getLogger().warn("Instance not created because cannot change to '{}'", npmFolder);
+                getLogger().warn(
+                        "Instance not created because cannot change to '{}'",
+                        npmFolder);
                 return null;
             }
             if (!webpack.canExecute()) {
-                getLogger().warn("Instance not created because cannot execute '{}'. Did you run `npm install`", webpack);
+                getLogger().warn(
+                        "Instance not created because cannot execute '{}'. Did you run `npm install`",
+                        webpack);
                 return null;
             } else if (!webpack.exists()) {
-                getLogger().warn("Instance not created because file '{}' doesn't exist. Did you run `npm install`",
+                getLogger().warn(
+                        "Instance not created because file '{}' doesn't exist. Did you run `npm install`",
                         webpack);
                 return null;
             }
             if (!webpackConfig.canRead()) {
-                getLogger().warn("Instance not created because there is not webpack configuration '{}'", webpackConfig);
+                getLogger().warn(
+                        "Instance not created because there is not webpack configuration '{}'",
+                        webpackConfig);
                 return null;
             }
         }
-        return new DevModeHandler(configuration, runningPort, npmFolder, webpack, webpackConfig);
+        return new DevModeHandler(configuration, runningPort, npmFolder,
+                webpack, webpackConfig);
     }
 
     /**
@@ -275,29 +313,23 @@ public class DevModeHandler implements Serializable {
             String header = headerNames.nextElement();
             connection.setRequestProperty(header,
                     // Exclude keep-alive
-                    "Connect".equals(header) ?
-                            "close" :
-                            request.getHeader(header));
+                    "Connect".equals(header) ? "close"
+                            : request.getHeader(header));
         }
 
         // Send the request
-        getLogger().debug("Requesting resource to webpack {}", connection.getURL());
-        int responseCode;
-        try {
-            responseCode = connection.getResponseCode();
-        } catch (Exception e) {
-            throw new IllegalStateException(
-                    String.format("%n  Unable to get bundle '%s' from webpack server.%n  Please verify that 'webpack-dev-server' is running.",
-                            connection.getURL()), e);
-        }
-
+        getLogger().debug("Requesting resource to webpack {}",
+                connection.getURL());
+        int responseCode = connection.getResponseCode();
         if (responseCode == HTTP_NOT_FOUND) {
-            getLogger().debug("Resource not served by webpack {}", requestFilename);
+            getLogger().debug("Resource not served by webpack {}",
+                    requestFilename);
             // webpack cannot access the resource, return false so as flow can
             // handle it
             return false;
         }
-        getLogger().debug("Served resource by webpack: {} {}", responseCode, requestFilename);
+        getLogger().debug("Served resource by webpack: {} {}", responseCode,
+                requestFilename);
 
         // Copies response headers
         connection.getHeaderFields().forEach((header, values) -> {
@@ -308,7 +340,8 @@ public class DevModeHandler implements Serializable {
 
         if (responseCode == HTTP_OK) {
             // Copies response payload
-            writeStream(response.getOutputStream(), connection.getInputStream());
+            writeStream(response.getOutputStream(),
+                    connection.getInputStream());
         } else {
             // Copies response code
             response.sendError(responseCode);
@@ -325,12 +358,14 @@ public class DevModeHandler implements Serializable {
             prepareConnection("/", "GET").getResponseCode();
             return true;
         } catch (IOException e) {
-            getLogger().debug("Error checking webpack dev server connection", e);
+            getLogger().debug("Error checking webpack dev server connection",
+                    e);
         }
         return false;
     }
 
-    private HttpURLConnection prepareConnection(String path, String method) throws IOException {
+    private HttpURLConnection prepareConnection(String path, String method)
+            throws IOException {
         URL uri = new URL(WEBPACK_HOST + ":" + port + path);
         HttpURLConnection connection = (HttpURLConnection) uri.openConnection();
         connection.setRequestMethod(method);
@@ -343,15 +378,18 @@ public class DevModeHandler implements Serializable {
         if (!notified) {
             notified = true;
             synchronized (this) {
-                notify(); //NOSONAR
+                notify(); // NOSONAR
             }
         }
     }
 
-    // mirrors a stream to logger, and check whether a success or error pattern is found in the output.
-    private void logStream(InputStream input, Pattern success, Pattern failure) {
+    // mirrors a stream to logger, and check whether a success or error pattern
+    // is found in the output.
+    private void logStream(InputStream input, Pattern success,
+            Pattern failure) {
         Thread thread = new Thread(() -> {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
+            BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(input, StandardCharsets.UTF_8));
             try {
                 readLinesLoop(success, failure, reader);
             } catch (IOException e) {
@@ -366,7 +404,8 @@ public class DevModeHandler implements Serializable {
         thread.start();
     }
 
-    private void readLinesLoop(Pattern success, Pattern failure, BufferedReader reader) throws IOException {
+    private void readLinesLoop(Pattern success, Pattern failure,
+            BufferedReader reader) throws IOException {
         StringBuilder output = new StringBuilder();
         Consumer<String> info = s -> getLogger().info(GREEN, s);
         Consumer<String> error = s -> getLogger().error(RED, s);
@@ -380,7 +419,8 @@ public class DevModeHandler implements Serializable {
                     .replaceAll("\\?babel-target=[\\w\\d]+", "");
 
             // write each line read to logger, but selecting its correct level
-            log = line.contains("WARNING") ? warn : line.contains("ERROR") ? error : log;
+            log = line.contains("WARNING") ? warn
+                    : line.contains("ERROR") ? error : log;
             log.accept(cleanLine);
 
             // save output so as it can be used to alert user in browser.
@@ -402,7 +442,8 @@ public class DevModeHandler implements Serializable {
         }
     }
 
-    private void writeStream(ServletOutputStream outputStream, InputStream inputStream) throws IOException {
+    private void writeStream(ServletOutputStream outputStream,
+            InputStream inputStream) throws IOException {
         final byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
         int bytes;
         while ((bytes = inputStream.read(buffer)) >= 0) {
@@ -434,7 +475,8 @@ public class DevModeHandler implements Serializable {
             s.setReuseAddress(true);
             return s.getLocalPort();
         } catch (IOException e) {
-            throw new IllegalStateException("Unable to find a free port for running webpack", e);
+            throw new IllegalStateException(
+                    "Unable to find a free port for running webpack", e);
         }
     }
 }
