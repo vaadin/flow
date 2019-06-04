@@ -50,7 +50,7 @@ class FrontendClassVisitor extends ClassVisitor {
      */
     static class RepeatedAnnotationVisitor extends AnnotationVisitor {
         public RepeatedAnnotationVisitor() {
-            super(Opcodes.ASM6);
+            super(Opcodes.ASM7);
         }
 
         @Override
@@ -159,12 +159,12 @@ class FrontendClassVisitor extends ClassVisitor {
      *            the end-point object that will be updated during the visit
      */
     FrontendClassVisitor(String className, EndPointData endPoint) { //NOSONAR
-        super(Opcodes.ASM6);
+        super(Opcodes.ASM7);
         this.className = className;
         this.endPoint = endPoint;
 
         // Visitor for each method in the class.
-        methodVisitor = new MethodVisitor(Opcodes.ASM6) {
+        methodVisitor = new MethodVisitor(Opcodes.ASM7) {
             // We are interested in the new instances created inside the method
             @Override
             public void visitTypeInsn(int opcode, String type) {
