@@ -60,6 +60,7 @@
                 </executions>
                 <configuration>
                     <bowerMode>false</bowerMode>
+                    <productionMode>true</productionMode>
                 </configuration>
             </plugin>
             <!-- Run jetty before integration tests, and stop after -->

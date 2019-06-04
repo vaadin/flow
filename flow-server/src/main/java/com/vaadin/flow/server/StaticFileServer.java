@@ -196,8 +196,16 @@ public class StaticFileServer implements StaticFileHandler {
         // http://localhost:8888/context/servlet/folder/file.js
         // ->
         // /servlet/folder/file.js
-        return request.getPathInfo() == null ? request.getServletPath()
-                        : request.getServletPath() + request.getPathInfo();
+        //
+        // http://localhost:8888/context/servlet/VAADIN/folder/file.js
+        // ->
+        // /VAADIN/folder/file.js
+        if (request.getPathInfo() == null) {
+            return request.getServletPath();
+        } else if (request.getPathInfo().startsWith("/" + VAADIN_MAPPING)) {
+            return request.getPathInfo();
+        }
+        return request.getServletPath() + request.getPathInfo();
     }
 
     /**
