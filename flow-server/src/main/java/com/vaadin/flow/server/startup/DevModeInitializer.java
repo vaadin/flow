@@ -17,6 +17,8 @@ package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
@@ -27,6 +29,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +38,7 @@ import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.VaadinServlet;
@@ -104,6 +108,31 @@ public class DevModeInitializer
         }
     }
 
+    private static class StopDevMode
+            implements ServletContextListener, Serializable {
+
+        private final SerializableRunnable stopCallback;
+
+        private static final AtomicInteger SERVLET_CONTEXTS = new AtomicInteger();
+
+        private StopDevMode(SerializableRunnable stopCallback) {
+            this.stopCallback = stopCallback;
+        }
+
+        @Override
+        public void contextInitialized(ServletContextEvent sce) {
+            SERVLET_CONTEXTS.incrementAndGet();
+        }
+
+        @Override
+        public void contextDestroyed(ServletContextEvent sce) {
+            if (SERVLET_CONTEXTS.decrementAndGet() == 0) {
+                stopCallback.run();
+            }
+        }
+
+    }
+
     @Override
     public void onStartup(Set<Class<?>> classes, ServletContext context)
             throws ServletException {
@@ -126,11 +155,11 @@ public class DevModeInitializer
      * compatibility mode.
      *
      * @param classes
-     *         classes to check for npm- and js modules
+     *            classes to check for npm- and js modules
      * @param context
-     *         servlet context we are running in
+     *            servlet context we are running in
      * @param config
-     *         deployment configuration
+     *            deployment configuration
      */
     public static void initDevModeHandler(Set<Class<?>> classes,
             ServletContext context, DeploymentConfiguration config) {
@@ -143,32 +172,33 @@ public class DevModeInitializer
             return;
         }
 
-        Builder builder = new NodeTasks.Builder(new DefaultClassFinder(classes));
+        Builder builder = new NodeTasks.Builder(
+                new DefaultClassFinder(classes));
 
-        log().info("Starting dev-mode updaters in {} folder.", builder.npmFolder);
+        log().info("Starting dev-mode updaters in {} folder.",
+                builder.npmFolder);
         for (File file : Arrays.asList(
                 new File(builder.npmFolder, PACKAGE_JSON),
                 new File(builder.generatedFolder, PACKAGE_JSON),
-                new File(builder.npmFolder, WEBPACK_CONFIG)
-                )) {
+                new File(builder.npmFolder, WEBPACK_CONFIG))) {
             if (!file.canRead()) {
-                log().warn("Skiping DEV MODE because cannot read '{}' file.", file.getPath());
+                log().warn("Skiping DEV MODE because cannot read '{}' file.",
+                        file.getPath());
                 return;
             }
         }
 
         Set<String> visitedClassNames = new HashSet<>();
-        builder.enablePackagesUpdate(true)
-                .enableImportsUpdate(true)
-                .runNpmInstall(true)
-                .withEmbeddableWebComponents(true)
-                .collectVisitedClasses(visitedClassNames)
-                .build().execute();
+        builder.enablePackagesUpdate(true).enableImportsUpdate(true)
+                .runNpmInstall(true).withEmbeddableWebComponents(true)
+                .collectVisitedClasses(visitedClassNames).build().execute();
 
         context.setAttribute(VisitedClasses.class.getName(),
                 new VisitedClasses(visitedClassNames));
 
-        DevModeHandler.start(config, builder.npmFolder);
+        DevModeHandler handler = DevModeHandler.start(config,
+                builder.npmFolder);
+        context.addListener(new StopDevMode(() -> handler.stop()));
     }
 
     private static Logger log() {

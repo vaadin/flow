@@ -61,7 +61,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
-
 @NotThreadSafe
 @SuppressWarnings("restriction")
 public class DevModeHandlerTest {
@@ -88,7 +87,8 @@ public class DevModeHandlerTest {
 
         new File(getBaseDir(), FrontendUtils.WEBPACK_CONFIG).createNewFile();
         createStubWebpackServer("Compiled", 100);
-        System.clearProperty("vaadin." + SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT);
+        System.clearProperty(
+                "vaadin." + SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT);
     }
 
     @After
@@ -97,19 +97,22 @@ public class DevModeHandlerTest {
             httpServer.stop(0);
         }
 
-
         // Reset unique instance in DevModeHandler
-        Field atomicHandler = DevModeHandler.class.getDeclaredField("atomicHandler");
+        Field atomicHandler = DevModeHandler.class
+                .getDeclaredField("atomicHandler");
         atomicHandler.setAccessible(true);
         atomicHandler.set(null, new AtomicReference<>());
     }
 
     @Test
-    public void should_CreateInstanceAndRunWebPack_When_DevModeAndNpmInstalled() throws Exception {
+    public void should_CreateInstanceAndRunWebPack_When_DevModeAndNpmInstalled()
+            throws Exception {
         assertNotNull(DevModeHandler.start(configuration, npmFolder));
-        assertTrue(new File(getBaseDir(), FrontendUtils.DEFAULT_NODE_DIR + WEBPACK_TEST_OUT_FILE).canRead());
+        assertTrue(new File(getBaseDir(),
+                FrontendUtils.DEFAULT_NODE_DIR + WEBPACK_TEST_OUT_FILE)
+                        .canRead());
         assertNull(DevModeHandler.getDevModeHandler().getFailedOutput());
-        Thread.sleep(150); //NOSONAR
+        Thread.sleep(150); // NOSONAR
     }
 
     @Test
@@ -123,26 +126,34 @@ public class DevModeHandlerTest {
     }
 
     @Test
-    public void should_CreateInstance_After_TimeoutWaitingForPattern() throws Exception {
-        configuration.setApplicationOrSystemProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT, "100");
+    public void should_CreateInstance_After_TimeoutWaitingForPattern()
+            throws Exception {
+        configuration.setApplicationOrSystemProperty(
+                SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT, "100");
         createStubWebpackServer("Foo", 300);
         assertNotNull(DevModeHandler.start(configuration, npmFolder));
-        assertTrue(Integer.getInteger("vaadin." + SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, 0) > 0);
-        Thread.sleep(350); //NOSONAR
+        assertTrue(Integer.getInteger(
+                "vaadin." + SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT,
+                0) > 0);
+        Thread.sleep(350); // NOSONAR
     }
 
     @Test
     public void should_CaptureWebpackOutput_When_Failed() throws Exception {
-        configuration.setApplicationOrSystemProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT, "100");
+        configuration.setApplicationOrSystemProperty(
+                SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT, "100");
         createStubWebpackServer("Failed to compile", 300);
         assertNotNull(DevModeHandler.start(configuration, npmFolder));
         // Wait for server to stop running before checking the output stream
-        Thread.sleep(350); //NOSONAR
-        assertNotNull("Got no output for the failed output even though expected output.", DevModeHandler.getDevModeHandler().getFailedOutput());
+        Thread.sleep(350); // NOSONAR
+        assertNotNull(
+                "Got no output for the failed output even though expected output.",
+                DevModeHandler.getDevModeHandler().getFailedOutput());
     }
 
     @Test
-    public void shouldNot_CreateInstance_When_ProductionMode() throws Exception {
+    public void shouldNot_CreateInstance_When_ProductionMode()
+            throws Exception {
         configuration.setProductionMode(true);
         assertNull(DevModeHandler.start(configuration, npmFolder));
     }
@@ -151,40 +162,47 @@ public class DevModeHandlerTest {
     public void shouldNot_CreateInstance_When_BowerMode() throws Exception {
         configuration.setProductionMode(true);
         assertNull(DevModeHandler.start(configuration, npmFolder));
-        Thread.sleep(150); //NOSONAR
+        Thread.sleep(150); // NOSONAR
     }
 
     @Test
     public void should_RunWebpack_When_WebpackNotListening() throws Exception {
         DevModeHandler.start(configuration, npmFolder);
-        assertTrue(new File(getBaseDir(), FrontendUtils.DEFAULT_NODE_DIR + WEBPACK_TEST_OUT_FILE).canRead());
-        Thread.sleep(150); //NOSONAR
+        assertTrue(new File(getBaseDir(),
+                FrontendUtils.DEFAULT_NODE_DIR + WEBPACK_TEST_OUT_FILE)
+                        .canRead());
+        Thread.sleep(150); // NOSONAR
     }
 
     @Test
     public void shouldNot_RunWebpack_When_WebpackRunning() throws Exception {
         prepareHttpServer(HTTP_OK, "bar");
         DevModeHandler.start(configuration, npmFolder);
-        assertFalse(new File(getBaseDir(), FrontendUtils.DEFAULT_NODE_DIR + WEBPACK_TEST_OUT_FILE).canRead());
+        assertFalse(new File(getBaseDir(),
+                FrontendUtils.DEFAULT_NODE_DIR + WEBPACK_TEST_OUT_FILE)
+                        .canRead());
     }
 
     @Test
-    public void shouldNot_CreateInstance_When_WebpackNotInstalled() throws Exception {
+    public void shouldNot_CreateInstance_When_WebpackNotInstalled()
+            throws Exception {
         new File(getBaseDir(), WEBPACK_SERVER).delete();
         assertNull(DevModeHandler.start(configuration, npmFolder));
     }
 
     @Test
-    public void shouldNot_CreateInstance_When_WebpackIsNotExecutable()  {
-        // The set executable doesn't work in Windows and will always return false
-        boolean systemImplementsExecutable = new File(getBaseDir(), WEBPACK_SERVER).setExecutable(false);
-        if(systemImplementsExecutable) {
+    public void shouldNot_CreateInstance_When_WebpackIsNotExecutable() {
+        // The set executable doesn't work in Windows and will always return
+        // false
+        boolean systemImplementsExecutable = new File(getBaseDir(),
+                WEBPACK_SERVER).setExecutable(false);
+        if (systemImplementsExecutable) {
             assertNull(DevModeHandler.start(configuration, npmFolder));
         }
     }
 
     @Test
-    public void shouldNot_CreateInstance_When_WebpackNotConfigured()  {
+    public void shouldNot_CreateInstance_When_WebpackNotConfigured() {
         new File(getBaseDir(), FrontendUtils.WEBPACK_CONFIG).delete();
         assertNull(DevModeHandler.start(configuration, npmFolder));
     }
@@ -202,7 +220,8 @@ public class DevModeHandlerTest {
     }
 
     @Test(expected = ConnectException.class)
-    public void should_ThrowAnException_When_WebpackNotListening() throws IOException {
+    public void should_ThrowAnException_When_WebpackNotListening()
+            throws IOException {
         HttpServletRequest request = prepareRequest("/foo.js");
         new DevModeHandler(0).serveDevModeRequest(request, null);
     }
@@ -213,17 +232,20 @@ public class DevModeHandlerTest {
         HttpServletResponse response = prepareResponse();
         int port = prepareHttpServer(HTTP_OK, "bar");
 
-        assertTrue(new DevModeHandler(port).serveDevModeRequest(request, response));
+        assertTrue(new DevModeHandler(port).serveDevModeRequest(request,
+                response));
         assertEquals(HTTP_OK, responseStatus);
     }
 
     @Test
-    public void should_ReturnFalse_When_WebpackResponseNotFound() throws Exception {
+    public void should_ReturnFalse_When_WebpackResponseNotFound()
+            throws Exception {
         HttpServletRequest request = prepareRequest("/foo.js");
         HttpServletResponse response = prepareResponse();
         int port = prepareHttpServer(HTTP_NOT_FOUND, "");
 
-        assertFalse(new DevModeHandler(port).serveDevModeRequest(request, response));
+        assertFalse(new DevModeHandler(port).serveDevModeRequest(request,
+                response));
         assertEquals(200, responseStatus);
     }
 
@@ -233,21 +255,24 @@ public class DevModeHandlerTest {
         HttpServletResponse response = prepareResponse();
         int port = prepareHttpServer(HTTP_UNAUTHORIZED, "");
 
-        assertTrue(new DevModeHandler(port).serveDevModeRequest(request, response));
+        assertTrue(new DevModeHandler(port).serveDevModeRequest(request,
+                response));
         assertEquals(HTTP_UNAUTHORIZED, responseStatus);
     }
 
     @Test(expected = ConnectException.class)
-    public void servlet_should_ThrowAnException_When_WebpackNotListening() throws Exception {
+    public void servlet_should_ThrowAnException_When_WebpackNotListening()
+            throws Exception {
         VaadinServlet servlet = prepareServlet();
         HttpServletRequest request = prepareRequest("/foo.js");
         HttpServletResponse response = prepareResponse();
         servlet.service(request, response);
-        Thread.sleep(150); //NOSONAR
+        Thread.sleep(150); // NOSONAR
     }
 
     @Test
-    public void servlet_should_GetValidResponse_When_WebpackListening() throws Exception {
+    public void servlet_should_GetValidResponse_When_WebpackListening()
+            throws Exception {
         HttpServletRequest request = prepareRequest("/foo.js");
         HttpServletResponse response = prepareResponse();
         prepareHttpServer(HTTP_OK, "");
@@ -256,16 +281,26 @@ public class DevModeHandlerTest {
         assertEquals(HTTP_OK, responseStatus);
     }
 
+    @Test
+    public void stopDevMode_devModeHanlderNull() throws InterruptedException {
+        DevModeHandler handler = DevModeHandler.start(configuration, npmFolder);
+        handler.stop();
+        assertNull(DevModeHandler.getDevModeHandler());
+        Thread.sleep(150); // NOSONAR
+    }
+
     private VaadinServlet prepareServlet() throws ServletException {
         DevModeHandler.start(configuration, npmFolder);
         VaadinServlet servlet = new VaadinServlet();
         ServletConfig cfg = mock(ServletConfig.class);
         ServletContext ctx = mock(ServletContext.class);
         Mockito.doAnswer(invocation -> ctx).when(cfg).getServletContext();
-        Mockito.doAnswer(invocation -> Collections.enumeration(Collections.emptyList())).when(cfg)
-                .getInitParameterNames();
-        Mockito.doAnswer(invocation -> Collections.enumeration(Collections.emptyList())).when(ctx)
-                .getInitParameterNames();
+        Mockito.doAnswer(
+                invocation -> Collections.enumeration(Collections.emptyList()))
+                .when(cfg).getInitParameterNames();
+        Mockito.doAnswer(
+                invocation -> Collections.enumeration(Collections.emptyList()))
+                .when(ctx).getInitParameterNames();
         servlet.init(cfg);
         return servlet;
     }
@@ -276,7 +311,9 @@ public class DevModeHandlerTest {
         Mockito.doAnswer(invocation -> uri).when(request).getRequestURI();
         Mockito.doAnswer(invocation -> "/app").when(request).getServletPath();
         Mockito.doAnswer(invocation -> "GET").when(request).getMethod();
-        Mockito.doAnswer(invocation -> Collections.enumeration(Arrays.asList("foo"))).when(request).getHeaderNames();
+        Mockito.doAnswer(
+                invocation -> Collections.enumeration(Arrays.asList("foo")))
+                .when(request).getHeaderNames();
         Mockito.doAnswer(invocation -> "bar").when(request).getHeader("foo");
         return request;
     }
@@ -286,12 +323,13 @@ public class DevModeHandlerTest {
         HttpServletResponse response = mock(HttpServletResponse.class);
         ServletOutputStream output = mock(ServletOutputStream.class);
         Mockito.doAnswer(invocation -> output).when(response).getOutputStream();
-        Mockito.doAnswer(invocation -> responseStatus = (int) invocation.getArguments()[0]).when(response)
-                .sendError(Mockito.anyInt());
+        Mockito.doAnswer(invocation -> responseStatus = (int) invocation
+                .getArguments()[0]).when(response).sendError(Mockito.anyInt());
         return response;
     }
 
-    private int prepareHttpServer(int status, String response) throws Exception {
+    private int prepareHttpServer(int status, String response)
+            throws Exception {
         int port = DevModeHandler.getFreePort();
         httpServer = HttpServer.create(new InetSocketAddress(port), 0);
         httpServer.createContext("/", exchange -> {
@@ -300,7 +338,9 @@ public class DevModeHandlerTest {
             exchange.close();
         });
         httpServer.start();
-        configuration.setApplicationOrSystemProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, String.valueOf(port));
+        configuration.setApplicationOrSystemProperty(
+                SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT,
+                String.valueOf(port));
         return port;
     }
 }
