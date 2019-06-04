@@ -28,16 +28,16 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
+import static com.vaadin.flow.server.DeploymentConfigurationFactory.SystemProperties;
 
 /**
  * A class for static methods and definitions that might be
@@ -182,7 +182,7 @@ public class FrontendUtils {
      * @return folder location
      */
     public static String getBaseDir() {
-        return System.getProperty(PROJECT_BASEDIR, System.getProperty("user.dir", "."));
+        return SystemProperties.getProperty(PROJECT_BASEDIR, System.getProperty("user.dir", "."));
     }
 
     /**
