@@ -459,7 +459,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     /**
      * Interface for objects capable of building the bootstrap page.
      */
-    public interface PageBuilder {
+    public interface PageBuilder extends Serializable {
         /**
          * Creates the bootstrap page.
          * @param context Context to build page for.
