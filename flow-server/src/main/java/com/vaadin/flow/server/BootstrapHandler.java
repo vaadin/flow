@@ -78,9 +78,9 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
 
+import static com.vaadin.flow.shared.ApplicationConstants.BASE_PROTOCOL_PREFIX;
 import static com.vaadin.flow.shared.ApplicationConstants.CONTEXT_PROTOCOL_PREFIX;
 import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_MAPPING;
-import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_STATIC_FILES_PATH;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -686,7 +686,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             BootstrapUriResolver resolver = context.getUriResolver();
             conf.getPolyfills().forEach(polyfill -> head.appendChild(
                     createJavaScriptElement(resolver.resolveVaadinUri(
-                            CONTEXT_PROTOCOL_PREFIX + VAADIN_MAPPING + polyfill), false)));
+                            BASE_PROTOCOL_PREFIX + VAADIN_MAPPING + polyfill), false)));
             try {
                 appendNpmBundle(head, resolver, service);
             } catch (IOException e) {
@@ -708,7 +708,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         for (String key: chunks.keys()) {
             Element script = createJavaScriptElement(resolver.resolveVaadinUri(
-                    CONTEXT_PROTOCOL_PREFIX + VAADIN_MAPPING + chunks.getString(key)));
+                    BASE_PROTOCOL_PREFIX + VAADIN_MAPPING + chunks.getString(key)));
             if (key.endsWith(".es5")) {
                 head.appendChild(script.attr("nomodule", true));
             } else {
@@ -1311,7 +1311,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         if (resolveNow && ClientResourcesUtils.getResource(
                 "/META-INF/resources/" + CLIENT_ENGINE_NOCACHE_FILE) != null) {
             return context.getUriResolver().resolveVaadinUri(
-                    "context://" + CLIENT_ENGINE_NOCACHE_FILE);
+                    CONTEXT_PROTOCOL_PREFIX + CLIENT_ENGINE_NOCACHE_FILE);
         }
 
         if (getClientEngine() == null) {
@@ -1319,7 +1319,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     "Client engine file name has not been resolved during initialization");
         }
         return context.getUriResolver()
-                .resolveVaadinUri("context://" + getClientEngine());
+                .resolveVaadinUri(CONTEXT_PROTOCOL_PREFIX + getClientEngine());
     }
 
     /**
