@@ -54,7 +54,10 @@ class ImportExtractor implements Serializable {
             indexFrom = index + IMPORT.length();
             index = strippedContent.indexOf(";", indexFrom);
             if (index < 0) {
-                break;
+                index = strippedContent.indexOf("\n", indexFrom);
+            }
+            if (index < 0) {
+                index = strippedContent.length();
             }
             String importStatement = strippedContent.substring(indexFrom, index)
                     .trim();

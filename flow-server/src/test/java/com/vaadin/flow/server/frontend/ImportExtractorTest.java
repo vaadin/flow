@@ -75,4 +75,15 @@ public class ImportExtractorTest {
         Assert.assertEquals("bar.js", importedPaths.get(1));
     }
 
+    @Test
+    public void getImport_lineHasNoSemicolon() {
+        ImportExtractor extractor = new ImportExtractor(
+                "import {A} from 'foo.js'; import from 'bar.js'\n import from 'baz.js'");
+        List<String> importedPaths = extractor.getImportedPaths();
+        Assert.assertEquals(3, importedPaths.size());
+        Assert.assertEquals("foo.js", importedPaths.get(0));
+        Assert.assertEquals("bar.js", importedPaths.get(1));
+        Assert.assertEquals("baz.js", importedPaths.get(2));
+    }
+
 }
