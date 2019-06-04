@@ -15,20 +15,16 @@
  */
 package com.vaadin.flow.uitest.ui.theme;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.openqa.selenium.By;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.theme.Theme;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-
-public class HtmlParserThemeTemplateIT extends ChromeBrowserTest {
-
-    @Test
-    public void themeComponentShouldLoadForTemplate() {
-        getDriver().get(getRootURL()
-                + "/view/com.vaadin.flow.uitest.ui.theme.HtmlParserThemeTemplateView");
-
-        Assert.assertTrue(findElement(By.id("theme-component")).isDisplayed());
-    }
+@Route(value = "com.vaadin.flow.uitest.ui.theme.NpmThemedComponentView")
+@Theme(MyTheme.class)
+@Tag("npm-themed-component")
+@JsModule("./src/npm-themed-component.js")
+public class NpmThemedComponentView extends Component {
 
 }

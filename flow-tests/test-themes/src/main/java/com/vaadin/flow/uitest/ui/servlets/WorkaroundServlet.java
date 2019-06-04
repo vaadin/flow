@@ -13,22 +13,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui.theme;
+package com.vaadin.flow.uitest.ui.servlets;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.openqa.selenium.By;
+import javax.servlet.annotation.WebServlet;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.flow.server.VaadinServlet;
 
-public class HtmlParserThemeTemplateIT extends ChromeBrowserTest {
-
-    @Test
-    public void themeComponentShouldLoadForTemplate() {
-        getDriver().get(getRootURL()
-                + "/view/com.vaadin.flow.uitest.ui.theme.HtmlParserThemeTemplateView");
-
-        Assert.assertTrue(findElement(By.id("theme-component")).isDisplayed());
-    }
+/**
+ * This is a temporary workaround until #5740 is fixed.
+ */
+@WebServlet("/*")
+public class WorkaroundServlet extends VaadinServlet {
 
 }
