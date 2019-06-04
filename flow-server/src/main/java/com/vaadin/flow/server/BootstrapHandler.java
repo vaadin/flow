@@ -121,10 +121,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     static Supplier<String> clientEngineFile = () -> LazyClientEngineInit.CLIENT_ENGINE_FILE;
 
-    private final BootstrapPageBuilder pageBuilder;
+    private final PageBuilder pageBuilder;
 
     /**
-     * Creates an instance of the handler with default {@link BootstrapPageBuilder}.
+     * Creates an instance of the handler with default {@link PageBuilder}.
      */
     public BootstrapHandler() {
         this(new BootstrapPageBuilder());
@@ -134,7 +134,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      * Creates an instance of the handler using provided page builder.
      * @param pageBuilder Page builder to use.
      */
-    protected BootstrapHandler(BootstrapPageBuilder pageBuilder) {
+    protected BootstrapHandler(PageBuilder pageBuilder) {
         this.pageBuilder = pageBuilder;
     }
 
@@ -142,7 +142,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      * Returns the current page builder object.
      * @return Page builder in charge of constructing the resulting page.
      */
-    protected BootstrapPageBuilder getPageBuilder() {
+    protected PageBuilder getPageBuilder() {
         return this.pageBuilder;
     }
 
@@ -457,17 +457,30 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     /**
+     * Interface for objects capable of building the bootstrap page.
+     */
+    public interface PageBuilder {
+        /**
+         * Creates the bootstrap page.
+         * @param context Context to build page for.
+         * @return A non-null {@link Document} with bootstrap page.
+         */
+        Document getBootstrapPage(BootstrapContext context);
+    }
+
+    /**
      * Builds bootstrap pages.
      *
      * Do not subclass this, unless you really know why you are doing it.
      */
-    protected static final class BootstrapPageBuilder implements Serializable {
+    protected static final class BootstrapPageBuilder implements PageBuilder, Serializable {
 
         /**
          * Returns the bootstrap page for the given context.
          * @param context Context to generate bootstrap page for.
          * @return A document with the corresponding HTML page.
          */
+        @Override
         public Document getBootstrapPage(BootstrapContext context) {
             DeploymentConfiguration config = context.getSession().getConfiguration();
 

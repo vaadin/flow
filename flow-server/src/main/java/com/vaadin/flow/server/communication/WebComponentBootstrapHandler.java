@@ -93,7 +93,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
      * Creates a new bootstrap handler, allowing to use custom page builder.
      * @param pageBuilder Page builder to use.
      */
-    protected WebComponentBootstrapHandler(BootstrapPageBuilder pageBuilder) {
+    protected WebComponentBootstrapHandler(PageBuilder pageBuilder) {
         super(pageBuilder);
     }
 

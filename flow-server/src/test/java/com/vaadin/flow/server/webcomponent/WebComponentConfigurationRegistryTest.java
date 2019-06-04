@@ -55,6 +55,8 @@ public class WebComponentConfigurationRegistryTest {
 
     protected WebComponentConfigurationRegistry registry;
 
+    protected VaadinContext context;
+
     protected WebComponentConfigurationRegistry createRegistry() {
         return new WebComponentConfigurationRegistry(){};
     }
@@ -62,18 +64,24 @@ public class WebComponentConfigurationRegistryTest {
     @Before
     public void init() {
         VaadinService service = mock(VaadinService.class);
-        VaadinContext context = mock(VaadinContext.class);
+        context = mock(VaadinContext.class);
         VaadinService.setCurrent(service);
         Mockito.when(service.getContext()).thenReturn(context);
-        Mockito.when(context.getAttribute(WebComponentConfigurationRegistry.class)).thenReturn(createRegistry());
-        Mockito.when(context.getAttribute(eq(WebComponentConfigurationRegistry.class), anyObject())).thenReturn(createRegistry());
-        registry = WebComponentConfigurationRegistry
-                .getInstance(context);
+        WebComponentConfigurationRegistry instance = createRegistry();
+        Mockito.when(context.getAttribute(WebComponentConfigurationRegistry.class)).thenReturn(instance);
+        Mockito.when(context.getAttribute(eq(WebComponentConfigurationRegistry.class), anyObject())).thenReturn(instance);
+        registry = WebComponentConfigurationRegistry.getInstance(context);
     }
 
     @Test
     public void assertWebComponentRegistry() {
         Assert.assertNotNull(registry);
+    }
+
+    @Test
+    public void assertRegistryIsSingleton() {
+        Assert.assertSame("WebComponentConfigurationRegistry instance should be singleton",
+            registry, WebComponentConfigurationRegistry.getInstance(context));
     }
 
     @Test

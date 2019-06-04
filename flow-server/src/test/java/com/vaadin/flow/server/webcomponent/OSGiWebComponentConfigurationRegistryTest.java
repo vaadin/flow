@@ -45,6 +45,13 @@ public class OSGiWebComponentConfigurationRegistryTest extends WebComponentConfi
         return new OSGiWebComponentConfigurationRegistry();
     }
 
+    @Test
+    @Override
+    public void assertRegistryIsSingleton() {
+        Assert.assertSame("OSGiWebComponentConfigurationRegistry instance should be singleton",
+            registry, OSGiWebComponentConfigurationRegistry.getInstance(context));
+    }
+
     @After
     public void cleanUpOSGi() {
         OSGiAccess.getInstance().getOsgiServletContext().setAttribute(
