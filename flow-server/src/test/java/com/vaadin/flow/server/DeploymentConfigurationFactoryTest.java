@@ -34,7 +34,6 @@ import static org.easymock.EasyMock.replay;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static com.vaadin.flow.server.DeploymentConfigurationFactory.SystemProperties;
 
 public class DeploymentConfigurationFactoryTest {
 
@@ -233,27 +232,6 @@ public class DeploymentConfigurationFactoryTest {
         DeploymentConfiguration config = createConfig(emptyMap());
         assertFalse(config.isBowerMode());
         assertTrue(config.isProductionMode());
-    }
-
-    @Test
-    public void get_set_systemProperties()
-            throws Exception {
-
-        String value;
-
-        value = SystemProperties.getProperty("foo");
-        Assert.assertNull("Unexpected value", value);
-
-        value = SystemProperties.getProperty("foo", "qwe");
-        Assert.assertEquals("Unexpected value", "qwe", value);
-
-        System.setProperty("foo", "bar");
-
-        value = SystemProperties.getProperty("foo", "qwe");
-        Assert.assertEquals("Unexpected value", "bar", value);
-
-        value = System.getProperty("foo");
-        Assert.assertNull("Unexpected value", value);
     }
 
     private DeploymentConfiguration createConfig(Map<String, String> map)

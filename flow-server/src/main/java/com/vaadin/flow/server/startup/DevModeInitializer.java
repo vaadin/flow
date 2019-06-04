@@ -48,6 +48,8 @@ import com.vaadin.flow.server.frontend.NodeTasks.Builder;
 import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
+import static com.vaadin.flow.server.frontend.FrontendUtils.PROJECT_BASEDIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 
 /**
@@ -138,6 +140,17 @@ public class DevModeInitializer
             throws ServletException {
         Collection<? extends ServletRegistration> registrations = context
                 .getServletRegistrations().values();
+
+        // Clear properties set by flow-maven-plugin:prepare-frontend.
+        // This fixes the problem when multiple sequential processes over the
+        // same JVM sets and/or reads the same properties. Thus a property set
+        // by a previous process won't be intercepted by the next process.
+        // In particular, it fixes the bower test modules which were failing if
+        // executed after the npm test modules.
+        context.addListener(new StopDevMode(() -> {
+            System.clearProperty(PARAM_TOKEN_FILE);
+            System.clearProperty(PROJECT_BASEDIR);
+        }));
 
         if (registrations.isEmpty()) {
             return;

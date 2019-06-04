@@ -53,56 +53,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
  */
 public final class DeploymentConfigurationFactory implements Serializable {
 
-    /**
-     * Provide a wrapper over {@link System#getProperty(String)} in order to
-     * clear the value as it's read and provide it later from a local cache.
-     * This helps when multiple sequential processes over the same JVM sets
-     * and/or reads the same properties. Thus a property set by a previous
-     * process won't be intercepted by the next process.
-     */
-    public static class SystemProperties implements Serializable {
-
-        private static Properties properties = new Properties();
-
-        /**
-         * Gets a system property indicated by the key.
-         *
-         * @param key
-         *            the property key.
-         * @return the property value.
-         * @see System#getProperty(String)
-         */
-        public static String getProperty(String key) {
-            String value = System.getProperty(key);
-
-            if (value == null) {
-                return properties.getProperty(key);
-
-            } else {
-                properties.setProperty(key, value);
-                System.clearProperty(key);
-                return value;
-            }
-        }
-
-        /**
-         * Gets a system property indicated by the key.
-         * 
-         * @param key
-         *            the property key.
-         * @param defaultValue
-         *            a default value in case the system value is
-         *            <code>null</code>.
-         * @return the property value.
-         * @see System#getProperty(String, String)
-         */
-        public static String getProperty(String key, String defaultValue) {
-            String value = getProperty(key);
-            return (value == null) ? defaultValue : value;
-        }
-
-    }
-
     private DeploymentConfigurationFactory() {
     }
 
@@ -194,7 +144,7 @@ public final class DeploymentConfigurationFactory implements Serializable {
         try {
             String json = null;
             // token file location passed via System property
-            String tokenLocation = SystemProperties.getProperty(PARAM_TOKEN_FILE);
+            String tokenLocation = System.getProperty(PARAM_TOKEN_FILE);
             if (tokenLocation != null) {
                 File tokenFile = new File(tokenLocation);
                 if (tokenFile != null && tokenFile.canRead()) {
