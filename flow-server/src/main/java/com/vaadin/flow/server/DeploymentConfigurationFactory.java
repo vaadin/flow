@@ -60,7 +60,7 @@ public final class DeploymentConfigurationFactory implements Serializable {
      * and/or reads the same properties. Thus a property set by a previous
      * process won't be intercepted by the next process.
      */
-    public static class SystemProperties {
+    public static class SystemProperties implements Serializable {
 
         private static Properties properties = new Properties();
 
