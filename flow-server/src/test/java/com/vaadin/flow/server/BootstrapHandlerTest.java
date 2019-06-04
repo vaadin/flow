@@ -1091,7 +1091,7 @@ public class BootstrapHandlerTest {
                 "webcomponents-loader.js should be added to head. (not deferred)",
                 allElements.stream().map(Object::toString)
                         .anyMatch(element -> element.equals(
-                                "<script type=\"text/javascript\" src=\"./"
+                                "<script type=\"text/javascript\" src=\""
                                         + VAADIN_MAPPING
                                         + "build/webcomponentsjs/webcomponents-loader.js\"></script>")));
 
@@ -1099,7 +1099,7 @@ public class BootstrapHandlerTest {
                 "index.js should be added to head for ES6 browsers. (deferred and type module)",
                 allElements.stream().map(Object::toString)
                         .anyMatch(element -> element.equals(
-                                "<script type=\"module\" defer src=\"./"
+                                "<script type=\"module\" defer src=\""
                                         + VAADIN_MAPPING
                                         + "build/index-1111.cache.js\"></script>")));
 
@@ -1107,7 +1107,7 @@ public class BootstrapHandlerTest {
                 "index.js should be added to head for ES5 browsers. (deferred and nomodule)",
                 allElements.stream().map(Object::toString)
                         .anyMatch(element -> element.equals(
-                                "<script type=\"text/javascript\" defer src=\"./"
+                                "<script type=\"text/javascript\" defer src=\""
                                         + VAADIN_MAPPING
                                         + "build/index.es5-2222.cache.js\" nomodule></script>")));
     }
