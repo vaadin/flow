@@ -80,8 +80,11 @@ class FrontendClassVisitor extends ClassVisitor {
 
 
         boolean hasData() {
-            return theme.name != null || theme.notheme || layout != null
-                    || modules.size() > 0 || scripts.size() > 0;
+            boolean hasTheme = theme.name != null || theme.notheme;
+            boolean hasScriptsOrModules =
+                    modules.size() > 0 || scripts.size() > 0;
+
+            return hasTheme || layout != null || hasScriptsOrModules;
         }
 
         /**
