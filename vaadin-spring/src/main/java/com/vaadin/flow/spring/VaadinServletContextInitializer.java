@@ -57,6 +57,7 @@ import com.vaadin.flow.server.AmbiguousRouteConfigurationException;
 import com.vaadin.flow.server.DeploymentConfigurationFactory;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.RouteRegistry;
+import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.startup.AbstractRouteRegistryInitializer;
 import com.vaadin.flow.server.startup.AnnotationValidator;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
@@ -233,7 +234,7 @@ public class VaadinServletContextInitializer
 
             if (servletRegistrationBean == null) {
                 LoggerFactory.getLogger(VaadinServletContextInitializer.class)
-                       .warn("No servlet registration found. DevServer will not be started!");
+                        .warn("No servlet registration found. DevServer will not be started!");
                 return;
             }
 
@@ -245,15 +246,18 @@ public class VaadinServletContextInitializer
                 return;
             }
 
-            // Handle classes Route.class, NpmPackage.class, WebComponentExporter.class
+            // Handle classes Route.class, NpmPackage.class,
+            // WebComponentExporter.class
             Collection<String> npmPackages = getNpmPackages();
-            Set<Class<?>> classes = findByAnnotation(npmPackages,
-                    Route.class, NpmPackage.class).collect(Collectors.toSet());
+            Set<Class<?>> classes = findByAnnotation(npmPackages, Route.class,
+                    NpmPackage.class).collect(Collectors.toSet());
 
-            classes.addAll(findBySuperType(npmPackages,
-                    WebComponentExporter.class).collect(Collectors.toSet()));
+            classes.addAll(
+                    findBySuperType(npmPackages, WebComponentExporter.class)
+                            .collect(Collectors.toSet()));
 
-            DevModeInitializer.initDevModeHandler(classes, event.getServletContext(), config);
+            DevModeInitializer.initDevModeHandler(classes,
+                    event.getServletContext(), config);
         }
 
         @Override
@@ -268,7 +272,8 @@ public class VaadinServletContextInitializer
         @Override
         public void contextInitialized(ServletContextEvent event) {
             WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
-                    .getInstance(event.getServletContext());
+                    .getInstance(new VaadinServletContext(
+                            event.getServletContext()));
 
             if (registry.getConfigurations() == null
                     || registry.getConfigurations().isEmpty()) {
@@ -342,7 +347,8 @@ public class VaadinServletContextInitializer
 
         // Skip custom web component builders search if registry already
         // initialized
-        if (!WebComponentConfigurationRegistry.getInstance(servletContext)
+        if (!WebComponentConfigurationRegistry
+                .getInstance(new VaadinServletContext(servletContext))
                 .hasConfigurations()) {
             servletContext
                     .addListener(new WebComponentServletContextListener());
@@ -397,7 +403,8 @@ public class VaadinServletContextInitializer
 
     private Collection<String> getNpmPackages() {
         List<String> npmPackages = new ArrayList(getDefaultPackages());
-        // By default we should always check the com.vaadin.flow packages for npm
+        // By default we should always check the com.vaadin.flow packages for
+        // npm
         npmPackages.add("com.vaadin.flow.component");
         return npmPackages;
     }
@@ -457,9 +464,9 @@ public class VaadinServletContextInitializer
          * Constructor.
          *
          * @param context
-         *         the ServletContext
+         *            the ServletContext
          * @param registration
-         *         the ServletRegistration for this ServletConfig instance
+         *            the ServletRegistration for this ServletConfig instance
          */
         private StubServletConfig(ServletContext context,
                 ServletRegistrationBean registration) {
@@ -495,11 +502,11 @@ public class VaadinServletContextInitializer
          * Creates a DeploymentConfiguration.
          *
          * @param context
-         *         the ServletContext
+         *            the ServletContext
          * @param registration
-         *         the ServletRegistrationBean to get servlet parameters from
+         *            the ServletRegistrationBean to get servlet parameters from
          * @param servletClass
-         *         the class to look for properties defined with annotations
+         *            the class to look for properties defined with annotations
          * @return a DeploymentConfiguration instance
          */
         public static DeploymentConfiguration createDeploymentConfiguration(
