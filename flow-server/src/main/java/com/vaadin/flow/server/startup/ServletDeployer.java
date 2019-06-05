@@ -183,7 +183,7 @@ public class ServletDeployer implements ServletContextListener {
     }
 
 
-    private ServletRegistration createAppServlet(ServletContext context) {
+    private void createAppServlet(ServletContext context) {
         boolean createServlet = ApplicationRouteRegistry.getInstance(context)
                 .hasNavigationTargets();
 
@@ -195,7 +195,7 @@ public class ServletDeployer implements ServletContextListener {
                     "{} there are no navigation targets registered to the "
                             + "route registry and there are no web component exporters",
                     SKIPPING_AUTOMATIC_SERVLET_REGISTRATION_BECAUSE);
-            return null;
+            return;
         }
 
         ServletRegistration vaadinServlet = findVaadinServlet(context);
@@ -204,10 +204,10 @@ public class ServletDeployer implements ServletContextListener {
                     "{} there is already a Vaadin servlet with the name {}",
                     SKIPPING_AUTOMATIC_SERVLET_REGISTRATION_BECAUSE,
                     vaadinServlet.getName());
-            return vaadinServlet;
+            return;
         }
 
-        return createServletIfNotExists(context, getClass().getName(), "/*");
+        createServletIfNotExists(context, getClass().getName(), "/*");
     }
 
     private ServletRegistration createServletIfNotExists(ServletContext context, String name,

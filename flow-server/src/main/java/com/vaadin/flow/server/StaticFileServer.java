@@ -17,7 +17,6 @@ package com.vaadin.flow.server;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -28,7 +27,9 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.ResponseWriter;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 
+import static com.vaadin.flow.shared.ApplicationConstants.META_INF;
 import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_BUILD_FILES_PATH;
 import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_MAPPING;
 import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_STATIC_FILES_PATH;
@@ -90,7 +91,14 @@ public class StaticFileServer implements StaticFileHandler {
             HttpServletResponse response) throws IOException {
 
         String filenameWithPath = getRequestFilename(request);
-        URL resourceUrl = servletService.getStaticResource(filenameWithPath);
+        URL resourceUrl;
+        if (filenameWithPath.startsWith("/" + VAADIN_BUILD_FILES_PATH)
+                && !isInternalFile(request)) {
+            resourceUrl = servletService.getClassLoader()
+                    .getResource(META_INF + filenameWithPath);
+        } else {
+            resourceUrl = servletService.getStaticResource(filenameWithPath);
+        }
         if (resourceUrl == null) {
             // Not found in webcontent or in META-INF/resources in some JAR
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -113,6 +121,21 @@ public class StaticFileServer implements StaticFileHandler {
         responseWriter.writeResponseContents(filenameWithPath, resourceUrl,
                 request, response);
         return true;
+    }
+
+
+    /**
+     * Files that we shouldn't serve for requests as they should be only used
+     * internally.
+     *
+     * @param request
+     *         the http request to handle
+     * @return true if we should not serve the requested file
+     */
+    protected static boolean isInternalFile(HttpServletRequest request) {
+        String file = request.getPathInfo();
+        return file.endsWith(Constants.STATISTICS_JSON_DEFAULT) || file
+                .endsWith(FrontendUtils.TOKEN_FILE);
     }
 
     /**

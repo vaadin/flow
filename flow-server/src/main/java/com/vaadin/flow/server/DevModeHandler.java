@@ -300,7 +300,7 @@ public class DevModeHandler implements Serializable {
     public boolean serveDevModeRequest(HttpServletRequest request,
             HttpServletResponse response) throws IOException {
         // Requests in devmode should come to /VAADIN/build/index....js where as
-        // webpack has the filed in /build/index....js so we need to drop the /VAADIN
+        // webpack has the file in /build/index....js so we need to drop the /VAADIN
         String requestFilename = request.getPathInfo()
                 .replace(VAADIN_MAPPING, "");
 

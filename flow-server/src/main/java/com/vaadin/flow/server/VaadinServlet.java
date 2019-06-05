@@ -284,7 +284,7 @@ public class VaadinServlet extends HttpServlet {
             return true;
         }
 
-        if (isInternalFile(request)) {
+        if (StaticFileServer.isInternalFile(request)) {
             return false;
         }
 
@@ -295,20 +295,6 @@ public class VaadinServlet extends HttpServlet {
 
         return webJarServer != null
                 && webJarServer.tryServeWebJarResource(request, response);
-    }
-
-    /**
-     * Files that we shouldn't serve for requests as they should be only used
-     * internally.
-     *
-     * @param request
-     *         the http request to handle
-     * @return true if we should not serve the requested file
-     */
-    private boolean isInternalFile(HttpServletRequest request) {
-        String file = request.getPathInfo();
-        return file.endsWith(Constants.STATISTICS_JSON_DEFAULT) || file
-                .endsWith(FrontendUtils.TOKEN_FILE);
     }
 
     /**

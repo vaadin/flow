@@ -206,13 +206,7 @@ public class VaadinServletService extends VaadinService {
     @Override
     public URL getStaticResource(String path) {
         try {
-            URL resource = getServlet().getServletContext().getResource(path);
-            if (resource == null) {
-                // Do not serve anything from classpath that is not prefixed with META-INF
-                String metaPath = path.startsWith(META_INF) ? path : META_INF + path;
-                resource = getServlet().getServletContext().getClassLoader().getResource(metaPath);
-            }
-            return resource;
+            return getServlet().getServletContext().getResource(path);
         } catch (MalformedURLException e) {
             getLogger().warn("Error finding resource for '{}'", path, e);
         }

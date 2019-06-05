@@ -901,17 +901,22 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
             // Basic reconnect and system error dialog styles just to make them
             // visible and outside of normal flow
-            styles.appendText(
-                    ".v-reconnect-dialog, .v-system-error {" // @formatter:off
-                            + "position: absolute;" + "color: black;"
-                            + "background: white;" + "top: 1em;" + "right: 1em;"
-                            + "border: 1px solid black;" + "padding: 1em;"
-                            + "z-index: 10000;"
-                            + "max-width: calc(100vw - 4em);"
-                            + "max-height: calc(100vh - 4em);"
-                            + "overflow: auto;" + "} .v-system-error {"
-                            + "color: red;" + "pointer-events: auto;"
-                            + "}"); // @formatter:on
+            styles.appendText(".v-reconnect-dialog, .v-system-error {" // @formatter:off
+                    +   "position: absolute;"
+                    +   "color: black;"
+                    +   "background: white;"
+                    +   "top: 1em;"
+                    +   "right: 1em;"
+                    +   "border: 1px solid black;"
+                    +   "padding: 1em;"
+                    +   "z-index: 10000;"
+                    +   "max-width: calc(100vw - 4em);"
+                    +   "max-height: calc(100vh - 4em);"
+                    +   "overflow: auto;"
+                    + "} .v-system-error {"
+                    +   "color: red;"
+                    +   "pointer-events: auto;"
+                    + "}"); // @formatter:on
         }
 
         private void setupMetaAndTitle(Element head, BootstrapContext context) {

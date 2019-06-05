@@ -114,6 +114,13 @@ public class PrepareFrontendMojoTest {
     }
 
     @Test
+    public void mavenGoal_when_packageWebpackConfigMissing() throws Exception {
+        Assert.assertFalse(FileUtils.fileExists(webpackConfig));
+        mojo.execute();
+        Assert.assertTrue(FileUtils.fileExists(webpackConfig));
+    }
+
+    @Test
     public void should_keepDependencies_when_packageJsonExists() throws Exception {
         FileUtils.fileWrite(packageJson, "{\"dependencies\":{\"foo\":\"bar\"}}");
         mojo.execute();
