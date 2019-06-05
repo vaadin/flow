@@ -158,7 +158,7 @@ public abstract class NodeUpdater implements Command {
             if (finder.getResource(RESOURCES_FRONTEND_DEFAULT + "/" + resource) != null) {
                 if (!resolved.startsWith("./")) {
                     log().warn(
-                            "Use the './' prefix for resources in JAR files: '{}', please update your component.",
+                            "Use the './' prefix for files in JAR files: '{}', please update your component.",
                             importPath);
                 }
                 resolved = FLOW_NPM_PACKAGE_NAME + resource;
