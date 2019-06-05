@@ -29,17 +29,16 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.DevModeHandler.DevModePort;
 
 /**
  * A class for static methods and definitions that might be
@@ -326,17 +325,16 @@ public class FrontendUtils {
 
     private static URL getStatsFromWebpack(VaadinService service, DeploymentConfiguration config, String stats,
             URL statsUrl) throws MalformedURLException {
-        String port = config.getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, null);
-        if (port != null && !port.isEmpty()) {
-            statsUrl = new URL("http://localhost:" + port + "/" + stats);
+        DevModePort port = service.getContext().getAttribute(DevModePort.class);
+        if (port != null) {
+            statsUrl = new URL("http://localhost:" + port.getValue() + "/" + stats);
         }
         if (statsUrl == null) {
             statsUrl = service.getStaticResource("/" + stats);
             if (statsUrl == null) {
                 getLogger().warn(
                         "Cannot get the stats file through webpack-dev-server. "
-                        + "The webpack port is unavailable via '{}' property. ",
-                        SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT);
+                        + "The webpack port is unavailable via VaadinContext.");
             } else {
                 getLogger().debug("Cannot get the stats file through webpack-dev-server, "
                         + "however it was found in the web contenxt, which means that the application was build previously. "
