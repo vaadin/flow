@@ -24,12 +24,6 @@
 
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>flow-server-production-mode</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.vaadin</groupId>
             <artifactId>flow-web-component-test-assets</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -51,9 +45,6 @@
                     <!-- Use war output directory to get the webpack files -->
                     <webAppConfig>
                         <allowDuplicateFragmentNames>true</allowDuplicateFragmentNames>
-                        <resourceBases>
-                            <resourceBase>${project.build.directory}/${project.build.finalName}</resourceBase>
-                        </resourceBases>
                     </webAppConfig>
                 </configuration>
             </plugin>

@@ -753,8 +753,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         /**
          * Writes the security key (and generates one if needed) to the given
-         * JSON
-         * object.
+         * JSON object.
          *
          * @param response
          *         the response JSON object to write security key into

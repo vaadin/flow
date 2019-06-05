@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.ResponseWriter;
 
+import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_BUILD_FILES_PATH;
 import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_MAPPING;
 import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_STATIC_FILES_PATH;
 
@@ -74,7 +75,7 @@ public class StaticFileServer implements StaticFileHandler {
             return false;
         }
 
-        if (requestFilename.startsWith("/" + VAADIN_STATIC_FILES_PATH) || requestFilename.startsWith("/" + VAADIN_MAPPING + "build/")) {
+        if (requestFilename.startsWith("/" + VAADIN_STATIC_FILES_PATH) || requestFilename.startsWith("/" + VAADIN_BUILD_FILES_PATH)) {
             // The path is reserved for internal resources only
             // We rather serve 404 than let it fall through
             return true;

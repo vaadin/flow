@@ -81,6 +81,11 @@ public class ApplicationConstants implements Serializable {
     public static final String VAADIN_STATIC_FILES_PATH = VAADIN_MAPPING + "static/";
 
     /**
+     * The prefix used for all internal static files, relative to context root.
+     */
+    public static final String VAADIN_BUILD_FILES_PATH = VAADIN_MAPPING + "build/";
+
+    /**
      * The name of the javascript containing push support.
      */
     public static final String VAADIN_PUSH_JS = VAADIN_STATIC_FILES_PATH
@@ -98,14 +103,12 @@ public class ApplicationConstants implements Serializable {
     public static final String PUSH_ID_PARAMETER = "v-pushId";
 
     /**
-     * The name of the parameter used to transmit RPC invocations
-     *
+     * The name of the parameter used to transmit RPC invocations.
      */
     public static final String RPC_INVOCATIONS = "rpc";
 
     /**
-     * The name of the parameter used to transmit the CSRF token
-     *
+     * The name of the parameter used to transmit the CSRF token.
      */
     public static final String CSRF_TOKEN = "csrfToken";
 

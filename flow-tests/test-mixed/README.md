@@ -1,7 +1,9 @@
 
 
 
-`test-mixed` is a module that test maven builds in all modes. At the same time checks that the application can be deployed with a custom context in the container, custom servlet path and custom route.
+`test-mixed` is a module that test maven builds in all modes. At the same time it 
+checks that the application can be deployed with a custom context in the container, 
+custom servlet path and custom route.
 
 The module has different maven build files per each mode combination.
 
