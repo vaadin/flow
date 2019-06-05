@@ -21,15 +21,18 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
-
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -42,6 +45,9 @@ import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 
@@ -79,14 +85,12 @@ import com.vaadin.flow.spring.VaadinScanPackagesRegistrar.VaadinScanPackages;
  *
  * @see ServletContainerInitializer
  * @see RouteRegistry
- *
- * @author Vaadin Ltd
- *
  */
 public class VaadinServletContextInitializer
         implements ServletContextInitializer {
 
     private ApplicationContext appContext;
+    private ResourceLoader customLoader;
 
     private class RouteServletContextListener extends
             AbstractRouteRegistryInitializer implements ServletContextListener {
@@ -242,22 +246,24 @@ public class VaadinServletContextInitializer
                     .createDeploymentConfiguration(event.getServletContext(),
                             servletRegistrationBean, SpringServlet.class);
 
-            if (config.isBowerMode()) {
+            if (config.isBowerMode() || config.isProductionMode()) {
                 return;
             }
 
-            // Handle classes Route.class, NpmPackage.class,
-            // WebComponentExporter.class
-            Collection<String> npmPackages = getNpmPackages();
-            Set<Class<?>> classes = findByAnnotation(npmPackages, Route.class,
-                    NpmPackage.class).collect(Collectors.toSet());
+            // Handle classes Route.class, NpmPackage.class, WebComponentExporter.class
+            Set<String> allClasses = Collections.singleton("");
+            Set<Class<?>> classes = findByAnnotation(allClasses,
+                    customLoader, Route.class, NpmPackage.class)
+                    .collect(Collectors.toSet());
 
             classes.addAll(
-                    findBySuperType(npmPackages, WebComponentExporter.class)
+                    findBySuperType(allClasses, customLoader,
+                            WebComponentExporter.class)
                             .collect(Collectors.toSet()));
 
-            DevModeInitializer.initDevModeHandler(classes,
-                    event.getServletContext(), config);
+            DevModeInitializer
+                    .initDevModeHandler(classes, event.getServletContext(),
+                            config);
         }
 
         @Override
@@ -312,6 +318,7 @@ public class VaadinServletContextInitializer
      */
     public VaadinServletContextInitializer(ApplicationContext context) {
         appContext = context;
+        customLoader = new CustomResourceLoader(appContext);
     }
 
     @Override
@@ -355,19 +362,18 @@ public class VaadinServletContextInitializer
         }
     }
 
-    @SuppressWarnings("unchecked")
     private Stream<Class<?>> findByAnnotation(Collection<String> packages,
             Class<? extends Annotation>... annotations) {
-        return findByAnnotation(packages, Stream.of(annotations));
+        return findByAnnotation(packages, appContext, annotations);
     }
 
-    private Stream<Class<?>> findByAnnotation(Collection<String> packages,
-            Stream<Class<? extends Annotation>> annotations) {
+    private Stream<Class<?>> findByAnnotation(Collection<String> packages, ResourceLoader loader,
+            Class<? extends Annotation>... annotations) {
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(
                 false);
-        scanner.setResourceLoader(appContext);
 
-        annotations.forEach(annotation -> scanner
+        scanner.setResourceLoader(loader);
+        Stream.of(annotations).forEach(annotation -> scanner
                 .addIncludeFilter(new AnnotationTypeFilter(annotation)));
 
         return packages.stream().map(scanner::findCandidateComponents)
@@ -376,9 +382,14 @@ public class VaadinServletContextInitializer
 
     private Stream<Class<?>> findBySuperType(Collection<String> packages,
             Class<?> type) {
+        return findBySuperType(packages, appContext, type);
+    }
+
+    private Stream<Class<?>> findBySuperType(Collection<String> packages, ResourceLoader loader,
+            Class<?> type) {
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(
                 false);
-        scanner.setResourceLoader(appContext);
+        scanner.setResourceLoader(loader);
         scanner.addIncludeFilter(new AssignableTypeFilter(type));
 
         return packages.stream().map(scanner::findCandidateComponents)
@@ -399,14 +410,6 @@ public class VaadinServletContextInitializer
             }
         }
         return beanClass;
-    }
-
-    private Collection<String> getNpmPackages() {
-        List<String> npmPackages = new ArrayList(getDefaultPackages());
-        // By default we should always check the com.vaadin.flow packages for
-        // npm
-        npmPackages.add("com.vaadin.flow.component");
-        return npmPackages;
     }
 
     private Collection<String> getRoutePackages() {
@@ -450,6 +453,78 @@ public class VaadinServletContextInitializer
             packagesList = AutoConfigurationPackages.get(appContext);
         }
         return packagesList;
+    }
+
+    /**
+     * For NPM we scan all packages. For performance reasons and due to
+     * problems with atmosphere we skip known packaged from our resources
+     * collection.
+     */
+    private static class CustomResourceLoader extends PathMatchingResourcePatternResolver {
+
+        /**
+         * Blacklisted packages that shouldn't be scanned for
+         * when scanning all
+         * packages.
+         */
+        private List<String> blackListed = Stream
+                .of("antlr", "cglib", "ch/quos/logback", "commons-codec",
+                        "commons-fileupload", "commons-io",
+                        "commons-logging", "com/fasterxml", "com/google",
+                        "com/h2database", "com/helger",
+                        "com/vaadin/external/atmosphere",
+                        "com/vaadin/webjar", "javax/", "junit",
+                        "net/bytebuddy", "org/apache", "org/aspectj",
+                        "org/dom4j", "org/easymock", "org/hamcrest",
+                        "org/hibernate", "org/javassist", "org/jboss",
+                        "org/jsoup", "org/seleniumhq", "org/slf4j",
+                        "org/springframework", "org/webjars/bowergithub",
+                        "org/yaml").collect(Collectors.toList());
+
+        public CustomResourceLoader(ResourceLoader resourceLoader) {
+            super(resourceLoader);
+        }
+
+        /**
+         * Lock used to ensure there's only one update going on
+         * at once.
+         * <p>
+         * The lock is configured to always guarantee a fair
+         * ordering.
+         */
+        private final ReentrantLock lock = new ReentrantLock(true);
+
+        private Map<String, Resource[]> cache = new HashMap<>();
+
+        @Override
+        public Resource[] getResources(String locationPattern)
+                throws IOException {
+            lock.lock();
+            try {
+                if (cache.containsKey(locationPattern)) {
+                    return cache.get(locationPattern);
+                }
+                Resource[] resources = collectResources(locationPattern);
+                cache.put(locationPattern, resources);
+                return resources;
+            } finally {
+                lock.unlock();
+            }
+        }
+
+        private Resource[] collectResources(String locationPattern)
+                throws IOException {
+            List<Resource> resourcesList = new ArrayList<>();
+            for (Resource resource : super.getResources(locationPattern)) {
+                String path = resource.getURL().getPath();
+                Optional<String> blacklisted = blackListed.stream()
+                        .filter(path::contains).findAny();
+                if (!blacklisted.isPresent()) {
+                    resourcesList.add(resource);
+                }
+            }
+            return resourcesList.toArray(new Resource[0]);
+        }
     }
 
     /**
