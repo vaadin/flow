@@ -15,11 +15,15 @@
  */
 package com.vaadin.flow.server.startup;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.Optional;
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.DeploymentConfigurationFactory;
+import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinServletConfiguration;
+import com.vaadin.flow.server.VaadinServletContext;
+import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -27,16 +31,11 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.DeploymentConfigurationFactory;
-import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.VaadinServletConfiguration;
-import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.Optional;
 
 /**
  * Context listener that automatically registers Vaadin servlets.
@@ -176,25 +175,12 @@ public class ServletDeployer implements ServletContextListener {
         return result;
     }
 
-    private DeploymentConfiguration createDeploymentConfiguration(
-            ServletConfig servletConfig, Class<?> servletClass) {
-        try {
-            return DeploymentConfigurationFactory
-                    .createPropertyDeploymentConfiguration(servletClass,
-                            servletConfig);
-        } catch (ServletException e) {
-            throw new IllegalStateException(String.format(
-                    "Failed to get deployment configuration data for servlet with name '%s' and class '%s'",
-                    servletConfig.getServletName(), servletClass), e);
-        }
-    }
-
     private void createAppServlet(ServletContext context) {
         boolean createServlet = ApplicationRouteRegistry.getInstance(context)
                 .hasNavigationTargets();
 
         createServlet = createServlet || WebComponentConfigurationRegistry
-                .getInstance(context).hasConfigurations();
+                .getInstance(new VaadinServletContext(context)).hasConfigurations();
 
         if (!createServlet) {
             getLogger().info(

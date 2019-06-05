@@ -36,7 +36,8 @@
 
         <!-- tests migrated to NPM -->
         <module>web-component-test-assets</module>
-        <!-- fails in TC  <module>test-mixed/pom-npm-devmode.xml</module> -->
+        <module>test-mixed/pom-npm-devmode.xml</module>
+        <module>test-themes/pom-npm.xml</module>
         <module>test-mixed/pom-npm-production.xml</module>
         <module>test-mixed/pom-bower-devmode.xml</module>
         <module>test-mixed/pom-bower-production.xml</module>
@@ -111,6 +112,10 @@
                         <webdriver.chrome.driver>${webdriver.chrome.driver}</webdriver.chrome.driver>
                     </systemPropertyVariables>
                     <excludedGroups>${test.excludegroup}</excludedGroups>
+                    <excludes>
+                        <exclude>**/*$*</exclude>
+                        <exclude>${exclude.it.tests}</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
         </plugins>

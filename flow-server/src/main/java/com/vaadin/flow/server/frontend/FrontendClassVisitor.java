@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import net.bytebuddy.jar.asm.AnnotationVisitor;
@@ -49,7 +50,7 @@ class FrontendClassVisitor extends ClassVisitor {
      */
     static class RepeatedAnnotationVisitor extends AnnotationVisitor {
         public RepeatedAnnotationVisitor() {
-            super(Opcodes.ASM6);
+            super(Opcodes.ASM7);
         }
 
         @Override
@@ -70,25 +71,67 @@ class FrontendClassVisitor extends ClassVisitor {
     static class EndPointData implements Serializable {
         final String name;
         String route = "";
-        boolean notheme = false;
-        String theme;
-        String variant;
         String layout;
+        private ThemeData theme = new ThemeData();
         final HashSet<String> classes = new HashSet<>();
         final HashSet<String> modules = new HashSet<>();
         final HashSet<String> scripts = new HashSet<>();
 
+        /**
+         * A container for Theme information when scanning the class path.
+         * It overrides equals and hashCode in order to use HashSet to eliminate duplicates.
+         */
+        static class ThemeData implements Serializable {
+            private String name;
+            private String variant = "";
+            private boolean notheme;
+
+            String getName() {
+                return name;
+            }
+            String getVariant() {
+                return variant;
+            }
+            boolean isNotheme() {
+                return notheme;
+            }
+
+            @Override
+            public boolean equals(Object other) {
+                if (other == null || !(other instanceof ThemeData)) {
+                    return false;
+                }
+                ThemeData that = (ThemeData)other;
+                return notheme == that.notheme && Objects.equals(name, that.name);
+            }
+
+            @Override
+            public int hashCode() {
+                // We might need to add variant when we wanted to fail in the case of
+                // same theme class with different variant, which was right in v13
+                return Objects.hash(name, notheme);
+            }
+
+            @Override
+            public String toString() {
+                return " notheme: " + notheme + "\n name:" + name + "\n variant: " + variant;
+            }
+        }
+
         public EndPointData(Class<?> clazz) {
             this.name = clazz.getName();
+        }
+        public ThemeData getTheme() {
+            return theme;
         }
 
         // For debugging
         @Override
         public String toString() {
             return String.format(
-                    "%n view: %s%n route: %s%n notheme: %b%n theme: %s%n variant: %s%n layout: %s%n modules: %s%n scripts: %s%n classes: %s%n",
-                    name, route, notheme, theme, variant, layout, col2Str(modules),
-                    col2Str(scripts), col2Str(classes));
+                    "%n view: %s%n route: %s%n%s%n layout: %s%n modules: %s%n scripts: %s%n",
+                    name, route, theme, layout, col2Str(modules),
+                    col2Str(scripts));
         }
         private String col2Str(Collection<String> s) {
             return String.join("\n          ", s);
@@ -116,12 +159,12 @@ class FrontendClassVisitor extends ClassVisitor {
      *            the end-point object that will be updated during the visit
      */
     FrontendClassVisitor(String className, EndPointData endPoint) { //NOSONAR
-        super(Opcodes.ASM6);
+        super(Opcodes.ASM7);
         this.className = className;
         this.endPoint = endPoint;
 
         // Visitor for each method in the class.
-        methodVisitor = new MethodVisitor(Opcodes.ASM6) {
+        methodVisitor = new MethodVisitor(Opcodes.ASM7) {
             // We are interested in the new instances created inside the method
             @Override
             public void visitTypeInsn(int opcode, String type) {
@@ -158,12 +201,10 @@ class FrontendClassVisitor extends ClassVisitor {
             @Override
             public void visit(String name, Object value) {
                 if (VALUE.equals(name)) {
-                    endPoint.theme = ((Type) value).getClassName();
-                    children.add(endPoint.theme);
-                    endPoint.variant = "";
-                }
-                if (VARIANT.equals(name)) {
-                    endPoint.variant = value.toString();
+                    endPoint.theme.name = ((Type) value).getClassName();
+                    children.add(endPoint.theme.name);
+                } else if (VARIANT.equals(name)) {
+                    endPoint.theme.variant = value.toString();
                 }
             }
         };
@@ -171,11 +212,10 @@ class FrontendClassVisitor extends ClassVisitor {
         themeLayoutVisitor = new RepeatedAnnotationVisitor() {
             @Override
             public void visit(String name, Object value) {
-                if (VALUE.equals(name) && endPoint.theme == null) {
-                    endPoint.theme = ((Type) value).getClassName();
-                }
-                if (VARIANT.equals(name) && endPoint.variant == null) {
-                    endPoint.variant = value.toString();
+                if (VALUE.equals(name) && endPoint.theme.name == null) {
+                    themeRouteVisitor.visit(name, value);
+                } else if (VARIANT.equals(name) && endPoint.theme.variant == null) {
+                    themeRouteVisitor.visit(name, value);
                 }
             }
         };
@@ -238,7 +278,7 @@ class FrontendClassVisitor extends ClassVisitor {
         }
         if (cname.contains(NoTheme.class.getName())) {
             if (className.equals(endPoint.name)) {
-                endPoint.notheme = true;
+                endPoint.theme.notheme = true;
             }
             return null;
         }

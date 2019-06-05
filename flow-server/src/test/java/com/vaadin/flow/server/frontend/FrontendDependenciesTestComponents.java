@@ -93,6 +93,16 @@ public class FrontendDependenciesTestComponents {
     static class Component3 extends Component {
     }
 
+    static class ComponentExtending extends GeneratedComponent {
+
+    }
+
+    @Tag("component-extends")
+    @NpmPackage(value = "@vaadin/component-extended", version = "2.1.0")
+    static abstract class GeneratedComponent extends Component {
+
+    }
+
 
     @Theme(value = Theme1.class, variant = Theme0.DARK)
     @JsModule("./router-layout-1.js")

@@ -19,6 +19,7 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -32,12 +33,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
+import org.slf4j.impl.SimpleLogger;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
@@ -45,6 +48,9 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAM
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 
 public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
@@ -58,13 +64,20 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
     private File generatedPath;
     private File frontendDirectory;
     private File nodeModulesPath;
+    private File loggerFile;
     private TaskUpdateImports updater;
-
 
     @Before
     public void setup() throws Exception {
-
         File tmpRoot = temporaryFolder.getRoot();
+
+        // Use a file for logs so as tests can assert the warnings shown to the user.
+        loggerFile = new File(tmpRoot, "test.log");
+        loggerFile.createNewFile();
+        // Setting a system property we make SimpleLogger to output to a file
+        System.setProperty(SimpleLogger.LOG_FILE_KEY, loggerFile.getAbsolutePath());
+        // re-init logger to get new configuration
+        initLogger();
 
         frontendDirectory = new File(tmpRoot, DEFAULT_FRONTEND_DIR);
         nodeModulesPath = new File(tmpRoot, NODE_MODULES);
@@ -79,6 +92,20 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         Assert.assertTrue(new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME + "ExampleConnector.js").exists());
     }
 
+    @After
+    public void tearDown() throws Exception  {
+        // re-init logger to reset to default
+        System.clearProperty(SimpleLogger.LOG_FILE_KEY);
+        initLogger();
+    }
+
+    private void initLogger() throws Exception, SecurityException {
+        // init method is protected
+        Method method = SimpleLogger.class.getDeclaredMethod("init");
+        method.setAccessible(true);
+        method.invoke(null);
+    }
+
     @Test
     public void should_ThrowException_WhenImportsDoNotExist() {
         deleteExpectedImports(frontendDirectory, nodeModulesPath);
@@ -88,7 +115,6 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
     @Test
     public void should_UpdateMainJsFile() throws Exception {
-
         List<String> expectedLines = new ArrayList<>(Arrays.asList(
                 "const div = document.createElement('div');",
                 "div.innerHTML = '<custom-style><style include=\"lumo-color lumo-typography\"></style></custom-style>';",
@@ -100,13 +126,30 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         expectedLines.add("import '@vaadin/vaadin-mixed-component/theme/lumo/vaadin-something-else'");
         // An import not found in node_modules
         expectedLines.add("import 'unresolved/component';");
+        assertFalse(importsFile.exists());
 
-        Assert.assertFalse(importsFile.exists());
+
         updater.execute();
-        Assert.assertTrue(importsFile.exists());
+        assertTrue(importsFile.exists());
 
         assertContainsImports(true, expectedLines.toArray(new String[0]));
+
+        assertTrue(loggerFile.exists());
+        String output = FileUtils.readFileToString(loggerFile, "UTF-8");
+        assertContains(output, true,
+                "changing 'frontend://frontend-p3-template.js' to './frontend-p3-template.js'",
+                "Use the './' prefix for resources in JAR files: 'ExampleConnector.js'",
+                "Use the './' prefix for files in the 'frontend' folder: 'vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js'");
+
+        // Using regex match because of the ➜ character in TC
+        assertTrue(output.matches(
+                "(?s).*Failed to find the following imports in the `node_modules` tree:\\n      . unresolved/component.*"));
+
+        assertContains(output, false,
+                "changing 'frontend://foo-dir/javascript-lib.js' to './foo-dir/javascript-lib.js'");
     }
+
+
 
     @Test
     public void shouldNot_UpdateJsFile_when_NoChanges() throws Exception {
@@ -178,19 +221,21 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
             throws IOException {
         String content = FileUtils.readFileToString(importsFile,
                 Charset.defaultCharset());
+        for (String line : imports) {
+            assertContains(content, contains, addWebpackPrefix(line));
+        }
+    }
 
-        for (String importString : imports) {
-                if (contains) {
-                    Assert.assertTrue(
-                        importString + " not found in:\n" + content,
-                        content.contains(addWebpackPrefix(importString)));
-                } else {
-                    Assert.assertFalse(
-                        importString + " not found in:\n" + content,
-                        content.contains(addWebpackPrefix(importString)));
-                }
+    private void assertContains(String content, boolean contains, String... checks) {
+        for (String importString : checks) {
+            boolean result = content.contains(importString);
+            String message = "\n  " + (contains ? "NOT " : "") + "FOUND '" + importString + " IN: \n" + content;
+            if (contains) {
+                assertTrue(message, result);
+            } else {
+                assertFalse(message, result);
             }
-
+        }
     }
 
     private String addWebpackPrefix(String s) {

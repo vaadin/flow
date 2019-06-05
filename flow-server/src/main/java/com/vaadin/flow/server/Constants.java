@@ -27,7 +27,7 @@ import com.vaadin.flow.shared.ApplicationConstants;
 public final class Constants implements Serializable {
 
     // Keep the version number in sync with flow-push/pom.xml
-    public static final String REQUIRED_ATMOSPHERE_RUNTIME_VERSION = "2.4.30.vaadin1";
+    public static final String REQUIRED_ATMOSPHERE_RUNTIME_VERSION = "2.4.30.slf4jvaadin1";
 
 
     /**
@@ -53,7 +53,6 @@ public final class Constants implements Serializable {
     public static final String SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING = "pushLongPollingSuspendTimeout";
 
     public static final String SERVLET_PARAMETER_JSBUNDLE = "module.bundle";
-    public static final String JSBUNDLE_DEFAULT_VALUE = "context://build/index.js";
     public static final String SERVLET_PARAMETER_POLYFILLS = "module.polyfills";
     public static final String POLYFILLS_DEFAULT_VALUE = "context://build/webcomponentsjs/webcomponents-loader.js";
 

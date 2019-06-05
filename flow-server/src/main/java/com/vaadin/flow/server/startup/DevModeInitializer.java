@@ -126,11 +126,11 @@ public class DevModeInitializer
      * compatibility mode.
      *
      * @param classes
-     *         classes to check for npm- and js modules
+     *            classes to check for npm- and js modules
      * @param context
-     *         servlet context we are running in
+     *            servlet context we are running in
      * @param config
-     *         deployment configuration
+     *            deployment configuration
      */
     public static void initDevModeHandler(Set<Class<?>> classes,
             ServletContext context, DeploymentConfiguration config) {
@@ -143,27 +143,26 @@ public class DevModeInitializer
             return;
         }
 
-        Builder builder = new NodeTasks.Builder(new DefaultClassFinder(classes));
+        Builder builder = new NodeTasks.Builder(
+                new DefaultClassFinder(classes));
 
-        log().info("Starting dev-mode updaters in {} folder.", builder.npmFolder);
+        log().info("Starting dev-mode updaters in {} folder.",
+                builder.npmFolder);
         for (File file : Arrays.asList(
                 new File(builder.npmFolder, PACKAGE_JSON),
                 new File(builder.generatedFolder, PACKAGE_JSON),
-                new File(builder.npmFolder, WEBPACK_CONFIG)
-                )) {
+                new File(builder.npmFolder, WEBPACK_CONFIG))) {
             if (!file.canRead()) {
-                log().warn("Skiping DEV MODE because cannot read '{}' file.", file.getPath());
+                log().warn("Skiping DEV MODE because cannot read '{}' file.",
+                        file.getPath());
                 return;
             }
         }
 
         Set<String> visitedClassNames = new HashSet<>();
-        builder.enablePackagesUpdate(true)
-                .enableImportsUpdate(true)
-                .runNpmInstall(true)
-                .withEmbeddableWebComponents(true)
-                .collectVisitedClasses(visitedClassNames)
-                .build().execute();
+        builder.enablePackagesUpdate(true).enableImportsUpdate(true)
+                .runNpmInstall(true).withEmbeddableWebComponents(true)
+                .collectVisitedClasses(visitedClassNames).build().execute();
 
         context.setAttribute(VisitedClasses.class.getName(),
                 new VisitedClasses(visitedClassNames));

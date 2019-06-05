@@ -17,7 +17,6 @@ package com.vaadin.flow.component.polymertemplate;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -39,11 +38,6 @@ import com.vaadin.flow.server.startup.FakeBrowser;
 import com.vaadin.flow.shared.ui.Dependency;
 
 import elemental.json.JsonObject;
-
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON;
-import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 
 /**
  * Npm template parser implementation.
@@ -98,7 +92,7 @@ public class NpmTemplateParser implements TemplateParser {
             String source = getSourcesFromTemplate(tag, url);
             if (source == null) {
                 try {
-                    source = getSourcesFromStats(service, tag, url);
+                    source = getSourcesFromStats(service, url);
                 } catch (IOException e) {
                     throw new UncheckedIOException(e);
                 }
@@ -133,50 +127,10 @@ public class NpmTemplateParser implements TemplateParser {
         return null;
     }
 
-    private String getSourcesFromStats(VaadinService service, String tag, String url) throws IOException  {
-        String stats = service.getDeploymentConfiguration()
-                .getStringProperty(SERVLET_PARAMETER_STATISTICS_JSON, STATISTICS_JSON_DEFAULT)
-                // Remove absolute
-                .replaceFirst("^/", "");
-
-        // Try stats as a resource from the class path
-        InputStream content = getClass().getClassLoader().getResourceAsStream(stats);
+    private String getSourcesFromStats(VaadinService service, String url) throws IOException  {
+        String content = FrontendUtils.getStatsContent(service);
         if (content != null) {
-            getLogger().debug("Found sources for the tag '{}' in the stats file '{}'", tag, stats);
-        } else {
-            URL statsUrl = null;
-            if (!service.getDeploymentConfiguration().isProductionMode()) {
-                String port = service.getDeploymentConfiguration()
-                        .getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, null);
-                if (port != null && !port.isEmpty()) {
-                    statsUrl = new URL("http://localhost:" + port + "/" + stats);
-                }
-                if (statsUrl == null) {
-                    statsUrl = service.getStaticResource("/" + stats);
-                    if (statsUrl == null) {
-                        getLogger().warn(
-                                "Cannot get the stats file through webpack-dev-server. "
-                                + "The webpack port is unavailable via '{}' property. ",
-                                SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT);
-                    } else {
-                        getLogger().debug("Cannot get the stats file through webpack-dev-server, "
-                                + "however it was found in the web contenxt, which means that the application was build previously. "
-                                + "To disable this message just set the '{}' property.",
-                                SERVLET_PARAMETER_PRODUCTION_MODE);
-                    }
-                }
-            } else {
-                statsUrl = service.getStaticResource("/" + stats);
-            }
-
-            if (statsUrl != null) {
-                statsUrl.openConnection();
-                content = statsUrl.openStream();
-                getLogger().debug("Found sources for the tag '{}' in the stats url '{}'", tag, statsUrl);
-            }
-        }
-        if (content != null) {
-            updateCache(url, FrontendUtils.streamToString(content));
+            updateCache(url, content);
         }
         return cache.get(url);
     }
