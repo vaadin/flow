@@ -211,7 +211,7 @@ public class DevModeInitializer
 
         DevModeHandler handler = DevModeHandler.start(config,
                 builder.npmFolder);
-        context.addListener(new StopDevMode(() -> handler.stop()));
+        context.addListener(new StopDevMode(handler::stop));
     }
 
     private static Logger log() {
