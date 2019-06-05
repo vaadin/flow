@@ -326,6 +326,14 @@
             </modules>
         </profile>
         <profile>
+            <id>prepare</id>
+            <modules>
+                <module>test-spring-common</module>
+                <!-- This test tests that we find the packages as expected -->
+                <module>test-spring-boot-only-prepare</module>
+            </modules>
+        </profile>
+        <profile>
             <id>bower</id>
             <activation>
                 <property>
