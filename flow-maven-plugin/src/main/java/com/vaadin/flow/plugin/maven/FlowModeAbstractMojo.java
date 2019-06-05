@@ -15,8 +15,13 @@
  */
 package com.vaadin.flow.plugin.maven;
 
+import java.io.File;
+
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.Parameter;
+
+import static com.vaadin.flow.shared.ApplicationConstants.META_INF;
+import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_MAPPING;
 
 /**
  * The base class of Flow Mojos in order to compute correctly the modes.
@@ -27,11 +32,18 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo{
      */
     @Parameter(defaultValue = "${vaadin.bowerMode}")
     public String bowerMode;
+
     /**
      * Whether or not we are running in productionMode.
      */
     @Parameter(defaultValue = "${vaadin.productionMode}")
     public boolean productionMode;
+
+    /**
+     * The folder where webpack should output index.js and other generated files.
+     */
+    @Parameter(defaultValue = "${project.build.outputDirectory}/" + META_INF + VAADIN_MAPPING)
+    protected File webpackOutputDirectory;
 
     /**
      * The actual bower mode boolean.

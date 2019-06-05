@@ -48,10 +48,7 @@ import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
-import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_MAPPING;
-import static com.vaadin.flow.shared.ApplicationConstants.META_INF;
 
 /**
  * This goal checks that node and npm tools are installed, copies frontend
@@ -119,12 +116,6 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
      */
     @Parameter(defaultValue = "${project.build.directory}/" + FRONTEND)
     private File generatedFolder;
-
-    /**
-     * The folder where webpack should output index.js and other generated files.
-     */
-    @Parameter(defaultValue = "${project.build.outputDirectory}/" + META_INF + VAADIN_MAPPING)
-    private File webpackOutputDirectory;
 
     @Override
     public void execute() {
@@ -197,10 +188,6 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
                     token.getAbsolutePath(),
                     buildInfo.toJson()));
         }
-
-        // We still pass the location of the file via System.property, this fixes
-        // cases e.g. jetty with `webAppSourceDirectory` not correctly configured
-        System.setProperty(PARAM_TOKEN_FILE, token.getAbsolutePath());
 
         // In the case of running npm dev-mode in a maven multi-module projects,
         // inform dev-mode server and updaters about the actual project folder.
