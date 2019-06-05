@@ -13,22 +13,20 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui.theme;
+package com.vaadin.flow.uitest.ui.notheme;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.openqa.selenium.By;
+import com.vaadin.flow.component.html.Anchor;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.theme.NoTheme;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
+@Route("com.vaadin.flow.uitest.ui.notheme.NoThemeComponentView")
+@NoTheme
+public class NoThemeComponentView extends Div {
 
-public class HtmlParserThemeTemplateIT extends ChromeBrowserTest {
-
-    @Test
-    public void themeComponentShouldLoadForTemplate() {
-        getDriver().get(getRootURL()
-                + "/view/com.vaadin.flow.uitest.ui.theme.HtmlParserThemeTemplateView");
-
-        Assert.assertTrue(findElement(By.id("theme-component")).isDisplayed());
+    public NoThemeComponentView() {
+        Anchor anchor = new Anchor();
+        anchor.setText("link");
+        add(anchor);
     }
-
 }

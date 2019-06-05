@@ -36,6 +36,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.DeploymentConfigurationFactory;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletConfiguration;
+import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 
 /**
@@ -181,25 +182,13 @@ public class ServletDeployer implements ServletContextListener {
         return result;
     }
 
-    private DeploymentConfiguration createDeploymentConfiguration(
-            ServletConfig servletConfig, Class<?> servletClass) {
-        try {
-            return DeploymentConfigurationFactory
-                    .createPropertyDeploymentConfiguration(servletClass,
-                            servletConfig);
-        } catch (ServletException e) {
-            throw new IllegalStateException(String.format(
-                    "Failed to get deployment configuration data for servlet with name '%s' and class '%s'",
-                    servletConfig.getServletName(), servletClass), e);
-        }
-    }
 
     private ServletRegistration createAppServlet(ServletContext context) {
         boolean createServlet = ApplicationRouteRegistry.getInstance(context)
                 .hasNavigationTargets();
 
         createServlet = createServlet || WebComponentConfigurationRegistry
-                .getInstance(context).hasConfigurations();
+                .getInstance(new VaadinServletContext(context)).hasConfigurations();
 
         if (!createServlet) {
             getLogger().info(

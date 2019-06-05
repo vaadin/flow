@@ -114,6 +114,10 @@
                         <webdriver.chrome.driver>${webdriver.chrome.driver}</webdriver.chrome.driver>
                     </systemPropertyVariables>
                     <excludedGroups>${test.excludegroup}</excludedGroups>
+                    <excludes>
+                        <exclude>**/*$*</exclude>
+                        <exclude>${exclude.it.tests}</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
         </plugins>
