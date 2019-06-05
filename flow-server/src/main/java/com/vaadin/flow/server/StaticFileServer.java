@@ -15,21 +15,24 @@
  */
 package com.vaadin.flow.server;
 
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.ResponseWriter;
+import com.vaadin.flow.server.frontend.FrontendUtils;
+import elemental.json.Json;
+import elemental.json.JsonObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Supplier;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.internal.ResponseWriter;
-import com.vaadin.flow.server.frontend.FrontendUtils;
-
-import static com.vaadin.flow.shared.ApplicationConstants.META_INF;
 import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_BUILD_FILES_PATH;
 import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_MAPPING;
 import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_STATIC_FILES_PATH;
@@ -93,9 +96,9 @@ public class StaticFileServer implements StaticFileHandler {
         String filenameWithPath = getRequestFilename(request);
         URL resourceUrl;
         if (filenameWithPath.startsWith("/" + VAADIN_BUILD_FILES_PATH)
-                && !isInternalFile(request)) {
+                && isAllowedVAADINBuildUrl(filenameWithPath)) {
             resourceUrl = servletService.getClassLoader()
-                    .getResource(META_INF + filenameWithPath);
+                    .getResource("META-INF" + filenameWithPath);
         } else {
             resourceUrl = servletService.getStaticResource(filenameWithPath);
         }
@@ -123,6 +126,71 @@ public class StaticFileServer implements StaticFileHandler {
         return true;
     }
 
+    /**
+     * Check if it is ok to serve the requested file from the classpath.
+     * <p>
+     * ClassLoader is applicable for use when we are in NPM production mode and
+     * are serving the bundle.js or webcomponent.js
+     *
+     * @param filenameWithPath
+     * @return
+     */
+    private boolean isAllowedVAADINBuildUrl(String filenameWithPath) {
+        if (deploymentConfiguration.isBowerMode() || !deploymentConfiguration
+                .isProductionMode()) {
+            getLogger().trace("Serving from the classpath in bower or "
+                            + "development mode is not accepted. "
+                            + "Letting request for '{}' go to servlet context.",
+                    filenameWithPath);
+            return false;
+        }
+        // Check that we target VAADIN/build and do not have '/../'
+        if (!filenameWithPath.startsWith("/" + VAADIN_BUILD_FILES_PATH)
+                || filenameWithPath.contains("/../")) {
+            getLogger().info("Blocked attempt to access file: {}",
+                    filenameWithPath);
+            return false;
+        }
+
+        // As of now we only accept polyfills and bundleFiles to be gotten from the build folder through the classloader.
+        if (deploymentConfiguration.getPolyfills()
+                .contains(filenameWithPath.replace("/" + VAADIN_MAPPING, ""))
+                || bundleFiles.get().contains(filenameWithPath)) {
+            getLogger()
+                    .trace("Accepted access to a build file using a class loader {}",
+                            filenameWithPath);
+
+            return true;
+        }
+
+        return false;
+    }
+
+
+    /**
+     * Load bundle files from stats.json on first request and store the result.
+     */
+    private Supplier<List<String>> bundleFiles = () -> {
+        List<String> bundles = getBundleChunks();
+        bundleFiles = () -> bundles;
+        return bundles;
+    };
+
+    private List<String> getBundleChunks() {
+        List<String> bundles = new ArrayList<>();
+        try {
+            String content = FrontendUtils.getStatsContent(servletService);
+            JsonObject chunks = Json.parse(content)
+                    .getObject("assetsByChunkName");
+
+            for (String key : chunks.keys()) {
+                bundles.add("/" + VAADIN_MAPPING + chunks.getString(key));
+            }
+        } catch (IOException e) {
+            getLogger().error("Failed to load stats file.", e);
+        }
+        return bundles;
+    }
 
     /**
      * Files that we shouldn't serve for requests as they should be only used

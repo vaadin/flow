@@ -210,7 +210,7 @@ public class ServletDeployer implements ServletContextListener {
         createServletIfNotExists(context, getClass().getName(), "/*");
     }
 
-    private ServletRegistration createServletIfNotExists(ServletContext context, String name,
+    private void createServletIfNotExists(ServletContext context, String name,
             String path) {
         ServletRegistration existingServlet = findServletByPathPart(context,
                 path);
@@ -219,7 +219,7 @@ public class ServletDeployer implements ServletContextListener {
                     "{} there is already a {} servlet with the name {} for path {} given",
                     SKIPPING_AUTOMATIC_SERVLET_REGISTRATION_BECAUSE,
                     existingServlet, existingServlet.getName(), path);
-            return existingServlet;
+            return;
         }
 
         ServletRegistration.Dynamic registration = context.addServlet(name,
@@ -228,7 +228,7 @@ public class ServletDeployer implements ServletContextListener {
             // Not expected to ever happen
             getLogger().info("{} there is already a servlet with the name {}",
                     SKIPPING_AUTOMATIC_SERVLET_REGISTRATION_BECAUSE, name);
-            return null;
+            return;
         }
 
         getLogger().info(
@@ -237,7 +237,6 @@ public class ServletDeployer implements ServletContextListener {
 
         registration.setAsyncSupported(true);
         registration.addMapping(path);
-        return registration;
     }
 
     private ServletRegistration findServletByPathPart(ServletContext context,

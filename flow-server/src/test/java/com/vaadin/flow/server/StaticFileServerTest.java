@@ -26,6 +26,7 @@ import java.net.URLStreamHandler;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -45,6 +46,11 @@ import org.mockito.Matchers;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+
+import static com.vaadin.flow.server.Constants.*;
+import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
+import static com.vaadin.flow.shared.ApplicationConstants.META_INF;
+import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_MAPPING;
 
 public class StaticFileServerTest implements Serializable {
 
@@ -442,6 +448,55 @@ public class StaticFileServerTest implements Serializable {
         Mockito.when(servletService.getStaticResource("/some/file.js")).thenReturn(
                 createFileURLWithDataAndLength("/some/file.js", fileData));
         CapturingServletOutputStream out = new CapturingServletOutputStream();
+        Mockito.when(response.getOutputStream()).thenReturn(out);
+
+        Assert.assertTrue(fileServer.serveStaticResource(request, response));
+        Assert.assertArrayEquals(fileData, out.getOutput());
+    }
+
+    @Test
+    public void serveStaticPolyfillBuildResource() throws IOException {
+        setupRequestURI("/context", "/servlet", "/VAADIN/build/webcomponentsjs/webcomponents-loader.js");
+        byte[] fileData = "function() {eval('foo');};"
+                .getBytes(StandardCharsets.UTF_8);
+        ClassLoader mockLoader = Mockito.mock(ClassLoader.class);
+        Mockito.when(servletService.getClassLoader()).thenReturn(mockLoader);
+
+        Mockito.when(mockLoader.getResource("META-INF/VAADIN/build/webcomponentsjs/webcomponents-loader.js")).thenReturn(
+                createFileURLWithDataAndLength("META-INF/VAADIN/build/webcomponentsjs/webcomponents-loader.js", fileData));
+        Mockito.when(configuration.getPolyfills()).thenReturn(Arrays.asList(POLYFILLS_DEFAULT_VALUE.split("[, ]+")));
+
+        CapturingServletOutputStream out = new CapturingServletOutputStream();
+
+        Mockito.when(response.getOutputStream()).thenReturn(out);
+
+        Assert.assertTrue(fileServer.serveStaticResource(request, response));
+        Assert.assertArrayEquals(fileData, out.getOutput());
+    }
+
+    @Test
+    public void serveStaticBundleBuildResource() throws IOException {
+        setupRequestURI("/context", "/servlet", "/VAADIN/build/vaadin-bundle-1234.cache.js");
+        byte[] fileData = "function() {eval('foo');};"
+                .getBytes(StandardCharsets.UTF_8);
+        ClassLoader mockLoader = Mockito.mock(ClassLoader.class);
+        Mockito.when(servletService.getClassLoader()).thenReturn(mockLoader);
+
+        Mockito.when(mockLoader.getResource("META-INF/VAADIN/build/vaadin-bundle-1234.cache.js")).thenReturn(
+                createFileURLWithDataAndLength("META-INF/VAADIN/build/vaadin-bundle-1234.cache.js", fileData));
+
+        Mockito.when(configuration
+                .getStringProperty(SERVLET_PARAMETER_STATISTICS_JSON,
+                        META_INF + VAADIN_MAPPING + STATISTICS_JSON_DEFAULT)).thenReturn("META-INF/VAADIN/build/stats.json");
+        byte[] stats = "{ \"assetsByChunkName\" :{ \"index\": \"build/vaadin-bundle-1234.cache.js\", \"index.es5\": \"build/vaadin-bundle.es5-1234.cache.js\" } }"
+                        .getBytes(StandardCharsets.UTF_8);
+        Mockito.when(mockLoader.getResourceAsStream("META-INF/VAADIN/build/stats.json")).thenReturn(
+                new ByteArrayInputStream(stats));
+        Mockito.when(configuration.getPolyfills()).thenReturn(Arrays.asList(POLYFILLS_DEFAULT_VALUE.split("[, ]+")));
+
+
+        CapturingServletOutputStream out = new CapturingServletOutputStream();
+
         Mockito.when(response.getOutputStream()).thenReturn(out);
 
         Assert.assertTrue(fileServer.serveStaticResource(request, response));

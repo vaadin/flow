@@ -283,10 +283,6 @@ public class VaadinServlet extends HttpServlet {
             return true;
         }
 
-        if (StaticFileServer.isInternalFile(request)) {
-            return false;
-        }
-
         if (staticFileHandler.isStaticResourceRequest(request)) {
             staticFileHandler.serveStaticResource(request, response);
             return true;
