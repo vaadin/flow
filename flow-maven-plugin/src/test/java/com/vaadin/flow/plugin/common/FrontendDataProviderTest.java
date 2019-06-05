@@ -134,8 +134,6 @@ public class FrontendDataProviderTest {
         Mockito.doAnswer(invocation -> invocation.getArgumentAt(0, Set.class))
                 .when(translator).applyTheme(any());
 
-        // Mockito.when(generator.getExporters())
-        // .thenAnswer(invocation -> Stream.of());
         Mockito.when(generator.generateWebComponentModules(any(File.class)))
                 .thenReturn(Collections.emptySet());
     }

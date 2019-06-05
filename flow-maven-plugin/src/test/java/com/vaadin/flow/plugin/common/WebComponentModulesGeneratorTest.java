@@ -74,18 +74,11 @@ public class WebComponentModulesGeneratorTest {
                 throw new RuntimeException(e);
             }
         }
-
-        ClassFinder finder =
-                getMockFinderWithExporterClasses(FooExporter.class);
-
-        introspector = new ClassPathIntrospector(finder) {};
-
-        generator = new WebComponentModulesGenerator(introspector);
     }
 
 
     @Test
-    public void getExporters_exportersAreDiscovered() throws IOException, ClassNotFoundException {
+    public void getExporters_exportersAreDiscovered() throws ClassNotFoundException {
         // prepare
         ClassFinder finder =
                 getMockFinderWithExporterClasses(FooExporter.class,
