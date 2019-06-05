@@ -21,7 +21,6 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -32,6 +31,8 @@ import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.sun.net.httpserver.HttpServer;
+import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Before;
@@ -42,10 +43,6 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.tests.util.MockDeploymentConfiguration;
-
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
 import static com.vaadin.flow.server.DevModeHandler.WEBPACK_SERVER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
@@ -67,6 +64,8 @@ public class DevModeHandlerTest {
 
     private MockDeploymentConfiguration configuration;
 
+    private MockServletContext servletContext;
+    private VaadinContext vaadinContext;
     private HttpServer httpServer;
     private int responseStatus;
     private File npmFolder;
@@ -81,14 +80,13 @@ public class DevModeHandlerTest {
     public void setup() throws Exception {
         npmFolder = temporaryFolder.getRoot();
         System.setProperty("user.dir", npmFolder.getAbsolutePath());
-
+        servletContext = new MockServletContext();
+        vaadinContext = new VaadinServletContext(servletContext);
         configuration = new MockDeploymentConfiguration();
         configuration.setProductionMode(false);
 
         new File(getBaseDir(), FrontendUtils.WEBPACK_CONFIG).createNewFile();
         createStubWebpackServer("Compiled", 100);
-        System.clearProperty(
-                "vaadin." + SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT);
     }
 
     @After
@@ -107,7 +105,7 @@ public class DevModeHandlerTest {
     @Test
     public void should_CreateInstanceAndRunWebPack_When_DevModeAndNpmInstalled()
             throws Exception {
-        assertNotNull(DevModeHandler.start(configuration, npmFolder));
+        assertNotNull(DevModeHandler.start(vaadinContext, configuration, npmFolder));
         assertTrue(new File(getBaseDir(),
                 FrontendUtils.DEFAULT_NODE_DIR + WEBPACK_TEST_OUT_FILE)
                         .canRead());
@@ -122,7 +120,7 @@ public class DevModeHandlerTest {
         exception.expectMessage("Webpack exited prematurely");
 
         createStubWebpackServer("Foo", 0);
-        DevModeHandler.start(configuration, npmFolder);
+        DevModeHandler.start(vaadinContext, configuration, npmFolder);
     }
 
     @Test
@@ -131,10 +129,8 @@ public class DevModeHandlerTest {
         configuration.setApplicationOrSystemProperty(
                 SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT, "100");
         createStubWebpackServer("Foo", 300);
-        assertNotNull(DevModeHandler.start(configuration, npmFolder));
-        assertTrue(Integer.getInteger(
-                "vaadin." + SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT,
-                0) > 0);
+        assertNotNull(DevModeHandler.start(vaadinContext, configuration, npmFolder));
+        assertTrue(DevModeHandler.getRunningPort(vaadinContext) > 0);
         Thread.sleep(350); // NOSONAR
     }
 
@@ -143,7 +139,7 @@ public class DevModeHandlerTest {
         configuration.setApplicationOrSystemProperty(
                 SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT, "100");
         createStubWebpackServer("Failed to compile", 300);
-        assertNotNull(DevModeHandler.start(configuration, npmFolder));
+        assertNotNull(DevModeHandler.start(vaadinContext, configuration, npmFolder));
         // Wait for server to stop running before checking the output stream
         Thread.sleep(350); // NOSONAR
         assertNotNull(
@@ -155,19 +151,19 @@ public class DevModeHandlerTest {
     public void shouldNot_CreateInstance_When_ProductionMode()
             throws Exception {
         configuration.setProductionMode(true);
-        assertNull(DevModeHandler.start(configuration, npmFolder));
+        assertNull(DevModeHandler.start(vaadinContext, configuration, npmFolder));
     }
 
     @Test
     public void shouldNot_CreateInstance_When_BowerMode() throws Exception {
         configuration.setProductionMode(true);
-        assertNull(DevModeHandler.start(configuration, npmFolder));
+        assertNull(DevModeHandler.start(vaadinContext, configuration, npmFolder));
         Thread.sleep(150); // NOSONAR
     }
 
     @Test
     public void should_RunWebpack_When_WebpackNotListening() throws Exception {
-        DevModeHandler.start(configuration, npmFolder);
+        DevModeHandler.start(vaadinContext, configuration, npmFolder);
         assertTrue(new File(getBaseDir(),
                 FrontendUtils.DEFAULT_NODE_DIR + WEBPACK_TEST_OUT_FILE)
                         .canRead());
@@ -177,7 +173,7 @@ public class DevModeHandlerTest {
     @Test
     public void shouldNot_RunWebpack_When_WebpackRunning() throws Exception {
         prepareHttpServer(HTTP_OK, "bar");
-        DevModeHandler.start(configuration, npmFolder);
+        DevModeHandler.start(vaadinContext, configuration, npmFolder);
         assertFalse(new File(getBaseDir(),
                 FrontendUtils.DEFAULT_NODE_DIR + WEBPACK_TEST_OUT_FILE)
                         .canRead());
@@ -187,7 +183,7 @@ public class DevModeHandlerTest {
     public void shouldNot_CreateInstance_When_WebpackNotInstalled()
             throws Exception {
         new File(getBaseDir(), WEBPACK_SERVER).delete();
-        assertNull(DevModeHandler.start(configuration, npmFolder));
+        assertNull(DevModeHandler.start(vaadinContext, configuration, npmFolder));
     }
 
     @Test
@@ -197,14 +193,14 @@ public class DevModeHandlerTest {
         boolean systemImplementsExecutable = new File(getBaseDir(),
                 WEBPACK_SERVER).setExecutable(false);
         if (systemImplementsExecutable) {
-            assertNull(DevModeHandler.start(configuration, npmFolder));
+            assertNull(DevModeHandler.start(vaadinContext, configuration, npmFolder));
         }
     }
 
     @Test
     public void shouldNot_CreateInstance_When_WebpackNotConfigured() {
         new File(getBaseDir(), FrontendUtils.WEBPACK_CONFIG).delete();
-        assertNull(DevModeHandler.start(configuration, npmFolder));
+        assertNull(DevModeHandler.start(vaadinContext, configuration, npmFolder));
     }
 
     @Test
@@ -283,14 +279,14 @@ public class DevModeHandlerTest {
 
     @Test
     public void stopDevMode_devModeHanlderNull() throws InterruptedException {
-        DevModeHandler handler = DevModeHandler.start(configuration, npmFolder);
+        DevModeHandler handler = DevModeHandler.start(vaadinContext, configuration, npmFolder);
         handler.stop();
         assertNull(DevModeHandler.getDevModeHandler());
         Thread.sleep(150); // NOSONAR
     }
 
     private VaadinServlet prepareServlet() throws ServletException {
-        DevModeHandler.start(configuration, npmFolder);
+        DevModeHandler.start(vaadinContext, configuration, npmFolder);
         VaadinServlet servlet = new VaadinServlet();
         ServletConfig cfg = mock(ServletConfig.class);
         ServletContext ctx = mock(ServletContext.class);
@@ -339,9 +335,7 @@ public class DevModeHandlerTest {
             exchange.close();
         });
         httpServer.start();
-        configuration.setApplicationOrSystemProperty(
-                SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT,
-                String.valueOf(port));
+        DevModeHandler.setRunningPort(vaadinContext, port);
         return port;
     }
 }

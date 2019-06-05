@@ -27,6 +27,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinServletContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -145,7 +147,6 @@ public class DevModeInitializer
         Builder builder = new NodeTasks.Builder(
                 new DefaultClassFinder(classes));
 
-
         log().info("Starting dev-mode updaters in {} folder.",
                 builder.npmFolder);
         for (File file : Arrays.asList(
@@ -165,10 +166,12 @@ public class DevModeInitializer
                 .runNpmInstall(true).withEmbeddableWebComponents(true)
                 .collectVisitedClasses(visitedClassNames).build().execute();
 
-        context.setAttribute(VisitedClasses.class.getName(),
-                new VisitedClasses(visitedClassNames));
+        VaadinContext vaadinContext = new VaadinServletContext(context);
 
-        DevModeHandler.start(config, builder.npmFolder);
+        vaadinContext.setAttribute(new VisitedClasses(visitedClassNames));
+
+        DevModeHandler handler = DevModeHandler.start(vaadinContext, config,
+                builder.npmFolder);
     }
 
     private static Logger log() {
