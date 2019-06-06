@@ -16,6 +16,7 @@
 package com.vaadin.flow.server;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.internal.ResponseWriter;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import elemental.json.Json;
@@ -54,6 +55,15 @@ public class StaticFileServer implements StaticFileHandler {
     private final ResponseWriter responseWriter;
     private final VaadinServletService servletService;
     private DeploymentConfiguration deploymentConfiguration;
+
+    /**
+     * Collect bundle files from stats.json on first get and store the result.
+     */
+    private SerializableSupplier<List<String>> bundleFiles = () -> {
+        List<String> bundles = getBundleChunks();
+        bundleFiles = () -> bundles;
+        return bundles;
+    };
 
     /**
      * Constructs a file server.
@@ -166,16 +176,6 @@ public class StaticFileServer implements StaticFileHandler {
         return false;
     }
 
-
-    /**
-     * Load bundle files from stats.json on first request and store the result.
-     */
-    private Supplier<List<String>> bundleFiles = () -> {
-        List<String> bundles = getBundleChunks();
-        bundleFiles = () -> bundles;
-        return bundles;
-    };
-
     private List<String> getBundleChunks() {
         List<String> bundles = new ArrayList<>();
         try {
@@ -190,20 +190,6 @@ public class StaticFileServer implements StaticFileHandler {
             getLogger().error("Failed to load stats file.", e);
         }
         return bundles;
-    }
-
-    /**
-     * Files that we shouldn't serve for requests as they should be only used
-     * internally.
-     *
-     * @param request
-     *         the http request to handle
-     * @return true if we should not serve the requested file
-     */
-    protected static boolean isInternalFile(HttpServletRequest request) {
-        String file = request.getPathInfo();
-        return file.endsWith(Constants.STATISTICS_JSON_DEFAULT) || file
-                .endsWith(FrontendUtils.TOKEN_FILE);
     }
 
     /**
