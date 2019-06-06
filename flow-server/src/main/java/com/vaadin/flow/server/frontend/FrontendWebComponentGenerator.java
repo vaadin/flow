@@ -13,41 +13,42 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.plugin.common;
+
+package com.vaadin.flow.server.frontend;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.server.webcomponent.WebComponentModulesWriter;
 
 /**
- * Generates embeddable web component files in bower production mode, hiding the
- * * complexity caused by using a different class loader.
+ * Generates embeddable web component files in npm mode, hiding the complexity
+ * caused by using a different class loader.
  *
  * Uses {@link com.vaadin.flow.server.webcomponent.WebComponentModulesWriter} to
  * generate web component modules files from
  * {@link com.vaadin.flow.component.WebComponentExporter} implementations found
- * by {@link com.vaadin.flow.plugin.common.ClassPathIntrospector}.
+ * by {@link ClassFinder}.
  * 
  * @author Vaadin Ltd.
  */
-public class WebComponentModulesGenerator extends ClassPathIntrospector {
-    private Class<?> writerClass;
+public class FrontendWebComponentGenerator implements Serializable {
+    private final ClassFinder finder;
 
     /**
-     * Creates a new instances and stores the {@code introspector} to be used
-     * for locating
+     * Creates a new instances and stores the {@code finder} to be used for
+     * locating
      * {@link com.vaadin.flow.server.webcomponent.WebComponentModulesWriter} and
      * {@link com.vaadin.flow.component.WebComponentExporter} classes.
-     *
-     * @param introspector
-     *            {@link com.vaadin.flow.plugin.common.ClassPathIntrospector}
-     *            implementation to use as a base.
+     * 
+     * @param finder
+     *            {@link com.vaadin.flow.server.frontend.ClassFinder}
+     *            implementation
      */
-    public WebComponentModulesGenerator(ClassPathIntrospector introspector) {
-        super(introspector);
+    public FrontendWebComponentGenerator(ClassFinder finder) {
+        this.finder = finder;
     }
 
     /**
@@ -55,29 +56,28 @@ public class WebComponentModulesGenerator extends ClassPathIntrospector {
      * {@link com.vaadin.flow.server.webcomponent.WebComponentModulesWriter}
      * class and classes that extend
      * {@link com.vaadin.flow.component.WebComponentExporter} using {@code
-     * inspector}. Generates web component modules and places the into the
-     * {@code outputDirectory}.
-     *
+     * finder}. Generates web component modules and places the into the {@code
+     * outputDirectory}.
+     * 
      * @param outputDirectory
      *            target directory for the web component module files
      * @return generated files
      * @throws java.lang.IllegalStateException
-     *             if {@code inspector} cannot locate required classes
+     *             if {@code finder} cannot locate required classes
      */
-    public Set<File> generateWebComponentModules(File outputDirectory) {
-        Set<Class<?>> exporterClasses = getSubtypes(WebComponentExporter.class)
-                .collect(Collectors.toSet());
-
-        return WebComponentModulesWriter.DirectoryWriter
-                .generateWebComponentsToDirectory(getWriterClass(),
-                        exporterClasses, outputDirectory, true);
-    }
-
-    private Class<?> getWriterClass() {
-        if (writerClass == null) {
-            writerClass = loadClassInProjectClassLoader(
-                    WebComponentModulesWriter.class.getName());
+    public Set<File> generateWebComponents(File outputDirectory) {
+        try {
+            final Class<?> writerClass = finder
+                    .loadClass(WebComponentModulesWriter.class.getName());
+            final Set<Class<?>> exporterClasses = finder
+                    .getSubTypesOf(WebComponentExporter.class.getName());
+            return WebComponentModulesWriter.DirectoryWriter
+                    .generateWebComponentsToDirectory(writerClass,
+                            exporterClasses, outputDirectory, false);
+        } catch (ClassNotFoundException e) {
+            throw new IllegalStateException(
+                    "Unable to locate a required class using custom class " +
+                            "loader", e);
         }
-        return writerClass;
     }
 }

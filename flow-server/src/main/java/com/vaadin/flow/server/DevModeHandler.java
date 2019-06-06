@@ -18,7 +18,6 @@ package com.vaadin.flow.server;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -49,6 +48,7 @@ import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
 import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
+import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 
@@ -279,11 +279,15 @@ public class DevModeHandler implements Serializable {
      * @return true if the request should be forwarded to webpack
      */
     public boolean isDevModeRequest(HttpServletRequest request) {
-        return getRequestFilename(request).matches(".+\\.js");
+        return request.getPathInfo() != null && request.getPathInfo().matches(".+\\.js");
     }
 
     /**
      * Serve a file by proxying to webpack.
+     * <p>
+     * Note: it considers the {@link HttpServletRequest#getPathInfo} that will
+     * be the path passed to the 'webpack-dev-server' which is running in the
+     * context root folder of the application.
      *
      * @param request
      *            the servlet request
@@ -295,7 +299,10 @@ public class DevModeHandler implements Serializable {
      */
     public boolean serveDevModeRequest(HttpServletRequest request,
             HttpServletResponse response) throws IOException {
-        String requestFilename = getRequestFilename(request);
+        // Requests in devmode should come to /VAADIN/build/index....js where as
+        // webpack has the file in /build/index....js so we need to drop the /VAADIN
+        String requestFilename = request.getPathInfo()
+                .replace(VAADIN_MAPPING, "");
 
         HttpURLConnection connection = prepareConnection(requestFilename,
                 request.getMethod());
@@ -442,11 +449,6 @@ public class DevModeHandler implements Serializable {
         while ((bytes = inputStream.read(buffer)) >= 0) {
             outputStream.write(buffer, 0, bytes);
         }
-    }
-
-    private String getRequestFilename(HttpServletRequest request) {
-        return request.getPathInfo() == null ? request.getServletPath()
-                : request.getServletPath() + request.getPathInfo();
     }
 
     private static Logger getLogger() {

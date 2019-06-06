@@ -138,7 +138,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         String output = FileUtils.readFileToString(loggerFile, "UTF-8");
         assertContains(output, true,
                 "changing 'frontend://frontend-p3-template.js' to './frontend-p3-template.js'",
-                "Use the './' prefix for resources in JAR files: 'ExampleConnector.js'",
+                "Use the './' prefix for files in JAR files: 'ExampleConnector.js'",
                 "Use the './' prefix for files in the 'frontend' folder: 'vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js'");
 
         // Using regex match because of the ➜ character in TC

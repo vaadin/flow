@@ -98,6 +98,8 @@ public class DevModeInitializerTest {
                 .thenReturn(registry);
         Mockito.when(servletContext.getInitParameterNames())
                 .thenReturn(Collections.emptyEnumeration());
+        Mockito.when(servletContext.getClassLoader())
+                .thenReturn(this.getClass().getClassLoader());
 
         mainPackageFile = new File(getBaseDir(), PACKAGE_JSON);
         appPackageFile = new File(getBaseDir(), DEFAULT_GENERATED_DIR + PACKAGE_JSON);
