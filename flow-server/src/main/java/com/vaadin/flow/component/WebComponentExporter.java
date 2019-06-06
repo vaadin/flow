@@ -41,35 +41,36 @@ import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 import elemental.json.JsonValue;
 
 /**
- * Provides a way to exporter a class which extends {@link Component} as an
- * embeddable web component. A non-null tag must be provided by calling {@code
- * super(String)} in the no-args constructor of the extending exporter.
- * Otherwise an exception will be throw during startup.
+ * Exports a {@link Component} as a web component.
  * <p>
- * Limitations regarding the tag are:
- * <ul>
- * <li>The tag must be a non-null, non-empty string with dash-separated words,
- * i.e. "dash-separated".</li>
- * <li>Exporter cannot share the tag with the component being exported. If they
- * do, an exception will be thrown during run-time.</li>
- * </ul>
+ * By extending this class you can export a server side {@link Component} with a
+ * given tag name so that it can be included in any web page as
+ * {@code <tag-name>}. You can add properties/attributes to the element, which
+ * are synchronized with the server and you can fire events from the server,
+ * which are available as custom events in the browser.
  * <p>
- * Example of exporting {@code MyComponent} component as an embeddable web
- * component:
+ * The tag name (must contain at least one dash and be unique on the target web
+ * page) is provided through the super constructor. Note that the exporter tag
+ * is not related to the tag used by the {@link Component} being exported and
+ * they cannot be the same.
+ * <p>
+ * The component class to exported is determined by the parameter given to
+ * {@code WebComponentExporter} when extending it, e.g.
+ * {@code extends WebComponentExporter<MyComponent>}.
+ * <p>
+ * If you want to custome the {@link Component} instance after it has been
+ * created, you should override
+ * {@link #configureInstance(WebComponent, Component)} which is called for each
+ * created instance.
+ * <p>
+ * Example of exporting {@code MyComponent} to be used as
+ * {@code <my-component name="something">}:
  *
  * <pre>
- * &#064;Tag("my-component")
- * public class Exporter implements WebComponentExporter&lt;MyComponent&gt;() {
+ * public class Exporter extends WebComponentExporter&lt;MyComponent&gt;() {
  *     public Exporter() {
  *         super("my-component");
  *         addProperty("name", "John Doe").onChange(MyComponent::setName);
- *     }
- *
- *     &#064;Override
- *     public void configureInstance(WebComponent&lt;MyComponent&gt;
- *              webComponent, MyComponent component) {
- *          // add e.g. a listener to the {@code component}
- *          // and do something with {@code webComponent}
  *     }
  * }
  * </pre>
@@ -264,8 +265,10 @@ public abstract class WebComponentExporter<C extends Component>
      * @param component
      *            instance of the exported web component
      */
-    public abstract void configureInstance(WebComponent<C> webComponent,
-            C component);
+    protected void configureInstance(WebComponent<C> webComponent,
+            C component) {
+        // This should be overridden when needed
+    }
 
     private static boolean isSupportedType(Class clazz) {
         return SUPPORTED_TYPES.contains(clazz);
