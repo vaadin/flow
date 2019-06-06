@@ -32,7 +32,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Supplier;
 
 import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_BUILD_FILES_PATH;
 import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_MAPPING;
