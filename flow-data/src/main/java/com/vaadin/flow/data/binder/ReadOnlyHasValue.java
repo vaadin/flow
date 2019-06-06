@@ -33,7 +33,7 @@ import com.vaadin.flow.shared.Registration;
  * <pre>
  * Label label = new Label();
  * ReadOnlyHasValue&lt;String&gt; hasValue = new ReadOnlyHasValue&lt;&gt;(label::setText);
- * binder.forField(hasValue).bind(SomeBean::getName);
+ * binder.forField(hasValue).bind(SomeBean::getName, null);
  * </pre>
  *
  * @param <V>
