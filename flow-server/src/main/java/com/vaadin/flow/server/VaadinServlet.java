@@ -20,7 +20,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -225,6 +224,7 @@ public class VaadinServlet extends HttpServlet {
     @Override
     protected void service(HttpServletRequest request,
             HttpServletResponse response) throws ServletException, IOException {
+
         // Handle context root request without trailing slash, see #9921
         if (handleContextOrServletRootWithoutSlash(request, response)) {
             return;
@@ -276,7 +276,7 @@ public class VaadinServlet extends HttpServlet {
      *                if the HTTP request cannot be handled
      */
     protected boolean serveStaticOrWebJarRequest(HttpServletRequest request,
-            HttpServletResponse response) throws ServletException, IOException {
+            HttpServletResponse response) throws IOException {
 
         if (devmodeHandler != null && devmodeHandler.isDevModeRequest(request)
                 && devmodeHandler.serveDevModeRequest(request, response)) {

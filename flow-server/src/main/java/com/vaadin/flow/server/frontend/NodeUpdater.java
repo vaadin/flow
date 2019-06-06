@@ -196,7 +196,7 @@ public abstract class NodeUpdater implements Command {
         // dependency for the custom package.json placed in the generated folder.
         String customPkg = "./" + npmFolder.getAbsoluteFile().toPath()
                 .relativize(generatedFolder.toPath()).toString();
-        added = addDependency(packageJson, DEPENDENCIES, DEP_NAME_FLOW_DEPS, customPkg) || added;
+        added = addDependency(packageJson, DEPENDENCIES, DEP_NAME_FLOW_DEPS, customPkg.replaceAll("\\\\", "/")) || added;
 
         added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack", "4.30.0") || added;
         added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack-cli", "3.3.0") || added;

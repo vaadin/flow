@@ -45,7 +45,7 @@ import elemental.json.impl.JsonUtil;
 import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFinder;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
+import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
 /**
  * Goal that builds the frontend bundle.
@@ -192,13 +192,13 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
 
     @Override
     boolean isDefaultBower() {
-        String tokenFile = System.getProperty(PARAM_TOKEN_FILE);
-        if (tokenFile == null) {
+        File tokenFile = new File(webpackOutputDirectory, TOKEN_FILE);
+        if (!tokenFile.exists()) {
             getLog().warn("'build-frontend' goal was called without previously calling 'prepare-package'");
             return true;
         }
         try {
-            String json = FileUtils.readFileToString(new File(tokenFile), "UTF-8");
+            String json = FileUtils.readFileToString(tokenFile, "UTF-8");
             JsonObject buildInfo = JsonUtil.parse(json);
             return buildInfo.hasKey("bowerMode") ? buildInfo.getBoolean("bowerMode") : true;
         } catch (IOException e) {

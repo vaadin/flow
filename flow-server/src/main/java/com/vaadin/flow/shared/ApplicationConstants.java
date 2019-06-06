@@ -87,14 +87,12 @@ public class ApplicationConstants implements Serializable {
     public static final String PUSH_ID_PARAMETER = "v-pushId";
 
     /**
-     * The name of the parameter used to transmit RPC invocations
-     *
+     * The name of the parameter used to transmit RPC invocations.
      */
     public static final String RPC_INVOCATIONS = "rpc";
 
     /**
-     * The name of the parameter used to transmit the CSRF token
-     *
+     * The name of the parameter used to transmit the CSRF token.
      */
     public static final String CSRF_TOKEN = "csrfToken";
 

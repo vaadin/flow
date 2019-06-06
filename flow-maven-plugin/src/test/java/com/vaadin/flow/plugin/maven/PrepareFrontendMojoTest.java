@@ -2,8 +2,6 @@ package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -32,6 +30,7 @@ import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
+import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 
 public class PrepareFrontendMojoTest {
     @Rule
@@ -47,6 +46,8 @@ public class PrepareFrontendMojoTest {
     private String webpackConfig;
     private String packageJson;
     private File projectBase;
+    private File webpackOutputDirectory;
+
 
     @Before
     public void setup() throws Exception {
@@ -68,6 +69,7 @@ public class PrepareFrontendMojoTest {
         flowPackagePath = new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME);
         webpackConfig = new File(projectBase, WEBPACK_CONFIG).getAbsolutePath();
         packageJson = new File(projectBase, PACKAGE_JSON).getAbsolutePath();
+        webpackOutputDirectory = new File(projectBase, VAADIN_SERVLET_RESOURCES);
 
         ReflectionUtils.setVariableValueInObject(mojo, "project", project);
         ReflectionUtils.setVariableValueInObject(mojo, "frontendResourcesDirectory", projectFrontendResourcesDirectory);
@@ -76,9 +78,10 @@ public class PrepareFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", projectBase);
         ReflectionUtils.setVariableValueInObject(mojo, "webpackTemplate", WEBPACK_CONFIG);
         ReflectionUtils.setVariableValueInObject(mojo, "generatedFolder", projectBase);
+        ReflectionUtils.setVariableValueInObject(mojo, "webpackOutputDirectory", webpackOutputDirectory);
 
         Assert.assertTrue(flowPackagePath.mkdirs());
-        setProject(mojo, projectBase, "war", "war_output");
+        setProject(mojo, projectBase);
     }
 
     @Test
@@ -102,40 +105,6 @@ public class PrepareFrontendMojoTest {
     }
 
     @Test
-    public void assertWebpackContent_jar() throws Exception {
-        Assert.assertFalse(FileUtils.fileExists(webpackConfig));
-        final String expectedOutput = "jar_output";
-        setProject(mojo, projectBase, "jar", expectedOutput);
-
-        mojo.execute();
-
-        Files.lines(Paths.get(webpackConfig))
-                .peek(line -> Assert.assertFalse(line.contains("{{")))
-                .filter(line -> line.contains(expectedOutput))
-                .findAny()
-                .orElseThrow(() -> new AssertionError(String.format(
-                        "Did not find expected output directory '%s' in the resulting webpack config",
-                        expectedOutput)));
-    }
-
-    @Test
-    public void assertWebpackContent_war() throws Exception {
-        Assert.assertFalse(FileUtils.fileExists(webpackConfig));
-        String expectedOutput = "war_output";
-        setProject(mojo, projectBase, "war", expectedOutput);
-
-        mojo.execute();
-
-        Files.lines(Paths.get(webpackConfig))
-                .peek(line -> Assert.assertFalse(line.contains("{{")))
-                .filter(line -> line.contains(expectedOutput))
-                .findAny()
-                .orElseThrow(() -> new AssertionError(String.format(
-                        "Did not find expected output directory '%s' in the resulting webpack config",
-                        expectedOutput)));
-    }
-
-    @Test
     public void mavenGoal_when_packageJsonMissing() throws Exception {
         Assert.assertFalse(FileUtils.fileExists(packageJson));
         mojo.execute();
@@ -144,14 +113,10 @@ public class PrepareFrontendMojoTest {
     }
 
     @Test
-    public void assertWebpackContent_NotWarNotJar() throws Exception {
-        String unexpectedPackaging = "notWarAndNotJar";
-
-        setProject(mojo, projectBase, unexpectedPackaging, "whatever");
-
-        exception.expect(IllegalStateException.class);
-        exception.expectMessage(unexpectedPackaging);
+    public void mavenGoal_when_packageWebpackConfigMissing() throws Exception {
+        Assert.assertFalse(FileUtils.fileExists(webpackConfig));
         mojo.execute();
+        Assert.assertTrue(FileUtils.fileExists(webpackConfig));
     }
 
     @Test

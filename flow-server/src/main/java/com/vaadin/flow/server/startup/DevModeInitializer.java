@@ -145,6 +145,7 @@ public class DevModeInitializer
         Builder builder = new NodeTasks.Builder(
                 new DefaultClassFinder(classes));
 
+
         log().info("Starting dev-mode updaters in {} folder.",
                 builder.npmFolder);
         for (File file : Arrays.asList(
