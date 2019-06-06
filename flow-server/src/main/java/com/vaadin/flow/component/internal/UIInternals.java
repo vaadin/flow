@@ -66,6 +66,7 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.WebBrowser;
 import com.vaadin.flow.server.communication.PushConnection;
+import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.theme.AbstractTheme;
@@ -848,12 +849,21 @@ public class UIInternals implements Serializable {
                     js -> page.addJavaScript(js.value(), js.loadMode()));
         } else {
             // In npm mode, add external JavaScripts directly to the page.
-            dependencies.getJavaScripts().stream()
-                    .filter(js -> js.value().contains("://")).forEach(js -> page
-                            .addJavaScript(js.value(), js.loadMode()));
+            dependencies.getJavaScripts().stream().filter(this::isExternal)
+                    .forEach(js -> page.addJavaScript(js.value(),
+                            js.loadMode()));
         }
         dependencies.getStyleSheets().forEach(styleSheet -> page
                 .addStyleSheet(styleSheet.value(), styleSheet.loadMode()));
+    }
+
+    private boolean isExternal(JavaScript js) {
+        return js.value().contains("://") && !(js.value()
+                .startsWith(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX)
+                || js.value().startsWith(
+                        ApplicationConstants.FRONTEND_PROTOCOL_PREFIX)
+                || js.value()
+                        .startsWith(ApplicationConstants.BASE_PROTOCOL_PREFIX));
     }
 
     private void addHtmlImport(HtmlImportDependency dependency, Page page) {
