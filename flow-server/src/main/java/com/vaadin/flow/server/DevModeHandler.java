@@ -192,7 +192,7 @@ public class DevModeHandler implements Serializable {
 
         stopProcess = stopCallback;
 
-        setRunningPort(context, port);
+        context.setAttribute(new DevModePort(port));
     }
 
     /**
@@ -497,32 +497,19 @@ public class DevModeHandler implements Serializable {
      */
     static int getRunningPort(VaadinContext context) {
         DevModePort attribute = context.getAttribute(DevModePort.class);
-        int runningPort = attribute == null ? 0 : attribute.getValue();
-        return runningPort;
-    }
-
-    /**
-     * Sets the webpack running port into the context.
-     * 
-     * @param context
-     *            the context where the port is stored.
-     * @param port
-     *            the webpack running port.
-     */
-    static void setRunningPort(VaadinContext context, int port) {
-        context.setAttribute(new DevModePort(port));
+        return attribute == null ? 0 : attribute.getValue();
     }
 
     /**
      * Webpack dev mode port wrapper.
      */
-    public static class DevModePort {
+    public static class DevModePort implements Serializable {
 
         private final int value;
 
         /**
          * Creates the dev mode port.
-         * 
+         *
          * @param value
          *            the value of the port.
          */
