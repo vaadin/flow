@@ -335,7 +335,7 @@ public class DevModeHandlerTest {
             exchange.close();
         });
         httpServer.start();
-        DevModeHandler.setRunningPort(vaadinContext, port);
+        vaadinContext.setAttribute(new DevModeHandler.DevModePort(port));
         return port;
     }
 }
