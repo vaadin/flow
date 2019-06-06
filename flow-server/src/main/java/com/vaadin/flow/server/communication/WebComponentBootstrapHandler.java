@@ -303,7 +303,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         }
     }
 
-    private static String inlineHTML(String html) {
+    static String inlineHTML(String html) {
         // Format the received html into a form which will fit nicely as a
         // one-liner to .innerHTML="{html}", since we cannot use
         // ES6 back-ticks (``) for multi-line text
@@ -312,6 +312,8 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 .replace("\\", "\\\\")
                 // escape quotes
                 .replace("\"", "\\\"")
+                // Change single line comments into multiline
+                .replaceAll("//([^\n]*)", "/*$1*/")
                 // change CDATA comment style for one-lining
                 .replace("//<![CDATA[", "/*<![CDATA[*/")
                 .replace("//]]>", "/*]]>*/")
