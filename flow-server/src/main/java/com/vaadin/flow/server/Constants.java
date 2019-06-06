@@ -192,6 +192,26 @@ public final class Constants implements Serializable {
      */
     public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS = "devmode.webpack.options";
 
+    /**
+     * The path used in the vaadin servlet for handling static resources.
+     */
+    public static final String META_INF = "META-INF/";
+
+    /**
+     * The path used in the vaadin servlet for handling static resources.
+     */
+    public static final String VAADIN_MAPPING = "VAADIN/";
+
+    /**
+     * The path to meta-inf/VAADIN/ where static resources are put on the servlet.
+     */
+    public static final String VAADIN_SERVLET_RESOURCES = META_INF + VAADIN_MAPPING;
+
+    /**
+     * The prefix used for all internal static files, relative to context root.
+     */
+    public static final String VAADIN_BUILD_FILES_PATH = VAADIN_MAPPING + "build/";
+
     private Constants() {
         // prevent instantiation constants class only
     }

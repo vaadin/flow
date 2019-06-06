@@ -79,7 +79,7 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
-import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_MAPPING;
+import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**

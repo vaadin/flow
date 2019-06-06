@@ -34,7 +34,7 @@ import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 
-import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_MAPPING;
+import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;

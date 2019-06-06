@@ -26,8 +26,7 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
-import static com.vaadin.flow.shared.ApplicationConstants.META_INF;
-import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_MAPPING;
+import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static java.util.Collections.emptyMap;
 import static org.easymock.EasyMock.capture;
 import static org.easymock.EasyMock.expect;
@@ -60,7 +59,8 @@ public class DeploymentConfigurationFactoryTest {
     public void setup() throws IOException {
         System.setProperty("user.dir",
                 temporaryFolder.getRoot().getAbsolutePath());
-        tokenFile = new File(temporaryFolder.getRoot(), META_INF + VAADIN_MAPPING + TOKEN_FILE);
+        tokenFile = new File(temporaryFolder.getRoot(), VAADIN_SERVLET_RESOURCES
+                + TOKEN_FILE);
         contextMock = mock(ServletContext.class);
     }
 

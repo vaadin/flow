@@ -18,8 +18,7 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
-import static com.vaadin.flow.shared.ApplicationConstants.META_INF;
-import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_MAPPING;
+import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 
 public class NpmTemplateParserTest {
     @Mock
@@ -71,7 +70,7 @@ public class NpmTemplateParserTest {
     public void should_FindCorrectDataInBeverageStats() {
         Mockito.when(configuration
                 .getStringProperty(Mockito.anyString(), Mockito.anyString()))
-                .thenReturn(META_INF + VAADIN_MAPPING + "build/stats-beverage.json");
+                .thenReturn(VAADIN_SERVLET_RESOURCES + "build/stats-beverage.json");
 
         TemplateParser instance = NpmTemplateParser.getInstance();
         TemplateParser.TemplateData templateContent = instance
@@ -132,7 +131,7 @@ public class NpmTemplateParserTest {
     public void sourceFileWithFaultyTemplateGetter_shouldJustReturnEmptyTemplateElement() {
         // If the template getter can not be found it should result in no template element children
         Mockito.when(configuration.getStringProperty(Mockito.anyString(), Mockito.anyString()))
-                .thenReturn(META_INF + VAADIN_MAPPING + "build/stats.json");
+                .thenReturn(VAADIN_SERVLET_RESOURCES + "build/stats.json");
         TemplateParser.TemplateData templateContent = NpmTemplateParser
                 .getInstance()
                 .getTemplateContent(LikeableFaulty.class, "likeable-element",
@@ -146,7 +145,7 @@ public class NpmTemplateParserTest {
         // Template with no closing style tag should parse as one big style tag and thus
         // the document body should have no elements.
         Mockito.when(configuration.getStringProperty(Mockito.anyString(), Mockito.anyString()))
-                .thenReturn(META_INF + VAADIN_MAPPING + "build/stats.json");
+                .thenReturn(VAADIN_SERVLET_RESOURCES + "build/stats.json");
         TemplateParser.TemplateData templateContent = NpmTemplateParser
                 .getInstance()
                 .getTemplateContent(LikeableBroken.class, "likeable-element",
@@ -158,7 +157,7 @@ public class NpmTemplateParserTest {
     @Test
     public void bableStats_shouldAlwaysParseCorrectly() {
         Mockito.when(configuration.getStringProperty(Mockito.anyString(), Mockito.anyString()))
-                .thenReturn(META_INF + VAADIN_MAPPING + "build/babel_stats.json");
+                .thenReturn(VAADIN_SERVLET_RESOURCES + "build/babel_stats.json");
         TemplateParser instance = NpmTemplateParser.getInstance();
         TemplateParser.TemplateData templateContent = instance
                 .getTemplateContent(MyComponent.class, "my-component", service);

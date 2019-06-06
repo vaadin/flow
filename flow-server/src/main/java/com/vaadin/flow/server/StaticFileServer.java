@@ -16,7 +16,6 @@
 package com.vaadin.flow.server;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.internal.ResponseWriter;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import elemental.json.Json;
@@ -33,8 +32,8 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_BUILD_FILES_PATH;
-import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_MAPPING;
+import static com.vaadin.flow.server.Constants.VAADIN_BUILD_FILES_PATH;
+import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_STATIC_FILES_PATH;
 
 /**
@@ -55,14 +54,8 @@ public class StaticFileServer implements StaticFileHandler {
     private final VaadinServletService servletService;
     private DeploymentConfiguration deploymentConfiguration;
 
-    /**
-     * Collect bundle files from stats.json on first get and store the result.
-     */
-    private SerializableSupplier<List<String>> bundleFiles = () -> {
-        List<String> bundles = getBundleChunks();
-        bundleFiles = () -> bundles;
-        return bundles;
-    };
+    private List<String> bundleFiles = null;
+
 
     /**
      * Constructs a file server.
@@ -164,7 +157,7 @@ public class StaticFileServer implements StaticFileHandler {
         // As of now we only accept polyfills and bundleFiles to be gotten from the build folder through the classloader.
         if (deploymentConfiguration.getPolyfills()
                 .contains(filenameWithPath.replace("/" + VAADIN_MAPPING, ""))
-                || bundleFiles.get().contains(filenameWithPath)) {
+                || getBundles().contains(filenameWithPath)) {
             getLogger()
                     .trace("Accepted access to a build file using a class loader {}",
                             filenameWithPath);
@@ -173,6 +166,16 @@ public class StaticFileServer implements StaticFileHandler {
         }
 
         return false;
+    }
+
+    /**
+     * Collect bundle files from stats.json on first get and store the result.
+     */
+    private List<String> getBundles() {
+        if(bundleFiles == null) {
+            bundleFiles = getBundleChunks();
+        }
+        return bundleFiles;
     }
 
     private List<String> getBundleChunks() {

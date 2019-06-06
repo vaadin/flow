@@ -39,8 +39,7 @@ import com.vaadin.flow.server.VaadinService;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
-import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_MAPPING;
-import static com.vaadin.flow.shared.ApplicationConstants.META_INF;
+import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 
 /**
  * A class for static methods and definitions that might be
@@ -302,7 +301,7 @@ public class FrontendUtils {
         DeploymentConfiguration config = service.getDeploymentConfiguration();
         String stats = config
                 .getStringProperty(SERVLET_PARAMETER_STATISTICS_JSON,
-                        META_INF + VAADIN_MAPPING + STATISTICS_JSON_DEFAULT)
+                        VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT)
                 // Remove absolute
                 .replaceFirst("^/", "");
 

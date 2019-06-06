@@ -44,11 +44,11 @@ import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_BOWER_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
+import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PROJECT_BASEDIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
-import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_MAPPING;
-import static com.vaadin.flow.shared.ApplicationConstants.META_INF;
+
 /**
  * Creates {@link DeploymentConfiguration} filled with all parameters specified
  * by the framework users.
@@ -158,7 +158,7 @@ public final class DeploymentConfigurationFactory implements Serializable {
             if (json == null) {
                 URL resource = DeploymentConfigurationFactory.class
                         .getClassLoader()
-                        .getResource(META_INF + VAADIN_MAPPING + TOKEN_FILE);
+                        .getResource(VAADIN_SERVLET_RESOURCES + TOKEN_FILE);
                 if (resource != null) {
                     json = FrontendUtils.streamToString(resource.openStream());
                 }

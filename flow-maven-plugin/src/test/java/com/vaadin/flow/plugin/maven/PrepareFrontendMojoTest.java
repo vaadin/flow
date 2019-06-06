@@ -30,8 +30,7 @@ import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
-import static com.vaadin.flow.shared.ApplicationConstants.META_INF;
-import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_MAPPING;
+import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 
 public class PrepareFrontendMojoTest {
     @Rule
@@ -70,7 +69,7 @@ public class PrepareFrontendMojoTest {
         flowPackagePath = new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME);
         webpackConfig = new File(projectBase, WEBPACK_CONFIG).getAbsolutePath();
         packageJson = new File(projectBase, PACKAGE_JSON).getAbsolutePath();
-        webpackOutputDirectory = new File(projectBase, META_INF + VAADIN_MAPPING);
+        webpackOutputDirectory = new File(projectBase, VAADIN_SERVLET_RESOURCES);
 
         ReflectionUtils.setVariableValueInObject(mojo, "project", project);
         ReflectionUtils.setVariableValueInObject(mojo, "frontendResourcesDirectory", projectFrontendResourcesDirectory);

@@ -20,8 +20,7 @@ import java.io.File;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
-import static com.vaadin.flow.shared.ApplicationConstants.META_INF;
-import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_MAPPING;
+import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 
 /**
  * The base class of Flow Mojos in order to compute correctly the modes.
@@ -42,7 +41,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo{
     /**
      * The folder where webpack should output index.js and other generated files.
      */
-    @Parameter(defaultValue = "${project.build.outputDirectory}/" + META_INF + VAADIN_MAPPING)
+    @Parameter(defaultValue = "${project.build.outputDirectory}/" + VAADIN_SERVLET_RESOURCES)
     protected File webpackOutputDirectory;
 
     /**

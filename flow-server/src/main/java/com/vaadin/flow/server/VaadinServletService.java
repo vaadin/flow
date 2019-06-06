@@ -37,7 +37,7 @@ import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.theme.AbstractTheme;
 
-import static com.vaadin.flow.shared.ApplicationConstants.META_INF;
+import static com.vaadin.flow.server.Constants.META_INF;
 
 /**
  * A service implementation connected to a {@link VaadinServlet}.

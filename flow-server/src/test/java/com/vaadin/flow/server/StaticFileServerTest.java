@@ -46,11 +46,10 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 
+import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.POLYFILLS_DEFAULT_VALUE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
-import static com.vaadin.flow.shared.ApplicationConstants.META_INF;
-import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_MAPPING;
 
 public class StaticFileServerTest implements Serializable {
 
@@ -477,9 +476,33 @@ public class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void serveStaticBundleBuildResource() throws IOException {
+    public void contextAndServletPath_serveStaticBundleBuildResource() throws IOException {
         String pathInfo = "/VAADIN/build/vaadin-bundle-1234.cache.js";
         setupRequestURI("/context", "/servlet", pathInfo);
+        assertBundleBuildResource(pathInfo);
+    }
+
+    @Test
+    public void ServletPath_serveStaticBundleBuildResource() throws IOException {
+        String pathInfo = "/VAADIN/build/vaadin-bundle-1234.cache.js";
+        setupRequestURI("", "/servlet", pathInfo);
+        assertBundleBuildResource(pathInfo);
+    }
+
+    @Test
+    public void contextPath_serveStaticBundleBuildResource() throws IOException {
+        String pathInfo = "/VAADIN/build/vaadin-bundle-1234.cache.js";
+        setupRequestURI("/context", "", pathInfo);
+        assertBundleBuildResource(pathInfo);
+    }
+    @Test
+    public void serveStaticBundleBuildResource() throws IOException {
+        String pathInfo = "/VAADIN/build/vaadin-bundle-1234.cache.js";
+        setupRequestURI("", "", pathInfo);
+        assertBundleBuildResource(pathInfo);
+    }
+
+    public void assertBundleBuildResource(String pathInfo) throws IOException {
         byte[] fileData = "function() {eval('foo');};"
                 .getBytes(StandardCharsets.UTF_8);
         ClassLoader mockLoader = Mockito.mock(ClassLoader.class);
@@ -531,6 +554,56 @@ public class StaticFileServerTest implements Serializable {
     }
 
     @Test
+    public void nonWhitelistedStaticBuildResource_nothingServed()
+            throws IOException {
+        String pathInfo = "/VAADIN/build/my-text.txt";
+        setupRequestURI("", "", pathInfo);
+        byte[] fileData = "function() {eval('foo');};"
+                .getBytes(StandardCharsets.UTF_8);
+        ClassLoader mockLoader = Mockito.mock(ClassLoader.class);
+        Mockito.when(servletService.getClassLoader()).thenReturn(mockLoader);
+
+        Mockito.when(mockLoader.getResource("META-INF" + pathInfo)).thenReturn(
+                createFileURLWithDataAndLength("META-INF" + pathInfo,
+                        fileData));
+
+        mockStatsBundles(mockLoader);
+        mockConfigurationPolyfills();
+
+        CapturingServletOutputStream out = new CapturingServletOutputStream();
+
+        Mockito.when(response.getOutputStream()).thenReturn(out);
+
+        Assert.assertTrue(fileServer.serveStaticResource(request, response));
+        Assert.assertEquals(0, out.getOutput().length);
+    }
+
+    @Test
+    public void nonexistingStaticBuildResource_returnsNotFound()
+            throws IOException {
+        String pathInfo = "/VAADIN/build/my-text.txt";
+        setupRequestURI("", "", pathInfo);
+        byte[] fileData = "function() {eval('foo');};"
+                .getBytes(StandardCharsets.UTF_8);
+        ClassLoader mockLoader = Mockito.mock(ClassLoader.class);
+        Mockito.when(servletService.getClassLoader()).thenReturn(mockLoader);
+
+        Mockito.when(mockLoader.getResource("META-INF" + pathInfo)).thenReturn(
+                createFileURLWithDataAndLength("META-INF" + pathInfo,
+                        fileData));
+
+        mockStatsBundles(mockLoader);
+        mockConfigurationPolyfills();
+
+        CapturingServletOutputStream out = new CapturingServletOutputStream();
+
+        Mockito.when(response.getOutputStream()).thenReturn(out);
+
+        Assert.assertTrue(fileServer.serveStaticResource(request, response));
+        Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, responseCode.get());
+    }
+
+    @Test
     public void customStatsJson_isServedFromServlet() throws IOException {
 
         String pathInfo = "/VAADIN/build/stats.json";
@@ -562,7 +635,7 @@ public class StaticFileServerTest implements Serializable {
     public void mockStatsBundles(ClassLoader mockLoader) {
         Mockito.when(configuration
                 .getStringProperty(SERVLET_PARAMETER_STATISTICS_JSON,
-                        META_INF + VAADIN_MAPPING + STATISTICS_JSON_DEFAULT))
+                        VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
                 .thenReturn("META-INF/VAADIN/build/stats.json");
         Mockito.when(mockLoader
                 .getResourceAsStream("META-INF/VAADIN/build/stats.json"))
