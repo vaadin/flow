@@ -21,7 +21,7 @@ import com.vaadin.flow.component.webcomponent.WebComponent;
 
 public class BarExporter extends WebComponentExporter<Component> {
 
-    protected BarExporter() {
+    public BarExporter() {
         super("wc-bar");
     }
 

@@ -35,8 +35,6 @@ import org.apache.maven.project.MavenProject;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
-import com.vaadin.flow.plugin.common.AnnotationValuesExtractor;
-import com.vaadin.flow.plugin.common.WebComponentModulesGenerator;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
@@ -44,7 +42,6 @@ import com.vaadin.flow.theme.Theme;
 
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
-
 import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFinder;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
@@ -121,8 +118,6 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
 
         long start = System.nanoTime();
 
-        generateExportedWebComponents();
-
         runNodeUpdater();
 
         if (generateBundle) {
@@ -133,31 +128,6 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
         getLog().info("update-frontend took " + ms + "ms.");
     }
 
-
-    /**
-     * Uses
-     * {@link com.vaadin.flow.plugin.common.WebComponentModulesGenerator} to
-     * generate JavaScript files from the {@code WebComponentExporters}
-     * present in the code base. The generated JavaScript files are placed in
-     * the same folder as the {@link FrontendUtils#FLOW_IMPORTS_NAME}.
-     */
-    private void generateExportedWebComponents() {
-        if (!generateEmbeddableWebComponents) {
-            return;
-        }
-        WebComponentModulesGenerator generator =
-                new WebComponentModulesGenerator(new AnnotationValuesExtractor(
-                        getClassFinder(project)), false);
-
-        try {
-            FileUtils.forceMkdir(generatedFolder);
-            generator.getExporters().forEach(exporter ->
-                    generator.generateModuleFile(exporter, generatedFolder));
-        } catch (IOException e) {
-            getLog().error("Failed to create a directory for generated web " +
-                    "components", e);
-        }
-    }
 
     private void runNodeUpdater() {
         new NodeTasks.Builder(getClassFinder(project),
