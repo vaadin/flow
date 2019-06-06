@@ -53,6 +53,11 @@ public interface HasSize extends HasElement {
      * <p>
      * If the provided {@code minWidth} value is {@literal null} then min-width is
      * removed.
+     * <p>
+     * Note: The min-width affects only block level elements (&lt;p&gt;, &lt;h1&gt;-&lt;h6&gt;, 
+     * &lt;p&gt;, &lt;ol&gt;, &lt;ul&gt;, &lt;pre&gt;, &lt;address&gt;, &lt;blockquote&gt;, 
+     * &lt;dl&gt;, &lt;div&gt;, &lt;fieldset&gt;, &lt;form&gt;, &lt;hr&gt;, &lt;noscript&gt;,
+     * &lt;table&gt;). Inline elements (all others) ignore it.
      *
      * @param minWidth
      *            the min-width value (if <code>null</code>, the property will be removed)
@@ -69,6 +74,11 @@ public interface HasSize extends HasElement {
      * <p>
      * If the provided {@code maxWidth} value is {@literal null} then max-width is
      * removed.
+     * <p>
+     * Note: The max-width affects only block level elements (&lt;p&gt;, &lt;h1&gt;-&lt;h6&gt;, 
+     * &lt;p&gt;, &lt;ol&gt;, &lt;ul&gt;, &lt;pre&gt;, &lt;address&gt;, &lt;blockquote&gt;, 
+     * &lt;dl&gt;, &lt;div&gt;, &lt;fieldset&gt;, &lt;form&gt;, &lt;hr&gt;, &lt;noscript&gt;,
+     * &lt;table&gt;). Inline elements (all others) ignore it.
      *
      * @param maxWidth
      *            the max-width value (if <code>null</code>, the property will be removed)
@@ -140,6 +150,11 @@ public interface HasSize extends HasElement {
      * <p>
      * If the provided {@code minHeight} value is {@literal null} then min-height is
      * removed.
+     * <p>
+     * Note: The min-height affects only block level elements (&lt;p&gt;, &lt;h1&gt;-&lt;h6&gt;, 
+     * &lt;p&gt;, &lt;ol&gt;, &lt;ul&gt;, &lt;pre&gt;, &lt;address&gt;, &lt;blockquote&gt;, 
+     * &lt;dl&gt;, &lt;div&gt;, &lt;fieldset&gt;, &lt;form&gt;, &lt;hr&gt;, &lt;noscript&gt;,
+     * &lt;table&gt;). Inline elements (all others) ignore it.
      *
      * @param minHeight
      *            the min-height value (if <code>null</code>, the property will be removed)
@@ -156,6 +171,11 @@ public interface HasSize extends HasElement {
      * <p>
      * If the provided {@code maxHeight} value is {@literal null} then max-height is
      * removed.
+     * <p>
+     * Note: The max-height affects only block level elements (&lt;p&gt;, &lt;h1&gt;-&lt;h6&gt;, 
+     * &lt;p&gt;, &lt;ol&gt;, &lt;ul&gt;, &lt;pre&gt;, &lt;address&gt;, &lt;blockquote&gt;, 
+     * &lt;dl&gt;, &lt;div&gt;, &lt;fieldset&gt;, &lt;form&gt;, &lt;hr&gt;, &lt;noscript&gt;,
+     * &lt;table&gt;). Inline elements (all others) ignore it.
      *
      * @param maxHeight
      *            the max-height value (if <code>null</code>, the property will be removed)
