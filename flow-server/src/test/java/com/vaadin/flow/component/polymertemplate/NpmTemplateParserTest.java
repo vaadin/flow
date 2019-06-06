@@ -15,12 +15,16 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.DevModeHandler;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 
 public class NpmTemplateParserTest {
+    @Mock
+    VaadinContext context;
     @Mock
     VaadinService service;
     @Mock
@@ -36,12 +40,15 @@ public class NpmTemplateParserTest {
                 .thenReturn(configuration);
         Mockito.when(service.getClassLoader())
                 .thenAnswer(invocation -> this.getClass().getClassLoader());
+        Mockito.when(service.getContext()).thenReturn(context);
         Mockito.when(configuration
                 .getStringProperty(Mockito.anyString(), Mockito.anyString()))
                 .thenAnswer((Answer<String>) invocation -> {
                     Object[] args = invocation.getArguments();
                     return (String) args[1];
                 });
+        Mockito.when(context.getAttribute(DevModeHandler.DevModePort.class))
+                .thenReturn(new DevModeHandler.DevModePort(6666));
     }
 
     @Test
