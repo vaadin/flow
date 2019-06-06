@@ -53,7 +53,7 @@ class FrontendAnnotatedClassVisitor extends ClassVisitor {
      *            The annotation class name to visit
      */
     FrontendAnnotatedClassVisitor(ClassFinder finder, String annotationName) {
-        super(Opcodes.ASM6);
+        super(Opcodes.ASM7);
         this.finder = finder;
         this.annotationName = annotationName;
     }
