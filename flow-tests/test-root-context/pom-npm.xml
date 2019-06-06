@@ -14,6 +14,7 @@
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
         <ui.jar.classes>${project.build.directory}/ui-jar</ui.jar.classes>
+        <exclude.it.tests>LazyLoadingTemplateIT, DependenciesLoadingPageApiIT, AnnotatedFrontendInlineIT, DependenciesLoadingAnnotationsIT, FrontendInlineApiIT</exclude.it.tests>
     </properties>
 
     <dependencies>
