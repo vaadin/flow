@@ -41,6 +41,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.frontend.DevModePort;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN;
@@ -239,10 +240,9 @@ public class DevModeHandler implements Serializable {
             return null;
         }
 
-        System.out.println("ServletContext: " + context);
         File webpack = null;
         File webpackConfig = null;
-        int runningPort = getRunningPort(context);
+        int runningPort = getDevServerPort(context);
 
         // Skip checks if we have a webpack-dev-server already running
         if (runningPort == 0) {
@@ -495,56 +495,8 @@ public class DevModeHandler implements Serializable {
      *            the context where the port is stored.
      * @return the webpack port or 0 if the port is not stored.
      */
-    static int getRunningPort(VaadinContext context) {
+    private static int getDevServerPort(VaadinContext context) {
         DevModePort attribute = context.getAttribute(DevModePort.class);
-        return attribute == null ? 0 : attribute.getValue();
+        return attribute == null ? 0 : attribute.getPort();
     }
-
-    /**
-     * Webpack dev mode port wrapper.
-     */
-    public static class DevModePort implements Serializable {
-
-        private final int value;
-
-        /**
-         * Creates the dev mode port.
-         *
-         * @param value
-         *            the value of the port.
-         */
-        public DevModePort(int value) {
-            this.value = value;
-        }
-
-        /**
-         * Gets the value of the port.
-         * 
-         * @return the value of the port.
-         */
-        public int getValue() {
-            return value;
-        }
-
-        @Override
-        public String toString() {
-            return "" + value;
-        }
-
-        @Override
-        public int hashCode() {
-            return value;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj instanceof DevModePort) {
-                DevModePort devModePort = (DevModePort) obj;
-                return devModePort.value == this.value;
-            }
-
-            return false;
-        }
-    }
-
 }

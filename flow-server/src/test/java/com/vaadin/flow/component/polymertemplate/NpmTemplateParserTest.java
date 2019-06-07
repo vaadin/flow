@@ -15,9 +15,9 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.frontend.DevModePort;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
@@ -47,8 +47,8 @@ public class NpmTemplateParserTest {
                     Object[] args = invocation.getArguments();
                     return (String) args[1];
                 });
-        Mockito.when(context.getAttribute(DevModeHandler.DevModePort.class))
-                .thenReturn(new DevModeHandler.DevModePort(6666));
+        Mockito.when(context.getAttribute(DevModePort.class))
+                .thenReturn(new DevModePort(6666));
     }
 
     @Test
