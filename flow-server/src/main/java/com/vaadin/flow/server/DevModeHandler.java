@@ -18,6 +18,7 @@ package com.vaadin.flow.server;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -47,8 +48,8 @@ import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
-import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
+import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 
@@ -157,8 +158,10 @@ public class DevModeHandler implements Serializable {
                     .redirectError(ProcessBuilder.Redirect.PIPE)
                     .redirectErrorStream(true).start();
             stopCallback = () -> {
-                webpackProcess.destroy();
+                System.setProperty(VAADIN_PREFIX
+                        + SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, null);
                 atomicHandler.set(null);
+                webpackProcess.destroy();
             };
             Runtime.getRuntime()
                     .addShutdownHook(new Thread(webpackProcess::destroy));
@@ -279,7 +282,8 @@ public class DevModeHandler implements Serializable {
      * @return true if the request should be forwarded to webpack
      */
     public boolean isDevModeRequest(HttpServletRequest request) {
-        return request.getPathInfo() != null && request.getPathInfo().matches(".+\\.js");
+        return request.getPathInfo() != null
+                && request.getPathInfo().matches(".+\\.js");
     }
 
     /**
@@ -300,9 +304,10 @@ public class DevModeHandler implements Serializable {
     public boolean serveDevModeRequest(HttpServletRequest request,
             HttpServletResponse response) throws IOException {
         // Requests in devmode should come to /VAADIN/build/index....js where as
-        // webpack has the file in /build/index....js so we need to drop the /VAADIN
-        String requestFilename = request.getPathInfo()
-                .replace(VAADIN_MAPPING, "");
+        // webpack has the file in /build/index....js so we need to drop the
+        // /VAADIN
+        String requestFilename = request.getPathInfo().replace(VAADIN_MAPPING,
+                "");
 
         HttpURLConnection connection = prepareConnection(requestFilename,
                 request.getMethod());

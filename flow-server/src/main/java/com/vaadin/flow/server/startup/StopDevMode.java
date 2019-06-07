@@ -24,9 +24,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.vaadin.flow.server.DevModeHandler;
 
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT;
-import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
-
 /**
  * Stops {@link DevModeHandler} if there is no anymore initialized servlet
  * context instances.
@@ -49,8 +46,6 @@ class StopDevMode implements ServletContextListener, Serializable {
             DevModeHandler handler = DevModeHandler.getDevModeHandler();
             if (handler != null) {
                 handler.stop();
-                System.setProperty(VAADIN_PREFIX
-                        + SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, null);
             }
         }
     }
