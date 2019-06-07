@@ -14,7 +14,11 @@
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
         <ui.jar.classes>${project.build.directory}/ui-jar</ui.jar.classes>
-        <exclude.it.tests>LazyLoadingTemplateIT, DependenciesLoadingPageApiIT, AnnotatedFrontendInlineIT, DependenciesLoadingAnnotationsIT, FrontendInlineApiIT</exclude.it.tests>
+        <exclude.it.tests>LazyLoadingTemplateIT, 
+            DependenciesLoadingPageApiIT, AnnotatedFrontendInlineIT, 
+            DependenciesLoadingAnnotationsIT, FrontendInlineApiIT, LongPollingMultipleThreadsIT, 
+            LongPollingPushIT, RouteNotFoundIT, WebComponentsIT, EmptyListsIT, 
+            InjectedElementInsideMixinBehaviorIT, TemplateHasInjectedSubTemplateIT, TemplateInTemplateIT, UpgradeElementIT</exclude.it.tests>
     </properties>
 
     <dependencies>
