@@ -262,9 +262,6 @@ public class VaadinServlet extends HttpServlet {
      * @exception IOException
      *                if an input or output error occurs while the servlet is
      *                handling the HTTP request
-     *
-     * @exception ServletException
-     *                if the HTTP request cannot be handled
      */
     protected boolean serveStaticOrWebJarRequest(HttpServletRequest request,
             HttpServletResponse response) throws ServletException, IOException {
