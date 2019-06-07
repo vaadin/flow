@@ -18,6 +18,7 @@ package com.vaadin.flow.uitest.ui;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
@@ -35,12 +36,14 @@ public class ShortcutsIT extends ChromeBrowserTest {
     }
 
     @Test
+    @Ignore("ignored until selenium Actions::sendKeys is fixed for chrome 75 issue #5862")
     public void clickShortcutWorks() {
         sendKeys(Keys.ALT, "b");
         assertActualEquals("button");
     }
 
     @Test
+    @Ignore("ignored until selenium Actions::sendKeys is fixed for chrome 75 issue #5862")
     public void focusShortcutWorks() {
         sendKeys(Keys.ALT, "f") ;
 
@@ -50,6 +53,7 @@ public class ShortcutsIT extends ChromeBrowserTest {
     }
 
     @Test
+    @Ignore("ignored until selenium Actions::sendKeys is fixed for chrome 75 issue #5862")
     public void shortcutsOnlyWorkWhenComponentIsVisible() {
         sendKeys(Keys.ALT, "v");
         assertActualEquals("invisibleP");
@@ -70,6 +74,7 @@ public class ShortcutsIT extends ChromeBrowserTest {
     }
 
     @Test
+    @Ignore("ignored until selenium Actions::sendKeys is fixed for chrome 75 issue #5862")
     public void shortcutOnlyWorksWhenComponentIsEnabled() {
         sendKeys(Keys.CONTROL, "U"); // ctrl+shift+u
 
@@ -98,6 +103,7 @@ public class ShortcutsIT extends ChromeBrowserTest {
     }
 
     @Test
+    @Ignore("ignored until selenium Actions::sendKeys is fixed for chrome 75 issue #5862")
     public void shortcutsOnlyWorkWhenComponentIsAttached() {
         sendKeys(Keys.ALT, "a");
         assertActualEquals("testing..."); // nothing happens
@@ -118,6 +124,7 @@ public class ShortcutsIT extends ChromeBrowserTest {
     }
 
     @Test
+    @Ignore("ignored until selenium Actions::sendKeys is fixed for chrome 75 issue #5862")
     public void modifyingShortcutShouldChangeShortcutEvent() {
         // the shortcut in this test flips its own modifiers
         sendKeys(Keys.ALT, "g");
