@@ -16,9 +16,12 @@
 
 package com.vaadin.flow.uitest.ui;
 
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
@@ -28,6 +31,9 @@ import org.openqa.selenium.interactions.Actions;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class ShortcutsIT extends ChromeBrowserTest {
+    private static final Set<Keys> modifiers = Stream
+            .of(Keys.SHIFT, Keys.ALT, Keys.CONTROL, Keys.META)
+            .collect(Collectors.toSet());
 
     @Before
     public void before() {
@@ -35,17 +41,16 @@ public class ShortcutsIT extends ChromeBrowserTest {
         resetKeys();
     }
 
+
     @Test
-    @Ignore("ignored until selenium Actions::sendKeys is fixed for chrome 75 issue #5862")
     public void clickShortcutWorks() {
         sendKeys(Keys.ALT, "b");
         assertActualEquals("button");
     }
 
     @Test
-    @Ignore("ignored until selenium Actions::sendKeys is fixed for chrome 75 issue #5862")
     public void focusShortcutWorks() {
-        sendKeys(Keys.ALT, "f") ;
+        sendKeys(Keys.ALT, "f");
 
         WebElement input = findElement(By.id("input"));
 
@@ -53,7 +58,6 @@ public class ShortcutsIT extends ChromeBrowserTest {
     }
 
     @Test
-    @Ignore("ignored until selenium Actions::sendKeys is fixed for chrome 75 issue #5862")
     public void shortcutsOnlyWorkWhenComponentIsVisible() {
         sendKeys(Keys.ALT, "v");
         assertActualEquals("invisibleP");
@@ -74,7 +78,6 @@ public class ShortcutsIT extends ChromeBrowserTest {
     }
 
     @Test
-    @Ignore("ignored until selenium Actions::sendKeys is fixed for chrome 75 issue #5862")
     public void shortcutOnlyWorksWhenComponentIsEnabled() {
         sendKeys(Keys.CONTROL, "U"); // ctrl+shift+u
 
@@ -103,7 +106,6 @@ public class ShortcutsIT extends ChromeBrowserTest {
     }
 
     @Test
-    @Ignore("ignored until selenium Actions::sendKeys is fixed for chrome 75 issue #5862")
     public void shortcutsOnlyWorkWhenComponentIsAttached() {
         sendKeys(Keys.ALT, "a");
         assertActualEquals("testing..."); // nothing happens
@@ -124,7 +126,6 @@ public class ShortcutsIT extends ChromeBrowserTest {
     }
 
     @Test
-    @Ignore("ignored until selenium Actions::sendKeys is fixed for chrome 75 issue #5862")
     public void modifyingShortcutShouldChangeShortcutEvent() {
         // the shortcut in this test flips its own modifiers
         sendKeys(Keys.ALT, "g");
@@ -139,21 +140,22 @@ public class ShortcutsIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void clickShortcutAllowsKeyDefaults() throws InterruptedException {
+    public void clickShortcutAllowsKeyDefaults() {
         WebElement textField1 = findElement(By.id("click-input-1"));
         WebElement textField2 = findElement(By.id("click-input-2"));
 
         // ClickButton1: allows browser's default behavior
         textField1.sendKeys("value 1");
-        Thread.sleep(100);
-        textField1.sendKeys(Keys.ENTER);
+        // using sendKeys(...) to send the ENTER instead of textField1
+        // .sendKeys(...) since that causes the test to become flaky for some
+        // reason
+        sendKeys(Keys.ENTER);
 
         assertActualEquals("click: value 1");
 
         // ClickButton2: prevents browser's default behavior
         textField2.sendKeys("value 2");
-        Thread.sleep(100);
-        textField2.sendKeys(Keys.ENTER);
+        sendKeys(Keys.ENTER);
 
         assertActualEquals("click: ");
     }
@@ -172,12 +174,26 @@ public class ShortcutsIT extends ChromeBrowserTest {
     }
 
     private void sendKeys(CharSequence... keys) {
-        new Actions(driver).sendKeys(keys).build().perform();
+        Actions actions = new Actions(driver);
+        for (CharSequence keySeq : keys) {
+            if (modifiers.contains(keySeq)) {
+                actions.keyDown(keySeq);
+            } else {
+                actions.sendKeys(keySeq);
+            }
+        }
+        actions.build().perform();
+        // Implementation that worked for driver < 75.beta:
+        // new Actions(driver).sendKeys(keys).build().perform();
         // if keys are not reset, alt will remain down and start flip-flopping
         resetKeys();
     }
 
     private void resetKeys() {
-        new Actions(driver).sendKeys(Keys.NULL).build().perform();
+        Actions actions = new Actions(driver);
+        modifiers.forEach(actions::keyUp);
+        actions.build().perform();
+        // Implementation that worked for driver < 75.beta:
+        // new Actions(driver).sendKeys(Keys.NULL).build().perform();
     }
 }
