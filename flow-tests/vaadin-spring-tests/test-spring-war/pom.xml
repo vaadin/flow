@@ -128,7 +128,6 @@
                 <version>${vaadin.flow.version}</version>
                 <!-- Configure the output folder so that spring-boot-maven-plugin gets the generated resources -->
                 <configuration>
-                    <webpackOutputDirectory>${project.build.outputDirectory}/META-INF/resources</webpackOutputDirectory>
                     <productionMode>true</productionMode>
                 </configuration>
                 <executions>
