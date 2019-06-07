@@ -39,7 +39,6 @@ import com.vaadin.flow.server.VaadinService;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
-import static com.vaadin.flow.server.DevModeHandler.DevModePort;
 
 /**
  * A class for static methods and definitions that might be used in different
@@ -345,7 +344,7 @@ public class FrontendUtils {
         DevModePort port = service.getContext().getAttribute(DevModePort.class);
         if (port != null) {
             statsUrl = new URL(
-                    "http://localhost:" + port.getValue() + "/" + stats);
+                    "http://localhost:" + port + "/" + stats);
         }
         if (statsUrl == null) {
             statsUrl = service.getStaticResource("/" + stats);

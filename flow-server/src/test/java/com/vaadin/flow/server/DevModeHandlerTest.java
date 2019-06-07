@@ -31,8 +31,6 @@ import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.sun.net.httpserver.HttpServer;
-import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.tests.util.MockDeploymentConfiguration;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Before;
@@ -42,6 +40,10 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
+
+import com.vaadin.flow.server.frontend.DevModePort;
+import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
 import static com.vaadin.flow.server.DevModeHandler.WEBPACK_SERVER;
@@ -130,7 +132,9 @@ public class DevModeHandlerTest {
                 SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT, "100");
         createStubWebpackServer("Foo", 300);
         assertNotNull(DevModeHandler.start(vaadinContext, configuration, npmFolder));
-        assertTrue(DevModeHandler.getRunningPort(vaadinContext) > 0);
+        DevModePort port = vaadinContext.getAttribute(DevModePort.class);
+        assertNotNull(port);
+        assertTrue(port.getPort() > 0);
         Thread.sleep(350); // NOSONAR
     }
 
@@ -335,7 +339,7 @@ public class DevModeHandlerTest {
             exchange.close();
         });
         httpServer.start();
-        vaadinContext.setAttribute(new DevModeHandler.DevModePort(port));
+        vaadinContext.setAttribute(new DevModePort(port));
         return port;
     }
 }
