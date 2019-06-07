@@ -158,8 +158,8 @@ public class DevModeHandler implements Serializable {
                     .redirectError(ProcessBuilder.Redirect.PIPE)
                     .redirectErrorStream(true).start();
             stopCallback = () -> {
-                System.setProperty(VAADIN_PREFIX
-                        + SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, null);
+                System.clearProperty(VAADIN_PREFIX
+                        + SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT);
                 atomicHandler.set(null);
                 webpackProcess.destroy();
             };
