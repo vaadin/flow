@@ -560,7 +560,7 @@ public class MockServletContext implements ServletContext {
      */
     @Override
     public ClassLoader getClassLoader() {
-        return null;
+        return this.getClass().getClassLoader();
     }
 
     /*

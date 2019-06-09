@@ -106,7 +106,7 @@ public class BuildFrontendMojoTest {
         flowPackagPath.mkdirs();
         generatedFolder.mkdirs();
 
-        setProject(mojo, npmFolder, "war", "war_output");
+        setProject(mojo, npmFolder);
 
         // Install all imports used in the tests on node_modules so as we don't
         // need to run `npm install`
@@ -128,17 +128,11 @@ public class BuildFrontendMojoTest {
         }
     }
 
-    static void setProject(AbstractMojo mojo, File baseFolder, String packaging,
-            String outputDirectory) throws Exception {
-        String out = new File(baseFolder, outputDirectory).getPath();
+    static void setProject(AbstractMojo mojo, File baseFolder) throws Exception {
         Build buildMock = mock(Build.class);
-        when(buildMock.getOutputDirectory()).thenReturn(out);
-        when(buildMock.getDirectory()).thenReturn(out);
         when(buildMock.getFinalName()).thenReturn("finalName");
-
         MavenProject project = mock(MavenProject.class);
         when(project.getBasedir()).thenReturn(baseFolder);
-        when(project.getPackaging()).thenReturn(packaging);
         when(project.getBuild()).thenReturn(buildMock);
         when(project.getRuntimeClasspathElements()).thenReturn(getClassPath());
         ReflectionUtils.setVariableValueInObject(mojo, "project", project);

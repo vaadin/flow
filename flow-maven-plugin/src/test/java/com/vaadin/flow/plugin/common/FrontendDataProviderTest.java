@@ -55,6 +55,7 @@ import com.vaadin.flow.component.webcomponent.WebComponent;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -110,8 +111,7 @@ public class FrontendDataProviderTest {
 
     }
 
-    public static class TestExporter
-            extends WebComponentExporter<Component> {
+    public static class TestExporter extends WebComponentExporter<Component> {
 
         public TestExporter() {
             super("test-component");
@@ -132,10 +132,10 @@ public class FrontendDataProviderTest {
         htmlFile = createFile(sourceDirectory, "test.html");
 
         Mockito.doAnswer(invocation -> invocation.getArgumentAt(0, Set.class))
-                .when(translator).applyTheme(Matchers.any());
+                .when(translator).applyTheme(any());
 
-        Mockito.when(generator.getExporters())
-                .thenAnswer(invocation -> Stream.of());
+        Mockito.when(generator.generateWebComponentModules(any(File.class)))
+                .thenReturn(Collections.emptySet());
     }
 
     private File createFile(File directory, String fileName)
@@ -269,12 +269,10 @@ public class FrontendDataProviderTest {
     @Test
     public void createShellFile_fileContainsGeneratedWebModuleAndRegularHtmlImport()
             throws IOException {
-        Mockito.when(generator.getExporters())
-                .thenReturn(Stream.of(TestExporter.class));
-
         File webModule = new File(sourceDirectory, "bar/web-module-gen.html");
-        Mockito.when(generator.generateModuleFile(TestExporter.class,
-                new File(sourceDirectory, "bar"))).thenReturn(webModule);
+
+        Mockito.when(generator.generateWebComponentModules(any(File.class)))
+                .thenReturn(Collections.singleton(webModule));
 
         AnnotationValuesExtractor annotationValuesExtractorMock = mock(
                 AnnotationValuesExtractor.class);

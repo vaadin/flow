@@ -59,6 +59,8 @@ public abstract class NodeUpdater implements Command {
     private static final String DEP_NAME_KEY = "name";
     private static final String DEP_NAME_DEFAULT = "no-name";
     private static final String DEP_NAME_FLOW_DEPS = "@vaadin/flow-deps";
+    private static final String DEP_VERSION_KEY = "version";
+    private static final String DEP_VERSION_DEFAULT = "1.0.0";
 
     /**
      * Base directory for {@link Constants#PACKAGE_JSON},
@@ -156,7 +158,7 @@ public abstract class NodeUpdater implements Command {
             if (finder.getResource(RESOURCES_FRONTEND_DEFAULT + "/" + resource) != null) {
                 if (!resolved.startsWith("./")) {
                     log().warn(
-                            "Use the './' prefix for resources in JAR files: '{}', please update your component.",
+                            "Use the './' prefix for files in JAR files: '{}', please update your component.",
                             importPath);
                 }
                 resolved = FLOW_NPM_PACKAGE_NAME + resource;
@@ -194,7 +196,7 @@ public abstract class NodeUpdater implements Command {
         // dependency for the custom package.json placed in the generated folder.
         String customPkg = "./" + npmFolder.getAbsoluteFile().toPath()
                 .relativize(generatedFolder.toPath()).toString();
-        added = addDependency(packageJson, DEPENDENCIES, DEP_NAME_FLOW_DEPS, customPkg) || added;
+        added = addDependency(packageJson, DEPENDENCIES, DEP_NAME_FLOW_DEPS, customPkg.replaceAll("\\\\", "/")) || added;
 
         added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack", "4.30.0") || added;
         added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack-cli", "3.3.0") || added;
@@ -206,6 +208,7 @@ public abstract class NodeUpdater implements Command {
 
     void updateAppDefaultDependencies(JsonObject packageJson) {
         addDependency(packageJson, null, DEP_NAME_KEY, DEP_NAME_FLOW_DEPS);
+        addDependency(packageJson, null, DEP_VERSION_KEY, DEP_VERSION_DEFAULT);
         addDependency(packageJson, null, DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT);
     }
 

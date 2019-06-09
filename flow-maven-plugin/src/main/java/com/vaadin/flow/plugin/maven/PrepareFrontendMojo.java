@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.maven.model.Build;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -49,7 +48,6 @@ import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
 /**
@@ -119,18 +117,9 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
     @Parameter(defaultValue = "${project.build.directory}/" + FRONTEND)
     private File generatedFolder;
 
-    /**
-     * The folder where webpack should output index.js and other generated files.
-     * By default the output folder is decided depending on project package type.
-     */
-    @Parameter
-    private File webpackOutputDirectory;
-
     @Override
     public void execute() {
         super.execute();
-
-        webpackOutputDirectory = getWebpackOutputDirectory();
 
         // propagate info via System properties and token file
         propagateBuildInfo();
@@ -200,10 +189,6 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
                     buildInfo.toJson()));
         }
 
-        // We still pass the location of the file via System.property, this fixes
-        // cases e.g. jetty with `webAppSourceDirectory` not correctly configured
-        System.setProperty(PARAM_TOKEN_FILE, token.getAbsolutePath());
-
         // In the case of running npm dev-mode in a maven multi-module projects,
         // inform dev-mode server and updaters about the actual project folder.
         System.setProperty("project.basedir", npmFolder.getAbsolutePath());
@@ -247,25 +232,6 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
                         frontendDirectory, flowNodeDirectory), e);
                 }
             }
-        }
-    }
-
-    private File getWebpackOutputDirectory() {
-        if(webpackOutputDirectory != null) {
-            return webpackOutputDirectory;
-        }
-
-        Build buildInformation = project.getBuild();
-        switch (project.getPackaging()) {
-            case "jar":
-                return new File(buildInformation.getOutputDirectory(),
-                        "META-INF/resources");
-            case "war":
-                return new File(buildInformation.getDirectory(),
-                        buildInformation.getFinalName());
-            default:
-                throw new IllegalStateException(String.format(
-                        "Unsupported packaging '%s'", project.getPackaging()));
         }
     }
 
