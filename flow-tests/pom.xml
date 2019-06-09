@@ -45,6 +45,7 @@
 
         <!-- This test fails in local -->
         <module>test-root-context</module>
+        <module>test-npm-only-features</module>
     </modules>
 
     <properties>

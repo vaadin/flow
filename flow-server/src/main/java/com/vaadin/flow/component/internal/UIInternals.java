@@ -849,21 +849,22 @@ public class UIInternals implements Serializable {
                     js -> page.addJavaScript(js.value(), js.loadMode()));
         } else {
             // In npm mode, add external JavaScripts directly to the page.
-            dependencies.getJavaScripts().stream().filter(this::isExternal)
-                    .forEach(js -> page.addJavaScript(js.value(),
-                            js.loadMode()));
+            dependencies.getJavaScripts().stream()
+                    .filter(js -> isExternal(js.value())).forEach(js -> page
+                            .addJavaScript(js.value(), js.loadMode()));
+            dependencies.getJsModules().stream()
+                    .filter(js -> isExternal(js.value()))
+                    .forEach(js -> page.addJsModule(js.value(), js.loadMode()));
         }
         dependencies.getStyleSheets().forEach(styleSheet -> page
                 .addStyleSheet(styleSheet.value(), styleSheet.loadMode()));
     }
 
-    private boolean isExternal(JavaScript js) {
-        return js.value().contains("://") && !(js.value()
+    private boolean isExternal(String url) {
+        return url.contains("://") && !(url
                 .startsWith(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX)
-                || js.value().startsWith(
-                        ApplicationConstants.FRONTEND_PROTOCOL_PREFIX)
-                || js.value()
-                        .startsWith(ApplicationConstants.BASE_PROTOCOL_PREFIX));
+                || url.startsWith(ApplicationConstants.FRONTEND_PROTOCOL_PREFIX)
+                || url.startsWith(ApplicationConstants.BASE_PROTOCOL_PREFIX));
     }
 
     private void addHtmlImport(HtmlImportDependency dependency, Page page) {

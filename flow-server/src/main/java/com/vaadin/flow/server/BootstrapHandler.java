@@ -16,6 +16,31 @@
 
 package com.vaadin.flow.server;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Serializable;
+import java.lang.annotation.Annotation;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.ServiceLoader;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import com.vaadin.flow.client.ClientResourcesUtils;
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
@@ -52,31 +77,6 @@ import org.jsoup.parser.Tag;
 import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.Serializable;
-import java.lang.annotation.Annotation;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.ServiceLoader;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -132,7 +132,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     /**
      * Creates an instance of the handler using provided page builder.
-     * @param pageBuilder Page builder to use.
+     * 
+     * @param pageBuilder
+     *            Page builder to use.
      */
     protected BootstrapHandler(PageBuilder pageBuilder) {
         this.pageBuilder = pageBuilder;
@@ -140,6 +142,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     /**
      * Returns the current page builder object.
+     * 
      * @return Page builder in charge of constructing the resulting page.
      */
     protected PageBuilder getPageBuilder() {
@@ -181,12 +184,13 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          */
         protected BootstrapContext(VaadinRequest request,
                 VaadinResponse response, VaadinSession session, UI ui,
-            Function<VaadinRequest, String> contextCallback) {
+                Function<VaadinRequest, String> contextCallback) {
             this.request = request;
             this.response = response;
             this.session = session;
             this.ui = ui;
-            this.parameterBuilder = new ApplicationParameterBuilder(contextCallback);
+            this.parameterBuilder = new ApplicationParameterBuilder(
+                    contextCallback);
 
             pageConfigurationHolder = BootstrapUtils
                     .resolvePageConfigurationHolder(ui, request).orElse(null);
@@ -278,7 +282,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          */
         public JsonObject getApplicationParameters() {
             if (applicationParameters == null) {
-                applicationParameters = parameterBuilder.getApplicationParameters(this);
+                applicationParameters = parameterBuilder
+                        .getApplicationParameters(this);
             }
 
             return applicationParameters;
@@ -448,10 +453,12 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         return true;
     }
 
-
-    private void writeBootstrapPage(VaadinResponse response, String html) throws IOException {
-        response.setContentType(ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8);
-        try(BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(response.getOutputStream(), UTF_8))) {
+    private void writeBootstrapPage(VaadinResponse response, String html)
+            throws IOException {
+        response.setContentType(
+                ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8);
+        try (BufferedWriter writer = new BufferedWriter(
+                new OutputStreamWriter(response.getOutputStream(), UTF_8))) {
             writer.append(html);
         }
     }
@@ -462,7 +469,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     public interface PageBuilder extends Serializable {
         /**
          * Creates the bootstrap page.
-         * @param context Context to build page for.
+         * 
+         * @param context
+         *            Context to build page for.
          * @return A non-null {@link Document} with bootstrap page.
          */
         Document getBootstrapPage(BootstrapContext context);
@@ -473,16 +482,20 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      *
      * Do not subclass this, unless you really know why you are doing it.
      */
-    protected static final class BootstrapPageBuilder implements PageBuilder, Serializable {
+    protected static final class BootstrapPageBuilder
+            implements PageBuilder, Serializable {
 
         /**
          * Returns the bootstrap page for the given context.
-         * @param context Context to generate bootstrap page for.
+         * 
+         * @param context
+         *            Context to generate bootstrap page for.
          * @return A document with the corresponding HTML page.
          */
         @Override
         public Document getBootstrapPage(BootstrapContext context) {
-            DeploymentConfiguration config = context.getSession().getConfiguration();
+            DeploymentConfiguration config = context.getSession()
+                    .getConfiguration();
 
             Document document = new Document("");
             DocumentType doctype = new DocumentType("html", "", "");
@@ -493,15 +506,21 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             Element head = html.appendElement("head");
             html.appendElement("body");
 
-            List<Element> dependenciesToInlineInBody = setupDocumentHead(head, context);
-            dependenciesToInlineInBody.forEach(dependency -> document.body().appendChild(dependency));
+            List<Element> dependenciesToInlineInBody = setupDocumentHead(head,
+                    context);
+            dependenciesToInlineInBody.forEach(
+                    dependency -> document.body().appendChild(dependency));
             setupDocumentBody(document);
 
             document.outputSettings().prettyPrint(false);
 
-            BootstrapUtils.getInlineTargets(context).ifPresent(targets -> handleInlineTargets(context, head, document.body(), targets));
+            BootstrapUtils.getInlineTargets(context)
+                    .ifPresent(targets -> handleInlineTargets(context, head,
+                            document.body(), targets));
 
-            BootstrapUtils.getInitialPageSettings(context).ifPresent(initialPageSettings -> handleInitialPageSettings(context, head, initialPageSettings));
+            BootstrapUtils.getInitialPageSettings(context).ifPresent(
+                    initialPageSettings -> handleInitialPageSettings(context,
+                            head, initialPageSettings));
 
             if (config.isBowerMode()) {
                 /* Append any theme elements to initial page. */
@@ -518,8 +537,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 checkWebpackStatus(document);
             }
 
-            BootstrapPageResponse response = new BootstrapPageResponse(context.getRequest(), context.getSession(), context.getResponse(), document, context.getUI(),
-                context.getUriResolver());
+            BootstrapPageResponse response = new BootstrapPageResponse(
+                    context.getRequest(), context.getSession(),
+                    context.getResponse(), document, context.getUI(),
+                    context.getUriResolver());
             context.getSession().getService().modifyBootstrapPage(response);
 
             return document;
@@ -534,8 +555,11 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             if (devMode != null) {
                 String errorMsg = devMode.getFailedOutput();
                 if (errorMsg != null) {
-                    document.body().appendChild(
-                        new Element(Tag.valueOf("div"), "").attr("class", "v-system-error").html("<h3>Webpack Error</h3><pre>" + errorMsg + "</pre>"));
+                    document.body()
+                            .appendChild(new Element(Tag.valueOf("div"), "")
+                                    .attr("class", "v-system-error")
+                                    .html("<h3>Webpack Error</h3><pre>"
+                                            + errorMsg + "</pre>"));
                 }
             }
         }
@@ -553,7 +577,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
                 // Registers the entry in a way that is picked up as a Vaadin
                 // WebComponent by the usage stats gatherer
-                return String.format("window.Vaadin[%s]=%s;", escapedName, json);
+                return String.format("window.Vaadin[%s]=%s;", escapedName,
+                        json);
             }).collect(Collectors.joining("\n"));
 
             if (!registerScript.isEmpty()) {
@@ -561,8 +586,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             }
         }
 
-        private void handleThemeContents(BootstrapContext context, Document document) {
-            ThemeSettings themeSettings = BootstrapUtils.getThemeSettings(context);
+        private void handleThemeContents(BootstrapContext context,
+                Document document) {
+            ThemeSettings themeSettings = BootstrapUtils
+                    .getThemeSettings(context);
 
             if (themeSettings == null) {
                 // no theme configured for the application
@@ -571,13 +598,17 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
             List<JsonObject> themeContents = themeSettings.getHeadContents();
             if (themeContents != null) {
-                themeContents.stream().map(dependency -> createDependencyElement(context, dependency))
-                    .forEach(element -> insertElements(element, document.head()::appendChild));
+                themeContents.stream()
+                        .map(dependency -> createDependencyElement(context,
+                                dependency))
+                        .forEach(element -> insertElements(element,
+                                document.head()::appendChild));
             }
 
             JsonObject themeContent = themeSettings.getHeadInjectedContent();
             if (themeContent != null) {
-                Element dependency = createDependencyElement(context, themeContent);
+                Element dependency = createDependencyElement(context,
+                        themeContent);
                 insertElements(dependency, document.head()::appendChild);
             }
 
@@ -589,64 +620,97 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
         private Element createDependencyElement(BootstrapContext context,
-            JsonObject dependencyJson) {
+                JsonObject dependencyJson) {
             String type = dependencyJson.getString(Dependency.KEY_TYPE);
             if (Dependency.Type.contains(type)) {
                 Dependency.Type dependencyType = Dependency.Type.valueOf(type);
                 return createDependencyElement(context.getUriResolver(),
-                    LoadMode.INLINE, dependencyJson, dependencyType);
+                        LoadMode.INLINE, dependencyJson, dependencyType);
             }
-            return Jsoup.parse(dependencyJson.getString(Dependency.KEY_CONTENTS),
-                "", Parser.xmlParser());
+            return Jsoup.parse(
+                    dependencyJson.getString(Dependency.KEY_CONTENTS), "",
+                    Parser.xmlParser());
         }
 
-        private void handleInlineTargets(BootstrapContext context, Element head, Element body, InlineTargets targets) {
-            targets.getInlineHead(Inline.Position.PREPEND).stream().map(dependency -> createDependencyElement(context, dependency))
-                .forEach(element -> insertElements(element, head::prependChild));
-            targets.getInlineHead(Inline.Position.APPEND).stream().map(dependency -> createDependencyElement(context, dependency))
-                .forEach(element -> insertElements(element, head::appendChild));
+        private void handleInlineTargets(BootstrapContext context, Element head,
+                Element body, InlineTargets targets) {
+            targets.getInlineHead(Inline.Position.PREPEND).stream().map(
+                    dependency -> createDependencyElement(context, dependency))
+                    .forEach(element -> insertElements(element,
+                            head::prependChild));
+            targets.getInlineHead(Inline.Position.APPEND).stream().map(
+                    dependency -> createDependencyElement(context, dependency))
+                    .forEach(element -> insertElements(element,
+                            head::appendChild));
 
-            targets.getInlineBody(Inline.Position.PREPEND).stream().map(dependency -> createDependencyElement(context, dependency))
-                .forEach(element -> insertElements(element, body::prependChild));
-            targets.getInlineBody(Inline.Position.APPEND).stream().map(dependency -> createDependencyElement(context, dependency))
-                .forEach(element -> insertElements(element, body::appendChild));
+            targets.getInlineBody(Inline.Position.PREPEND).stream().map(
+                    dependency -> createDependencyElement(context, dependency))
+                    .forEach(element -> insertElements(element,
+                            body::prependChild));
+            targets.getInlineBody(Inline.Position.APPEND).stream().map(
+                    dependency -> createDependencyElement(context, dependency))
+                    .forEach(element -> insertElements(element,
+                            body::appendChild));
         }
 
-        private void handleInitialPageSettings(BootstrapContext context, Element head, InitialPageSettings initialPageSettings) {
+        private void handleInitialPageSettings(BootstrapContext context,
+                Element head, InitialPageSettings initialPageSettings) {
             if (initialPageSettings.getViewport() != null) {
-                Elements viewport = head.getElementsByAttributeValue("name", VIEWPORT);
+                Elements viewport = head.getElementsByAttributeValue("name",
+                        VIEWPORT);
                 if (!viewport.isEmpty() && viewport.size() == 1) {
-                    viewport.get(0).attr(CONTENT_ATTRIBUTE, initialPageSettings.getViewport());
+                    viewport.get(0).attr(CONTENT_ATTRIBUTE,
+                            initialPageSettings.getViewport());
                 } else {
-                    head.appendElement(META_TAG).attr("name", VIEWPORT).attr(CONTENT_ATTRIBUTE, initialPageSettings.getViewport());
+                    head.appendElement(META_TAG).attr("name", VIEWPORT).attr(
+                            CONTENT_ATTRIBUTE,
+                            initialPageSettings.getViewport());
                 }
             }
 
-            initialPageSettings.getInline(InitialPageSettings.Position.PREPEND).stream().map(dependency -> createDependencyElement(context, dependency))
-                .forEach(element -> insertElements(element, head::prependChild));
-            initialPageSettings.getInline(InitialPageSettings.Position.APPEND).stream().map(dependency -> createDependencyElement(context, dependency))
-                .forEach(element -> insertElements(element, head::appendChild));
+            initialPageSettings.getInline(InitialPageSettings.Position.PREPEND)
+                    .stream()
+                    .map(dependency -> createDependencyElement(context,
+                            dependency))
+                    .forEach(element -> insertElements(element,
+                            head::prependChild));
+            initialPageSettings.getInline(InitialPageSettings.Position.APPEND)
+                    .stream()
+                    .map(dependency -> createDependencyElement(context,
+                            dependency))
+                    .forEach(element -> insertElements(element,
+                            head::appendChild));
 
-            initialPageSettings.getElement(InitialPageSettings.Position.PREPEND).forEach(element -> insertElements(element, head::prependChild));
-            initialPageSettings.getElement(InitialPageSettings.Position.APPEND).forEach(element -> insertElements(element, head::appendChild));
+            initialPageSettings.getElement(InitialPageSettings.Position.PREPEND)
+                    .forEach(element -> insertElements(element,
+                            head::prependChild));
+            initialPageSettings.getElement(InitialPageSettings.Position.APPEND)
+                    .forEach(element -> insertElements(element,
+                            head::appendChild));
         }
 
         private void insertElements(Element element, Consumer<Element> action) {
             if (element instanceof Document) {
-                element.getAllElements().stream().filter(item -> !(item instanceof Document) && element.equals(item.parent())).forEach(action::accept);
+                element.getAllElements().stream()
+                        .filter(item -> !(item instanceof Document)
+                                && element.equals(item.parent()))
+                        .forEach(action::accept);
             } else if (element != null) {
                 action.accept(element);
             }
         }
 
-        private List<Element> setupDocumentHead(Element head, BootstrapContext context) {
+        private List<Element> setupDocumentHead(Element head,
+                BootstrapContext context) {
             setupMetaAndTitle(head, context);
             setupCss(head, context);
 
             JsonObject initialUIDL = getInitialUidl(context.getUI());
-            Map<LoadMode, JsonArray> dependenciesToProcessOnServer = popDependenciesToProcessOnServer(initialUIDL);
+            Map<LoadMode, JsonArray> dependenciesToProcessOnServer = popDependenciesToProcessOnServer(
+                    initialUIDL);
             setupFrameworkLibraries(head, initialUIDL, context);
-            return applyUserDependencies(head, context, dependenciesToProcessOnServer);
+            return applyUserDependencies(head, context,
+                    dependenciesToProcessOnServer);
         }
 
         /**
@@ -681,14 +745,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          *            the vaadin session to which the security key belongs
          */
         private void writePushIdUIDL(JsonObject response,
-            VaadinSession session) {
+                VaadinSession session) {
             String pushId = session.getPushId();
             response.put(ApplicationConstants.UIDL_PUSH_ID, pushId);
         }
 
         /**
-         * Writes the security key (and generates one if needed) to the given JSON
-         * object.
+         * Writes the security key (and generates one if needed) to the given
+         * JSON object.
          *
          * @param response
          *            the response JSON object to write security key into
@@ -700,24 +764,33 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             response.put(ApplicationConstants.UIDL_SECURITY_TOKEN_ID, seckey);
         }
 
-        private List<Element> applyUserDependencies(Element head, BootstrapContext context,
-            Map<LoadMode, JsonArray> dependenciesToProcessOnServer) {
+        private List<Element> applyUserDependencies(Element head,
+                BootstrapContext context,
+                Map<LoadMode, JsonArray> dependenciesToProcessOnServer) {
             List<Element> dependenciesToInlineInBody = new ArrayList<>();
-            for (Map.Entry<LoadMode, JsonArray> entry : dependenciesToProcessOnServer.entrySet()) {
-                dependenciesToInlineInBody.addAll(inlineDependenciesInHead(head, context.getUriResolver(), entry.getKey(), entry.getValue()));
+            for (Map.Entry<LoadMode, JsonArray> entry : dependenciesToProcessOnServer
+                    .entrySet()) {
+                dependenciesToInlineInBody.addAll(
+                        inlineDependenciesInHead(head, context.getUriResolver(),
+                                entry.getKey(), entry.getValue()));
             }
             return dependenciesToInlineInBody;
         }
 
-        private List<Element> inlineDependenciesInHead(Element head, BootstrapUriResolver uriResolver, LoadMode loadMode, JsonArray dependencies) {
+        private List<Element> inlineDependenciesInHead(Element head,
+                BootstrapUriResolver uriResolver, LoadMode loadMode,
+                JsonArray dependencies) {
             List<Element> dependenciesToInlineInBody = new ArrayList<>();
 
             for (int i = 0; i < dependencies.length(); i++) {
                 JsonObject dependencyJson = dependencies.getObject(i);
-                Dependency.Type dependencyType = Dependency.Type.valueOf(dependencyJson.getString(Dependency.KEY_TYPE));
-                Element dependencyElement = createDependencyElement(uriResolver, loadMode, dependencyJson, dependencyType);
+                Dependency.Type dependencyType = Dependency.Type
+                        .valueOf(dependencyJson.getString(Dependency.KEY_TYPE));
+                Element dependencyElement = createDependencyElement(uriResolver,
+                        loadMode, dependencyJson, dependencyType);
 
-                if (loadMode == LoadMode.INLINE && dependencyType == Dependency.Type.HTML_IMPORT) {
+                if (loadMode == LoadMode.INLINE
+                        && dependencyType == Dependency.Type.HTML_IMPORT) {
                     dependenciesToInlineInBody.add(dependencyElement);
                 } else {
                     head.appendChild(dependencyElement);
@@ -726,7 +799,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return dependenciesToInlineInBody;
         }
 
-        private Map<LoadMode, JsonArray> popDependenciesToProcessOnServer(JsonObject initialUIDL) {
+        private Map<LoadMode, JsonArray> popDependenciesToProcessOnServer(
+                JsonObject initialUIDL) {
             Map<LoadMode, JsonArray> result = new EnumMap<>(LoadMode.class);
             Stream.of(LoadMode.EAGER, LoadMode.INLINE).forEach(mode -> {
                 if (initialUIDL.hasKey(mode.name())) {
@@ -737,81 +811,92 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return result;
         }
 
-    private void setupFrameworkLibraries(Element head,
-            JsonObject initialUIDL, BootstrapContext context) {
+        private void setupFrameworkLibraries(Element head,
+                JsonObject initialUIDL, BootstrapContext context) {
 
-        VaadinService service = context.getSession().getService();
-        DeploymentConfiguration conf = service.getDeploymentConfiguration();
+            VaadinService service = context.getSession().getService();
+            DeploymentConfiguration conf = service.getDeploymentConfiguration();
 
-        if (conf.isBowerMode()) {
-            inlineEs6Collections(head, context);
-            appendWebComponentsPolyfills(head, context);
-        } else {
-            BootstrapUriResolver resolver = context.getUriResolver();
-            conf.getPolyfills().forEach(polyfill -> head.appendChild(
-                    createJavaScriptElement(resolver.resolveVaadinUri(polyfill), false)));
-            try {
-                appendNpmBundle(head, resolver, service);
-            } catch (IOException e) {
-                throw new BootstrapException("Unable to read webpack stats file.", e);
+            if (conf.isBowerMode()) {
+                inlineEs6Collections(head, context);
+                appendWebComponentsPolyfills(head, context);
+            } else {
+                BootstrapUriResolver resolver = context.getUriResolver();
+                conf.getPolyfills().forEach(
+                        polyfill -> head.appendChild(createJavaScriptElement(
+                                resolver.resolveVaadinUri(polyfill), false)));
+                try {
+                    appendNpmBundle(head, resolver, service);
+                } catch (IOException e) {
+                    throw new BootstrapException(
+                            "Unable to read webpack stats file.", e);
+                }
             }
-        }
 
             if (context.getPushMode().isEnabled()) {
                 head.appendChild(getPushScript(context));
             }
 
             head.appendChild(getBootstrapScript(initialUIDL, context));
-            head.appendChild(createJavaScriptElement(getClientEngineUrl(context)));
+            head.appendChild(
+                    createJavaScriptElement(getClientEngineUrl(context)));
         }
 
-    private void appendNpmBundle(Element head, BootstrapUriResolver resolver, VaadinService service) throws IOException {
-        String content = FrontendUtils.getStatsContent(service);
-        JsonObject chunks = Json.parse(content).getObject("assetsByChunkName");
+        private void appendNpmBundle(Element head,
+                BootstrapUriResolver resolver, VaadinService service)
+                throws IOException {
+            String content = FrontendUtils.getStatsContent(service);
+            JsonObject chunks = Json.parse(content)
+                    .getObject("assetsByChunkName");
 
-        for (String key: chunks.keys()) {
-            Element script = createJavaScriptElement(
-                    resolver.resolveVaadinUri(chunks.getString(key)));
+            for (String key : chunks.keys()) {
+                Element script = createJavaScriptElement(
+                        resolver.resolveVaadinUri(chunks.getString(key)));
 
-            if (key.endsWith(".es5")) {
-                head.appendChild(script.attr("nomodule", true));
-            } else {
-                head.appendChild(script.attr("type", "module"));
+                if (key.endsWith(".es5")) {
+                    head.appendChild(script.attr("nomodule", true));
+                } else {
+                    head.appendChild(script.attr("type", "module"));
+                }
             }
         }
-    }
 
         private String getClientEngineUrl(BootstrapContext context) {
             // use nocache version of client engine if it
             // has been compiled by SDM or eclipse
-            // In production mode, this should really be loaded by the static block
+            // In production mode, this should really be loaded by the static
+            // block
             // so emit a warning if we get here (tests will always get here)
-            final boolean productionMode = context.getSession().getConfiguration()
-                                               .isProductionMode();
+            final boolean productionMode = context.getSession()
+                    .getConfiguration().isProductionMode();
 
             boolean resolveNow = !productionMode || getClientEngine() == null;
-            if (resolveNow && ClientResourcesUtils.getResource(
-                "/META-INF/resources/" + CLIENT_ENGINE_NOCACHE_FILE) != null) {
+            if (resolveNow
+                    && ClientResourcesUtils.getResource("/META-INF/resources/"
+                            + CLIENT_ENGINE_NOCACHE_FILE) != null) {
                 return context.getUriResolver().resolveVaadinUri(
-                    "context://" + CLIENT_ENGINE_NOCACHE_FILE);
+                        "context://" + CLIENT_ENGINE_NOCACHE_FILE);
             }
 
             if (getClientEngine() == null) {
                 throw new BootstrapException(
-                    "Client engine file name has not been resolved during initialization");
+                        "Client engine file name has not been resolved during initialization");
             }
             return context.getUriResolver()
-                       .resolveVaadinUri("context://" + getClientEngine());
+                    .resolveVaadinUri("context://" + getClientEngine());
         }
 
-        private void inlineEs6Collections(Element head, BootstrapContext context) {
+        private void inlineEs6Collections(Element head,
+                BootstrapContext context) {
             if (!context.getSession().getBrowser().isEs6Supported()) {
-                head.appendChild(createInlineJavaScriptElement(ES6_COLLECTIONS));
+                head.appendChild(
+                        createInlineJavaScriptElement(ES6_COLLECTIONS));
             }
         }
 
         private void setupCss(Element head, BootstrapContext context) {
-            Element styles = head.appendElement("style").attr("type", CSS_TYPE_ATTRIBUTE_VALUE);
+            Element styles = head.appendElement("style").attr("type",
+                    CSS_TYPE_ATTRIBUTE_VALUE);
             // Add any body style that is defined for the application using
             // @BodySize
             String bodySizeContent = BootstrapUtils.getBodySizeContent(context);
@@ -838,18 +923,25 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
         private void setupMetaAndTitle(Element head, BootstrapContext context) {
-            head.appendElement(META_TAG).attr("http-equiv", "Content-Type").attr(CONTENT_ATTRIBUTE, ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8);
+            head.appendElement(META_TAG).attr("http-equiv", "Content-Type")
+                    .attr(CONTENT_ATTRIBUTE,
+                            ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8);
 
-            head.appendElement(META_TAG).attr("http-equiv", "X-UA-Compatible").attr(CONTENT_ATTRIBUTE, "IE=edge");
+            head.appendElement(META_TAG).attr("http-equiv", "X-UA-Compatible")
+                    .attr(CONTENT_ATTRIBUTE, "IE=edge");
 
             head.appendElement("base").attr("href", getServiceUrl(context));
 
-            head.appendElement(META_TAG).attr("name", VIEWPORT)
-                .attr(CONTENT_ATTRIBUTE, BootstrapUtils.getViewportContent(context).orElse(Viewport.DEFAULT));
+            head.appendElement(META_TAG).attr("name", VIEWPORT).attr(
+                    CONTENT_ATTRIBUTE,
+                    BootstrapUtils.getViewportContent(context)
+                            .orElse(Viewport.DEFAULT));
 
             if (!BootstrapUtils.getMetaTargets(context).isEmpty()) {
                 BootstrapUtils.getMetaTargets(context)
-                    .forEach((name, content) -> head.appendElement(META_TAG).attr("name", name).attr(CONTENT_ATTRIBUTE, content));
+                        .forEach((name, content) -> head.appendElement(META_TAG)
+                                .attr("name", name)
+                                .attr(CONTENT_ATTRIBUTE, content));
             }
             resolvePageTitle(context).ifPresent(title -> {
                 if (!title.isEmpty()) {
@@ -876,14 +968,20 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 Element head = document.head();
 
                 // Describe PWA capability for iOS devices
-                head.appendElement(META_TAG).attr("name", "apple-mobile-web-app-capable").attr(CONTENT_ATTRIBUTE, "yes");
+                head.appendElement(META_TAG)
+                        .attr("name", "apple-mobile-web-app-capable")
+                        .attr(CONTENT_ATTRIBUTE, "yes");
 
                 // Theme color
-                head.appendElement(META_TAG).attr("name", "theme-color").attr(CONTENT_ATTRIBUTE, config.getThemeColor());
-                head.appendElement(META_TAG).attr("name", "apple-mobile-web-app-status-bar-style").attr(CONTENT_ATTRIBUTE, config.getThemeColor());
+                head.appendElement(META_TAG).attr("name", "theme-color")
+                        .attr(CONTENT_ATTRIBUTE, config.getThemeColor());
+                head.appendElement(META_TAG)
+                        .attr("name", "apple-mobile-web-app-status-bar-style")
+                        .attr(CONTENT_ATTRIBUTE, config.getThemeColor());
 
                 // Add manifest
-                head.appendElement("link").attr("rel", "manifest").attr("href", config.getManifestPath());
+                head.appendElement("link").attr("rel", "manifest").attr("href",
+                        config.getManifestPath());
 
                 // Add icons
                 for (PwaIcon icon : registry.getHeaderIcons()) {
@@ -891,8 +989,12 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 }
 
                 // Add service worker initialization
-                head.appendElement(SCRIPT_TAG).text("if ('serviceWorker' in navigator) {\n" + "  window.addEventListener('load', function() {\n" + "    navigator.serviceWorker.register('"
-                                                        + config.getServiceWorkerPath() + "');\n" + "  });\n" + "}");
+                head.appendElement(SCRIPT_TAG)
+                        .text("if ('serviceWorker' in navigator) {\n"
+                                + "  window.addEventListener('load', function() {\n"
+                                + "    navigator.serviceWorker.register('"
+                                + config.getServiceWorkerPath() + "');\n"
+                                + "  });\n" + "}");
 
                 // add body injections
                 if (registry.getPwaConfiguration().isInstallPromptEnabled()) {
@@ -902,18 +1004,21 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             }
         }
 
-        private void appendWebComponentsPolyfills(Element head, BootstrapContext context) {
+        private void appendWebComponentsPolyfills(Element head,
+                BootstrapContext context) {
             VaadinSession session = context.getSession();
             DeploymentConfiguration config = session.getConfiguration();
 
             String es5AdapterUrl = "frontend://bower_components/webcomponentsjs/custom-elements-es5-adapter.js";
             VaadinService service = session.getService();
-            if (!service.isResourceAvailable(POLYFILLS_JS, session.getBrowser(), null)) {
+            if (!service.isResourceAvailable(POLYFILLS_JS, session.getBrowser(),
+                    null)) {
                 // No webcomponents polyfill, load nothing
                 return;
             }
 
-            boolean loadEs5Adapter = config.getBooleanProperty(Constants.LOAD_ES5_ADAPTERS, true);
+            boolean loadEs5Adapter = config
+                    .getBooleanProperty(Constants.LOAD_ES5_ADAPTERS, true);
             if (loadEs5Adapter && !session.getBrowser().isEs6Supported()) {
                 // This adapter is required since lots of our current customers
                 // use polymer-cli to transpile sources,
@@ -921,28 +1026,41 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 // https://github.com/Polymer/polymer-cli/blob/master/src/build/build.ts#L64
                 // and
                 // https://github.com/Polymer/polymer-cli/blob/master/src/build/optimize-streams.ts#L119
-                head.appendChild(createInlineJavaScriptElement(BABEL_HELPERS_JS));
+                head.appendChild(
+                        createInlineJavaScriptElement(BABEL_HELPERS_JS));
 
                 if (session.getBrowser().isEs5AdapterNeeded()) {
-                    head.appendChild(createJavaScriptElement(context.getUriResolver().resolveVaadinUri(es5AdapterUrl), false));
+                    head.appendChild(
+                            createJavaScriptElement(context.getUriResolver()
+                                    .resolveVaadinUri(es5AdapterUrl), false));
                 }
             }
 
-            String resolvedUrl = context.getUriResolver().resolveVaadinUri(POLYFILLS_JS);
+            String resolvedUrl = context.getUriResolver()
+                    .resolveVaadinUri(POLYFILLS_JS);
             head.appendChild(createJavaScriptElement(resolvedUrl, false));
 
         }
 
-        private Element createInlineJavaScriptElement(String javaScriptContents) {
+        private Element createInlineJavaScriptElement(
+                String javaScriptContents) {
             // defer makes no sense without src:
             // https://developer.mozilla.org/en/docs/Web/HTML/Element/script
             Element wrapper = createJavaScriptElement(null, false);
-            wrapper.appendChild(new DataNode(javaScriptContents, wrapper.baseUri()));
+            wrapper.appendChild(
+                    new DataNode(javaScriptContents, wrapper.baseUri()));
             return wrapper;
         }
 
-        private Element createJavaScriptElement(String sourceUrl, boolean defer) {
-            Element jsElement = new Element(Tag.valueOf(SCRIPT_TAG), "").attr("type", "text/javascript").attr(DEFER_ATTRIBUTE, defer);
+        private Element createJavaScriptElement(String sourceUrl,
+                boolean defer) {
+            return createJavaScriptElement(sourceUrl, defer, "text/javascript");
+        }
+
+        private Element createJavaScriptElement(String sourceUrl, boolean defer,
+                String type) {
+            Element jsElement = new Element(Tag.valueOf(SCRIPT_TAG), "")
+                    .attr("type", type).attr(DEFER_ATTRIBUTE, defer);
             if (sourceUrl != null) {
                 jsElement = jsElement.attr("src", sourceUrl);
             }
@@ -953,9 +1071,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return createJavaScriptElement(sourceUrl, true);
         }
 
-        private Element createDependencyElement(BootstrapUriResolver resolver, LoadMode loadMode, JsonObject dependency, Dependency.Type type) {
+        private Element createDependencyElement(BootstrapUriResolver resolver,
+                LoadMode loadMode, JsonObject dependency,
+                Dependency.Type type) {
             boolean inlineElement = loadMode == LoadMode.INLINE;
-            String url = dependency.hasKey(Dependency.KEY_URL) ? resolver.resolveVaadinUri(dependency.getString(Dependency.KEY_URL)) : null;
+            String url = dependency.hasKey(Dependency.KEY_URL)
+                    ? resolver.resolveVaadinUri(
+                            dependency.getString(Dependency.KEY_URL))
+                    : null;
 
             final Element dependencyElement;
             switch (type) {
@@ -963,20 +1086,25 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 dependencyElement = createStylesheetElement(url);
                 break;
             case JAVASCRIPT:
-                dependencyElement = createJavaScriptElement(url, !inlineElement);
+                dependencyElement = createJavaScriptElement(url,
+                        !inlineElement);
                 break;
             case JS_MODULE:
-                dependencyElement = null;
+                dependencyElement = createJavaScriptElement(url, !inlineElement,
+                        "module");
                 break;
             case HTML_IMPORT:
                 dependencyElement = createHtmlImportElement(url);
                 break;
             default:
-                throw new IllegalStateException("Unsupported dependency type: " + type);
+                throw new IllegalStateException(
+                        "Unsupported dependency type: " + type);
             }
 
             if (inlineElement && dependencyElement != null) {
-                dependencyElement.appendChild(new DataNode(dependency.getString(Dependency.KEY_CONTENTS), dependencyElement.baseUri()));
+                dependencyElement.appendChild(new DataNode(
+                        dependency.getString(Dependency.KEY_CONTENTS),
+                        dependencyElement.baseUri()));
             }
 
             return dependencyElement;
@@ -985,9 +1113,11 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         private Element createHtmlImportElement(String url) {
             final Element htmlImportElement;
             if (url != null) {
-                htmlImportElement = new Element(Tag.valueOf("link"), "").attr("rel", "import").attr("href", url);
+                htmlImportElement = new Element(Tag.valueOf("link"), "")
+                        .attr("rel", "import").attr("href", url);
             } else {
-                htmlImportElement = new Element(Tag.valueOf("span"), "").attr("hidden", true);
+                htmlImportElement = new Element(Tag.valueOf("span"), "")
+                        .attr("hidden", true);
             }
             return htmlImportElement;
         }
@@ -995,15 +1125,20 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         private Element createStylesheetElement(String url) {
             final Element cssElement;
             if (url != null) {
-                cssElement = new Element(Tag.valueOf("link"), "").attr("rel", "stylesheet").attr("type", CSS_TYPE_ATTRIBUTE_VALUE).attr("href", url);
+                cssElement = new Element(Tag.valueOf("link"), "")
+                        .attr("rel", "stylesheet")
+                        .attr("type", CSS_TYPE_ATTRIBUTE_VALUE)
+                        .attr("href", url);
             } else {
-                cssElement = new Element(Tag.valueOf("style"), "").attr("type", CSS_TYPE_ATTRIBUTE_VALUE);
+                cssElement = new Element(Tag.valueOf("style"), "").attr("type",
+                        CSS_TYPE_ATTRIBUTE_VALUE);
             }
             return cssElement;
         }
 
         private void setupDocumentBody(Document document) {
-            document.body().appendElement("noscript").append("You have to enable javascript in your browser to use this web site.");
+            document.body().appendElement("noscript").append(
+                    "You have to enable javascript in your browser to use this web site.");
         }
 
         private Element getPushScript(BootstrapContext context) {
@@ -1013,9 +1148,11 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             String versionQueryParam = "?v=" + Version.getFullVersion();
 
             // Load client-side dependencies for push support
-            String pushJSPath = context.getRequest().getService().getContextRootRelativePath(request);
+            String pushJSPath = context.getRequest().getService()
+                    .getContextRootRelativePath(request);
 
-            if (request.getService().getDeploymentConfiguration().isProductionMode()) {
+            if (request.getService().getDeploymentConfiguration()
+                    .isProductionMode()) {
                 pushJSPath += ApplicationConstants.VAADIN_PUSH_JS;
             } else {
                 pushJSPath += ApplicationConstants.VAADIN_PUSH_DEBUG_JS;
@@ -1026,23 +1163,28 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return createJavaScriptElement(pushJSPath);
         }
 
-        private Element getBootstrapScript(JsonValue initialUIDL, BootstrapContext context) {
-            return createInlineJavaScriptElement("//<![CDATA[\n" + getBootstrapJS(initialUIDL, context) + "//]]>");
+        private Element getBootstrapScript(JsonValue initialUIDL,
+                BootstrapContext context) {
+            return createInlineJavaScriptElement("//<![CDATA[\n"
+                    + getBootstrapJS(initialUIDL, context) + "//]]>");
         }
 
         private String getBootstrapJS() {
             if (BOOTSTRAP_JS.isEmpty()) {
                 throw new BootstrapException(
-                    "BootstrapHandler.js has not been loaded during initialization");
+                        "BootstrapHandler.js has not been loaded during initialization");
             }
             return BOOTSTRAP_JS;
         }
 
-        private String getBootstrapJS(JsonValue initialUIDL, BootstrapContext context) {
-            boolean productionMode = context.getSession().getConfiguration().isProductionMode();
+        private String getBootstrapJS(JsonValue initialUIDL,
+                BootstrapContext context) {
+            boolean productionMode = context.getSession().getConfiguration()
+                    .isProductionMode();
             String result = getBootstrapJS();
             JsonObject appConfig = context.getApplicationParameters();
-            appConfig.put(ApplicationConstants.UI_TAG, context.getUI().getElement().getTag());
+            appConfig.put(ApplicationConstants.UI_TAG,
+                    context.getUI().getElement().getTag());
 
             int indent = 0;
             if (!productionMode) {
@@ -1055,8 +1197,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             /*
              * The < symbol is escaped to prevent two problems:
              *
-             * 1 - The browser interprets </script> as end of script no matter if it
-             * is inside a string
+             * 1 - The browser interprets </script> as end of script no matter
+             * if it is inside a string
              *
              * 2 - Scripts can be injected with <!-- <script>, that can cause
              * unexpected behavior or complete crash of the app
@@ -1065,7 +1207,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
             if (!productionMode) {
                 // only used in debug mode by profiler
-                result = result.replace("{{GWT_STAT_EVENTS}}", GWT_STAT_EVENTS_JS);
+                result = result.replace("{{GWT_STAT_EVENTS}}",
+                        GWT_STAT_EVENTS_JS);
             } else {
                 result = result.replace("{{GWT_STAT_EVENTS}}", "");
             }
@@ -1082,45 +1225,49 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static final class ApplicationParameterBuilder {
         private final Function<VaadinRequest, String> contextCallback;
 
-        private ApplicationParameterBuilder(Function<VaadinRequest, String> contextCallback) {
+        private ApplicationParameterBuilder(
+                Function<VaadinRequest, String> contextCallback) {
             this.contextCallback = contextCallback;
         }
 
         /**
-         * Creates application parameters for the provided {@link BootstrapContext}.
-         * @param context Non-null context to provide application parameters for.
+         * Creates application parameters for the provided
+         * {@link BootstrapContext}.
+         * 
+         * @param context
+         *            Non-null context to provide application parameters for.
          * @return A non-null {@link JsonObject} with application parameters.
          */
         public JsonObject getApplicationParameters(BootstrapContext context) {
-            JsonObject appConfig = getApplicationParameters(context.getRequest(),
-                context.getSession());
+            JsonObject appConfig = getApplicationParameters(
+                    context.getRequest(), context.getSession());
 
             appConfig.put(ApplicationConstants.UI_ID_PARAMETER,
-                context.getUI().getUIId());
+                    context.getUI().getUIId());
             return appConfig;
         }
 
         private JsonObject getApplicationParameters(VaadinRequest request,
-            VaadinSession session) {
+                VaadinSession session) {
             DeploymentConfiguration deploymentConfiguration = session
-                                                                  .getConfiguration();
+                    .getConfiguration();
             final boolean productionMode = deploymentConfiguration
-                                               .isProductionMode();
+                    .isProductionMode();
 
             JsonObject appConfig = Json.createObject();
 
             appConfig.put(ApplicationConstants.FRONTEND_URL_ES6,
-                deploymentConfiguration.getEs6FrontendPrefix());
+                    deploymentConfiguration.getEs6FrontendPrefix());
             appConfig.put(ApplicationConstants.FRONTEND_URL_ES5,
-                deploymentConfiguration.getEs5FrontendPrefix());
+                    deploymentConfiguration.getEs5FrontendPrefix());
             appConfig.put(ApplicationConstants.UI_ELEMENT_ID,
-                deploymentConfiguration.getRootElementId());
+                    deploymentConfiguration.getRootElementId());
 
             if (!productionMode) {
                 JsonObject versionInfo = Json.createObject();
                 versionInfo.put("vaadinVersion", Version.getFullVersion());
                 String atmosphereVersion = AtmospherePushConnection
-                                               .getAtmosphereVersion();
+                        .getAtmosphereVersion();
                 if (atmosphereVersion != null) {
                     versionInfo.put("atmosphereVersion", atmosphereVersion);
                 }
@@ -1131,15 +1278,15 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             Locale locale = ServletHelper.findLocale(session, request);
             // Get system messages
             SystemMessages systemMessages = session.getService()
-                                                .getSystemMessages(locale, request);
+                    .getSystemMessages(locale, request);
             if (systemMessages != null) {
                 JsonObject sessExpMsg = Json.createObject();
                 putValueOrNull(sessExpMsg, CAPTION,
-                    systemMessages.getSessionExpiredCaption());
+                        systemMessages.getSessionExpiredCaption());
                 putValueOrNull(sessExpMsg, MESSAGE,
-                    systemMessages.getSessionExpiredMessage());
+                        systemMessages.getSessionExpiredMessage());
                 putValueOrNull(sessExpMsg, URL,
-                    systemMessages.getSessionExpiredURL());
+                        systemMessages.getSessionExpiredURL());
 
                 appConfig.put("sessExpMsg", sessExpMsg);
             }
@@ -1156,10 +1303,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             }
 
             appConfig.put("heartbeatInterval",
-                deploymentConfiguration.getHeartbeatInterval());
+                    deploymentConfiguration.getHeartbeatInterval());
 
             boolean sendUrlsAsParameters = deploymentConfiguration
-                                               .isSendUrlsAsParameters();
+                    .isSendUrlsAsParameters();
             if (!sendUrlsAsParameters) {
                 appConfig.put("sendUrlsAsParameters", false);
             }
@@ -1168,7 +1315,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
         private void putValueOrNull(JsonObject object, String key,
-            String value) {
+                String value) {
             assert object != null;
             assert key != null;
             if (value == null) {
@@ -1179,8 +1326,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
     }
-
-
 
     /**
      * Gets the service URL as a URL relative to the request URI.
@@ -1227,15 +1372,16 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             VaadinRequest request, VaadinResponse response,
             VaadinSession session) {
         UI ui = ReflectTools.createInstance(uiClass);
-        ui.getInternals().setContextRoot(request.getService().getContextRootRelativePath(request));
+        ui.getInternals().setContextRoot(
+                request.getService().getContextRootRelativePath(request));
 
         PushConfiguration pushConfiguration = ui.getPushConfiguration();
 
         ui.getInternals().setSession(session);
         ui.setLocale(session.getLocale());
 
-        BootstrapContext context = createBootstrapContext(request, response,
-                ui, request.getService()::getContextRootRelativePath);
+        BootstrapContext context = createBootstrapContext(request, response, ui,
+                request.getService()::getContextRootRelativePath);
 
         Optional<Push> push = context
                 .getPageConfigurationAnnotation(Push.class);
@@ -1278,7 +1424,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      * @return a new bootstrap context instance
      */
     protected BootstrapContext createBootstrapContext(VaadinRequest request,
-            VaadinResponse response, UI ui, Function<VaadinRequest, String> contextPathCallback) {
+            VaadinResponse response, UI ui,
+            Function<VaadinRequest, String> contextPathCallback) {
         return new BootstrapContext(request, response,
                 ui.getInternals().getSession(), ui, contextPathCallback);
     }
@@ -1353,19 +1500,20 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         private static String readClientEngine() {
             // read client engine file name
-            try (InputStream prop = ClientResourcesUtils.getResource(
-                "/META-INF/resources/" + ApplicationConstants.CLIENT_ENGINE_PATH
-                    + "/compile.properties")) {
+            try (InputStream prop = ClientResourcesUtils
+                    .getResource("/META-INF/resources/"
+                            + ApplicationConstants.CLIENT_ENGINE_PATH
+                            + "/compile.properties")) {
                 // null when running SDM or tests
                 if (prop != null) {
                     Properties properties = new Properties();
                     properties.load(prop);
                     return ApplicationConstants.CLIENT_ENGINE_PATH + "/"
-                               + properties.getProperty("jsFile");
+                            + properties.getProperty("jsFile");
                 } else {
                     getLogger().warn(
-                        "No compile.properties available on initialization, "
-                            + "could not read client engine file name.");
+                            "No compile.properties available on initialization, "
+                                    + "could not read client engine file name.");
                 }
             } catch (IOException e) {
                 throw new ExceptionInInitializerError(e);
