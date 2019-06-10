@@ -1285,7 +1285,6 @@ public class BootstrapHandlerTest {
     @Test
     public void useDependencyFilters_removeDependenciesAndAddNewOnes()
             throws ServiceException {
-        deploymentConfiguration.setBowerMode(true);
         List<DependencyFilter> filters = (List<DependencyFilter>) service
                 .getDependencyFilters();
         filters.add((list, context) -> {
@@ -1352,6 +1351,7 @@ public class BootstrapHandlerTest {
                 found);
     }
 
+    // This test is not applicable for npm mode
     @Test
     public void frontendProtocol_productionMode_es5Url() {
         mocks.setProductionMode(true);
@@ -1372,6 +1372,7 @@ public class BootstrapHandlerTest {
                 + "foo", urlES5);
     }
 
+    // This test is not applicable for npm mode
     @Test
     public void frontendProtocol_productionMode_useDifferentUrlsForEs5AndEs6() {
         deploymentConfiguration.setBowerMode(true);
@@ -1394,7 +1395,6 @@ public class BootstrapHandlerTest {
 
     @Test
     public void frontendProtocol_notInProductionMode_useDefaultFrontend() {
-        deploymentConfiguration.setBowerMode(true);
         initUI(testUI);
         mocks.setProductionMode(false);
         WebBrowser mockedWebBrowser = Mockito.mock(WebBrowser.class);
@@ -1418,6 +1418,7 @@ public class BootstrapHandlerTest {
         assertEquals(resolvedContext + "frontend/foo", urlES5);
     }
 
+    // This test is not applicable for npm mode
     @Test
     public void frontendProtocol_productionModeAndWithProperties_useProperties_es5() {
         deploymentConfiguration.setBowerMode(true);
@@ -1439,6 +1440,7 @@ public class BootstrapHandlerTest {
                 Constants.FRONTEND_URL_ES5), urlES5, is(es5Prefix + urlPart));
     }
 
+    // This test is not applicable for npm mode
     @Test
     public void frontendProtocol_productionModeAndWithProperties_useProperties_es6() {
         deploymentConfiguration.setBowerMode(true);
@@ -1462,7 +1464,6 @@ public class BootstrapHandlerTest {
 
     @Test
     public void frontendProtocol_notInProductionModeAndWithProperties_useProperties() {
-        deploymentConfiguration.setBowerMode(true);
         initUI(testUI);
         mocks.setProductionMode(false);
         WebBrowser mockedWebBrowser = Mockito.mock(WebBrowser.class);

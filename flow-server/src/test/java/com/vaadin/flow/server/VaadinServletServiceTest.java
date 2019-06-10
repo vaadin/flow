@@ -38,7 +38,6 @@ public class VaadinServletServiceTest {
     public void setup() throws Exception {
         mocks = new MockServletServiceSessionSetup();
         service = mocks.getService();
-        mocks.getDeploymentConfiguration().setBowerMode(true);
     }
 
     @After
@@ -70,6 +69,7 @@ public class VaadinServletServiceTest {
 
     @Test
     public void resolveResource_production() {
+        mocks.getDeploymentConfiguration().setBowerMode(true);
         mocks.setProductionMode(true);
 
         Assert.assertEquals("",
@@ -88,6 +88,30 @@ public class VaadinServletServiceTest {
         Assert.assertEquals("foo",
                 service.resolveResource("foo", mocks.getBrowser()));
         Assert.assertEquals("/frontend-es5/foo",
+                service.resolveResource("frontend://foo", mocks.getBrowser()));
+        Assert.assertEquals("/foo",
+                service.resolveResource("context://foo", mocks.getBrowser()));
+    }
+    @Test
+    public void resolveResourceNPM_production() {
+        mocks.setProductionMode(true);
+
+        Assert.assertEquals("",
+                service.resolveResource("", mocks.getBrowser()));
+        Assert.assertEquals("foo",
+                service.resolveResource("foo", mocks.getBrowser()));
+        Assert.assertEquals("/frontend/foo",
+                service.resolveResource("frontend://foo", mocks.getBrowser()));
+        Assert.assertEquals("/foo",
+                service.resolveResource("context://foo", mocks.getBrowser()));
+
+        mocks.setBrowserEs6(false);
+
+        Assert.assertEquals("",
+                service.resolveResource("", mocks.getBrowser()));
+        Assert.assertEquals("foo",
+                service.resolveResource("foo", mocks.getBrowser()));
+        Assert.assertEquals("/frontend/foo",
                 service.resolveResource("frontend://foo", mocks.getBrowser()));
         Assert.assertEquals("/foo",
                 service.resolveResource("context://foo", mocks.getBrowser()));
@@ -137,8 +161,11 @@ public class VaadinServletServiceTest {
                 browser, null);
     }
 
+    // Theme resource is not handled from servlet in NPM
     @Test
     public void getResourceNoTheme_production() throws IOException {
+        mocks.getDeploymentConfiguration().setBowerMode(true);
+
         mocks.getServlet().addServletContextResource("/frontend-es6/foo.txt");
         mocks.getServlet().addServletContextResource("/frontend-es5/foo.txt");
 
@@ -215,8 +242,11 @@ public class VaadinServletServiceTest {
                 browser, theme);
     }
 
+    // NPM theme is not handled in servlet service.
     @Test
     public void getResourceTheme_production() throws IOException {
+        mocks.getDeploymentConfiguration().setBowerMode(true);
+
         mocks.setProductionMode(true);
         WebBrowser browser = mocks.getBrowser();
         TestTheme theme = new TestTheme();
