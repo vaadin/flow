@@ -23,11 +23,13 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -121,8 +123,15 @@ public class FrontendUtils {
     public static final String PARAM_FRONTEND_DIR = "vaadin.frontend.frontend.folder";
 
     /**
-     * A special prefix used by webpack to map imports placed in the {@link FrontendUtils#DEFAULT_FRONTEND_DIR}.
-     * e.g. <code>import 'Frontend/foo.js';</code> references the file<code>frontend/foo.js</code>.
+     * Set to {@code true} to ignore node/npm tool version checks.
+     */
+    public static final String PARAM_IGNORE_VERSION_CHECKS = "vaadin.ignoreVersionChecks";
+
+    /**
+     * A special prefix used by webpack to map imports placed in the
+     * {@link FrontendUtils#DEFAULT_FRONTEND_DIR}. e.g.
+     * <code>import 'Frontend/foo.js';</code> references the
+     * file<code>frontend/foo.js</code>.
      */
     public static final String WEBPACK_PREFIX_ALIAS = "Frontend/";
 
@@ -132,17 +141,26 @@ public class FrontendUtils {
     public static final String TOKEN_FILE = "build/flow-build-info.json";
 
     /**
-     * A parameter informing about the location of the {@link FrontendUtils#TOKEN_FILE}.
+     * A parameter informing about the location of the
+     * {@link FrontendUtils#TOKEN_FILE}.
      */
     public static final String PARAM_TOKEN_FILE = "vaadin.frontend.token.file";
 
-    private static final String NOT_FOUND =
-            "%n%n======================================================================================================"
-            + "%nFailed to determine '%s' tool."
-            + "%nPlease install it either:"
+    private static final String NOT_FOUND = "%n%n======================================================================================================"
+            + "%nFailed to determine '%s' tool." + "%nPlease install it either:"
             + "%n  - by following the https://nodejs.org/en/download/ guide to install it globally"
             + "%n  - or by running the frontend-maven-plugin goal to install it in this project:"
             + "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.7.6:install-node-and-npm -DnodeVersion=\"v11.6.0\" "
+            + "%n======================================================================================================%n";
+
+    private static final String TOO_OLD = "%n%n======================================================================================================"
+            + "%nYour installed '%s' version (%s) is too old. Supported versions are %d.%d+" //
+            + "%nPlease install a new one either:"
+            + "%n  - by following the https://nodejs.org/en/download/ guide to install it globally"
+            + "%n  - or by running the frontend-maven-plugin goal to install it in this project:"
+            + "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.7.6:install-node-and-npm -DnodeVersion=\"v11.6.0\" "
+            + "%n" //
+            + "%nYou can disable the version check using -D%s=true" //
             + "%n======================================================================================================%n";
 
     private static FrontendToolsLocator frontendToolsLocator = new FrontendToolsLocator();
@@ -344,6 +362,128 @@ public class FrontendUtils {
             }
         }
         return statsUrl;
+    }
+
+    /**
+     * Validate that the found node and npm versions are new enough. Throws an
+     * exception with a descriptive message if a version is too old.
+     */
+    public static void validateNodeAndNpmVersion() {
+        try {
+            List<String> nodeVersionCommand = new ArrayList<>();
+            nodeVersionCommand.add(FrontendUtils.getNodeExecutable());
+            nodeVersionCommand.add("--version");
+            String[] nodeVersion = getVersion("node", nodeVersionCommand);
+            validateLargerThan("node", nodeVersion,
+                    Constants.REQUIRED_NODE_MAJOR_VERSION,
+                    Constants.REQUIRED_NODE_MINOR_VERSION);
+        } catch (UnknownVersionException e) {
+            getLogger().warn("Error checking if node is new enough", e);
+        }
+
+        try {
+            List<String> npmVersionCommand = new ArrayList<>();
+            npmVersionCommand.addAll(FrontendUtils.getNpmExecutable());
+            npmVersionCommand.add("--version");
+            String[] npmVersion = getVersion("npm", npmVersionCommand);
+            validateLargerThan("npm", npmVersion,
+                    Constants.REQUIRED_NPM_MAJOR_VERSION,
+                    Constants.REQUIRED_NPM_MINOR_VERSION);
+        } catch (UnknownVersionException e) {
+            getLogger().warn("Error checking if npm is new enough", e);
+        }
+
+    }
+
+    static void validateLargerThan(String tool, String[] toolVersion,
+            int requiredMajor, int requiredMinor)
+            throws UnknownVersionException {
+        if ("true".equalsIgnoreCase(
+                System.getProperty(PARAM_IGNORE_VERSION_CHECKS))) {
+            return;
+        }
+
+        if (!isVersionAtLeast(tool, toolVersion, requiredMajor,
+                requiredMinor)) {
+            throw new IllegalStateException(String.format(TOO_OLD, tool,
+                    join(toolVersion, "."), requiredMajor, requiredMinor,
+                    PARAM_IGNORE_VERSION_CHECKS));
+        }
+    }
+
+    static boolean isVersionAtLeast(String tool, String[] toolVersion,
+            int requiredMajor, int requiredMinor)
+            throws UnknownVersionException {
+        try {
+            int major = Integer.parseInt(toolVersion[0]);
+            int minor = Integer.parseInt(toolVersion[1]);
+            return (major > requiredMajor
+                    || (major == requiredMajor && minor >= requiredMinor));
+        } catch (NumberFormatException e) {
+            throw new UnknownVersionException(tool, "Reported version "
+                    + join(toolVersion, ".") + " could not be parsed", e);
+        }
+    }
+
+    private static String join(String[] toolVersion, String separate) {
+        return Stream.of(toolVersion).collect(Collectors.joining(separate));
+    }
+
+    /**
+     * Thrown when detecting the version of a tool fails.
+     */
+    public static class UnknownVersionException extends Exception {
+
+        /**
+         * Constructs an exception telling which tool was being detected and
+         * using what command.
+         *
+         * @param tool
+         *            the tool being detected
+         * @param extraInfo
+         *            extra information which might be helpful to the end user
+         */
+        public UnknownVersionException(String tool, String extraInfo) {
+            super("Unable to detect version of " + tool + "." + extraInfo);
+        }
+
+        /**
+         * Constructs an exception telling which tool was being detected and
+         * using what command, and the exception causing the failure.
+         *
+         * @param tool
+         *            the tool being detected
+         * @param extraInfo
+         *            extra information which might be helpful to the end user
+         * @param cause
+         *            the exception causing the failure
+         */
+        public UnknownVersionException(String tool, String extraInfo,
+                Exception cause) {
+            super("Unable to detect version of " + tool + "." + extraInfo,
+                    cause);
+
+        }
+    }
+
+    private static String[] getVersion(String tool, List<String> versionCommand)
+            throws UnknownVersionException {
+        String[] command = versionCommand
+                .toArray(new String[versionCommand.size()]);
+        try {
+            Process process = new ProcessBuilder(command).start();
+            int exitCode = process.waitFor();
+            if (exitCode != 0) {
+                throw new UnknownVersionException(tool,
+                        "Using command " + join(command, " "));
+            }
+            String output = streamToString(process.getInputStream());
+            return output.replaceFirst("^v", "").replaceAll("\n", "")
+                    .split("\\.", 3);
+        } catch (InterruptedException | IOException e) {
+            throw new UnknownVersionException(tool,
+                    "Using command " + join(command, " "), e);
+        }
     }
 
     private static Logger getLogger() {
