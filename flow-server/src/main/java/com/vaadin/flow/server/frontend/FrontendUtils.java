@@ -339,7 +339,7 @@ public class FrontendUtils {
 
     private static URL getStatsFromWebpack(VaadinService service, String stats,
             URL statsUrl) throws MalformedURLException {
-        DevModePort port = service.getContext().getAttribute(DevModePort.class);
+        WebpackDevServerPort port = service.getContext().getAttribute(WebpackDevServerPort.class);
         if (port != null) {
             statsUrl = new URL(
                     "http://localhost:" + port + "/" + stats);

@@ -136,11 +136,11 @@ public class DevModeInitializer
     public static void initDevModeHandler(Set<Class<?>> classes,
             ServletContext context, DeploymentConfiguration config) {
         if (config.isProductionMode()) {
-            log().debug("Skiping DEV MODE because PRODUCTION MODE is set.");
+            log().debug("Skipping DEV MODE because PRODUCTION MODE is set.");
             return;
         }
         if (config.isBowerMode()) {
-            log().debug("Skiping DEV MODE because BOWER MODE is set.");
+            log().debug("Skipping DEV MODE because BOWER MODE is set.");
             return;
         }
 
@@ -155,7 +155,7 @@ public class DevModeInitializer
                 new File(builder.npmFolder, WEBPACK_CONFIG),
                 builder.generatedFolder)) {
             if (!file.canRead()) {
-                log().warn("Skiping DEV MODE because cannot read '{}' file.",
+                log().warn("Skipping DEV MODE because cannot read '{}' file.",
                         file.getPath());
                 return;
             }
@@ -170,7 +170,7 @@ public class DevModeInitializer
 
         vaadinContext.setAttribute(new VisitedClasses(visitedClassNames));
 
-        DevModeHandler handler = DevModeHandler.start(vaadinContext, config,
+        DevModeHandler.start(vaadinContext, config,
                 builder.npmFolder);
     }
 
