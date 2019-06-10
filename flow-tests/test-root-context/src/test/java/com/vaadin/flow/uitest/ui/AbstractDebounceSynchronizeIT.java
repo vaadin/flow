@@ -25,12 +25,8 @@ public abstract class AbstractDebounceSynchronizeIT extends ChromeBrowserTest {
 
         // T + 1500, second update registered
         assertMessages("a", "ab");
-        Long before = getTime();
         input.sendKeys("c");
-        Long after = getTime();
-        if (after - before < 1000) {
-            assertMessages("a", "ab");
-        }
+        assertMessages("a", "ab");
 
         Thread.sleep(700);
 
@@ -68,7 +64,4 @@ public abstract class AbstractDebounceSynchronizeIT extends ChromeBrowserTest {
         assertMessages("a", "ab");
     }
 
-    private Long getTime() {
-        return (Long) executeScript("return new Date().getTime();");
-    }
 }
