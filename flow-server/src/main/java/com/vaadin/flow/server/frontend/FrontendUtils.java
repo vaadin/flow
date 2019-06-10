@@ -20,14 +20,17 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UncheckedIOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -344,6 +347,83 @@ public class FrontendUtils {
             }
         }
         return statsUrl;
+    }
+
+    public static void validateNodeAndNpmVersion() {
+        List<String> nodeVersionCommand = new ArrayList<>();
+        nodeVersionCommand.add(FrontendUtils.getNodeExecutable());
+        nodeVersionCommand.add("--version");
+        String[] nodeVersion = getVersion("node", nodeVersionCommand);
+        validateLargerThan("node", nodeVersion,
+                Constants.REQUIRED_NODE_MAJOR_VERSION,
+                Constants.REQUIRED_NODE_MINOR_VERSION);
+
+        List<String> npmVersionCommand = new ArrayList<>();
+        npmVersionCommand.addAll(FrontendUtils.getNpmExecutable());
+        npmVersionCommand.add("--version");
+        String[] npmVersion = getVersion("npm", npmVersionCommand);
+        validateLargerThan("npm", npmVersion,
+                Constants.REQUIRED_NPM_MAJOR_VERSION,
+                Constants.REQUIRED_NPM_MINOR_VERSION);
+
+    }
+
+    private static void validateLargerThan(String tool, String[] toolVersion,
+            int requiredMajor, int requiredMinor) {
+        if (!isVersionAtLeast(tool, toolVersion, requiredMajor,
+                requiredMinor)) {
+            String message = String.format(
+                    "You have %s version %s installed and at least %d.%d is required. Please upgrade before continuing.\nSee https://nodejs.org",
+                    tool, join(toolVersion, "."), requiredMajor, requiredMinor);
+            throw new RuntimeException(message);
+        }
+    }
+
+    static boolean isVersionAtLeast(String tool, String[] toolVersion,
+            int requiredMajor, int requiredMinor) {
+        try {
+            int major = Integer.parseInt(toolVersion[0]);
+            int minor = Integer.parseInt(toolVersion[1]);
+            return (major >= requiredMajor
+                    || (major == requiredMajor && minor >= requiredMinor));
+        } catch (Exception e) {
+            String message = "Unable to validate the version of " + tool
+                    + ".\n";
+            message += String.format("Supported versions are %d.%d+\n",
+                    requiredMajor, requiredMinor);
+            message += String.format("The detected version was %s",
+                    join(toolVersion, "."));
+            getLogger().warn(message, e);
+            // Do not block usage if version detection code is faulty
+            return true;
+        }
+    }
+
+    private static String join(String[] toolVersion, String separate) {
+        return Stream.of(toolVersion).collect(Collectors.joining(separate));
+    }
+
+    private static String[] getVersion(String tool,
+            List<String> versionCommand) {
+        int exitCode = -123;
+        try {
+            Process process = new ProcessBuilder(
+                    versionCommand.toArray(new String[versionCommand.size()]))
+                            .start();
+            exitCode = process.waitFor();
+            if (exitCode != 0) {
+                throw new UncheckedIOException(
+                        new IOException("Unable to detect " + tool
+                                + " version using " + versionCommand
+                                + "Exit code was " + exitCode));
+            }
+            String output = streamToString(process.getInputStream());
+            return output.replaceFirst("^v", "").replaceAll("\n", "")
+                    .split("\\.", 3);
+        } catch (InterruptedException | IOException e) {
+            throw new UncheckedIOException(new IOException(
+                    "Unable to detect version using " + versionCommand));
+        }
     }
 
     private static Logger getLogger() {
