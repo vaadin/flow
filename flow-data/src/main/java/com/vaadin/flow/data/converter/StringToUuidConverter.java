@@ -18,29 +18,20 @@ package com.vaadin.flow.data.converter;
 
 import java.util.UUID;
 
-<<<<<<< HEAD
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-=======
->>>>>>> Create a String-to-UUID Converter (#4400)
 import com.vaadin.flow.data.binder.ErrorMessageProvider;
 import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;
 
 /**
-<<<<<<< HEAD
  * A converter that converts from {@link String} to {@link UUID} and back.
-=======
- * A converter that converts from {@link String} to {@link UUID} and back. <br/>
->>>>>>> Create a String-to-UUID Converter (#4400)
  * Empty strings are converted to <code>null</code>.
  *
  * @author Vaadin Ltd
  * @since 2.0
  */
 public class StringToUuidConverter implements Converter<String, UUID> {
-<<<<<<< HEAD
     
     private ErrorMessageProvider errorMessageProvider;
 
@@ -98,60 +89,5 @@ public class StringToUuidConverter implements Converter<String, UUID> {
 
         return uuid.toString();
     }
-=======
-
-	private ErrorMessageProvider errorMessageProvider;
-
-	/**
-	 * Creates converter to convert from String to UUID and back
-	 *
-	 * @param errorMessage 
-	 *            the error message to use if conversion fails
-	 */
-	public StringToUuidConverter(String errorMessage) {
-		this(context -> errorMessage);
-	}
-
-	/**
-	 * Creates a new converter instance with the given error message provider. 
-	 *
-	 * @param errorMessageProvider 
-	 *            the error message provider to use if conversion
-	 *                             fails
-	 */
-	public StringToUuidConverter(ErrorMessageProvider errorMessageProvider) {
-		this.errorMessageProvider = errorMessageProvider;
-	}
-
-	@Override
-	public Result<UUID> convertToModel(String value, ValueContext context) {
-
-		if (isNullOrEmptyString(value)) {
-			return Result.ok(null);
-		}
-		
-		try {
-			value = value.trim();
-			final UUID uuid = UUID.fromString(value);
-			return Result.ok(uuid);
-		} catch (IllegalArgumentException e) {
-			return Result.error(this.errorMessageProvider.apply(context));
-		}
-	}
-	
-	private boolean isNullOrEmptyString(String value) {
-		return value == null || value.isEmpty();
-	}
-
-	@Override
-	public String convertToPresentation(UUID uuid, ValueContext context) {
-
-		if (uuid == null) {
-			return null;
-		}
-
-		return uuid.toString();
-	}
->>>>>>> Create a String-to-UUID Converter (#4400)
 
 }
