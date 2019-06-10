@@ -16,24 +16,28 @@
 
 package com.vaadin.flow.server;
 
-import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.server.communication.FaviconHandler;
-import com.vaadin.flow.server.communication.PushRequestHandler;
-import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
-import com.vaadin.flow.shared.ApplicationConstants;
-import com.vaadin.flow.theme.AbstractTheme;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import javax.servlet.GenericServlet;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.communication.FaviconHandler;
+import com.vaadin.flow.server.communication.PushRequestHandler;
+import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
+import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.flow.theme.AbstractTheme;
+
+import static com.vaadin.flow.server.Constants.META_INF;
 
 /**
  * A service implementation connected to a {@link VaadinServlet}.
@@ -158,8 +162,7 @@ public class VaadinServletService extends VaadinService {
         appId = appId.replaceAll("[^a-zA-Z0-9]", "");
         // Add hashCode to the end, so that it is still (sort of)
         // predictable, but indicates that it should not be used in CSS
-        // and
-        // such:
+        // and such:
         int hashCode = appId.hashCode();
         if (hashCode < 0) {
             hashCode = -hashCode;
@@ -207,7 +210,6 @@ public class VaadinServletService extends VaadinService {
         } catch (MalformedURLException e) {
             getLogger().warn("Error finding resource for '{}'", path, e);
         }
-
         return null;
     }
 
@@ -301,7 +303,7 @@ public class VaadinServletService extends VaadinService {
      * @return a URL for the resource or <code>null</code> if no resource was
      *         found
      */
-    private URL getResourceInServletContextOrWebJar(String path) {
+    public URL getResourceInServletContextOrWebJar(String path) {
         ServletContext servletContext = getServlet().getServletContext();
         try {
             URL url = servletContext.getResource(path);

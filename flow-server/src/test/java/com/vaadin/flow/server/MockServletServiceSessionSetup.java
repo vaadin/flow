@@ -220,6 +220,8 @@ public class MockServletServiceSessionSetup {
         servlet = new TestVaadinServlet();
 
         deploymentConfiguration.setXsrfProtectionEnabled(false);
+        Mockito.doAnswer(invocation -> servletContext.getClass().getClassLoader())
+                .when(servletContext).getClassLoader();
         Mockito.when(servletConfig.getServletContext())
                 .thenReturn(servletContext);
 

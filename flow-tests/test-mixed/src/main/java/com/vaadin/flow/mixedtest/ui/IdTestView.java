@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.mixedtest.ui;
 
+import javax.servlet.annotation.WebServlet;
+
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
@@ -23,13 +25,18 @@ import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
-@Route(value = "")
+@Route(value = "route-path")
 @Tag("my-component")
 @JsModule("./my-component.js")
 @HtmlImport("my-component.html")
 public class IdTestView extends PolymerTemplate<TemplateModel> {
+
+    @WebServlet("/servlet-path/*")
+    public static class MyServlet extends VaadinServlet {
+    }
 
     @Id
     NativeButton button;

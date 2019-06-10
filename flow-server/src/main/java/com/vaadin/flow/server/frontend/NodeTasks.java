@@ -255,6 +255,13 @@ public class NodeTasks implements Command {
         if (builder.enablePackagesUpdate || builder.enableImportsUpdate) {
             classFinder = new ClassFinder.CachedClassFinder(
                     builder.classFinder);
+
+            if (builder.generateEmbeddableWebComponents) {
+                FrontendWebComponentGenerator generator =
+                        new FrontendWebComponentGenerator(classFinder);
+                generator.generateWebComponents(builder.generatedFolder);
+            }
+
             frontendDependencies = new FrontendDependencies(classFinder,
                     builder.generateEmbeddableWebComponents);
         }
@@ -284,10 +291,9 @@ public class NodeTasks implements Command {
         }
 
         if (builder.enableImportsUpdate) {
-            commands.add(
-                    new TaskUpdateImports(classFinder, frontendDependencies,
-                            builder.npmFolder, builder.generatedFolder,
-                            builder.frontendDirectory));
+            commands.add(new TaskUpdateImports(classFinder,
+                    frontendDependencies, builder.npmFolder,
+                    builder.generatedFolder, builder.frontendDirectory));
 
             if (builder.visitedClasses != null) {
                 builder.visitedClasses

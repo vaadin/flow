@@ -294,6 +294,7 @@ public class DevModeHandlerTest {
         VaadinServlet servlet = new VaadinServlet();
         ServletConfig cfg = mock(ServletConfig.class);
         ServletContext ctx = mock(ServletContext.class);
+        Mockito.doAnswer(invocation -> ctx.getClass().getClassLoader()).when(ctx).getClassLoader();
         Mockito.doAnswer(invocation -> ctx).when(cfg).getServletContext();
         Mockito.doAnswer(
                 invocation -> Collections.enumeration(Collections.emptyList()))

@@ -17,19 +17,15 @@ package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
-
 import java.io.File;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +34,6 @@ import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.VaadinServlet;
@@ -110,47 +105,11 @@ public class DevModeInitializer
         }
     }
 
-    private static class StopDevMode
-            implements ServletContextListener, Serializable {
-
-        private final SerializableRunnable stopCallback;
-
-        private static final AtomicInteger SERVLET_CONTEXTS = new AtomicInteger();
-
-        private StopDevMode(SerializableRunnable stopCallback) {
-            this.stopCallback = stopCallback;
-        }
-
-        @Override
-        public void contextInitialized(ServletContextEvent sce) {
-            SERVLET_CONTEXTS.incrementAndGet();
-        }
-
-        @Override
-        public void contextDestroyed(ServletContextEvent sce) {
-            if (SERVLET_CONTEXTS.decrementAndGet() == 0) {
-                stopCallback.run();
-            }
-        }
-
-    }
-
     @Override
     public void onStartup(Set<Class<?>> classes, ServletContext context)
             throws ServletException {
         Collection<? extends ServletRegistration> registrations = context
                 .getServletRegistrations().values();
-
-        // Clear properties set by flow-maven-plugin:prepare-frontend.
-        // This fixes the problem when multiple sequential processes over the
-        // same JVM sets and/or reads the same properties. Thus a property set
-        // by a previous process won't be intercepted by the next process.
-        // In particular, it fixes the bower test modules which were failing if
-        // executed after the npm test modules.
-        context.addListener(new StopDevMode(() -> {
-            System.clearProperty(PARAM_TOKEN_FILE);
-            System.clearProperty(PROJECT_BASEDIR);
-        }));
 
         if (registrations.isEmpty()) {
             return;
@@ -188,12 +147,14 @@ public class DevModeInitializer
         Builder builder = new NodeTasks.Builder(
                 new DefaultClassFinder(classes));
 
+
         log().info("Starting dev-mode updaters in {} folder.",
                 builder.npmFolder);
         for (File file : Arrays.asList(
                 new File(builder.npmFolder, PACKAGE_JSON),
                 new File(builder.generatedFolder, PACKAGE_JSON),
-                new File(builder.npmFolder, WEBPACK_CONFIG))) {
+                new File(builder.npmFolder, WEBPACK_CONFIG),
+                builder.generatedFolder)) {
             if (!file.canRead()) {
                 log().warn("Skiping DEV MODE because cannot read '{}' file.",
                         file.getPath());
@@ -209,9 +170,7 @@ public class DevModeInitializer
         context.setAttribute(VisitedClasses.class.getName(),
                 new VisitedClasses(visitedClassNames));
 
-        DevModeHandler handler = DevModeHandler.start(config,
-                builder.npmFolder);
-        context.addListener(new StopDevMode(handler::stop));
+        DevModeHandler.start(config, builder.npmFolder);
     }
 
     private static Logger log() {

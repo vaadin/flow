@@ -28,7 +28,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 public class IdTestIT extends ChromeBrowserTest {
     @Override
     protected String getTestPath() {
-        return "/";
+        return "/context-path/servlet-path/route-path";
     }
 
     @Test
