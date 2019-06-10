@@ -41,7 +41,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.server.frontend.DevModePort;
+import com.vaadin.flow.server.frontend.WebpackDevServerPort;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
@@ -132,7 +132,7 @@ public class DevModeHandlerTest {
                 SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT, "100");
         createStubWebpackServer("Foo", 300);
         assertNotNull(DevModeHandler.start(vaadinContext, configuration, npmFolder));
-        DevModePort port = vaadinContext.getAttribute(DevModePort.class);
+        WebpackDevServerPort port = vaadinContext.getAttribute(WebpackDevServerPort.class);
         assertNotNull(port);
         assertTrue(port.getPort() > 0);
         Thread.sleep(350); // NOSONAR
@@ -339,7 +339,7 @@ public class DevModeHandlerTest {
             exchange.close();
         });
         httpServer.start();
-        vaadinContext.setAttribute(new DevModePort(port));
+        vaadinContext.setAttribute(new WebpackDevServerPort(port));
         return port;
     }
 }

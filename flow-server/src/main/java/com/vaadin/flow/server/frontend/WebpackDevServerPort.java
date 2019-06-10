@@ -22,7 +22,7 @@ import java.io.Serializable;
  * Webpack development server port wrapper. The port is stored into
  * {@link com.vaadin.flow.server.VaadinContext} using the class as identifier.
  */
-public class DevModePort implements Serializable {
+public class WebpackDevServerPort implements Serializable {
 
     private final int port;
 
@@ -32,7 +32,7 @@ public class DevModePort implements Serializable {
      * @param port
      *            the value of the port.
      */
-    public DevModePort(int port) {
+    public WebpackDevServerPort(int port) {
         this.port = port;
     }
 
@@ -57,9 +57,9 @@ public class DevModePort implements Serializable {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof DevModePort) {
-            DevModePort devModePort = (DevModePort) obj;
-            return devModePort.port == this.port;
+        if (obj instanceof WebpackDevServerPort) {
+            WebpackDevServerPort webpackDevServerPort = (WebpackDevServerPort) obj;
+            return webpackDevServerPort.port == this.port;
         }
 
         return false;
