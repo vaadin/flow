@@ -40,7 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.server.frontend.DevModePort;
+import com.vaadin.flow.server.frontend.WebpackDevServerPort;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN;
@@ -159,7 +159,7 @@ public class DevModeHandler implements Serializable {
                     .redirectErrorStream(true).start();
             stopCallback = () -> {
                 webpackProcess.destroy();
-                context.removeAttribute(DevModePort.class);
+                context.removeAttribute(WebpackDevServerPort.class);
                 atomicHandler.set(null);
             };
             Runtime.getRuntime()
@@ -190,7 +190,7 @@ public class DevModeHandler implements Serializable {
 
         stopProcess = stopCallback;
 
-        context.setAttribute(new DevModePort(port));
+        context.setAttribute(new WebpackDevServerPort(port));
     }
 
     /**
@@ -491,7 +491,7 @@ public class DevModeHandler implements Serializable {
      * @return the webpack port or 0 if the port is not stored.
      */
     private static int getDevServerPort(VaadinContext context) {
-        DevModePort attribute = context.getAttribute(DevModePort.class);
+        WebpackDevServerPort attribute = context.getAttribute(WebpackDevServerPort.class);
         return attribute == null ? 0 : attribute.getPort();
     }
 }
