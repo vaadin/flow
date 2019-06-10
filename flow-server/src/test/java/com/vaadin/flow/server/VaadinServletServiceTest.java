@@ -12,6 +12,10 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
+/**
+ * Test class for testing es5 and es6 resolution by browser capability.
+ * This is valid only for bower mode where we need to decide ourselves.
+ */
 public class VaadinServletServiceTest {
 
     private final class TestTheme implements AbstractTheme {
@@ -34,6 +38,7 @@ public class VaadinServletServiceTest {
     public void setup() throws Exception {
         mocks = new MockServletServiceSessionSetup();
         service = mocks.getService();
+        mocks.getDeploymentConfiguration().setBowerMode(true);
     }
 
     @After

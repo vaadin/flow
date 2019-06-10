@@ -1285,6 +1285,7 @@ public class BootstrapHandlerTest {
     @Test
     public void useDependencyFilters_removeDependenciesAndAddNewOnes()
             throws ServiceException {
+        deploymentConfiguration.setBowerMode(true);
         List<DependencyFilter> filters = (List<DependencyFilter>) service
                 .getDependencyFilters();
         filters.add((list, context) -> {
@@ -1354,6 +1355,7 @@ public class BootstrapHandlerTest {
     @Test
     public void frontendProtocol_productionMode_es5Url() {
         mocks.setProductionMode(true);
+        deploymentConfiguration.setBowerMode(true);
         initUI(testUI);
         WebBrowser mockedWebBrowser = Mockito.mock(WebBrowser.class);
         Mockito.when(session.getBrowser()).thenReturn(mockedWebBrowser);
@@ -1372,6 +1374,7 @@ public class BootstrapHandlerTest {
 
     @Test
     public void frontendProtocol_productionMode_useDifferentUrlsForEs5AndEs6() {
+        deploymentConfiguration.setBowerMode(true);
         initUI(testUI);
         mocks.setProductionMode(true);
         WebBrowser mockedWebBrowser = Mockito.mock(WebBrowser.class);
@@ -1391,6 +1394,7 @@ public class BootstrapHandlerTest {
 
     @Test
     public void frontendProtocol_notInProductionMode_useDefaultFrontend() {
+        deploymentConfiguration.setBowerMode(true);
         initUI(testUI);
         mocks.setProductionMode(false);
         WebBrowser mockedWebBrowser = Mockito.mock(WebBrowser.class);
@@ -1416,6 +1420,7 @@ public class BootstrapHandlerTest {
 
     @Test
     public void frontendProtocol_productionModeAndWithProperties_useProperties_es5() {
+        deploymentConfiguration.setBowerMode(true);
         String es5Prefix = "bar/es5/";
         deploymentConfiguration.setApplicationOrSystemProperty(
                 Constants.FRONTEND_URL_ES5, es5Prefix);
@@ -1436,6 +1441,7 @@ public class BootstrapHandlerTest {
 
     @Test
     public void frontendProtocol_productionModeAndWithProperties_useProperties_es6() {
+        deploymentConfiguration.setBowerMode(true);
         String es6Prefix = "bar/es6/";
         deploymentConfiguration.setApplicationOrSystemProperty(
                 Constants.FRONTEND_URL_ES6, es6Prefix);
@@ -1456,6 +1462,7 @@ public class BootstrapHandlerTest {
 
     @Test
     public void frontendProtocol_notInProductionModeAndWithProperties_useProperties() {
+        deploymentConfiguration.setBowerMode(true);
         initUI(testUI);
         mocks.setProductionMode(false);
         WebBrowser mockedWebBrowser = Mockito.mock(WebBrowser.class);

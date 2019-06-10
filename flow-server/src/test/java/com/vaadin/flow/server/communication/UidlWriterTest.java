@@ -364,14 +364,13 @@ public class UidlWriterTest {
         JsonObject inlineDependency = inlineDependencies.get(0);
 
         String url = inlineDependency.getString(Dependency.KEY_CONTENTS);
-        if (!url.startsWith(expectedPrefix)) {
-            throw new AssertionError(
-                url + " should have the prefix "
-                    + expectedPrefix);
+        if(mocks.getDeploymentConfiguration().isBowerMode()) {
+            if (!url.startsWith(expectedPrefix)) {
+                throw new AssertionError(url + " should have the prefix " + expectedPrefix);
+            }
+            String normalizedUrl = url.substring(expectedPrefix.length());
+            assertEquals("inline.css", normalizedUrl);
         }
-        String normalizedUrl = url.substring(expectedPrefix.length());
-        assertEquals(normalizedUrl, "inline.css");
-
         assertEquals(Dependency.Type.STYLESHEET,
             Dependency.Type.valueOf(inlineDependency.getString(Dependency.KEY_TYPE)));
     }
@@ -394,6 +393,9 @@ public class UidlWriterTest {
             mocks.getServlet()
                     .addServletContextResource("/frontend/inline." + type,
                             "/frontend/inline." + type);
+            mocks.getServlet()
+                    .addServletContextResource("./inline." + type,
+                            "./inline." + type);
         }
 
         HttpServletRequest servletRequestMock = mock(HttpServletRequest.class);
