@@ -50,7 +50,6 @@ import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
-import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 
@@ -160,8 +159,7 @@ public class DevModeHandler implements Serializable {
                     .redirectError(ProcessBuilder.Redirect.PIPE)
                     .redirectErrorStream(true).start();
             stopCallback = () -> {
-                System.clearProperty(VAADIN_PREFIX
-                        + SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT);
+                context.removeAttribute(DevModePort.class);
                 atomicHandler.set(null);
                 webpackProcess.destroy();
             };
