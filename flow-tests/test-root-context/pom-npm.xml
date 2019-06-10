@@ -19,7 +19,7 @@
             DependenciesLoadingAnnotationsIT, FrontendInlineApiIT, LongPollingMultipleThreadsIT, 
             LongPollingPushIT, RouteNotFoundIT, WebComponentsIT, EmptyListsIT, 
             InjectedElementInsideMixinBehaviorIT, TemplateHasInjectedSubTemplateIT, 
-            TemplateInTemplateIT, UpgradeElementIT, DebounceSynchronizePropertyIT</exclude.it.tests>
+            TemplateInTemplateIT, UpgradeElementIT, DebounceSynchronizePropertyIT, ValueChangeModeIT</exclude.it.tests>
     </properties>
 
     <dependencies>
@@ -179,9 +179,14 @@
                     <execution>
                         <goals>
                             <goal>prepare-frontend</goal>
+                            <goal>build-frontend</goal>
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <bowerMode>false</bowerMode>
+                    <productionMode>true</productionMode>
+                </configuration>
             </plugin>
         </plugins>
     </build>
