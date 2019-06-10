@@ -327,8 +327,7 @@ public class FrontendUtils {
             if (config.isProductionMode()) {
                 statsUrl = service.getStaticResource("/" + stats);
             } else {
-                statsUrl = getStatsFromWebpack(service, config, stats,
-                        statsUrl);
+                statsUrl = getStatsFromWebpack(service, stats, statsUrl);
             }
             if (statsUrl != null) {
                 getLogger().debug("Found stats file at url '{}'", statsUrl);
@@ -338,9 +337,8 @@ public class FrontendUtils {
         return content != null ? streamToString(content) : null;
     }
 
-    private static URL getStatsFromWebpack(VaadinService service,
-            DeploymentConfiguration config, String stats, URL statsUrl)
-            throws MalformedURLException {
+    private static URL getStatsFromWebpack(VaadinService service, String stats,
+            URL statsUrl) throws MalformedURLException {
         DevModePort port = service.getContext().getAttribute(DevModePort.class);
         if (port != null) {
             statsUrl = new URL(
