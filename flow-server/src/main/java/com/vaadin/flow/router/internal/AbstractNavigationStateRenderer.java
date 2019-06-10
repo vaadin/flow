@@ -144,7 +144,7 @@ public abstract class AbstractNavigationStateRenderer
 
         if (eventActionsSupported()) {
             BeforeLeaveEvent beforeNavigationDeactivating = new BeforeLeaveEvent(
-                    event, routeTargetType);
+                    event, routeTargetType, routeLayoutTypes);
 
             Deque<BeforeLeaveHandler> leaveHandlers;
             if (postponed != null) {
@@ -203,7 +203,7 @@ public abstract class AbstractNavigationStateRenderer
         final Component componentInstance = (Component) chain.get(0);
 
         BeforeEnterEvent beforeNavigationActivating = new BeforeEnterEvent(
-                event, routeTargetType);
+                event, routeTargetType, routeLayoutTypes);
 
         LocationChangeEvent locationChangeEvent = new LocationChangeEvent(
                 event.getSource(), event.getUI(), event.getTrigger(),
