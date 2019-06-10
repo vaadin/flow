@@ -1,7 +1,5 @@
 (function() {
 	var apps = {};
-	var widgetsets = {};
-		
 		
 	var log;
 	if (typeof console === undefined || !window.location.search.match(/[&?]debug(&|$)/)) {
@@ -47,6 +45,7 @@
     if (!window.Vaadin.Flow.clients) {
         window.Vaadin.Flow.clients = {};
 
+        window.Vaadin.Flow.pendingStartup = {};
         window.Vaadin.Flow.initApplication = function(appId, config) {
 			var testbenchId = appId.replace(/-\d+$/, '');
 			
@@ -84,15 +83,17 @@
 			}
 	
 			var widgetset = "client";
-			widgetsets[widgetset] = {
+			if (!window.Vaadin.Flow.pendingStartup[widgetset]) {
+				window.Vaadin.Flow.pendingStartup[widgetset] = {
 					pendingApps: []
 				};
-			if (widgetsets[widgetset].callback) {
+			}
+			if (window.Vaadin.Flow.pendingStartup[widgetset].callback) {
 				log("Starting from bootstrap", appId);
-				widgetsets[widgetset].callback(appId);
+				window.Vaadin.Flow.pendingStartup[widgetset].callback(appId);
 			}  else {
 				log("Setting pending startup", appId);
-				widgetsets[widgetset].pendingApps.push(appId);
+				window.Vaadin.Flow.pendingStartup[widgetset].pendingApps.push(appId);
 			}
 	
 			return app;
@@ -111,8 +112,16 @@
 		};
 		window.Vaadin.Flow.registerWidgetset = function(widgetset, callback) {
 			log("Widgetset registered", widgetset);
-			var ws = widgetsets[widgetset];
-			if (ws && ws.pendingApps) {
+			if (!window.Vaadin.Flow.pendingStartup[widgetset]) {
+				window.Vaadin.Flow.pendingStartup[widgetset] = {
+					pendingApps: [],
+					callback: callback
+				};
+				/* Callback will be invoked when initApp is called */
+				return;
+			}
+			var ws = window.Vaadin.Flow.pendingStartup[widgetset];
+			if (ws.pendingApps) {
 				ws.callback = callback;
 				for(var i = 0; i < ws.pendingApps.length; i++) {
 					var appId = ws.pendingApps[i];
