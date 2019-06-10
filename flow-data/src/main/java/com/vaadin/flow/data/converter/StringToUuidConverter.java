@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2019 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,45 +16,40 @@
 
 package com.vaadin.flow.data.converter;
 
+import java.util.UUID;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.data.binder.ErrorMessageProvider;
 import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;
-import org.slf4j.LoggerFactory;
-
-import java.util.UUID;
 
 /**
  * A converter that converts from {@link String} to {@link UUID} and back.
- * <p>
- * Leading and trailing white spaces are ignored when converting from a String.
- * </p>
- * <p>
- * The String representation uses the canonical format of 32-characters with a hyphen
- * to separate each of five groups of hexadecimal digits as defined in:
- * RFC 4122: A Universally Unique IDentifier (UUID) URN Namespace
- * http://www.ietf.org/rfc/rfc4122.txt
- * </p>
+ * Empty strings are converted to <code>null</code>.
  *
  * @author Vaadin Ltd
+ * @since 2.0
  */
 public class StringToUuidConverter implements Converter<String, UUID> {
-
+    
     private ErrorMessageProvider errorMessageProvider;
 
     /**
-     * Constructs a converter for String to UUID and back.
+     * Creates converter to convert from String to UUID and back.
      *
      * @param errorMessage the error message to use if conversion fails
      */
     public StringToUuidConverter(String errorMessage) {
-        this(ctx -> errorMessage);
+        this(context -> errorMessage);
     }
 
     /**
-     * Constructs a new converter instance with the given error message provider.
-     * Empty strings are converted to <code>null</code>.
+     * Creates a new converter instance with the given error message provider.
      *
-     * @param errorMessageProvider the error message provider to use if conversion fails
+     * @param errorMessageProvider the error message provider to use if conversion
+     *                             fails
      */
     public StringToUuidConverter(ErrorMessageProvider errorMessageProvider) {
         this.errorMessageProvider = errorMessageProvider;
@@ -62,35 +57,38 @@ public class StringToUuidConverter implements Converter<String, UUID> {
 
     @Override
     public Result<UUID> convertToModel(String value, ValueContext context) {
-        if (value == null) {
+
+        if (isNullOrEmptyString(value)) {
             return Result.ok(null);
         }
 
-        // Remove leading and trailing white space
-        value = value.trim();
-
-        // Parse string as UUID.
-        UUID uuid = null;
         try {
-            uuid = UUID.fromString(value);
-        } catch (java.lang.IllegalArgumentException e) {
-            LoggerFactory.getLogger(StringToUuidConverter.class.getName()).warn(
-                    "Unable to convert String to UUID: " + value, e);
+            value = value.trim();
+            final UUID uuid = UUID.fromString(value);
+            return Result.ok(uuid);
+        } catch (IllegalArgumentException e) {
+            getLogger().warn("Unable to parse input string {} as a valid UUID", value, e);
             return Result.error(this.errorMessageProvider.apply(context));
         }
-        return Result.ok(uuid); // Return the UUID object, converted from String.
+    }
+
+    private boolean isNullOrEmptyString(String value) {
+        return value == null || value.isEmpty();
+    }
+    
+    
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(StringToUuidConverter.class);
     }
 
     @Override
-    public String convertToPresentation(UUID value, ValueContext context) {
-        if (value == null) {
+    public String convertToPresentation(UUID uuid, ValueContext context) {
+
+        if (uuid == null) {
             return null;
         }
-        // `java.util.UUID::toString` generates a textual representation of a
-        // UUID’s 128-bits as in a  hexadecimal `String` in 32-character canonical
-        // format with four hyphens separating groups of digits.
-        // https://docs.oracle.com/javase/10/docs/api/java/util/UUID.html#toString()
-        return value.toString();
+
+        return uuid.toString();
     }
 
 }
