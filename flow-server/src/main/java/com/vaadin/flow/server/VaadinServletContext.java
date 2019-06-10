@@ -74,4 +74,10 @@ public class VaadinServletContext implements VaadinContext {
         context.setAttribute(value.getClass().getName(), value);
     }
 
+    @Override
+    public void removeAttribute(Class<?> clazz) {
+        ensureServletContext();
+        context.removeAttribute(clazz.getName());
+    }
+
 }

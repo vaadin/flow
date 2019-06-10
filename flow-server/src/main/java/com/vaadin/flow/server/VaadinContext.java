@@ -59,7 +59,18 @@ public interface VaadinContext extends Serializable {
      *
      * @param value
      *            Value of the attribute. May not be {@code null}.
+     * @see #removeAttribute(Class) for removing attributes.
      */
     <T> void setAttribute(T value);
 
+    /**
+     * Removes an attribute identified by the given type. If the attribute does
+     * not exist, no action will be taken.
+     * 
+     * @param clazz
+     *            Attribute type.
+     *
+     * @see #setAttribute(Object) for setting attributes.
+     */
+    void removeAttribute(Class<?> clazz);
 }

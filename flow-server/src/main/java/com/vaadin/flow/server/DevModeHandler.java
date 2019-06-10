@@ -159,6 +159,7 @@ public class DevModeHandler implements Serializable {
                     .redirectErrorStream(true).start();
             stopCallback = () -> {
                 webpackProcess.destroy();
+                context.removeAttribute(DevModePort.class);
                 atomicHandler.set(null);
             };
             Runtime.getRuntime()
