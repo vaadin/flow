@@ -18,70 +18,77 @@ package com.vaadin.flow.data.converter;
 
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.data.binder.ErrorMessageProvider;
 import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;
 
 /**
- * A converter that converts from {@link String} to {@link UUID} and back. <br>
+ * A converter that converts from {@link String} to {@link UUID} and back.
  * Empty strings are converted to <code>null</code>.
  *
  * @author Vaadin Ltd
  * @since 2.0
  */
 public class StringToUuidConverter implements Converter<String, UUID> {
+    
+    private ErrorMessageProvider errorMessageProvider;
 
-	private ErrorMessageProvider errorMessageProvider;
+    /**
+     * Creates converter to convert from String to UUID and back.
+     *
+     * @param errorMessage the error message to use if conversion fails
+     */
+    public StringToUuidConverter(String errorMessage) {
+        this(context -> errorMessage);
+    }
 
-	/**
-	 * Creates converter to convert from String to UUID and back
-	 *
-	 * @param errorMessage 
-	 *            the error message to use if conversion fails
-	 */
-	public StringToUuidConverter(String errorMessage) {
-		this(context -> errorMessage);
-	}
+    /**
+     * Creates a new converter instance with the given error message provider.
+     *
+     * @param errorMessageProvider the error message provider to use if conversion
+     *                             fails
+     */
+    public StringToUuidConverter(ErrorMessageProvider errorMessageProvider) {
+        this.errorMessageProvider = errorMessageProvider;
+    }
 
-	/**
-	 * Creates a new converter instance with the given error message provider. 
-	 *
-	 * @param errorMessageProvider 
-	 *            the error message provider to use if conversion
-	 *                             fails
-	 */
-	public StringToUuidConverter(ErrorMessageProvider errorMessageProvider) {
-		this.errorMessageProvider = errorMessageProvider;
-	}
+    @Override
+    public Result<UUID> convertToModel(String value, ValueContext context) {
 
-	@Override
-	public Result<UUID> convertToModel(String value, ValueContext context) {
+        if (isNullOrEmptyString(value)) {
+            return Result.ok(null);
+        }
 
-		if (isNullOrEmptyString(value)) {
-			return Result.ok(null);
-		}
-		
-		try {
-			value = value.trim();
-			final UUID uuid = UUID.fromString(value);
-			return Result.ok(uuid);
-		} catch (IllegalArgumentException e) {
-			return Result.error(this.errorMessageProvider.apply(context));
-		}
-	}
-	
-	private boolean isNullOrEmptyString(String value) {
-		return value == null || value.isEmpty();
-	}
+        try {
+            value = value.trim();
+            final UUID uuid = UUID.fromString(value);
+            return Result.ok(uuid);
+        } catch (IllegalArgumentException e) {
+            getLogger().warn("Unable to parse input string {} as a valid UUID", value, e);
+            return Result.error(this.errorMessageProvider.apply(context));
+        }
+    }
 
-	@Override
-	public String convertToPresentation(UUID uuid, ValueContext context) {
+    private boolean isNullOrEmptyString(String value) {
+        return value == null || value.isEmpty();
+    }
+    
+    
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(StringToUuidConverter.class);
+    }
 
-		if (uuid == null) {
-			return null;
-		}
+    @Override
+    public String convertToPresentation(UUID uuid, ValueContext context) {
 
-		return uuid.toString();
-	}
+        if (uuid == null) {
+            return null;
+        }
+
+        return uuid.toString();
+    }
 
 }
