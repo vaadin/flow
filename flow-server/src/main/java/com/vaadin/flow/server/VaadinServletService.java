@@ -201,7 +201,7 @@ public class VaadinServletService extends VaadinService {
                 frontendRootUrl = config.getEs5FrontendPrefix();
             }
         } else {
-            frontendRootUrl =  config.getDevelopmentFrontendPrefix();
+            frontendRootUrl =  config.getNpmFrontendPrefix();
         }
 
         return contextResolver.resolveVaadinUri(url, frontendRootUrl);

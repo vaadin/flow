@@ -411,7 +411,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     frontendRootUrl = config.getEs5FrontendPrefix();
                 }
             } else {
-                frontendRootUrl = config.getDevelopmentFrontendPrefix();
+                frontendRootUrl = config.getNpmFrontendPrefix();
             }
             assert frontendRootUrl.endsWith("/");
             assert servletPathToContextRoot.endsWith("/");
