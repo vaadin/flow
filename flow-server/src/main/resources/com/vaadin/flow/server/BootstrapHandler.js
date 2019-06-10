@@ -68,11 +68,12 @@
 	 * this script.
 	 */
     window.Vaadin = window.Vaadin || {};
+    window.Vaadin.Flow = window.Vaadin.Flow || {};
 
-	window.Vaadin.Flow = window.Vaadin.Flow || {
-        clients: {},
+    if (!window.Vaadin.Flow.clients) {
+        window.Vaadin.Flow.clients = {};
 
-		initApplication: function(appId, config) {
+        window.Vaadin.Flow.initApplication = function(appId, config) {
 			var testbenchId = appId.replace(/-\d+$/, '');
 			
 			if (apps[appId]) {
@@ -121,8 +122,8 @@
 			}
 	
 			return app;
-		},
-		getAppIds: function() {
+		};
+		window.Vaadin.Flow.getAppIds = function() {
 			var ids = [ ];
 			for (var id in apps) {
 				if (apps.hasOwnProperty(id)) {
@@ -130,11 +131,11 @@
 				}
 			}
 			return ids;
-		},
-		getApp: function(appId) {
+		};
+		window.Vaadin.Flow.getApp = function(appId) {
 			return apps[appId];
-		},
-		registerWidgetset: function(widgetset, callback) {
+		};
+		window.Vaadin.Flow.registerWidgetset = function(widgetset, callback) {
 			log("Widgetset registered", widgetset);
 			var ws = widgetsets[widgetset];
 			if (ws && ws.pendingApps) {
@@ -146,8 +147,8 @@
 				}
 				ws.pendingApps = null;
 			}
-		},
-        getBrowserDetailsParameters: function() {
+		};
+		window.Vaadin.Flow.getBrowserDetailsParameters = function() {
             var params = {  };
 
             /* Screen height and width */
@@ -220,8 +221,8 @@
                 }
             });
             return params;
-        }
-	};
+        };
+    }
 	
 	log('Flow bootstrap loaded');
 	
