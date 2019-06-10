@@ -15,10 +15,19 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubNode;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -26,11 +35,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.slf4j.LoggerFactory;
 
-import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubNode;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import com.vaadin.flow.server.frontend.FrontendUtils.UnknownVersionException;
 
 public class FrontendUtilsTest {
 
@@ -95,5 +100,55 @@ public class FrontendUtilsTest {
         assertThat(FrontendUtils.getNodeExecutable(),
                 not(containsString(NPM_CLI_STRING)));
         assertEquals(1, FrontendUtils.getNpmExecutable().size());
+    }
+
+    @Test
+    public void parseValidVersions() throws UnknownVersionException {
+        assertFalse(FrontendUtils.isVersionAtLeast("test",
+                new String[] { "6", "0", "0" }, 10, 0));
+        assertFalse(FrontendUtils.isVersionAtLeast("test",
+                new String[] { "6", "0", "0" }, 6, 1));
+        assertTrue(FrontendUtils.isVersionAtLeast("test",
+                new String[] { "10", "0", "0" }, 10, 0));
+        assertTrue(FrontendUtils.isVersionAtLeast("test",
+                new String[] { "10", "0", "2" }, 10, 0));
+        assertTrue(FrontendUtils.isVersionAtLeast("test",
+                new String[] { "10", "2", "0" }, 10, 0));
+    }
+
+    @Test
+    public void parseInvalidVersions() throws UnknownVersionException {
+        try {
+            FrontendUtils.isVersionAtLeast("test",
+                    new String[] { "6", "0b2", "0" }, 10, 0);
+            Assert.fail();
+        } catch (UnknownVersionException e) {
+        }
+        try {
+            FrontendUtils.isVersionAtLeast("test",
+                    new String[] { "6b", "0b2", "0" }, 10, 0);
+            Assert.fail();
+        } catch (UnknownVersionException e) {
+        }
+    }
+
+    @Test
+    public void validateLargerThan() {
+        try {
+            FrontendUtils.validateLargerThan("test",
+                    new String[] { "a", "b", "c" }, 10, 2);
+            Assert.fail();
+        } catch (UnknownVersionException e) {
+        }
+
+        try {
+            System.setProperty("vaadin.ignoreVersionChecks", "true");
+            FrontendUtils.validateLargerThan("test",
+                    new String[] { "a", "b", "c" }, 10, 2);
+        } catch (UnknownVersionException e) {
+            Assert.fail();
+        } finally {
+            System.clearProperty("vaadin.ignoreVersionChecks");
+        }
     }
 }

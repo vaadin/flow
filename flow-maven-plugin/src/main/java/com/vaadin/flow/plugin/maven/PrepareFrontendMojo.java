@@ -131,8 +131,7 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
             return;
         }
 
-        FrontendUtils.getNodeExecutable();
-        FrontendUtils.getNpmExecutable();
+        FrontendUtils.validateNodeAndNpmVersion();
 
         new NodeTasks.Builder(getClassFinder(project), npmFolder, generatedFolder)
                 .withWebpack(webpackOutputDirectory, webpackTemplate)
