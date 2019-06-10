@@ -23,7 +23,7 @@ import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;
 
 /**
- * A converter that converts from {@link String} to {@link UUID} and back. <br/>
+ * A converter that converts from {@link String} to {@link UUID} and back. <br>
  * Empty strings are converted to <code>null</code>.
  *
  * @author Vaadin Ltd
