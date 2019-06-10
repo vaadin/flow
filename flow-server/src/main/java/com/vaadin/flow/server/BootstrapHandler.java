@@ -1049,10 +1049,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
         private Element createJavaScriptElement(String sourceUrl,
-                boolean defer) {
+                                                boolean defer) {
+            return createJavaScriptElement(sourceUrl, defer, "text/javascript");
+        }
+
+        private Element createJavaScriptElement(String sourceUrl, boolean defer,
+                                                String type) {
             Element jsElement = new Element(Tag.valueOf(SCRIPT_TAG), "")
-                    .attr("type", "text/javascript")
-                    .attr(DEFER_ATTRIBUTE, defer);
+                    .attr("type", type).attr(DEFER_ATTRIBUTE, defer);
             if (sourceUrl != null) {
                 jsElement = jsElement.attr("src", sourceUrl);
             }
@@ -1081,9 +1085,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 dependencyElement = createJavaScriptElement(url,
                         !inlineElement);
                 break;
-            case JS_MODULE:
-                dependencyElement = null;
-                break;
+                case JS_MODULE:
+                    dependencyElement = createJavaScriptElement(url, !inlineElement,
+                            "module");
+                    break;
             case HTML_IMPORT:
                 dependencyElement = createHtmlImportElement(url);
                 break;
