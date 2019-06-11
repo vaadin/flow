@@ -17,11 +17,6 @@
 
 package com.vaadin.flow.server.frontend;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -43,6 +38,11 @@ import org.junit.rules.TemporaryFolder;
 
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
+
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 
 public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
 
