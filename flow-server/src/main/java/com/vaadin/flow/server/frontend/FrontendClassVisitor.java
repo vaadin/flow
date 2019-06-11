@@ -60,79 +60,28 @@ class FrontendClassVisitor extends ClassVisitor {
         }
 
         @Override
-        public AnnotationVisitor visitAnnotation(String name, String descriptor) {
+        public AnnotationVisitor visitAnnotation(String name,
+                String descriptor) {
             return this;
         }
     }
 
     /**
-     * A simple container with the information related to an application end-point,
-     * i.e. those classes annotated with the {@link Route} annotation.
+     * A simple container with the information related to an application
+     * end-point, i.e. those classes annotated with the {@link Route}
+     * annotation.
      */
     static class EndPointData implements Serializable {
-        final String name;
-        String route = "";
-        String layout;
+        private final String name;
+        private String route = "";
+        private String layout;
         private ThemeData theme = new ThemeData();
-        final HashSet<String> classes = new HashSet<>();
-        final HashSet<String> modules = new HashSet<>();
-        final HashSet<String> scripts = new HashSet<>();
+        private final HashSet<String> modules = new HashSet<>();
+        private final HashSet<String> scripts = new HashSet<>();
+        private final HashSet<String> classes = new HashSet<>();
 
-
-        boolean hasData() {
-            boolean hasTheme = theme.name != null || theme.notheme;
-            boolean hasScriptsOrModules =
-                    modules.size() > 0 || scripts.size() > 0;
-
-            return hasTheme || layout != null || hasScriptsOrModules;
-        }
-
-        /**
-         * A container for Theme information when scanning the class path.
-         * It overrides equals and hashCode in order to use HashSet to eliminate duplicates.
-         */
-        static class ThemeData implements Serializable {
-            private String name;
-            private String variant = "";
-            private boolean notheme;
-
-            String getName() {
-                return name;
-            }
-            String getVariant() {
-                return variant;
-            }
-            boolean isNotheme() {
-                return notheme;
-            }
-
-            @Override
-            public boolean equals(Object other) {
-                if (other == null || !(other instanceof ThemeData)) {
-                    return false;
-                }
-                ThemeData that = (ThemeData)other;
-                return notheme == that.notheme && Objects.equals(name, that.name);
-            }
-
-            @Override
-            public int hashCode() {
-                // We might need to add variant when we wanted to fail in the case of
-                // same theme class with different variant, which was right in v13
-                return Objects.hash(name, notheme);
-            }
-
-            @Override
-            public String toString() {
-                return " notheme: " + notheme + "\n name:" + name + "\n variant: " + variant;
-            }
-        }
-
-        public EndPointData(Class<?> clazz) {
+        EndPointData(Class<?> clazz) {
             this.name = clazz.getName();
-        }
-        public ThemeData getTheme() {
-            return theme;
         }
 
         // For debugging
@@ -143,8 +92,88 @@ class FrontendClassVisitor extends ClassVisitor {
                     name, route, theme, layout, col2Str(modules),
                     col2Str(scripts));
         }
+
+        Set<String> getModules() {
+            return modules;
+        }
+
+        Set<String> getScripts() {
+            return scripts;
+        }
+
+        Set<String> getClasses() {
+            return classes;
+        }
+
+        boolean hasData() {
+            boolean hasTheme = theme.name != null || theme.notheme;
+            boolean hasScriptsOrModules = modules.size() > 0
+                    || scripts.size() > 0;
+
+            return hasTheme || layout != null || hasScriptsOrModules;
+        }
+
+        ThemeData getTheme() {
+            return theme;
+        }
+
+        String getRoute() {
+            return route;
+        }
+
+        String getName() {
+            return name;
+        }
+
         private String col2Str(Collection<String> s) {
             return String.join("\n          ", s);
+        }
+    }
+
+    /**
+     * A container for Theme information when scanning the class path. It
+     * overrides equals and hashCode in order to use HashSet to eliminate
+     * duplicates.
+     */
+    static class ThemeData implements Serializable {
+        private String name;
+        private String variant = "";
+        private boolean notheme;
+
+        String getName() {
+            return name;
+        }
+
+        String getVariant() {
+            return variant;
+        }
+
+        boolean isNotheme() {
+            return notheme;
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            if (other == null || !(other instanceof ThemeData)) {
+                return false;
+            }
+            ThemeData that = (ThemeData) other;
+            return notheme == that.notheme && Objects.equals(name, that.name);
+        }
+
+        @Override
+        public int hashCode() {
+            // We might need to add variant when we wanted to fail in the
+            // case of
+            // same theme class with different variant, which was right in
+            // v13
+            return Objects.hash(name, notheme);
+        }
+
+        @Override
+        public String toString() {
+            return " notheme: " + notheme + "\n name:" + name + "\n variant: "
+                    + variant;
         }
     }
 
@@ -168,7 +197,7 @@ class FrontendClassVisitor extends ClassVisitor {
      * @param endPoint
      *            the end-point object that will be updated during the visit
      */
-    FrontendClassVisitor(String className, EndPointData endPoint) { //NOSONAR
+    FrontendClassVisitor(String className, EndPointData endPoint) { // NOSONAR
         super(Opcodes.ASM7);
         this.className = className;
         this.endPoint = endPoint;
@@ -180,15 +209,21 @@ class FrontendClassVisitor extends ClassVisitor {
             public void visitTypeInsn(int opcode, String type) {
                 addSignatureToClasses(children, type);
             }
-            // We are interested in method instructions like Notification.show('bla')
+
+            // We are interested in method instructions like
+            // Notification.show('bla')
             @Override
-            public void visitMethodInsn(int opcode, String owner, String name, String descriptor, boolean isInterface) {
+            public void visitMethodInsn(int opcode, String owner, String name,
+                    String descriptor, boolean isInterface) {
                 addSignatureToClasses(children, owner);
                 addSignatureToClasses(children, descriptor);
             }
-            // Visit instructions that stores something in a field inside the method
+
+            // Visit instructions that stores something in a field inside the
+            // method
             @Override
-            public void visitFieldInsn(int opcode, String owner, String name, String descriptor) {
+            public void visitFieldInsn(int opcode, String owner, String name,
+                    String descriptor) {
                 addSignatureToClasses(children, owner);
                 addSignatureToClasses(children, descriptor);
             }
@@ -224,7 +259,8 @@ class FrontendClassVisitor extends ClassVisitor {
             public void visit(String name, Object value) {
                 if (VALUE.equals(name) && endPoint.theme.name == null) {
                     themeRouteVisitor.visit(name, value);
-                } else if (VARIANT.equals(name) && endPoint.theme.variant == null) {
+                } else if (VARIANT.equals(name)
+                        && endPoint.theme.variant == null) {
                     themeRouteVisitor.visit(name, value);
                 }
             }
@@ -247,7 +283,8 @@ class FrontendClassVisitor extends ClassVisitor {
         annotationVisitor = new RepeatedAnnotationVisitor() {
             @Override
             public void visit(String name, Object value) {
-                if (value != null && !value.getClass().isPrimitive() && !value.getClass().equals(String.class)) {
+                if (value != null && !value.getClass().isPrimitive()
+                        && !value.getClass().equals(String.class)) {
                     addSignatureToClasses(children, value.toString());
                 }
             }
@@ -257,27 +294,30 @@ class FrontendClassVisitor extends ClassVisitor {
 
     // Executed for the class definition info.
     @Override
-    public void visit(int version, int access, String name, String signature, String superName,
-            String[] interfaces) {
+    public void visit(int version, int access, String name, String signature,
+            String superName, String[] interfaces) {
         addSignatureToClasses(children, superName);
     }
 
     // Executed for each method defined in the class.
     @Override
-    public MethodVisitor visitMethod(int access, String name, String descriptor, String signature,
-            String[] exceptions) {
+    public MethodVisitor visitMethod(int access, String name, String descriptor,
+            String signature, String[] exceptions) {
         addSignatureToClasses(children, descriptor);
         return methodVisitor;
     }
 
     // Executed for each annotation in the class.
     @Override
-    public AnnotationVisitor visitAnnotation(String descriptor, boolean visible) {
+    public AnnotationVisitor visitAnnotation(String descriptor,
+            boolean visible) {
         addSignatureToClasses(children, descriptor);
 
-        // We return different visitor implementations depending on the annotation
+        // We return different visitor implementations depending on the
+        // annotation
         String cname = descriptor.replace("/", ".");
-        if (className.equals(endPoint.name) && cname.contains(Route.class.getName())) {
+        if (className.equals(endPoint.name)
+                && cname.contains(Route.class.getName())) {
             return routeVisitor;
         }
         if (cname.contains(JsModule.class.getName())) {
@@ -306,7 +346,8 @@ class FrontendClassVisitor extends ClassVisitor {
 
     // Executed for each field defined in the class.
     @Override
-    public FieldVisitor visitField(int access, String name, String descriptor, String signature, Object value) {
+    public FieldVisitor visitField(int access, String name, String descriptor,
+            String signature, Object value) {
         addSignatureToClasses(children, descriptor);
         return null;
     }
@@ -341,8 +382,8 @@ class FrontendClassVisitor extends ClassVisitor {
         }
         // This regular expression is able to split the signature and remove
         // primitive and other mark symbols, see test for more info.
-        String[] tmp = signature.replace("/", ".")
-                .split("(^\\([\\[ZBFDJICL]*|^[\\[ZBFDJICL]+|;?\\)[\\[ZBFDJICLV]*|;[\\[ZBFDJICL]*)");
+        String[] tmp = signature.replace("/", ".").split(
+                "(^\\([\\[ZBFDJICL]*|^[\\[ZBFDJICL]+|;?\\)[\\[ZBFDJICLV]*|;[\\[ZBFDJICL]*)");
         classes.addAll(Arrays.asList(tmp));
     }
 }
