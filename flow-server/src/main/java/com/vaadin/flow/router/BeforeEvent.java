@@ -52,7 +52,7 @@ public abstract class BeforeEvent extends EventObject {
      * Construct event from a NavigationEvent.
      *
      * @param event
-     *            NavigationEvent that is on going
+     *            NavigationEvent that is on-going
      * @param navigationTarget
      *            Navigation target
      * @deprecated Use {@link #BeforeEvent(NavigationEvent, Class, List)}
@@ -69,7 +69,7 @@ public abstract class BeforeEvent extends EventObject {
      * Construct event from a NavigationEvent.
      *
      * @param event
-     *            NavigationEvent that is on going
+     *            NavigationEvent that is on-going
      * @param navigationTarget
      *            Navigation target
      * @param layouts
@@ -449,7 +449,7 @@ public abstract class BeforeEvent extends EventObject {
      * Get the layout chain for the {@link #getNavigationState(String, List)
      * navigation target}.
      * 
-     * @return layout chain.
+     * @return layout chain
      */
     public List<Class<? extends RouterLayout>> getLayouts() {
         return layouts;

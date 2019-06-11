@@ -31,7 +31,7 @@ public class BeforeEnterEvent extends BeforeEvent {
      * Construct event from a NavigationEvent.
      *
      * @param event
-     *            NavigationEvent that is on going
+     *            NavigationEvent that is on-going
      * @param navigationTarget
      *            Navigation target
      * @deprecated Use {@link #BeforeEnterEvent(NavigationEvent, Class, List)}
@@ -46,7 +46,7 @@ public class BeforeEnterEvent extends BeforeEvent {
      * Construct event from a NavigationEvent.
      *
      * @param event
-     *            NavigationEvent that is on going
+     *            NavigationEvent that is on-going
      * @param navigationTarget
      *            Navigation target
      * @param layouts
