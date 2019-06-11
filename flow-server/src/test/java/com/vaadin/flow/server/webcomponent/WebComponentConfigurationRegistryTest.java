@@ -16,7 +16,18 @@
 
 package com.vaadin.flow.server.webcomponent;
 
-import javax.servlet.ServletContext;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.webcomponent.WebComponent;
+import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
+import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinService;
+import net.jcip.annotations.NotThreadSafe;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -32,24 +43,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import net.jcip.annotations.NotThreadSafe;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.WebComponentExporter;
-import com.vaadin.flow.component.webcomponent.WebComponent;
-import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
-import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.server.MockInstantiator;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinSession;
-
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 
 @NotThreadSafe
@@ -60,16 +55,33 @@ public class WebComponentConfigurationRegistryTest {
 
     protected WebComponentConfigurationRegistry registry;
 
+    protected VaadinContext context;
+
+    protected WebComponentConfigurationRegistry createRegistry() {
+        return new WebComponentConfigurationRegistry(){};
+    }
+
     @Before
     public void init() {
-        registry = WebComponentConfigurationRegistry
-                .getInstance(mock(ServletContext.class));
+        VaadinService service = mock(VaadinService.class);
+        context = mock(VaadinContext.class);
+        VaadinService.setCurrent(service);
+        Mockito.when(service.getContext()).thenReturn(context);
+        WebComponentConfigurationRegistry instance = createRegistry();
+        Mockito.when(context.getAttribute(WebComponentConfigurationRegistry.class)).thenReturn(instance);
+        Mockito.when(context.getAttribute(eq(WebComponentConfigurationRegistry.class), anyObject())).thenReturn(instance);
+        registry = WebComponentConfigurationRegistry.getInstance(context);
     }
 
     @Test
     public void assertWebComponentRegistry() {
-        Assert.assertEquals(WebComponentConfigurationRegistry.class,
-                registry.getClass());
+        Assert.assertNotNull(registry);
+    }
+
+    @Test
+    public void assertRegistryIsSingleton() {
+        Assert.assertSame("WebComponentConfigurationRegistry instance should be singleton",
+            registry, WebComponentConfigurationRegistry.getInstance(context));
     }
 
     @Test

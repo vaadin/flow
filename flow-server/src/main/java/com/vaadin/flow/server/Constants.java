@@ -27,7 +27,7 @@ import com.vaadin.flow.shared.ApplicationConstants;
 public final class Constants implements Serializable {
 
     // Keep the version number in sync with flow-push/pom.xml
-    public static final String REQUIRED_ATMOSPHERE_RUNTIME_VERSION = "2.4.30.vaadin1";
+    public static final String REQUIRED_ATMOSPHERE_RUNTIME_VERSION = "2.4.30.slf4jvaadin1";
 
 
     /**
@@ -54,7 +54,7 @@ public final class Constants implements Serializable {
 
     public static final String SERVLET_PARAMETER_JSBUNDLE = "module.bundle";
     public static final String SERVLET_PARAMETER_POLYFILLS = "module.polyfills";
-    public static final String POLYFILLS_DEFAULT_VALUE = "context://build/webcomponentsjs/webcomponents-loader.js";
+    public static final String POLYFILLS_DEFAULT_VALUE = "build/webcomponentsjs/webcomponents-loader.js";
 
     /**
      * Configuration name for the parameter that determines whether Brotli
@@ -141,9 +141,9 @@ public final class Constants implements Serializable {
 
     /**
      * Default path for the WebPack profile statistics json file. It can be
-     * modifyied by setting the system property "statistics.file.path".
+     * modified by setting the system property "statistics.file.path".
      */
-    public static final String STATISTICS_JSON_DEFAULT = "/build/stats.json";
+    public static final String STATISTICS_JSON_DEFAULT = "build/stats.json";
 
     /**
      * Name of the <code>npm</code> main file.
@@ -191,6 +191,26 @@ public final class Constants implements Serializable {
      * Configuration name for adding extra options to the webpack-dev-server.
      */
     public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS = "devmode.webpack.options";
+
+    /**
+     * The path used in the vaadin servlet for handling static resources.
+     */
+    public static final String META_INF = "META-INF/";
+
+    /**
+     * The path used in the vaadin servlet for handling static resources.
+     */
+    public static final String VAADIN_MAPPING = "VAADIN/";
+
+    /**
+     * The path to meta-inf/VAADIN/ where static resources are put on the servlet.
+     */
+    public static final String VAADIN_SERVLET_RESOURCES = META_INF + VAADIN_MAPPING;
+
+    /**
+     * The prefix used for all internal static files, relative to context root.
+     */
+    public static final String VAADIN_BUILD_FILES_PATH = VAADIN_MAPPING + "build/";
 
     private Constants() {
         // prevent instantiation constants class only

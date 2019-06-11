@@ -90,7 +90,164 @@
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
             </plugin>
+           
             <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <id>add-resource</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>add-resource</goal>
+                        </goals>
+                        <configuration>
+                            <resources>
+                                <!-- This makes static resource files be
+                                    available via servlet context and via HTTP -->
+                                <resource>
+                                    <directory>src/main/webapp</directory>
+                                    <targetPath></targetPath>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>${maven.war.plugin.version}</version>
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <Implementation-Title>${project.name}
+                            </Implementation-Title>
+                            <Implementation-Version>${project.version}
+                            </Implementation-Version>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+                        <index>false</index>
+                        <manifest>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                        </manifest>
+                    </archive>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>ui-tests</id>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>local-run</id>
+            <activation>
+                <property>
+                    <name>!test.use.hub</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.lazerycode.selenium</groupId>
+                        <artifactId>driver-binary-downloader-maven-plugin</artifactId>
+                        <version>${driver.binary.downloader.maven.plugin.version}</version>
+                        <configuration>
+                            <onlyGetDriversForHostOperatingSystem>true</onlyGetDriversForHostOperatingSystem>
+                            <rootStandaloneServerDirectory>${project.rootdir}/driver</rootStandaloneServerDirectory>
+                            <downloadedZipFileDirectory>${project.rootdir}/driver_zips</downloadedZipFileDirectory>
+                            <customRepositoryMap>${project.rootdir}/drivers.xml</customRepositoryMap>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>selenium</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>productionMode</id>
+            <activation>
+                <property>
+                    <!-- In BrowserStack tests are run on IE11, and transpilation
+                        is needed -->
+                    <name>test.use.browserstack</name>
+                    <value>true</value>
+                </property>
+            </activation>
+
+            <properties>
+                <transpilation.output>${project.build.directory}/build</transpilation.output>
+            </properties>
+
+            <dependencies>
+                <dependency>
+                    <groupId>com.vaadin</groupId>
+                    <artifactId>flow-server-production-mode</artifactId>
+                    <version>2.0-SNAPSHOT</version>
+                </dependency>
+            </dependencies>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.vaadin</groupId>
+                        <artifactId>flow-maven-plugin</artifactId>
+                        <version>2.0-SNAPSHOT</version>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>copy-production-files</goal>
+                                    <goal>package-for-production</goal>
+                                </goals>
+                                <configuration>
+                                    <transpileOutputDirectory>${transpilation.output}</transpileOutputDirectory>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.eclipse.jetty</groupId>
+                        <artifactId>jetty-maven-plugin</artifactId>
+                        <configuration>
+                            <webAppConfig>
+                                <containerIncludeJarPattern>^$</containerIncludeJarPattern>
+                                <resourceBases>
+                                    <resourceBase>${transpilation.output}</resourceBase>
+                                </resourceBases>
+                            </webAppConfig>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>web-jar-repackage</id>
+            <build>
+              <plugins>
+                 <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
@@ -163,63 +320,9 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <version>3.0.0</version>
-                <executions>
-                    <execution>
-                        <id>add-resource</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>add-resource</goal>
-                        </goals>
-                        <configuration>
-                            <resources>
-                                <!-- This makes static resource files be 
-                                    available via servlet context and via HTTP -->
-                                <resource>
-                                    <directory>src/main/webapp</directory>
-                                    <targetPath></targetPath>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-war-plugin</artifactId>
-                <version>${maven.war.plugin.version}</version>
-                <configuration>
-                    <archive>
-                        <manifestEntries>
-                            <Implementation-Title>${project.name}
-                            </Implementation-Title>
-                            <Implementation-Version>${project.version}
-                            </Implementation-Version>
-                        </manifestEntries>
-                    </archive>
-                </configuration>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
-                        <index>false</index>
-                        <manifest>
-                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                        </manifest>
-                    </archive>
-                </configuration>
                 <executions>
-                    <execution>
-                        <id>ui-tests</id>
-                        <goals>
-                            <goal>test-jar</goal>
-                        </goals>
-                    </execution>
                     <execution>
                         <id>ui</id>
                         <goals>
@@ -227,110 +330,12 @@
                         </goals>
                         <configuration>
                             <classesDirectory>${ui.jar.classes}</classesDirectory>
-                            <!-- Class from the "test-common" module are 
-                                included into the resulting "root-context" jar. As a result we don't need 
-                                "test-common" as a dependency. Another option is to have it as a separate 
-                                bundle. And later on may be we need a test which does it. The lines below 
-                                allows to exclude "test-common" module classes from the "root-context" jar. 
-                                I don't really know why jar plugin puts classes from "test-common" module 
-                                to the "root-context" jar. -->
-                            <!-- excludes> <exclude>**/servlet/*</exclude> 
-                                </excludes -->
                             <classifier>ui</classifier>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
-        </plugins>
-    </build>
-
-    <profiles>
-        <profile>
-            <id>local-run</id>
-            <activation>
-                <property>
-                    <name>!test.use.hub</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>com.lazerycode.selenium</groupId>
-                        <artifactId>driver-binary-downloader-maven-plugin</artifactId>
-                        <version>${driver.binary.downloader.maven.plugin.version}</version>
-                        <configuration>
-                            <onlyGetDriversForHostOperatingSystem>true</onlyGetDriversForHostOperatingSystem>
-                            <rootStandaloneServerDirectory>${project.rootdir}/driver</rootStandaloneServerDirectory>
-                            <downloadedZipFileDirectory>${project.rootdir}/driver_zips</downloadedZipFileDirectory>
-                            <customRepositoryMap>${project.rootdir}/drivers.xml</customRepositoryMap>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <phase>pre-integration-test</phase>
-                                <goals>
-                                    <goal>selenium</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>productionMode</id>
-            <activation>
-                <property>
-                    <!-- In BrowserStack tests are run on IE11, and transpilation 
-                        is needed -->
-                    <name>test.use.browserstack</name>
-                    <value>true</value>
-                </property>
-            </activation>
-
-            <properties>
-                <transpilation.output>${project.build.directory}/build</transpilation.output>
-            </properties>
-
-            <dependencies>
-                <dependency>
-                    <groupId>com.vaadin</groupId>
-                    <artifactId>flow-server-production-mode</artifactId>
-                    <version>2.0-SNAPSHOT</version>
-                </dependency>
-            </dependencies>
-
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>com.vaadin</groupId>
-                        <artifactId>flow-maven-plugin</artifactId>
-                        <version>2.0-SNAPSHOT</version>
-                        <executions>
-                            <execution>
-                                <goals>
-                                    <goal>copy-production-files</goal>
-                                    <goal>package-for-production</goal>
-                                </goals>
-                                <configuration>
-                                    <transpileOutputDirectory>${transpilation.output}</transpileOutputDirectory>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-
-                    <plugin>
-                        <groupId>org.eclipse.jetty</groupId>
-                        <artifactId>jetty-maven-plugin</artifactId>
-                        <configuration>
-                            <webAppConfig>
-                                <containerIncludeJarPattern>^$</containerIncludeJarPattern>
-                                <resourceBases>
-                                    <resourceBase>${transpilation.output}</resourceBase>
-                                </resourceBases>
-                            </webAppConfig>
-                        </configuration>
-                    </plugin>
-                </plugins>
+            </plugins>
             </build>
         </profile>
     </profiles>

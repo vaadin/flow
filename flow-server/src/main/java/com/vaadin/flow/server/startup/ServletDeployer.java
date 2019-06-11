@@ -15,18 +15,18 @@
  */
 package com.vaadin.flow.server.startup;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.Optional;
-
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +36,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.DeploymentConfigurationFactory;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletConfiguration;
+import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 
 /**
@@ -52,6 +53,11 @@ import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
  * mode or has
  * {@link com.vaadin.flow.server.Constants#USE_ORIGINAL_FRONTEND_RESOURCES}
  * parameter set to {@code true}.</li>
+ * <li>Static files servlet, mapped to '/VAADIN/static' responsible to resolve
+ * files placed in the '[webcontext]/VAADIN/static' folder or in the
+ * '[classpath]/META-INF/static' location. It prevents sensible files like
+ * 'stats.json' and 'flow-build-info.json' to be served. It manages cache
+ * headers based on the '.cache.' and '.nocache.' fragment in the file name.</li>
  * </ul>
  *
  * In addition to the rules above, a servlet won't be registered, if any servlet
@@ -176,25 +182,13 @@ public class ServletDeployer implements ServletContextListener {
         return result;
     }
 
-    private DeploymentConfiguration createDeploymentConfiguration(
-            ServletConfig servletConfig, Class<?> servletClass) {
-        try {
-            return DeploymentConfigurationFactory
-                    .createPropertyDeploymentConfiguration(servletClass,
-                            servletConfig);
-        } catch (ServletException e) {
-            throw new IllegalStateException(String.format(
-                    "Failed to get deployment configuration data for servlet with name '%s' and class '%s'",
-                    servletConfig.getServletName(), servletClass), e);
-        }
-    }
 
     private void createAppServlet(ServletContext context) {
         boolean createServlet = ApplicationRouteRegistry.getInstance(context)
                 .hasNavigationTargets();
 
         createServlet = createServlet || WebComponentConfigurationRegistry
-                .getInstance(context).hasConfigurations();
+                .getInstance(new VaadinServletContext(context)).hasConfigurations();
 
         if (!createServlet) {
             getLogger().info(

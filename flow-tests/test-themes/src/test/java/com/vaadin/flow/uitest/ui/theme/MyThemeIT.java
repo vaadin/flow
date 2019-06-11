@@ -39,8 +39,7 @@ public class MyThemeIT extends ChromeBrowserTest {
         getDriver().get(getRootURL()
                 + "/view/com.vaadin.flow.uitest.ui.theme.MyThemeComponentView");
 
-        Assert.assertTrue(
-                findElement(By.id("theme-component")).isDisplayed());
+        Assert.assertTrue(findElement(By.id("theme-component")).isDisplayed());
     }
 
 }

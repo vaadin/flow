@@ -16,6 +16,14 @@
 
 package com.vaadin.flow.server.webcomponent;
 
+import com.vaadin.flow.server.osgi.OSGiAccess;
+import com.vaadin.flow.server.startup.EnableOSGiRunner;
+import net.jcip.annotations.NotThreadSafe;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -28,25 +36,20 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import net.jcip.annotations.NotThreadSafe;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import com.vaadin.flow.server.osgi.OSGiAccess;
-import com.vaadin.flow.server.startup.EnableOSGiRunner;
-
 @NotThreadSafe
 @RunWith(EnableOSGiRunner.class)
 public class OSGiWebComponentConfigurationRegistryTest extends WebComponentConfigurationRegistryTest {
 
-    @Before
     @Override
-    public void init() {
-        registry = WebComponentConfigurationRegistry
-                .getInstance(OSGiAccess.getInstance().getOsgiServletContext());
+    protected WebComponentConfigurationRegistry createRegistry() {
+        return new OSGiWebComponentConfigurationRegistry();
+    }
+
+    @Test
+    @Override
+    public void assertRegistryIsSingleton() {
+        Assert.assertSame("OSGiWebComponentConfigurationRegistry instance should be singleton",
+            registry, OSGiWebComponentConfigurationRegistry.getInstance(context));
     }
 
     @After
@@ -60,12 +63,6 @@ public class OSGiWebComponentConfigurationRegistryTest extends WebComponentConfi
     public void assertWebComponentRegistry() {
         Assert.assertEquals(OSGiWebComponentConfigurationRegistry.class.getName(),
                 registry.getClass().getName());
-    }
-
-    @Test
-    public void assertOsgiRegistryIsServedAsASingleton() {
-        Assert.assertEquals(registry, WebComponentConfigurationRegistry
-                .getInstance(OSGiAccess.getInstance().getOsgiServletContext()));
     }
 
     @Override

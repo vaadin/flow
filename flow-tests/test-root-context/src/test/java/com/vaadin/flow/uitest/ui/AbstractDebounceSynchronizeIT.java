@@ -1,15 +1,17 @@
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
+import java.util.Arrays;
+
 import org.junit.Assert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import java.util.Arrays;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public abstract class AbstractDebounceSynchronizeIT extends ChromeBrowserTest {
 
-    protected void assertThrottle(WebElement input) throws InterruptedException {
+    protected void assertThrottle(WebElement input)
+            throws InterruptedException {
         input.sendKeys("a");
         assertMessages("a");
 
@@ -32,7 +34,8 @@ public abstract class AbstractDebounceSynchronizeIT extends ChromeBrowserTest {
         assertMessages("a", "ab", "abc");
     }
 
-    protected void assertDebounce(WebElement input) throws InterruptedException {
+    protected void assertDebounce(WebElement input)
+            throws InterruptedException {
         // Should not sync while typing within 1000ms from last time
         for (String keys : Arrays.asList("a", "b", "c")) {
             input.sendKeys(keys);
@@ -60,4 +63,5 @@ public abstract class AbstractDebounceSynchronizeIT extends ChromeBrowserTest {
         input.sendKeys("b");
         assertMessages("a", "ab");
     }
+
 }

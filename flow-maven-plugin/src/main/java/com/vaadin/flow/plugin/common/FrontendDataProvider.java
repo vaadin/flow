@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -99,7 +100,6 @@ public class FrontendDataProvider {
         shellFileImports = resolveShellFileImports(es6SourceDirectory,
                 annotationValuesExtractor, fragments.values().stream()
                         .flatMap(Set::stream).collect(Collectors.toSet()));
-
         shellFileImports.addAll(generateWebComponentModules(
                 new File(es6SourceDirectory, webComponentOutputDirectoryName),
                 annotationValuesExtractor));
@@ -203,7 +203,7 @@ public class FrontendDataProvider {
      */
     protected WebComponentModulesGenerator getWebComponentGenerator(
             ClassPathIntrospector introspector) {
-        return new WebComponentModulesGenerator(introspector, true);
+        return new WebComponentModulesGenerator(introspector);
     }
 
     private Map<String, Set<File>> resolveFragmentFiles(File es6SourceDirectory,
@@ -354,18 +354,15 @@ public class FrontendDataProvider {
 
     private Collection<File> generateWebComponentModules(File outputDir,
             AnnotationValuesExtractor annotationValuesExtractor) {
-        if (outputDir.isFile()) {
-            throw new IllegalStateException(String.format(
-                    "The path '%s' already exists and it is not a diretory",
-                    outputDir));
+        try {
+            FileUtils.forceMkdir(outputDir);
+        } catch (IOException e) {
+            throw new IllegalStateException("Unable to create output " +
+                    "directory for generated web components!", e);
         }
-        if (!outputDir.exists()) {
-            outputDir.mkdir();
-        }
+
         WebComponentModulesGenerator generator = getWebComponentGenerator(
                 annotationValuesExtractor);
-        return generator.getExporters().map(
-                exporter -> generator.generateModuleFile(exporter, outputDir))
-                .collect(Collectors.toList());
+        return generator.generateWebComponentModules(outputDir);
     }
 }
