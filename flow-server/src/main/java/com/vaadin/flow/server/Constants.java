@@ -143,7 +143,7 @@ public final class Constants implements Serializable {
      * Default path for the WebPack profile statistics json file. It can be
      * modified by setting the system property "statistics.file.path".
      */
-    public static final String STATISTICS_JSON_DEFAULT = "build/stats.json";
+    public static final String STATISTICS_JSON_DEFAULT = Constants.VAADIN_CONFIGURATION + "stats.json";
 
     /**
      * Name of the <code>npm</code> main file.
@@ -208,9 +208,19 @@ public final class Constants implements Serializable {
     public static final String VAADIN_SERVLET_RESOURCES = META_INF + VAADIN_MAPPING;
 
     /**
+     * The static build resources folder.
+     */
+    public static final String VAADIN_BUILD = "build/";
+
+    /**
+     * The static configuration resources folder.
+     */
+    public static final String VAADIN_CONFIGURATION = "config/";
+
+    /**
      * The prefix used for all internal static files, relative to context root.
      */
-    public static final String VAADIN_BUILD_FILES_PATH = VAADIN_MAPPING + "build/";
+    public static final String VAADIN_BUILD_FILES_PATH = VAADIN_MAPPING + VAADIN_BUILD;
 
     private Constants() {
         // prevent instantiation constants class only
