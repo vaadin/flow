@@ -282,6 +282,15 @@ public interface DeploymentConfiguration extends Serializable {
                 : getDevelopmentFrontendPrefix();
     }
 
+    /**
+     * Gets the URL from which frontend resources should be loaded in NPM mode.
+     *
+     * @return the NPM resource URL
+     */
+    default String getNpmFrontendPrefix() {
+        return getDevelopmentFrontendPrefix();
+    }
+
     default String getRootElementId() {
         return getStringProperty(ApplicationConstants.UI_ELEMENT_ID, "");
     }
