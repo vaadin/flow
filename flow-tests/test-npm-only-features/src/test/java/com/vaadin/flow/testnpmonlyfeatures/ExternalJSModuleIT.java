@@ -43,4 +43,19 @@ public class ExternalJSModuleIT extends ChromeBrowserTest {
                                 && "module".equals(
                                         scriptTag.getAttribute("type"))));
     }
+
+    @Test
+    public void jsModuleAnnotation_externalJsInAComponentBeingAdded_shouldBeAddedToPage() {
+        findElement(By.id("addComponentButton")).click();
+        waitForElementPresent(By.id("componentWithExternalJsModule"));
+
+        List<WebElement> scriptTags = findElements(By.tagName("script"));
+        Assert.assertTrue(
+                "When a component is added to the page, external JS annotated with @JsModule annotation in the component should be added as a script tag with module type to the page!",
+                scriptTags.stream().anyMatch(
+                        scriptTag -> ComponentWithExternalJsModule.SOME_RANDOM_EXTERNAL_JS_MODULE_URL
+                                .equals(scriptTag.getAttribute("src"))
+                                && "module".equals(
+                                        scriptTag.getAttribute("type"))));
+    }
 }

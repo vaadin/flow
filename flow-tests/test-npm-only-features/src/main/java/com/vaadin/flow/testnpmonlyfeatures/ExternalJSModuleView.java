@@ -18,6 +18,7 @@ package com.vaadin.flow.testnpmonlyfeatures;
 
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
@@ -25,4 +26,14 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 @Route(value = "com.vaadin.flow.testnpmonlyfeatures.ExternalJSModuleView", layout = ViewTestLayout.class)
 public class ExternalJSModuleView extends Div {
     public static final String SOME_RANDOM_EXTERNAL_JS_MODULE_URL = "https://some-external-website.fi/some-js-module.js";
+
+    public ExternalJSModuleView() {
+        NativeButton button = new NativeButton("Add component", event -> {
+            ComponentWithExternalJsModule component = new ComponentWithExternalJsModule();
+            component.setId("componentWithExternalJsModule");
+            add(component);
+        });
+        button.setId("addComponentButton");
+        add(button);
+    }
 }

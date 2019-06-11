@@ -18,6 +18,7 @@ package com.vaadin.flow.uitest.ui.dependencies;
 
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
@@ -25,4 +26,14 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 @Route(value = "com.vaadin.flow.uitest.ui.dependencies.ExternalJavaScriptView", layout = ViewTestLayout.class)
 public class ExternalJavaScriptView extends Div {
     public static final String SOME_RANDOM_EXTERNAL_JS_URL = "https://some-external-website.fi/some-js-file.js";
+
+    public ExternalJavaScriptView() {
+        NativeButton button = new NativeButton("Add component", event -> {
+            ComponentWithExternalJavaScript component = new ComponentWithExternalJavaScript();
+            component.setId("componentWithExternalJavaScript");
+            add(component);
+        });
+        button.setId("addComponentButton");
+        add(button);
+    }
 }
