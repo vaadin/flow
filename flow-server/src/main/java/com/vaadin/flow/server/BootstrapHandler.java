@@ -1067,6 +1067,15 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return createJavaScriptElement(sourceUrl, true);
         }
 
+        private boolean isExternal(String url) {
+            return url.contains("://") && !(url
+                    .startsWith(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX)
+                    || url.startsWith(
+                    ApplicationConstants.FRONTEND_PROTOCOL_PREFIX)
+                    || url.startsWith(
+                    ApplicationConstants.BASE_PROTOCOL_PREFIX));
+        }
+
         private Element createDependencyElement(BootstrapUriResolver resolver,
                 LoadMode loadMode, JsonObject dependency,
                 Dependency.Type type) {
@@ -1085,10 +1094,13 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 dependencyElement = createJavaScriptElement(url,
                         !inlineElement);
                 break;
-                case JS_MODULE:
-                    dependencyElement = createJavaScriptElement(url, !inlineElement,
-                            "module");
-                    break;
+            case JS_MODULE:
+                if (url != null && isExternal(url))
+                    dependencyElement = createJavaScriptElement(url,
+                            !inlineElement, "module");
+                else
+                    dependencyElement = null;
+                break;
             case HTML_IMPORT:
                 dependencyElement = createHtmlImportElement(url);
                 break;
