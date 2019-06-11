@@ -211,7 +211,7 @@
                 supportsTouch = 'ontouchstart' in window
                    || (typeof navigator.msMaxTouchPoints !== 'undefined');
             }
-            params['v-td'] = false;
+            params['v-td'] = supportsTouch;
 
             /* Stringify each value (they are parsed on the server side) */
             Object.keys(params).forEach(function(key) {
