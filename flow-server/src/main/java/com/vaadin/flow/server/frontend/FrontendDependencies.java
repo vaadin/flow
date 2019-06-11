@@ -239,13 +239,12 @@ public class FrontendDependencies implements Serializable {
         computeApplicationTheme(endPoints);
     }
 
-
     // Visit all end-points and compute the theme for the application.
     // It fails in the case that there are multiple themes for the application or in the
     // case of Theme and NoTheme found in the application.
     // If no theme is found, it uses lumo if found in the class-path
     private void computeApplicationTheme(HashMap<String, EndPointData> endPoints)
-            throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+            throws ClassNotFoundException, InstantiationException, IllegalAccessException, IOException {
 
         Set<ThemeData> themes = endPoints.values().stream()
                 // consider only endPoints with theme information
@@ -270,6 +269,13 @@ public class FrontendDependencies implements Serializable {
         if (themes.isEmpty()) {
             // No theme annotation found by the scanner
             theme = getLumoTheme();
+            // visit the default theme class and add it under a fake endpoint
+            // identified by Object.class (which can never be a real @Route
+            // target)
+            EndPointData themeEndPoint =
+                    new EndPointData(Object.class);
+            visitClass(theme.getName(), themeEndPoint);
+            endPoints.put(theme.getName(), themeEndPoint);
         } else {
 
             // we have a proper theme or no-theme for the app
