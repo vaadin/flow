@@ -20,7 +20,7 @@
             LongPollingPushIT, RouteNotFoundIT, WebComponentsIT, EmptyListsIT, 
             InjectedElementInsideMixinBehaviorIT, TemplateHasInjectedSubTemplateIT, 
             TemplateInTemplateIT, UpgradeElementIT, DebounceSynchronizePropertyIT, 
-            ChangeModeIT, LoadingIndicatorIT,TimingInfoReportedIT</exclude.it.tests>
+            ChangeModeIT, LoadingIndicatorIT,TimingInfoReportedIT, ValueChangeModeIT</exclude.it.tests>
     </properties>
 
     <dependencies>

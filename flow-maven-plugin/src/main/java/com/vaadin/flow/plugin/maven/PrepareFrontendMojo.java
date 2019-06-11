@@ -157,10 +157,6 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         buildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, productionMode);
         buildInfo.put("npmFolder", npmFolder.getAbsolutePath());
         buildInfo.put("generatedFolder", generatedFolder.getAbsolutePath());
-        String webpackPort = System.getProperty("vaadin." + SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT);
-        if (webpackPort != null && webpackPort.matches("\\d+")) {
-            buildInfo.put("webpackPort", Double.parseDouble(webpackPort));
-        }
         try {
             FileUtils.forceMkdir(token.getParentFile());
             FileUtils.write(token, JsonUtil.stringify(buildInfo, 2) + "\n", "UTF-8");
