@@ -27,7 +27,7 @@ import com.vaadin.flow.server.DevModeHandler;
 /**
  * Stops {@link DevModeHandler} if there is no anymore initialized servlet
  * context instances.
- * 
+ *
  * @author Vaadin Ltd
  *
  */
