@@ -185,8 +185,9 @@ public final class DeploymentConfigurationFactory implements Serializable {
                     System.setProperty(VAADIN_PREFIX  + SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT,
                             String.valueOf((int)buildInfo.getNumber("webpackPort")));
                 }
-                if (System.getProperty(PROJECT_BASEDIR) == null && buildInfo.hasKey("npmFolder")) {
-                    System.setProperty(PROJECT_BASEDIR, buildInfo.getString("npmFolder"));
+                if (buildInfo.hasKey("npmFolder")) {
+                    initParameters.setProperty(PROJECT_BASEDIR,
+                            buildInfo.getString("npmFolder"));
                 }
             }
         } catch (IOException e) {

@@ -67,7 +67,8 @@ public class TaskRunNpmInstall implements Command {
      * Executes `npm install` after `package.json` has been updated.
      */
     private void runNpmInstall() {
-        List<String> command = new ArrayList<>(FrontendUtils.getNpmExecutable());
+        List<String> command = new ArrayList<>(FrontendUtils
+                .getNpmExecutable(packageUpdater.npmFolder.getAbsolutePath()));
         command.add("install");
 
         ProcessBuilder builder = FrontendUtils.createProcessBuilder(command);

@@ -35,7 +35,9 @@ public class NodeTasksTest {
 
     @Test
     public void should_UseDefaultFolders()throws Exception {
-        Builder builder = new Builder(new DefaultClassFinder(this.getClass().getClassLoader()))
+        Builder builder = new Builder(
+                new DefaultClassFinder(this.getClass().getClassLoader()),
+                new File(userDir))
             .enablePackagesUpdate(false)
             .enableImportsUpdate(true)
             .runNpmInstall(false)
@@ -56,7 +58,9 @@ public class NodeTasksTest {
         System.setProperty(PARAM_FRONTEND_DIR, "my_custom_sources_folder");
         System.setProperty(PARAM_GENERATED_DIR, "my/custom/generated/folder");
 
-        Builder builder = new Builder(new DefaultClassFinder(this.getClass().getClassLoader()))
+        Builder builder = new Builder(
+                new DefaultClassFinder(this.getClass().getClassLoader()),
+                new File(userDir))
             .enablePackagesUpdate(false)
             .enableImportsUpdate(true)
             .runNpmInstall(false)

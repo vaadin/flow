@@ -17,20 +17,20 @@
 
 package com.vaadin.flow.server.frontend;
 
-import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
-
 import java.io.File;
 import java.io.IOException;
 
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
+import elemental.json.JsonObject;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import elemental.json.JsonObject;
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 
 public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
@@ -42,14 +42,17 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
     private File mainPackageJson;
     private File appPackageJson;
 
+    private DeploymentConfiguration config;
+
     @Before
     public void setup() throws Exception {
         System.setProperty("user.dir", temporaryFolder.getRoot().getPath());
+        config = new MockDeploymentConfiguration();
 
-        File baseDir = new File(getBaseDir());
+        File baseDir = new File(config.getBaseDir());
         File generatedDir = new File(baseDir, DEFAULT_GENERATED_DIR);
 
-        NodeUpdateTestUtil.createStubNode(true, true);
+        NodeUpdateTestUtil.createStubNode(true, true, config);
 
         packageCreator = new TaskCreatePackageJson(baseDir, generatedDir);
 

@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -35,7 +37,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DI
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
-import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
 
 public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
 
@@ -46,13 +47,16 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
     private File webpackConfig;
     File baseDir;
 
+    private DeploymentConfiguration config;
+
     @Before
     public void setup() throws Exception {
         System.setProperty("user.dir", temporaryFolder.getRoot().getPath());
+        config = new MockDeploymentConfiguration();
 
-        baseDir = new File(getBaseDir());
+        baseDir = new File(config.getBaseDir());
 
-        NodeUpdateTestUtil.createStubNode(true, true);
+        NodeUpdateTestUtil.createStubNode(true, true, config);
 
         webpackUpdater = new TaskUpdateWebpack(
                 baseDir,

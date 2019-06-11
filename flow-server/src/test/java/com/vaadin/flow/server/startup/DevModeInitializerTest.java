@@ -13,6 +13,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
@@ -33,7 +35,6 @@ import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
-import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubNode;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubWebpackServer;
 import static org.junit.Assert.assertFalse;
@@ -49,6 +50,7 @@ public class DevModeInitializerTest {
     public ExpectedException exception = ExpectedException.none();
 
     private ServletContext servletContext;
+    private DeploymentConfiguration config;
     private DevModeInitializer devModeInitializer;
     private Set<Class<?>> classes;
 
@@ -85,8 +87,10 @@ public class DevModeInitializerTest {
 
         System.setProperty("user.dir", temporaryFolder.getRoot().getPath());
 
-        createStubNode(false, true);
-        createStubWebpackServer("Compiled", 0);
+        config = new MockDeploymentConfiguration();
+
+        createStubNode(false, true, config);
+        createStubWebpackServer("Compiled", 0, config);
 
         servletContext = Mockito.mock(ServletContext.class);
         ServletRegistration registration = Mockito.mock(ServletRegistration.class);
@@ -101,9 +105,9 @@ public class DevModeInitializerTest {
         Mockito.when(servletContext.getClassLoader())
                 .thenReturn(this.getClass().getClassLoader());
 
-        mainPackageFile = new File(getBaseDir(), PACKAGE_JSON);
-        appPackageFile = new File(getBaseDir(), DEFAULT_GENERATED_DIR + PACKAGE_JSON);
-        webpackFile = new File(getBaseDir(), WEBPACK_CONFIG);
+        mainPackageFile = new File(config.getBaseDir(), PACKAGE_JSON);
+        appPackageFile = new File(config.getBaseDir(), DEFAULT_GENERATED_DIR + PACKAGE_JSON);
+        webpackFile = new File(config.getBaseDir(), WEBPACK_CONFIG);
         appPackageFile.getParentFile().mkdirs();
 
         FileUtils.write(mainPackageFile, "{}", "UTF-8");

@@ -177,25 +177,14 @@ public class FrontendUtils {
     }
 
     /**
-     * Computes the project root folder. This is useful in case build is
-     * executed from a different working dir or when we want to change it for
-     * testing purposes.
-     *
-     * @return folder location
-     */
-    public static String getBaseDir() {
-        return System.getProperty(PROJECT_BASEDIR, System.getProperty("user.dir", "."));
-    }
-
-    /**
      * Locate <code>node</code> executable.
      *
      * @return the full path to the executable
      */
-    public static String getNodeExecutable() {
+    public static String getNodeExecutable(String baseDir) {
         String command = isWindows() ? "node.exe" : "node";
         String defaultNode = FrontendUtils.isWindows() ? "node/node.exe" : "node/node";
-        return getExecutable(command, defaultNode).getAbsolutePath();
+        return getExecutable(baseDir, command, defaultNode).getAbsolutePath();
     }
 
     /**
@@ -204,25 +193,25 @@ public class FrontendUtils {
      * @return the a list of all commands in sequence that need to be executed
      *         to have npm running
      */
-    public static List<String> getNpmExecutable() {
+    public static List<String> getNpmExecutable(String baseDir) {
         // If `node` is not found in PATH, `node/node_modules/npm/bin/npm` will not work
         // because it's a shell or windows script that looks for node and will fail.
         // Thus we look for the `mpn-cli` node script instead
-        File file = new File(getBaseDir(), "node/node_modules/npm/bin/npm-cli.js");
+        File file = new File(baseDir, "node/node_modules/npm/bin/npm-cli.js");
         if (file.canRead()) {
             // We return a two element list with node binary and npm-cli script
-            return Arrays.asList(getNodeExecutable(), file.getAbsolutePath());
+            return Arrays.asList(getNodeExecutable(baseDir), file.getAbsolutePath());
         }
         // Otherwise look for regulan `npm`
         String command = isWindows() ? "npm.cmd" : "npm";
-        return Arrays.asList(getExecutable(command, null).getAbsolutePath());
+        return Arrays.asList(getExecutable(baseDir, command, null).getAbsolutePath());
     }
 
-    private static File getExecutable(String cmd, String defaultLocation) {
+    private static File getExecutable(String baseDir, String cmd, String defaultLocation) {
         File file = null;
         try {
             file = defaultLocation == null ? frontendToolsLocator.tryLocateTool(cmd).orElse(null)
-                    : Optional.of(new File(getBaseDir(), defaultLocation))
+                    : Optional.of(new File(baseDir, defaultLocation))
                             .filter(frontendToolsLocator::verifyTool)
                             .orElseGet(() -> frontendToolsLocator.tryLocateTool(cmd).orElse(null));
         } catch (Exception e) { //NOSONAR

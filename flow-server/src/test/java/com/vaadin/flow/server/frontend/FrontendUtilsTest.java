@@ -19,6 +19,7 @@ import java.io.File;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -47,9 +48,13 @@ public class FrontendUtilsTest {
     @Rule
     public final TemporaryFolder tmpDir = new TemporaryFolder();
 
+    private MockDeploymentConfiguration configuration;
+
     @Before
     public void setup() throws Exception {
         System.setProperty("user.dir", tmpDir.getRoot().getAbsolutePath());
+
+        configuration = new MockDeploymentConfiguration();
     }
 
     @Test
@@ -58,14 +63,14 @@ public class FrontendUtilsTest {
             LoggerFactory.getLogger(FrontendUtilsTest.class).info("Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.");
             return;
         }
-        createStubNode(true, true);
+        createStubNode(true, true, configuration);
 
-        assertThat(FrontendUtils.getNodeExecutable(),
+        assertThat(FrontendUtils.getNodeExecutable(configuration.getBaseDir()),
                 containsString(DEFAULT_NODE));
-        assertThat(FrontendUtils.getNpmExecutable().get(0),
-                containsString(DEFAULT_NODE));
-        assertThat(FrontendUtils.getNpmExecutable().get(1),
-                containsString(NPM_CLI_STRING));
+        assertThat(FrontendUtils.getNpmExecutable(configuration.getBaseDir())
+                .get(0), containsString(DEFAULT_NODE));
+        assertThat(FrontendUtils.getNpmExecutable(configuration.getBaseDir())
+                .get(1), containsString(NPM_CLI_STRING));
     }
 
     @Test
@@ -74,26 +79,29 @@ public class FrontendUtilsTest {
             LoggerFactory.getLogger(FrontendUtilsTest.class).info("Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.");
             return;
         }
-        createStubNode(false, true);
+        createStubNode(false, true, configuration);
 
-        assertThat(FrontendUtils.getNodeExecutable(), containsString("node"));
-        assertThat(FrontendUtils.getNodeExecutable(),
-                not(containsString(DEFAULT_NODE)));
-        assertThat(FrontendUtils.getNpmExecutable().get(0),
+        assertThat(FrontendUtils.getNodeExecutable(configuration.getBaseDir()),
                 containsString("node"));
-        assertThat(FrontendUtils.getNpmExecutable().get(1),
-                containsString(NPM_CLI_STRING));
+        assertThat(FrontendUtils.getNodeExecutable(configuration.getBaseDir()),
+                not(containsString(DEFAULT_NODE)));
+        assertThat(FrontendUtils.getNpmExecutable(configuration.getBaseDir())
+                .get(0), containsString("node"));
+        assertThat(FrontendUtils.getNpmExecutable(configuration.getBaseDir())
+                .get(1), containsString(NPM_CLI_STRING));
     }
 
     @Test
     public void should_useSystemNode() {
-        assertThat(FrontendUtils.getNodeExecutable(), containsString("node"));
-        assertThat(FrontendUtils.getNodeExecutable(),
+        assertThat(FrontendUtils.getNodeExecutable(configuration.getBaseDir()),
+                containsString("node"));
+        assertThat(FrontendUtils.getNodeExecutable(configuration.getBaseDir()),
                 not(containsString(DEFAULT_NODE)));
-        assertThat(FrontendUtils.getNpmExecutable().get(0),
-                containsString("npm"));
-        assertThat(FrontendUtils.getNodeExecutable(),
+        assertThat(FrontendUtils.getNpmExecutable(configuration.getBaseDir())
+                .get(0), containsString("npm"));
+        assertThat(FrontendUtils.getNodeExecutable(configuration.getBaseDir()),
                 not(containsString(NPM_CLI_STRING)));
-        assertEquals(1, FrontendUtils.getNpmExecutable().size());
+        assertEquals(1, FrontendUtils
+                .getNpmExecutable(configuration.getBaseDir()).size());
     }
 }

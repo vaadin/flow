@@ -131,8 +131,8 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
             return;
         }
 
-        FrontendUtils.getNodeExecutable();
-        FrontendUtils.getNpmExecutable();
+        FrontendUtils.getNodeExecutable(npmFolder.getAbsolutePath());
+        FrontendUtils.getNpmExecutable(npmFolder.getAbsolutePath());
 
         new NodeTasks.Builder(getClassFinder(project), npmFolder, generatedFolder)
                 .withWebpack(webpackOutputDirectory, webpackTemplate)
@@ -188,10 +188,6 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
                     token.getAbsolutePath(),
                     buildInfo.toJson()));
         }
-
-        // In the case of running npm dev-mode in a maven multi-module projects,
-        // inform dev-mode server and updaters about the actual project folder.
-        System.setProperty("project.basedir", npmFolder.getAbsolutePath());
     }
 
     private void copyFlowModuleDependencies(File flowNodeDirectory) {

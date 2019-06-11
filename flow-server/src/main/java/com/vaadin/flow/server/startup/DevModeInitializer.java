@@ -142,9 +142,8 @@ public class DevModeInitializer
             return;
         }
 
-        Builder builder = new NodeTasks.Builder(
-                new DefaultClassFinder(classes));
-
+        Builder builder = new NodeTasks.Builder(new DefaultClassFinder(classes),
+                new File(config.getBaseDir()));
 
         log().info("Starting dev-mode updaters in {} folder.",
                 builder.npmFolder);
