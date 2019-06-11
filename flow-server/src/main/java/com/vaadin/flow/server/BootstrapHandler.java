@@ -404,10 +404,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 VaadinSession session) {
             servletPathToContextRoot = contextRootRelatiePath;
             DeploymentConfiguration config = session.getConfiguration();
-            if (session.getBrowser().isEs6Supported()) {
-                frontendRootUrl = config.getEs6FrontendPrefix();
+            if(config.isBowerMode()) {
+                if (session.getBrowser().isEs6Supported()) {
+                    frontendRootUrl = config.getEs6FrontendPrefix();
+                } else {
+                    frontendRootUrl = config.getEs5FrontendPrefix();
+                }
             } else {
-                frontendRootUrl = config.getEs5FrontendPrefix();
+                frontendRootUrl = config.getNpmFrontendPrefix();
             }
             assert frontendRootUrl.endsWith("/");
             assert servletPathToContextRoot.endsWith("/");

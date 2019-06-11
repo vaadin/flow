@@ -364,14 +364,11 @@ public class UidlWriterTest {
         JsonObject inlineDependency = inlineDependencies.get(0);
 
         String url = inlineDependency.getString(Dependency.KEY_CONTENTS);
-        if (!url.startsWith(expectedPrefix)) {
-            throw new AssertionError(
-                url + " should have the prefix "
-                    + expectedPrefix);
-        }
-        String normalizedUrl = url.substring(expectedPrefix.length());
-        assertEquals(normalizedUrl, "inline.css");
-
+            if (!url.startsWith(expectedPrefix)) {
+                throw new AssertionError(url + " should have the prefix " + expectedPrefix);
+            }
+            String normalizedUrl = url.substring(expectedPrefix.length());
+            assertEquals("inline.css", normalizedUrl);
         assertEquals(Dependency.Type.STYLESHEET,
             Dependency.Type.valueOf(inlineDependency.getString(Dependency.KEY_TYPE)));
     }
