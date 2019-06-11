@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -256,7 +257,7 @@ public class FrontendDependencies implements Serializable {
     private void computeApplicationTheme(
             HashMap<String, EndPointData> endPoints)
             throws ClassNotFoundException, InstantiationException,
-            IllegalAccessException {
+            IllegalAccessException, IOException {
 
         Set<ThemeData> themes = endPoints.values().stream()
                 // consider only endPoints with theme information
@@ -286,9 +287,19 @@ public class FrontendDependencies implements Serializable {
         String variant = "";
         if (themes.isEmpty()) {
             // No theme annotation found by the scanner
-            theme = getLumoTheme();
+            final Class<? extends AbstractTheme> defaultTheme = getLumoTheme();
+            // call visitClass on the default theme using the first available
+            // endpoint. If not endpoint is available, default theme won't be
+            // set.
+            if (defaultTheme != null) {
+                Optional<EndPointData> endPointData =
+                        endPoints.values().stream().findFirst();
+                if (endPointData.isPresent()) {
+                    visitClass(defaultTheme.getName(), endPointData.get());
+                    theme = defaultTheme;
+                }
+            }
         } else {
-
             // we have a proper theme or no-theme for the app
             ThemeData themeData = themes.iterator().next();
             if (!themeData.isNotheme()) {
