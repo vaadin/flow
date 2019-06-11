@@ -36,7 +36,9 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.DevModeHandler;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.frontend.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.server.frontend.NodeTasks.Builder;
@@ -134,17 +136,16 @@ public class DevModeInitializer
     public static void initDevModeHandler(Set<Class<?>> classes,
             ServletContext context, DeploymentConfiguration config) {
         if (config.isProductionMode()) {
-            log().debug("Skiping DEV MODE because PRODUCTION MODE is set.");
+            log().debug("Skipping DEV MODE because PRODUCTION MODE is set.");
             return;
         }
         if (config.isBowerMode()) {
-            log().debug("Skiping DEV MODE because BOWER MODE is set.");
+            log().debug("Skipping DEV MODE because BOWER MODE is set.");
             return;
         }
 
         Builder builder = new NodeTasks.Builder(
                 new DefaultClassFinder(classes));
-
 
         log().info("Starting dev-mode updaters in {} folder.",
                 builder.npmFolder);
@@ -154,7 +155,7 @@ public class DevModeInitializer
                 new File(builder.npmFolder, WEBPACK_CONFIG),
                 builder.generatedFolder)) {
             if (!file.canRead()) {
-                log().warn("Skiping DEV MODE because cannot read '{}' file.",
+                log().warn("Skipping DEV MODE because cannot read '{}' file.",
                         file.getPath());
                 return;
             }
@@ -165,10 +166,11 @@ public class DevModeInitializer
                 .runNpmInstall(true).withEmbeddableWebComponents(true)
                 .collectVisitedClasses(visitedClassNames).build().execute();
 
-        context.setAttribute(VisitedClasses.class.getName(),
-                new VisitedClasses(visitedClassNames));
+        VaadinContext vaadinContext = new VaadinServletContext(context);
 
-        DevModeHandler.start(config, builder.npmFolder);
+        vaadinContext.setAttribute(new VisitedClasses(visitedClassNames));
+
+        DevModeHandler.start(vaadinContext, config, builder.npmFolder);
     }
 
     private static Logger log() {
