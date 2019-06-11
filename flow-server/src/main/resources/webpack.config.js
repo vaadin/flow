@@ -19,15 +19,20 @@ fileNameOfTheFlowGeneratedMainEntryPoint;
 mavenOutputFolderForFlowBundledFiles;
 ////////////////////////////////////////
 
-// public path for resources, must match the request used in flow to get the /build/stats.json file
+// public path for resources, must match Flow VAADIN_BUILD
 const build = 'build';
-// folder for outputting stats.js, index.js bundle, etc.
+// public path for resources, must match the request used in flow to get the /build/stats.json file
+const config = 'config'
+// folder for outputting index.js bundle, etc.
 const buildFolder = `${mavenOutputFolderForFlowBundledFiles}/${build}`;
+// folder for outputting stats.js
+const confFolder = `${mavenOutputFolderForFlowBundledFiles}/${config}`;
 // file which is used by flow to read templates for server `@Id` binding
-const statsFile = `${buildFolder}/stats.json`;
+const statsFile = `${confFolder}/stats.json`;
 // make sure that build folder exists before outputting anything
 const mkdirp = require('mkdirp');
 mkdirp(buildFolder);
+mkdirp(confFolder);
 
 module.exports = {
   mode: 'production',

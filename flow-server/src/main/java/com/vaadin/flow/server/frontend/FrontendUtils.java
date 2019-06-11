@@ -129,7 +129,7 @@ public class FrontendUtils {
     /**
      * File used to enable npm mode.
      */
-    public static final String TOKEN_FILE = "build/flow-build-info.json";
+    public static final String TOKEN_FILE = Constants.VAADIN_CONFIGURATION + "flow-build-info.json";
 
     /**
      * A parameter informing about the location of the {@link FrontendUtils#TOKEN_FILE}.
