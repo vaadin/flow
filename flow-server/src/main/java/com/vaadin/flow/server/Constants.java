@@ -235,6 +235,11 @@ public final class Constants implements Serializable {
     public static final String VAADIN_BUILD_FILES_PATH = VAADIN_MAPPING
             + VAADIN_BUILD;
 
+    public static final int REQUIRED_NODE_MAJOR_VERSION = 10;
+    public static final int REQUIRED_NODE_MINOR_VERSION = 0;
+    public static final int REQUIRED_NPM_MAJOR_VERSION = 5;
+    public static final int REQUIRED_NPM_MINOR_VERSION = 6;
+
     private Constants() {
         // prevent instantiation constants class only
     }
