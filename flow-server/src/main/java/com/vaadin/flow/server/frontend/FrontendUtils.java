@@ -84,6 +84,10 @@ public class FrontendUtils {
      * The name of the webpack configuration file.
      */
     public static final String WEBPACK_CONFIG = "webpack.config.js";
+    /**
+     * The name of the webpack generated configuration file.
+     */
+    public static final String WEBPACK_GENERATED = "webpack.generated.js";
 
     /**
      * The NPM package name that will be used for the javascript files present

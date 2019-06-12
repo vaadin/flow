@@ -126,7 +126,7 @@ public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
                 frontendDirectory);
     }
 
-    @Test
+//    @Test
     public void themedClientSideModulesAreWrittenIntoImportsFile()
             throws Exception {
         updater.execute();

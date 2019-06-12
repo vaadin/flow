@@ -28,6 +28,7 @@ import org.apache.commons.io.FileUtils;
 import com.vaadin.flow.server.Command;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
 import static com.vaadin.flow.server.frontend.NodeUpdater.log;
 /**
  * Updates the webpack config file according with current project settings.
@@ -38,6 +39,7 @@ public class TaskUpdateWebpack implements Command {
      * The name of the webpack config file.
      */
     private final String webpackTemplate;
+    private final String webpackGeneratedTemplate;
     private final transient Path webpackOutputPath;
     private final transient Path flowImportsFilePath;
     private final transient Path webpackConfigPath;
@@ -52,12 +54,17 @@ public class TaskUpdateWebpack implements Command {
      * @param webpackTemplate
      *            name of the webpack resource to be used as template when
      *            creating the <code>webpack.config.js</code> file.
+     * @param webpackGeneratedTemplate
+     *            name of the webpack resource to be used as template when
+     *            creating the <code>webpack.generated.js</code> file.
      * @param generatedFlowImports
      *            name of the JS file to update with the Flow project imports
      */
     TaskUpdateWebpack(File webpackConfigFolder, File webpackOutputDirectory,
-            String webpackTemplate, File generatedFlowImports) {
+            String webpackTemplate, String webpackGeneratedTemplate,
+            File generatedFlowImports) {
         this.webpackTemplate = webpackTemplate;
+        this.webpackGeneratedTemplate = webpackGeneratedTemplate;
         this.webpackOutputPath = webpackOutputDirectory.toPath();
         this.flowImportsFilePath = generatedFlowImports.toPath();
         this.webpackConfigPath = webpackConfigFolder.toPath();
@@ -77,42 +84,55 @@ public class TaskUpdateWebpack implements Command {
             return;
         }
 
-        File configFile = new File(webpackConfigPath.toFile(),
-                WEBPACK_CONFIG);
+        File configFile = new File(webpackConfigPath.toFile(), WEBPACK_CONFIG);
+
+        // If we have an old config file we remove it and create the new one using the webpack.generated.js
+        if (configFile.exists()) {
+            if (!FileUtils.readFileToString(configFile, "UTF-8").contains(
+                    "const flowDefaults = require('./webpack.generated.js');")) {
+                log().info("Webpack configuration was outdated, removing file: " + configFile);
+                configFile.delete();
+            }
+        }
 
         if (!configFile.exists()) {
             URL resource = this.getClass().getClassLoader()
                     .getResource(webpackTemplate);
             FileUtils.copyURLToFile(resource, configFile);
-            log().info("Created webpack file: " + configFile);
+            log().info("Created webpack configuration file: " + configFile);
         }
 
-        if (configFile.exists()) {
-            List<String> lines = FileUtils.readLines(configFile, "UTF-8");
+        // Generated file is always re-written
+        File generatedFile = new File(webpackConfigPath.toFile(), WEBPACK_GENERATED);
 
-            boolean modified = false;
-            String outputLine = "mavenOutputFolderForFlowBundledFiles = require('path').resolve(__dirname, '"
-                    + getEscapedRelativeWebpackPath(webpackOutputPath) + "');";
-            String mainLine = "fileNameOfTheFlowGeneratedMainEntryPoint = require('path').resolve(__dirname, '"
-                    + getEscapedRelativeWebpackPath(flowImportsFilePath) + "');";
+        URL resource = this.getClass().getClassLoader()
+                .getResource(webpackGeneratedTemplate);
+        FileUtils.copyURLToFile(resource, generatedFile);
+        List<String> lines = FileUtils.readLines(generatedFile, "UTF-8");
 
-            for (int i = 0; i < lines.size(); i++) {
-                String line = lines.get(i).trim();
-                if (lines.get(i).startsWith("fileNameOfTheFlowGeneratedMainEntryPoint") && !line.equals(mainLine)) {
-                    lines.set(i, mainLine);
-                    modified = true;
-                }
-                if (lines.get(i).startsWith("mavenOutputFolderForFlowBundledFiles") && !line.equals(outputLine)) {
-                    lines.set(i, outputLine);
-                    modified = true;
-                }
+        String outputLine =
+                "mavenOutputFolderForFlowBundledFiles = require('path').resolve(__dirname, '"
+                        + getEscapedRelativeWebpackPath(webpackOutputPath)
+                        + "');";
+        String mainLine =
+                "fileNameOfTheFlowGeneratedMainEntryPoint = require('path').resolve(__dirname, '"
+                        + getEscapedRelativeWebpackPath(flowImportsFilePath)
+                        + "');";
+
+        for (int i = 0; i < lines.size(); i++) {
+            String line = lines.get(i).trim();
+            if (lines.get(i)
+                    .startsWith("fileNameOfTheFlowGeneratedMainEntryPoint")
+                    && !line.equals(mainLine)) {
+                lines.set(i, mainLine);
             }
-
-            if (modified) {
-                FileUtils.writeLines(configFile, lines);
-                log().info("Updated webpack file: " + configFile);
+            if (lines.get(i).startsWith("mavenOutputFolderForFlowBundledFiles")
+                    && !line.equals(outputLine)) {
+                lines.set(i, outputLine);
             }
         }
+
+        FileUtils.writeLines(generatedFile, lines);
     }
 
     private String getEscapedRelativeWebpackPath(Path path) {
