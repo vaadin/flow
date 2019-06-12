@@ -42,6 +42,7 @@ import com.vaadin.flow.theme.Theme;
 
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
+
 import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFinder;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
@@ -55,9 +56,9 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
  * <li>Update {@link Constants#PACKAGE_JSON} file with the {@link NpmPackage}
  * annotations defined in the classpath,</li>
  * <li>Install dependencies by running <code>npm install</code></li>
- * <li>Update the {@link FrontendUtils#IMPORTS_NAME} file imports with
- * the {@link JsModule} {@link Theme} and {@link JavaScript} annotations defined
- * in the classpath,</li>
+ * <li>Update the {@link FrontendUtils#IMPORTS_NAME} file imports with the
+ * {@link JsModule} {@link Theme} and {@link JavaScript} annotations defined in
+ * the classpath,</li>
  * <li>Update {@link FrontendUtils#WEBPACK_CONFIG} file.</li>
  * </ul>
  */
@@ -100,8 +101,8 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
     private boolean runNpmInstall;
 
     /**
-     * Whether to generate embeddable web components from
-     * WebComponentExporter inheritors.
+     * Whether to generate embeddable web components from WebComponentExporter
+     * inheritors.
      */
     @Parameter(defaultValue = "true")
     private boolean generateEmbeddableWebComponents;
@@ -110,9 +111,10 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
     public void execute() {
         super.execute();
 
-        // Do nothing when bower mode
-        if (bower) {
-            getLog().info("Skipped 'build-frontend' goal because 'vaadin.bowerMode' is set to true.");
+        // Do nothing when compatibility mode
+        if (compatibility) {
+            getLog().info(
+                    "Skipped 'build-frontend' goal because compatibility mode is set to true.");
             return;
         }
 
@@ -128,35 +130,36 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
         getLog().info("update-frontend took " + ms + "ms.");
     }
 
-
     private void runNodeUpdater() {
-        new NodeTasks.Builder(getClassFinder(project),
-                npmFolder, generatedFolder, frontendDirectory)
-                .runNpmInstall(runNpmInstall)
-                .enablePackagesUpdate(true)
-                .enableImportsUpdate(true)
-                .withEmbeddableWebComponents(generateEmbeddableWebComponents)
-                .build().execute();
+        new NodeTasks.Builder(getClassFinder(project), npmFolder,
+                generatedFolder, frontendDirectory).runNpmInstall(runNpmInstall)
+                        .enablePackagesUpdate(true).enableImportsUpdate(true)
+                        .withEmbeddableWebComponents(
+                                generateEmbeddableWebComponents)
+                        .build().execute();
     }
 
     private void runWebpack() {
         String webpackCommand = "webpack/bin/webpack.js";
-        File webpackExecutable = new File(npmFolder, NODE_MODULES + webpackCommand);
+        File webpackExecutable = new File(npmFolder,
+                NODE_MODULES + webpackCommand);
         if (!webpackExecutable.isFile()) {
             throw new IllegalStateException(String.format(
-                    "Unable to locate webpack executable by path '%s'. Double" +
-                            " check that the plugin is executed correctly",
+                    "Unable to locate webpack executable by path '%s'. Double"
+                            + " check that the plugin is executed correctly",
                     webpackExecutable.getAbsolutePath()));
         }
 
-        String nodePath  = FrontendUtils.getNodeExecutable();
+        String nodePath = FrontendUtils.getNodeExecutable();
 
         Process webpackLaunch = null;
         try {
             getLog().info("Running webpack ...");
-            webpackLaunch =  new ProcessBuilder(nodePath,
-                    webpackExecutable.getAbsolutePath()).directory(project.getBasedir())
-                    .redirectOutput(ProcessBuilder.Redirect.INHERIT).start();
+            webpackLaunch = new ProcessBuilder(nodePath,
+                    webpackExecutable.getAbsolutePath())
+                            .directory(project.getBasedir())
+                            .redirectOutput(ProcessBuilder.Redirect.INHERIT)
+                            .start();
             int errorCode = webpackLaunch.waitFor();
             if (errorCode != 0) {
                 readDetailsAndThrowException(webpackLaunch);
@@ -191,16 +194,22 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
     }
 
     @Override
-    boolean isDefaultBower() {
+    boolean isDefaultCompatibility() {
         File tokenFile = new File(webpackOutputDirectory, TOKEN_FILE);
         if (!tokenFile.exists()) {
-            getLog().warn("'build-frontend' goal was called without previously calling 'prepare-package'");
+            getLog().warn(
+                    "'build-frontend' goal was called without previously calling 'prepare-package'");
             return true;
         }
         try {
             String json = FileUtils.readFileToString(tokenFile, "UTF-8");
             JsonObject buildInfo = JsonUtil.parse(json);
-            return buildInfo.hasKey("bowerMode") ? buildInfo.getBoolean("bowerMode") : true;
+            if (buildInfo.hasKey("bowerMode")) {
+                return buildInfo.getBoolean("bowerMode");
+            }
+            return buildInfo.hasKey("compatibilityMode")
+                    ? buildInfo.getBoolean("compatibilityMode")
+                    : true;
         } catch (IOException e) {
             getLog().warn("Unable to read token file", e);
             return true;

@@ -67,9 +67,10 @@ public class CopyProductionFilesMojo extends FlowModeAbstractMojo {
     public void execute() {
         super.execute();
 
-        // Do nothing when not in bower mode
-        if (!bower) {
-            getLog().info("Skipped `copy-production-files` goal because `vaadin.bowerMode` is not set.");
+        // Do nothing when not in compatibility mode
+        if (!compatibility) {
+            getLog().info(
+                    "Skipped `copy-production-files` goal because compatibility mode is not set.");
             return;
         }
 
@@ -102,8 +103,8 @@ public class CopyProductionFilesMojo extends FlowModeAbstractMojo {
     }
 
     @Override
-    boolean isDefaultBower() {
+    boolean isDefaultCompatibility() {
         return true;
     }
-    
+
 }
