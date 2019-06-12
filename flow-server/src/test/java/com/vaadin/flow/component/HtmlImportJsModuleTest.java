@@ -17,6 +17,17 @@
 
 package com.vaadin.flow.component;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.internal.DependencyTreeCache;
@@ -30,16 +41,6 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.DevModeInitializer;
 import com.vaadin.flow.shared.ui.LoadMode;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-
-import java.util.HashSet;
-import java.util.Set;
 
 public class HtmlImportJsModuleTest {
 
@@ -58,8 +59,14 @@ public class HtmlImportJsModuleTest {
         VaadinContext context = Mockito.mock(VaadinContext.class);
 
         Mockito.when(service.getContext()).thenReturn(context);
-        Mockito.when(context.getAttribute(DevModeInitializer.VisitedClasses.class)).thenReturn(visitedClasses);
-        Mockito.doAnswer(invocationOnMock -> visitedClasses = (DevModeInitializer.VisitedClasses) invocationOnMock.getArguments()[0]).when(context).setAttribute(Mockito.any(DevModeInitializer.VisitedClasses.class));
+        Mockito.when(
+                context.getAttribute(DevModeInitializer.VisitedClasses.class))
+                .thenReturn(visitedClasses);
+        Mockito.doAnswer(
+                invocationOnMock -> visitedClasses = (DevModeInitializer.VisitedClasses) invocationOnMock
+                        .getArguments()[0])
+                .when(context).setAttribute(
+                        Mockito.any(DevModeInitializer.VisitedClasses.class));
 
         Mockito.when(session.getService()).thenReturn(service);
         Mockito.when(session.getConfiguration()).thenReturn(configuration);
@@ -85,6 +92,7 @@ public class HtmlImportJsModuleTest {
 
         Mockito.when(dependencyCache.getDependencies(Mockito.anyString()))
                 .thenAnswer(new Answer<Object>() {
+                    @Override
                     public Object answer(InvocationOnMock invocation) {
                         Set set = new HashSet<>(1);
                         set.add(invocation.getArguments()[0]);
@@ -131,7 +139,8 @@ public class HtmlImportJsModuleTest {
     private void assertComponentImport(Class componentClass, String importValue,
             LoadMode importLoadMode, boolean isBowerMode) {
 
-        Mockito.when(configuration.isBowerMode()).thenReturn(isBowerMode);
+        Mockito.when(configuration.isCompatibilityMode())
+                .thenReturn(isBowerMode);
 
         UIInternals uiInternals = new UIInternals(ui);
         uiInternals.setSession(session);
@@ -149,9 +158,10 @@ public class HtmlImportJsModuleTest {
             Assert.assertEquals("Incorrect import value.", importValue,
                     valueArgumentCaptor.getValue());
             Assert.assertEquals("Incorrect import load mode.", importLoadMode,
-                    loadModeArgumentCaptor.getValue());            
+                    loadModeArgumentCaptor.getValue());
         } else {
-            Mockito.verify(page, Mockito.never()).addHtmlImport(Mockito.anyString());
+            Mockito.verify(page, Mockito.never())
+                    .addHtmlImport(Mockito.anyString());
         }
     }
 

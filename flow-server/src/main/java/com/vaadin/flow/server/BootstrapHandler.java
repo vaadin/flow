@@ -404,7 +404,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 VaadinSession session) {
             servletPathToContextRoot = contextRootRelatiePath;
             DeploymentConfiguration config = session.getConfiguration();
-            if(config.isBowerMode()) {
+            if(config.isCompatibilityMode()) {
                 if (session.getBrowser().isEs6Supported()) {
                     frontendRootUrl = config.getEs6FrontendPrefix();
                 } else {
@@ -532,7 +532,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     initialPageSettings -> handleInitialPageSettings(context,
                             head, initialPageSettings));
 
-            if (config.isBowerMode()) {
+            if (config.isCompatibilityMode()) {
                 /* Append any theme elements to initial page. */
                 handleThemeContents(context, document);
             }
@@ -543,7 +543,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
             setupPwa(document, context);
 
-            if (!config.isBowerMode() && !config.isProductionMode()) {
+            if (!config.isCompatibilityMode() && !config.isProductionMode()) {
                 checkWebpackStatus(document);
             }
 
@@ -822,7 +822,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             VaadinService service = context.getSession().getService();
             DeploymentConfiguration conf = service.getDeploymentConfiguration();
 
-            if (conf.isBowerMode()) {
+            if (conf.isCompatibilityMode()) {
                 inlineEs6Collections(head, context);
                 appendWebComponentsPolyfills(head, context);
             } else {

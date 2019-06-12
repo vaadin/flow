@@ -131,7 +131,7 @@ public class StaticFileServer implements StaticFileHandler {
      * @return true if we are ok to try serving the file
      */
     private boolean isAllowedVAADINBuildUrl(String filenameWithPath) {
-        if (deploymentConfiguration.isBowerMode()) {
+        if (deploymentConfiguration.isCompatibilityMode()) {
             getLogger().trace("Serving from the classpath in legacy "
                             + "mode is not accepted. "
                             + "Letting request for '{}' go to servlet context.",
