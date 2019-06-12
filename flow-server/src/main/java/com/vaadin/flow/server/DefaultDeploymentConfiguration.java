@@ -41,9 +41,10 @@ public class DefaultDeploymentConfiguration
             + "to disable debug features." + SEPARATOR;
 
     public static final String WARNING_BOWER_MODE = SEPARATOR
-            + "\nVaadin is running in BOWER mode.\n"
-            + "This mode will be unsuported in future Vaadin versions."
-            + SEPARATOR;
+            + "\nRunning in Vaadin 13 (Flow 1) compatibility mode.\n\n"
+            + "This mode uses webjars/Bower for client side dependency management and HTML imports for dependency loading.\n\n"
+            + "The default mode in Vaadin 14+ (Flow 2+) is based on npm for dependency management and JavaScript modules for dependency inclusion.\n\n"
+            + "See http://vaadin.com/docs for more information." + SEPARATOR;
 
     public static final String WARNING_XSRF_PROTECTION_DISABLED = SEPARATOR
             + "\nWARNING: Cross-site request forgery protection is disabled!"
@@ -231,7 +232,6 @@ public class DefaultDeploymentConfiguration
         return pushURL;
     }
 
-
     /**
      * Log a warning if Vaadin is not running in production mode.
      */
@@ -247,7 +247,8 @@ public class DefaultDeploymentConfiguration
      * Log a warning if Vaadin is running in bower mode.
      */
     private void checkBowerMode(boolean loggWarning) {
-        bowerMode = getBooleanProperty(Constants.SERVLET_PARAMETER_BOWER_MODE, true);
+        bowerMode = getBooleanProperty(Constants.SERVLET_PARAMETER_BOWER_MODE,
+                true);
         if (bowerMode && loggWarning) {
             getLogger().warn(WARNING_BOWER_MODE);
         }
