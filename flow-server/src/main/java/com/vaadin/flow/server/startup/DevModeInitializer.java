@@ -124,8 +124,8 @@ public class DevModeInitializer
     }
 
     /**
-     * Initialize the devmode server if not in production mode or bower
-     * compatibility mode.
+     * Initialize the devmode server if not in production mode or compatibility
+     * mode.
      *
      * @param classes
      *            classes to check for npm- and js modules
