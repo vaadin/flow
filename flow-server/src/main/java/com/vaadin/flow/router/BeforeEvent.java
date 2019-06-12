@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.router;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EventObject;
 import java.util.List;
@@ -42,6 +43,7 @@ public abstract class BeforeEvent extends EventObject {
     private NavigationHandler rerouteTarget;
 
     private final Class<?> navigationTarget;
+    private final List<Class<? extends RouterLayout>> layouts;
     private NavigationState forwardTargetState;
     private NavigationState rerouteTargetState;
     private ErrorParameter<?> errorParameter;
@@ -50,13 +52,34 @@ public abstract class BeforeEvent extends EventObject {
      * Construct event from a NavigationEvent.
      *
      * @param event
-     *            NavigationEvent that is on going
+     *            NavigationEvent that is on-going
      * @param navigationTarget
      *            Navigation target
+     * @deprecated Use {@link #BeforeEvent(NavigationEvent, Class, List)}
+     *             instead.
      */
+    @Deprecated
     public BeforeEvent(NavigationEvent event, Class<?> navigationTarget) {
         this(event.getSource(), event.getTrigger(), event.getLocation(),
                 navigationTarget, event.getUI());
+
+    }
+
+    /**
+     * Construct event from a NavigationEvent.
+     *
+     * @param event
+     *            NavigationEvent that is on-going
+     * @param navigationTarget
+     *            Navigation target
+     * @param layouts
+     *            Navigation layout chain
+     */
+    public BeforeEvent(NavigationEvent event, Class<?> navigationTarget,
+            List<Class<? extends RouterLayout>> layouts) {
+        this(event.getSource(), event.getTrigger(), event.getLocation(),
+                navigationTarget, event.getUI(), layouts);
+
     }
 
     /**
@@ -73,20 +96,50 @@ public abstract class BeforeEvent extends EventObject {
      *            navigation target class
      * @param ui
      *            the UI related to the navigation
+     * @deprecated Use
+     *             {@link #BeforeEvent(Router, NavigationTrigger, Location, Class, UI, List)}
+     *             instead.
      */
+    @Deprecated
     public BeforeEvent(Router router, NavigationTrigger trigger,
             Location location, Class<?> navigationTarget, UI ui) {
+        this(router, trigger, location, navigationTarget, ui,
+                Collections.emptyList());
+    }
+
+    /**
+     * Constructs a new BeforeNavigation Event.
+     *
+     * @param router
+     *            the router that triggered the change, not {@code null}
+     * @param trigger
+     *            the type of user action that triggered this location change,
+     *            not <code>null</code>
+     * @param location
+     *            the new location, not {@code null}
+     * @param navigationTarget
+     *            navigation target class
+     * @param ui
+     *            the UI related to the navigation
+     * @param layouts
+     *            the layout chain for the navigation target
+     */
+    public BeforeEvent(Router router, NavigationTrigger trigger,
+            Location location, Class<?> navigationTarget, UI ui,
+            List<Class<? extends RouterLayout>> layouts) {
         super(router);
 
         assert trigger != null;
         assert location != null;
         assert navigationTarget != null;
         assert ui != null;
+        assert layouts != null;
 
         this.trigger = trigger;
         this.location = location;
         this.navigationTarget = navigationTarget;
         this.ui = ui;
+        this.layouts = Collections.unmodifiableList(new ArrayList<>(layouts));
     }
 
     /**
@@ -390,6 +443,16 @@ public abstract class BeforeEvent extends EventObject {
      */
     public Class<?> getNavigationTarget() {
         return navigationTarget;
+    }
+
+    /**
+     * Get the layout chain for the {@link #getNavigationState(String, List)
+     * navigation target}.
+     * 
+     * @return layout chain
+     */
+    public List<Class<? extends RouterLayout>> getLayouts() {
+        return layouts;
     }
 
     /**
