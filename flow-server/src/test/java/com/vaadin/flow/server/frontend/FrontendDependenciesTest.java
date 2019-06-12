@@ -57,7 +57,7 @@ public class FrontendDependenciesTest {
 
     private FrontendDependencies create(Class<?>... classes) throws Exception {
         FrontendDependencies frontendDependencies = new FrontendDependencies(
-                new DefaultClassFinder(new HashSet<Class<?>>(
+                new DefaultClassFinder(new HashSet<>(
                         new ArrayList<>(Arrays.asList(classes)))));
         return frontendDependencies;
     }
