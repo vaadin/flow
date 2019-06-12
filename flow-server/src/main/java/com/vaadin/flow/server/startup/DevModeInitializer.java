@@ -20,6 +20,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
+
 import java.io.File;
 import java.io.Serializable;
 import java.util.Arrays;
@@ -139,7 +140,7 @@ public class DevModeInitializer
             log().debug("Skipping DEV MODE because PRODUCTION MODE is set.");
             return;
         }
-        if (config.isBowerMode()) {
+        if (config.isCompatibilityMode()) {
             log().debug("Skipping DEV MODE because BOWER MODE is set.");
             return;
         }

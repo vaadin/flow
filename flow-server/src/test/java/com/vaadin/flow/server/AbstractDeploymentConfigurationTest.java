@@ -77,7 +77,7 @@ public class AbstractDeploymentConfigurationTest {
         }
 
         @Override
-        public boolean isBowerMode() {
+        public boolean isCompatibilityMode() {
           return false;
         }
         

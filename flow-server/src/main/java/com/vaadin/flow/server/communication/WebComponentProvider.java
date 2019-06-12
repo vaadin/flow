@@ -88,7 +88,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
         String pathInfo = request.getPathInfo();
 
         final boolean bowerMode =
-                session.getService().getDeploymentConfiguration().isBowerMode();
+                session.getService().getDeploymentConfiguration().isCompatibilityMode();
         final ComponentInfo componentInfo = new ComponentInfo(pathInfo);
 
         if (!componentInfo.hasExtension()) {

@@ -292,7 +292,7 @@ public abstract class VaadinService implements Serializable {
             getRouteRegistry().getRegisteredRoutes().stream()
                     .map(Object::toString).forEach(logger::debug);
 
-            if (configuration.isBowerMode()) {
+            if (configuration.isCompatibilityMode()) {
                 UsageStatistics.markAsUsed("flow/Bower", null);
             } else {
                 UsageStatistics.markAsUsed("flow/npm", null);

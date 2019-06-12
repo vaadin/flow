@@ -40,7 +40,7 @@ public class DefaultDeploymentConfiguration
             + "\nVaadin is running in DEBUG MODE.\nAdd productionMode=true to web.xml "
             + "to disable debug features." + SEPARATOR;
 
-    public static final String WARNING_BOWER_MODE = SEPARATOR
+    public static final String WARNING_COMPATIBILITY_MODE = SEPARATOR
             + "\nRunning in Vaadin 13 (Flow 1) compatibility mode.\n\n"
             + "This mode uses webjars/Bower for client side dependency management and HTML imports for dependency loading.\n\n"
             + "The default mode in Vaadin 14+ (Flow 2+) is based on npm for dependency management and JavaScript modules for dependency inclusion.\n\n"
@@ -84,7 +84,7 @@ public class DefaultDeploymentConfiguration
     public static final boolean DEFAULT_SEND_URLS_AS_PARAMETERS = true;
 
     private boolean productionMode;
-    private boolean bowerMode;
+    private boolean compatibilityMode;
     private boolean xsrfProtectionEnabled;
     private int heartbeatInterval;
     private int webComponentDisconnect;
@@ -114,7 +114,7 @@ public class DefaultDeploymentConfiguration
         boolean log = loggWarning.getAndSet(false);
 
         checkProductionMode(log);
-        checkBowerMode(log);
+        checkCompatibilityMode(log);
         checkRequestTiming();
         checkXsrfProtection(log);
         checkHeartbeatInterval();
@@ -143,7 +143,7 @@ public class DefaultDeploymentConfiguration
      */
     @Override
     public boolean isBowerMode() {
-        return bowerMode;
+        return compatibilityMode;
     }
 
     /**
@@ -246,11 +246,19 @@ public class DefaultDeploymentConfiguration
     /**
      * Log a warning if Vaadin is running in bower mode.
      */
-    private void checkBowerMode(boolean loggWarning) {
-        bowerMode = getBooleanProperty(Constants.SERVLET_PARAMETER_BOWER_MODE,
-                true);
-        if (bowerMode && loggWarning) {
-            getLogger().warn(WARNING_BOWER_MODE);
+    private void checkCompatibilityMode(boolean loggWarning) {
+        String bower = getStringProperty(Constants.SERVLET_PARAMETER_BOWER_MODE,
+                null);
+        if (bower == null) {
+            compatibilityMode = getBooleanProperty(
+                    Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE, true);
+        } else {
+            compatibilityMode = getBooleanProperty(
+                    Constants.SERVLET_PARAMETER_BOWER_MODE, true);
+        }
+
+        if (compatibilityMode && loggWarning) {
+            getLogger().warn(WARNING_COMPATIBILITY_MODE);
         }
     }
 

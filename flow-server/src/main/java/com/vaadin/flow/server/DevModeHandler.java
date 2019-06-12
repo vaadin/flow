@@ -234,7 +234,7 @@ public class DevModeHandler implements Serializable {
 
     private static DevModeHandler createInstance(VaadinContext context,
             DeploymentConfiguration configuration, File npmFolder) {
-        if (configuration.isProductionMode() || configuration.isBowerMode()) {
+        if (configuration.isProductionMode() || configuration.isCompatibilityMode()) {
             return null;
         }
 

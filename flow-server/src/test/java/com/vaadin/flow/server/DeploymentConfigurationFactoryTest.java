@@ -217,7 +217,7 @@ public class DeploymentConfigurationFactoryTest {
     public void should_beInBowerModeByDefault()
             throws Exception {
         DeploymentConfiguration config = createConfig(emptyMap());
-        assertTrue(config.isBowerMode());
+        assertTrue(config.isCompatibilityMode());
         assertFalse(config.isProductionMode());
     }
 
@@ -233,7 +233,7 @@ public class DeploymentConfigurationFactoryTest {
 
 
         DeploymentConfiguration config = createConfig(Collections.singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
-        assertFalse(config.isBowerMode());
+        assertFalse(config.isCompatibilityMode());
         assertTrue(config.isProductionMode());
     }
 

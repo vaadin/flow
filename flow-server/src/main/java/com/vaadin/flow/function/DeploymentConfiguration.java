@@ -47,13 +47,27 @@ public interface DeploymentConfiguration extends Serializable {
     boolean isProductionMode();
 
     /**
-     * Returns whether Vaadin is running in bower mode.
+     * Returns whether Vaadin is running in Vaadin 13 compatibility mode.
      *
-     * NOTE: bower mode will be unsupported in future versions.
+     * NOTE: compatibility mode will be unsupported in future versions.
      *
-     * @return true if in bower mode, false otherwise.
+     * @deprecated use {@link #isCompatibilityMode()}
+     *
+     * @return true if in compatibility mode, false otherwise.
      */
+    @Deprecated
     boolean isBowerMode();
+
+    /**
+     * Returns whether Vaadin is running in Vaadin 13 compatibility mode.
+     *
+     * NOTE: compatibility mode will be unsupported in future versions.
+     *
+     * @return true if in compatibility mode, false otherwise.
+     */
+    default boolean isCompatibilityMode() {
+        return isBowerMode();
+    }
 
     /**
      * Returns whether the server provides timing info to the client.
@@ -357,13 +371,15 @@ public interface DeploymentConfiguration extends Serializable {
     /**
      * Returns an array with polyfills to be loaded when the app is loaded.
      *
-     * The default value is <code>build/webcomponentsjs/webcomponents-loader.js</code>
-     * but it can be changed by setting the {@link Constants#SERVLET_PARAMETER_POLYFILLS}
-     * as a comma separated list of JS files to load.
+     * The default value is
+     * <code>build/webcomponentsjs/webcomponents-loader.js</code> but it can be
+     * changed by setting the {@link Constants#SERVLET_PARAMETER_POLYFILLS} as a
+     * comma separated list of JS files to load.
      *
      * @return polyfills to load
      */
     default List<String> getPolyfills() {
-        return Arrays.asList(getStringProperty(SERVLET_PARAMETER_POLYFILLS, POLYFILLS_DEFAULT_VALUE).split("[, ]+"));
+        return Arrays.asList(getStringProperty(SERVLET_PARAMETER_POLYFILLS,
+                POLYFILLS_DEFAULT_VALUE).split("[, ]+"));
     }
 }

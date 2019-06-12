@@ -41,7 +41,7 @@ import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_BOWER_MODE;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
@@ -125,14 +125,14 @@ public final class DeploymentConfigurationFactory implements Serializable {
         // Read default parameters from server.xml
         final ServletContext context = servletConfig.getServletContext();
         for (final Enumeration<String> e = context.getInitParameterNames(); e
-                .hasMoreElements(); ) {
+                .hasMoreElements();) {
             final String name = e.nextElement();
             initParameters.setProperty(name, context.getInitParameter(name));
         }
 
         // Override with application config from web.xml
         for (final Enumeration<String> e = servletConfig
-                .getInitParameterNames(); e.hasMoreElements(); ) {
+                .getInitParameterNames(); e.hasMoreElements();) {
             final String name = e.nextElement();
             initParameters.setProperty(name,
                     servletConfig.getInitParameter(name));
@@ -142,7 +142,7 @@ public final class DeploymentConfigurationFactory implements Serializable {
         return initParameters;
     }
 
-    private static void readBuildInfo(Properties initParameters) { //NOSONAR
+    private static void readBuildInfo(Properties initParameters) { // NOSONAR
         try {
             String json = null;
             // token file location passed via init parameter property
@@ -164,25 +164,45 @@ public final class DeploymentConfigurationFactory implements Serializable {
                 }
             }
 
-            // Read the json and set the appropriate system properties if not already set.
+            // Read the json and set the appropriate system properties if not
+            // already set.
             if (json != null) {
                 JsonObject buildInfo = JsonUtil.parse(json);
                 if (buildInfo.hasKey(SERVLET_PARAMETER_PRODUCTION_MODE)) {
-                    initParameters.setProperty(SERVLET_PARAMETER_PRODUCTION_MODE, String.valueOf(
-                            buildInfo.getBoolean(SERVLET_PARAMETER_PRODUCTION_MODE)));
-                    // Need to be sure that we remove the system property, because
+                    initParameters.setProperty(
+                            SERVLET_PARAMETER_PRODUCTION_MODE,
+                            String.valueOf(buildInfo.getBoolean(
+                                    SERVLET_PARAMETER_PRODUCTION_MODE)));
+                    // Need to be sure that we remove the system property,
+                    // because
                     // it has priority in the configuration getter
-                    System.clearProperty(VAADIN_PREFIX + SERVLET_PARAMETER_PRODUCTION_MODE);
+                    System.clearProperty(
+                            VAADIN_PREFIX + SERVLET_PARAMETER_PRODUCTION_MODE);
                 }
                 if (buildInfo.hasKey(SERVLET_PARAMETER_BOWER_MODE)) {
-                    initParameters.setProperty(SERVLET_PARAMETER_BOWER_MODE, String.valueOf(
-                            buildInfo.getBoolean(SERVLET_PARAMETER_BOWER_MODE)));
-                    // Need to be sure that we remove the system property, because
-                    // it has priority in the configuration getter
-                    System.clearProperty(VAADIN_PREFIX + SERVLET_PARAMETER_BOWER_MODE);
+                    initParameters.setProperty(
+                            SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                            String.valueOf(buildInfo
+                                    .getBoolean(SERVLET_PARAMETER_BOWER_MODE)));
+                    // Need to be sure that we remove the system property,
+                    // because it has priority in the configuration getter
+                    System.clearProperty(
+                            VAADIN_PREFIX + SERVLET_PARAMETER_BOWER_MODE);
                 }
-                if (System.getProperty(PROJECT_BASEDIR) == null && buildInfo.hasKey("npmFolder")) {
-                    System.setProperty(PROJECT_BASEDIR, buildInfo.getString("npmFolder"));
+                if (buildInfo.hasKey(SERVLET_PARAMETER_COMPATIBILITY_MODE)) {
+                    initParameters.setProperty(
+                            SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                            String.valueOf(buildInfo.getBoolean(
+                                    SERVLET_PARAMETER_COMPATIBILITY_MODE)));
+                    // Need to be sure that we remove the system property,
+                    // because it has priority in the configuration getter
+                    System.clearProperty(VAADIN_PREFIX
+                            + SERVLET_PARAMETER_COMPATIBILITY_MODE);
+                }
+                if (System.getProperty(PROJECT_BASEDIR) == null
+                        && buildInfo.hasKey("npmFolder")) {
+                    System.setProperty(PROJECT_BASEDIR,
+                            buildInfo.getString("npmFolder"));
                 }
             }
         } catch (IOException e) {

@@ -41,7 +41,7 @@ public class MockDeploymentConfiguration
     }
 
     @Override
-    public boolean isBowerMode() {
+    public boolean isCompatibilityMode() {
       return bowerMode;
     }
 
