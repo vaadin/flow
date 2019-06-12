@@ -32,7 +32,6 @@ import org.apache.maven.project.MavenProject;
 import org.reflections.Reflections;
 import org.reflections.util.ConfigurationBuilder;
 
-import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.ClassFinder;
 
 /**
@@ -55,14 +54,15 @@ public class FlowPluginFrontendUtils {
          *            the list of urls for finding classes.
          */
         public ReflectionsClassFinder(URL... urls) {
-            classLoader = new URLClassLoader(urls, null); //NOSONAR
+            classLoader = new URLClassLoader(urls, null); // NOSONAR
             reflections = new Reflections(
-                    new ConfigurationBuilder().addClassLoader(classLoader).setExpandSuperTypes(false)
-                            .addUrls(urls));
+                    new ConfigurationBuilder().addClassLoader(classLoader)
+                            .setExpandSuperTypes(false).addUrls(urls));
         }
 
         @Override
-        public Set<Class<?>> getAnnotatedClasses(Class<? extends Annotation> clazz) {
+        public Set<Class<?>> getAnnotatedClasses(
+                Class<? extends Annotation> clazz) {
             Set<Class<?>> classes = new HashSet<>();
             classes.addAll(reflections.getTypesAnnotatedWith(clazz, true));
             classes.addAll(getAnnotatedByRepeatedAnnotation(clazz));
@@ -70,10 +70,13 @@ public class FlowPluginFrontendUtils {
 
         }
 
-        private Set<Class<?>> getAnnotatedByRepeatedAnnotation(AnnotatedElement annotationClass) {
-            Repeatable repeatableAnnotation = annotationClass.getAnnotation(Repeatable.class);
+        private Set<Class<?>> getAnnotatedByRepeatedAnnotation(
+                AnnotatedElement annotationClass) {
+            Repeatable repeatableAnnotation = annotationClass
+                    .getAnnotation(Repeatable.class);
             if (repeatableAnnotation != null) {
-                return reflections.getTypesAnnotatedWith(repeatableAnnotation.value(), true);
+                return reflections.getTypesAnnotatedWith(
+                        repeatableAnnotation.value(), true);
             }
             return Collections.emptySet();
         }
@@ -85,8 +88,9 @@ public class FlowPluginFrontendUtils {
 
         @SuppressWarnings("unchecked")
         @Override
-        public <T> Class<T> loadClass(String name) throws ClassNotFoundException {
-            return (Class<T>)classLoader.loadClass(name);
+        public <T> Class<T> loadClass(String name)
+                throws ClassNotFoundException {
+            return (Class<T>) classLoader.loadClass(name);
         }
 
         @Override
@@ -96,16 +100,6 @@ public class FlowPluginFrontendUtils {
     }
 
     private FlowPluginFrontendUtils() {
-    }
-
-    /**
-     * Check whether the goal should be run in bower mode, by checking the
-     * corresponding system property, otherwise the folder structure.
-     *
-     * @return true when in bower mode.
-     */
-    public static boolean isBowerMode() {
-        return Boolean.getBoolean("vaadin." + Constants.SERVLET_PARAMETER_BOWER_MODE);
     }
 
     /**

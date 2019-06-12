@@ -204,9 +204,6 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
         try {
             String json = FileUtils.readFileToString(tokenFile, "UTF-8");
             JsonObject buildInfo = JsonUtil.parse(json);
-            if (buildInfo.hasKey("bowerMode")) {
-                return buildInfo.getBoolean("bowerMode");
-            }
             return buildInfo.hasKey("compatibilityMode")
                     ? buildInfo.getBoolean("compatibilityMode")
                     : true;

@@ -40,7 +40,6 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
 
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_BOWER_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
@@ -178,16 +177,6 @@ public final class DeploymentConfigurationFactory implements Serializable {
                     // it has priority in the configuration getter
                     System.clearProperty(
                             VAADIN_PREFIX + SERVLET_PARAMETER_PRODUCTION_MODE);
-                }
-                if (buildInfo.hasKey(SERVLET_PARAMETER_BOWER_MODE)) {
-                    initParameters.setProperty(
-                            SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                            String.valueOf(buildInfo
-                                    .getBoolean(SERVLET_PARAMETER_BOWER_MODE)));
-                    // Need to be sure that we remove the system property,
-                    // because it has priority in the configuration getter
-                    System.clearProperty(
-                            VAADIN_PREFIX + SERVLET_PARAMETER_BOWER_MODE);
                 }
                 if (buildInfo.hasKey(SERVLET_PARAMETER_COMPATIBILITY_MODE)) {
                     initParameters.setProperty(
