@@ -35,12 +35,13 @@ public class LongPollingPushIT extends ChromeBrowserTest {
         waitForElementNotPresent(By.id("child"));
 
         WebElement button = findElement(By.id("visibility"));
+
         button.click();
 
         waitForElementPresent(By.id("child"));
-
         WebElement span = findElement(By.id("child"));
-        Assert.assertEquals("Some text", span.getText());
+
+        Assert.assertEquals("Some text", span.getAttribute("innerHTML"));
         checkLogsForErrors();
     }
 
