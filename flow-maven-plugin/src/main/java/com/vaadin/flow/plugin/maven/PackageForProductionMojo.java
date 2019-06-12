@@ -142,9 +142,9 @@ public class PackageForProductionMojo extends FlowModeAbstractMojo {
 
     /**
      * Defines the node version to download and use, if {@code nodePath} is not
-     * set. The default is <code>v8.11.1</code>.
+     * set. The default is <code>v10.16.0</code>.
      */
-    @Parameter(name = "nodeVersion", defaultValue = "v8.11.1")
+    @Parameter(name = "nodeVersion", defaultValue = "v10.16.0")
     private String nodeVersion;
 
     /**
