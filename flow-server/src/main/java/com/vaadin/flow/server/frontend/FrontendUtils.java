@@ -180,6 +180,9 @@ public class FrontendUtils {
     /**
      * Locate <code>node</code> executable.
      *
+     * @param baseDir
+     *            project root folder.
+     * 
      * @return the full path to the executable
      */
     public static String getNodeExecutable(String baseDir) {
@@ -191,6 +194,9 @@ public class FrontendUtils {
 
     /**
      * Locate <code>npm</code> executable.
+     *
+     * @param baseDir
+     *            project root folder.
      *
      * @return the a list of all commands in sequence that need to be executed
      *         to have npm running
