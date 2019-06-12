@@ -673,6 +673,30 @@ public class RouterTest extends RoutingTestBase {
 
     }
 
+    @Route(value = "childWithParameter", layout = RouteParent.class)
+    @Tag(Tag.DIV)
+    public static class RouteChildWithParameter extends Component implements
+            BeforeLeaveObserver, BeforeEnterObserver, HasUrlParameter<String> {
+
+        static List<EventObject> events = new ArrayList<>();
+        static List<String> parameters = new ArrayList<>();
+
+        @Override
+        public void setParameter(BeforeEvent event, String parameter) {
+            parameters.add(parameter);
+        }
+
+        @Override
+        public void beforeEnter(BeforeEnterEvent event) {
+            events.add(event);
+        }
+
+        @Override
+        public void beforeLeave(BeforeLeaveEvent event) {
+            events.add(event);
+        }
+    }
+
     @Route(value = "single", layout = RouteParent.class, absolute = true)
     @Tag(Tag.DIV)
     public static class LoneRoute extends Component
@@ -3075,6 +3099,31 @@ public class RouterTest extends RoutingTestBase {
                 Arrays.asList(NoRemoveContent1.class, NoRemoveContent2.class),
                 layout.getChildren().map(Component::getClass)
                         .collect(Collectors.toList()));
+    }
+
+    @Test // 5388
+    public void layout_chain_is_included_in_before_events() {
+        setNavigationTargets(LoneRoute.class, RouteChildWithParameter.class);
+
+        RouteChildWithParameter.events.clear();
+        ui.navigate(RouteChildWithParameter.class, "foobar");
+
+        BeforeEnterEvent beforeEnterEvent = (BeforeEnterEvent) RouteChildWithParameter.events.get(0);
+        Assert.assertEquals(
+                "There is not exactly one layout in the layout chain", 1,
+                beforeEnterEvent.getLayouts().size());
+        Assert.assertTrue("RouteParent was not included in the layout chain",
+                beforeEnterEvent.getLayouts().contains(RouteParent.class));
+
+        RouteChildWithParameter.events.clear();
+        ui.navigate(LoneRoute.class);
+
+        BeforeLeaveEvent beforeLeaveEvent = (BeforeLeaveEvent) RouteChildWithParameter.events.get(0);
+        Assert.assertEquals(
+                "There is not exactly one layout in the layout chain", 1,
+                beforeLeaveEvent.getLayouts().size());
+        Assert.assertTrue("RouteParent was not included in the layout chain",
+                beforeLeaveEvent.getLayouts().contains(RouteParent.class));
     }
 
     private void setNavigationTargets(
