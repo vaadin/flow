@@ -69,7 +69,7 @@ public class VaadinServletServiceTest {
 
     @Test
     public void resolveResource_production() {
-        mocks.getDeploymentConfiguration().setBowerMode(true);
+        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
         mocks.setProductionMode(true);
 
         Assert.assertEquals("",
@@ -164,7 +164,7 @@ public class VaadinServletServiceTest {
     // Theme resource is not handled from servlet in NPM
     @Test
     public void getResourceNoTheme_production() throws IOException {
-        mocks.getDeploymentConfiguration().setBowerMode(true);
+        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
 
         mocks.getServlet().addServletContextResource("/frontend-es6/foo.txt");
         mocks.getServlet().addServletContextResource("/frontend-es5/foo.txt");
@@ -245,7 +245,7 @@ public class VaadinServletServiceTest {
     // NPM theme is not handled in servlet service.
     @Test
     public void getResourceTheme_production() throws IOException {
-        mocks.getDeploymentConfiguration().setBowerMode(true);
+        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
 
         mocks.setProductionMode(true);
         WebBrowser browser = mocks.getBrowser();

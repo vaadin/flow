@@ -65,7 +65,7 @@ public class WebComponentUI extends UI {
                         + uiElementId + "' }))");
         DeploymentConfiguration deploymentConfiguration = session.getService()
                 .getDeploymentConfiguration();
-        if (deploymentConfiguration.isBowerMode()
+        if (deploymentConfiguration.isCompatibilityMode()
                 && deploymentConfiguration.useCompiledFrontendResources()) {
             /*
              * This code adds a number of HTML dependencies to the page but in

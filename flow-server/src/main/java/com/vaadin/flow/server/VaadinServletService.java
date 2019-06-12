@@ -194,7 +194,7 @@ public class VaadinServletService extends VaadinService {
 
         String frontendRootUrl;
         DeploymentConfiguration config = getDeploymentConfiguration();
-        if(config.isBowerMode()) {
+        if(config.isCompatibilityMode()) {
             if (browser.isEs6Supported()) {
                 frontendRootUrl = config.getEs6FrontendPrefix();
             } else {
