@@ -24,6 +24,7 @@
             <groupId>com.vaadin</groupId>
             <artifactId>flow-html-components-testbench</artifactId>
             <version>${project.version}</version>
+            <scope>test</scope>
         </dependency>
          <dependency>
             <groupId>com.vaadin</groupId>
@@ -87,7 +88,7 @@
                     </execution>
                 </executions>
                  <configuration>
-                    <bowerMode>false</bowerMode>
+                    <compatibilityMode>false</compatibilityMode>
                     <productionMode>true</productionMode>
                 </configuration>
             </plugin>

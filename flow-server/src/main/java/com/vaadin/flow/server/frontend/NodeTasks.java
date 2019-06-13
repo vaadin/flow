@@ -49,6 +49,8 @@ public class NodeTasks implements Command {
 
         private String webpackTemplate;
 
+        private String webpackGeneratedTemplate;
+
         private boolean enablePackagesUpdate;
 
         private boolean createMissingPackageJson;
@@ -143,12 +145,16 @@ public class NodeTasks implements Command {
          * @param webpackTemplate
          *            name of the webpack resource to be used as template when
          *            creating the <code>webpack.config.js</code> file.
+         * @param webpackGeneratedTemplate
+         *            name of the webpack resource to be used as template when
+         *            creating the <code>webpack.generated.js</code> file.
          * @return this builder
          */
         public Builder withWebpack(File webpackOutputDirectory,
-                String webpackTemplate) {
+                String webpackTemplate, String webpackGeneratedTemplate) {
             this.webpackOutputDirectory = webpackOutputDirectory;
             this.webpackTemplate = webpackTemplate;
+            this.webpackGeneratedTemplate = webpackGeneratedTemplate;
             return this;
         }
 
@@ -272,10 +278,11 @@ public class NodeTasks implements Command {
             }
         }
 
-        if (builder.webpackTemplate != null
-                && !builder.webpackTemplate.isEmpty()) {
+        if (builder.webpackTemplate != null && !builder.webpackTemplate
+                .isEmpty()) {
             commands.add(new TaskUpdateWebpack(builder.npmFolder,
                     builder.webpackOutputDirectory, builder.webpackTemplate,
+                    builder.webpackGeneratedTemplate,
                     new File(builder.generatedFolder, IMPORTS_NAME)));
         }
 

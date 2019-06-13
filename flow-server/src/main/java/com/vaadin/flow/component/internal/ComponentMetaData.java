@@ -185,7 +185,7 @@ public class ComponentMetaData {
 
         scannedClasses.add(componentClass);
 
-        if (service.getDeploymentConfiguration().isBowerMode()) {
+        if (service.getDeploymentConfiguration().isCompatibilityMode()) {
             dependencyInfo.htmlImports
                     .addAll(getHtmlImportDependencies(service, componentClass));
 

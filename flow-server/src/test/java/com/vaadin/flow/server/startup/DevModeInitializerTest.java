@@ -30,7 +30,7 @@ import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.startup.DevModeInitializer.VisitedClasses;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_BOWER_MODE;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
@@ -41,7 +41,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-
 
 @NotThreadSafe
 public class DevModeInitializerTest {
@@ -93,7 +92,8 @@ public class DevModeInitializerTest {
         createStubWebpackServer("Compiled", 0, config);
 
         servletContext = Mockito.mock(ServletContext.class);
-        ServletRegistration registration = Mockito.mock(ServletRegistration.class);
+        ServletRegistration registration = Mockito
+                .mock(ServletRegistration.class);
         classes = new HashSet<>();
 
         Map registry = new HashMap();
@@ -106,7 +106,8 @@ public class DevModeInitializerTest {
                 .thenReturn(this.getClass().getClassLoader());
 
         mainPackageFile = new File(config.getBaseDir(), PACKAGE_JSON);
-        appPackageFile = new File(config.getBaseDir(), DEFAULT_GENERATED_DIR + PACKAGE_JSON);
+        appPackageFile = new File(config.getBaseDir(),
+                DEFAULT_GENERATED_DIR + PACKAGE_JSON);
         webpackFile = new File(config.getBaseDir(), WEBPACK_CONFIG);
         appPackageFile.getParentFile().mkdirs();
 
@@ -116,14 +117,16 @@ public class DevModeInitializerTest {
         devModeInitializer = new DevModeInitializer();
 
         // Default is Bower Mode, change to Npm Mode
-        System.setProperty("vaadin." + SERVLET_PARAMETER_BOWER_MODE, "false");
+        System.setProperty("vaadin." + SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                "false");
     }
 
     @After
     public void teardown() throws Exception, SecurityException {
-        System.clearProperty("vaadin." + SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT);
+        System.clearProperty(
+                "vaadin." + SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT);
         System.clearProperty("vaadin." + SERVLET_PARAMETER_PRODUCTION_MODE);
-        System.clearProperty("vaadin." + SERVLET_PARAMETER_BOWER_MODE);
+        System.clearProperty("vaadin." + SERVLET_PARAMETER_COMPATIBILITY_MODE);
 
         webpackFile.delete();
         mainPackageFile.delete();
@@ -143,7 +146,8 @@ public class DevModeInitializerTest {
     }
 
     @Test
-    public void should_Not_Run_Updaters_when_NoNodeConfFiles() throws Exception {
+    public void should_Not_Run_Updaters_when_NoNodeConfFiles()
+            throws Exception {
         webpackFile.delete();
         mainPackageFile.delete();
         appPackageFile.delete();
@@ -152,13 +156,15 @@ public class DevModeInitializerTest {
     }
 
     @Test
-    public void should_Not_Run_Updaters_when_NoMainPackageFile() throws Exception {
+    public void should_Not_Run_Updaters_when_NoMainPackageFile()
+            throws Exception {
         mainPackageFile.delete();
         assertNull(DevModeHandler.getDevModeHandler());
     }
 
     @Test
-    public void should_Not_Run_Updaters_when_NoAppPackageFile() throws Exception {
+    public void should_Not_Run_Updaters_when_NoAppPackageFile()
+            throws Exception {
         appPackageFile.delete();
         devModeInitializer.onStartup(classes, servletContext);
         assertNull(DevModeHandler.getDevModeHandler());
@@ -173,7 +179,7 @@ public class DevModeInitializerTest {
 
     @Test
     public void should_Not_Run_Updaters_inBowerMode() throws Exception {
-        System.clearProperty("vaadin." + SERVLET_PARAMETER_BOWER_MODE);
+        System.clearProperty("vaadin." + SERVLET_PARAMETER_COMPATIBILITY_MODE);
         devModeInitializer = new DevModeInitializer();
         devModeInitializer.onStartup(classes, servletContext);
         assertNull(DevModeHandler.getDevModeHandler());
@@ -181,7 +187,8 @@ public class DevModeInitializerTest {
 
     @Test
     public void should_Not_Run_Updaters_inProductionMode() throws Exception {
-        System.setProperty("vaadin." + SERVLET_PARAMETER_PRODUCTION_MODE, "true");
+        System.setProperty("vaadin." + SERVLET_PARAMETER_PRODUCTION_MODE,
+                "true");
         devModeInitializer = new DevModeInitializer();
         devModeInitializer.onStartup(classes, servletContext);
         assertNull(DevModeHandler.getDevModeHandler());

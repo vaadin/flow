@@ -1058,7 +1058,7 @@ public class ComponentTest {
     @Test
     public void usesComponent() {
         UI ui = UI.getCurrent();
-        mocks.getDeploymentConfiguration().setBowerMode(true);
+        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
 
         ui.getInternals()
                 .addComponentDependencies(UsesComponentWithDependencies.class);
@@ -1080,7 +1080,7 @@ public class ComponentTest {
     @Test
     public void usesChain() {
         UIInternals internals = UI.getCurrent().getInternals();
-        mocks.getDeploymentConfiguration().setBowerMode(true);
+        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
 
         internals.addComponentDependencies(
                 UsesUsesComponentWithDependencies.class);
@@ -1105,7 +1105,7 @@ public class ComponentTest {
     public void circularDependencies() {
         UIInternals internals = new MockUI().getInternals();
         DependencyList dependencyList = internals.getDependencyList();
-        mocks.getDeploymentConfiguration().setBowerMode(true);
+        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
 
         internals.addComponentDependencies(CircularDependencies1.class);
         Map<String, Dependency> pendingDependencies = getDependenciesMap(
@@ -1132,7 +1132,7 @@ public class ComponentTest {
 
     @Test
     public void inNpmModeNoJsDependenciesAreAdded() {
-        mocks.getDeploymentConfiguration().setBowerMode(false);
+        mocks.getDeploymentConfiguration().setCompatibilityMode(false);
         UIInternals internals = new MockUI().getInternals();
         DependencyList dependencyList = internals.getDependencyList();
 

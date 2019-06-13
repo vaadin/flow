@@ -165,7 +165,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
 
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session, VaadinRequest request, VaadinResponse response) throws IOException {
-        if (session.getService().getDeploymentConfiguration().isBowerMode()) {
+        if (session.getService().getDeploymentConfiguration().isCompatibilityMode()) {
             return super.synchronizedHandleRequest(session, request, response);
         } else {
             // Find UI class

@@ -20,6 +20,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
+
 import java.io.File;
 import java.io.Serializable;
 import java.util.Arrays;
@@ -123,8 +124,8 @@ public class DevModeInitializer
     }
 
     /**
-     * Initialize the devmode server if not in production mode or bower
-     * compatibility mode.
+     * Initialize the devmode server if not in production mode or compatibility
+     * mode.
      *
      * @param classes
      *            classes to check for npm- and js modules
@@ -139,7 +140,7 @@ public class DevModeInitializer
             log().debug("Skipping DEV MODE because PRODUCTION MODE is set.");
             return;
         }
-        if (config.isBowerMode()) {
+        if (config.isCompatibilityMode()) {
             log().debug("Skipping DEV MODE because BOWER MODE is set.");
             return;
         }

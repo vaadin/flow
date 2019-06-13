@@ -102,7 +102,7 @@ public class UnsupportedBrowserHandlerTest {
     @Test
     public void testUnsupportedBrowserHandler_IE11WithDevelopmentMode_returnsIE11RequiresProductionModePage() throws IOException {
         initMocks(false, false, true);
-        configuration.setBowerMode(true);
+        configuration.setCompatibilityMode(true);
 
         Assert.assertTrue("Request should have been handled", handler.synchronizedHandleRequest(session, request, response));
 
