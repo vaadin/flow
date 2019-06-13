@@ -246,7 +246,7 @@ public class VaadinServletContextInitializer
                     .createDeploymentConfiguration(event.getServletContext(),
                             servletRegistrationBean, SpringServlet.class);
 
-            if (config.isBowerMode() || config.isProductionMode()) {
+            if (config.isCompatibilityMode() || config.isProductionMode()) {
                 return;
             }
 
