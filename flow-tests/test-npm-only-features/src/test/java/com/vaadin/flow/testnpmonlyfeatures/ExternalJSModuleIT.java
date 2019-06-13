@@ -57,5 +57,12 @@ public class ExternalJSModuleIT extends ChromeBrowserTest {
                                 .equals(scriptTag.getAttribute("src"))
                                 && "module".equals(
                                         scriptTag.getAttribute("type"))));
+
+        Assert.assertTrue(
+                "When a component is added to the page, non-external JS annotated with @JsModule annotation in the component should not be added as a script tag to the page!",
+                scriptTags.stream().noneMatch(scriptTag -> scriptTag
+                        .getAttribute("src") != null
+                        && scriptTag.getAttribute("src").endsWith(
+                                ComponentWithExternalJsModule.NON_EXTERNAL_JS_MODULE_NAME)));
     }
 }

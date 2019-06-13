@@ -46,6 +46,7 @@ import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.internal.nodefeature.LoadingIndicatorConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.PollConfigurationMap;
@@ -66,7 +67,6 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.WebBrowser;
 import com.vaadin.flow.server.communication.PushConnection;
-import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.theme.AbstractTheme;
@@ -850,21 +850,14 @@ public class UIInternals implements Serializable {
         } else {
             // In npm mode, add external JavaScripts directly to the page.
             dependencies.getJavaScripts().stream()
-                    .filter(js -> isExternal(js.value())).forEach(js -> page
+                    .filter(js -> UrlUtil.isExternal(js.value())).forEach(js -> page
                             .addJavaScript(js.value(), js.loadMode()));
             dependencies.getJsModules().stream()
-                    .filter(js -> isExternal(js.value()))
+                    .filter(js -> UrlUtil.isExternal(js.value()))
                     .forEach(js -> page.addJsModule(js.value(), js.loadMode()));
         }
         dependencies.getStyleSheets().forEach(styleSheet -> page
                 .addStyleSheet(styleSheet.value(), styleSheet.loadMode()));
-    }
-
-    private boolean isExternal(String url) {
-        return url.contains("://") && !(url
-                .startsWith(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX)
-                || url.startsWith(ApplicationConstants.FRONTEND_PROTOCOL_PREFIX)
-                || url.startsWith(ApplicationConstants.BASE_PROTOCOL_PREFIX));
     }
 
     private void addHtmlImport(HtmlImportDependency dependency, Page page) {

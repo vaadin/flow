@@ -305,7 +305,7 @@ public class ResourceLoader {
      *
      *
      * @param scriptUrl
-     *            url of script to load
+     *            url of script to load. It should be an external URL.
      * @param resourceLoadListener
      *            listener to notify when script is loaded
      * @param async
@@ -356,28 +356,7 @@ public class ResourceLoader {
      *            listener to notify when script is loaded
      */
     public void inlineScript(String scriptContents,
-            final ResourceLoadListener resourceLoadListener) {
-        inlineScript(scriptContents, resourceLoadListener, "text/javascript");
-    }
-
-    /**
-     * Inlines a script with type module and notify a listener when the script
-     * is loaded. Calling this method when the script is currently loading or
-     * already loaded doesn't cause the script to be loaded again, but the
-     * listener will still be notified when appropriate.
-     *
-     * @param scriptContents
-     *            the script contents to inline
-     * @param resourceLoadListener
-     *            listener to notify when script is loaded
-     */
-    public void inlineJsModule(String scriptContents,
-            final ResourceLoadListener resourceLoadListener) {
-        inlineScript(scriptContents, resourceLoadListener, "module");
-    }
-
-    private void inlineScript(String scriptContents,
-            ResourceLoadListener resourceLoadListener, String type) {
+                             final ResourceLoadListener resourceLoadListener) {
         ResourceLoadEvent event = new ResourceLoadEvent(this, scriptContents);
         if (loadedResources.has(scriptContents)) {
             if (resourceLoadListener != null) {
@@ -389,7 +368,7 @@ public class ResourceLoader {
         if (addListener(scriptContents, resourceLoadListener, loadListeners)) {
             ScriptElement scriptElement = getDocument().createScriptElement();
             scriptElement.setTextContent(scriptContents);
-            scriptElement.setType(type);
+            scriptElement.setType("text/javascript");
 
             addOnloadHandler(scriptElement, new SimpleLoadListener(), event);
             getHead().appendChild(scriptElement);

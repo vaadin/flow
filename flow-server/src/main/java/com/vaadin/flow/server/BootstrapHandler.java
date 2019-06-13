@@ -61,6 +61,7 @@ import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.BootstrapUtils.ThemeSettings;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
@@ -79,6 +80,7 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
+
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -1071,15 +1073,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return createJavaScriptElement(sourceUrl, true);
         }
 
-        private boolean isExternal(String url) {
-            return url.contains("://") && !(url
-                    .startsWith(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX)
-                    || url.startsWith(
-                    ApplicationConstants.FRONTEND_PROTOCOL_PREFIX)
-                    || url.startsWith(
-                    ApplicationConstants.BASE_PROTOCOL_PREFIX));
-        }
-
         private Element createDependencyElement(BootstrapUriResolver resolver,
                 LoadMode loadMode, JsonObject dependency,
                 Dependency.Type type) {
@@ -1099,7 +1092,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                         !inlineElement);
                 break;
             case JS_MODULE:
-                if (url != null && isExternal(url))
+                if (url != null && UrlUtil.isExternal(url))
                     dependencyElement = createJavaScriptElement(url,
                             !inlineElement, "module");
                 else

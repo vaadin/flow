@@ -245,7 +245,8 @@ public class DependencyLoader {
                     .loadScript(scriptUrl, resourceLoadListener, false, true);
         case JS_MODULE:
             if (inline) {
-                return resourceLoader::inlineJsModule;
+                throw new IllegalArgumentException(
+                        "Inline load mode is not supported for JsModule.");
             }
             return (scriptUrl, resourceLoadListener) -> resourceLoader
                     .loadJsModule(scriptUrl, resourceLoadListener, false, true);
