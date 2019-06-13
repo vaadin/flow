@@ -11,3 +11,8 @@ class MyTemplate extends PolymerElement {
       }
 }
 
+window.MyTemplate = MyTemplate;
+
+customElements.whenDefined('upgrade-element').then(function () {
+    window.upgradeElementDefined = true;
+});
