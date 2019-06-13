@@ -1179,8 +1179,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     .isProductionMode();
             String result = getBootstrapJS();
             JsonObject appConfig = context.getApplicationParameters();
-            appConfig.put(ApplicationConstants.UI_TAG,
-                    context.getUI().getElement().getTag());
 
             int indent = 0;
             if (!productionMode) {
