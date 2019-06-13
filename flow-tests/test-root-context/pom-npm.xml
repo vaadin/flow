@@ -16,9 +16,7 @@
         <ui.jar.classes>${project.build.directory}/ui-jar</ui.jar.classes>
         <exclude.it.tests>LazyLoadingTemplateIT, 
             DependenciesLoadingPageApiIT, AnnotatedFrontendInlineIT, 
-            DependenciesLoadingAnnotationsIT, FrontendInlineApiIT,
-            RouteNotFoundIT, WebComponentsIT, EmptyListsIT, 
-            InjectedElementInsideMixinBehaviorIT, TemplateHasInjectedSubTemplateIT, 
+            DependenciesLoadingAnnotationsIT, FrontendInlineApiIT, 
             TemplateInTemplateIT, UpgradeElementIT, DebounceSynchronizePropertyIT, 
             ChangeModeIT, LoadingIndicatorIT,TimingInfoReportedIT, ValueChangeModeIT</exclude.it.tests>
     </properties>

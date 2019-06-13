@@ -33,6 +33,7 @@ public class TemplateHasInjectedSubTemplateView
 
     @Tag("injected-child")
     @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/InjectedChild.html")
+    @JsModule("InjectedChild.js")
     public static class InjectedChild extends PolymerTemplate<Message> {
         @Override
         protected Message getModel() {

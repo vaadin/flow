@@ -30,8 +30,8 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 @Tag("mixin-injects")
 @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/MixinInjectsElement.html")
 @NpmPackage(value = "@polymer/iron-resizable-behavior", version = "3.0.1")
-@JsModule("@polymer/iron-resizable-behavior/iron-resizable-behavior.js")
 @JsModule("MixinInjectsElement.js")
+// @JsModule("@polymer/iron-resizable-behavior/iron-resizable-behavior.js")
 public class InjectedElementInsideMixinBehaviorView
         extends PolymerTemplate<TemplateModel> {
 
