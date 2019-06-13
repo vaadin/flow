@@ -188,8 +188,7 @@ public final class DeploymentConfigurationFactory implements Serializable {
                     System.clearProperty(VAADIN_PREFIX
                             + SERVLET_PARAMETER_COMPATIBILITY_MODE);
                 }
-                if (buildInfo.hasKey("npmFolder")
-                        && buildInfo.hasKey("npmFolder")) {
+                if (buildInfo.hasKey("npmFolder")) {
                     initParameters.setProperty(PROJECT_BASEDIR,
                             buildInfo.getString("npmFolder"));
                 }

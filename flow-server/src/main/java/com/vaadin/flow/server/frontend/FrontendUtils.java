@@ -387,6 +387,9 @@ public class FrontendUtils {
     /**
      * Validate that the found node and npm versions are new enough. Throws an
      * exception with a descriptive message if a version is too old.
+     *
+     * @param baseDir
+     *            project root folder.
      */
     public static void validateNodeAndNpmVersion(String baseDir) {
         try {
