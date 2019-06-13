@@ -41,7 +41,7 @@ public class HtmlDependencyParserTest {
         mocks = new MockServletServiceSessionSetup();
         servlet = mocks.getServlet();
         service = mocks.getService();
-        mocks.getDeploymentConfiguration().setBowerMode(true);
+        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
     }
 
     @After
