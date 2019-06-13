@@ -22,19 +22,29 @@ import java.util.TimeZone;
 /**
  * Provides extended information about the web browser, such as screen
  * resolution and time zone.
+ * <p>
+ * Please note that all information is fetched only once, and <em>not updated
+ * automatically</em>. To retrieve updated values, you can execute JS with
+ * {@link Page#executeJs(String, Serializable...)} and get the current value
+ * back.
  *
  * @author Vaadin Ltd
- * @since 1.0.
+ * @since 2.0
  */
 public class ExtendedClientDetails implements Serializable {
     private int screenHeight = -1;
     private int screenWidth = -1;
+    private int windowInnerHeight = -1;
+    private int windowInnerWidth = -1;
+    private int bodyClientWidth = -1;
+    private int bodyClientHeight = -1;
     private int timezoneOffset = 0;
     private int rawTimezoneOffset = 0;
     private int dstSavings;
     private boolean dstInEffect;
     private String timeZoneId;
     private boolean touchDevice;
+    private double devicePixelRatio = -1.0D;
     private long clientServerTimeDelta;
     private String windowName;
 
@@ -46,6 +56,14 @@ public class ExtendedClientDetails implements Serializable {
      *            Screen width
      * @param screenHeight
      *            Screen height
+     * @param windowInnerWidth
+     *            Window width
+     * @param windowInnerHeight
+     *            Window height
+     * @param bodyClientWidth
+     *            Body element width
+     * @param bodyClientHeight
+     *            Body element height
      * @param tzOffset
      *            TimeZone offset in minutes from GMT
      * @param rawTzOffset
@@ -60,19 +78,40 @@ public class ExtendedClientDetails implements Serializable {
      *            the current date in milliseconds since the epoch
      * @param touchDevice
      *            whether browser responds to touch events
+     * @param devicePixelRatio
+     *            the ratio of the display's resolution in physical pixels to
+     *            the resolution in CSS pixels
      * @param windowName
      *            a unique browser window name which persists on reload
      */
     ExtendedClientDetails(String screenWidth, String screenHeight,
-                          String tzOffset, String rawTzOffset, String dstShift,
-                          String dstInEffect, String tzId, String curDate,
-                          String touchDevice, String windowName) {
+            String windowInnerWidth, String windowInnerHeight,
+            String bodyClientWidth, String bodyClientHeight, String tzOffset,
+            String rawTzOffset, String dstShift, String dstInEffect,
+            String tzId, String curDate, String touchDevice,
+            String devicePixelRatio, String windowName) {
         if (screenWidth != null) {
             try {
                 this.screenWidth = Integer.parseInt(screenWidth);
                 this.screenHeight = Integer.parseInt(screenHeight);
             } catch (final NumberFormatException e) {
                 this.screenHeight = this.screenWidth = -1;
+            }
+        }
+        if (bodyClientHeight != null) {
+            try {
+                this.bodyClientHeight = Integer.parseInt(bodyClientHeight);
+                this.bodyClientWidth = Integer.parseInt(bodyClientWidth);
+            } catch (final NumberFormatException e) {
+                this.bodyClientHeight = this.bodyClientWidth = -1;
+            }
+        }
+        if (windowInnerHeight != null) {
+            try {
+                this.windowInnerHeight = Integer.parseInt(windowInnerHeight);
+                this.windowInnerWidth = Integer.parseInt(windowInnerWidth);
+            } catch (final NumberFormatException e) {
+                this.windowInnerHeight = this.windowInnerWidth = -1;
             }
         }
         if (tzOffset != null) {
@@ -120,6 +159,9 @@ public class ExtendedClientDetails implements Serializable {
         if (touchDevice != null) {
             this.touchDevice = Boolean.parseBoolean(touchDevice);
         }
+        if (devicePixelRatio != null) {
+            this.devicePixelRatio = Double.parseDouble(devicePixelRatio);
+        }
 
         this.windowName = windowName;
     }
@@ -142,6 +184,44 @@ public class ExtendedClientDetails implements Serializable {
      */
     public int getScreenHeight() {
         return screenHeight;
+    }
+
+    /**
+     * Gets the inner height of the browser window {@code window.innerHeight} in
+     * pixels. This includes the scrollbar, it is visible.
+     *
+     * @return the browser window inner height in pixels
+     */
+    public int getWindowInnerHeight() {
+        return windowInnerHeight;
+    }
+
+    /**
+     * Gets the inner width of the browser window {@code window.innerWidth} in
+     * pixels. This includes the scrollbar, it is visible.
+     * 
+     * @return the browser window inner width in pixels
+     */
+    public int getWindowInnerWidth() {
+        return windowInnerWidth;
+    }
+
+    /**
+     * Gets the height of the body element in the document in pixels.
+     * 
+     * @return the height of the body element
+     */
+    public int getBodyClientHeight() {
+        return bodyClientHeight;
+    }
+
+    /**
+     * Gets the width of the body element in the document in pixels.
+     *
+     * @return the width of the body element
+     */
+    public int getBodyClientWidth() {
+        return bodyClientWidth;
     }
 
     /**
@@ -249,10 +329,25 @@ public class ExtendedClientDetails implements Serializable {
     }
 
     /**
+     * Gets the device pixel ratio, {@code window.devicePixelRatio}. See more
+     * from <a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio">MDN web docs</a>.
+     * <p>
+     * A value of -1 indicates that the value was not reported by the browser
+     * correctly.
+     * 
+     * @return double-precision floating-point value indicating the ratio of the
+     *         display's resolution in physical pixels to the resolution in CSS
+     *         pixels
+     */
+    public double getDevicePixelRatio() {
+        return devicePixelRatio;
+    }
+
+    /**
      * Returns a unique browser window identifier. For internal use only.
      *
      * @return An id which persists if the UI is reloaded in the same browser
-     * window/tab.
+     *         window/tab.
      */
     public String getWindowName() {
         return windowName;
