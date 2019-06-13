@@ -26,7 +26,6 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.util.Iterator;
-import java.util.List;
 
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
@@ -175,7 +174,8 @@ public class StreamReceiverHandler implements Serializable {
             // If we try to parse the request now, we will get an exception
             // since it has already been parsed and turned into Parts.
             try {
-                Iterator<Part> iter = ((HttpServletRequest) request).getParts().iterator();
+                Iterator<Part> iter = ((HttpServletRequest) request).getParts()
+                        .iterator();
                 while (iter.hasNext()) {
                     Part part = iter.next();
                     handleStream(session, streamReceiver, owner, part);
@@ -208,15 +208,18 @@ public class StreamReceiverHandler implements Serializable {
 
     private boolean hasParts(VaadinRequest request) {
         try {
-            return ((HttpServletRequest) request).getParts().size() > 0;
+            return !((HttpServletRequest) request).getParts().isEmpty();
         } catch (Exception e) {
+            getLogger().trace(
+                    "Pretending the request did not contain any parts because of exception",
+                    e);
             return false;
         }
     }
 
     private void handleStream(VaadinSession session,
-                            StreamReceiver streamReceiver, StateNode owner,
-                            Part part) throws IOException {
+            StreamReceiver streamReceiver, StateNode owner, Part part)
+            throws IOException {
         String name = part.getName();
         InputStream stream = part.getInputStream();
         try {
