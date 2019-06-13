@@ -42,8 +42,7 @@ import elemental.json.impl.JsonUtil;
 
 import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFinder;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_BOWER_MODE;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
@@ -60,8 +59,8 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
 
     /**
      * This goal checks that node and npm tools are installed, copies frontend
-     * resources available inside `.jar` dependencies to `node_modules`, and creates
-     * or updates `package.json` and `webpack.config.json` files.
+     * resources available inside `.jar` dependencies to `node_modules`, and
+     * creates or updates `package.json` and `webpack.config.json` files.
      *
      * @deprecated use {@link PrepareFrontendMojo} instead
      */
@@ -70,7 +69,8 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
     public static class VaildateMojo extends PrepareFrontendMojo {
         @Override
         public void execute() {
-            getLog().warn("\n\n   You are using the 'validate' goal which has been renamed to 'prepare-frontend', please update your 'pom.xml'.\n");
+            getLog().warn(
+                    "\n\n   You are using the 'validate' goal which has been renamed to 'prepare-frontend', please update your 'pom.xml'.\n");
             super.execute();
         }
     }
@@ -112,7 +112,8 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
     private String webpackTemplate;
 
     /**
-     * The folder where flow will put generated files that will be used by webpack.
+     * The folder where flow will put generated files that will be used by
+     * webpack.
      */
     @Parameter(defaultValue = "${project.build.directory}/" + FRONTEND)
     private File generatedFolder;
@@ -124,23 +125,21 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         // propagate info via System properties and token file
         propagateBuildInfo();
 
-        // Do nothing when bower mode
-        if (bower) {
+        // Do nothing when compatibility mode
+        if (compatibility) {
             getLog().debug(
-                    "Skipped 'prepare-frontend' goal because `vaadin.bowerMode` is set.");
+                    "Skipped 'prepare-frontend' goal because compatibility mode is set.");
             return;
         }
 
-        FrontendUtils.getNodeExecutable();
-        FrontendUtils.getNpmExecutable();
+        FrontendUtils.validateNodeAndNpmVersion();
 
-        new NodeTasks.Builder(getClassFinder(project), npmFolder, generatedFolder)
-                .withWebpack(webpackOutputDirectory, webpackTemplate)
-                .createMissingPackageJson(true)
-                .enableImportsUpdate(false)
-                .enablePackagesUpdate(false)
-                .runNpmInstall(false)
-                .build().execute();
+        new NodeTasks.Builder(getClassFinder(project), npmFolder,
+                generatedFolder)
+                        .withWebpack(webpackOutputDirectory, webpackTemplate)
+                        .createMissingPackageJson(true)
+                        .enableImportsUpdate(false).enablePackagesUpdate(false)
+                        .runNpmInstall(false).build().execute();
 
         File flowNodeDirectory = new File(npmFolder,
                 NODE_MODULES + FLOW_NPM_PACKAGE_NAME);
@@ -153,17 +152,14 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         // token file with the information about the build
         File token = new File(webpackOutputDirectory, TOKEN_FILE);
         JsonObject buildInfo = Json.createObject();
-        buildInfo.put(SERVLET_PARAMETER_BOWER_MODE, bower);
+        buildInfo.put(SERVLET_PARAMETER_COMPATIBILITY_MODE, compatibility);
         buildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, productionMode);
         buildInfo.put("npmFolder", npmFolder.getAbsolutePath());
         buildInfo.put("generatedFolder", generatedFolder.getAbsolutePath());
-        String webpackPort = System.getProperty("vaadin." + SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT);
-        if (webpackPort != null && webpackPort.matches("\\d+")) {
-            buildInfo.put("webpackPort", Double.parseDouble(webpackPort));
-        }
         try {
             FileUtils.forceMkdir(token.getParentFile());
-            FileUtils.write(token, JsonUtil.stringify(buildInfo, 2) + "\n", "UTF-8");
+            FileUtils.write(token, JsonUtil.stringify(buildInfo, 2) + "\n",
+                    "UTF-8");
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -171,22 +167,19 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         // Enable debug to find out problems related with flow modes
         Log log = getLog();
         if (log.isDebugEnabled()) {
-            log.debug(String.format("%n>>> Running prepare-package in %s project%nSystem.properties:%n"
-                    + " productionMode: %s%n boweMode: %s%n webpackPort: %s%n project.basedir: %s%n"
-                    + "Goal parameters:%n productionMode: %s%n bowerMode: %s%n bower: %b%n npmFolder: %s%n"
-                    + "Token file: %s%n"
-                    + "Token content: %s%n",
+            log.debug(String.format(
+                    "%n>>> Running prepare-package in %s project%nSystem.properties:%n"
+                            + " productionMode: %s%n bowerMode: %s%n compatibilityMode: %s%n webpackPort: %s%n project.basedir: %s%n"
+                            + "Goal parameters:%n productionMode: %s%n compatibilityMode: %s%n compatibility: %b%n npmFolder: %s%n"
+                            + "Token file: %s%n" + "Token content: %s%n",
                     project.getName(),
                     System.getProperty("vaadin.productionMode"),
                     System.getProperty("vaadin.bowerMode"),
+                    System.getProperty("vaadin.compatibiityMode"),
                     System.getProperty("vaadin.devmode.webpack.running-port"),
-                    System.getProperty("project.basedir"),
-                    productionMode,
-                    bowerMode,
-                    bower,
-                    npmFolder,
-                    token.getAbsolutePath(),
-                    buildInfo.toJson()));
+                    System.getProperty("project.basedir"), productionMode,
+                    compatibilityMode, compatibility, npmFolder,
+                    token.getAbsolutePath(), buildInfo.toJson()));
         }
 
         // In the case of running npm dev-mode in a maven multi-module projects,
@@ -212,12 +205,16 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
     private void copyProjectFrontendResources(File flowNodeDirectory) {
         final List<File> projectFrontendDirectories = Stream.of(
                 new File(project.getBasedir(), "src/main/webapp/frontend"),
-                new File(project.getBasedir(), "src/main/resources/META-INF/resources/frontend"),
-                new File(project.getBasedir(), "src/main/resources/public/frontend"),
-                new File(project.getBasedir(), "src/main/resources/static/frontend"),
-                new File(project.getBasedir(), "src/main/resources/resources/frontend"),
-                frontendResourcesDirectory)
-            .distinct().filter(File::isDirectory).collect(Collectors.toList());
+                new File(project.getBasedir(),
+                        "src/main/resources/META-INF/resources/frontend"),
+                new File(project.getBasedir(),
+                        "src/main/resources/public/frontend"),
+                new File(project.getBasedir(),
+                        "src/main/resources/static/frontend"),
+                new File(project.getBasedir(),
+                        "src/main/resources/resources/frontend"),
+                frontendResourcesDirectory).distinct().filter(File::isDirectory)
+                .collect(Collectors.toList());
 
         if (projectFrontendDirectories.isEmpty()) {
             getLog().debug("Found no local frontend resources for the project");
@@ -225,18 +222,18 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
             for (File frontendDirectory : projectFrontendDirectories) {
                 try {
                     FileUtils.copyDirectory(frontendDirectory,
-                        flowNodeDirectory);
+                            flowNodeDirectory);
                 } catch (IOException e) {
                     throw new UncheckedIOException(String.format(
-                        "Failed to copy project frontend resources from '%s' to '%s'",
-                        frontendDirectory, flowNodeDirectory), e);
+                            "Failed to copy project frontend resources from '%s' to '%s'",
+                            frontendDirectory, flowNodeDirectory), e);
                 }
             }
         }
     }
 
     @Override
-    boolean isDefaultBower() {
+    boolean isDefaultCompatibility() {
         return false;
     }
 }

@@ -41,7 +41,7 @@ import com.vaadin.flow.component.WebComponentExporter;
  * Writes web components generated from
  * {@link com.vaadin.flow.component.WebComponentExporter} implementation classes
  * to a target directory.
- * 
+ *
  * @author Vaadin Ltd
  * @since
  */
@@ -55,13 +55,13 @@ public final class WebComponentModulesWriter implements Serializable {
      * {@link com.vaadin.flow.server.webcomponent.WebComponentGenerator} and
      * writes the generated modules to {@code outputDirectory}. The name of the
      * file is {@code [web component's tag].js}.
-     * 
+     *
      * @param exporterClasses
      *            set of {@link com.vaadin.flow.component.WebComponentExporter}
      *            classes
      * @param outputDirectory
      *            target directory for the generated web component module files
-     * @param bowerMode
+     * @param compatibilityMode
      *            {@code true} to generated html modules, {@code false} to
      *            generate JavaScript modules
      * @return generated files
@@ -72,7 +72,7 @@ public final class WebComponentModulesWriter implements Serializable {
      */
     private static Set<File> writeWebComponentsToDirectory( // NOSONAR
             Set<Class<? extends WebComponentExporter<? extends Component>>> exporterClasses,
-            File outputDirectory, boolean bowerMode) {
+            File outputDirectory, boolean compatibilityMode) {
         // this method is used via reflection by DirectoryWriter
         Objects.requireNonNull(exporterClasses,
                 "Parameter 'exporterClasses' must not be null");
@@ -87,7 +87,7 @@ public final class WebComponentModulesWriter implements Serializable {
 
         return filterConcreteExporters(exporterClasses)
                 .map(clazz -> writeWebComponentToDirectory(clazz,
-                        outputDirectory, bowerMode))
+                        outputDirectory, compatibilityMode))
                 .collect(Collectors.toSet());
     }
 
@@ -111,15 +111,16 @@ public final class WebComponentModulesWriter implements Serializable {
      */
     private static File writeWebComponentToDirectory(
             Class<? extends WebComponentExporter<? extends Component>> clazz,
-            File outputDirectory, boolean bowerMode) {
+            File outputDirectory, boolean compatibilityMode) {
         String tag = getTag(clazz);
 
-        String fileName = bowerMode ? tag + ".html" : tag + ".js";
+        String fileName = compatibilityMode ? tag + ".html" : tag + ".js";
         Path generatedFile = outputDirectory.toPath().resolve(fileName);
         try {
             FileUtils.forceMkdir(generatedFile.getParent().toFile());
             Files.write(generatedFile,
-                    Collections.singletonList(generateModule(clazz, bowerMode)),
+                    Collections.singletonList(
+                            generateModule(clazz, compatibilityMode)),
                     StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new UncheckedIOException(String.format(
@@ -131,9 +132,9 @@ public final class WebComponentModulesWriter implements Serializable {
 
     private static String generateModule(
             Class<? extends WebComponentExporter<? extends Component>> exporterClass,
-            boolean bowerMode) {
+            boolean compatibilityMode) {
         return WebComponentGenerator.generateModule(exporterClass, "../",
-                bowerMode);
+                compatibilityMode);
     }
 
     private static String getTag(
@@ -141,8 +142,6 @@ public final class WebComponentModulesWriter implements Serializable {
         WebComponentExporterTagExtractor exporterTagExtractor = new WebComponentExporterTagExtractor();
         return exporterTagExtractor.apply(exporterClass);
     }
-
-
 
     /**
      * Enables the usage of given {@link WebComponentModulesWriter} class via
@@ -170,7 +169,7 @@ public final class WebComponentModulesWriter implements Serializable {
          * @param outputDirectory
          *            target directory for the generated web component module
          *            files
-         * @param bowerMode
+         * @param compatibilityMode
          *            {@code true} to generated html modules, {@code false} to *
          *            generate JavaScript modules
          * @return generated files
@@ -182,8 +181,8 @@ public final class WebComponentModulesWriter implements Serializable {
          *             if {@code writer} is not
          *             {@code WebComponentModulesWriter} class
          * @throws java.lang.IllegalArgumentException
-         *             if {@code writerClass} and {@code exporterClasses}
-         *             do not share a class loader
+         *             if {@code writerClass} and {@code exporterClasses} do not
+         *             share a class loader
          * @throws java.lang.IllegalStateException
          *             if the received {@code writer} does not have method
          *             {@link #writeWebComponentsToDirectory(java.util.Set, java.io.File, boolean)}
@@ -195,7 +194,7 @@ public final class WebComponentModulesWriter implements Serializable {
         @SuppressWarnings("unchecked")
         public static Set<File> generateWebComponentsToDirectory(
                 Class<?> writerClass, Set<Class<?>> exporterClasses,
-                File outputDirectory, boolean bowerMode) {
+                File outputDirectory, boolean compatibilityMode) {
             Objects.requireNonNull(writerClass,
                     "Parameter 'writerClassSupplier' must not null");
             Objects.requireNonNull(exporterClasses,
@@ -224,7 +223,8 @@ public final class WebComponentModulesWriter implements Serializable {
                 throw new IllegalArgumentException(
                         "Argument 'writer' should be a class of '"
                                 + WebComponentModulesWriter.class.getName()
-                                + "' but it is '" + writerClass.getName() + "'");
+                                + "' but it is '" + writerClass.getName()
+                                + "'");
             }
             Method writeMethod = getMethod(writerClass, WRITE_MODULES_METHOD)
                     .orElseThrow(() -> new IllegalStateException(String.format(
@@ -235,18 +235,18 @@ public final class WebComponentModulesWriter implements Serializable {
                 final boolean accessible = writeMethod.isAccessible();
                 writeMethod.setAccessible(true);
                 Set<File> files = ((Set<File>) writeMethod.invoke(null,
-                        exporterClasses,
-                        outputDirectory, bowerMode));
+                        exporterClasses, outputDirectory, compatibilityMode));
                 writeMethod.setAccessible(accessible);
                 return files;
-            } catch (IllegalAccessException | InvocationTargetException | NullPointerException e) {
+            } catch (IllegalAccessException | InvocationTargetException
+                    | NullPointerException e) {
                 throw new RuntimeException(
                         "Could not write exported web component module!", e);
             }
         }
 
         private static Optional<Method> getMethod(Class<?> writerClass,
-                                                  String methodName) {
+                String methodName) {
             return Stream.of(writerClass.getDeclaredMethods())
                     .filter(method -> method.getName().equals(methodName))
                     .findFirst();

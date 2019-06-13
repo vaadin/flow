@@ -39,7 +39,7 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.frontend.FrontendClassVisitor.EndPointData;
-import com.vaadin.flow.server.frontend.FrontendClassVisitor.EndPointData.ThemeData;
+import com.vaadin.flow.server.frontend.FrontendClassVisitor.ThemeData;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
@@ -63,7 +63,8 @@ public class FrontendDependencies implements Serializable {
     private static class ThemeWrapper implements AbstractTheme, Serializable {
         private final Serializable instance;
 
-        public ThemeWrapper(Class<? extends AbstractTheme> theme) throws InstantiationException, IllegalAccessException {
+        public ThemeWrapper(Class<? extends AbstractTheme> theme)
+                throws InstantiationException, IllegalAccessException {
             instance = theme.newInstance();
         }
 
@@ -93,7 +94,8 @@ public class FrontendDependencies implements Serializable {
         }
 
         @SuppressWarnings("unchecked")
-        private <T> T invoke(Object instance, String methodName, Object... arguments) {
+        private <T> T invoke(Object instance, String methodName,
+                Object... arguments) {
             try {
                 for (Method m : instance.getClass().getMethods()) {
                     if (m.getName().equals(methodName)) {
@@ -112,12 +114,13 @@ public class FrontendDependencies implements Serializable {
     private ThemeDefinition themeDefinition;
     private AbstractTheme themeInstance;
     private final HashMap<String, String> packages = new HashMap<>();
+    private final Set<String> irrelevantClasses = new HashSet<>();
 
     /**
      * Default Constructor.
      *
      * @param finder
-     *         the class finder
+     *            the class finder
      */
     public FrontendDependencies(ClassFinder finder) {
         this(finder, true);
@@ -128,14 +131,17 @@ public class FrontendDependencies implements Serializable {
      * components should be checked for resource dependencies.
      *
      * @param finder
-     *         the class finder
+     *            the class finder
      * @param generateEmbeddableWebComponents
-     *         {@code true} checks the {@link com.vaadin.flow.component.WebComponentExporter}
-     *         classes for dependencies. {@code true} is default for {@link
-     *         FrontendDependencies#FrontendDependencies(ClassFinder)}
+     *            {@code true} checks the
+     *            {@link com.vaadin.flow.component.WebComponentExporter} classes
+     *            for dependencies. {@code true} is default for
+     *            {@link FrontendDependencies#FrontendDependencies(ClassFinder)}
      */
     public FrontendDependencies(ClassFinder finder,
-                                boolean generateEmbeddableWebComponents) {
+            boolean generateEmbeddableWebComponents) {
+        log().info(
+                "Scanning classes to find frontend configurations and dependencies...");
         this.finder = finder;
         try {
             computeEndpoints();
@@ -143,8 +149,10 @@ public class FrontendDependencies implements Serializable {
             if (generateEmbeddableWebComponents) {
                 computeExporters();
             }
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IOException e) {
-            throw new IllegalStateException("Unable to compute frontend dependencies", e);
+        } catch (ClassNotFoundException | InstantiationException
+                | IllegalAccessException | IOException e) {
+            throw new IllegalStateException(
+                    "Unable to compute frontend dependencies", e);
         }
     }
 
@@ -164,8 +172,8 @@ public class FrontendDependencies implements Serializable {
      */
     public Set<String> getModules() {
         Set<String> all = new HashSet<>();
-        for (FrontendClassVisitor.EndPointData r : endPoints.values()) {
-            all.addAll(r.modules);
+        for (FrontendClassVisitor.EndPointData data : endPoints.values()) {
+            all.addAll(data.getModules());
         }
         return all;
     }
@@ -177,11 +185,12 @@ public class FrontendDependencies implements Serializable {
      */
     public Set<String> getScripts() {
         Set<String> all = new HashSet<>();
-        for (FrontendClassVisitor.EndPointData r : endPoints.values()) {
-            all.addAll(r.scripts);
+        for (FrontendClassVisitor.EndPointData data : endPoints.values()) {
+            all.addAll(data.getScripts());
         }
         return all;
     }
+
     /**
      * get all Java classes considered when looking for used dependencies.
      *
@@ -189,8 +198,8 @@ public class FrontendDependencies implements Serializable {
      */
     public Set<String> getClasses() {
         Set<String> all = new HashSet<>();
-        for (FrontendClassVisitor.EndPointData r : endPoints.values()) {
-            all.addAll(r.classes);
+        for (FrontendClassVisitor.EndPointData data : endPoints.values()) {
+            all.addAll(data.getClasses());
         }
         return all;
     }
@@ -214,8 +223,8 @@ public class FrontendDependencies implements Serializable {
     }
 
     /**
-     * Visit all classes annotated with {@link Route} and update an {@link
-     * EndPointData} object with the info found.
+     * Visit all classes annotated with {@link Route} and update an
+     * {@link EndPointData} object with the info found.
      * <p>
      * At the same time when the root level view is visited, compute the theme
      * to use and create its instance.
@@ -225,44 +234,52 @@ public class FrontendDependencies implements Serializable {
      * @throws InstantiationException
      * @throws IllegalAccessException
      */
-    private void computeEndpoints()
-            throws ClassNotFoundException, IOException, InstantiationException, IllegalAccessException {
+    private void computeEndpoints() throws ClassNotFoundException, IOException,
+            InstantiationException, IllegalAccessException {
         // Because of different classLoaders we need compare against class
         // references loaded by the specific class finder loader
-        Class<? extends Annotation> routeClass = finder.loadClass(Route.class.getName());
+        Class<? extends Annotation> routeClass = finder
+                .loadClass(Route.class.getName());
         for (Class<?> route : finder.getAnnotatedClasses(routeClass)) {
             String className = route.getName();
             EndPointData data = new EndPointData(route);
             endPoints.put(className, visitClass(className, data));
         }
-
         computeApplicationTheme(endPoints);
     }
 
-
     // Visit all end-points and compute the theme for the application.
-    // It fails in the case that there are multiple themes for the application or in the
+    // It fails in the case that there are multiple themes for the application
+    // or in the
     // case of Theme and NoTheme found in the application.
     // If no theme is found, it uses lumo if found in the class-path
-    private void computeApplicationTheme(HashMap<String, EndPointData> endPoints)
-            throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+    private void computeApplicationTheme(
+            HashMap<String, EndPointData> endPoints)
+            throws ClassNotFoundException, InstantiationException,
+            IllegalAccessException {
 
         Set<ThemeData> themes = endPoints.values().stream()
                 // consider only endPoints with theme information
-                .filter(data -> data.getTheme().getName() != null || data.getTheme().isNotheme())
+                .filter(data -> data.getTheme().getName() != null
+                        || data.getTheme().isNotheme())
                 .map(data -> data.getTheme())
                 // Remove duplicates by returning a set
                 .collect(Collectors.toSet());
 
         if (themes.size() > 1) {
-            String names = String.join("\n      ", endPoints.values().stream()
-                    .filter(data -> data.getTheme().getName() != null || data.getTheme().isNotheme())
-                    .map(data -> "found '"
-                            + (data.getTheme().isNotheme() ? NoTheme.class.getName() : data.getTheme().getName())
-                            + "' in '" + data.name + "'")
-                    .collect(Collectors.toList()));
+            String names = String.join("\n      ",
+                    endPoints.values().stream()
+                            .filter(data -> data.getTheme().getName() != null
+                                    || data.getTheme().isNotheme())
+                            .map(data -> "found '"
+                                    + (data.getTheme().isNotheme()
+                                            ? NoTheme.class.getName()
+                                            : data.getTheme().getName())
+                                    + "' in '" + data.getName() + "'")
+                            .collect(Collectors.toList()));
             throw new IllegalStateException(
-                    "\n Multiple Theme configuration is not supported:\n      " + names);
+                    "\n Multiple Theme configuration is not supported:\n      "
+                            + names);
         }
 
         Class<? extends AbstractTheme> theme = null;
@@ -288,7 +305,6 @@ public class FrontendDependencies implements Serializable {
         }
     }
 
-
     /**
      * Visit all classes annotated with {@link NpmPackage} and update the list
      * of dependencies and their versions.
@@ -297,19 +313,23 @@ public class FrontendDependencies implements Serializable {
      * @throws IOException
      */
     private void computePackages() throws ClassNotFoundException, IOException {
-        FrontendAnnotatedClassVisitor npmPackageVisitor = new FrontendAnnotatedClassVisitor(finder, NpmPackage.class.getName());
+        FrontendAnnotatedClassVisitor npmPackageVisitor = new FrontendAnnotatedClassVisitor(
+                finder, NpmPackage.class.getName());
 
-        for (Class<?> component : finder.getAnnotatedClasses(NpmPackage.class.getName())) {
+        for (Class<?> component : finder
+                .getAnnotatedClasses(NpmPackage.class.getName())) {
             npmPackageVisitor.visitClass(component.getName());
         }
 
         Set<String> dependencies = npmPackageVisitor.getValues(VALUE);
         for (String dependency : dependencies) {
-            Set<String> versions = npmPackageVisitor.getValuesForKey(VALUE, dependency, VERSION);
+            Set<String> versions = npmPackageVisitor.getValuesForKey(VALUE,
+                    dependency, VERSION);
             String version = versions.iterator().next();
             if (versions.size() > 1) {
                 String foundVersions = versions.toString();
-                log().warn("Multiple npm versions for {} found:  {}. First version found '{}' will be considered.",
+                log().warn(
+                        "Multiple npm versions for {} found:  {}. First version found '{}' will be considered.",
                         dependency, foundVersions, version);
             }
             packages.put(dependency, version);
@@ -322,13 +342,14 @@ public class FrontendDependencies implements Serializable {
     }
 
     /**
-     * Visits all classes extending {@link com.vaadin.flow.component.WebComponentExporter}
-     * and update an {@link EndPointData} object with the info found.
+     * Visits all classes extending
+     * {@link com.vaadin.flow.component.WebComponentExporter} and update an
+     * {@link EndPointData} object with the info found.
      * <p>
-     * The limitation with {@code WebComponentExporters} is that only one
-     * theme can be defined. If the more than one {@code @Theme} annotation
-     * is found on the exporters, {@code IllegalStateException} will be thrown.
-     * Having {@code @Theme} and {@code @NoTheme} is considered as two theme
+     * The limitation with {@code WebComponentExporters} is that only one theme
+     * can be defined. If the more than one {@code @Theme} annotation is found
+     * on the exporters, {@code IllegalStateException} will be thrown. Having
+     * {@code @Theme} and {@code @NoTheme} is considered as two theme
      * annotations. However, if no theme is found, {@code Lumo} is used, if
      * available.
      *
@@ -339,14 +360,16 @@ public class FrontendDependencies implements Serializable {
      * @throws IllegalStateException
      */
     @SuppressWarnings("unchecked")
-    private void computeExporters() throws ClassNotFoundException, IOException, IllegalAccessException, InstantiationException {
+    private void computeExporters() throws ClassNotFoundException, IOException,
+            IllegalAccessException, InstantiationException {
         // Because of different classLoaders we need compare against class
         // references loaded by the specific class finder loader
-        Class<? extends Annotation> routeClass = finder.loadClass(Route.class.getName());
-        Class<WebComponentExporter<? extends Component>> exporterClass =
-                finder.loadClass(WebComponentExporter.class.getName());
-        Set<? extends Class<? extends WebComponentExporter<? extends Component>>> exporterClasses =
-                finder.getSubTypesOf(exporterClass);
+        Class<? extends Annotation> routeClass = finder
+                .loadClass(Route.class.getName());
+        Class<WebComponentExporter<? extends Component>> exporterClass = finder
+                .loadClass(WebComponentExporter.class.getName());
+        Set<? extends Class<? extends WebComponentExporter<? extends Component>>> exporterClasses = finder
+                .getSubTypesOf(exporterClass);
 
         // if no exporters in the project, return
         if (exporterClasses.isEmpty()) {
@@ -358,16 +381,17 @@ public class FrontendDependencies implements Serializable {
         for (Class<?> exporter : exporterClasses) {
             String exporterClassName = exporter.getName();
             EndPointData exporterData = new EndPointData(exporter);
-            exportedPoints.put(exporterClassName, visitClass(exporterClassName, exporterData));
+            exportedPoints.put(exporterClassName,
+                    visitClass(exporterClassName, exporterData));
 
             if (!Modifier.isAbstract(exporter.getModifiers())) {
-                Class<? extends Component> componentClass =
-                        (Class<? extends Component>) ReflectTools
-                                .getGenericInterfaceType(exporter, exporterClass);
-                if (componentClass != null && !componentClass.isAnnotationPresent(routeClass)) {
+                Class<? extends Component> componentClass = (Class<? extends Component>) ReflectTools
+                        .getGenericInterfaceType(exporter, exporterClass);
+                if (componentClass != null
+                        && !componentClass.isAnnotationPresent(routeClass)) {
                     String componentClassName = componentClass.getName();
-                    EndPointData configurationData =
-                            new EndPointData(componentClass);
+                    EndPointData configurationData = new EndPointData(
+                            componentClass);
                     exportedPoints.put(componentClassName,
                             visitClass(componentClassName, configurationData));
                 }
@@ -386,33 +410,41 @@ public class FrontendDependencies implements Serializable {
      * @return
      * @throws IOException
      */
-    private EndPointData visitClass(String className, FrontendClassVisitor.EndPointData endPoint)
-            throws IOException {
+    private EndPointData visitClass(String className,
+            FrontendClassVisitor.EndPointData endPoint) throws IOException {
 
-        if (endPoint.classes.contains(className)) {
+        if (!isVisitable(className)
+                || endPoint.getClasses().contains(className)) {
             return endPoint;
         }
-        endPoint.classes.add(className);
+
+        endPoint.getClasses().add(className);
 
         URL url = getUrl(className);
         if (url == null) {
+            irrelevantClasses.add(className);
             return endPoint;
         }
 
-        FrontendClassVisitor visitor = new FrontendClassVisitor(className, endPoint);
+        FrontendClassVisitor visitor = new FrontendClassVisitor(className,
+                endPoint);
         ClassReader cr = new ClassReader(url.openStream());
         cr.accept(visitor, ClassReader.EXPAND_FRAMES);
 
-        for (String s : visitor.getChildren()) {
-            if (isVisitable(s)) {
-                visitClass(s, endPoint);
-            }
+        for (String clazz : visitor.getChildren()) {
+            visitClass(clazz, endPoint);
         }
 
-        boolean isRootLevel = className.equals(endPoint.name) && endPoint.route.isEmpty();
-        boolean hasTheme = !endPoint.getTheme().isNotheme() && endPoint.getTheme().getName() != null;
+        boolean isRootLevel = className.equals(endPoint.getName())
+                && endPoint.getRoute().isEmpty();
+        boolean hasTheme = !endPoint.getTheme().isNotheme()
+                && endPoint.getTheme().getName() != null;
         if (isRootLevel && hasTheme) {
             visitClass(endPoint.getTheme().getName(), endPoint);
+        }
+
+        if (!endPoint.hasData()) {
+            irrelevantClasses.add(className);
         }
 
         return endPoint;
@@ -421,7 +453,7 @@ public class FrontendDependencies implements Serializable {
     private Class<? extends AbstractTheme> getLumoTheme() {
         try {
             return finder.loadClass(LUMO);
-        } catch (ClassNotFoundException ignore) { //NOSONAR
+        } catch (ClassNotFoundException ignore) { // NOSONAR
             return null;
         }
     }
@@ -432,7 +464,8 @@ public class FrontendDependencies implements Serializable {
         // HasElement, and AbstractTheme classes, but that excludes some
         // syntaxes like using factories. This is the reason of having just a
         // blacklist of some common name-spaces that would not have components.
-        return className != null &&  // @formatter:off
+        return className != null && // @formatter:off
+                !irrelevantClasses.contains(className) &&
                 !className.matches(
                     "(^$|"
                     + ".*(slf4j).*|"

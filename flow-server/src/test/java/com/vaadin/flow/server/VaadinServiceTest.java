@@ -281,7 +281,7 @@ public class VaadinServiceTest {
                 return true;
             }
             @Override
-            public boolean isBowerMode() {
+            public boolean isCompatibilityMode() {
                 return true;
             };
         };

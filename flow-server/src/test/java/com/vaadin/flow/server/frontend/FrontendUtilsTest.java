@@ -15,10 +15,22 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubNode;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -26,11 +38,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.slf4j.LoggerFactory;
 
-import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubNode;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import com.vaadin.flow.server.frontend.FrontendUtils.UnknownVersionException;
 
 public class FrontendUtilsTest {
 
@@ -95,5 +103,91 @@ public class FrontendUtilsTest {
         assertThat(FrontendUtils.getNodeExecutable(),
                 not(containsString(NPM_CLI_STRING)));
         assertEquals(1, FrontendUtils.getNpmExecutable().size());
+    }
+
+    @Test
+    public void parseValidVersions() throws UnknownVersionException {
+        assertFalse(FrontendUtils.isVersionAtLeast("test",
+                new String[] { "6", "0", "0" }, 10, 0));
+        assertFalse(FrontendUtils.isVersionAtLeast("test",
+                new String[] { "6", "0", "0" }, 6, 1));
+        assertTrue(FrontendUtils.isVersionAtLeast("test",
+                new String[] { "10", "0", "0" }, 10, 0));
+        assertTrue(FrontendUtils.isVersionAtLeast("test",
+                new String[] { "10", "0", "2" }, 10, 0));
+        assertTrue(FrontendUtils.isVersionAtLeast("test",
+                new String[] { "10", "2", "0" }, 10, 0));
+    }
+
+    @Test(expected = UnknownVersionException.class)
+    public void parseInvalidMajorVersion() throws UnknownVersionException {
+        FrontendUtils.isVersionAtLeast("test", new String[] { "6", "0b2", "0" },
+                10, 0);
+    }
+
+    @Test(expected = UnknownVersionException.class)
+    public void parseInvalidMinorVersion() throws UnknownVersionException {
+        FrontendUtils.isVersionAtLeast("test", new String[] { "6", "0b2", "0" },
+                10, 0);
+    }
+
+    @Test
+    public void validateLargerThan_passesForNewVersion()
+            throws UnknownVersionException {
+        FrontendUtils.validateToolVersion("test",
+                new String[] { "10", "0", "2" }, 10, 0, 10, 0);
+        FrontendUtils.validateToolVersion("test",
+                new String[] { "10", "1", "2" }, 10, 0, 10, 0);
+        FrontendUtils.validateToolVersion("test",
+                new String[] { "11", "0", "2" }, 10, 0, 10, 0);
+    }
+
+    @Test
+    public void validateLargerThan_logsForSlightlyOldVersion()
+            throws UnknownVersionException, UnsupportedEncodingException {
+        PrintStream orgErr = System.err;
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        System.setErr(new PrintStream(out));
+        try {
+            FrontendUtils.validateToolVersion("test",
+                    new String[] { "9", "0", "0" }, 10, 0, 8, 0);
+            String logged = out.toString("utf-8");
+            Assert.assertTrue(logged.contains(
+                    "Your installed 'test' version (9.0.0) is not supported but should still work. Supported versions are 10.0+\n"));
+        } finally {
+            System.setErr(orgErr);
+        }
+    }
+
+    @Test
+    public void validateLargerThan_throwsForOldVersion()
+            throws UnknownVersionException, UnsupportedEncodingException {
+        try {
+            FrontendUtils.validateToolVersion("test",
+                    new String[] { "7", "5", "0" }, 10, 0, 8, 0);
+            Assert.fail("No exception was thrown for old version");
+        } catch (IllegalStateException e) {
+            Assert.assertTrue(e.getMessage().contains(
+                    "Your installed 'test' version (7.5.0) is too old. Supported versions are 10.0+"));
+        }
+    }
+
+    @Test(expected = UnknownVersionException.class)
+    public void validateLargerThan_invalidVersionThrows()
+            throws UnknownVersionException {
+        FrontendUtils.validateToolVersion("test",
+                new String[] { "a", "b", "c" }, 10, 2, 10, 2);
+    }
+
+    @Test
+    public void validateLargerThan_ignoredWithProperty()
+            throws UnknownVersionException {
+        try {
+            System.setProperty("vaadin.ignoreVersionChecks", "true");
+            FrontendUtils.validateToolVersion("test",
+                    new String[] { "a", "b", "c" }, 10, 2, 10, 2);
+        } finally {
+            System.clearProperty("vaadin.ignoreVersionChecks");
+        }
     }
 }

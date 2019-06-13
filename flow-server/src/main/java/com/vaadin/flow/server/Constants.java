@@ -29,7 +29,6 @@ public final class Constants implements Serializable {
     // Keep the version number in sync with flow-push/pom.xml
     public static final String REQUIRED_ATMOSPHERE_RUNTIME_VERSION = "2.4.30.slf4jvaadin1";
 
-
     /**
      * The prefix used for System property parameters.
      */
@@ -37,8 +36,18 @@ public final class Constants implements Serializable {
 
     public static final String SERVLET_PARAMETER_PRODUCTION_MODE = "productionMode";
 
-    /** enable it if your project is a Polymer 2.0 one, should be removed in V15 */
+    /**
+     * enable it if your project is a Polymer 2.0 one, should be removed in V15
+     *
+     * @deprecated the parameter is renamed to
+     *             {@link #SERVLET_PARAMETER_COMPATIBILITY_MODE}
+     */
+    @Deprecated
     public static final String SERVLET_PARAMETER_BOWER_MODE = "bowerMode";
+    /**
+     * enable it if your project is a Polymer 2.0 one, should be removed in V15
+     */
+    public static final String SERVLET_PARAMETER_COMPATIBILITY_MODE = "compatibilityMode";
 
     public static final String SERVLET_PARAMETER_REQUEST_TIMING = "requestTiming";
     // Javadocs for VaadinService should be updated if this value is changed
@@ -143,7 +152,8 @@ public final class Constants implements Serializable {
      * Default path for the WebPack profile statistics json file. It can be
      * modified by setting the system property "statistics.file.path".
      */
-    public static final String STATISTICS_JSON_DEFAULT = "build/stats.json";
+    public static final String STATISTICS_JSON_DEFAULT = Constants.VAADIN_CONFIGURATION
+            + "stats.json";
 
     /**
      * Name of the <code>npm</code> main file.
@@ -156,11 +166,11 @@ public final class Constants implements Serializable {
     public static final String RESOURCES_FRONTEND_DEFAULT = "META-INF/resources/frontend";
 
     /**
-     * Configuration name for the parameter that indicates the tcp port of a webpack-dev-server
-     * already running. This property is automatically defined when
-     * {@link DevModeHandler} starts the webpack server. If you have your own
-     * server already running, define this property, then {@link DevModeHandler}
-     * will re-use that server and will disable updaters.
+     * Configuration name for the parameter that indicates the tcp port of a
+     * webpack-dev-server already running. This property is automatically
+     * defined when {@link DevModeHandler} starts the webpack server. If you
+     * have your own server already running, define this property, then
+     * {@link DevModeHandler} will re-use that server and will disable updaters.
      */
     public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT = "devmode.webpack.running-port";
 
@@ -203,14 +213,36 @@ public final class Constants implements Serializable {
     public static final String VAADIN_MAPPING = "VAADIN/";
 
     /**
-     * The path to meta-inf/VAADIN/ where static resources are put on the servlet.
+     * The path to meta-inf/VAADIN/ where static resources are put on the
+     * servlet.
      */
-    public static final String VAADIN_SERVLET_RESOURCES = META_INF + VAADIN_MAPPING;
+    public static final String VAADIN_SERVLET_RESOURCES = META_INF
+            + VAADIN_MAPPING;
+
+    /**
+     * The static build resources folder.
+     */
+    public static final String VAADIN_BUILD = "build/";
+
+    /**
+     * The static configuration resources folder.
+     */
+    public static final String VAADIN_CONFIGURATION = "config/";
 
     /**
      * The prefix used for all internal static files, relative to context root.
      */
-    public static final String VAADIN_BUILD_FILES_PATH = VAADIN_MAPPING + "build/";
+    public static final String VAADIN_BUILD_FILES_PATH = VAADIN_MAPPING
+            + VAADIN_BUILD;
+
+    public static final int SUPPORTED_NODE_MAJOR_VERSION = 10;
+    public static final int SUPPORTED_NODE_MINOR_VERSION = 0;
+    public static final int SUPPORTED_NPM_MAJOR_VERSION = 5;
+    public static final int SUPPORTED_NPM_MINOR_VERSION = 6;
+    public static final int SHOULD_WORK_NODE_MAJOR_VERSION = 8;
+    public static final int SHOULD_WORK_NODE_MINOR_VERSION = 9;
+    public static final int SHOULD_WORK_NPM_MAJOR_VERSION = 5;
+    public static final int SHOULD_WORK_NPM_MINOR_VERSION = 5;
 
     private Constants() {
         // prevent instantiation constants class only

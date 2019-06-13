@@ -64,9 +64,9 @@ public class WebComponentGenerator {
         }
     }
 
-    private static String getTemplate(boolean bowerMode) {
+    private static String getTemplate(boolean compatibilityMode) {
         String templateHead;
-        if (bowerMode) {
+        if (compatibilityMode) {
             templateHead = getStringResource(HTML_TEMPLATE);
         } else {
             templateHead = getStringResource(JS_TEMPLATE);
@@ -79,63 +79,63 @@ public class WebComponentGenerator {
      * Generate web component html/JS for given exporter class.
      *
      * @param exporterClass
-     *         web component exporter class, not {@code null}
+     *            web component exporter class, not {@code null}
      * @param frontendURI
-     *         the frontend resources URI, not {@code null}
-     * @param bowerMode
-     *         {@code true} to generate Polymer2 template, {@code false} to
-     *         generate Polymer3 template
+     *            the frontend resources URI, not {@code null}
+     * @param compatibilityMode
+     *            {@code true} to generate Polymer2 template, {@code false} to
+     *            generate Polymer3 template
      * @return generated web component html/JS to be served to the client
      */
     public static String generateModule(
             Class<? extends WebComponentExporter<? extends Component>> exporterClass,
-            String frontendURI, boolean bowerMode) {
+            String frontendURI, boolean compatibilityMode) {
         Objects.requireNonNull(exporterClass);
         Objects.requireNonNull(frontendURI);
 
-        WebComponentConfiguration<? extends Component> config =
-                new WebComponentExporter.WebComponentConfigurationFactory()
-                        .create(exporterClass);
+        WebComponentConfiguration<? extends Component> config = new WebComponentExporter.WebComponentConfigurationFactory()
+                .create(exporterClass);
 
-        return generateModule(config, frontendURI, false, bowerMode);
+        return generateModule(config, frontendURI, false, compatibilityMode);
     }
 
     /**
      * Generate web component html/JS for given tag and class.
      *
      * @param webComponentConfiguration
-     *         web component class implementation, not {@code null}
+     *            web component class implementation, not {@code null}
      * @param frontendURI
-     *         the frontend resources URI, not {@code null}
-     * @param bowerMode
-     *         {@code true} to generate Polymer2 template, {@code false} to
-     *         generate Polymer3 template
+     *            the frontend resources URI, not {@code null}
+     * @param compatibilityMode
+     *            {@code true} to generate Polymer2 template, {@code false} to
+     *            generate Polymer3 template
      * @return generated web component html/JS to be served to the client
      */
     public static String generateModule(
             WebComponentConfiguration<? extends Component> webComponentConfiguration,
-            String frontendURI, boolean bowerMode) {
+            String frontendURI, boolean compatibilityMode) {
         Objects.requireNonNull(webComponentConfiguration);
         Objects.requireNonNull(frontendURI);
 
         return generateModule(webComponentConfiguration, frontendURI, true,
-                bowerMode);
+                compatibilityMode);
     }
 
     private static String generateModule(
             WebComponentConfiguration<? extends Component> webComponentConfiguration,
-            String frontendURI, boolean generateUiImport, boolean bowerMode) {
+            String frontendURI, boolean generateUiImport,
+            boolean compatibilityMode) {
         Objects.requireNonNull(webComponentConfiguration);
         Objects.requireNonNull(frontendURI);
 
         Set<PropertyData<?>> propertyDataSet = webComponentConfiguration
                 .getPropertyDataSet();
 
-        Map<String, String> replacements =
-                getReplacementsMap(webComponentConfiguration.getTag(),
-                        propertyDataSet, frontendURI, generateUiImport);
+        Map<String, String> replacements = getReplacementsMap(
+                webComponentConfiguration.getTag(), propertyDataSet,
+                frontendURI, generateUiImport);
 
-        String template = getTemplate(bowerMode);
+        String template = getTemplate(compatibilityMode);
         for (Map.Entry<String, String> replacement : replacements.entrySet()) {
             template = template.replace("_" + replacement.getKey() + "_",
                     replacement.getValue());
@@ -143,8 +143,7 @@ public class WebComponentGenerator {
         return template;
     }
 
-    static Map<String, String> getReplacementsMap(
-            String tag,
+    static Map<String, String> getReplacementsMap(String tag,
             Set<PropertyData<? extends Serializable>> propertyDataSet,
             String frontendURI, boolean generateUiImport) {
         Map<String, String> replacements = new HashMap<>();
@@ -199,8 +198,8 @@ public class WebComponentGenerator {
                 prop.put(propertyValue, (JsonValue) property.getDefaultValue());
             } else {
                 throw new UnsupportedPropertyTypeException(String.format(
-                        "%s is not a currently supported type for a Property." +
-                                " Please use %s instead.",
+                        "%s is not a currently supported type for a Property."
+                                + " Please use %s instead.",
                         property.getType().getSimpleName(),
                         JsonValue.class.getSimpleName()));
             }
