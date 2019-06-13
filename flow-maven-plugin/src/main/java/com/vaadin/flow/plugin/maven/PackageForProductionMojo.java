@@ -208,9 +208,10 @@ public class PackageForProductionMojo extends FlowModeAbstractMojo {
     public void execute() {
         super.execute();
 
-        // Do nothing when not in bower mode
-        if (!bower) {
-            getLog().info("Skipped `package-for-production` goal because `vaadin.bowerMode` is not set.");
+        // Do nothing when not in compatibility mode
+        if (!compatibility) {
+            getLog().info(
+                    "Skipped `package-for-production` goal because compatibility mode is not set.");
             return;
         }
 
@@ -298,7 +299,7 @@ public class PackageForProductionMojo extends FlowModeAbstractMojo {
     }
 
     @Override
-    boolean isDefaultBower() {
+    boolean isDefaultCompatibility() {
         return true;
     }
 }

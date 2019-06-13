@@ -1064,7 +1064,7 @@ public class BootstrapHandlerTest {
     public void theme_contents_are_appended_to_head()
             throws InvalidRouteConfigurationException {
 
-        mocks.getDeploymentConfiguration().setBowerMode(true);
+        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
 
         initUI(testUI, createVaadinRequest(),
                 Collections.singleton(MyThemeTest.class));
@@ -1143,7 +1143,7 @@ public class BootstrapHandlerTest {
     @Test // 3333
     public void theme_contents_are_appended_to_head_for_alias_route()
             throws InvalidRouteConfigurationException {
-        mocks.getDeploymentConfiguration().setBowerMode(true);
+        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
 
         HttpServletRequest request = createRequest();
         Mockito.doAnswer(invocation -> "/alias").when(request).getPathInfo();
@@ -1189,7 +1189,7 @@ public class BootstrapHandlerTest {
     public void theme_contents_added_also_when_theme_in_super_class()
             throws InvalidRouteConfigurationException {
 
-        mocks.getDeploymentConfiguration().setBowerMode(true);
+        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
 
         initUI(testUI, createVaadinRequest(),
                 Collections.singleton(ExtendingView.class));
@@ -1213,7 +1213,7 @@ public class BootstrapHandlerTest {
 
     @Test
     public void themeContents_htmlAttributesAreAddedToHtmlTag() {
-        mocks.getDeploymentConfiguration().setBowerMode(true);
+        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
 
         initUI(testUI, createVaadinRequest(),
                 Collections.singleton(MyThemeTest.class));
@@ -1355,7 +1355,7 @@ public class BootstrapHandlerTest {
     @Test
     public void frontendProtocol_productionMode_es5Url() {
         mocks.setProductionMode(true);
-        deploymentConfiguration.setBowerMode(true);
+        deploymentConfiguration.setCompatibilityMode(true);
         initUI(testUI);
         WebBrowser mockedWebBrowser = Mockito.mock(WebBrowser.class);
         Mockito.when(session.getBrowser()).thenReturn(mockedWebBrowser);
@@ -1375,7 +1375,7 @@ public class BootstrapHandlerTest {
     // This test is not applicable for npm mode
     @Test
     public void frontendProtocol_productionMode_useDifferentUrlsForEs5AndEs6() {
-        deploymentConfiguration.setBowerMode(true);
+        deploymentConfiguration.setCompatibilityMode(true);
         initUI(testUI);
         mocks.setProductionMode(true);
         WebBrowser mockedWebBrowser = Mockito.mock(WebBrowser.class);
@@ -1421,7 +1421,7 @@ public class BootstrapHandlerTest {
     // This test is not applicable for npm mode
     @Test
     public void frontendProtocol_productionModeAndWithProperties_useProperties_es5() {
-        deploymentConfiguration.setBowerMode(true);
+        deploymentConfiguration.setCompatibilityMode(true);
         String es5Prefix = "bar/es5/";
         deploymentConfiguration.setApplicationOrSystemProperty(
                 Constants.FRONTEND_URL_ES5, es5Prefix);
@@ -1443,7 +1443,7 @@ public class BootstrapHandlerTest {
     // This test is not applicable for npm mode
     @Test
     public void frontendProtocol_productionModeAndWithProperties_useProperties_es6() {
-        deploymentConfiguration.setBowerMode(true);
+        deploymentConfiguration.setCompatibilityMode(true);
         String es6Prefix = "bar/es6/";
         deploymentConfiguration.setApplicationOrSystemProperty(
                 Constants.FRONTEND_URL_ES6, es6Prefix);
@@ -1519,7 +1519,7 @@ public class BootstrapHandlerTest {
 
     @Test
     public void es6NotSupported_webcomponentsPolyfillBasePresent_polyfillsLoaded() {
-        mocks.getDeploymentConfiguration().setBowerMode(true);
+        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
 
         mocks.setBrowserEs6(false);
         mocks.getServlet().addServletContextResource(

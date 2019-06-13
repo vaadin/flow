@@ -58,7 +58,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <bowerMode>false</bowerMode>
+                    <compatibilityMode>false</compatibilityMode>
                     <productionMode>false</productionMode>
                 </configuration>
             </plugin>

@@ -25,12 +25,14 @@ import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 /**
  * The base class of Flow Mojos in order to compute correctly the modes.
  */
-public abstract class FlowModeAbstractMojo extends AbstractMojo{
+public abstract class FlowModeAbstractMojo extends AbstractMojo {
+    static final String VAADIN_COMPATIBILITY_MODE = "vaadin.compatibilityMode";
+
     /**
-     * Whether or not we are running in bowerMode.
+     * Whether or not we are running in compatibility mode.
      */
-    @Parameter(defaultValue = "${vaadin.bowerMode}")
-    public String bowerMode;
+    @Parameter(defaultValue = "${vaadin.bowerMode}", alias = "bowerMode")
+    public String compatibilityMode;
 
     /**
      * Whether or not we are running in productionMode.
@@ -39,21 +41,28 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo{
     public boolean productionMode;
 
     /**
-     * The folder where webpack should output index.js and other generated files.
+     * The folder where webpack should output index.js and other generated
+     * files.
      */
-    @Parameter(defaultValue = "${project.build.outputDirectory}/" + VAADIN_SERVLET_RESOURCES)
+    @Parameter(defaultValue = "${project.build.outputDirectory}/"
+            + VAADIN_SERVLET_RESOURCES)
     protected File webpackOutputDirectory;
 
     /**
-     * The actual bower mode boolean.
+     * The actual compatibility mode boolean.
      */
-    protected boolean bower;
+    protected boolean compatibility;
 
     @Override
     public void execute() {
+        if (compatibilityMode == null) {
+            compatibilityMode = System.getProperty(VAADIN_COMPATIBILITY_MODE);
+        }
         // Default mode for V14 is bower true
-        bower = bowerMode != null ? Boolean.valueOf(bowerMode) : isDefaultBower();
+        compatibility = compatibilityMode != null
+                ? Boolean.valueOf(compatibilityMode)
+                : isDefaultCompatibility();
     }
 
-    abstract boolean isDefaultBower();
+    abstract boolean isDefaultCompatibility();
 }
