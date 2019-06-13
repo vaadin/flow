@@ -3,6 +3,7 @@ package com.vaadin.flow.server.frontend;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -11,6 +12,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.server.frontend.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Component0;
@@ -22,12 +24,14 @@ import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.RootVi
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.RootViewWithMultipleTheme;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.RootViewWithTheme;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.RootViewWithoutTheme;
+import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.RootViewWithoutThemeAnnotation;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.SecondView;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Theme1;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Theme2;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Theme4;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.ThemeExporter;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.ThirdView;
+import com.vaadin.flow.theme.AbstractTheme;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -36,6 +40,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class FrontendDependenciesTest {
 
@@ -112,18 +117,20 @@ public class FrontendDependenciesTest {
         assertEquals("222.222.222",
                 deps.getPackages().get("@vaadin/component-2"));
         assertEquals("=2.1.0", deps.getPackages().get("@vaadin/component-0"));
-        assertEquals("1.23.114-alpha1", deps.getPackages().get("@vaadin/vaadin-foo"));
+        assertEquals("1.23.114-alpha1",
+                deps.getPackages().get("@vaadin/vaadin-foo"));
     }
-
 
     @Test
     public void should_visitSuperNpmPakageAnnotations() throws Exception {
         FrontendDependencies deps = create(
                 FrontendDependenciesTestComponents.ComponentExtending.class);
         assertEquals(1, deps.getPackages().size());
-        assertTrue(deps.getPackages().containsKey("@vaadin/component-extended"));
+        assertTrue(
+                deps.getPackages().containsKey("@vaadin/component-extended"));
 
-        assertEquals("2.1.0", deps.getPackages().get("@vaadin/component-extended"));
+        assertEquals("2.1.0",
+                deps.getPackages().get("@vaadin/component-extended"));
     }
 
     @Test
@@ -166,7 +173,7 @@ public class FrontendDependenciesTest {
         assertEquals(8, deps.getModules().size());
         assertEquals(1, deps.getPackages().size());
         assertEquals(6, deps.getScripts().size());
-        
+
         assertTrue(deps.getPackages().containsKey("@foo/first-view"));
         assertEquals("0.0.1", deps.getPackages().get("@foo/first-view"));
     }
@@ -229,30 +236,60 @@ public class FrontendDependenciesTest {
     }
 
     @Test
-    public void should_takeTheme_from_exporter_if_defined() throws Exception {
+    public void should_visitDefaultTheme_when_noThemeAnnotationIsGiven()
+            throws Exception {
+
+        DefaultClassFinder finder = spy(new DefaultClassFinder(
+                Collections.singleton(RootViewWithoutThemeAnnotation.class)));
+
+        // we'll do a partial mock here since we want to keep the other
+        // behavior of the DefaultClassFinder. Theme4 is used as a fake Lumo
+        // since it has @JsModule annotation which makes it easy to verify
+        // that the Theme was actually visited and modules collected
+        Mockito.doReturn(Theme4.class).when(finder)
+                .loadClass(FrontendDependencies.LUMO);
+
+        FrontendDependencies deps = new FrontendDependencies(finder);
+        assertEquals(
+                "Theme4 should have been returned when default theme was selected",
+                Theme4.class, deps.getThemeDefinition().getTheme());
+        assertTrue("Theme4 should have been visited and JsModule collected",
+                deps.getModules().contains("./theme-4.js"));
+    }
+
+    @Test
+    public void should_takeThemeFromExporter_when_exporterFound()
+            throws Exception {
         FrontendDependencies deps = create(ThemeExporter.class);
 
         assertEquals(Theme2.class, deps.getThemeDefinition().getTheme());
     }
 
     @Test
-    public void should_default_to_Lumo_theme_when_no_theme_defined_by_exporter()
+    public void should_defaultToLumoTheme_when_noThemeDefinedByExporter()
             throws Exception {
-
         // RootViewWithTheme is added to the list just to make sure exporter
         // handles theming default, not the other crawlers
-        DefaultClassFinder finder = spy(new DefaultClassFinder(new HashSet<Class<?>>(
-                new ArrayList<>(Arrays.asList(NoThemeExporter.class,
-                        RootViewWithTheme.class)))));
+        DefaultClassFinder finder = spy(new DefaultClassFinder(
+                new HashSet<>(Arrays.asList(NoThemeExporter.class,
+                        RootViewWithTheme.class))));
 
-        new FrontendDependencies(finder);
-        verify(finder, times(1)).loadClass(FrontendDependencies.LUMO);
+        Mockito.doReturn(Theme4.class).when(finder)
+                .loadClass(FrontendDependencies.LUMO);
+
+        FrontendDependencies deps = new FrontendDependencies(finder);
+        assertEquals(
+                "Theme4 should have been returned when default theme was selected",
+                Theme4.class, deps.getThemeDefinition().getTheme());
+        assertTrue("Theme4 should have been visited and JsModule collected",
+                deps.getModules().contains("./theme-4.js"));
     }
 
     @Test // flow#5715
-    public void should_not_attempt_to_override_theme_if_no_exporters() throws ClassNotFoundException {
-        DefaultClassFinder finder = spy(new DefaultClassFinder(new HashSet<Class<?>>(
-                new ArrayList<>(Arrays.asList(RootViewWithTheme.class)))));
+    public void should_notAttemptToOverrideTheme_when_noExportersFound()
+            throws ClassNotFoundException {
+        DefaultClassFinder finder = spy(new DefaultClassFinder(
+                Collections.singleton(RootViewWithTheme.class)));
 
         new FrontendDependencies(finder);
         verify(finder, times(0)).loadClass(FrontendDependencies.LUMO);
