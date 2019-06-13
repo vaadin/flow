@@ -88,7 +88,6 @@ import com.vaadin.flow.theme.ThemeUtil;
  * @see #init(VaadinRequest)
  *
  */
-@Tag("body")
 public class UI extends Component
         implements PollNotifier, HasComponents, RouterLayout {
 
@@ -126,8 +125,7 @@ public class UI extends Component
      */
     public UI() {
         super(null);
-        getNode().getFeature(ElementData.class)
-                .setTag(this.getClass().getAnnotation(Tag.class).value());
+        getNode().getFeature(ElementData.class).setTag("body");
         Component.setElement(this, Element.get(getNode()));
         pushConfiguration = new PushConfigurationImpl(this);
     }
