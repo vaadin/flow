@@ -18,32 +18,6 @@
 		log = console.log;
 	}
 	
-	var isWidgetsetLoaded = function(widgetset) {
-		var className = widgetset.replace(/\./g, "_");
-		return (typeof window[className]) != "undefined";
-	};
-	
-	var loadWidgetset = function(url, widgetset) {
-		if (widgetsets[widgetset]) {
-			return;
-		}
-		log("load widgetset", url, widgetset);
-		setTimeout(function() {
-			if (!isWidgetsetLoaded(widgetset)) {
-				alert("Failed to load the widgetset: " + url);
-			}
-		}, 15000);
-	
-		var scriptTag = document.createElement('script');
-		scriptTag.setAttribute('type', 'text/javascript');
-		scriptTag.setAttribute('src', url);
-		document.getElementsByTagName('head')[0].appendChild(scriptTag);
-		
-		widgetsets[widgetset] = {
-			pendingApps: []
-		};
-	};
-	
 	var isInitializedInDom = function(appId) {
 		var appDiv = document.getElementById(appId);
 		if (!appDiv) {
