@@ -596,6 +596,10 @@ public class Page implements Serializable {
         ui.getInternals().setExtendedClientDetails(new ExtendedClientDetails(
                 getStringElseNull.apply("v-sw"),
                 getStringElseNull.apply("v-sh"),
+                getStringElseNull.apply("v-ww"),
+                getStringElseNull.apply("v-wh"),
+                getStringElseNull.apply("v-bw"),
+                getStringElseNull.apply("v-bh"),
                 getStringElseNull.apply("v-tzo"),
                 getStringElseNull.apply("v-rtzo"),
                 getStringElseNull.apply("v-dstd"),
@@ -603,7 +607,7 @@ public class Page implements Serializable {
                 getStringElseNull.apply("v-tzid"),
                 getStringElseNull.apply("v-curdate"),
                 getStringElseNull.apply("v-td"),
+                getStringElseNull.apply("v-pr"),
                 getStringElseNull.apply("v-wn")));
-
     }
 }
