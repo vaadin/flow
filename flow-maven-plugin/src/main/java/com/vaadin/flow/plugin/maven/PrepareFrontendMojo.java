@@ -112,6 +112,14 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
     private String webpackTemplate;
 
     /**
+     * Copy the `webapp.generated.js` from the specified URL. Default is
+     * the template provided by this plugin. Set it to empty string to disable
+     * the feature.
+     */
+    @Parameter(defaultValue = FrontendUtils.WEBPACK_GENERATED)
+    private String webpackGeneratedTemplate;
+
+    /**
      * The folder where flow will put generated files that will be used by
      * webpack.
      */
@@ -134,12 +142,13 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
 
         FrontendUtils.validateNodeAndNpmVersion();
 
-        new NodeTasks.Builder(getClassFinder(project), npmFolder,
-                generatedFolder)
-                        .withWebpack(webpackOutputDirectory, webpackTemplate)
-                        .createMissingPackageJson(true)
-                        .enableImportsUpdate(false).enablePackagesUpdate(false)
-                        .runNpmInstall(false).build().execute();
+        new NodeTasks.Builder(getClassFinder(project), npmFolder, generatedFolder)
+                .withWebpack(webpackOutputDirectory, webpackTemplate, webpackGeneratedTemplate)
+                .createMissingPackageJson(true)
+                .enableImportsUpdate(false)
+                .enablePackagesUpdate(false)
+                .runNpmInstall(false)
+                .build().execute();
 
         File flowNodeDirectory = new File(npmFolder,
                 NODE_MODULES + FLOW_NPM_PACKAGE_NAME);

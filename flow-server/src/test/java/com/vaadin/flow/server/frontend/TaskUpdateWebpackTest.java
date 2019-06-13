@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -35,6 +36,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DI
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
 import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
 
 public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
@@ -44,6 +46,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
 
     private TaskUpdateWebpack webpackUpdater;
     private File webpackConfig;
+    private File webpackGenerated;
     File baseDir;
 
     @Before
@@ -57,50 +60,87 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
         webpackUpdater = new TaskUpdateWebpack(
                 baseDir,
                 new File(baseDir, TARGET + "classes"),
-                WEBPACK_CONFIG,
+                WEBPACK_CONFIG, WEBPACK_GENERATED,
                 new File(baseDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME));
 
         webpackConfig = new File(baseDir, WEBPACK_CONFIG);
+        webpackGenerated = new File(baseDir, WEBPACK_GENERATED);
     }
 
 
     @After
     public void teardown() {
         webpackConfig.delete();
+        webpackGenerated.delete();
     }
 
     @Test
-    public void should_CreateWebpackConfig() throws Exception {
-        Assert.assertFalse(webpackConfig.exists());
+    public void should_CreateWebpackConfigAndGeneratedConfig() throws Exception {
+        Assert.assertFalse("No webpack config file should be present.", webpackConfig.exists());
+        Assert.assertFalse("No generated config file should be present.", webpackGenerated.exists());
         webpackUpdater.execute();
 
-        Assert.assertTrue(webpackConfig.exists());
-        assertWebpackConfigContent("target/frontend/generated-flow-imports.js", "target/classes");
+        Assert.assertTrue("webpack.config.js was not created.",webpackConfig.exists());
+        Assert.assertTrue("webpack.generated.js was not created.", webpackGenerated.exists());
+        assertWebpackConfigContent();
+        assertWebpackGeneratedConfigContent("target/frontend/generated-flow-imports.js", "target/classes");
     }
 
     @Test
-    public void should_update_Webpack() throws Exception {
-        webpackUpdater.execute();
-        Assert.assertTrue(webpackConfig.exists());
+    public void should_updateOnlyGeneratedWebpack() throws Exception {
+        Assert.assertFalse("No webpack config file should be present.", webpackConfig.exists());
+        Assert.assertFalse("No generated config file should be present.", webpackGenerated.exists());
 
-        TaskUpdateWebpack newUpdater = new TaskUpdateWebpack(baseDir, new File(baseDir, "foo"), WEBPACK_CONFIG,
+        webpackUpdater.execute();
+        Assert.assertTrue("webpack.config.js was not created.",webpackConfig.exists());
+        Assert.assertTrue("webpack.generated.js was not created.", webpackGenerated.exists());
+        assertWebpackConfigContent();
+
+        // Add a custom line into webpack.config.js
+        String customString = "custom element;";
+        List<String> lines = FileUtils.readLines(webpackConfig, "UTF-8");
+        for(int i = 0; i <lines.size(); i++) {
+            if(lines.get(i).equals("module.exports = merge(flowDefaults, {")) {
+                lines.add(i+1, customString);
+                break;
+            }
+        }
+
+        FileUtils.writeLines(webpackConfig, lines);
+
+        TaskUpdateWebpack newUpdater = new TaskUpdateWebpack(baseDir, new File(baseDir, "foo"), WEBPACK_CONFIG, WEBPACK_GENERATED,
                 new File(baseDir, "bar"));
         newUpdater.execute();
 
-        assertWebpackConfigContent("bar", "foo");
-    }
-
-    private void assertWebpackConfigContent(String entryPoint, String outputFolder) throws IOException {
-
+        assertWebpackGeneratedConfigContent("bar", "foo");
         List<String> webpackContents = Files.lines(webpackConfig.toPath()).collect(Collectors.toList());
 
+        Assert.assertTrue("Custom string has disappeared", webpackContents.contains(customString));
+
+    }
+
+    private void assertWebpackGeneratedConfigContent(String entryPoint, String outputFolder) throws IOException {
+
+        List<String> webpackContents = Files.lines(webpackGenerated.toPath()).collect(Collectors.toList());
+
         Assert.assertFalse(
-                "webpack config should not contain Windows path separators",
+                "webpack.generated.js config should not contain Windows path separators",
                 webpackContents.contains("\\\\"));
 
         verifyNoAbsolutePathsPresent(webpackContents);
 
         verifyUpdate(webpackContents, entryPoint, outputFolder);
+    }
+
+    private void assertWebpackConfigContent() throws IOException {
+
+        List<String> webpackContents = Files.lines(webpackConfig.toPath()).collect(Collectors.toList());
+
+        Assert.assertTrue("No webpack-merge imported.", webpackContents.contains("const merge = require('webpack-merge');"));
+        Assert.assertTrue("No flowDefaults imported.", webpackContents.contains("const flowDefaults = require('./webpack.generated.js');"));
+
+
+        Assert.assertTrue("No module.exports for flowDefaults available.", webpackContents.contains("module.exports = merge(flowDefaults, {"));
     }
 
 
