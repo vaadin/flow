@@ -75,7 +75,8 @@ public class ApplicationConnection {
         boolean productionMode = applicationConfiguration.isProductionMode();
         boolean requestTiming = applicationConfiguration.isRequestTiming();
         publishProductionModeJavascriptMethods(appRootPanelName, productionMode,
-                requestTiming);
+                requestTiming,
+                applicationConfiguration.getExportedWebComponents());
         if (!productionMode) {
             String servletVersion = applicationConfiguration
                     .getServletVersion();
@@ -132,9 +133,12 @@ public class ApplicationConnection {
      * @param requestTiming
      *            <code>true</code> if request timing info should be made
      *            available, <code>false</code> otherwise
+     * @param exportedWebComponents
+     *            a list of web component tags exported by this UI
      */
     private native void publishProductionModeJavascriptMethods(
-            String applicationId, boolean productionMode, boolean requestTiming)
+            String applicationId, boolean productionMode, boolean requestTiming,
+            String[] exportedWebComponents)
     /*-{
         var ap = this;
         var client = {};
@@ -148,6 +152,13 @@ public class ApplicationConnection {
         client.poll = $entry(function() {
                 var poller = ap.@ApplicationConnection::registry.@com.vaadin.client.Registry::getPoller()();
                 poller.@com.vaadin.client.communication.Poller::poll()();
+        });
+        client.connectWebComponent = $entry(function(eventData) {
+            // Connects the web component described by eventData with the server
+            var registry = ap.@ApplicationConnection::registry;
+            var sc = registry.@com.vaadin.client.Registry::getServerConnector()();
+            var nodeId = registry.@com.vaadin.client.Registry::getStateTree()().@com.vaadin.client.flow.StateTree::getRootNode()().@com.vaadin.client.flow.StateNode::id;
+            sc.@com.vaadin.client.communication.ServerConnector::sendEventMessage(ILjava/lang/String;Lelemental/json/JsonObject;)(nodeId, 'connect-web-component', eventData);
         });
         if (requestTiming) {
            client.getProfilingData = $entry(function() {
@@ -176,7 +187,7 @@ public class ApplicationConnection {
         });
     
         client.initializing = false;
-    
+        client.exportedWebComponents = exportedWebComponents;
         $wnd.Vaadin.Flow.clients[applicationId] = client;
     }-*/;
 

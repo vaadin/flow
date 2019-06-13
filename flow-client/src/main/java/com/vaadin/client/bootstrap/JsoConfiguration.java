@@ -63,6 +63,19 @@ public final class JsoConfiguration extends JavaScriptObject {
     }-*/;
 
     /**
+     * Reads a configuration parameter as a String array.
+     *
+     * @param name
+     *            name of the configuration parameter
+     * @return value of the configuration parameter, or <code>null</code>if not
+     *         defined
+     */
+    public native String[] getConfigStringArray(String name)
+    /*-{
+        return this.getConfig(name);
+    }-*/;
+
+    /**
      * Reads a configuration parameter as a boolean.
      * <p>
      * Please note that the javascript value of the parameter should also be a
