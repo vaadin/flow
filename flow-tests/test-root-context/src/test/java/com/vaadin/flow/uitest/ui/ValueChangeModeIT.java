@@ -5,6 +5,9 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
+
+import com.vaadin.flow.data.value.ValueChangeMode;
 
 import com.vaadin.flow.data.value.ValueChangeMode;
 
@@ -61,7 +64,9 @@ public class ValueChangeModeIT extends AbstractDebounceSynchronizeIT {
     }
 
     private void toggleMode(ValueChangeMode mode) {
-        findElement(By.id(mode.name())).click();
+        WebElement modeButton = findElement(By.id(mode.name()));
+        new Actions(getDriver()).moveToElement(modeButton, 10, 10).click()
+                .build().perform();
     }
 
 }
