@@ -25,7 +25,8 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>test-npm-only-features</artifactId>
+    <artifactId>flow-test-npm-only-features</artifactId>
+    <name>Flow npm-only feature tests</name>
     <packaging>pom</packaging>
     <modules>
         <module>test-default-theme</module>
