@@ -154,7 +154,17 @@ public class FrontendUtils {
             + "%nFailed to determine '%s' tool." + "%nPlease install it either:"
             + "%n  - by following the https://nodejs.org/en/download/ guide to install it globally"
             + "%n  - or by running the frontend-maven-plugin goal to install it in this project:"
-            + "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.7.6:install-node-and-npm -DnodeVersion=\"v11.6.0\" "
+            + "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.7.6:install-node-and-npm -DnodeVersion=\"v10.16.0\" "
+            + "%n======================================================================================================%n";
+
+    private static final String SHOULD_WORK = "%n%n======================================================================================================"
+            + "%nYour installed '%s' version (%s) is not supported but should still work. Supported versions are %d.%d+" //
+            + "%nYou can install a new one:"
+            + "%n  - by following the https://nodejs.org/en/download/ guide to install it globally"
+            + "%n  - or by running the frontend-maven-plugin goal to install it in this project:"
+            + "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.7.6:install-node-and-npm -DnodeVersion=\"v10.16.0\" "
+            + "%n" //
+            + "%nYou can disable the version check using -D%s=true" //
             + "%n======================================================================================================%n";
 
     private static final String TOO_OLD = "%n%n======================================================================================================"
@@ -393,9 +403,11 @@ public class FrontendUtils {
             nodeVersionCommand.add(FrontendUtils.getNodeExecutable());
             nodeVersionCommand.add("--version");
             String[] nodeVersion = getVersion("node", nodeVersionCommand);
-            validateLargerThan("node", nodeVersion,
-                    Constants.REQUIRED_NODE_MAJOR_VERSION,
-                    Constants.REQUIRED_NODE_MINOR_VERSION);
+            validateToolVersion("node", nodeVersion,
+                    Constants.SUPPORTED_NODE_MAJOR_VERSION,
+                    Constants.SUPPORTED_NODE_MINOR_VERSION,
+                    Constants.SHOULD_WORK_NODE_MAJOR_VERSION,
+                    Constants.SHOULD_WORK_NODE_MINOR_VERSION);
         } catch (UnknownVersionException e) {
             getLogger().warn("Error checking if node is new enough", e);
         }
@@ -405,29 +417,40 @@ public class FrontendUtils {
             npmVersionCommand.addAll(FrontendUtils.getNpmExecutable());
             npmVersionCommand.add("--version");
             String[] npmVersion = getVersion("npm", npmVersionCommand);
-            validateLargerThan("npm", npmVersion,
-                    Constants.REQUIRED_NPM_MAJOR_VERSION,
-                    Constants.REQUIRED_NPM_MINOR_VERSION);
+            validateToolVersion("node", npmVersion,
+                    Constants.SUPPORTED_NPM_MAJOR_VERSION,
+                    Constants.SUPPORTED_NPM_MINOR_VERSION,
+                    Constants.SHOULD_WORK_NPM_MAJOR_VERSION,
+                    Constants.SHOULD_WORK_NPM_MINOR_VERSION);
         } catch (UnknownVersionException e) {
             getLogger().warn("Error checking if npm is new enough", e);
         }
 
     }
 
-    static void validateLargerThan(String tool, String[] toolVersion,
-            int requiredMajor, int requiredMinor)
-            throws UnknownVersionException {
+    static void validateToolVersion(String tool, String[] toolVersion,
+            int supportedMajor, int supportedMinor, int shouldWorkMajor,
+            int shouldWorkMinor) throws UnknownVersionException {
         if ("true".equalsIgnoreCase(
                 System.getProperty(PARAM_IGNORE_VERSION_CHECKS))) {
             return;
         }
 
-        if (!isVersionAtLeast(tool, toolVersion, requiredMajor,
-                requiredMinor)) {
-            throw new IllegalStateException(String.format(TOO_OLD, tool,
-                    join(toolVersion, "."), requiredMajor, requiredMinor,
-                    PARAM_IGNORE_VERSION_CHECKS));
+        if (isVersionAtLeast(tool, toolVersion, supportedMajor,
+                supportedMinor)) {
+            return;
         }
+        if (isVersionAtLeast(tool, toolVersion, shouldWorkMajor,
+                shouldWorkMinor)) {
+            getLogger().warn(String.format(SHOULD_WORK, tool,
+                    join(toolVersion, "."), supportedMajor, supportedMinor,
+                    PARAM_IGNORE_VERSION_CHECKS));
+            return;
+        }
+
+        throw new IllegalStateException(String.format(TOO_OLD, tool,
+                join(toolVersion, "."), supportedMajor, supportedMinor,
+                PARAM_IGNORE_VERSION_CHECKS));
     }
 
     static boolean isVersionAtLeast(String tool, String[] toolVersion,

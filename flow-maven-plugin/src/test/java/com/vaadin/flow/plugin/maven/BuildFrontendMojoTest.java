@@ -48,6 +48,7 @@ import com.vaadin.flow.plugin.TestUtils;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
@@ -101,7 +102,8 @@ public class BuildFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", npmFolder);
         ReflectionUtils.setVariableValueInObject(mojo, "generateBundle", false);
         ReflectionUtils.setVariableValueInObject(mojo, "runNpmInstall", false);
-        ReflectionUtils.setVariableValueInObject(mojo, "bowerMode", "false");
+        ReflectionUtils.setVariableValueInObject(mojo, "compatibilityMode",
+                "false");
 
         flowPackagPath.mkdirs();
         generatedFolder.mkdirs();
@@ -128,7 +130,8 @@ public class BuildFrontendMojoTest {
         }
     }
 
-    static void setProject(AbstractMojo mojo, File baseFolder) throws Exception {
+    static void setProject(AbstractMojo mojo, File baseFolder)
+            throws Exception {
         Build buildMock = mock(Build.class);
         when(buildMock.getFinalName()).thenReturn("finalName");
         MavenProject project = mock(MavenProject.class);
@@ -233,16 +236,16 @@ public class BuildFrontendMojoTest {
         JsonObject packageJsonObject = getPackageJson(appPackage);
         JsonObject dependencies = packageJsonObject.getObject("dependencies");
 
-        assertContainsPackage(dependencies,
-            "@vaadin/vaadin-button",
-            "@vaadin/vaadin-element-mixin");
+        assertContainsPackage(dependencies, "@vaadin/vaadin-button",
+                "@vaadin/vaadin-element-mixin");
 
         Assert.assertFalse("Has foo", dependencies.hasKey("foo"));
     }
 
-    static void assertContainsPackage(JsonObject dependencies, String... packages) {
-        Arrays.asList(packages)
-            .forEach(dep -> Assert.assertTrue("Missing " + dep, dependencies.hasKey(dep)));
+    static void assertContainsPackage(JsonObject dependencies,
+            String... packages) {
+        Arrays.asList(packages).forEach(dep -> Assert
+                .assertTrue("Missing " + dep, dependencies.hasKey(dep)));
     }
 
     private void assertContainsImports(boolean contains, String... imports)
