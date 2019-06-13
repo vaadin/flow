@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.flow.testnpmonlyfeatures;
+package com.vaadin.flow.testnpmonlyfeatures.general;
 
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
@@ -23,7 +23,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @JsModule(ExternalJSModuleView.SOME_RANDOM_EXTERNAL_JS_MODULE_URL)
-@Route(value = "com.vaadin.flow.testnpmonlyfeatures.ExternalJSModuleView", layout = ViewTestLayout.class)
+@Route(value = "com.vaadin.flow.testnpmonlyfeatures.general.ExternalJSModuleView", layout = ViewTestLayout.class)
 public class ExternalJSModuleView extends Div {
     public static final String SOME_RANDOM_EXTERNAL_JS_MODULE_URL = "https://some-external-website.fi/some-js-module.js";
 

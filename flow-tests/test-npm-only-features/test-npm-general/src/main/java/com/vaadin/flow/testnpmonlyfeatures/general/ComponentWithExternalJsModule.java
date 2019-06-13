@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.flow.testnpmonlyfeatures;
+package com.vaadin.flow.testnpmonlyfeatures.general;
 
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.dependency.JsModule;

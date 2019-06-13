@@ -41,7 +41,6 @@
         <module>test-mixed/pom-bower-devmode.xml</module>
         <module>test-mixed/pom-bower-production.xml</module>
         <module>test-themes/pom-npm.xml</module>
-
         <module>test-npm-web-components</module>
 
         <!-- This test fails in local -->

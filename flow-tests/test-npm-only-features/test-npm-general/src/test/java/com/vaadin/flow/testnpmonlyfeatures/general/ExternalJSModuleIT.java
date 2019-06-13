@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.flow.testnpmonlyfeatures;
+package com.vaadin.flow.testnpmonlyfeatures.general;
 
 import java.util.List;
 
@@ -30,6 +30,12 @@ public class ExternalJSModuleIT extends ChromeBrowserTest {
     public void init() {
         open();
         waitForElementPresent(By.tagName("div"));
+    }
+
+    @Override
+    protected String getTestPath() {
+        String testPath = super.getTestPath();
+        return testPath;
     }
 
     @Test
