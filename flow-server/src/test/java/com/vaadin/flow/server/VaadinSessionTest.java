@@ -133,7 +133,7 @@ public class VaadinSessionTest {
         mockService.storeSession(session, mockWrappedSession);
 
         MockDeploymentConfiguration configuration =new MockDeploymentConfiguration();
-        configuration.setBowerMode(true);
+        configuration.setCompatibilityMode(true);
         session.lock();
         session.setConfiguration(configuration);
         session.unlock();

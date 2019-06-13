@@ -101,7 +101,7 @@ public abstract class PolymerTemplate<M extends TemplateModel>
      */
     public PolymerTemplate() {
         this(VaadinService.getCurrent().getDeploymentConfiguration()
-                .isBowerMode() ? DefaultTemplateParser.getInstance()
+                .isCompatibilityMode() ? DefaultTemplateParser.getInstance()
                         : NpmTemplateParser.getInstance(),
                 VaadinService.getCurrent());
     }

@@ -134,6 +134,8 @@ public class DevModeHandler implements Serializable {
         ProcessBuilder processBuilder = new ProcessBuilder()
                 .directory(npmFolder);
 
+        FrontendUtils.validateNodeAndNpmVersion();
+
         List<String> command = new ArrayList<>();
         command.add(FrontendUtils.getNodeExecutable());
         command.add(webpack.getAbsolutePath());
@@ -234,7 +236,7 @@ public class DevModeHandler implements Serializable {
 
     private static DevModeHandler createInstance(VaadinContext context,
             DeploymentConfiguration configuration, File npmFolder) {
-        if (configuration.isProductionMode() || configuration.isBowerMode()) {
+        if (configuration.isProductionMode() || configuration.isCompatibilityMode()) {
             return null;
         }
 

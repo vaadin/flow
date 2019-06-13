@@ -60,7 +60,7 @@ public class BundleFilterFactory implements Serializable {
      *         filter should be used
      */
     public Stream<BundleDependencyFilter> createFilters(VaadinService service) {
-        if (!service.getDeploymentConfiguration().isBowerMode()
+        if (!service.getDeploymentConfiguration().isCompatibilityMode()
                 || !service.getDeploymentConfiguration().useCompiledFrontendResources()) {
             return Stream.empty();
         }
