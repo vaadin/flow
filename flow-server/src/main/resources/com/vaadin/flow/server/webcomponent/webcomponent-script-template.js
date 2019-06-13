@@ -35,43 +35,30 @@
 
   connectedCallback() {
     super.connectedCallback();
-
-    if (_TagCamel_.rootId != null){
-        this._connect(_TagCamel_.rootId);
-    }
-    else {
-        var self = this;
-        document.body.addEventListener('root-element', function(event) {
-            self._connect(event.detail);
-        });
-    }
+    this._connect();
   }
 
-  _connect(rootId){
-      var flowRoot;
-      if ( rootId ){
-          flowRoot = document.getElementById(rootId);
-      }
-      else {
-          flowRoot = document.body;
-      }
+  _connect(){
       if (!this.$.id) {
-        this._registerElement(flowRoot);
-      } else if (flowRoot && flowRoot.$server) {
+        this._registerElement();
+      } else {
+          console.debug('reconnecting '+this+' using id '+this.$.id);
           this.$server.reconnect();
       }
-      console.debug('connected', this);
   }
 
-  _registerElement(flowRoot) {
+  _registerElement() {
     this.$.id = "_TagCamel_-" + _TagCamel_.id++;
+    console.debug('registering '+this+' using id '+this.$.id);
+    const flowRoot = document.body;
 
-    // Needed to make Flow do lookup correctly
     const poller = () => {
-      if (flowRoot && flowRoot.$server) {
+      var flowClient = Object.values(window.Vaadin.Flow.clients).find(c => c.exportedWebComponents && c.exportedWebComponents.indexOf('_TagDash_') != -1);
+      if (flowClient && flowClient.connectWebComponent) {
         flowRoot.$ = flowRoot.$ || {};
         flowRoot.$[this.$.id] = this;
-        flowRoot.$server.connectWebComponent('_TagDash_', this.$.id);
+        flowClient.connectWebComponent({tag: '_TagDash_', id: this.$.id});
+        console.debug('connected '+this+' using id '+this.$.id);
       } else {
         setTimeout(poller, 10);
       }
@@ -95,21 +82,5 @@
   }
 }
 
-_TagCamel_.rootId = null;
 _TagCamel_.id = 0;
-
-function addRootElementEventListener(){
-    document.body.addEventListener('root-element', function(event) {
-        _TagCamel_.rootId = event.detail;
-    });
-}
-if ( document.body ){
-    addRootElementEventListener();
-}
-else {
-    window.addEventListener('load', function () {
-        addRootElementEventListener();
-    });
-}
-
 customElements.define(_TagCamel_.is, _TagCamel_);

@@ -42,6 +42,7 @@ public class ApplicationConfiguration {
     private String atmosphereJSVersion;
     private String uiElementId;
     private String uiTag;
+    private String[] exportedWebComponents;
 
     /**
      * Gets the id generated for the application.
@@ -332,5 +333,24 @@ public class ApplicationConfiguration {
      */
     public void setUiTag(String uiTag) {
         this.uiTag = uiTag;
+    }
+
+    /**
+     * Sets the exported web components.
+     *
+     * @param exportedWebComponents
+     *            the exported web components
+     */
+    public void setExportedWebComponents(String[] exportedWebComponents) {
+        this.exportedWebComponents = exportedWebComponents;
+    }
+
+    /**
+     * Gets the exported web components.
+     *
+     * @return the exported web components
+     */
+    public String[] getExportedWebComponents() {
+        return exportedWebComponents;
     }
 }

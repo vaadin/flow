@@ -15,8 +15,15 @@
  */
 package com.vaadin.flow.component.webcomponent;
 
-import com.vaadin.flow.component.ClientCallable;
+import java.util.Map;
+import java.util.Optional;
+
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.DomEvent;
+import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
@@ -33,10 +40,6 @@ import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
 import com.vaadin.flow.theme.ThemeUtil;
-import org.slf4j.LoggerFactory;
-
-import java.util.Map;
-import java.util.Optional;
 
 /**
  * Custom UI for use with WebComponents served from the server.
@@ -54,15 +57,6 @@ public class WebComponentUI extends UI {
         assignTheme();
 
         VaadinSession session = getSession();
-        String uiElementId;
-        if (session.getConfiguration().getRootElementId().isEmpty()) {
-            uiElementId = "";
-        } else {
-            uiElementId = session.getConfiguration().getRootElementId();
-        }
-        getPage().executeJs(
-                "document.body.dispatchEvent(new CustomEvent('root-element', { detail: '"
-                        + uiElementId + "' }))");
         DeploymentConfiguration deploymentConfiguration = session.getService()
                 .getDeploymentConfiguration();
         if (deploymentConfiguration.isCompatibilityMode()
@@ -77,30 +71,57 @@ public class WebComponentUI extends UI {
              * This code is not needed when in npm mode, since the web
              * components will be contained within index.js
              */
-            getConfigurationRegistry().getConfigurations().forEach(config ->
-                    getPage().addHtmlImport(getWebComponentHtmlPath(config)));
+            getConfigurationRegistry().getConfigurations()
+                    .forEach(config -> getPage()
+                            .addHtmlImport(getWebComponentHtmlPath(config)));
         }
+
+        getEventBus().addListener(WebComponentConnectEvent.class,
+                this::connectWebComponent);
+    }
+
+    @DomEvent("connect-web-component")
+    public static class WebComponentConnectEvent extends ComponentEvent<UI> {
+
+        private String tag;
+        private String webComponentElementId;
+
+        public WebComponentConnectEvent(UI source, boolean fromClient,
+                @EventData("tag") String tag,
+                @EventData("id") String webComponentElementId) {
+            super(source, fromClient);
+            this.tag = tag;
+            this.webComponentElementId = webComponentElementId;
+        }
+
+        public String getTag() {
+            return tag;
+        }
+
+        public String getWebComponentElementId() {
+            return webComponentElementId;
+        }
+
     }
 
     /**
-     * Connect a client side web component element with a server side {@link
-     * Component} that's added as a virtual child to the UI as the actual
+     * Connect a client side web component element with a server side
+     * {@link Component} that's added as a virtual child to the UI as the actual
      * relation of the elements is unknown.
      *
      * @param tag
-     *         web component tag
+     *            web component tag
      * @param webComponentElementId
-     *         client side id of the element
+     *            client side id of the element
      */
-    @ClientCallable
-    public void connectWebComponent(String tag, String webComponentElementId) {
-        Optional<WebComponentConfiguration<? extends Component>> webComponentConfiguration =
-                getConfigurationRegistry().getConfiguration(tag);
+    private void connectWebComponent(WebComponentConnectEvent event) {
+        Optional<WebComponentConfiguration<? extends Component>> webComponentConfiguration = getConfigurationRegistry()
+                .getConfiguration(event.getTag());
 
         if (!webComponentConfiguration.isPresent()) {
             LoggerFactory.getLogger(WebComponentUI.class).warn(
                     "Received connect request for non existing WebComponent '{}'",
-                    tag);
+                    event.getTag());
             return;
         }
 
@@ -111,14 +132,14 @@ public class WebComponentUI extends UI {
          * proxying property updates to the component and the call to
          * configureWebComponentInstance sets up the component-to-host linkage.
          */
-        Element el = new Element(tag);
+        Element el = new Element(event.getTag());
         WebComponentBinding binding = webComponentConfiguration.get()
                 .createWebComponentBinding(Instantiator.get(this), el);
         WebComponentWrapper wrapper = new WebComponentWrapper(el, binding);
 
         getElement().getStateProvider().appendVirtualChild(
                 getElement().getNode(), wrapper.getElement(),
-                NodeProperties.INJECT_BY_ID, webComponentElementId);
+                NodeProperties.INJECT_BY_ID, event.getWebComponentElementId());
         wrapper.getElement().executeJs("$0.serverConnected()");
     }
 

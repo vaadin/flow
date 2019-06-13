@@ -18,6 +18,7 @@ package com.vaadin.flow.server.communication;
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.webcomponent.WebComponentUI;
+import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.ServletHelper;
 import com.vaadin.flow.server.VaadinRequest;
@@ -28,6 +29,9 @@ import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
+
+import elemental.json.Json;
+import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Document;
@@ -153,6 +157,13 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
 
         assert serviceUrl.endsWith("/");
         config.put(ApplicationConstants.SERVICE_URL, serviceUrl);
+        WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
+                .getInstance(request.getService().getContext());
+
+        JsonArray tags = registry.getConfigurations().stream()
+                .map(conf -> Json.create(conf.getTag()))
+                .collect(JsonUtils.asArray());
+        config.put("webcomponents", tags);
         return context;
     }
 
