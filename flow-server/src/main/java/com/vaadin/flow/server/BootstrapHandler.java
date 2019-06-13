@@ -151,7 +151,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      * @return Page builder in charge of constructing the resulting page.
      */
     protected PageBuilder getPageBuilder() {
-        return this.pageBuilder;
+        return pageBuilder;
     }
 
     private static Logger getLogger() {
@@ -194,7 +194,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             this.response = response;
             this.session = session;
             this.ui = ui;
-            this.parameterBuilder = new ApplicationParameterBuilder(
+            parameterBuilder = new ApplicationParameterBuilder(
                     contextCallback);
 
             pageConfigurationHolder = BootstrapUtils
@@ -1189,8 +1189,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     .isProductionMode();
             String result = getBootstrapJS();
             JsonObject appConfig = context.getApplicationParameters();
-            appConfig.put(ApplicationConstants.UI_TAG,
-                    context.getUI().getElement().getTag());
 
             int indent = 0;
             if (!productionMode) {
@@ -1266,8 +1264,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     deploymentConfiguration.getEs6FrontendPrefix());
             appConfig.put(ApplicationConstants.FRONTEND_URL_ES5,
                     deploymentConfiguration.getEs5FrontendPrefix());
-            appConfig.put(ApplicationConstants.UI_ELEMENT_ID,
-                    deploymentConfiguration.getRootElementId());
 
             if (!productionMode) {
                 JsonObject versionInfo = Json.createObject();
@@ -1297,7 +1293,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 appConfig.put("sessExpMsg", sessExpMsg);
             }
 
-            String contextRoot = this.contextCallback.apply(request);
+            String contextRoot = contextCallback.apply(request);
             appConfig.put(ApplicationConstants.CONTEXT_ROOT_URL, contextRoot);
 
             if (!productionMode) {

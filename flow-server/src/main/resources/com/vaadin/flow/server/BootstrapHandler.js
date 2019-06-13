@@ -18,32 +18,6 @@
 		log = console.log;
 	}
 	
-	var isWidgetsetLoaded = function(widgetset) {
-		var className = widgetset.replace(/\./g, "_");
-		return (typeof window[className]) != "undefined";
-	};
-	
-	var loadWidgetset = function(url, widgetset) {
-		if (widgetsets[widgetset]) {
-			return;
-		}
-		log("load widgetset", url, widgetset);
-		setTimeout(function() {
-			if (!isWidgetsetLoaded(widgetset)) {
-				alert("Failed to load the widgetset: " + url);
-			}
-		}, 15000);
-	
-		var scriptTag = document.createElement('script');
-		scriptTag.setAttribute('type', 'text/javascript');
-		scriptTag.setAttribute('src', url);
-		document.getElementsByTagName('head')[0].appendChild(scriptTag);
-		
-		widgetsets[widgetset] = {
-			pendingApps: []
-		};
-	};
-	
 	var isInitializedInDom = function(appId) {
 		var appDiv = document.getElementById(appId);
 		if (!appDiv) {
@@ -211,7 +185,7 @@
                 supportsTouch = 'ontouchstart' in window
                    || (typeof navigator.msMaxTouchPoints !== 'undefined');
             }
-            params['v-td'] = false;
+            params['v-td'] = supportsTouch;
 
             /* Stringify each value (they are parsed on the server side) */
             Object.keys(params).forEach(function(key) {
