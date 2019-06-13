@@ -168,7 +168,6 @@ public class WebComponentProviderTest {
 
         Mockito.when(response.getOutputStream()).thenReturn(out);
         Mockito.when(session.getConfiguration()).thenReturn(configuration);
-        Mockito.when(configuration.getRootElementId()).thenReturn("");
 
         Mockito.when(request.getPathInfo())
                 .thenReturn("/web-component/my-component.js");
@@ -195,7 +194,6 @@ public class WebComponentProviderTest {
 
         Mockito.when(response.getOutputStream()).thenReturn(out);
         Mockito.when(session.getConfiguration()).thenReturn(configuration);
-        Mockito.when(configuration.getRootElementId()).thenReturn("");
 
         Mockito.when(request.getPathInfo())
                 .thenReturn("/web-component/my-component.js");

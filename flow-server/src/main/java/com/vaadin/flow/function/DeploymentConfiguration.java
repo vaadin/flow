@@ -24,7 +24,6 @@ import java.util.function.Function;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.WrappedSession;
-import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.communication.PushMode;
 
 import static com.vaadin.flow.server.Constants.POLYFILLS_DEFAULT_VALUE;
@@ -303,10 +302,6 @@ public interface DeploymentConfiguration extends Serializable {
      */
     default String getNpmFrontendPrefix() {
         return getDevelopmentFrontendPrefix();
-    }
-
-    default String getRootElementId() {
-        return getStringProperty(ApplicationConstants.UI_ELEMENT_ID, "");
     }
 
     /**
