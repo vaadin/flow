@@ -127,6 +127,11 @@ public class FrontendDependenciesTestComponents {
     public static class RootViewWithTheme extends Component {
     }
 
+    @Route(value = "")
+    public static class RootViewWithoutThemeAnnotation extends Component {
+
+    }
+
     @Route(value = "", layout = RouterLayout1.class)
     @JsModule("./view-3.js")
     @NoTheme
