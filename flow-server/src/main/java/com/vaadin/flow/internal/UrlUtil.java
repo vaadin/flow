@@ -24,6 +24,10 @@ import com.vaadin.flow.shared.ApplicationConstants;
  * @author Vaadin Ltd
  */
 public class UrlUtil {
+
+    private UrlUtil() {
+    }
+
     /**
      * checks if the given url is an external URL (e.g. staring with http:// or
      * https://) or not.
