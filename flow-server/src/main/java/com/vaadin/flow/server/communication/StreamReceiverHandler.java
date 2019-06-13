@@ -15,8 +15,9 @@
  */
 package com.vaadin.flow.server.communication;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.Part;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,8 +25,8 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Serializable;
-
-import javax.servlet.http.HttpServletRequest;
+import java.util.Iterator;
+import java.util.List;
 
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
@@ -51,6 +52,8 @@ import com.vaadin.flow.server.communication.streaming.StreamingErrorEventImpl;
 import com.vaadin.flow.server.communication.streaming.StreamingProgressEventImpl;
 import com.vaadin.flow.server.communication.streaming.StreamingStartEventImpl;
 import com.vaadin.flow.shared.ApplicationConstants;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Handles {@link StreamResource} instances registered in {@link VaadinSession}.
@@ -168,23 +171,60 @@ public class StreamReceiverHandler implements Serializable {
             VaadinRequest request, VaadinResponse response,
             StreamReceiver streamReceiver, StateNode owner) throws IOException {
 
-        // Create a new file upload handler
-        ServletFileUpload upload = new ServletFileUpload();
-
-        long contentLength = getContentLength(request);
-        // Parse the request
-        FileItemIterator iter;
-        try {
-            iter = upload.getItemIterator((HttpServletRequest) request);
-            while (iter.hasNext()) {
-                FileItemStream item = iter.next();
-                handleStream(session, streamReceiver, owner, contentLength,
-                        item);
+        if (hasParts(request)) {
+            // If we try to parse the request now, we will get an exception
+            // since it has already been parsed and turned into Parts.
+            try {
+                Iterator<Part> iter = ((HttpServletRequest) request).getParts().iterator();
+                while (iter.hasNext()) {
+                    Part part = iter.next();
+                    handleStream(session, streamReceiver, owner, part);
+                }
+            } catch (ServletException e) {
+                // This should only happen if the request is not a multipart
+                // request and this we have already checked in hasParts().
+                getLogger().warn("File upload failed.", e);
             }
-        } catch (FileUploadException e) {
-            getLogger().warn("File upload failed.", e);
+        } else {
+            // Create a new file upload handler
+            ServletFileUpload upload = new ServletFileUpload();
+
+            long contentLength = getContentLength(request);
+            // Parse the request
+            FileItemIterator iter;
+            try {
+                iter = upload.getItemIterator((HttpServletRequest) request);
+                while (iter.hasNext()) {
+                    FileItemStream item = iter.next();
+                    handleStream(session, streamReceiver, owner, contentLength,
+                            item);
+                }
+            } catch (FileUploadException e) {
+                getLogger().warn("File upload failed.", e);
+            }
         }
         sendUploadResponse(response);
+    }
+
+    private boolean hasParts(VaadinRequest request) {
+        try {
+            return ((HttpServletRequest) request).getParts().size() > 0;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private void handleStream(VaadinSession session,
+                            StreamReceiver streamReceiver, StateNode owner,
+                            Part part) throws IOException {
+        String name = part.getName();
+        InputStream stream = part.getInputStream();
+        try {
+            handleFileUploadValidationAndData(session, stream, streamReceiver,
+                    name, part.getContentType(), part.getSize(), owner);
+        } catch (UploadException e) {
+            session.getErrorHandler().error(new ErrorEvent(e));
+        }
     }
 
     private void handleStream(VaadinSession session,

@@ -1,10 +1,17 @@
 package com.vaadin.flow.server.communication;
 
 import javax.servlet.ReadListener;
+import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.Part;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.Before;
@@ -27,8 +34,6 @@ import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.communication.StreamReceiverHandler;
-import com.vaadin.flow.server.communication.StreamRequestHandler;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -71,12 +76,14 @@ public class StreamReceiverHandlerTest {
     private String contentLength;
     private ServletInputStream inputStream;
     private String contentType;
+    private List<Part> parts;
 
     @Before
     public void setup() throws Exception {
         contentLength = "6";
         inputStream = createInputStream("foobar");
         contentType = "foobar";
+        parts = Collections.emptyList();
         MockitoAnnotations.initMocks(this);
 
         handler = new StreamReceiverHandler();
@@ -150,6 +157,12 @@ public class StreamReceiverHandlerTest {
             public String getContentType() {
                 return contentType;
             }
+
+            @Override
+            public Collection<Part> getParts()
+                    throws IOException, ServletException {
+                return parts;
+            }
         };
     }
 
@@ -189,6 +202,61 @@ public class StreamReceiverHandlerTest {
                 }
 
                 return msg[counter++];
+            }
+        };
+    }
+
+    private Part createPart(InputStream inputStream, String contentType,
+            String name, int size) {
+        return new Part() {
+            @Override
+            public InputStream getInputStream() throws IOException {
+                return inputStream;
+            }
+
+            @Override
+            public String getContentType() {
+                return contentType;
+            }
+
+            @Override
+            public String getName() {
+                return name;
+            }
+
+            @Override
+            public String getSubmittedFileName() {
+                return name;
+            }
+
+            @Override
+            public long getSize() {
+                return size;
+            }
+
+            @Override
+            public void write(String fileName) throws IOException {
+                throw new IOException("Not implemented");
+            }
+
+            @Override
+            public void delete() throws IOException {
+                throw new IOException("Not implemented");
+            }
+
+            @Override
+            public String getHeader(String name) {
+                return null;
+            }
+
+            @Override
+            public Collection<String> getHeaders(String name) {
+                return Collections.emptyList();
+            }
+
+            @Override
+            public Collection<String> getHeaderNames() {
+                return Collections.emptySet();
             }
         };
     }
@@ -244,5 +312,26 @@ public class StreamReceiverHandlerTest {
                 String.valueOf(uiId), expectedSecurityKey);
 
         verifyZeroInteractions(responseOutput);
+    }
+
+    @Test // Vaadin Spring #381
+    public void partsAreUsedDirectlyIfPresentWithoutParsingInput()
+            throws IOException {
+        contentType = "multipart/form-data; boundary=----WebKitFormBoundary7NsWHeCJVZNwi6ll";
+        inputStream = createInputStream(
+                "------WebKitFormBoundary7NsWHeCJVZNwi6ll\n"
+                        + "Content-Disposition: form-data; name=\"file\"; filename=\"EBookJP.txt\"\n"
+                        + "Content-Type: text/plain\n" + "\n" + "\n"
+                        + "------WebKitFormBoundary7NsWHeCJVZNwi6ll--");
+        contentLength = "99";
+
+        parts = new ArrayList<>();
+        parts.add(createPart(createInputStream("foobar"), "text/plain",
+                "EBookJP.txt", 6));
+
+        handler.handleRequest(session, request, response, streamReceiver,
+                String.valueOf(uiId), expectedSecurityKey);
+
+        verify(responseOutput).close();
     }
 }
