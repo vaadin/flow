@@ -38,7 +38,8 @@ public class LongPollingMultipleThreadsIT extends ChromeBrowserTest {
              * This entry may be ignored.
              */
 
-            checkLogsForErrors(msg -> msg.contains("sockjs-node"));
+            checkLogsForErrors(msg -> msg.contains("sockjs-node")
+                    || msg.contains("[WDS] Disconnected!"));
         }
 
     }
