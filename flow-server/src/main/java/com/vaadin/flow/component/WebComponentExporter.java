@@ -271,7 +271,7 @@ public abstract class WebComponentExporter<C extends Component>
         return SUPPORTED_TYPES.contains(clazz);
     }
 
-    private final static class WebComponentConfigurationImpl<C extends Component>
+    private static final class WebComponentConfigurationImpl<C extends Component>
             implements WebComponentConfiguration<C> {
         private WebComponentExporter<C> exporter;
         private final Map<String, PropertyConfigurationImpl<C, ? extends Serializable>> immutablePropertyMap;
