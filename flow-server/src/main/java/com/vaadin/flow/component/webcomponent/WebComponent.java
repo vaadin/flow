@@ -137,7 +137,7 @@ public final class WebComponent<C extends Component> implements Serializable {
         object.put("detail", objectData == null ?
                 Json.createNull() : objectData);
 
-        componentHost.executeJavaScript(String.format(CUSTOM_EVENT,
+        componentHost.executeJs(String.format(CUSTOM_EVENT,
                 object.toJson()), eventName);
     }
 
@@ -193,7 +193,7 @@ public final class WebComponent<C extends Component> implements Serializable {
             throw new IllegalArgumentException(String.format("Property '%s' " +
                             "of type '%s' cannot be assigned value of type '%s'!",
                     propertyName,
-                    binding.getPropertyType(propertyName).getCanonicalName(),
+                    binding.getPropertyType(propertyName).getName(),
                     value.getClass().getCanonicalName()));
         }
 
@@ -203,26 +203,26 @@ public final class WebComponent<C extends Component> implements Serializable {
     private void setProperty(String propertyName, Object value) {
 
         if (value == null) {
-            componentHost.executeJavaScript(UPDATE_PROPERTY_NULL, propertyName);
+            componentHost.executeJs(UPDATE_PROPERTY_NULL, propertyName);
         }
 
         if (value instanceof Integer) {
-            componentHost.executeJavaScript(UPDATE_PROPERTY, propertyName,
+            componentHost.executeJs(UPDATE_PROPERTY, propertyName,
                     (Integer) value);
         } else if (value instanceof Double) {
-            componentHost.executeJavaScript(UPDATE_PROPERTY, propertyName,
+            componentHost.executeJs(UPDATE_PROPERTY, propertyName,
                     (Double) value);
         } else if (value instanceof String) {
-            componentHost.executeJavaScript(UPDATE_PROPERTY, propertyName,
+            componentHost.executeJs(UPDATE_PROPERTY, propertyName,
                     (String) value);
         } else if (value instanceof Boolean) {
-            componentHost.executeJavaScript(UPDATE_PROPERTY, propertyName,
+            componentHost.executeJs(UPDATE_PROPERTY, propertyName,
                     (Boolean) value);
         } else if (value instanceof JsonValue) {
             // this gets around executeJavaScript limitation.
             // Since properties can take JsonValues, this was needed to allow
             // that expected behavior.
-            componentHost.executeJavaScript(String.format(UPDATE_PROPERTY_FORMAT,
+            componentHost.executeJs(String.format(UPDATE_PROPERTY_FORMAT,
                     ((JsonValue) value).toJson()),
                     propertyName);
         }
