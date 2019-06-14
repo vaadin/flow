@@ -42,7 +42,13 @@ public class LongPollingPushIT extends ChromeBrowserTest {
         WebElement span = findElement(By.id("child"));
 
         Assert.assertEquals("Some text", span.getAttribute("innerHTML"));
-        checkLogsForErrors();
+        /*
+         * SockJS client may try to connect to sockjs node server:
+         * https://github.com/sockjs/sockjs-node/blob/master/README.md.
+         *
+         * This entry may be ignored.
+         */
+        checkLogsForErrors(msg -> msg.contains("sockjs-node"));
     }
 
 }
