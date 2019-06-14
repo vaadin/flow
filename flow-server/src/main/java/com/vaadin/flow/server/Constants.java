@@ -48,6 +48,7 @@ public final class Constants implements Serializable {
      * enable it if your project is a Polymer 2.0 one, should be removed in V15
      */
     public static final String SERVLET_PARAMETER_COMPATIBILITY_MODE = "compatibilityMode";
+    public static final String SERVLET_PARAMETER_ENABLE_DEV_SERVER = "enableDevServer";
 
     public static final String SERVLET_PARAMETER_REQUEST_TIMING = "requestTiming";
     // Javadocs for VaadinService should be updated if this value is changed

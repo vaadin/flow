@@ -377,4 +377,14 @@ public interface DeploymentConfiguration extends Serializable {
         return Arrays.asList(getStringProperty(SERVLET_PARAMETER_POLYFILLS,
                 POLYFILLS_DEFAULT_VALUE).split("[, ]+"));
     }
+
+    /**
+     * Get if the dev server should be enabled. True by default
+     *
+     * @return true if dev server should be used
+     */
+    default boolean runDevServer() {
+        return getBooleanProperty(
+                Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER, true);
+    }
 }

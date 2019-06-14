@@ -48,13 +48,18 @@ import com.vaadin.flow.plugin.TestUtils;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-
+import elemental.json.impl.JsonUtil;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
+import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
 import static java.io.File.pathSeparator;
@@ -73,6 +78,8 @@ public class BuildFrontendMojoTest {
     private String appPackage;
     private String webpackConfig;
 
+    private File tokenFile;
+
     private final BuildFrontendMojo mojo = new BuildFrontendMojo();
 
     @Before
@@ -80,6 +87,9 @@ public class BuildFrontendMojoTest {
         MavenProject project = Mockito.mock(MavenProject.class);
         Mockito.when(project.getRuntimeClasspathElements())
                 .thenReturn(getClassPath());
+
+        tokenFile = new File(temporaryFolder.getRoot(),
+                VAADIN_SERVLET_RESOURCES + TOKEN_FILE);
 
         File npmFolder = temporaryFolder.getRoot();
         generatedFolder = new File(npmFolder, DEFAULT_GENERATED_DIR);
@@ -102,8 +112,8 @@ public class BuildFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", npmFolder);
         ReflectionUtils.setVariableValueInObject(mojo, "generateBundle", false);
         ReflectionUtils.setVariableValueInObject(mojo, "runNpmInstall", false);
-        ReflectionUtils.setVariableValueInObject(mojo, "compatibilityMode",
-                "false");
+        ReflectionUtils
+                .setVariableValueInObject(mojo, "compatibilityMode", "false");
 
         flowPackagPath.mkdirs();
         generatedFolder.mkdirs();
@@ -145,11 +155,11 @@ public class BuildFrontendMojoTest {
     public void should_UpdateMainJsFile() throws Exception {
         Assert.assertFalse(importsFile.exists());
 
-        List<String> expectedLines = new ArrayList<>(Arrays.asList(
-                "const div = document.createElement('div');",
-                "div.innerHTML = '<custom-style><style include=\"lumo-color lumo-typography\"></style></custom-style>';",
-                "document.head.insertBefore(div.firstElementChild, document.head.firstChild);",
-                "document.body.setAttribute('theme', 'dark');"));
+        List<String> expectedLines = new ArrayList<>(
+                Arrays.asList("const div = document.createElement('div');",
+                        "div.innerHTML = '<custom-style><style include=\"lumo-color lumo-typography\"></style></custom-style>';",
+                        "document.head.insertBefore(div.firstElementChild, document.head.firstChild);",
+                        "document.body.setAttribute('theme', 'dark');"));
         expectedLines.addAll(getExpectedImports());
 
         mojo.execute();
@@ -249,6 +259,48 @@ public class BuildFrontendMojoTest {
         Assert.assertFalse("Has foo", dependencies.hasKey("foo"));
     }
 
+    @Test
+    public void existingTokenFile_enableDevServerShouldBeAdded()
+            throws IOException, IllegalAccessException {
+
+        File projectBase = temporaryFolder.getRoot();
+        File webpackOutputDirectory = new File(projectBase, VAADIN_SERVLET_RESOURCES);
+
+        ReflectionUtils.setVariableValueInObject(mojo, "generatedFolder", projectBase);
+        ReflectionUtils.setVariableValueInObject(mojo, "webpackOutputDirectory", webpackOutputDirectory);
+
+        JsonObject initialBuildInfo = Json.createObject();
+        initialBuildInfo.put(SERVLET_PARAMETER_COMPATIBILITY_MODE, false);
+        initialBuildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, false);
+        org.apache.commons.io.FileUtils.forceMkdir(tokenFile.getParentFile());
+        org.apache.commons.io.FileUtils
+                .write(tokenFile, JsonUtil.stringify(initialBuildInfo, 2) + "\n",
+                        "UTF-8");
+
+        mojo.execute();
+
+        try {
+            String json = org.apache.commons.io.FileUtils
+                    .readFileToString(tokenFile, "UTF-8");
+            JsonObject buildInfo = JsonUtil.parse(json);
+            Assert.assertNotNull("devMode token should be available",
+                    buildInfo.get(SERVLET_PARAMETER_ENABLE_DEV_SERVER));
+            Assert.assertNotNull("compatibilityMode token should be available",
+                    buildInfo.get(SERVLET_PARAMETER_COMPATIBILITY_MODE));
+            Assert.assertNotNull("productionMode token should be available",
+                    buildInfo.get(SERVLET_PARAMETER_PRODUCTION_MODE));
+        } catch (IOException ioe) {
+            Assert.fail("Failed to read tokenFile " + ioe.getMessage());
+        }
+    }
+
+    @Test
+    public void noTokenFile_noTokenFileShouldBeCreated() {
+        mojo.execute();
+
+        Assert.assertFalse(tokenFile.exists());
+    }
+
     static void assertContainsPackage(JsonObject dependencies,
             String... packages) {
         Arrays.asList(packages).forEach(dep -> Assert
@@ -260,14 +312,12 @@ public class BuildFrontendMojoTest {
         String content = FileUtils.fileRead(importsFile);
 
         if (contains) {
-            Arrays.asList(imports)
-                    .forEach(s -> Assert.assertTrue(
-                            s + " not found in:\n" + content,
+            Arrays.asList(imports).forEach(s -> Assert
+                    .assertTrue(s + " not found in:\n" + content,
                             content.contains(addWebpackPrefix(s))));
         } else {
-            Arrays.asList(imports)
-                    .forEach(s -> Assert.assertFalse(
-                            s + " found in:\n" + content,
+            Arrays.asList(imports).forEach(s -> Assert
+                    .assertFalse(s + " found in:\n" + content,
                             content.contains(addWebpackPrefix(s))));
         }
     }
@@ -284,10 +334,9 @@ public class BuildFrontendMojoTest {
 
         List<String> current = FileUtils.loadFile(importsFile);
 
-        Set<String> removed = current
-                .stream().filter(line -> importsList.stream()
-                        .map(this::addWebpackPrefix).anyMatch(line::contains))
-                .collect(Collectors.toSet());
+        Set<String> removed = current.stream()
+                .filter(line -> importsList.stream().map(this::addWebpackPrefix)
+                        .anyMatch(line::contains)).collect(Collectors.toSet());
 
         current.removeAll(removed);
 
@@ -342,8 +391,9 @@ public class BuildFrontendMojoTest {
 
     private File resolveImportFile(File directoryWithImportsJs,
             File nodeModulesPath, String jsImport) {
-        File root = jsImport.startsWith("./") ? directoryWithImportsJs
-                : nodeModulesPath;
+        File root = jsImport.startsWith("./") ?
+                directoryWithImportsJs :
+                nodeModulesPath;
         return new File(root, jsImport);
     }
 
