@@ -171,49 +171,63 @@ public class StreamReceiverHandler implements Serializable {
             StreamReceiver streamReceiver, StateNode owner) throws IOException {
 
         if (hasParts(request)) {
-            // If we try to parse the request now, we will get an exception
-            // since it has already been parsed and turned into Parts.
-            try {
-                Iterator<Part> iter = ((HttpServletRequest) request).getParts()
-                        .iterator();
-                while (iter.hasNext()) {
-                    Part part = iter.next();
-                    handleStream(session, streamReceiver, owner, part);
-                }
-            } catch (ServletException e) {
-                // This should only happen if the request is not a multipart
-                // request and this we have already checked in hasParts().
-                getLogger().warn("File upload failed.", e);
-            }
+            handleMultipartFileUploadFromParts(session, request, streamReceiver,
+                    owner);
         } else {
-            // Create a new file upload handler
-            ServletFileUpload upload = new ServletFileUpload();
-
-            long contentLength = getContentLength(request);
-            // Parse the request
-            FileItemIterator iter;
-            try {
-                iter = upload.getItemIterator((HttpServletRequest) request);
-                while (iter.hasNext()) {
-                    FileItemStream item = iter.next();
-                    handleStream(session, streamReceiver, owner, contentLength,
-                            item);
-                }
-            } catch (FileUploadException e) {
-                getLogger().warn("File upload failed.", e);
-            }
+            handleMultipartFileUploadFromInputStream(session, request,
+                    streamReceiver, owner);
         }
         sendUploadResponse(response);
     }
 
-    private boolean hasParts(VaadinRequest request) {
+    private boolean hasParts(VaadinRequest request) throws IOException {
         try {
             return !((HttpServletRequest) request).getParts().isEmpty();
-        } catch (Exception e) {
+        } catch (ServletException | IllegalStateException e) {
             getLogger().trace(
                     "Pretending the request did not contain any parts because of exception",
                     e);
             return false;
+        }
+    }
+
+    private void handleMultipartFileUploadFromParts(VaadinSession session,
+            VaadinRequest request, StreamReceiver streamReceiver,
+            StateNode owner) throws IOException {
+        // If we try to parse the request now, we will get an exception
+        // since it has already been parsed and turned into Parts.
+        try {
+            Iterator<Part> iter = ((HttpServletRequest) request).getParts()
+                    .iterator();
+            while (iter.hasNext()) {
+                Part part = iter.next();
+                handleStream(session, streamReceiver, owner, part);
+            }
+        } catch (ServletException e) {
+            // This should only happen if the request is not a multipart
+            // request and this we have already checked in hasParts().
+            getLogger().warn("File upload failed.", e);
+        }
+    }
+
+    private void handleMultipartFileUploadFromInputStream(VaadinSession session,
+            VaadinRequest request, StreamReceiver streamReceiver,
+            StateNode owner) throws IOException {
+        // Create a new file upload handler
+        ServletFileUpload upload = new ServletFileUpload();
+
+        long contentLength = getContentLength(request);
+        // Parse the request
+        FileItemIterator iter;
+        try {
+            iter = upload.getItemIterator((HttpServletRequest) request);
+            while (iter.hasNext()) {
+                FileItemStream item = iter.next();
+                handleStream(session, streamReceiver, owner, contentLength,
+                        item);
+            }
+        } catch (FileUploadException e) {
+            getLogger().warn("File upload failed.", e);
         }
     }
 
