@@ -31,6 +31,7 @@ import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
@@ -40,7 +41,6 @@ import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.Dependency.Type;
 import com.vaadin.flow.shared.ui.LoadMode;
-
 import elemental.json.JsonObject;
 import elemental.json.JsonType;
 import elemental.json.JsonValue;
@@ -262,6 +262,40 @@ public class Page implements Serializable {
      */
     public void addJavaScript(String url, LoadMode loadMode) {
         addDependency(new Dependency(Type.JAVASCRIPT, url, loadMode));
+    }
+
+    /**
+     * Adds the given JavaScript module to the page and ensures that it is
+     * loaded successfully.
+     * <p>
+     * For component related JsModule dependencies, you should use the
+     * {@link JsModule @JsModule} annotation.
+     * <p>
+     * Is is guaranteed that script will be loaded before the first page load.
+     * For more options, refer to {@link #addJsModule(String, LoadMode)}
+     *
+     * @param url
+     *            the URL to load the JavaScript from, not <code>null</code>
+     */
+    public void addJsModule(String url) {
+        addJsModule(url, LoadMode.EAGER);
+    }
+
+    /**
+     * Adds the given JavaScript module to the page and ensures that it is
+     * loaded successfully.
+     * <p>
+     * For component related JavaScript dependencies, you should use the
+     * {@link JsModule @JsModule} annotation.
+     *
+     * @param url
+     *            the URL to load the JavaScript from, not <code>null</code>
+     * @param loadMode
+     *            determines dependency load mode, refer to {@link LoadMode} for
+     *            details
+     */
+    public void addJsModule(String url, LoadMode loadMode) {
+        addDependency(new Dependency(Type.JS_MODULE, url, loadMode));
     }
 
     /**
@@ -541,24 +575,25 @@ public class Page implements Serializable {
 
         /**
          * Invoked when the client-side details are available.
+         * 
          * @param extendedClientDetails
-         *          object containing extended client details
+         *            object containing extended client details
          */
         void receiveDetails(ExtendedClientDetails extendedClientDetails);
     }
 
     /**
      * Obtain extended client side details, such as time screen and time zone
-     * information, via callback. If already obtained, the callback is
-     * called directly. Otherwise, a client-side roundtrip will be carried out.
+     * information, via callback. If already obtained, the callback is called
+     * directly. Otherwise, a client-side roundtrip will be carried out.
      *
      * @param receiver
-     *              the callback to which the details are provided
+     *            the callback to which the details are provided
      */
     public void retrieveExtendedClientDetails(
             ExtendedClientDetailsReceiver receiver) {
-        final ExtendedClientDetails cachedDetails =
-                ui.getInternals().getExtendedClientDetails();
+        final ExtendedClientDetails cachedDetails = ui.getInternals()
+                .getExtendedClientDetails();
         if (cachedDetails != null) {
             receiver.receiveDetails(cachedDetails);
             return;
@@ -570,8 +605,8 @@ public class Page implements Serializable {
                     ui.getInternals().getExtendedClientDetails());
         };
         final SerializableConsumer<String> errorHandler = err -> {
-            throw new RuntimeException("Unable to retrieve extended " +
-                    "client details. JS error is '" + err + "'");
+            throw new RuntimeException("Unable to retrieve extended "
+                    + "client details. JS error is '" + err + "'");
         };
         executeJs(js).then(resultHandler, errorHandler);
     }
@@ -593,17 +628,18 @@ public class Page implements Serializable {
                 return null;
             }
         };
-        ui.getInternals().setExtendedClientDetails(new ExtendedClientDetails(
-                getStringElseNull.apply("v-sw"),
-                getStringElseNull.apply("v-sh"),
-                getStringElseNull.apply("v-tzo"),
-                getStringElseNull.apply("v-rtzo"),
-                getStringElseNull.apply("v-dstd"),
-                getStringElseNull.apply("v-dston"),
-                getStringElseNull.apply("v-tzid"),
-                getStringElseNull.apply("v-curdate"),
-                getStringElseNull.apply("v-td"),
-                getStringElseNull.apply("v-wn")));
+        ui.getInternals()
+                .setExtendedClientDetails(new ExtendedClientDetails(
+                        getStringElseNull.apply("v-sw"),
+                        getStringElseNull.apply("v-sh"),
+                        getStringElseNull.apply("v-tzo"),
+                        getStringElseNull.apply("v-rtzo"),
+                        getStringElseNull.apply("v-dstd"),
+                        getStringElseNull.apply("v-dston"),
+                        getStringElseNull.apply("v-tzid"),
+                        getStringElseNull.apply("v-curdate"),
+                        getStringElseNull.apply("v-td"),
+                        getStringElseNull.apply("v-wn")));
 
     }
 }

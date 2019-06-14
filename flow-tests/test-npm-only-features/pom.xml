@@ -30,7 +30,6 @@
     <packaging>pom</packaging>
     <modules>
         <module>test-default-theme</module>
+        <module>test-npm-general</module>
     </modules>
-
-
 </project>

@@ -34,7 +34,6 @@
         <module>test-web-components-production</module>
         <module>test-web-components-theme-variant</module>
 
-
         <!-- tests migrated to NPM -->
         <module>web-component-test-assets</module>
         <module>test-mixed</module>
@@ -42,11 +41,12 @@
         <module>test-mixed/pom-bower-devmode.xml</module>
         <module>test-mixed/pom-bower-production.xml</module>
         <module>test-themes/pom-npm.xml</module>
-        <module>test-npm-only-features</module>
         <module>test-npm-web-components</module>
 
         <!-- This test fails in local -->
         <module>test-root-context</module>
+
+        <module>test-npm-only-features</module>
     </modules>
 
     <properties>

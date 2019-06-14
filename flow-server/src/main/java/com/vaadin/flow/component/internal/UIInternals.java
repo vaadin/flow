@@ -46,6 +46,7 @@ import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.internal.nodefeature.LoadingIndicatorConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.PollConfigurationMap;
@@ -84,8 +85,8 @@ import org.slf4j.LoggerFactory;
 public class UIInternals implements Serializable {
 
     /**
-     * A {@link Page#executeJs(String, Serializable...)} invocation that
-     * has not yet been sent to the client.
+     * A {@link Page#executeJs(String, Serializable...)} invocation that has not
+     * yet been sent to the client.
      */
     public static class JavaScriptInvocation implements Serializable {
         private final String expression;
@@ -197,7 +198,6 @@ public class UIInternals implements Serializable {
     private Component activeDragSourceComponent;
 
     private ExtendedClientDetails extendedClientDetails = null;
-
 
     /**
      * Creates a new instance for the given UI.
@@ -845,8 +845,16 @@ public class UIInternals implements Serializable {
         if (getSession().getConfiguration().isCompatibilityMode()) {
             dependencies.getHtmlImports()
                     .forEach(html -> addHtmlImport(html, page));
-            dependencies.getJavaScripts()
-                .forEach(js -> page.addJavaScript(js.value(), js.loadMode()));
+            dependencies.getJavaScripts().forEach(
+                    js -> page.addJavaScript(js.value(), js.loadMode()));
+        } else {
+            // In npm mode, add external JavaScripts directly to the page.
+            dependencies.getJavaScripts().stream()
+                    .filter(js -> UrlUtil.isExternal(js.value())).forEach(js -> page
+                            .addJavaScript(js.value(), js.loadMode()));
+            dependencies.getJsModules().stream()
+                    .filter(js -> UrlUtil.isExternal(js.value()))
+                    .forEach(js -> page.addJsModule(js.value(), js.loadMode()));
         }
         dependencies.getStyleSheets().forEach(styleSheet -> page
                 .addStyleSheet(styleSheet.value(), styleSheet.loadMode()));
@@ -1057,7 +1065,7 @@ public class UIInternals implements Serializable {
      * Updates the extended client details.
      *
      * @param details
-     *              the updated extended client details.
+     *            the updated extended client details.
      */
     public void setExtendedClientDetails(ExtendedClientDetails details) {
         this.extendedClientDetails = details;

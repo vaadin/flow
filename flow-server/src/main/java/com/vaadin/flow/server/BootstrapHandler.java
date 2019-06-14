@@ -16,9 +16,6 @@
 
 package com.vaadin.flow.server;
 
-import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -64,6 +61,7 @@ import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.BootstrapUtils.ThemeSettings;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
@@ -82,6 +80,9 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
+
+import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Request handler which handles bootstrapping of the application, i.e. the
@@ -1054,10 +1055,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
         private Element createJavaScriptElement(String sourceUrl,
-                boolean defer) {
+                                                boolean defer) {
+            return createJavaScriptElement(sourceUrl, defer, "text/javascript");
+        }
+
+        private Element createJavaScriptElement(String sourceUrl, boolean defer,
+                                                String type) {
             Element jsElement = new Element(Tag.valueOf(SCRIPT_TAG), "")
-                    .attr("type", "text/javascript")
-                    .attr(DEFER_ATTRIBUTE, defer);
+                    .attr("type", type).attr(DEFER_ATTRIBUTE, defer);
             if (sourceUrl != null) {
                 jsElement = jsElement.attr("src", sourceUrl);
             }
@@ -1087,7 +1092,11 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                         !inlineElement);
                 break;
             case JS_MODULE:
-                dependencyElement = null;
+                if (url != null && UrlUtil.isExternal(url))
+                    dependencyElement = createJavaScriptElement(url,
+                            !inlineElement, "module");
+                else
+                    dependencyElement = null;
                 break;
             case HTML_IMPORT:
                 dependencyElement = createHtmlImportElement(url);
