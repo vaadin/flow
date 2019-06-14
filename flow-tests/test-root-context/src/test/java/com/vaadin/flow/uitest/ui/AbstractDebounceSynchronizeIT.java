@@ -12,9 +12,11 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public abstract class AbstractDebounceSynchronizeIT extends ChromeBrowserTest {
 
+    private static final int MAX_THROTTLE_ATTEMPTS = 5;
+
     protected void assertThrottle(WebElement input)
             throws InterruptedException {
-        runThrottleTest(input, false);
+        runThrottleTest(input, 0);
     }
 
     protected void assertDebounce(WebElement input)
@@ -47,7 +49,7 @@ public abstract class AbstractDebounceSynchronizeIT extends ChromeBrowserTest {
         assertMessages("a", "ab");
     }
 
-    private boolean runThrottleTest(WebElement input, boolean failOnError)
+    private boolean runThrottleTest(WebElement input, int attempt)
             throws InterruptedException {
         input.sendKeys("a");
         assertMessages("a");
@@ -63,11 +65,11 @@ public abstract class AbstractDebounceSynchronizeIT extends ChromeBrowserTest {
         // T + 1500, second update registered
         assertMessages("a", "ab");
         input.sendKeys("c");
-        if (failOnError) {
+        if (attempt == MAX_THROTTLE_ATTEMPTS) {
             assertMessages("a", "ab");
         } else if (!checkMessages("a", "ab")) {
             // run test one more time
-            runThrottleTest(input, true);
+            runThrottleTest(input, attempt + 1);
         }
 
         Thread.sleep(700);
