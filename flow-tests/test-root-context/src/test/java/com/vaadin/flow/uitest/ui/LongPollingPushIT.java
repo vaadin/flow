@@ -30,7 +30,8 @@ public class LongPollingPushIT extends ChromeBrowserTest {
     @Test
     public void openPage_thereAreNoErrorsInTheConsole() {
         open();
-        checkLogsForErrors();
+        checkLogsForErrors(msg -> msg.contains("sockjs-node")
+                || msg.contains("[WDS] Disconnected!"));
 
         waitForElementNotPresent(By.id("child"));
 
