@@ -53,6 +53,8 @@ public class WebComponentsIT extends ChromeBrowserTest {
                             .contains("favicon.ico"))
                     .filter(entry -> !entry.getMessage()
                             .contains("sockjs-node"))
+                    .filter(entry -> !entry.getMessage()
+                            .contains("[WDS] Disconnected!"))
                     .findAny();
             anyError.ifPresent(entry -> Assert.fail(entry.getMessage()));
         }
