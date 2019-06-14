@@ -61,7 +61,7 @@ public class WebComponentWrapperTest {
         // make component available and bind properties to it
         binding = (WebComponentBinding<MyComponent>) new WebComponentExporter
                 .WebComponentConfigurationFactory().create(exporter)
-                .createWebComponentBinding(new MockInstantiator(), element);
+                .createWebComponentBinding(new MockInstantiator(), element, Json.createObject());
         wrapper = new WebComponentWrapper(element, binding);
         component = binding.getComponent();
     }
@@ -226,7 +226,7 @@ public class WebComponentWrapperTest {
         }
         WebComponentBinding<C> binding = (WebComponentBinding<C>)
                 new WebComponentExporter.WebComponentConfigurationFactory().create(exporter)
-                        .createWebComponentBinding(new MockInstantiator(), element);
+                        .createWebComponentBinding(new MockInstantiator(), element, Json.createObject());
         wrapper = new WebComponentWrapper(element, binding) {
             @Override
             public Optional<UI> getUI() {

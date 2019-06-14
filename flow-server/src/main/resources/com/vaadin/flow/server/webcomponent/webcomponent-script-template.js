@@ -57,9 +57,11 @@
       if (flowRoot && flowRoot.$server) {
         flowRoot.$ = flowRoot.$ || {};
         flowRoot.$[this.$.id] = this;
-//        flowRoot.$server.connectWebComponent('_TagDash_', this.$.id);
         const properties = {};
-        for (var prop in Object.keys(_TagCamel_.properties)) {
+        for (var prop in _TagCamel_.properties) {
+          if (prop === "_propertyUpdatedFromServer") {
+            continue;
+          }
           properties[prop] = this[prop];
         }
         flowRoot.$server.connectWebComponent('_TagDash_', this.$.id, properties);
@@ -78,11 +80,6 @@
   }
 
   serverConnected() {
-//    Object.keys(_TagCamel_.properties).forEach(prop => {
-//      if (prop !== "_propertyUpdatedFromServer") {
-//        this._sync(prop, this[prop]);
-//      }
-//    });
   }
 }
 

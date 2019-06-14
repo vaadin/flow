@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.component.webcomponent;
 
-import java.io.Serializable;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -25,7 +24,6 @@ import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 import com.vaadin.flow.shared.Registration;
 
@@ -72,19 +70,14 @@ public class WebComponentWrapper extends Component {
      * server.
      *
      * @param property
-     *         property name to update
+     *            property name to update
      * @param newValue
-     *         the new value to set
+     *            the new value to set
      */
     @ClientCallable
     public void sync(String property, JsonValue newValue) {
         try {
-            if (webComponentBinding.hasProperty(property)) {
-                setNewPropertyValue(property, newValue);
-            } else {
-                LoggerFactory.getLogger(child.getClass())
-                        .error("No match found for {}", property);
-            }
+            webComponentBinding.updateProperty(property, newValue);
         } catch (IllegalArgumentException e) {
             LoggerFactory.getLogger(child.getClass())
                     .error("Failed to synchronise property '{}'", property, e);
@@ -99,9 +92,9 @@ public class WebComponentWrapper extends Component {
         if (disconnectRegistration != null) {
             disconnectRegistration.remove();
         } else {
-            LoggerFactory.getLogger(WebComponentUI.class)
-                    .warn("Received reconnect request for non disconnected WebComponent '{}'",
-                            this.child.getClass().getName());
+            LoggerFactory.getLogger(WebComponentUI.class).warn(
+                    "Received reconnect request for non disconnected WebComponent '{}'",
+                    this.child.getClass().getName());
         }
     }
 
@@ -123,28 +116,11 @@ public class WebComponentWrapper extends Component {
                         int timeout = 1000 * disconnectTimeout;
 
                         if (event.getSource().getInternals()
-                                .getLastHeartbeatTimestamp() - disconnect
-                                > timeout) {
+                                .getLastHeartbeatTimestamp()
+                                - disconnect > timeout) {
                             this.getElement().removeFromParent();
                         }
                     });
-        }
-    }
-
-    private void setNewPropertyValue(String property, JsonValue newValue) {
-        Class<? extends Serializable> propertyType =
-                webComponentBinding.getPropertyType(property);
-
-        if (JsonCodec.canEncodeWithoutTypeInfo(propertyType)) {
-            Serializable value = null;
-            if (newValue != null) {
-                value = JsonCodec.decodeAs(newValue, propertyType);
-            }
-            webComponentBinding.updateProperty(property, value);
-        } else {
-            throw new IllegalArgumentException(
-                    String.format("Received value was not convertible to '%s'",
-                            propertyType.getName()));
         }
     }
 }
