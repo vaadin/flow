@@ -1,10 +1,12 @@
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.data.value.ValueChangeMode;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
+
+import com.vaadin.flow.data.value.ValueChangeMode;
 
 public class ValueChangeModeIT extends AbstractDebounceSynchronizeIT {
 
@@ -29,6 +31,7 @@ public class ValueChangeModeIT extends AbstractDebounceSynchronizeIT {
     }
 
     @Test
+    @Ignore
     public void timeout() throws InterruptedException {
         toggleMode(ValueChangeMode.TIMEOUT);
         assertThrottle(input);
