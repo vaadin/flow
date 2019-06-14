@@ -51,6 +51,8 @@ public class EmptyListsIT extends ChromeBrowserTest {
                             .contains("favicon.ico"))
                     .filter(entry -> !entry.getMessage()
                             .contains("HTML Imports is deprecated"))
+                    .filter(entry -> !entry.getMessage()
+                            .contains("sockjs-node"))
                     .findAny();
             anyError.ifPresent(entry -> Assert.fail(entry.getMessage()));
         }

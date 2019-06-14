@@ -51,6 +51,8 @@ public class WebComponentsIT extends ChromeBrowserTest {
                             .intValue())
                     .filter(entry -> !entry.getMessage()
                             .contains("favicon.ico"))
+                    .filter(entry -> !entry.getMessage()
+                            .contains("sockjs-node"))
                     .findAny();
             anyError.ifPresent(entry -> Assert.fail(entry.getMessage()));
         }
