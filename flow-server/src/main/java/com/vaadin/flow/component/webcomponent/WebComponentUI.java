@@ -39,6 +39,10 @@ import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
 import com.vaadin.flow.theme.ThemeUtil;
 
+import elemental.json.JsonObject;
+import elemental.json.JsonString;
+import elemental.json.JsonValue;
+
 /**
  * Custom UI for use with WebComponents served from the server.
  *
@@ -85,7 +89,8 @@ public class WebComponentUI extends UI {
      *         client side id of the element
      */
     @ClientCallable
-    public void connectWebComponent(String tag, String webComponentElementId) {
+    public void connectWebComponent(String tag, String webComponentElementId,
+                                    JsonObject json) {
         Optional<WebComponentConfiguration<? extends Component>> webComponentConfiguration =
                 getConfigurationRegistry().getConfiguration(tag);
 
