@@ -65,7 +65,7 @@ public abstract class AbstractDebounceSynchronizeIT extends ChromeBrowserTest {
         input.sendKeys("c");
         if (failOnError) {
             assertMessages("a", "ab");
-        } else if (checkMessages("a", "ab")) {
+        } else if (!checkMessages("a", "ab")) {
             // run test one more time
             runThrottleTest(input, true);
         }
