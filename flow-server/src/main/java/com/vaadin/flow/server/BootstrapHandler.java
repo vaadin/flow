@@ -61,6 +61,7 @@ import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.BootstrapUtils.ThemeSettings;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
@@ -79,6 +80,7 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
+
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -149,7 +151,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      * @return Page builder in charge of constructing the resulting page.
      */
     protected PageBuilder getPageBuilder() {
-        return this.pageBuilder;
+        return pageBuilder;
     }
 
     private static Logger getLogger() {
@@ -192,7 +194,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             this.response = response;
             this.session = session;
             this.ui = ui;
-            this.parameterBuilder = new ApplicationParameterBuilder(
+            parameterBuilder = new ApplicationParameterBuilder(
                     contextCallback);
 
             pageConfigurationHolder = BootstrapUtils
@@ -1053,10 +1055,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
         private Element createJavaScriptElement(String sourceUrl,
-                boolean defer) {
+                                                boolean defer) {
+            return createJavaScriptElement(sourceUrl, defer, "text/javascript");
+        }
+
+        private Element createJavaScriptElement(String sourceUrl, boolean defer,
+                                                String type) {
             Element jsElement = new Element(Tag.valueOf(SCRIPT_TAG), "")
-                    .attr("type", "text/javascript")
-                    .attr(DEFER_ATTRIBUTE, defer);
+                    .attr("type", type).attr(DEFER_ATTRIBUTE, defer);
             if (sourceUrl != null) {
                 jsElement = jsElement.attr("src", sourceUrl);
             }
@@ -1086,7 +1092,11 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                         !inlineElement);
                 break;
             case JS_MODULE:
-                dependencyElement = null;
+                if (url != null && UrlUtil.isExternal(url))
+                    dependencyElement = createJavaScriptElement(url,
+                            !inlineElement, "module");
+                else
+                    dependencyElement = null;
                 break;
             case HTML_IMPORT:
                 dependencyElement = createHtmlImportElement(url);
@@ -1179,8 +1189,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     .isProductionMode();
             String result = getBootstrapJS();
             JsonObject appConfig = context.getApplicationParameters();
-            appConfig.put(ApplicationConstants.UI_TAG,
-                    context.getUI().getElement().getTag());
 
             int indent = 0;
             if (!productionMode) {
@@ -1256,8 +1264,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     deploymentConfiguration.getEs6FrontendPrefix());
             appConfig.put(ApplicationConstants.FRONTEND_URL_ES5,
                     deploymentConfiguration.getEs5FrontendPrefix());
-            appConfig.put(ApplicationConstants.UI_ELEMENT_ID,
-                    deploymentConfiguration.getRootElementId());
 
             if (!productionMode) {
                 JsonObject versionInfo = Json.createObject();
@@ -1287,7 +1293,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 appConfig.put("sessExpMsg", sessExpMsg);
             }
 
-            String contextRoot = this.contextCallback.apply(request);
+            String contextRoot = contextCallback.apply(request);
             appConfig.put(ApplicationConstants.CONTEXT_ROOT_URL, contextRoot);
 
             if (!productionMode) {

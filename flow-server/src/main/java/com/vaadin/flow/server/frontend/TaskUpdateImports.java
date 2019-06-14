@@ -88,6 +88,10 @@ public class TaskUpdateImports extends NodeUpdater {
         modules.addAll(getGeneratedModules(generatedFolder,
                 Collections.singleton(generatedFlowImports.getName())));
 
+        // filter out external URLs (including "://")
+        modules = modules.stream().filter(module -> !module.contains("://"))
+                .collect(Collectors.toSet());
+
         modules = sortModules(modules);
         try {
             updateMainJsFile(getMainJsContent(modules));

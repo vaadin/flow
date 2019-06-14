@@ -25,7 +25,6 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.lumo.Lumo;
 
-
 /**
  * A container class for all components used in tests.
  */
@@ -41,6 +40,7 @@ public class TestComponents {
     @JsModule("@vaadin/vaadin-date-picker/src/vaadin-date-picker.js")
     @JsModule("@vaadin/vaadin-date-picker/src/vaadin-month-calendar.js")
     @JavaScript("frontend://ExampleConnector.js")
+    @JavaScript("https://foo.com/bar.js")
     public static class VaadinBowerComponent extends Component {
     }
 

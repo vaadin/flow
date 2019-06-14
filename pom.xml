@@ -38,9 +38,9 @@
 
     <organization>
         <name>Vaadin Ltd</name>
-        <url>http://vaadin.com</url>
+        <url>https://vaadin.com</url>
     </organization>
-    <url>http://vaadin.com</url>
+    <url>https://vaadin.com</url>
     <licenses>
         <license>
             <name>Apache License Version 2.0</name>
@@ -71,7 +71,7 @@
         </flow.deployment.repo.url>
         <flow.addons.repo.id>vaadin-addons</flow.addons.repo.id>
         <flow.addons.repo.url>
-            http://maven.vaadin.com/vaadin-addons
+            https://maven.vaadin.com/vaadin-addons
         </flow.addons.repo.url>
 
         <maven.compiler.source>1.8</maven.compiler.source>

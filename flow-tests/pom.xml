@@ -35,7 +35,6 @@
         <module>test-web-components-production</module>
         <module>test-web-components-theme-variant</module>
 
-
         <!-- tests migrated to NPM -->
         <module>web-component-test-assets</module>
         <module>test-mixed</module>

@@ -187,6 +187,13 @@ public class BuildFrontendMojoTest {
     }
 
     @Test
+    public void shouldNot_ContainExternalUrls() throws Exception {
+        mojo.execute();
+
+        assertContainsImports(false, "https://foo.com/bar.js");
+    }
+
+    @Test
     public void should_AddImports() throws Exception {
         mojo.execute();
         removeImports("@vaadin/vaadin-lumo-styles/sizing.js",

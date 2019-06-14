@@ -15,6 +15,11 @@
  */
 package com.vaadin.flow.component.webcomponent;
 
+import java.util.Map;
+import java.util.Optional;
+
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -33,10 +38,6 @@ import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
 import com.vaadin.flow.theme.ThemeUtil;
-import org.slf4j.LoggerFactory;
-
-import java.util.Map;
-import java.util.Optional;
 
 /**
  * Custom UI for use with WebComponents served from the server.
@@ -54,15 +55,6 @@ public class WebComponentUI extends UI {
         assignTheme();
 
         VaadinSession session = getSession();
-        String uiElementId;
-        if (session.getConfiguration().getRootElementId().isEmpty()) {
-            uiElementId = "";
-        } else {
-            uiElementId = session.getConfiguration().getRootElementId();
-        }
-        getPage().executeJs(
-                "document.body.dispatchEvent(new CustomEvent('root-element', { detail: '"
-                        + uiElementId + "' }))");
         DeploymentConfiguration deploymentConfiguration = session.getService()
                 .getDeploymentConfiguration();
         if (deploymentConfiguration.isCompatibilityMode()

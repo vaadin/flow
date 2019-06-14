@@ -411,7 +411,7 @@ public class FrontendUtils {
             npmVersionCommand.addAll(FrontendUtils.getNpmExecutable(baseDir));
             npmVersionCommand.add("--version");
             String[] npmVersion = getVersion("npm", npmVersionCommand);
-            validateToolVersion("node", npmVersion,
+            validateToolVersion("npm", npmVersion,
                     Constants.SUPPORTED_NPM_MAJOR_VERSION,
                     Constants.SUPPORTED_NPM_MINOR_VERSION,
                     Constants.SHOULD_WORK_NPM_MAJOR_VERSION,

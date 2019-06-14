@@ -25,7 +25,6 @@ import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsMap;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
-
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
@@ -244,6 +243,13 @@ public class DependencyLoader {
             }
             return (scriptUrl, resourceLoadListener) -> resourceLoader
                     .loadScript(scriptUrl, resourceLoadListener, false, true);
+        case JS_MODULE:
+            if (inline) {
+                throw new IllegalArgumentException(
+                        "Inline load mode is not supported for JsModule.");
+            }
+            return (scriptUrl, resourceLoadListener) -> resourceLoader
+                    .loadJsModule(scriptUrl, resourceLoadListener, false, true);
         default:
             throw new IllegalArgumentException(
                     "Unknown dependency type " + resourceType);

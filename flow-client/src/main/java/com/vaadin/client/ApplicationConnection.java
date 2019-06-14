@@ -24,9 +24,7 @@ import com.vaadin.client.communication.ReconnectDialogConfiguration;
 import com.vaadin.client.flow.RouterLinkHandler;
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.binding.Binder;
-
 import elemental.client.Browser;
-import elemental.dom.Document;
 import elemental.dom.Element;
 import elemental.dom.Node;
 
@@ -61,23 +59,11 @@ public class ApplicationConnection {
 
         new PopStateHandler(registry).bind();
 
-        Document document = Browser.getDocument();
-        Element flowRoot = null;
-        if (!applicationConfiguration.getUiElementId().isEmpty()) {
-            flowRoot = document
-                    .getElementById(applicationConfiguration.getUiElementId());
-        }
+        Element body = Browser.getDocument().getBody();
 
-        Element root = flowRoot != null ? flowRoot : document.getBody();
-        assert root.getTagName()
-                .equalsIgnoreCase(applicationConfiguration.getUiTag()) :
-                "UI element type didn't match the server defined one! expected "
-                        + applicationConfiguration.getUiTag().toLowerCase()
-                        + " got " + root.getTagName().toLowerCase();
-
-        rootNode.setDomNode(root);
-        Binder.bind(rootNode, root);
-        RouterLinkHandler.bind(registry, root);
+        rootNode.setDomNode(body);
+        Binder.bind(rootNode, body);
+        RouterLinkHandler.bind(registry, body);
 
         Console.log("Starting application "
                 + applicationConfiguration.getApplicationId());
