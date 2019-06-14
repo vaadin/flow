@@ -26,17 +26,20 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.webcomponent.PropertyData;
 import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 
+import elemental.json.JsonObject;
+
 /**
- * Result of defining an embeddable web component using {@link
- * WebComponentExporter}. Provides all the necessary information to generate the
- * web component resources and constructs new {@link WebComponentBinding}
- * instances with {@link #createWebComponentBinding(Instantiator, Element)};
+ * Result of defining an embeddable web component using
+ * {@link WebComponentExporter}. Provides all the necessary information to
+ * generate the web component resources and constructs new
+ * {@link WebComponentBinding} instances with
+ * {@link #createWebComponentBinding(com.vaadin.flow.di.Instantiator, com.vaadin.flow.dom.Element, elemental.json.JsonObject)};
  *
  * @param <C>
- *         type of the component being exported
+ *            type of the component being exported
  * @author Vaadin Ltd.
  * @see com.vaadin.flow.component.WebComponentExporter.WebComponentConfigurationFactory
- *         for constructing new instances
+ *      for constructing new instances
  */
 public interface WebComponentConfiguration<C extends Component>
         extends Serializable {
@@ -46,7 +49,7 @@ public interface WebComponentConfiguration<C extends Component>
      * propertyName}.
      *
      * @param propertyName
-     *         name of the property, not null
+     *            name of the property, not null
      * @return has property
      */
     boolean hasProperty(String propertyName);
@@ -56,7 +59,7 @@ public interface WebComponentConfiguration<C extends Component>
      * returns {@code null}
      *
      * @param propertyName
-     *         name of the property, not null
+     *            name of the property, not null
      * @return property type or null
      */
     Class<? extends Serializable> getPropertyType(String propertyName);
@@ -80,15 +83,20 @@ public interface WebComponentConfiguration<C extends Component>
      * Creates a new {@link WebComponentBinding} instance.
      *
      * @param instantiator
-     *         {@link Instantiator} used to construct instances
+     *            {@link com.vaadin.flow.di.Instantiator} used to construct
+     *            instances
      * @param element
-     *         element which acts as the root element for the exported
-     *         {@code component} instance
+     *            element which acts as the root element for the exported
+     *            {@code component} instance
+     * @param newAttributeDefaults
+     *            {@link JsonObject} containing default overrides set by the
+     *            user defining the component on a web page. These defaults are
+     *            set using the web component's attributes.
      * @return web component binding which can be used by the web component host
      *         to communicate with the component it is hosting
      */
     WebComponentBinding<C> createWebComponentBinding(Instantiator instantiator,
-                                                     Element element);
+            Element element, JsonObject newAttributeDefaults);
 
     /**
      * Retrieves the tag name configured by the web component exporter.

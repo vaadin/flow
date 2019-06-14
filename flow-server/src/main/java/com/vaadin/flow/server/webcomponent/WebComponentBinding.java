@@ -24,10 +24,11 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
-import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.internal.JsonCodec;
+
+import elemental.json.JsonValue;
 
 /**
  * Represents a single instance of a exported web component instance embedded
@@ -36,12 +37,14 @@ import com.vaadin.flow.function.SerializableConsumer;
  * updates from the client to the {@code component}.
  *
  * @param <C>
- *         type of the exported component
+ *            type of the exported component
  * @author Vaadin Ltd.
- * @see WebComponentConfiguration#createWebComponentBinding(Instantiator,
- *         Element) to create {@code WebComponentBindings}
+ * @see WebComponentConfiguration#createWebComponentBinding(com.vaadin.flow.di.Instantiator,
+ *      com.vaadin.flow.dom.Element, elemental.json.JsonObject) to create
+ *      {@code WebComponentBindings}
  */
-public final class WebComponentBinding<C extends Component> implements Serializable {
+public final class WebComponentBinding<C extends Component>
+        implements Serializable {
     private C component;
     private HashMap<String, PropertyBinding<? extends Serializable>> properties = new HashMap<>();
 
@@ -51,14 +54,14 @@ public final class WebComponentBinding<C extends Component> implements Serializa
      * are bound by calling {@link #bindProperty(PropertyConfigurationImpl)};
      *
      * @param component
-     *         component which exposes {@code properties} as web component. Not
-     *         {@code null}
+     *            component which exposes {@code properties} as web component.
+     *            Not {@code null}
      * @throws NullPointerException
-     *         if {@code component} is {@code null}
+     *             if {@code component} is {@code null}
      */
     public WebComponentBinding(C component) {
-        Objects.requireNonNull(component, "Parameter 'component' must not be " +
-                "null!");
+        Objects.requireNonNull(component,
+                "Parameter 'component' must not be " + "null!");
 
         this.component = component;
     }
@@ -70,17 +73,17 @@ public final class WebComponentBinding<C extends Component> implements Serializa
      * value (which could be {@code null}).
      *
      * @param propertyName
-     *         name of the property, not {@code null}
+     *            name of the property, not {@code null}
      * @param value
-     *         new value to set for the property
+     *            new value to set for the property
      * @throws NullPointerException
-     *         if {@code propertyName} is {@code null}
+     *             if {@code propertyName} is {@code null}
      * @throws IllegalArgumentException
-     *         if no bound property can be found for {@code propertyName}
+     *             if no bound property can be found for {@code propertyName}
      */
     public void updateProperty(String propertyName, Serializable value) {
-        Objects.requireNonNull(propertyName, "Parameter 'propertyName' must " +
-                "not be null!");
+        Objects.requireNonNull(propertyName,
+                "Parameter 'propertyName' must " + "not be null!");
 
         PropertyBinding<?> propertyBinding = properties.get(propertyName);
 
@@ -91,6 +94,34 @@ public final class WebComponentBinding<C extends Component> implements Serializa
         }
 
         propertyBinding.updateValue(value);
+    }
+
+    /**
+     * Updates a property bound to the {@code component}. Converts the {@code
+     * jsonValue} into the correct type if able and then calls
+     * {@link #updateProperty(String, java.io.Serializable)}.
+     *
+     * @param propertyName
+     *            name of the property, not {@code null}
+     * @param jsonValue
+     *            new value to set for the property
+     * @throws NullPointerException
+     *             if {@code propertyName} is {@code null}
+     * @throws IllegalArgumentException
+     *             if no bound property can be found for {@code propertyName}
+     * @throws IllegalArgumentException
+     *             if the {@code jsonValue} cannot be converted to the type of
+     *             the property identified by {@code propertyName}.
+     */
+    public void updateProperty(String propertyName, JsonValue jsonValue) {
+        Objects.requireNonNull(propertyName,
+                "Parameter 'propertyName' must " + "not be null!");
+
+        Class<? extends Serializable> propertyType = getPropertyType(
+                propertyName);
+
+        Serializable value = jsonValueToConcreteType(jsonValue, propertyType);
+        updateProperty(propertyName, value);
     }
 
     /**
@@ -106,7 +137,7 @@ public final class WebComponentBinding<C extends Component> implements Serializa
      * Retrieve the type of a property's value.
      *
      * @param propertyName
-     *         name of the property
+     *            name of the property
      * @return property type
      */
     public Class<? extends Serializable> getPropertyType(String propertyName) {
@@ -120,7 +151,7 @@ public final class WebComponentBinding<C extends Component> implements Serializa
      * Does the component binding have a property identified by given name.
      *
      * @param propertyName
-     *         name of the property
+     *            name of the property
      * @return has property
      */
     public boolean hasProperty(String propertyName) {
@@ -128,8 +159,8 @@ public final class WebComponentBinding<C extends Component> implements Serializa
     }
 
     /**
-     * Calls the bound change handlers defined via {@link
-     * com.vaadin.flow.component.webcomponent.PropertyConfiguration#onChange(SerializableBiConsumer)}
+     * Calls the bound change handlers defined via
+     * {@link com.vaadin.flow.component.webcomponent.PropertyConfiguration#onChange(SerializableBiConsumer)}
      * for each bound property with the current value of the property.
      */
     public void updatePropertiesToComponent() {
@@ -142,32 +173,71 @@ public final class WebComponentBinding<C extends Component> implements Serializa
      * previous binding is removed.
      *
      * @param propertyConfiguration
-     *         property configuration, not {@code null}
+     *            property configuration, not {@code null}
+     * @param overrideDefault
+     *            set to {@code true} if the default value of the property
+     *            should be replaced with the value given by
+     *            {@code newDefaultValue}
+     * @param newDefaultValue
+     *            new default value for the property. Can be {@code null}.
+     *            {@code overrideDefault} must be {@code true} for this value to
+     *            have any effect
      * @throws NullPointerException
-     *         if {@code propertyConfiguration} is {@code null}
+     *             if {@code propertyConfiguration} is {@code null}
      */
-    public void bindProperty(PropertyConfigurationImpl<C,
-            ? extends Serializable> propertyConfiguration) {
-        Objects.requireNonNull(propertyConfiguration, "Parameter " +
-                "'propertyConfiguration' cannot be null!");
+    public void bindProperty(
+            PropertyConfigurationImpl<C, ? extends Serializable> propertyConfiguration,
+            boolean overrideDefault, JsonValue newDefaultValue) {
+        Objects.requireNonNull(propertyConfiguration,
+                "Parameter 'propertyConfiguration' cannot be null!");
 
-        SerializableBiConsumer<C, Serializable> consumer = propertyConfiguration
+        final SerializableBiConsumer<C, Serializable> consumer =
+                propertyConfiguration
                 .getOnChangeHandler();
-        PropertyBinding<? extends Serializable> binding =
-                new PropertyBinding<>(propertyConfiguration.getPropertyData(),
-                        consumer == null ? null
-                                : value -> consumer.accept(
-                                component, value));
-        properties.put(propertyConfiguration.getPropertyData().getName(), binding);
+
+        final Serializable serializableDefault =
+                jsonValueToConcreteType(newDefaultValue,
+                        propertyConfiguration.getPropertyData().getType());
+        // calculate new PropertyData, we'll need to change the default
+        // value, if the user defined a new value in the component's attributes
+        final PropertyData<? extends Serializable> propertyData = !overrideDefault
+                ? propertyConfiguration.getPropertyData()
+                : propertyConfiguration.getPropertyData()
+                        .updateDefaultValue(serializableDefault);
+
+        final PropertyBinding<? extends Serializable> binding =
+                new PropertyBinding<>(
+                propertyData, consumer == null ? null
+                        : value -> consumer.accept(component, value));
+        properties.put(propertyConfiguration.getPropertyData().getName(),
+                binding);
     }
 
-    private static class PropertyBinding<P extends Serializable> implements Serializable {
+    private Serializable jsonValueToConcreteType(JsonValue jsonValue,
+            Class<? extends Serializable> type) {
+        Objects.requireNonNull(type, "Parameter 'type' must not be null!");
+
+        if (JsonCodec.canEncodeWithoutTypeInfo(type)) {
+            Serializable value = null;
+            if (jsonValue != null) {
+                value = JsonCodec.decodeAs(jsonValue, type);
+            }
+            return value;
+        } else {
+            throw new IllegalArgumentException(String.format(
+                    "Received '%s' was not convertible" + " to '%s'",
+                    JsonValue.class.getName(), type.getName()));
+        }
+    }
+
+    private static class PropertyBinding<P extends Serializable>
+            implements Serializable {
         private PropertyData<P> data;
         private SerializableConsumer<P> listener;
         private P value;
 
         public PropertyBinding(PropertyData<P> data,
-                               SerializableConsumer<P> listener) {
+                SerializableConsumer<P> listener) {
             Objects.requireNonNull(data, "Parameter 'data' must not be null!");
             this.data = data;
             this.listener = listener;
@@ -178,19 +248,18 @@ public final class WebComponentBinding<C extends Component> implements Serializa
         public void updateValue(Serializable newValue) {
             if (isReadOnly()) {
                 LoggerFactory.getLogger(getClass())
-                        .warn(String.format("An attempt was made to write to " +
-                                        "a read-only property '%s' owned by exported " +
-                                        "component %s", getName(),
+                        .warn(String.format("An attempt was made to write to "
+                                + "a read-only property '%s' owned by exported "
+                                + "component %s", getName(),
                                 getType().getCanonicalName()));
                 return;
             }
 
             if (newValue != null && newValue.getClass() != getType()) {
-                throw new IllegalArgumentException(String.format("Parameter " +
-                                "'newValue' is of the wrong type: onChangeHandler" +
-                                " of the property expected to receive %s but " +
-                                "found %s instead.",
-                        getType().getCanonicalName(),
+                throw new IllegalArgumentException(String.format("Parameter "
+                        + "'newValue' is of the wrong type: onChangeHandler"
+                        + " of the property expected to receive %s but "
+                        + "found %s instead.", getType().getCanonicalName(),
                         newValue.getClass().getCanonicalName()));
             }
 
@@ -247,8 +316,8 @@ public final class WebComponentBinding<C extends Component> implements Serializa
             if (obj instanceof PropertyBinding) {
                 PropertyBinding other = (PropertyBinding) obj;
                 boolean valuesAreNull = value == null && other.value == null;
-                boolean valuesAreEqual = valuesAreNull ||
-                        (value != null && value.equals(other.value));
+                boolean valuesAreEqual = valuesAreNull
+                        || (value != null && value.equals(other.value));
                 return data.equals(other.data) && valuesAreEqual;
             }
             return false;

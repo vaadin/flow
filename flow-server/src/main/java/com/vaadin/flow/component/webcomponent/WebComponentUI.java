@@ -15,9 +15,11 @@
  */
 package com.vaadin.flow.component.webcomponent;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.Optional;
 
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.ClientCallable;
@@ -26,6 +28,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.QueryParameters;
@@ -38,6 +41,12 @@ import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
 import com.vaadin.flow.theme.ThemeUtil;
+
+import elemental.json.Json;
+import elemental.json.JsonException;
+import elemental.json.JsonObject;
+import elemental.json.JsonString;
+import elemental.json.JsonValue;
 
 /**
  * Custom UI for use with WebComponents served from the server.
@@ -69,25 +78,31 @@ public class WebComponentUI extends UI {
              * This code is not needed when in npm mode, since the web
              * components will be contained within index.js
              */
-            getConfigurationRegistry().getConfigurations().forEach(config ->
-                    getPage().addHtmlImport(getWebComponentHtmlPath(config)));
+            getConfigurationRegistry().getConfigurations()
+                    .forEach(config -> getPage()
+                            .addHtmlImport(getWebComponentHtmlPath(config)));
         }
     }
 
     /**
-     * Connect a client side web component element with a server side {@link
-     * Component} that's added as a virtual child to the UI as the actual
+     * Connect a client side web component element with a server side
+     * {@link Component} that's added as a virtual child to the UI as the actual
      * relation of the elements is unknown.
      *
      * @param tag
-     *         web component tag
+     *            web component tag
      * @param webComponentElementId
-     *         client side id of the element
+     *            client side id of the element
+     * @param attributeJson
+     *            initial attribute values as a JsonObject. If present, these
+     *            will override the default value designated by the
+     *            {@code WebComponentExporter} but only for this instance.
      */
     @ClientCallable
-    public void connectWebComponent(String tag, String webComponentElementId) {
-        Optional<WebComponentConfiguration<? extends Component>> webComponentConfiguration =
-                getConfigurationRegistry().getConfiguration(tag);
+    public void connectWebComponent(String tag, String webComponentElementId,
+            JsonObject attributeJson) {
+        Optional<WebComponentConfiguration<? extends Component>> webComponentConfiguration = getConfigurationRegistry()
+                .getConfiguration(tag);
 
         if (!webComponentConfiguration.isPresent()) {
             LoggerFactory.getLogger(WebComponentUI.class).warn(
@@ -96,17 +111,12 @@ public class WebComponentUI extends UI {
             return;
         }
 
-        /*
-         * Form the two-way binding between the component host
-         * (WebComponentWrapper) and the component produces by handling
-         * WebComponentExporter. WebComponentBinding offers a method for
-         * proxying property updates to the component and the call to
-         * configureWebComponentInstance sets up the component-to-host linkage.
-         */
-        Element el = new Element(tag);
+        final Element rootElement = new Element(tag);
         WebComponentBinding binding = webComponentConfiguration.get()
-                .createWebComponentBinding(Instantiator.get(this), el);
-        WebComponentWrapper wrapper = new WebComponentWrapper(el, binding);
+                .createWebComponentBinding(Instantiator.get(this), rootElement,
+                        attributeJson);
+        WebComponentWrapper wrapper = new WebComponentWrapper(rootElement,
+                binding);
 
         getElement().getStateProvider().appendVirtualChild(
                 getElement().getNode(), wrapper.getElement(),
@@ -121,7 +131,7 @@ public class WebComponentUI extends UI {
 
     @Override
     public Optional<ThemeDefinition> getThemeFor(Class<?> navigationTarget,
-                                                 String path) {
+            String path) {
         return Optional.empty();
     }
 
@@ -160,7 +170,7 @@ public class WebComponentUI extends UI {
     }
 
     private void assignVariant(WebComponentConfigurationRegistry registry,
-                               Theme theme) {
+            Theme theme) {
         AbstractTheme themeInstance = Instantiator.get(this)
                 .getOrCreate(theme.value());
         ThemeDefinition definition = new ThemeDefinition(theme);
@@ -174,10 +184,11 @@ public class WebComponentUI extends UI {
     private void addAttributes(String tag, Map<String, String> attributes) {
         final StringBuilder builder = new StringBuilder();
         builder.append("var elements = document.querySelectorAll('").append(tag)
-                .append("');").append("for (let i = 0; i < elements.length; i++) {");
-        attributes.forEach((attribute, value) ->
-                builder.append("elements[i].setAttribute('").append(attribute)
-                        .append("', '").append(value).append("');"));
+                .append("');")
+                .append("for (let i = 0; i < elements.length; i++) {");
+        attributes.forEach((attribute, value) -> builder
+                .append("elements[i].setAttribute('").append(attribute)
+                .append("', '").append(value).append("');"));
         builder.append("}");
         getPage().executeJs(builder.toString());
     }

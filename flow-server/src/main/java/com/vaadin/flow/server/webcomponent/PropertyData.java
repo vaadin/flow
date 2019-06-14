@@ -22,10 +22,11 @@ import java.util.Objects;
  * Value object containing information of a web component's property field.
  *
  * @param <P>
- *         type of the property's value
+ *            type of the property's value
  * @author Vaadin Ltd.
  */
-public final class PropertyData<P extends Serializable> implements Serializable {
+public final class PropertyData<P extends Serializable>
+        implements Serializable {
     private final String name;
     private final Class<P> type;
     private final P defaultValue;
@@ -36,34 +37,22 @@ public final class PropertyData<P extends Serializable> implements Serializable 
      * property's value given by {@code type}.
      *
      * @param name
-     *         name of the property
+     *            name of the property
      * @param type
-     *         type of the property value
+     *            type of the property value
      * @param readOnly
-     *         is the property read-only (on the client-side)
+     *            is the property read-only (on the client-side)
      * @param defaultValue
-     *         default value for the property
+     *            default value for the property
      */
     public PropertyData(String name, Class<P> type, boolean readOnly,
-                        P defaultValue) {
+            P defaultValue) {
         Objects.requireNonNull(name, "Parameter 'name' must not be null!");
         Objects.requireNonNull(type, "Parameter 'type' must not be null!");
         this.name = name;
         this.type = type;
         this.readOnly = readOnly;
         this.defaultValue = defaultValue;
-    }
-
-    /**
-     * Copy-constructor, which allows for changing the {@code readOnly} flag.
-     *
-     * @param data
-     *         base property data
-     * @param readOnly
-     *         new read-only value
-     */
-    public PropertyData(PropertyData<P> data, boolean readOnly) {
-        this(data.name, data.type, readOnly, data.defaultValue);
     }
 
     /**
@@ -100,6 +89,39 @@ public final class PropertyData<P extends Serializable> implements Serializable 
      */
     public boolean isReadOnly() {
         return readOnly;
+    }
+
+    /**
+     * Creates a copy of {@code this} with the new {@code readOnly} value.
+     *
+     * @param readOnly
+     *            new {@code readOnly} value
+     * @return copy of {@code this}
+     */
+    public PropertyData<P> updateReadOnly(boolean readOnly) {
+        return new PropertyData<>(this.name, this.type, readOnly,
+                this.defaultValue);
+    }
+
+    /**
+     * Creates a copy of {@code this} with the new {@code defaultValue} value.
+     * 
+     * @param defaultValue
+     *            new {@code defaultValue} value
+     * @return copy of {@code this}
+     * @throws IllegalArgumentException
+     *             if {@code defaultValue} does not share type with the previous
+     *             value
+     */
+    public PropertyData<P> updateDefaultValue(Serializable defaultValue) {
+        if (defaultValue != null && !this.type.isAssignableFrom(defaultValue.getClass())) {
+            throw new IllegalArgumentException(String.format(
+                    "Parameter 'defaultValue' of type '%s' cannot be cast to " +
+                            "%s!", defaultValue.getClass().getName(),
+                    this.type.getName()));
+        }
+        return new PropertyData<>(this.name, this.type, this.readOnly,
+                (P) defaultValue);
     }
 
     @Override

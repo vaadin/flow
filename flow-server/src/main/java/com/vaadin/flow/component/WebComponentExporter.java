@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.vaadin.flow.component.webcomponent.PropertyConfiguration;
 import com.vaadin.flow.component.webcomponent.WebComponent;
@@ -38,6 +39,7 @@ import com.vaadin.flow.server.webcomponent.PropertyData;
 import com.vaadin.flow.server.webcomponent.UnsupportedPropertyTypeException;
 import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 
+import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
@@ -317,7 +319,7 @@ public abstract class WebComponentExporter<C extends Component>
 
         @Override
         public WebComponentBinding<C> createWebComponentBinding(
-                Instantiator instantiator, Element element) {
+                Instantiator instantiator, Element element, JsonObject newAttributeDefaults) {
             assert (instantiator != null);
 
             final C componentReference = instantiator
@@ -348,7 +350,23 @@ public abstract class WebComponentExporter<C extends Component>
             WebComponentBinding<C> binding = new WebComponentBinding<>(
                     componentReference);
 
-            immutablePropertyMap.values().forEach(binding::bindProperty);
+            // collect possible new defaults from attributes as JsonValues
+            final Map<String, JsonValue> newDefaultValues =
+                    Stream.of(newAttributeDefaults.keys()).collect(Collectors.toMap(
+                            key -> key,
+                            key -> (JsonValue) newAttributeDefaults.get(key)));
+
+            // bind properties onto the WebComponentBinding. Since
+            // PropertyConfigurations are Exporter level constructs, we need
+            // to create instance level bindings, hence PropertyBindings.
+            // if newDefaultValues contains a new default value for the
+            // component instance, that is used
+            immutablePropertyMap.values().forEach(propertyConfiguration -> {
+                String key = propertyConfiguration.getPropertyData().getName();
+                binding.bindProperty(propertyConfiguration,
+                        newDefaultValues.containsKey(key),
+                        newDefaultValues.get(key));
+            });
 
             exporter.isConfigureInstanceCall = true;
             try {

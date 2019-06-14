@@ -77,7 +77,7 @@ public final class PropertyConfigurationImpl<C extends Component,
 
     @Override
     public PropertyConfiguration<C, P> readOnly() {
-        data = new PropertyData<>(data, true);
+        data = data.updateReadOnly(true);
         return this;
     }
 
