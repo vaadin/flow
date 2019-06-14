@@ -206,12 +206,12 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
             getLog().warn("Couldn't update devMode token due to missing token file.");
         }
         try {
-            String json = FileUtils.readFileToString(tokenFile, "UTF-8");
+            String json = FileUtils.readFileToString(tokenFile, StandardCharsets.UTF_8.name());
             JsonObject buildInfo = JsonUtil.parse(json);
 
             buildInfo.put(SERVLET_PARAMETER_ENABLE_DEV_SERVER, false);
             FileUtils.write(tokenFile, JsonUtil.stringify(buildInfo, 2) + "\n",
-                    "UTF-8");
+                    StandardCharsets.UTF_8.name());
         } catch (IOException e) {
             getLog().warn("Unable to read token file", e);
         }
@@ -226,7 +226,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
             return true;
         }
         try {
-            String json = FileUtils.readFileToString(tokenFile, "UTF-8");
+            String json = FileUtils.readFileToString(tokenFile, StandardCharsets.UTF_8.name());
             JsonObject buildInfo = JsonUtil.parse(json);
             return buildInfo.hasKey(SERVLET_PARAMETER_COMPATIBILITY_MODE)
                     ? buildInfo.getBoolean(SERVLET_PARAMETER_COMPATIBILITY_MODE)

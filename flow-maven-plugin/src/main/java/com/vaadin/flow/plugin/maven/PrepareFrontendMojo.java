@@ -18,6 +18,7 @@ package com.vaadin.flow.plugin.maven;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -168,7 +169,7 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         try {
             FileUtils.forceMkdir(token.getParentFile());
             FileUtils.write(token, JsonUtil.stringify(buildInfo, 2) + "\n",
-                    "UTF-8");
+                    StandardCharsets.UTF_8.name());
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
