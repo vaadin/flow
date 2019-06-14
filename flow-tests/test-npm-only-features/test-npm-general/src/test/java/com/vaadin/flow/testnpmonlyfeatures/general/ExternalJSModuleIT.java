@@ -32,12 +32,6 @@ public class ExternalJSModuleIT extends ChromeBrowserTest {
         waitForElementPresent(By.tagName("div"));
     }
 
-    @Override
-    protected String getTestPath() {
-        String testPath = super.getTestPath();
-        return testPath;
-    }
-
     @Test
     public void jsModuleAnnotation_externalJs_shouldBeAddedToPage() {
         List<WebElement> scriptTags = findElements(By.tagName("script"));
