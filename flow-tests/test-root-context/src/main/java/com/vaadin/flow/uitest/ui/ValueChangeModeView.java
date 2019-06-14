@@ -17,9 +17,6 @@ public class ValueChangeModeView extends AbstractDebounceSynchronizeView {
         Input input = new Input();
         input.setId("input");
         input.setValueChangeTimeout(CHANGE_TIMEOUT);
-        // use timeout mode by default (the mode is switched in the test for
-        // every mode).
-        input.setValueChangeMode(ValueChangeMode.TIMEOUT);
         add(input);
         input.addValueChangeListener(
                 event -> addChangeMessage(event.getValue()));
