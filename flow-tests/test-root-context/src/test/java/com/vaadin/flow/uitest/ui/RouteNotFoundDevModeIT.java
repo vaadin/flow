@@ -21,6 +21,7 @@ public class RouteNotFoundDevModeIT extends RouteNotFoundIT {
 
     @Test
     public void notFoundDevMode() {
+        getDriver().get(getRootURL() + "/view/notfound/" + INJECT_ATTACK);
         assertPageHasRoutes(true);
     }
 }
