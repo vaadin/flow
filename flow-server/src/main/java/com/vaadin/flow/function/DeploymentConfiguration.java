@@ -29,7 +29,6 @@ import com.vaadin.flow.shared.communication.PushMode;
 
 import static com.vaadin.flow.server.Constants.POLYFILLS_DEFAULT_VALUE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_POLYFILLS;
-import static com.vaadin.flow.server.frontend.FrontendUtils.PROJECT_BASEDIR;
 
 /**
  * A collection of properties configured at deploy time as well as a way of
@@ -382,18 +381,6 @@ public interface DeploymentConfiguration extends Serializable {
     default List<String> getPolyfills() {
         return Arrays.asList(getStringProperty(SERVLET_PARAMETER_POLYFILLS,
                 POLYFILLS_DEFAULT_VALUE).split("[, ]+"));
-    }
-
-    /**
-     * Computes the project root folder. This is useful in case build is
-     * executed from a different working dir or when we want to change it for
-     * testing purposes.
-     *
-     * @return folder location
-     */
-    default String getBaseDir() {
-        return getStringProperty(PROJECT_BASEDIR,
-                System.getProperty("user.dir", "."));
     }
 
 }

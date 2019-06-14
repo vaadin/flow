@@ -135,10 +135,11 @@ public class DevModeHandler implements Serializable {
         ProcessBuilder processBuilder = new ProcessBuilder()
                 .directory(npmFolder);
 
-        FrontendUtils.validateNodeAndNpmVersion(config.getBaseDir());
+        FrontendUtils.validateNodeAndNpmVersion(npmFolder.getAbsolutePath());
 
         List<String> command = new ArrayList<>();
-        command.add(FrontendUtils.getNodeExecutable(config.getBaseDir()));
+        command.add(FrontendUtils.getNodeExecutable(
+                npmFolder.getAbsolutePath()));
         command.add(webpack.getAbsolutePath());
         command.add("--config");
         command.add(webpackConfig.getAbsolutePath());

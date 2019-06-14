@@ -13,8 +13,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.tests.util.MockDeploymentConfiguration;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
@@ -49,7 +48,6 @@ public class DevModeInitializerTest {
     public ExpectedException exception = ExpectedException.none();
 
     private ServletContext servletContext;
-    private DeploymentConfiguration config;
     private DevModeInitializer devModeInitializer;
     private Set<Class<?>> classes;
 
@@ -81,19 +79,23 @@ public class DevModeInitializerTest {
     public final TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     @Before
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public void setup() throws Exception {
+        String baseDir = temporaryFolder.getRoot().getPath();
 
-        System.setProperty("user.dir", temporaryFolder.getRoot().getPath());
-
-        config = new MockDeploymentConfiguration();
-
-        createStubNode(false, true, config);
-        createStubWebpackServer("Compiled", 0, config);
+        createStubNode(false, true, baseDir);
+        createStubWebpackServer("Compiled", 0, baseDir);
 
         servletContext = Mockito.mock(ServletContext.class);
         ServletRegistration registration = Mockito
                 .mock(ServletRegistration.class);
+
+        Mockito.when(registration.getInitParameter(FrontendUtils.PROJECT_BASEDIR))
+                .thenReturn(baseDir);
+        Map<String, String> initParams = new HashMap<>();
+        initParams.put(FrontendUtils.PROJECT_BASEDIR, baseDir);
+        Mockito.when(registration.getInitParameters()).thenReturn(initParams);
+
         classes = new HashSet<>();
 
         Map registry = new HashMap();
@@ -105,10 +107,10 @@ public class DevModeInitializerTest {
         Mockito.when(servletContext.getClassLoader())
                 .thenReturn(this.getClass().getClassLoader());
 
-        mainPackageFile = new File(config.getBaseDir(), PACKAGE_JSON);
-        appPackageFile = new File(config.getBaseDir(),
+        mainPackageFile = new File(baseDir, PACKAGE_JSON);
+        appPackageFile = new File(baseDir,
                 DEFAULT_GENERATED_DIR + PACKAGE_JSON);
-        webpackFile = new File(config.getBaseDir(), WEBPACK_CONFIG);
+        webpackFile = new File(baseDir, WEBPACK_CONFIG);
         appPackageFile.getParentFile().mkdirs();
 
         FileUtils.write(mainPackageFile, "{}", "UTF-8");

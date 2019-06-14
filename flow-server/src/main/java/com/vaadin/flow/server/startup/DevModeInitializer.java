@@ -41,6 +41,7 @@ import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.frontend.ClassFinder.DefaultClassFinder;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.server.frontend.NodeTasks.Builder;
 import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
@@ -145,8 +146,11 @@ public class DevModeInitializer
             return;
         }
 
+        String baseDir = config.getStringProperty(
+                FrontendUtils.PROJECT_BASEDIR,
+                System.getProperty("user.dir", "."));
         Builder builder = new NodeTasks.Builder(new DefaultClassFinder(classes),
-                new File(config.getBaseDir()));
+                new File(baseDir));
 
         log().info("Starting dev-mode updaters in {} folder.",
                 builder.npmFolder);

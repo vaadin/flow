@@ -24,8 +24,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.tests.util.MockDeploymentConfiguration;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
@@ -48,18 +46,14 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
     private TaskUpdateWebpack webpackUpdater;
     private File webpackConfig;
     private File webpackGenerated;
-    File baseDir;
-
-    private DeploymentConfiguration config;
+    private File baseDir;
 
     @Before
     public void setup() throws Exception {
-        System.setProperty("user.dir", temporaryFolder.getRoot().getPath());
-        config = new MockDeploymentConfiguration();
+        baseDir = temporaryFolder.getRoot();
 
-        baseDir = new File(config.getBaseDir());
-
-        NodeUpdateTestUtil.createStubNode(true, true, config);
+        NodeUpdateTestUtil.createStubNode(true, true,
+                baseDir.getAbsolutePath());
 
         webpackUpdater = new TaskUpdateWebpack(
                 baseDir,
