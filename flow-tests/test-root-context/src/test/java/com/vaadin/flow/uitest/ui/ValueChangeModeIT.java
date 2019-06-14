@@ -1,6 +1,7 @@
 package com.vaadin.flow.uitest.ui;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -30,6 +31,7 @@ public class ValueChangeModeIT extends AbstractDebounceSynchronizeIT {
     }
 
     @Test
+    @Ignore
     public void timeout() throws InterruptedException {
         toggleMode(ValueChangeMode.TIMEOUT);
         assertThrottle(input);
