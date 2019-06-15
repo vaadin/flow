@@ -109,9 +109,19 @@ public class RouteNotFoundError extends Component
                     .text(text);
             return new Element(Tag.LI).appendChild(link);
         } else {
-            return new Element(Tag.LI).text(text + " (requires parameter)");
+            Class<? extends Component> target = route.getNavigationTarget();
+            if (ParameterDeserializer.isAnnotatedParameter(target, OptionalParameter.class)) {
+                text = text + " (supports optional parameter)";
+                Element link =
+                    new Element(Tag.A).attr("href", route.getUrl()).text(text);
+                return new Element(Tag.LI).appendChild(link);
+            } else {
+                text = text + " (requires parameter)";
+                Element link =
+                    new Element(Tag.A).attr("href", route.getUrl()).text(text);
+                return new Element(Tag.LI).appendChild(link);
+            }
         }
-
     }
 
     private static class LazyInit {

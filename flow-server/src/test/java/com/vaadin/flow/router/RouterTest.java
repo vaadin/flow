@@ -337,6 +337,22 @@ public class RouterTest extends RoutingTestBase {
         }
     }
 
+    @Route("optional")
+    @Tag(Tag.DIV)
+    public static class WithoutOptionalParameter extends Component
+            implements HasUrlParameter<String> {
+
+        private static List<BeforeEvent> events = new ArrayList<>();
+
+        private static String param;
+
+        @Override
+        public void setParameter(BeforeEvent event, String parameter) {
+            events.add(event);
+            param = parameter;
+        }
+    }
+
     @Route("usupported/wildcard")
     @Tag(Tag.DIV)
     public static class UnsupportedWildParameter extends Component
@@ -3061,6 +3077,52 @@ public class RouterTest extends RoutingTestBase {
                 Arrays.asList(NoRemoveContent1.class, NoRemoveContent2.class),
                 layout.getChildren().map(Component::getClass)
                         .collect(Collectors.toList()));
+    }
+
+    @Test
+    public void optional_parameter_non_existing_route()
+    throws InvalidRouteConfigurationException {
+        OptionalParameter.events.clear();
+        Mockito.when(configuration.isProductionMode()).thenReturn(false);
+        setNavigationTargets(OptionalParameter.class);
+
+        String locationString = "optional/doesnotExist/parameter";
+        router.navigate(
+            ui, new Location(locationString), NavigationTrigger.PROGRAMMATIC);
+
+        String exceptionText1 =
+             String.format("Could not navigate to '%s'", locationString);
+
+        String exceptionText2 =
+            String.format("Reason: Couldn't find route for '%s'", locationString);
+
+        String exceptionText3 = "(supports optional parameter)";
+
+        assertExceptionComponent(
+            RouteNotFoundError.class, exceptionText1, exceptionText2, exceptionText3);
+    }
+
+    @Test
+    public void without_optional_parameter()
+    throws InvalidRouteConfigurationException {
+        OptionalParameter.events.clear();
+        Mockito.when(configuration.isProductionMode()).thenReturn(false);
+        setNavigationTargets(WithoutOptionalParameter.class);
+
+        String locationString = "optional";
+        router.navigate(
+            ui, new Location(locationString), NavigationTrigger.PROGRAMMATIC);
+
+        String exceptionText1 =
+             String.format("Could not navigate to '%s'", locationString);
+
+        String exceptionText2 =
+            String.format("Reason: Couldn't find route for '%s'", locationString);
+
+        String exceptionText3 = "(requires parameter)";
+
+        assertExceptionComponent(
+            RouteNotFoundError.class, exceptionText1, exceptionText2, exceptionText3);
     }
 
     private void setNavigationTargets(
