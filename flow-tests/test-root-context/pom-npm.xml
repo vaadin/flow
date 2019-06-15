@@ -17,8 +17,7 @@
         <exclude.it.tests>LazyLoadingTemplateIT, 
             DependenciesLoadingPageApiIT, AnnotatedFrontendInlineIT, 
             DependenciesLoadingAnnotationsIT, FrontendInlineApiIT, RouteNotFoundProdModeIT,
-            TemplateInTemplateIT, DebounceSynchronizePropertyIT, 
-            ChangeModeIT, LoadingIndicatorIT,TimingInfoReportedIT</exclude.it.tests>
+            TemplateInTemplateIT</exclude.it.tests>
     </properties>
 
     <dependencies>
