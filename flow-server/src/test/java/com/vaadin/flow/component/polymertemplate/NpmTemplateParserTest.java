@@ -92,7 +92,7 @@ public class NpmTemplateParserTest {
                 "likeable-element",
                 templateContent.getTemplateElement().parent().id());
 
-        Assert.assertEquals("Expected template element to have 29 children", 29,
+        Assert.assertEquals("Expected template element to have 2 children", 2,
                 templateContent.getTemplateElement().childNodeSize());
 
         Assert.assertEquals(
