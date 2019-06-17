@@ -161,6 +161,13 @@ public class DevModeHandlerTest {
     }
 
     @Test
+    public void enableDevServerFalse_shouldNotCreateInstance()
+            throws Exception {
+        configuration.setEnableDevServer(false);
+        assertNull(DevModeHandler.start(vaadinContext, configuration, npmFolder));
+    }
+
+    @Test
     public void shouldNot_CreateInstance_When_BowerMode() throws Exception {
         configuration.setProductionMode(true);
         assertNull(DevModeHandler.start(vaadinContext, configuration, npmFolder));

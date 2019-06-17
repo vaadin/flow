@@ -18,7 +18,6 @@ package com.vaadin.flow.server;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -37,13 +36,13 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
-import com.vaadin.flow.function.SerializableRunnable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.server.frontend.WebpackDevServerPort;
+import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.WebpackDevServerPort;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS;
@@ -213,8 +212,12 @@ public class DevModeHandler implements Serializable {
      */
     public static DevModeHandler start(VaadinContext context,
             DeploymentConfiguration configuration, File npmFolder) {
-        atomicHandler.compareAndSet(null, DevModeHandler.createInstance(context,
-                configuration, npmFolder));
+        if (configuration.isProductionMode() || configuration
+                .isCompatibilityMode() || !configuration.enableDevServer()) {
+            return null;
+        }
+        atomicHandler.compareAndSet(null, DevModeHandler
+                .createInstance(context, configuration, npmFolder));
         return getDevModeHandler();
     }
 
@@ -238,9 +241,6 @@ public class DevModeHandler implements Serializable {
 
     private static DevModeHandler createInstance(VaadinContext context,
             DeploymentConfiguration configuration, File npmFolder) {
-        if (configuration.isProductionMode() || configuration.isCompatibilityMode()) {
-            return null;
-        }
 
         File webpack = null;
         File webpackConfig = null;

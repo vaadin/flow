@@ -20,17 +20,22 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
+import elemental.json.Json;
 import elemental.json.JsonObject;
-
+import elemental.json.impl.JsonUtil;
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.assertContainsPackage;
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.getPackageJson;
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.setProject;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
+import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
-import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
 
 public class PrepareFrontendMojoTest {
@@ -48,11 +53,15 @@ public class PrepareFrontendMojoTest {
     private String packageJson;
     private File projectBase;
     private File webpackOutputDirectory;
+    private File tokenFile;
 
 
     @Before
     public void setup() throws Exception {
         projectBase = temporaryFolder.getRoot();
+
+        tokenFile = new File(temporaryFolder.getRoot(),
+                VAADIN_SERVLET_RESOURCES + TOKEN_FILE);
 
         MavenProject project = Mockito.mock(MavenProject.class);
         Mockito.when(project.getBasedir()).thenReturn(projectBase);
@@ -104,6 +113,49 @@ public class PrepareFrontendMojoTest {
         filesInNodeModules.forEach(file -> Assert.assertTrue(String.format(
                 "Expected the copied file '%s' to be in the project resources",
                 file), projectFrontendResources.contains(file.getName())));
+    }
+
+    @Test
+    public void tokenFileShouldExist_noDevModeTokenVisible()
+            throws IOException {
+        mojo.execute();
+        Assert.assertTrue("No token file could be found", tokenFile.exists());
+
+        String json = org.apache.commons.io.FileUtils
+                .readFileToString(tokenFile, "UTF-8");
+        JsonObject buildInfo = JsonUtil.parse(json);
+        Assert.assertNull("No devMode token should be available",
+                buildInfo.get(SERVLET_PARAMETER_ENABLE_DEV_SERVER));
+        Assert.assertNotNull("compatibilityMode token should be available",
+                buildInfo.get(SERVLET_PARAMETER_COMPATIBILITY_MODE));
+        Assert.assertNotNull("productionMode token should be available",
+                buildInfo.get(SERVLET_PARAMETER_PRODUCTION_MODE));
+    }
+
+    @Test
+    public void existingTokenFile_enableDevServerShouldBeRemoved()
+            throws IOException {
+
+        JsonObject initialBuildInfo = Json.createObject();
+        initialBuildInfo.put(SERVLET_PARAMETER_COMPATIBILITY_MODE, false);
+        initialBuildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, false);
+        initialBuildInfo.put(SERVLET_PARAMETER_ENABLE_DEV_SERVER, false);
+        org.apache.commons.io.FileUtils.forceMkdir(tokenFile.getParentFile());
+        org.apache.commons.io.FileUtils
+                .write(tokenFile, JsonUtil.stringify(initialBuildInfo, 2) + "\n",
+                        "UTF-8");
+
+        mojo.execute();
+
+        String json = org.apache.commons.io.FileUtils
+                .readFileToString(tokenFile, "UTF-8");
+        JsonObject buildInfo = JsonUtil.parse(json);
+        Assert.assertNull("No devMode token should be available",
+                buildInfo.get(SERVLET_PARAMETER_ENABLE_DEV_SERVER));
+        Assert.assertNotNull("compatibilityMode token should be available",
+                buildInfo.get(SERVLET_PARAMETER_COMPATIBILITY_MODE));
+        Assert.assertNotNull("productionMode token should be available",
+                buildInfo.get(SERVLET_PARAMETER_PRODUCTION_MODE));
     }
 
     @Test
