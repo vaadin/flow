@@ -15,11 +15,9 @@
  */
 package com.vaadin.flow.component.webcomponent;
 
-import java.io.Serializable;
 import java.util.Map;
 import java.util.Optional;
 
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.ClientCallable;
@@ -28,7 +26,6 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.QueryParameters;
@@ -42,11 +39,7 @@ import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
 import com.vaadin.flow.theme.ThemeUtil;
 
-import elemental.json.Json;
-import elemental.json.JsonException;
 import elemental.json.JsonObject;
-import elemental.json.JsonString;
-import elemental.json.JsonValue;
 
 /**
  * Custom UI for use with WebComponents served from the server.
