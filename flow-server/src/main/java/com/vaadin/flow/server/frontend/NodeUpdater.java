@@ -125,8 +125,11 @@ public abstract class NodeUpdater implements Command {
                 .stream()
                 .filter(file -> {
                     String path = unixPath.apply(file.getPath());
+                    if (path.contains("/node_modules/")) {
+                        return false;
+                    }
                     return excludes.stream().noneMatch(postfix ->
-                            path.endsWith(unixPath.apply(postfix)));
+                    path.endsWith(unixPath.apply(postfix)));
                 })
                 .map(file -> GENERATED_PREFIX + unixPath.apply(baseDir.relativize(file.toURI()).getPath()))
                 .collect(Collectors.toSet());
