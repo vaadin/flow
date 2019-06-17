@@ -11,7 +11,7 @@ class ParentTemplate extends PolymerElement {
             <div>
             <div>Placeholder</div>
             
-            <child-template id="child">
+            <child-template id="child"></child-template>
             
             </div>
             <style>
