@@ -145,6 +145,10 @@ public class DevModeInitializer
             log().debug("Skipping DEV MODE because BOWER MODE is set.");
             return;
         }
+        if(!config.enableDevServer()) {
+            log().debug("Skipping DEV MODE because dev server shouldn't be enabled.");
+            return;
+        }
 
         String baseDir = config.getStringProperty(
                 FrontendUtils.PROJECT_BASEDIR,
