@@ -51,7 +51,8 @@ public final class WebComponentBinding<C extends Component>
     /**
      * Constructs a new {@code WebComponentBinding}. The bound {@link Component}
      * is given via {@code component} parameter. The web component properties
-     * are bound by calling {@link #bindProperty(PropertyConfigurationImpl)};
+     * are bound by calling
+     * {@link #bindProperty(PropertyConfigurationImpl, boolean, elemental.json.JsonValue)};
      *
      * @param component
      *            component which exposes {@code properties} as web component.
