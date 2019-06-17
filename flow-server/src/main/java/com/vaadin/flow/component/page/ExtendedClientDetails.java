@@ -188,7 +188,7 @@ public class ExtendedClientDetails implements Serializable {
 
     /**
      * Gets the inner height of the browser window {@code window.innerHeight} in
-     * pixels. This includes the scrollbar, it is visible.
+     * pixels. This includes the scrollbar, if it is visible.
      *
      * @return the browser window inner height in pixels
      */
@@ -198,7 +198,7 @@ public class ExtendedClientDetails implements Serializable {
 
     /**
      * Gets the inner width of the browser window {@code window.innerWidth} in
-     * pixels. This includes the scrollbar, it is visible.
+     * pixels. This includes the scrollbar, if it is visible.
      * 
      * @return the browser window inner width in pixels
      */

@@ -29,12 +29,12 @@ public class ExtendedClientDetailsIT extends ChromeBrowserTest {
 
         $(TestBenchElement.class).id("fetch-values").click();
 
-        verifyHasNumber("sw");
-        verifyHasNumber("sh");
-        verifyHasNumber("bw");
-        verifyHasNumber("bh");
-        verifyHasNumber("ww");
-        verifyHasNumber("wh");
+        verifyTextMatchesJSExecution("sh", "window.screen.height");
+        verifyTextMatchesJSExecution("sw", "window.screen.width");
+        verifyTextMatchesJSExecution("wh", "window.innerHeight");
+        verifyTextMatchesJSExecution("ww", "window.innerWidth");
+        verifyTextMatchesJSExecution("bh", "document.body.clientHeight");
+        verifyTextMatchesJSExecution("bw", "document.body.clientWidth");
         try {
             Double.parseDouble($(TestBenchElement.class).id("pr").getText());
         } catch (NumberFormatException nfe) {
@@ -65,14 +65,13 @@ public class ExtendedClientDetailsIT extends ChromeBrowserTest {
 
     }
 
-    private void verifyHasNumber(String elementId) {
+    private void verifyTextMatchesJSExecution(String elementId,
+            String jsExecution) {
         String elementText = $(TestBenchElement.class).id(elementId).getText();
-        try {
-            Integer.parseInt(elementText);
-        } catch (NumberFormatException nfe) {
-            Assert.fail(
-                    "Could not parse text <" + elementText + "> as number from "
-                            + "element " + "with ID <" + elementId + ">");
-        }
+        Object executionResult = getCommandExecutor()
+                .executeScript(("return " + jsExecution + ";"));
+        Assert.assertEquals(
+                "reported value did not match js execution for " + elementId,
+                executionResult.toString(), elementText);
     }
 }
