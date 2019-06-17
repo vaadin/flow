@@ -12,7 +12,7 @@ import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.Matchers.isOneOf;
 import static org.hamcrest.Matchers.not;
 
-public class VerifyExtendedClientDetailsIT extends ChromeBrowserTest {
+public class InitialExtendedClientDetailsIT extends ChromeBrowserTest {
 
     private final TypeSafeMatcher<String> isParseableAsInteger() {
         return new TypeSafeMatcher<String>() {
@@ -41,6 +41,14 @@ public class VerifyExtendedClientDetailsIT extends ChromeBrowserTest {
         Assert.assertThat(findElement(By.id("screenWidth")).getText(),
                 isParseableAsInteger());
         Assert.assertThat(findElement(By.id("screenHeight")).getText(),
+                isParseableAsInteger());
+        Assert.assertThat(findElement(By.id("windowInnerWidth")).getText(),
+                isParseableAsInteger());
+        Assert.assertThat(findElement(By.id("windowInnerHeight")).getText(),
+                isParseableAsInteger());
+        Assert.assertThat(findElement(By.id("bodyClientWidth")).getText(),
+                isParseableAsInteger());
+        Assert.assertThat(findElement(By.id("bodyClientHeight")).getText(),
                 isParseableAsInteger());
         Assert.assertThat(findElement(By.id("timezoneOffset")).getText(),
                 isParseableAsInteger());

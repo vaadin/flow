@@ -128,6 +128,12 @@
             /* Screen height and width */
             params['v-sh'] = window.screen.height;
             params['v-sw'] = window.screen.width;
+            /* Browser window dimensions */
+            params['v-wh'] = window.innerHeight;
+            params['v-ww'] = window.innerWidth;
+            /* Body element dimensions */
+					  params['v-bh'] = document.body.clientHeight;
+            params['v-bw'] = document.body.clientWidth;
 
             /* Current time */
             var date = new Date();
@@ -186,6 +192,9 @@
                    || (typeof navigator.msMaxTouchPoints !== 'undefined');
             }
             params['v-td'] = supportsTouch;
+
+            /* Device Pixel Ratio */
+            params['v-pr'] = window.devicePixelRatio;
 
             /* Stringify each value (they are parsed on the server side) */
             Object.keys(params).forEach(function(key) {
