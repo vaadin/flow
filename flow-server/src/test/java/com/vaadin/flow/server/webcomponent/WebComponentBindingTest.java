@@ -22,8 +22,10 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.webcomponent.PropertyConfiguration;
 import com.vaadin.flow.server.webcomponent.PropertyConfigurationImpl;
 
+import elemental.json.Json;
 import elemental.json.JsonValue;
 
 public class WebComponentBindingTest {
@@ -34,13 +36,15 @@ public class WebComponentBindingTest {
     @Before
     public void setUp() {
         component = new MyComponent();
-        binding = new WebComponentBinding(component);
+        binding = new WebComponentBinding<>(component);
         binding.bindProperty(
                 new PropertyConfigurationImpl<>(
-                        MyComponent.class, "int", Integer.class, 0));
+                        MyComponent.class, "int", Integer.class, 0), false,
+                null);
         binding.bindProperty(
                 new PropertyConfigurationImpl<>(
-                        MyComponent.class, "json", JsonValue.class, null));
+                        MyComponent.class, "json", JsonValue.class, null),
+                false, null);
     }
 
     @Test
@@ -62,7 +66,6 @@ public class WebComponentBindingTest {
         Assert.assertTrue(binding.hasProperty("json"));
 
         Assert.assertFalse(binding.hasProperty("not-a-property"));
-
     }
 
     @Tag("tag")

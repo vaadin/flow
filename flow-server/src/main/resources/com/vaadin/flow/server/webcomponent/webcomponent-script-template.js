@@ -17,7 +17,8 @@
   _PropertyMethods_
 
   _sync(property, newValue) {
-    if (this.$server) {
+    // Don't sync, if the web component has not been registered yet
+    if (this.$server && document.body.$[this.$.id] === this) {
       if (!this._propertyUpdatedFromServer[property]) {
         this.$server.sync(property, newValue);
       } else {
@@ -56,7 +57,14 @@
       if (flowRoot && flowRoot.$server) {
         flowRoot.$ = flowRoot.$ || {};
         flowRoot.$[this.$.id] = this;
-        flowRoot.$server.connectWebComponent('_TagDash_', this.$.id);
+        const properties = {};
+        for (var prop in _TagCamel_.properties) {
+          if (prop === "_propertyUpdatedFromServer") {
+            continue;
+          }
+          properties[prop] = this[prop];
+        }
+        flowRoot.$server.connectWebComponent('_TagDash_', this.$.id, properties);
       } else {
         setTimeout(poller, 10);
       }
@@ -72,11 +80,6 @@
   }
 
   serverConnected() {
-    Object.keys(_TagCamel_.properties).forEach(prop => {
-      if (prop !== "_propertyUpdatedFromServer") {
-        this._sync(prop, this[prop]);
-      }
-    });
   }
 }
 

@@ -34,6 +34,8 @@ import com.vaadin.flow.server.MockInstantiator;
 import com.vaadin.flow.server.webcomponent.PropertyData;
 import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 
+import elemental.json.Json;
+import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 public class WebComponentExporterTest {
@@ -84,7 +86,7 @@ public class WebComponentExporterTest {
 
         exporter.addProperty("int", 2);
 
-        Assert.assertEquals("Builder should have one property", 1,
+        Assert.assertEquals("Configuration should have one property", 1,
                 config.getPropertyDataSet().size());
 
         assertProperty(config, "int", 2);
@@ -114,7 +116,7 @@ public class WebComponentExporterTest {
 
         WebComponentBinding<MyComponent> binding = config
                 .createWebComponentBinding(new MockInstantiator(),
-                        mock(Element.class));
+                        mock(Element.class), Json.createObject());
 
         Assert.assertNotNull(binding);
 
@@ -144,7 +146,7 @@ public class WebComponentExporterTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    public void configuration_bindProxy_withInstanceConfigurator() {
+    public void configuration_createWebComponentBinding() {
         exporter = new MyComponentExporter() {
             @Override
             public void configureInstance(
@@ -153,26 +155,46 @@ public class WebComponentExporterTest {
                 component.flop();
             }
         };
+        exporter.addProperty("value", 1).onChange(MyComponent::update);
 
         config = (WebComponentConfiguration<MyComponent>) new WebComponentExporter.WebComponentConfigurationFactory()
                 .create(exporter);
 
         WebComponentBinding<MyComponent> binding = config
                 .createWebComponentBinding(new MockInstantiator(),
-                        mock(Element.class));
+                        mock(Element.class), Json.createObject());
 
         Assert.assertNotNull("Binding should not be null", binding);
         Assert.assertNotNull("Binding's component should not be null",
                 binding.getComponent());
-        Assert.assertTrue("InstanceConfigurator should have set 'flip' to true",
+        Assert.assertTrue("configureInstance() should have set 'flip' to true",
                 binding.getComponent().getFlip());
+        Assert.assertEquals("value should be set to 1 by default",
+                1, binding.getComponent().value);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void configuration_createWebComponentBinding_overridesDefaultValues() {
+        exporter.addProperty("value", 1).onChange(MyComponent::update);
+
+        config = (WebComponentConfiguration<MyComponent>) new WebComponentExporter.WebComponentConfigurationFactory()
+                .create(exporter);
+
+        // attribute: value=2
+        WebComponentBinding<MyComponent> binding = config
+                .createWebComponentBinding(new MockInstantiator(),
+                        mock(Element.class), Json.parse("{\"value\":2}"));
+
+        Assert.assertEquals("attribute should have set default value to two",
+                2, binding.getComponent().value);
     }
 
     @Test
     public void configuration_bindProxy_withoutInstanceConfigurator() {
         WebComponentBinding<MyComponent> binding = config
                 .createWebComponentBinding(new MockInstantiator(),
-                        mock(Element.class));
+                        mock(Element.class), Json.createObject());
 
         Assert.assertNotNull("Binding should not be null", binding);
         Assert.assertNotNull("Binding's component should not be null",
@@ -189,7 +211,7 @@ public class WebComponentExporterTest {
                 .create(sharedTagExporter);
 
         sharedConfig.createWebComponentBinding(new MockInstantiator(),
-                mock(Element.class));
+                mock(Element.class), Json.createObject());
     }
 
     @Test
@@ -217,7 +239,7 @@ public class WebComponentExporterTest {
                 .create(exporter);
 
         config.createWebComponentBinding(new MockInstantiator(),
-                mock(Element.class));
+                mock(Element.class), Json.createObject());
     }
 
     @Test(expected = IllegalStateException.class)
@@ -285,7 +307,6 @@ public class WebComponentExporterTest {
         @Override
         public void configureInstance(WebComponent<MyComponent> webComponent,
                 MyComponent component) {
-
         }
     }
 
