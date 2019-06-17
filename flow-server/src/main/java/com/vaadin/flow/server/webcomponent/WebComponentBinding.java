@@ -62,7 +62,7 @@ public final class WebComponentBinding<C extends Component>
      */
     public WebComponentBinding(C component) {
         Objects.requireNonNull(component,
-                "Parameter 'component' must not be " + "null!");
+                "Parameter 'component' must not be null!");
 
         this.component = component;
     }
@@ -84,7 +84,7 @@ public final class WebComponentBinding<C extends Component>
      */
     public void updateProperty(String propertyName, Serializable value) {
         Objects.requireNonNull(propertyName,
-                "Parameter 'propertyName' must " + "not be null!");
+                "Parameter 'propertyName' must not be null!");
 
         PropertyBinding<?> propertyBinding = properties.get(propertyName);
 
@@ -116,7 +116,7 @@ public final class WebComponentBinding<C extends Component>
      */
     public void updateProperty(String propertyName, JsonValue jsonValue) {
         Objects.requireNonNull(propertyName,
-                "Parameter 'propertyName' must " + "not be null!");
+                "Parameter 'propertyName' must not be null!");
 
         Class<? extends Serializable> propertyType = getPropertyType(
                 propertyName);
@@ -176,11 +176,11 @@ public final class WebComponentBinding<C extends Component>
      * @param propertyConfiguration
      *            property configuration, not {@code null}
      * @param overrideDefault
-     *            set to {@code true} if the default value of the property
-     *            should be replaced with the value given by
-     *            {@code newDefaultValue}
-     * @param newDefaultValue
-     *            new default value for the property. Can be {@code null}.
+     *            set to {@code true} if the property should be initialized
+     *            with {@code startingValue} instead of default value found
+     *            in {@link PropertyData}
+     * @param startingValue
+     *            starting value for the property. Can be {@code null}.
      *            {@code overrideDefault} must be {@code true} for this value to
      *            have any effect
      * @throws NullPointerException
@@ -188,28 +188,22 @@ public final class WebComponentBinding<C extends Component>
      */
     public void bindProperty(
             PropertyConfigurationImpl<C, ? extends Serializable> propertyConfiguration,
-            boolean overrideDefault, JsonValue newDefaultValue) {
+            boolean overrideDefault, JsonValue startingValue) {
         Objects.requireNonNull(propertyConfiguration,
                 "Parameter 'propertyConfiguration' cannot be null!");
 
-        final SerializableBiConsumer<C, Serializable> consumer =
-                propertyConfiguration
+        final SerializableBiConsumer<C, Serializable> consumer = propertyConfiguration
                 .getOnChangeHandler();
 
-        final Serializable serializableDefault =
-                jsonValueToConcreteType(newDefaultValue,
+        final Serializable selectedStartingValue = !overrideDefault ?
+                propertyConfiguration.getPropertyData().getDefaultValue() :
+                jsonValueToConcreteType(startingValue,
                         propertyConfiguration.getPropertyData().getType());
-        // calculate new PropertyData, we'll need to change the default
-        // value, if the user defined a new value in the component's attributes
-        final PropertyData<? extends Serializable> propertyData = !overrideDefault
-                ? propertyConfiguration.getPropertyData()
-                : propertyConfiguration.getPropertyData()
-                        .updateDefaultValue(serializableDefault);
 
-        final PropertyBinding<? extends Serializable> binding =
-                new PropertyBinding<>(
-                propertyData, consumer == null ? null
-                        : value -> consumer.accept(component, value));
+        final PropertyBinding<? extends Serializable> binding = new PropertyBinding<>(
+                propertyConfiguration.getPropertyData(), consumer == null ? null
+                        : value -> consumer.accept(component, value), selectedStartingValue);
+
         properties.put(propertyConfiguration.getPropertyData().getName(),
                 binding);
     }
@@ -226,7 +220,7 @@ public final class WebComponentBinding<C extends Component>
             return value;
         } else {
             throw new IllegalArgumentException(String.format(
-                    "Received '%s' was not convertible" + " to '%s'",
+                    "Received '%s' was not convertible to '%s'",
                     JsonValue.class.getName(), type.getName()));
         }
     }
@@ -237,16 +231,16 @@ public final class WebComponentBinding<C extends Component>
         private SerializableConsumer<P> listener;
         private P value;
 
-        public PropertyBinding(PropertyData<P> data,
-                SerializableConsumer<P> listener) {
+        PropertyBinding(PropertyData<P> data,
+                        SerializableConsumer<P> listener, Serializable startingValue) {
             Objects.requireNonNull(data, "Parameter 'data' must not be null!");
             this.data = data;
             this.listener = listener;
-            this.value = data.getDefaultValue();
+            this.value = (P) startingValue;
         }
 
         @SuppressWarnings("unchecked")
-        public void updateValue(Serializable newValue) {
+        void updateValue(Serializable newValue) {
             if (isReadOnly()) {
                 LoggerFactory.getLogger(getClass())
                         .warn(String.format("An attempt was made to write to "
@@ -301,7 +295,7 @@ public final class WebComponentBinding<C extends Component>
             return data.isReadOnly();
         }
 
-        public void notifyValueChange() {
+        void notifyValueChange() {
             if (listener != null) {
                 listener.accept(this.value);
             }

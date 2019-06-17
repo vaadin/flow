@@ -103,27 +103,6 @@ public final class PropertyData<P extends Serializable>
                 this.defaultValue);
     }
 
-    /**
-     * Creates a copy of {@code this} with the new {@code defaultValue} value.
-     * 
-     * @param defaultValue
-     *            new {@code defaultValue} value
-     * @return copy of {@code this}
-     * @throws IllegalArgumentException
-     *             if {@code defaultValue} does not share type with the previous
-     *             value
-     */
-    public PropertyData<P> updateDefaultValue(Serializable defaultValue) {
-        if (defaultValue != null && !this.type.isAssignableFrom(defaultValue.getClass())) {
-            throw new IllegalArgumentException(String.format(
-                    "Parameter 'defaultValue' of type '%s' cannot be cast to " +
-                            "%s!", defaultValue.getClass().getName(),
-                    this.type.getName()));
-        }
-        return new PropertyData<>(this.name, this.type, this.readOnly,
-                (P) defaultValue);
-    }
-
     @Override
     public int hashCode() {
         return Objects.hash(name, type);
