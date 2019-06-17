@@ -29,7 +29,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DI
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
 
 /**
  * An executor that it's run when the servlet context is initialised in dev-mode
@@ -73,16 +72,6 @@ public class NodeTasks implements Command {
          * Directory where generated files are written.
          */
         public final File generatedFolder;
-
-        /**
-         * Create a builder instance, with everything set as default.
-         *
-         * @param classFinder
-         *            a class finder
-         */
-        public Builder(ClassFinder classFinder) {
-            this(classFinder, new File(getBaseDir()));
-        }
 
         /**
          * Create a builder instance given an specific npm folder.

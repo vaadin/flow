@@ -377,4 +377,5 @@ public interface DeploymentConfiguration extends Serializable {
         return Arrays.asList(getStringProperty(SERVLET_PARAMETER_POLYFILLS,
                 POLYFILLS_DEFAULT_VALUE).split("[, ]+"));
     }
+
 }

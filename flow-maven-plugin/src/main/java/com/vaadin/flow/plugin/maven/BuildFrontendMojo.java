@@ -150,7 +150,8 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                     webpackExecutable.getAbsolutePath()));
         }
 
-        String nodePath = FrontendUtils.getNodeExecutable();
+        String nodePath = FrontendUtils
+                .getNodeExecutable(npmFolder.getAbsolutePath());
 
         Process webpackLaunch = null;
         try {

@@ -25,13 +25,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.vaadin.flow.server.frontend.ClassFinder.DefaultClassFinder;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 
-import com.vaadin.flow.server.frontend.ClassFinder.DefaultClassFinder;
-
 import static com.vaadin.flow.server.DevModeHandler.WEBPACK_SERVER;
-import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
 import static org.junit.Assert.assertNotNull;
 
 public class NodeUpdateTestUtil {
@@ -68,15 +66,17 @@ public class NodeUpdateTestUtil {
     // Creates stub versions of `node` and `npm` in the ./node folder as
     // frontend-maven-plugin does
     // Also creates a stub version of webpack-devmode-server
-    public static void createStubNode(boolean stubNode, boolean stubNpm) throws IOException {
+    public static void createStubNode(boolean stubNode, boolean stubNpm,
+            String baseDir) throws IOException {
 
         if (stubNpm) {
-            File npmCli = new File(getBaseDir(), "node/node_modules/npm/bin/npm-cli.js");
+            File npmCli = new File(baseDir,
+                    "node/node_modules/npm/bin/npm-cli.js");
             FileUtils.forceMkdirParent(npmCli);
             npmCli.createNewFile();
         }
         if (stubNode) {
-            File node = new File(getBaseDir(),
+            File node = new File(baseDir,
                     FrontendUtils.isWindows() ? "node/node.exe" : "node/node");
             node.createNewFile();
             node.setExecutable(true);
@@ -95,8 +95,10 @@ public class NodeUpdateTestUtil {
 
     // Creates a stub webpack-dev-server able to output a ready string, sleep
     // for a while and output arguments passed to a file, so as tests can check it
-    public static void createStubWebpackServer(String readyString, int milliSecondsToRun) throws IOException {
-        File serverFile = new File(getBaseDir(), WEBPACK_SERVER);
+    public static void createStubWebpackServer(String readyString,
+            int milliSecondsToRun, String baseDir)
+            throws IOException {
+        File serverFile = new File(baseDir, WEBPACK_SERVER);
         FileUtils.forceMkdirParent(serverFile);
 
         serverFile.createNewFile();

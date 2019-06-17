@@ -207,60 +207,51 @@ public class FrontendUtils {
     public static boolean isWindows() {
         return getOsName().startsWith("Windows");
     }
-
-    /**
-     * Computes the project root folder. This is useful in case build is
-     * executed from a different working dir or when we want to change it for
-     * testing purposes.
-     *
-     * @return folder location
-     */
-    public static String getBaseDir() {
-        return System.getProperty(PROJECT_BASEDIR,
-                System.getProperty("user.dir", "."));
-    }
-
+    
     /**
      * Locate <code>node</code> executable.
      *
+     * @param baseDir
+     *            project root folder.
+     * 
      * @return the full path to the executable
      */
-    public static String getNodeExecutable() {
+    public static String getNodeExecutable(String baseDir) {
         String command = isWindows() ? "node.exe" : "node";
         String defaultNode = FrontendUtils.isWindows() ? "node/node.exe"
                 : "node/node";
-        return getExecutable(command, defaultNode).getAbsolutePath();
+        return getExecutable(baseDir, command, defaultNode).getAbsolutePath();
     }
 
     /**
      * Locate <code>npm</code> executable.
      *
+     * @param baseDir
+     *            project root folder.
+     *
      * @return the a list of all commands in sequence that need to be executed
      *         to have npm running
      */
-    public static List<String> getNpmExecutable() {
+    public static List<String> getNpmExecutable(String baseDir) {
         // If `node` is not found in PATH, `node/node_modules/npm/bin/npm` will
-        // not work
-        // because it's a shell or windows script that looks for node and will
-        // fail.
-        // Thus we look for the `mpn-cli` node script instead
-        File file = new File(getBaseDir(),
-                "node/node_modules/npm/bin/npm-cli.js");
+        // not work because it's a shell or windows script that looks for node
+        // and will fail. Thus we look for the `mpn-cli` node script instead
+        File file = new File(baseDir, "node/node_modules/npm/bin/npm-cli.js");
         if (file.canRead()) {
             // We return a two element list with node binary and npm-cli script
-            return Arrays.asList(getNodeExecutable(), file.getAbsolutePath());
+            return Arrays.asList(getNodeExecutable(baseDir), file.getAbsolutePath());
         }
         // Otherwise look for regulan `npm`
         String command = isWindows() ? "npm.cmd" : "npm";
-        return Arrays.asList(getExecutable(command, null).getAbsolutePath());
+        return Arrays.asList(getExecutable(baseDir, command, null).getAbsolutePath());
     }
 
-    private static File getExecutable(String cmd, String defaultLocation) {
+    private static File getExecutable(String baseDir, String cmd, String defaultLocation) {
         File file = null;
         try {
             file = defaultLocation == null
                     ? frontendToolsLocator.tryLocateTool(cmd).orElse(null)
-                    : Optional.of(new File(getBaseDir(), defaultLocation))
+                    : Optional.of(new File(baseDir, defaultLocation))
                             .filter(frontendToolsLocator::verifyTool)
                             .orElseGet(() -> frontendToolsLocator
                                     .tryLocateTool(cmd).orElse(null));
@@ -396,11 +387,14 @@ public class FrontendUtils {
     /**
      * Validate that the found node and npm versions are new enough. Throws an
      * exception with a descriptive message if a version is too old.
+     *
+     * @param baseDir
+     *            project root folder.
      */
-    public static void validateNodeAndNpmVersion() {
+    public static void validateNodeAndNpmVersion(String baseDir) {
         try {
             List<String> nodeVersionCommand = new ArrayList<>();
-            nodeVersionCommand.add(FrontendUtils.getNodeExecutable());
+            nodeVersionCommand.add(FrontendUtils.getNodeExecutable(baseDir));
             nodeVersionCommand.add("--version");
             String[] nodeVersion = getVersion("node", nodeVersionCommand);
             validateToolVersion("node", nodeVersion,
@@ -414,7 +408,7 @@ public class FrontendUtils {
 
         try {
             List<String> npmVersionCommand = new ArrayList<>();
-            npmVersionCommand.addAll(FrontendUtils.getNpmExecutable());
+            npmVersionCommand.addAll(FrontendUtils.getNpmExecutable(baseDir));
             npmVersionCommand.add("--version");
             String[] npmVersion = getVersion("npm", npmVersionCommand);
             validateToolVersion("npm", npmVersion,
