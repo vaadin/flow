@@ -14,6 +14,7 @@ public class MockDeploymentConfiguration
     private final String webComponentsPolyfillBase;
 
     private boolean productionMode = false;
+    private boolean enableDevServer = true;
     private boolean compatibilityMode = false;
     private boolean xsrfProtectionEnabled = true;
     private int heartbeatInterval = 300;
@@ -52,6 +53,15 @@ public class MockDeploymentConfiguration
 
     public void setProductionMode(boolean productionMode) {
         this.productionMode = productionMode;
+    }
+
+    public void setEnableDevServer(boolean enableDevServer) {
+        this.enableDevServer = enableDevServer;
+    }
+
+    @Override
+    public boolean enableDevServer() {
+        return enableDevServer;
     }
 
     @Override

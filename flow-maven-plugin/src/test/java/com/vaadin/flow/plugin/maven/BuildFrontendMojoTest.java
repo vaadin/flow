@@ -273,25 +273,20 @@ public class BuildFrontendMojoTest {
         initialBuildInfo.put(SERVLET_PARAMETER_COMPATIBILITY_MODE, false);
         initialBuildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, false);
         org.apache.commons.io.FileUtils.forceMkdir(tokenFile.getParentFile());
-        org.apache.commons.io.FileUtils
-                .write(tokenFile, JsonUtil.stringify(initialBuildInfo, 2) + "\n",
-                        "UTF-8");
+        org.apache.commons.io.FileUtils.write(tokenFile,
+                JsonUtil.stringify(initialBuildInfo, 2) + "\n", "UTF-8");
 
         mojo.execute();
 
-        try {
-            String json = org.apache.commons.io.FileUtils
-                    .readFileToString(tokenFile, "UTF-8");
-            JsonObject buildInfo = JsonUtil.parse(json);
-            Assert.assertNotNull("devMode token should be available",
-                    buildInfo.get(SERVLET_PARAMETER_ENABLE_DEV_SERVER));
-            Assert.assertNotNull("compatibilityMode token should be available",
-                    buildInfo.get(SERVLET_PARAMETER_COMPATIBILITY_MODE));
-            Assert.assertNotNull("productionMode token should be available",
-                    buildInfo.get(SERVLET_PARAMETER_PRODUCTION_MODE));
-        } catch (IOException ioe) {
-            Assert.fail("Failed to read tokenFile " + ioe.getMessage());
-        }
+        String json = org.apache.commons.io.FileUtils
+                .readFileToString(tokenFile, "UTF-8");
+        JsonObject buildInfo = JsonUtil.parse(json);
+        Assert.assertNotNull("devMode token should be available",
+                buildInfo.get(SERVLET_PARAMETER_ENABLE_DEV_SERVER));
+        Assert.assertNotNull("compatibilityMode token should be available",
+                buildInfo.get(SERVLET_PARAMETER_COMPATIBILITY_MODE));
+        Assert.assertNotNull("productionMode token should be available",
+                buildInfo.get(SERVLET_PARAMETER_PRODUCTION_MODE));
     }
 
     @Test

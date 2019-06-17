@@ -116,23 +116,20 @@ public class PrepareFrontendMojoTest {
     }
 
     @Test
-    public void tokenFileShouldExist_noDevModeTokenVisible() {
+    public void tokenFileShouldExist_noDevModeTokenVisible()
+            throws IOException {
         mojo.execute();
         Assert.assertTrue("No token file could be found", tokenFile.exists());
 
-        try {
-            String json = org.apache.commons.io.FileUtils
-                    .readFileToString(tokenFile, "UTF-8");
-            JsonObject buildInfo = JsonUtil.parse(json);
-            Assert.assertNull("No devMode token should be available",
-                    buildInfo.get(SERVLET_PARAMETER_ENABLE_DEV_SERVER));
-            Assert.assertNotNull("compatibilityMode token should be available",
-                    buildInfo.get(SERVLET_PARAMETER_COMPATIBILITY_MODE));
-            Assert.assertNotNull("productionMode token should be available",
-                    buildInfo.get(SERVLET_PARAMETER_PRODUCTION_MODE));
-        } catch (IOException ioe) {
-            Assert.fail("Failed to read tokenFile " + ioe.getMessage());
-        }
+        String json = org.apache.commons.io.FileUtils
+                .readFileToString(tokenFile, "UTF-8");
+        JsonObject buildInfo = JsonUtil.parse(json);
+        Assert.assertNull("No devMode token should be available",
+                buildInfo.get(SERVLET_PARAMETER_ENABLE_DEV_SERVER));
+        Assert.assertNotNull("compatibilityMode token should be available",
+                buildInfo.get(SERVLET_PARAMETER_COMPATIBILITY_MODE));
+        Assert.assertNotNull("productionMode token should be available",
+                buildInfo.get(SERVLET_PARAMETER_PRODUCTION_MODE));
     }
 
     @Test
@@ -150,20 +147,15 @@ public class PrepareFrontendMojoTest {
 
         mojo.execute();
 
-
-        try {
-            String json = org.apache.commons.io.FileUtils
-                    .readFileToString(tokenFile, "UTF-8");
-            JsonObject buildInfo = JsonUtil.parse(json);
-            Assert.assertNull("No devMode token should be available",
-                    buildInfo.get(SERVLET_PARAMETER_ENABLE_DEV_SERVER));
-            Assert.assertNotNull("compatibilityMode token should be available",
-                    buildInfo.get(SERVLET_PARAMETER_COMPATIBILITY_MODE));
-            Assert.assertNotNull("productionMode token should be available",
-                    buildInfo.get(SERVLET_PARAMETER_PRODUCTION_MODE));
-        } catch (IOException ioe) {
-            Assert.fail("Failed to read tokenFile " + ioe.getMessage());
-        }
+        String json = org.apache.commons.io.FileUtils
+                .readFileToString(tokenFile, "UTF-8");
+        JsonObject buildInfo = JsonUtil.parse(json);
+        Assert.assertNull("No devMode token should be available",
+                buildInfo.get(SERVLET_PARAMETER_ENABLE_DEV_SERVER));
+        Assert.assertNotNull("compatibilityMode token should be available",
+                buildInfo.get(SERVLET_PARAMETER_COMPATIBILITY_MODE));
+        Assert.assertNotNull("productionMode token should be available",
+                buildInfo.get(SERVLET_PARAMETER_PRODUCTION_MODE));
     }
 
     @Test
