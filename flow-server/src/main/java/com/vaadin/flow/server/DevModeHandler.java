@@ -36,6 +36,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
+import com.vaadin.flow.function.SerializableRunnable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,7 +95,7 @@ public class DevModeHandler implements Serializable {
 
     private String failedOutput;
 
-    private final Runnable stopProcess;
+    private final SerializableRunnable stopProcess;
 
     /**
      * The local installation path of the webpack-dev-server node script.
@@ -133,10 +134,11 @@ public class DevModeHandler implements Serializable {
         ProcessBuilder processBuilder = new ProcessBuilder()
                 .directory(npmFolder);
 
-        FrontendUtils.validateNodeAndNpmVersion();
+        FrontendUtils.validateNodeAndNpmVersion(npmFolder.getAbsolutePath());
 
         List<String> command = new ArrayList<>();
-        command.add(FrontendUtils.getNodeExecutable());
+        command.add(FrontendUtils.getNodeExecutable(
+                npmFolder.getAbsolutePath()));
         command.add(webpack.getAbsolutePath());
         command.add("--config");
         command.add(webpackConfig.getAbsolutePath());
@@ -154,7 +156,7 @@ public class DevModeHandler implements Serializable {
         }
 
         processBuilder.command(command);
-        Runnable stopCallback = null;
+        SerializableRunnable stopCallback = null;
         try {
             Process webpackProcess = processBuilder
                     .redirectError(ProcessBuilder.Redirect.PIPE)

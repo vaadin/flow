@@ -43,10 +43,9 @@ public class WebComponentTest {
 
     @Before
     public void init() {
-        WebComponentBinding<Component> componentBinding =
-                new WebComponentBinding<>(mock(Component.class));
-        webComponent = new WebComponent<>(componentBinding,
-                new Element("tag"));
+        WebComponentBinding<Component> componentBinding = new WebComponentBinding<>(
+                mock(Component.class));
+        webComponent = new WebComponent<>(componentBinding, new Element("tag"));
     }
 
     @Test
@@ -78,18 +77,17 @@ public class WebComponentTest {
     @Test
     public void setProperty_throwsOnUnknownProperty() {
         exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("WebComponent does not have a property identified");
+        exception.expectMessage(
+                "WebComponent does not have a property identified");
 
-        WebComponentBinding<Component> binding =
-                new WebComponentBinding<>(mock(Component.class));
+        WebComponentBinding<Component> binding = new WebComponentBinding<>(
+                mock(Component.class));
 
-        WebComponent<Component> webComponent =
-                new WebComponent<>(binding,
+        WebComponent<Component> webComponent = new WebComponent<>(binding,
                 new Element("tag"));
 
-        PropertyConfigurationImpl<Component, String> configuration =
-                new PropertyConfigurationImpl<>(
-                        Component.class, "property", String.class, "value");
+        PropertyConfigurationImpl<Component, String> configuration = new PropertyConfigurationImpl<>(
+                Component.class, "property", String.class, "value");
 
         webComponent.setProperty(configuration, "newValue");
     }
@@ -97,24 +95,22 @@ public class WebComponentTest {
     @Test
     public void setProperty_throwsWhenGivenWrongPropertyTypeAsParameter() {
         exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Property 'property' of type " +
-                "'java.lang.Integer' cannot be assigned value of type " +
-                "'java.lang.String'!");
+        exception.expectMessage("Property 'property' of type "
+                + "'java.lang.Integer' cannot be assigned value of type "
+                + "'java.lang.String'!");
 
-        PropertyConfigurationImpl<Component, Integer> intConfiguration =
-        new PropertyConfigurationImpl<>(
+        PropertyConfigurationImpl<Component, Integer> intConfiguration = new PropertyConfigurationImpl<>(
                 Component.class, "property", Integer.class, 0);
 
-        WebComponentBinding<Component> binding =
-                new WebComponentBinding<>(mock(Component.class));
+        WebComponentBinding<Component> binding = new WebComponentBinding<>(
+                mock(Component.class));
         binding.bindProperty(intConfiguration);
 
-        WebComponent<Component> webComponent =
-                new WebComponent<>(binding, new Element("tag"));
+        WebComponent<Component> webComponent = new WebComponent<>(binding,
+                new Element("tag"));
 
-        PropertyConfigurationImpl<Component, String> stringConfiguration =
-                new PropertyConfigurationImpl<>(
-                        Component.class, "property", String.class, "value");
+        PropertyConfigurationImpl<Component, String> stringConfiguration = new PropertyConfigurationImpl<>(
+                Component.class, "property", String.class, "value");
 
         webComponent.setProperty(stringConfiguration, "newValue");
     }
@@ -124,25 +120,20 @@ public class WebComponentTest {
         Element element = spy(new Element("tag"));
 
         // configurations
-        PropertyConfigurationImpl<Component, Integer> intConfiguration =
-                new PropertyConfigurationImpl<>(
-                        Component.class, "int", Integer.class, 0);
-        PropertyConfigurationImpl<Component, Double> doubleConfiguration =
-                new PropertyConfigurationImpl<>(
-                        Component.class, "double", Double.class, 0.0);
-        PropertyConfigurationImpl<Component, String> stringConfiguration =
-                new PropertyConfigurationImpl<>(
-                        Component.class, "string", String.class, "");
-        PropertyConfigurationImpl<Component, Boolean> booleanConfiguration =
-                new PropertyConfigurationImpl<>(
-                        Component.class, "boolean", Boolean.class, false);
-        PropertyConfigurationImpl<Component, JsonValue> jsonConfiguration =
-                new PropertyConfigurationImpl<>(
-                        Component.class, "json", JsonValue.class, Json.createNull());
+        PropertyConfigurationImpl<Component, Integer> intConfiguration = new PropertyConfigurationImpl<>(
+                Component.class, "int", Integer.class, 0);
+        PropertyConfigurationImpl<Component, Double> doubleConfiguration = new PropertyConfigurationImpl<>(
+                Component.class, "double", Double.class, 0.0);
+        PropertyConfigurationImpl<Component, String> stringConfiguration = new PropertyConfigurationImpl<>(
+                Component.class, "string", String.class, "");
+        PropertyConfigurationImpl<Component, Boolean> booleanConfiguration = new PropertyConfigurationImpl<>(
+                Component.class, "boolean", Boolean.class, false);
+        PropertyConfigurationImpl<Component, JsonValue> jsonConfiguration = new PropertyConfigurationImpl<>(
+                Component.class, "json", JsonValue.class, Json.createNull());
 
         // binding
-        WebComponentBinding<Component> binding =
-                new WebComponentBinding<>(mock(Component.class));
+        WebComponentBinding<Component> binding = new WebComponentBinding<>(
+                mock(Component.class));
         binding.bindProperty(intConfiguration);
         binding.bindProperty(doubleConfiguration);
         binding.bindProperty(stringConfiguration);
@@ -154,16 +145,21 @@ public class WebComponentTest {
                 element);
 
         webComponent.setProperty(intConfiguration, 1);
-        verify(element, Mockito.times(1)).executeJavaScript(Matchers.anyString(), Matchers.any(), Matchers.any());
+        verify(element, Mockito.times(1)).executeJs(Matchers.anyString(),
+                Matchers.any(), Matchers.any());
         webComponent.setProperty(doubleConfiguration, 1.0);
-        verify(element, Mockito.times(2)).executeJavaScript(Matchers.anyString(), Matchers.any(), Matchers.any());
+        verify(element, Mockito.times(2)).executeJs(Matchers.anyString(),
+                Matchers.any(), Matchers.any());
         webComponent.setProperty(stringConfiguration, "asd");
-        verify(element, Mockito.times(3)).executeJavaScript(Matchers.anyString(), Matchers.any(), Matchers.any());
+        verify(element, Mockito.times(3)).executeJs(Matchers.anyString(),
+                Matchers.any(), Matchers.any());
         webComponent.setProperty(booleanConfiguration, true);
-        verify(element, Mockito.times(4)).executeJavaScript(Matchers.anyString(), Matchers.any(), Matchers.any());
+        verify(element, Mockito.times(4)).executeJs(Matchers.anyString(),
+                Matchers.any(), Matchers.any());
         // JsonValue has a different number of arguments, so the invocation
         // will be registered to a different overload
         webComponent.setProperty(jsonConfiguration, Json.create(true));
-        verify(element, Mockito.times(1)).executeJavaScript(Matchers.anyString(), Matchers.any());
+        verify(element, Mockito.times(1)).executeJs(Matchers.anyString(),
+                Matchers.any());
     }
 }

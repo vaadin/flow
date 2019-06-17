@@ -37,7 +37,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
-import static com.vaadin.flow.server.frontend.FrontendUtils.getBaseDir;
 
 public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
 
@@ -47,15 +46,14 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
     private TaskUpdateWebpack webpackUpdater;
     private File webpackConfig;
     private File webpackGenerated;
-    File baseDir;
+    private File baseDir;
 
     @Before
     public void setup() throws Exception {
-        System.setProperty("user.dir", temporaryFolder.getRoot().getPath());
+        baseDir = temporaryFolder.getRoot();
 
-        baseDir = new File(getBaseDir());
-
-        NodeUpdateTestUtil.createStubNode(true, true);
+        NodeUpdateTestUtil.createStubNode(true, true,
+                baseDir.getAbsolutePath());
 
         webpackUpdater = new TaskUpdateWebpack(
                 baseDir,

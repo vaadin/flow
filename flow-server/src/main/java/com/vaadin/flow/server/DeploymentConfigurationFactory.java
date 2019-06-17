@@ -198,9 +198,8 @@ public final class DeploymentConfigurationFactory implements Serializable {
                     // property override then the user probably knows what
                     // they are doing.
                 }
-                if (System.getProperty(PROJECT_BASEDIR) == null
-                        && buildInfo.hasKey("npmFolder")) {
-                    System.setProperty(PROJECT_BASEDIR,
+                if (buildInfo.hasKey("npmFolder")) {
+                    initParameters.setProperty(PROJECT_BASEDIR,
                             buildInfo.getString("npmFolder"));
                 }
             }
