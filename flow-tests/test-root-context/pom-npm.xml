@@ -19,7 +19,7 @@
             DependenciesLoadingAnnotationsIT, FrontendInlineApiIT, LongPollingMultipleThreadsIT, 
             LongPollingPushIT, RouteNotFoundIT, WebComponentsIT, EmptyListsIT, 
             InjectedElementInsideMixinBehaviorIT, TemplateHasInjectedSubTemplateIT, 
-            TemplateInTemplateIT, UpgradeElementIT, DebounceSynchronizePropertyIT, 
+            UpgradeElementIT, DebounceSynchronizePropertyIT, 
             ChangeModeIT, LoadingIndicatorIT,TimingInfoReportedIT, ValueChangeModeIT</exclude.it.tests>
     </properties>
 

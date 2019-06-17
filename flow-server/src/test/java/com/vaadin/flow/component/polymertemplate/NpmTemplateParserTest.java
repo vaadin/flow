@@ -1,8 +1,11 @@
 package com.vaadin.flow.component.polymertemplate;
 
 import java.util.Collections;
+import java.util.Locale;
 
 import org.jsoup.UncheckedIOException;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,6 +17,7 @@ import org.mockito.stubbing.Answer;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
@@ -41,8 +45,8 @@ public class NpmTemplateParserTest {
         Mockito.when(service.getClassLoader())
                 .thenAnswer(invocation -> this.getClass().getClassLoader());
         Mockito.when(service.getContext()).thenReturn(context);
-        Mockito.when(configuration
-                .getStringProperty(Mockito.anyString(), Mockito.anyString()))
+        Mockito.when(configuration.getStringProperty(Mockito.anyString(),
+                Mockito.anyString()))
                 .thenAnswer((Answer<String>) invocation -> {
                     Object[] args = invocation.getArguments();
                     return (String) args[1];
@@ -68,16 +72,16 @@ public class NpmTemplateParserTest {
 
         Assert.assertEquals(
                 "Template element should have contained a div element with the id 'test'",
-                "div",
-                templateContent.getTemplateElement().getElementById("test")
-                        .tag().toString());
+                "div", templateContent.getTemplateElement()
+                        .getElementById("test").tag().toString());
     }
 
     @Test
     public void should_FindCorrectDataInBeverageStats() {
-        Mockito.when(configuration
-                .getStringProperty(Mockito.anyString(), Mockito.anyString()))
-                .thenReturn(VAADIN_SERVLET_RESOURCES + "config/stats-beverage.json");
+        Mockito.when(configuration.getStringProperty(Mockito.anyString(),
+                Mockito.anyString()))
+                .thenReturn(VAADIN_SERVLET_RESOURCES
+                        + "config/stats-beverage.json");
 
         TemplateParser instance = NpmTemplateParser.getInstance();
         TemplateParser.TemplateData templateContent = instance
@@ -88,14 +92,13 @@ public class NpmTemplateParserTest {
                 "likeable-element",
                 templateContent.getTemplateElement().parent().id());
 
-        Assert.assertEquals("Expected template element to have 29 children", 29,
+        Assert.assertEquals("Expected template element to have 2 children", 2,
                 templateContent.getTemplateElement().childNodeSize());
 
         Assert.assertEquals(
                 "Template element should have contained a div element with the id 'search'",
-                "vaadin-text-field",
-                templateContent.getTemplateElement().getElementById("search")
-                        .tag().toString());
+                "vaadin-text-field", templateContent.getTemplateElement()
+                        .getElementById("search").tag().toString());
     }
 
     @Test
@@ -114,15 +117,14 @@ public class NpmTemplateParserTest {
 
         Assert.assertEquals(
                 "Template element should have contained a div element with the id 'test'",
-                "div",
-                templateContent.getTemplateElement().getElementById("test")
-                        .tag().toString());
+                "div", templateContent.getTemplateElement()
+                        .getElementById("test").tag().toString());
     }
 
     @Test(expected = UncheckedIOException.class)
     public void should_throwException_when_LocalFileNotFound() {
-        Mockito.when(configuration
-                .getStringProperty(Mockito.anyString(), Mockito.anyString()))
+        Mockito.when(configuration.getStringProperty(Mockito.anyString(),
+                Mockito.anyString()))
                 .thenReturn("META-INF/resources/foo-bar.json");
         TemplateParser instance = NpmTemplateParser.getInstance();
         instance.getTemplateContent(FooView.class, "foo-view", service);
@@ -136,35 +138,40 @@ public class NpmTemplateParserTest {
 
     @Test
     public void sourceFileWithFaultyTemplateGetter_shouldJustReturnEmptyTemplateElement() {
-        // If the template getter can not be found it should result in no template element children
-        Mockito.when(configuration.getStringProperty(Mockito.anyString(), Mockito.anyString()))
+        // If the template getter can not be found it should result in no
+        // template element children
+        Mockito.when(configuration.getStringProperty(Mockito.anyString(),
+                Mockito.anyString()))
                 .thenReturn(VAADIN_SERVLET_RESOURCES + "config/stats.json");
         TemplateParser.TemplateData templateContent = NpmTemplateParser
-                .getInstance()
-                .getTemplateContent(LikeableFaulty.class, "likeable-element",
-                        service);
+                .getInstance().getTemplateContent(LikeableFaulty.class,
+                        "likeable-element", service);
 
-        Assert.assertEquals("Faulty template getter should not find elements", 0, templateContent.getTemplateElement().childNodeSize());
+        Assert.assertEquals("Faulty template getter should not find elements",
+                0, templateContent.getTemplateElement().childNodeSize());
     }
 
     @Test
     public void faultyTemplateStyle_shouldReturnEmptyTemplateElement() {
-        // Template with no closing style tag should parse as one big style tag and thus
+        // Template with no closing style tag should parse as one big style tag
+        // and thus
         // the document body should have no elements.
-        Mockito.when(configuration.getStringProperty(Mockito.anyString(), Mockito.anyString()))
+        Mockito.when(configuration.getStringProperty(Mockito.anyString(),
+                Mockito.anyString()))
                 .thenReturn(VAADIN_SERVLET_RESOURCES + "config/stats.json");
         TemplateParser.TemplateData templateContent = NpmTemplateParser
-                .getInstance()
-                .getTemplateContent(LikeableBroken.class, "likeable-element",
-                        service);
+                .getInstance().getTemplateContent(LikeableBroken.class,
+                        "likeable-element", service);
 
-        Assert.assertEquals("Faulty html should not find elements", 0,templateContent.getTemplateElement().childNodeSize());
+        Assert.assertEquals("Faulty html should not find elements", 0,
+                templateContent.getTemplateElement().childNodeSize());
     }
 
     @Test
     public void bableStats_shouldAlwaysParseCorrectly() {
-        Mockito.when(configuration.getStringProperty(Mockito.anyString(), Mockito.anyString()))
-                .thenReturn(VAADIN_SERVLET_RESOURCES + "config/babel_stats.json");
+        Mockito.when(configuration.getStringProperty(Mockito.anyString(),
+                Mockito.anyString())).thenReturn(
+                        VAADIN_SERVLET_RESOURCES + "config/babel_stats.json");
         TemplateParser instance = NpmTemplateParser.getInstance();
         TemplateParser.TemplateData templateContent = instance
                 .getTemplateContent(MyComponent.class, "my-component", service);
@@ -178,15 +185,65 @@ public class NpmTemplateParserTest {
 
         Assert.assertEquals(
                 "Template element should have contained a div element with the id 'button'",
-                "button",
-                templateContent.getTemplateElement().getElementById("button")
-                        .tag().toString());
+                "button", templateContent.getTemplateElement()
+                        .getElementById("button").tag().toString());
 
         Assert.assertEquals(
                 "Template element should have contained a div element with the id 'content'",
-                "div",
-                templateContent.getTemplateElement().getElementById("content")
-                        .tag().toString());
+                "div", templateContent.getTemplateElement()
+                        .getElementById("content").tag().toString());
+    }
+
+    /*
+     * This example is for :
+     *
+     * @formatter:off
+     * <pre>
+     * <code>
+     * static get template() {
+        return html`
+           <div>Parent Template</div>
+            <div>
+            <div>Placeholder</div>
+
+            <child-template id="child"></child-template>
+
+            </div>
+            <style>
+
+                parent-template {
+                    width: 100%;
+                }
+            </style>
+    `;
+      }
+      </code>
+     * </pre>
+     *
+     * @formatter:on
+     */
+    @Test
+    public void hierarchicalTemplate_templateHasChild_childHasCorrectPosition() {
+        Mockito.when(configuration.getStringProperty(Mockito.anyString(),
+                Mockito.anyString()))
+                .thenReturn(VAADIN_SERVLET_RESOURCES
+                        + "config/template-in-template-stats.json");
+        TemplateParser instance = NpmTemplateParser.getInstance();
+        TemplateParser.TemplateData templateContent = instance
+                .getTemplateContent(ParentTemplate.class, "parent-template",
+                        service);
+
+        Element templateElement = templateContent.getTemplateElement();
+        Assert.assertEquals(3, templateElement.children().size());
+        Element parentDiv = templateElement.child(1);
+        Assert.assertEquals("div",
+                parentDiv.tag().getName().toLowerCase(Locale.ENGLISH));
+        Elements children = parentDiv.children();
+        Assert.assertEquals(2, children.size());
+        Assert.assertEquals("div",
+                parentDiv.child(0).tag().getName().toLowerCase(Locale.ENGLISH));
+        Assert.assertEquals("child-template",
+                parentDiv.child(1).tag().getName().toLowerCase(Locale.ENGLISH));
     }
 
     @Tag("likeable-element")
@@ -223,5 +280,18 @@ public class NpmTemplateParserTest {
     @Tag("likeable-element")
     @JsModule("./my-component.js")
     public class MyComponent extends PolymerTemplate<TemplateModel> {
+    }
+
+    @JsModule("./ParentTemplate.js")
+    @Tag("parent-template")
+    @Uses(ChildTemplate.class)
+    public class ParentTemplate extends PolymerTemplate<TemplateModel> {
+
+    }
+
+    @JsModule("./ChildTemplate.js")
+    @Tag("child-template")
+    public class ChildTemplate extends PolymerTemplate<TemplateModel> {
+
     }
 }
