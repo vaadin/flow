@@ -383,7 +383,7 @@ public interface DeploymentConfiguration extends Serializable {
      *
      * @return true if dev server should be used
      */
-    default boolean runDevServer() {
+    default boolean enableDevServer() {
         return getBooleanProperty(
                 Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER, true);
     }

@@ -210,9 +210,12 @@ public class DevModeHandler implements Serializable {
      */
     public static DevModeHandler start(VaadinContext context,
             DeploymentConfiguration configuration, File npmFolder) {
-        atomicHandler.compareAndSet(null, DevModeHandler.createInstance(context,
-                configuration, npmFolder));
-        return getDevModeHandler();
+        if(configuration.enableDevServer()) {
+            atomicHandler.compareAndSet(null, DevModeHandler
+                    .createInstance(context, configuration, npmFolder));
+            return getDevModeHandler();
+        }
+        return null;
     }
 
     /**
@@ -236,7 +239,7 @@ public class DevModeHandler implements Serializable {
     private static DevModeHandler createInstance(VaadinContext context,
             DeploymentConfiguration configuration, File npmFolder) {
         if (configuration.isProductionMode() || configuration
-                .isCompatibilityMode() || !configuration.runDevServer()) {
+                .isCompatibilityMode()) {
             return null;
         }
 
