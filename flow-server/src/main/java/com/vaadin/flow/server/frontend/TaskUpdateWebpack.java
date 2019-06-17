@@ -88,10 +88,14 @@ public class TaskUpdateWebpack implements Command {
 
         // If we have an old config file we remove it and create the new one using the webpack.generated.js
         if (configFile.exists()) {
-            if (!FileUtils.readFileToString(configFile, "UTF-8").contains(
-                    "const flowDefaults = require('./webpack.generated.js');")) {
-                log().info("Webpack configuration was outdated, removing file: " + configFile);
-                configFile.delete();
+            if (!FileUtils.readFileToString(configFile, "UTF-8")
+                    .contains("./webpack.generated.js")) {
+                log().warn(
+                        "Flow generated webpack configuration was not mentioned "
+                                + "in the configuration file: {}."
+                                + "Please verify that './webpack.generated.js' is used "
+                                + "in the merge or remove the file to generate a new one.",
+                        configFile);
             }
         }
 

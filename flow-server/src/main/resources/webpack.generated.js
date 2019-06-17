@@ -31,6 +31,13 @@ const mkdirp = require('mkdirp');
 mkdirp(buildFolder);
 mkdirp(confFolder);
 
+
+exports = {
+  frontendFolder: `${frontendFolder}`,
+  buildFolder: `${buildFolder}`,
+  confFolder: `${confFolder}`
+}
+
 module.exports = {
   mode: 'production',
   context: frontendFolder,
