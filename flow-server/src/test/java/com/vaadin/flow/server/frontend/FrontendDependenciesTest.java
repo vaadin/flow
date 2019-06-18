@@ -14,7 +14,10 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.frontend.ClassFinder.DefaultClassFinder;
+import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.BridgeClass;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Component0;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Component1;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Component2;
@@ -25,13 +28,18 @@ import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.RootVi
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.RootViewWithTheme;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.RootViewWithoutTheme;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.RootViewWithoutThemeAnnotation;
+import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.RoutedClass;
+import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.RoutedClassWithAnnotations;
+import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.RoutedClassWithoutAnnotations;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.SecondView;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Theme1;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Theme2;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Theme4;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.ThemeExporter;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.ThirdView;
-import com.vaadin.flow.theme.AbstractTheme;
+import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.UnAnnotatedClass;
+import com.vaadin.flow.shared.ui.LoadMode;
+import com.vaadin.flow.theme.NoTheme;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -40,7 +48,6 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 public class FrontendDependenciesTest {
 
@@ -293,5 +300,33 @@ public class FrontendDependenciesTest {
 
         new FrontendDependencies(finder);
         verify(finder, times(0)).loadClass(FrontendDependencies.LUMO);
+    }
+
+    @Test
+    public void should_notVisitNonAnnotatredClasses() throws Exception {
+        FrontendDependencies deps = create(UnAnnotatedClass.class);
+        assertEquals(0, deps.irrelevantClasses.size());
+        assertEquals(0, deps.endPoints.size());
+    }
+
+    @Test
+    public void should_cacheIrrelevantClasses() throws Exception {
+        FrontendDependencies deps = create(RoutedClassWithoutAnnotations.class);
+        assertEquals(1, deps.endPoints.size());
+        assertEquals(2, deps.irrelevantClasses.size());
+        assertTrue(deps.irrelevantClasses.contains(Route.class.getName()));
+        assertTrue(deps.irrelevantClasses.contains(RoutedClassWithoutAnnotations.class.getName()));
+    }
+
+    @Test
+    public void should_cacheSuperIrrelevantClasses() throws Exception {
+        FrontendDependencies deps = create(RoutedClass.class);
+        assertEquals(1, deps.endPoints.size());
+        assertEquals(6, deps.irrelevantClasses.size());
+        assertTrue(deps.irrelevantClasses.contains(Route.class.getName()));
+        assertTrue(deps.irrelevantClasses.contains(NoTheme.class.getName()));
+        assertTrue(deps.irrelevantClasses.contains(RoutedClassWithoutAnnotations.class.getName()));
+        assertTrue(deps.irrelevantClasses.contains(LoadMode.class.getName()));
+        assertTrue(deps.irrelevantClasses.contains(JsModule.class.getName()));
     }
 }
