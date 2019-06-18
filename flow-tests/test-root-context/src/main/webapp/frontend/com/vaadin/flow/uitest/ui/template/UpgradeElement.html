@@ -24,5 +24,11 @@
         class MyTemplate extends Polymer.Element {
             static get is() { return 'upgrade-element' }
         }
+        
+        window.MyTemplate = MyTemplate;
+
+        customElements.whenDefined('upgrade-element').then(function () {
+            window.upgradeElementDefined = true;
+        });
     </script>
 </dom-module>

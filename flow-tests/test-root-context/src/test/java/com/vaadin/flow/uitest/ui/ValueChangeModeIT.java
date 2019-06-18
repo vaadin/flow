@@ -8,6 +8,8 @@ import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.data.value.ValueChangeMode;
 
+import com.vaadin.flow.data.value.ValueChangeMode;
+
 public class ValueChangeModeIT extends AbstractDebounceSynchronizeIT {
 
     private WebElement input;
@@ -61,7 +63,8 @@ public class ValueChangeModeIT extends AbstractDebounceSynchronizeIT {
     }
 
     private void toggleMode(ValueChangeMode mode) {
-        findElement(By.id(mode.name())).click();
+        WebElement modeButton = findElement(By.id(mode.name()));
+        modeButton.click();
     }
 
 }

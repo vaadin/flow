@@ -17,10 +17,11 @@
 
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
+
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class LongPollingMultipleThreadsIT extends ChromeBrowserTest {
 
@@ -28,9 +29,17 @@ public class LongPollingMultipleThreadsIT extends ChromeBrowserTest {
     public void openPage_startUpdatingLabelThrowThreads_thereAreNoErrorsInTheConsole() {
         open();
         WebElement button = findElement(By.id("start-button"));
-        for(int i = 0; i < 10; i ++){
+        for (int i = 0; i < 10; i++) {
             button.click();
-            checkLogsForErrors();
+            /*
+             * SockJS client may try to connect to sockjs node server:
+             * https://github.com/sockjs/sockjs-node/blob/master/README.md.
+             *
+             * This entry may be ignored.
+             */
+
+            checkLogsForErrors(msg -> msg.contains("sockjs-node")
+                    || msg.contains("[WDS] Disconnected!"));
         }
 
     }

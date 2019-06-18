@@ -30,18 +30,27 @@ public class LongPollingPushIT extends ChromeBrowserTest {
     @Test
     public void openPage_thereAreNoErrorsInTheConsole() {
         open();
-        checkLogsForErrors();
+        checkLogsForErrors(msg -> msg.contains("sockjs-node")
+                || msg.contains("[WDS] Disconnected!"));
 
         waitForElementNotPresent(By.id("child"));
 
         WebElement button = findElement(By.id("visibility"));
+
         button.click();
 
         waitForElementPresent(By.id("child"));
-
         WebElement span = findElement(By.id("child"));
-        Assert.assertEquals("Some text", span.getText());
-        checkLogsForErrors();
+
+        Assert.assertEquals("Some text", span.getAttribute("innerHTML"));
+        /*
+         * SockJS client may try to connect to sockjs node server:
+         * https://github.com/sockjs/sockjs-node/blob/master/README.md.
+         *
+         * This entry may be ignored.
+         */
+        checkLogsForErrors(msg -> msg.contains("sockjs-node")
+                || msg.contains("[WDS] Disconnected!"));
     }
 
 }
