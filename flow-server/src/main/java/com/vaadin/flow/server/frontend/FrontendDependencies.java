@@ -480,7 +480,8 @@ public class FrontendDependencies implements Serializable {
                 !className.matches(
                     "(^$|"
                     + ".*(slf4j).*|"
-                    + "^(java|sun|elemental|org.(apache|atmosphere|jsoup|jboss|w3c|spring)|com.(helger|spring|gwt)).*|"
+                    // #5803
+                    + "^(java|sun|elemental|javax|org.(apache|atmosphere|jsoup|jboss|w3c|spring|joda|hibernate|glassfish|hsqldb)|com.(helger|spring|gwt|lowagie|fasterxml)|net.(sf|bytebuddy)).*|"
                     + ".*(Exception)$"
                     + ")"); // @formatter:on
     }
