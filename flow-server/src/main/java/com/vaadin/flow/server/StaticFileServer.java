@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.regex.Pattern;
 
 import static com.vaadin.flow.server.Constants.VAADIN_BUILD_FILES_PATH;
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
@@ -45,6 +46,8 @@ import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_STATIC_FILES_PA
  * @since 1.0
  */
 public class StaticFileServer implements StaticFileHandler {
+    private static final Pattern INCORRECT_WEBJAR_PATH = Pattern
+            .compile("^/frontend[-\\w]*/webjars/");
     private final ResponseWriter responseWriter;
     private final VaadinServletService servletService;
     private DeploymentConfiguration deploymentConfiguration;
@@ -80,6 +83,12 @@ public class StaticFileServer implements StaticFileHandler {
         }
         resource = servletService.getStaticResource(requestFilename);
 
+        if (resource == null && deploymentConfiguration.isProductionMode()
+                && isIncorrectWebjarPathFromProduction(requestFilename)) {
+            // Flow issue #4601
+            return true;
+        }
+
         return resource != null;
     }
 
@@ -97,6 +106,13 @@ public class StaticFileServer implements StaticFileHandler {
         if (resourceUrl == null) {
             resourceUrl = servletService.getStaticResource(filenameWithPath);
         }
+        if (resourceUrl == null && deploymentConfiguration.isProductionMode()
+                && isIncorrectWebjarPathFromProduction(filenameWithPath)) {
+            // Flow issue #4601
+            resourceUrl = servletService.getStaticResource(
+                    sanitizeIncorrectWebjarPath(filenameWithPath));
+        }
+
         if (resourceUrl == null) {
             // Not found in webcontent or in META-INF/resources in some JAR
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -119,6 +135,28 @@ public class StaticFileServer implements StaticFileHandler {
         responseWriter.writeResponseContents(filenameWithPath, resourceUrl,
                 request, response);
         return true;
+    }
+
+    // When referring to webjar resources from application stylesheets (loaded
+    // using @StyleSheet) using relative paths, the paths will be different in
+    // development mode and in production mode. The reason is that in production
+    // mode, the CSS is incorporated into the bundle and when this happens,
+    // the relative paths are changed so that they end up pointing to paths like
+    // 'frontend-es6/webjars' instead of just 'webjars'.
+
+    // These paths are changed deep inside the Polymer build chain. It was
+    // easier to fix the StaticFileServer to take the incorrect path names
+    // into account than fixing the Polymer build chain to generate correct
+    // paths. Hence, these two methods:
+
+    private boolean isIncorrectWebjarPathFromProduction(
+            String requestFilename) {
+        return INCORRECT_WEBJAR_PATH.matcher(requestFilename).lookingAt();
+    }
+
+    private String sanitizeIncorrectWebjarPath(String requestFilename) {
+        return INCORRECT_WEBJAR_PATH.matcher(requestFilename)
+                .replaceAll("/webjars/");
     }
 
     /**
