@@ -246,7 +246,7 @@ public class VaadinServletContextInitializer
                     .createDeploymentConfiguration(event.getServletContext(),
                             servletRegistrationBean, SpringServlet.class);
 
-            if (config.isCompatibilityMode() || config.isProductionMode()) {
+            if (config.isCompatibilityMode() || config.isProductionMode() || !config.enableDevServer()) {
                 return;
             }
 
@@ -477,7 +477,7 @@ public class VaadinServletContextInitializer
                         "net/bytebuddy", "org/apache", "org/aspectj",
                         "org/dom4j", "org/easymock", "org/hamcrest",
                         "org/hibernate", "org/javassist", "org/jboss",
-                        "org/jsoup", "org/seleniumhq", "org/slf4j",
+                        "org/jsoup", "org/seleniumhq", "org/slf4j", "org/atmosphere",
                         "org/springframework", "org/webjars/bowergithub",
                         "org/yaml").collect(Collectors.toList());
 
