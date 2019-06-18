@@ -3159,7 +3159,8 @@ public class RouterTest extends RoutingTestBase {
         String exceptionText2 =
             String.format("Reason: Couldn't find route for '%s'", locationString);
 
-        String exceptionText3 = "(supports optional parameter)";
+        String exceptionText3 =
+            "<li><a href=\"optional\">optional (supports optional parameter)</a></li>";
 
         assertExceptionComponent(
             RouteNotFoundError.class, exceptionText1, exceptionText2, exceptionText3);
@@ -3182,7 +3183,7 @@ public class RouterTest extends RoutingTestBase {
         String exceptionText2 =
             String.format("Reason: Couldn't find route for '%s'", locationString);
 
-        String exceptionText3 = "(requires parameter)";
+        String exceptionText3 = "<li>optional (requires parameter)</li>";
 
         assertExceptionComponent(
             RouteNotFoundError.class, exceptionText1, exceptionText2, exceptionText3);

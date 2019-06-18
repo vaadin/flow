@@ -112,7 +112,7 @@ public class RouteNotFoundError extends Component
                 text = text + " (supports optional parameter)";
                 return elementAsLink(route.getUrl(), text);
             } else {
-                return new Element(Tag.LI).text(text + "1(requires parameter)");
+                return new Element(Tag.LI).text(text + " (requires parameter)");
             }
         }
     }
