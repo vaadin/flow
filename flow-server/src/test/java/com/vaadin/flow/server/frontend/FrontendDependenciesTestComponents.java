@@ -16,6 +16,8 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
@@ -241,4 +243,26 @@ public class FrontendDependenciesTestComponents {
 
         }
     }
+
+
+    public static class UnAnnotatedClass {
+    }
+
+    @Route
+    public static class RoutedClassWithoutAnnotations {
+    }
+
+    @Route("route-1")
+    @NoTheme
+    @JsModule("./foo")
+    public static class RoutedClassWithAnnotations extends RoutedClassWithoutAnnotations {
+    }
+
+    public static class BridgeClass extends RoutedClassWithAnnotations {
+    }
+
+    @Route("route-2")
+    public static class RoutedClass extends BridgeClass {
+    }
+
 }

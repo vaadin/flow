@@ -111,11 +111,11 @@ public class FrontendDependencies implements Serializable {
     }
 
     private final ClassFinder finder;
-    private final HashMap<String, EndPointData> endPoints = new HashMap<>();
+    final HashMap<String, EndPointData> endPoints = new HashMap<>();
     private ThemeDefinition themeDefinition;
     private AbstractTheme themeInstance;
     private final HashMap<String, String> packages = new HashMap<>();
-    private final Set<String> irrelevantClasses = new HashSet<>();
+    final Set<String> irrelevantClasses = new HashSet<>();
 
     /**
      * Default Constructor.
@@ -143,6 +143,7 @@ public class FrontendDependencies implements Serializable {
             boolean generateEmbeddableWebComponents) {
         log().info(
                 "Scanning classes to find frontend configurations and dependencies...");
+        long start = System.nanoTime();
         this.finder = finder;
         try {
             computeEndpoints();
@@ -150,6 +151,7 @@ public class FrontendDependencies implements Serializable {
             if (generateEmbeddableWebComponents) {
                 computeExporters();
             }
+            log().info("took " + (System.nanoTime() - start) / 1000000 + "ms.");
         } catch (ClassNotFoundException | InstantiationException
                 | IllegalAccessException | IOException e) {
             throw new IllegalStateException(
@@ -437,6 +439,8 @@ public class FrontendDependencies implements Serializable {
             return endPoint;
         }
 
+        int previousDataHash = endPoint.dataHash();
+
         FrontendClassVisitor visitor = new FrontendClassVisitor(className,
                 endPoint);
         ClassReader cr = new ClassReader(url.openStream());
@@ -454,7 +458,7 @@ public class FrontendDependencies implements Serializable {
             visitClass(endPoint.getTheme().getName(), endPoint);
         }
 
-        if (!endPoint.hasData()) {
+        if (previousDataHash == endPoint.dataHash()) {
             irrelevantClasses.add(className);
         }
 

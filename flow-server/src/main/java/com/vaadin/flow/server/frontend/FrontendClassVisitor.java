@@ -105,12 +105,8 @@ class FrontendClassVisitor extends ClassVisitor {
             return classes;
         }
 
-        boolean hasData() {
-            boolean hasTheme = theme.name != null || theme.notheme;
-            boolean hasScriptsOrModules = modules.size() > 0
-                    || scripts.size() > 0;
-
-            return hasTheme || layout != null || hasScriptsOrModules;
+        int dataHash() {
+            return Objects.hash(theme.name, theme.notheme, modules, scripts, layout);
         }
 
         ThemeData getTheme() {
