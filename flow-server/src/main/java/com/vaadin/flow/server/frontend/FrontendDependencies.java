@@ -111,11 +111,11 @@ public class FrontendDependencies implements Serializable {
     }
 
     private final ClassFinder finder;
-    final HashMap<String, EndPointData> endPoints = new HashMap<>();
+    private final HashMap<String, EndPointData> endPoints = new HashMap<>();
     private ThemeDefinition themeDefinition;
     private AbstractTheme themeInstance;
     private final HashMap<String, String> packages = new HashMap<>();
-    final Set<String> irrelevantClasses = new HashSet<>();
+    private final Set<String> irrelevantClasses = new HashSet<>();
 
     /**
      * Default Constructor.
@@ -151,7 +151,8 @@ public class FrontendDependencies implements Serializable {
             if (generateEmbeddableWebComponents) {
                 computeExporters();
             }
-            log().info("took " + (System.nanoTime() - start) / 1000000 + "ms.");
+            long ms = (System.nanoTime() - start) / 1000000;
+            log().info("took " + ms + "ms.");
         } catch (ClassNotFoundException | InstantiationException
                 | IllegalAccessException | IOException e) {
             throw new IllegalStateException(
