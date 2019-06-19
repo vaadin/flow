@@ -266,11 +266,7 @@ public class Location implements Serializable {
     private static List<String> parsePath(String path) {
         final String basePath;
         int endIndex = path.indexOf(QUERY_SEPARATOR);
-        if (endIndex == 0) {
-            throw new IllegalArgumentException("Location '" + path
-                    + "' is incorrect, it cannot start with " + QUERY_SEPARATOR
-                    + " symbol");
-        } else if (endIndex > 0) {
+        if (endIndex >= 0) {
             basePath = path.substring(0, endIndex);
         } else {
             basePath = path;
