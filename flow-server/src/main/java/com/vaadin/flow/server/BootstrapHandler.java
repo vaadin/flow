@@ -851,6 +851,13 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         private void appendNpmBundle(Element head, VaadinService service)
                 throws IOException {
             String content = FrontendUtils.getStatsContent(service);
+            if (content == null) {
+                throw new IOException(
+                        "The stats file from webpack (stats.json) was not found.\n"
+                        + "This typically mean that you have started the application without executing the 'prepare-frontend' Maven target.\n"
+                        + "If you are using Spring Boot and are launching the Application class directly, "
+                        + "you need to run \"mvn install\" once first or launch the application using \"mvn spring-boot:run\"");
+            }
             JsonObject chunks = Json.parse(content)
                     .getObject("assetsByChunkName");
 
