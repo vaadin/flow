@@ -42,6 +42,7 @@ public class ApplicationConfiguration {
     private String servletVersion;
     private String atmosphereVersion;
     private String atmosphereJSVersion;
+    private String[] exportedWebComponents;
 
     /**
      * Gets the id generated for the application.
@@ -314,4 +315,22 @@ public class ApplicationConfiguration {
         this.frontendRootUrl = frontendRootUrl;
     }
 
+    /**
+     * Sets the exported web components.
+     *
+     * @param exportedWebComponents
+     *            the exported web components
+     */
+    public void setExportedWebComponents(String[] exportedWebComponents) {
+        this.exportedWebComponents = exportedWebComponents;
+    }
+
+    /**
+     * Gets the exported web components.
+     *
+     * @return the exported web components
+     */
+    public String[] getExportedWebComponents() {
+        return exportedWebComponents;
+    }
 }
