@@ -78,21 +78,23 @@ class _TagCamel_ extends HTMLElement {
       if (!this.$.id) {
         this._registerElement();
       } else {
+        console.debug('reconnecting ',this,' using id '+this.$.id);
         this.$server.reconnect();
       }
-      console.debug('connected', this);
-
   }
 
   _registerElement() {
     this.$.id = "_TagCamel_-" + _TagCamel_.id++;
     const flowRoot = document.body;
+    console.debug('registering ',this,' using id '+this.$.id);
+
     // Needed to make Flow do lookup correctly
     const poller = () => {
-      if (flowRoot && flowRoot.$server) {
+      var flowClient = this._getClient();
+      if (flowClient && flowClient.connectWebComponent) {
         flowRoot.$ = flowRoot.$ || {};
         flowRoot.$[this.$.id] = this;
-        flowRoot.$server.connectWebComponent('_TagDash_', this.$.id, _PropertyValues_);
+        flowClient.connectWebComponent({tag: '_TagDash_', id: this.$.id, attributeValues: _PropertyValues_});
       } else {
         setTimeout(poller, 10);
       }
@@ -100,7 +102,12 @@ class _TagCamel_ extends HTMLElement {
 
     poller();
   }
+  _getClient() {
+	  if (!window.Vaadin || !window.Vaadin.Flow || !window.Vaadin.Flow.clients)
+		  return undefined;
 
+	  return Object.values(window.Vaadin.Flow.clients).find(c => c.exportedWebComponents && c.exportedWebComponents.indexOf('_TagDash_') != -1)
+  }
   disconnectedCallback() {
     this.$server.disconnected();
 

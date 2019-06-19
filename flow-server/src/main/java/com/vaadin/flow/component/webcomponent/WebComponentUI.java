@@ -20,8 +20,10 @@ import java.util.Optional;
 
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.DomEvent;
+import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
@@ -72,8 +74,78 @@ public class WebComponentUI extends UI {
              * components will be contained within index.js
              */
             getConfigurationRegistry().getConfigurations()
-                    .forEach(config -> getPage()
-                            .addHtmlImport(getWebComponentHtmlPath(config)));
+            .forEach(config -> getPage()
+                    .addHtmlImport(getWebComponentHtmlPath(config)));
+        }
+
+        getEventBus().addListener(WebComponentConnectEvent.class,
+                this::connectWebComponent);
+    }
+
+    /**
+     * Event used for sending the activation event for an exported web component
+     * from the client to the server.
+     */
+    @DomEvent("connect-web-component")
+    public static class WebComponentConnectEvent extends ComponentEvent<UI> {
+
+        private String tag;
+        private String webComponentElementId;
+        private JsonObject attributeValues;
+
+        /**
+         * Creates a new web component connection event.
+         *
+         * @param source
+         *            the component that was attached
+         * @param fromClient
+         *            <code>true</code> if the event was originally fired on the
+         *            client, <code>false</code> if the event originates from
+         *            server-side logic
+         * @param tag
+         *            the tag of the element to connect
+         * @param webComponentElementId
+         *            the id of the web component
+         * @param attributeValues
+         *            initial attribute values as a JsonObject. If present,
+         *            these will override the default value designated by the
+         *            {@code WebComponentExporter} but only for this instance.
+         */
+        public WebComponentConnectEvent(UI source, boolean fromClient,
+                @EventData("tag") String tag,
+                @EventData("id") String webComponentElementId,
+                @EventData("attributeValues") JsonObject attributeValues) {
+            super(source, true);
+            this.tag = tag;
+            this.webComponentElementId = webComponentElementId;
+            this.attributeValues = attributeValues;
+        }
+
+        /**
+         * Gets the tag of the element to connect.
+         *
+         * @return the tag of the element
+         */
+        public String getTag() {
+            return tag;
+        }
+
+        /**
+         * Gets the id of the web component.
+         *
+         * @return the id of the web component
+         */
+        public String getWebComponentElementId() {
+            return webComponentElementId;
+        }
+
+        /**
+         * Gets the initial attribute values.
+         *
+         * @return the initial attribute values
+         */
+        public JsonObject getAttributeJson() {
+            return attributeValues;
         }
     }
 
@@ -82,38 +154,32 @@ public class WebComponentUI extends UI {
      * {@link Component} that's added as a virtual child to the UI as the actual
      * relation of the elements is unknown.
      *
-     * @param tag
+     * @param event
      *            web component tag
      * @param webComponentElementId
      *            client side id of the element
-     * @param attributeJson
-     *            initial attribute values as a JsonObject. If present, these
-     *            will override the default value designated by the
-     *            {@code WebComponentExporter} but only for this instance.
      */
-    @ClientCallable
-    public void connectWebComponent(String tag, String webComponentElementId,
-            JsonObject attributeJson) {
+    private void connectWebComponent(WebComponentConnectEvent event) {
         Optional<WebComponentConfiguration<? extends Component>> webComponentConfiguration = getConfigurationRegistry()
-                .getConfiguration(tag);
+                .getConfiguration(event.getTag());
 
         if (!webComponentConfiguration.isPresent()) {
             LoggerFactory.getLogger(WebComponentUI.class).warn(
                     "Received connect request for non existing WebComponent '{}'",
-                    tag);
+                    event.getTag());
             return;
         }
 
-        final Element rootElement = new Element(tag);
+        Element rootElement = new Element(event.getTag());
         WebComponentBinding binding = webComponentConfiguration.get()
                 .createWebComponentBinding(Instantiator.get(this), rootElement,
-                        attributeJson);
+                        event.getAttributeJson());
         WebComponentWrapper wrapper = new WebComponentWrapper(rootElement,
                 binding);
 
         getElement().getStateProvider().appendVirtualChild(
                 getElement().getNode(), wrapper.getElement(),
-                NodeProperties.INJECT_BY_ID, webComponentElementId);
+                NodeProperties.INJECT_BY_ID, event.getWebComponentElementId());
         wrapper.getElement().executeJs("$0.serverConnected()");
     }
 
