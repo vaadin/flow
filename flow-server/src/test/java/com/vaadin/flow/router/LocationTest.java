@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -53,9 +54,18 @@ public class LocationTest {
         new Location("/foo/bar");
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void parseLocationWithQueryStringOnly() {
-        new Location("?hey=hola&zz=");
+        Location location = new Location("?hey=hola&zz=");
+        assertEquals("", location.getPath());
+        Map<String, List<String>> queryMap = new HashMap<>();
+        queryMap.put("hey", Collections.singletonList("hola"));
+        queryMap.put("zz", Collections.emptyList());
+
+        assertEquals(Collections.singletonList("hola"),
+                location.getQueryParameters().getParameters().get("hey"));
+        assertEquals(Collections.singletonList(""),
+                location.getQueryParameters().getParameters().get("zz"));
     }
 
     @Test
