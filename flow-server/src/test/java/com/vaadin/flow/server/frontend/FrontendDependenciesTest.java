@@ -1,15 +1,11 @@
 package com.vaadin.flow.server.frontend;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.commons.lang3.reflect.FieldUtils;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -18,7 +14,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.frontend.ClassFinder.DefaultClassFinder;
-import com.vaadin.flow.server.frontend.FrontendClassVisitor.EndPointData;
+import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.BridgeClass;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Component0;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Component1;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Component2;
@@ -30,6 +26,7 @@ import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.RootVi
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.RootViewWithoutTheme;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.RootViewWithoutThemeAnnotation;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.RoutedClass;
+import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.RoutedClassWithAnnotations;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.RoutedClassWithoutAnnotations;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.SecondView;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Theme1;
@@ -53,19 +50,6 @@ public class FrontendDependenciesTest {
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
-
-    @Before
-    public void setup() throws NoSuchFieldException, IllegalAccessException {
-
-        // TODO: This is not working yet, need to be fixed and adjust the test
-        // //NOSONAR
-        Field field = FieldUtils.getDeclaredField(FrontendDependencies.class,
-                "LUMO", true);
-        FieldUtils.removeFinalModifier(field, true);
-        FieldUtils.writeStaticField(field,
-                "com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.ThemeDefault",
-                true);
-    }
 
     private FrontendDependencies create(Class<?>... classes) throws Exception {
         FrontendDependencies frontendDependencies = new FrontendDependencies(
@@ -305,42 +289,33 @@ public class FrontendDependenciesTest {
     @Test
     public void should_notVisitNonAnnotatredClasses() throws Exception {
         FrontendDependencies deps = create(UnAnnotatedClass.class);
-        Set<String> irrelevantClasses = getFieldValue(deps, "irrelevantClasses");
-        HashMap<String, EndPointData> endPoints = getFieldValue(deps, "endPoints");
-        assertEquals(0, irrelevantClasses.size());
-        assertEquals(0, endPoints.size());
+        assertEquals(0, deps.getEndPoints().size());
+        assertEquals(0, deps.getClasses().size());
     }
 
     @Test
     public void should_cacheIrrelevantClasses() throws Exception {
         FrontendDependencies deps = create(RoutedClassWithoutAnnotations.class);
-        Set<String> irrelevantClasses = getFieldValue(deps, "irrelevantClasses");
-        HashMap<String, EndPointData> endPoints = getFieldValue(deps, "endPoints");
-        assertEquals(1, endPoints.size());
-        assertEquals(2, irrelevantClasses.size());
-        assertTrue(irrelevantClasses.contains(Route.class.getName()));
-        assertTrue(irrelevantClasses.contains(RoutedClassWithoutAnnotations.class.getName()));
+        assertEquals(1, deps.getEndPoints().size());
+        assertEquals(2, deps.getClasses().size());
+        assertTrue(deps.getClasses().contains(Route.class.getName()));
+        assertTrue(deps.getClasses().contains(RoutedClassWithoutAnnotations.class.getName()));
     }
 
     @Test
     public void should_cacheSuperIrrelevantClasses() throws Exception {
         FrontendDependencies deps = create(RoutedClass.class);
-        Set<String> irrelevantClasses = getFieldValue(deps, "irrelevantClasses");
-        HashMap<String, EndPointData> endPoints = getFieldValue(deps, "endPoints");
-        assertEquals(1, endPoints.size());
-        assertEquals(6, irrelevantClasses.size());
-        assertTrue(irrelevantClasses.contains(Route.class.getName()));
-        assertTrue(irrelevantClasses.contains(NoTheme.class.getName()));
-        assertTrue(irrelevantClasses.contains(RoutedClassWithoutAnnotations.class.getName()));
-        assertTrue(irrelevantClasses.contains(LoadMode.class.getName()));
-        assertTrue(irrelevantClasses.contains(JsModule.class.getName()));
-    }
-
-    @SuppressWarnings("unchecked")
-    private <T> T getFieldValue(Object obj, String name) throws Exception {
-        // awful, slow, and non-type-safe, but here to keep private FrotendDependencies fields
-        Field field = obj.getClass().getDeclaredField(name);
-        field.setAccessible(true);
-        return (T) field.get(obj);
+        assertEquals(1, deps.getEndPoints().size());
+        assertEquals(9, deps.getClasses().size());
+        assertEquals(9, deps.getClasses().size());
+        assertTrue(deps.getClasses().contains(Route.class.getName()));
+        assertTrue(deps.getClasses().contains(NoTheme.class.getName()));
+        assertTrue(deps.getClasses().contains(Route.class.getName()));
+        assertTrue(deps.getClasses().contains(JsModule.class.getName()));
+        assertTrue(deps.getClasses().contains(LoadMode.class.getName()));
+        assertTrue(deps.getClasses().contains(RoutedClassWithAnnotations.class.getName()));
+        assertTrue(deps.getClasses().contains(RoutedClassWithoutAnnotations.class.getName()));
+        assertTrue(deps.getClasses().contains(RoutedClass.class.getName()));
+        assertTrue(deps.getClasses().contains(BridgeClass.class.getName()));
     }
 }
