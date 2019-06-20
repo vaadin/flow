@@ -44,7 +44,6 @@ class FrontendClassVisitor extends ClassVisitor {
     private static final String LAYOUT = "layout";
     static final String VALUE = "value";
     static final String VERSION = "version";
-    static final Set<String> invalidClasses = new HashSet<>();
 
     /**
      * An annotation visitor implementation that enables repeated annotations.
@@ -105,16 +104,16 @@ class FrontendClassVisitor extends ClassVisitor {
             return classes;
         }
 
-        int dataHash() {
-            return Objects.hash(theme.name, theme.notheme, modules, scripts, layout);
-        }
-
         ThemeData getTheme() {
             return theme;
         }
 
         String getRoute() {
             return route;
+        }
+
+        String getLayout() {
+            return layout;
         }
 
         String getName() {
