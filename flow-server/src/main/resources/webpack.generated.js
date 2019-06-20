@@ -19,7 +19,7 @@ mavenOutputFolderForFlowBundledFiles;
 // public path for resources, must match Flow VAADIN_BUILD
 const build = 'build';
 // public path for resources, must match the request used in flow to get the /build/stats.json file
-const config = 'config'
+const config = 'config';
 // folder for outputting index.js bundle, etc.
 const buildFolder = `${mavenOutputFolderForFlowBundledFiles}/${build}`;
 // folder for outputting stats.js
@@ -36,7 +36,7 @@ exports = {
   frontendFolder: `${frontendFolder}`,
   buildFolder: `${buildFolder}`,
   confFolder: `${confFolder}`
-}
+};
 
 module.exports = {
   mode: 'production',
