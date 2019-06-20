@@ -13,7 +13,7 @@
     <packaging>war</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
-        <ui.jar.classes>${project.build.directory}/ui-jar</ui.jar.classes>
+        <ui.jar.classes>${project.build.outputDirectory}</ui.jar.classes>
     </properties>
 
     <dependencies>
@@ -149,6 +149,16 @@
                             <goal>test-jar</goal>
                         </goals>
                     </execution>
+                    <execution>
+                        <id>ui</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <classesDirectory>${ui.jar.classes}</classesDirectory>
+                            <classifier>ui</classifier>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
         </plugins>
@@ -245,6 +255,9 @@
         </profile>
         <profile>
             <id>web-jar-repackage</id>
+            <properties>
+                <ui.jar.classes>${project.build.directory}/ui-jar</ui.jar.classes>
+            </properties>
             <build>
               <plugins>
                  <plugin>
@@ -316,22 +329,6 @@
                         <goals>
                             <goal>run</goal>
                         </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>ui</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <configuration>
-                            <classesDirectory>${ui.jar.classes}</classesDirectory>
-                            <classifier>ui</classifier>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
