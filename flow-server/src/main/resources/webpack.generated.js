@@ -6,20 +6,20 @@
  */
 const fs = require('fs');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
-const { BabelMultiTargetPlugin } = require('webpack-babel-multi-target-plugin');
+const {BabelMultiTargetPlugin} = require('webpack-babel-multi-target-plugin');
 
 const path = require('path');
 const baseDir = path.resolve(__dirname);
 // the folder of app resources (main.js and flow templates)
 const frontendFolder = `${baseDir}/frontend`;
 
-fileNameOfTheFlowGeneratedMainEntryPoint;
-mavenOutputFolderForFlowBundledFiles;
+const fileNameOfTheFlowGeneratedMainEntryPoint = '[to-be-generated-by-flow]';
+const mavenOutputFolderForFlowBundledFiles = '[to-be-generated-by-flow]';
 
 // public path for resources, must match Flow VAADIN_BUILD
 const build = 'build';
 // public path for resources, must match the request used in flow to get the /build/stats.json file
-const config = 'config'
+const config = 'config';
 // folder for outputting index.js bundle, etc.
 const buildFolder = `${mavenOutputFolderForFlowBundledFiles}/${build}`;
 // folder for outputting stats.js
@@ -36,7 +36,7 @@ exports = {
   frontendFolder: `${frontendFolder}`,
   buildFolder: `${buildFolder}`,
   confFolder: `${confFolder}`
-}
+};
 
 module.exports = {
   mode: 'production',
@@ -100,9 +100,10 @@ module.exports = {
     }),
 
     // Generates the stats file for flow `@Id` binding.
-    function (compiler) {
-      compiler.hooks.afterEmit.tapAsync("FlowIdPlugin", (compilation, done) => {
-        console.log("Emitted " + statsFile)
+    function(compiler) {
+      compiler.hooks.afterEmit.tapAsync('FlowIdPlugin', (compilation, done) => {
+        // eslint-disable-next-line no-console
+        console.log('Emitted ' + statsFile);
         fs.writeFile(statsFile, JSON.stringify(compilation.getStats().toJson(), null, 1), done);
       });
     },
