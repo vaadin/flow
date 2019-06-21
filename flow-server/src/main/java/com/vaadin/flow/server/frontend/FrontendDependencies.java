@@ -272,10 +272,6 @@ public class FrontendDependencies implements Serializable {
             if (endPoint.getLayout() != null) {
                 visitClass(endPoint.getLayout(), endPoint);
             }
-
-            if (!endPoint.getTheme().isNotheme() && endPoint.getTheme().getName() != null) {
-                visitClass(endPoint.getTheme().getName(), endPoint);
-            }
         }
 
         Set<ThemeData> themes = endPoints.values().stream()
