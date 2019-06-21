@@ -142,6 +142,10 @@ public class FrontendDependenciesTestComponents {
     public static class RootViewWithLayoutTheme extends FirstView {
     }
 
+    @Route(value = "2", layout = RouterLayout1.class)
+    public static class RootView2WithLayoutTheme {
+    }
+
     @Route(value = "", layout = RouterLayout2.class)
     @Theme(value = Theme2.class, variant = "foo")
     @JsModule("./view-2.js")
@@ -241,4 +245,26 @@ public class FrontendDependenciesTestComponents {
 
         }
     }
+
+
+    public static class UnAnnotatedClass {
+    }
+
+    @Route
+    public static class RoutedClassWithoutAnnotations {
+    }
+
+    @Route("route-1")
+    @NoTheme
+    @JsModule("./foo")
+    public static class RoutedClassWithAnnotations extends RoutedClassWithoutAnnotations {
+    }
+
+    public static class BridgeClass extends RoutedClassWithAnnotations {
+    }
+
+    @Route("route-2")
+    public static class RoutedClass extends BridgeClass {
+    }
+
 }

@@ -22,6 +22,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -115,7 +116,7 @@ public class FrontendDependencies implements Serializable {
     private ThemeDefinition themeDefinition;
     private AbstractTheme themeInstance;
     private final HashMap<String, String> packages = new HashMap<>();
-    private final Set<String> irrelevantClasses = new HashSet<>();
+    private final Set<String> visited = new HashSet<>();
 
     /**
      * Default Constructor.
@@ -143,13 +144,17 @@ public class FrontendDependencies implements Serializable {
             boolean generateEmbeddableWebComponents) {
         log().info(
                 "Scanning classes to find frontend configurations and dependencies...");
+        long start = System.nanoTime();
         this.finder = finder;
         try {
             computeEndpoints();
+            computeApplicationTheme(endPoints);
             computePackages();
             if (generateEmbeddableWebComponents) {
                 computeExporters();
             }
+            long ms = (System.nanoTime() - start) / 1000000;
+            log().info("took {} ms.", ms);
         } catch (ClassNotFoundException | InstantiationException
                 | IllegalAccessException | IOException e) {
             throw new IllegalStateException(
@@ -158,7 +163,7 @@ public class FrontendDependencies implements Serializable {
     }
 
     /**
-     * get all npm packages the application depends on.
+     * Get all npm packages the application depends on.
      *
      * @return the set of npm packages
      */
@@ -167,7 +172,7 @@ public class FrontendDependencies implements Serializable {
     }
 
     /**
-     * get all ES6 modules needed for run the application.
+     * Get all ES6 modules needed for run the application.
      *
      * @return the set of JS modules
      */
@@ -180,7 +185,7 @@ public class FrontendDependencies implements Serializable {
     }
 
     /**
-     * get all JS files used by the application.
+     * Get all the JS files used by the application.
      *
      * @return the set of JS files
      */
@@ -193,20 +198,25 @@ public class FrontendDependencies implements Serializable {
     }
 
     /**
-     * get all Java classes considered when looking for used dependencies.
+     * Get all Java classes considered when looking for used dependencies.
      *
      * @return the set of JS files
      */
     public Set<String> getClasses() {
-        Set<String> all = new HashSet<>();
-        for (FrontendClassVisitor.EndPointData data : endPoints.values()) {
-            all.addAll(data.getClasses());
-        }
-        return all;
+        return visited;
     }
 
     /**
-     * get the {@link ThemeDefinition} of the application.
+     * Get all entryPoints in the application.
+     *
+     * @return the set of JS files
+     */
+    public Collection<EndPointData> getEndPoints() {
+        return endPoints.values();
+    }
+
+    /**
+     * Get the {@link ThemeDefinition} of the application.
      *
      * @return the theme definition
      */
@@ -215,7 +225,7 @@ public class FrontendDependencies implements Serializable {
     }
 
     /**
-     * get the {@link AbstractTheme} instance used in the application.
+     * Get the {@link AbstractTheme} instance used in the application.
      *
      * @return the theme instance
      */
@@ -232,11 +242,8 @@ public class FrontendDependencies implements Serializable {
      *
      * @throws ClassNotFoundException
      * @throws IOException
-     * @throws InstantiationException
-     * @throws IllegalAccessException
      */
-    private void computeEndpoints() throws ClassNotFoundException, IOException,
-            InstantiationException, IllegalAccessException {
+    private void computeEndpoints() throws ClassNotFoundException, IOException {
         // Because of different classLoaders we need compare against class
         // references loaded by the specific class finder loader
         Class<? extends Annotation> routeClass = finder
@@ -246,7 +253,6 @@ public class FrontendDependencies implements Serializable {
             EndPointData data = new EndPointData(route);
             endPoints.put(className, visitClass(className, data));
         }
-        computeApplicationTheme(endPoints);
     }
 
     // Visit all end-points and compute the theme for the application.
@@ -258,6 +264,15 @@ public class FrontendDependencies implements Serializable {
             HashMap<String, EndPointData> endPoints)
             throws ClassNotFoundException, InstantiationException,
             IllegalAccessException, IOException {
+
+        // Re-visit theme related classes, because they might be skipped
+        // when they where already added to the visited list during other
+        // entry-point visits
+        for (EndPointData endPoint : endPoints.values()) {
+            if (endPoint.getLayout() != null) {
+                visitClass(endPoint.getLayout(), endPoint);
+            }
+        }
 
         Set<ThemeData> themes = endPoints.values().stream()
                 // consider only endPoints with theme information
@@ -424,16 +439,13 @@ public class FrontendDependencies implements Serializable {
     private EndPointData visitClass(String className,
             FrontendClassVisitor.EndPointData endPoint) throws IOException {
 
-        if (!isVisitable(className)
-                || endPoint.getClasses().contains(className)) {
+        if (!isVisitable(className) || endPoint.getClasses().contains(className)) {
             return endPoint;
         }
-
         endPoint.getClasses().add(className);
 
         URL url = getUrl(className);
         if (url == null) {
-            irrelevantClasses.add(className);
             return endPoint;
         }
 
@@ -442,20 +454,17 @@ public class FrontendDependencies implements Serializable {
         ClassReader cr = new ClassReader(url.openStream());
         cr.accept(visitor, ClassReader.EXPAND_FRAMES);
 
+        // all classes visited by the scanner, used for performance (#5933)
+        visited.add(className);
+
         for (String clazz : visitor.getChildren()) {
-            visitClass(clazz, endPoint);
-        }
-
-        boolean isRootLevel = className.equals(endPoint.getName())
-                && endPoint.getRoute().isEmpty();
-        boolean hasTheme = !endPoint.getTheme().isNotheme()
-                && endPoint.getTheme().getName() != null;
-        if (isRootLevel && hasTheme) {
-            visitClass(endPoint.getTheme().getName(), endPoint);
-        }
-
-        if (!endPoint.hasData()) {
-            irrelevantClasses.add(className);
+            // Since we only have an entry point for the app, it is all right to
+            // skip the visit to the the same class in other end-points, because
+            // we output all dependencies at once. When we implement
+            // chunks, this will need to be considered.
+            if (!visited.contains(clazz)) {
+                visitClass(clazz, endPoint);
+            }
         }
 
         return endPoint;
@@ -472,11 +481,10 @@ public class FrontendDependencies implements Serializable {
     private boolean isVisitable(String className) {
         // We should visit only those classes that might have NpmPackage,
         // JsImport, JavaScript and HtmlImport annotations, basically
-        // HasElement, and AbstractTheme classes, but that excludes some
-        // syntaxes like using factories. This is the reason of having just a
-        // blacklist of some common name-spaces that would not have components.
+        // HasElement, and AbstractTheme classes, but that prevents the usage of
+        // factories. This is the reason of having just a blacklist of some
+        // common name-spaces that would not have components.
         return className != null && // @formatter:off
-                !irrelevantClasses.contains(className) &&
                 !className.matches(
                     "(^$|"
                     + ".*(slf4j).*|"

@@ -1,37 +1,44 @@
 package com.vaadin.flow.server.frontend;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.lang3.reflect.FieldUtils;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.frontend.ClassFinder.DefaultClassFinder;
+import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.BridgeClass;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Component0;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Component1;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Component2;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.FirstView;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.NoThemeExporter;
+import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.RootView2WithLayoutTheme;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.RootViewWithLayoutTheme;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.RootViewWithMultipleTheme;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.RootViewWithTheme;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.RootViewWithoutTheme;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.RootViewWithoutThemeAnnotation;
+import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.RoutedClass;
+import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.RoutedClassWithAnnotations;
+import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.RoutedClassWithoutAnnotations;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.SecondView;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Theme1;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Theme2;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Theme4;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.ThemeExporter;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.ThirdView;
-import com.vaadin.flow.theme.AbstractTheme;
+import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.UnAnnotatedClass;
+import com.vaadin.flow.shared.ui.LoadMode;
+import com.vaadin.flow.theme.NoTheme;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -40,25 +47,11 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 public class FrontendDependenciesTest {
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
-
-    @Before
-    public void setup() throws NoSuchFieldException, IllegalAccessException {
-
-        // TODO: This is not working yet, need to be fixed and adjust the test
-        // //NOSONAR
-        Field field = FieldUtils.getDeclaredField(FrontendDependencies.class,
-                "LUMO", true);
-        FieldUtils.removeFinalModifier(field, true);
-        FieldUtils.writeStaticField(field,
-                "com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.ThemeDefault",
-                true);
-    }
 
     private FrontendDependencies create(Class<?>... classes) throws Exception {
         FrontendDependencies frontendDependencies = new FrontendDependencies(
@@ -178,6 +171,7 @@ public class FrontendDependenciesTest {
         assertEquals("0.0.1", deps.getPackages().get("@foo/first-view"));
     }
 
+
     @Test
     public void should_takeThemeWhenMultipleTheme() throws Exception {
         FrontendDependencies deps = create(RootViewWithMultipleTheme.class);
@@ -293,5 +287,55 @@ public class FrontendDependenciesTest {
 
         new FrontendDependencies(finder);
         verify(finder, times(0)).loadClass(FrontendDependencies.LUMO);
+    }
+
+    @Test
+    public void should_notVisitNonAnnotatredClasses() throws Exception {
+        FrontendDependencies deps = create(UnAnnotatedClass.class);
+        assertEquals(0, deps.getEndPoints().size());
+        assertEquals(0, deps.getClasses().size());
+    }
+
+    @Test
+    public void should_cacheVisitedClasses() throws Exception {
+        FrontendDependencies deps = create(RoutedClassWithoutAnnotations.class);
+        assertEquals(1, deps.getEndPoints().size());
+        assertEquals(2, deps.getClasses().size());
+        assertTrue(deps.getClasses().contains(Route.class.getName()));
+        assertTrue(deps.getClasses().contains(RoutedClassWithoutAnnotations.class.getName()));
+    }
+
+    @Test
+    public void should_cacheSuperVisitedClasses() throws Exception {
+        List<Class<?>> visited = Arrays.asList(Route.class, NoTheme.class, JsModule.class, LoadMode.class,
+                RoutedClassWithAnnotations.class, RoutedClassWithoutAnnotations.class, RoutedClass.class,
+                BridgeClass.class);
+
+        // Visit a route that extends an extra routed class
+        FrontendDependencies deps = create(RoutedClass.class);
+        assertEquals(1, deps.getEndPoints().size());
+        assertEquals(9, deps.getClasses().size());
+        for (Class<?> clz : visited) {
+            assertTrue("should cache " + clz.getName(), deps.getClasses().contains(clz.getName()));
+        }
+
+        // Visit the same route but also the super routed class, the number of visited classes should
+        // be the same, but number of entry points increases
+        deps = create(RoutedClassWithoutAnnotations.class, RoutedClass.class);
+        assertEquals(2, deps.getEndPoints().size());
+        assertEquals(9, deps.getClasses().size());
+        for (Class<?> clz : visited) {
+            assertTrue("should cache " + clz.getName(), deps.getClasses().contains(clz.getName()));
+        }
+    }
+
+    @Test
+    public void should_takeThemeFromLayout_ifLayoutAlreadyVisited() throws Exception {
+        // Make sure that all entry-points sharing layouts are correctly theming-configured
+        FrontendDependencies deps = create(RootViewWithLayoutTheme.class, RootView2WithLayoutTheme.class);
+        assertEquals(Theme1.class, deps.getThemeDefinition().getTheme());
+        deps.getEndPoints().forEach(endPoint -> {
+            assertEquals(Theme1.class.getName(), endPoint.getTheme().getName());
+        });
     }
 }
