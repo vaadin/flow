@@ -21,6 +21,7 @@ import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Compon
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Component2;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.FirstView;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.NoThemeExporter;
+import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.RootView2WithLayoutTheme;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.RootViewWithLayoutTheme;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.RootViewWithMultipleTheme;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.RootViewWithTheme;
@@ -169,6 +170,7 @@ public class FrontendDependenciesTest {
         assertTrue(deps.getPackages().containsKey("@foo/first-view"));
         assertEquals("0.0.1", deps.getPackages().get("@foo/first-view"));
     }
+
 
     @Test
     public void should_takeThemeWhenMultipleTheme() throws Exception {
@@ -325,5 +327,15 @@ public class FrontendDependenciesTest {
         for (Class<?> clz : visited) {
             assertTrue("should cache " + clz.getName(), deps.getClasses().contains(clz.getName()));
         }
+    }
+
+    @Test
+    public void should_takeThemeFromLayout_ifLayoutAlreadyVisited() throws Exception {
+        // Make sure that all entry-points sharing layouts are correctly theming-configured
+        FrontendDependencies deps = create(RootViewWithLayoutTheme.class, RootView2WithLayoutTheme.class);
+        assertEquals(Theme1.class, deps.getThemeDefinition().getTheme());
+        deps.getEndPoints().forEach(endPoint -> {
+            assertEquals(Theme1.class.getName(), endPoint.getTheme().getName());
+        });
     }
 }

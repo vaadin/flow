@@ -142,6 +142,10 @@ public class FrontendDependenciesTestComponents {
     public static class RootViewWithLayoutTheme extends FirstView {
     }
 
+    @Route(value = "2", layout = RouterLayout1.class)
+    public static class RootView2WithLayoutTheme {
+    }
+
     @Route(value = "", layout = RouterLayout2.class)
     @Theme(value = Theme2.class, variant = "foo")
     @JsModule("./view-2.js")
