@@ -115,22 +115,22 @@ public class TaskUpdateWebpack implements Command {
         List<String> lines = FileUtils.readLines(generatedFile, "UTF-8");
 
         String outputLine =
-                "mavenOutputFolderForFlowBundledFiles = require('path').resolve(__dirname, '"
+                "const mavenOutputFolderForFlowBundledFiles = require('path').resolve(__dirname, '"
                         + getEscapedRelativeWebpackPath(webpackOutputPath)
                         + "');";
         String mainLine =
-                "fileNameOfTheFlowGeneratedMainEntryPoint = require('path').resolve(__dirname, '"
+                "const fileNameOfTheFlowGeneratedMainEntryPoint = require('path').resolve(__dirname, '"
                         + getEscapedRelativeWebpackPath(flowImportsFilePath)
                         + "');";
 
         for (int i = 0; i < lines.size(); i++) {
             String line = lines.get(i).trim();
             if (lines.get(i)
-                    .startsWith("fileNameOfTheFlowGeneratedMainEntryPoint")
+                    .startsWith("const fileNameOfTheFlowGeneratedMainEntryPoint")
                     && !line.equals(mainLine)) {
                 lines.set(i, mainLine);
             }
-            if (lines.get(i).startsWith("mavenOutputFolderForFlowBundledFiles")
+            if (lines.get(i).startsWith("const mavenOutputFolderForFlowBundledFiles")
                     && !line.equals(outputLine)) {
                 lines.set(i, outputLine);
             }
