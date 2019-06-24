@@ -75,8 +75,8 @@ public class DevModeHandler implements Serializable {
     // last line
     private static final String DEFAULT_OUTPUT_PATTERN = ": Compiled.";
     private static final String DEFAULT_ERROR_PATTERN = ": Failed to compile.";
-    private static final String FAILED_MSG = "\n------------------ 🚫  Frontend compilation failed. 🚫 -----------------";
-    private static final String SUCCEED_MSG = "\n----------------- 👍  Frontend compiled successfully. 👍 -----------------";
+    private static final String FAILED_MSG = "\n------------------ Frontend compilation failed. -----------------";
+    private static final String SUCCEED_MSG = "\n----------------- Frontend compiled successfully. -----------------";
     private static final String YELLOW = "\u001b[38;5;111m{}\u001b[0m";
     private static final String RED = "\u001b[38;5;196m{}\u001b[0m";
     private static final String GREEN = "\u001b[38;5;35m{}\u001b[0m";
