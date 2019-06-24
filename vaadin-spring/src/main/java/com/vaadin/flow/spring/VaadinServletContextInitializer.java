@@ -24,6 +24,7 @@ import javax.servlet.ServletException;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -318,7 +319,16 @@ public class VaadinServletContextInitializer
      */
     public VaadinServletContextInitializer(ApplicationContext context) {
         appContext = context;
-        customLoader = new CustomResourceLoader(appContext);
+        String property = appContext.getEnvironment()
+                .getProperty("vaadin.blacklisted-packages");
+        List<String> blacklist;
+        if (property == null) {
+            blacklist = Collections.emptyList();
+        } else {
+            blacklist = Arrays.stream(property.split(",")).map(String::trim)
+                    .collect(Collectors.toList());
+        }
+        customLoader = new CustomResourceLoader(appContext, blacklist);
     }
 
     @Override
@@ -416,10 +426,6 @@ public class VaadinServletContextInitializer
         return getDefaultPackages();
     }
 
-    private Collection<String> getCustomElementPackages() {
-        return getDefaultPackages();
-    }
-
     private Collection<String> getVerifiableAnnotationPackages() {
         return getDefaultPackages();
     }
@@ -481,8 +487,9 @@ public class VaadinServletContextInitializer
                         "org/springframework", "org/webjars/bowergithub",
                         "org/yaml").collect(Collectors.toList());
 
-        public CustomResourceLoader(ResourceLoader resourceLoader) {
+        public CustomResourceLoader(ResourceLoader resourceLoader, List<String> addedBlacklist) {
             super(resourceLoader);
+            blackListed.addAll(addedBlacklist);
         }
 
         /**

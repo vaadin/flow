@@ -15,6 +15,10 @@
  */
 package com.vaadin.flow.spring;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -37,6 +41,11 @@ public class VaadinConfigurationProperties {
      * Whether asynchronous operations are supported.
      */
     private boolean asyncSupported = true;
+
+    /**
+     * Custom package blacklist that should be skipped in scanning.
+     */
+    private List<String> blacklistedPackages  = new ArrayList<>();
 
     /**
      * Gets the url mapping for the Vaadin servlet.
@@ -76,4 +85,22 @@ public class VaadinConfigurationProperties {
         this.asyncSupported = asyncSupported;
     }
 
+    /**
+     * Get a list of packages that are blacklisted for class scanning.
+     *
+     * @return package blacklist
+     */
+    public List<String> getBlacklistedPackages() {
+        return Collections.unmodifiableList(blacklistedPackages);
+    }
+
+    /**
+     * Set list of packages to ignore for class scanning.
+     *
+     * @param blacklistedPackages
+     *         list of packages to ignore
+     */
+    public void setBlacklistedPackages(List<String> blacklistedPackages) {
+        this.blacklistedPackages = new ArrayList<>(blacklistedPackages);
+    }
 }
