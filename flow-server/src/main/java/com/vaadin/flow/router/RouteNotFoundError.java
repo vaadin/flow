@@ -105,13 +105,21 @@ public class RouteNotFoundError extends Component
         }
 
         if (route.getParameters().isEmpty()) {
-            Element link = new Element(Tag.A).attr("href", route.getUrl())
-                    .text(text);
-            return new Element(Tag.LI).appendChild(link);
+            return elementAsLink(route.getUrl(), text);
         } else {
-            return new Element(Tag.LI).text(text + " (requires parameter)");
+            Class<? extends Component> target = route.getNavigationTarget();
+            if (ParameterDeserializer.isAnnotatedParameter(target, OptionalParameter.class)) {
+                text = text + " (supports optional parameter)";
+                return elementAsLink(route.getUrl(), text);
+            } else {
+                return new Element(Tag.LI).text(text + " (requires parameter)");
+            }
         }
+    }
 
+    private Element elementAsLink(String url, String text) {
+        Element link = new Element(Tag.A).attr("href", url).text(text);
+        return new Element(Tag.LI).appendChild(link);
     }
 
     private static class LazyInit {
