@@ -21,37 +21,26 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.server.ServiceInitEvent;
-import com.vaadin.flow.server.UIInitListener;
+import com.vaadin.flow.server.UIInitEvent;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 
 public class TestingServiceInitListener implements VaadinServiceInitListener {
     public static final String DYNAMICALLY_REGISTERED_ROUTE = "dynamically-registered-route";
     private static AtomicInteger initCount = new AtomicInteger();
     private static AtomicInteger requestCount = new AtomicInteger();
+    private static AtomicInteger uisCount = new AtomicInteger();
 
     private boolean redirected;
 
     @Override
     public void serviceInit(ServiceInitEvent event) {
-        event.getSource().addUIInitListener(
-                (UIInitListener & Serializable) initEvent -> initEvent.getUI()
-                        .addBeforeEnterListener(
-                                (BeforeEnterListener & Serializable) e -> {
-                                    if (!redirected
-                                            && ServiceInitListenersView.class
-                                                    .equals(e
-                                                            .getNavigationTarget())) {
-                                        e.rerouteTo(e.getLocation().getPath(),
-                                                22);
-                                        redirected = true;
-                                    }
-                                }));
+        event.getSource().addUIInitListener(this::handleUIInit);
         initCount.incrementAndGet();
 
-        RouteConfiguration configuration = RouteConfiguration.forApplicationScope();
+        RouteConfiguration configuration = RouteConfiguration
+                .forApplicationScope();
         if (!configuration.isPathRegistered(DYNAMICALLY_REGISTERED_ROUTE)) {
-            configuration.setRoute(
-                    DYNAMICALLY_REGISTERED_ROUTE,
+            configuration.setRoute(DYNAMICALLY_REGISTERED_ROUTE,
                     DynamicallyRegisteredRoute.class);
         }
 
@@ -68,6 +57,26 @@ public class TestingServiceInitListener implements VaadinServiceInitListener {
 
     public static int getRequestCount() {
         return requestCount.get();
+    }
+
+    public static int getUisCount() {
+        return uisCount.get();
+    }
+
+    public static void resetUisCount() {
+        uisCount.set(0);
+    }
+
+    private void handleUIInit(UIInitEvent event) {
+        uisCount.incrementAndGet();
+        event.getUI().addBeforeEnterListener(
+                (BeforeEnterListener & Serializable) e -> {
+                    if (!redirected && ServiceInitListenersView.class
+                            .equals(e.getNavigationTarget())) {
+                        e.rerouteTo(e.getLocation().getPath(), 22);
+                        redirected = true;
+                    }
+                });
     }
 
 }
