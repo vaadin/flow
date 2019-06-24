@@ -46,10 +46,10 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 
-import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.POLYFILLS_DEFAULT_VALUE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
+import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 
 public class StaticFileServerTest implements Serializable {
 
@@ -675,4 +675,26 @@ public class StaticFileServerTest implements Serializable {
                 responseCode.get());
     }
 
+    @Test
+    public void serveStaticResourceFromWebjarWithIncorrectPath()
+            throws IOException {
+        Mockito.when(configuration.getBooleanProperty(
+                StaticFileServer.PROPERTY_FIX_INCORRECT_WEBJAR_PATHS, false))
+                .thenReturn(true);
+
+        byte[] fileData = "function() {eval('foo');};"
+                .getBytes(StandardCharsets.UTF_8);
+        Mockito.when(servletService.getStaticResource("/webjars/foo/bar.js"))
+                .thenReturn(createFileURLWithDataAndLength(
+                        "/webjars/foo/bar.js", fileData));
+
+        CapturingServletOutputStream out = new CapturingServletOutputStream();
+        Mockito.when(response.getOutputStream()).thenReturn(out);
+
+        setupRequestURI("", "", "/frontend/src/webjars/foo/bar.js");
+
+        Assert.assertTrue(fileServer.isStaticResourceRequest(request));
+        Assert.assertTrue(fileServer.serveStaticResource(request, response));
+        Assert.assertArrayEquals(fileData, out.getOutput());
+    }
 }
