@@ -481,7 +481,7 @@ public class VaadinServletContextInitializer
                         "com/vaadin/external/atmosphere",
                         "com/vaadin/webjar", "javax/", "junit",
                         "net/bytebuddy", "org/apache", "org/aspectj",
-                        "org/dom4j", "org/easymock", "org/hamcrest",
+                        "org/bouncycastle", "org/dom4j", "org/easymock", "org/hamcrest",
                         "org/hibernate", "org/javassist", "org/jboss",
                         "org/jsoup", "org/seleniumhq", "org/slf4j", "org/atmosphere",
                         "org/springframework", "org/webjars/bowergithub",
