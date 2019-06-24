@@ -16,8 +16,12 @@
 package com.vaadin.flow.uitest.ui;
 
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.server.ServiceInitEvent;
@@ -28,7 +32,8 @@ public class TestingServiceInitListener implements VaadinServiceInitListener {
     public static final String DYNAMICALLY_REGISTERED_ROUTE = "dynamically-registered-route";
     private static AtomicInteger initCount = new AtomicInteger();
     private static AtomicInteger requestCount = new AtomicInteger();
-    private static AtomicInteger uisCount = new AtomicInteger();
+    private static Set<UI> notNavigatedUis = Collections
+            .newSetFromMap(new ConcurrentHashMap<>());
 
     private boolean redirected;
 
@@ -59,18 +64,17 @@ public class TestingServiceInitListener implements VaadinServiceInitListener {
         return requestCount.get();
     }
 
-    public static int getUisCount() {
-        return uisCount.get();
-    }
-
-    public static void resetUisCount() {
-        uisCount.set(0);
+    public static int getNotNavigatedUis() {
+        return notNavigatedUis.size();
     }
 
     private void handleUIInit(UIInitEvent event) {
-        uisCount.incrementAndGet();
+        notNavigatedUis.add(event.getUI());
         event.getUI().addBeforeEnterListener(
                 (BeforeEnterListener & Serializable) e -> {
+                    if (e.getNavigationTarget() != null) {
+                        notNavigatedUis.remove(e.getUI());
+                    }
                     if (!redirected && ServiceInitListenersView.class
                             .equals(e.getNavigationTarget())) {
                         e.rerouteTo(e.getLocation().getPath(), 22);

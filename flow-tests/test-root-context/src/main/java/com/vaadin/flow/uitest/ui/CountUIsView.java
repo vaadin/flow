@@ -31,8 +31,8 @@ public class CountUIsView extends Div {
         // explicit via action. At this point all UIs should be already
         // initialized
         NativeButton showUisNumber = new NativeButton("Show created UIs number",
-                event -> count.setText(String
-                        .valueOf(TestingServiceInitListener.getUisCount())));
+                event -> count.setText(String.valueOf(
+                        TestingServiceInitListener.getNotNavigatedUis())));
         add(showUisNumber);
     }
 }

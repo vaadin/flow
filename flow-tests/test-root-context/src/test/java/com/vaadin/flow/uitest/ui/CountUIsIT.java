@@ -22,18 +22,25 @@ import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.parallel.BrowserUtil;
 
 public class CountUIsIT extends ChromeBrowserTest {
 
     @Test
     public void countUisNumer_onlyOneUIShouldBeInitiialized() {
-        open("resetUisCounter");
+        if (!BrowserUtil.isChrome(getDesiredCapabilities())) {
+            // limit this test for being executed in one browser only
+            return;
+        }
         open();
 
         $(NativeButtonElement.class).first().click();
 
         WebElement uisCount = findElement(By.id("uis"));
         int count = Integer.parseInt(uisCount.getText());
-        Assert.assertEquals(1, count);
+
+        // there should not be any UI instance which is created but never has
+        // been navigated (no any enter event into a navigation target)
+        Assert.assertEquals(0, count);
     }
 }
