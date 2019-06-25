@@ -27,6 +27,7 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -713,6 +714,49 @@ public class ReflectTools implements Serializable {
         }
 
         return currentClass;
+    }
+
+    /**
+     * Finds the common ancestor of the two {@code ClassLoaders}. The class
+     * loaders themselves are potential ancestors; if they are equal, {@code
+     * classLoaderA} is returned. This method is under the same exception and
+     * behavioral rules as {@link ClassLoader#getParent()}.
+     *
+     * @param classLoaderA
+     *            class loader A
+     * @param classLoaderB
+     *            class loader B
+     * @return a common ancestor both class loaders share, or an empty optional
+     *         if there is no shared ancestor. Or if the implementation treats
+     *         bootstrap loaders as {@code null} (as per
+     *         {@link ClassLoader#getParent()}).
+     */
+    public static Optional<ClassLoader> findClosestCommonClassLoaderAncestor(
+            ClassLoader classLoaderA, ClassLoader classLoaderB) {
+        if (classLoaderA == null || classLoaderB == null) {
+            return Optional.empty();
+        }
+        HashSet<ClassLoader> parents = new HashSet<>();
+        ClassLoader parentA = classLoaderA;
+        ClassLoader parentB = classLoaderB;
+
+        while (parentA != null || parentB != null) {
+            if (parentA != null) {
+                if (parents.contains(parentA)) {
+                    return Optional.of(parentA);
+                }
+                parents.add(parentA);
+                parentA = parentA.getParent();
+            }
+            if (parentB != null) {
+                if (parents.contains(parentB)) {
+                    return Optional.of(parentB);
+                }
+                parents.add(parentB);
+                parentB = parentB.getParent();
+            }
+        }
+        return Optional.empty();
     }
 
     private static List<Field> getConstants(Class<?> staticFields) {

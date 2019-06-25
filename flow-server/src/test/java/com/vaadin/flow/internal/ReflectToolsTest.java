@@ -20,6 +20,7 @@ import static org.junit.Assert.assertSame;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
@@ -83,6 +84,20 @@ public class ReflectToolsTest {
         ID getId();
 
         void setId(ID id);
+    }
+
+    public static class ParentClassLoader extends ClassLoader {
+
+    }
+
+    public static class ChildClassLoader extends ClassLoader {
+        protected ChildClassLoader(ClassLoader parent) {
+            super(parent);
+        }
+
+        protected ChildClassLoader() {
+            super();
+        }
     }
 
     public class Category implements Serializable, Entity<Long> {
@@ -260,6 +275,52 @@ public class ReflectToolsTest {
         Method setter = setters.get(0);
         Assert.assertEquals("setId", setter.getName());
         Assert.assertEquals(Long.class, setter.getParameterTypes()[0]);
+    }
+
+    @Test
+    public void findClosestCommonClassLoaderAncestor_findAncestor_whenBothArgumentsAreTheSame() {
+        ParentClassLoader loader = new ParentClassLoader();
+        ClassLoader ret = ReflectTools.findClosestCommonClassLoaderAncestor(loader,
+                loader).get();
+
+        Assert.assertEquals(loader, ret);
+    }
+
+    @Test
+    public void findClosestCommonClassLoaderAncestor_findsAncestor_whenOneIsParentOfTheOther() {
+        ParentClassLoader parent = new ParentClassLoader();
+        ChildClassLoader child = new ChildClassLoader(parent);
+        ClassLoader ret = ReflectTools.findClosestCommonClassLoaderAncestor(parent,
+                child).get();
+
+        Assert.assertEquals(parent, ret);
+    }
+
+    @Test
+    public void findClosestCommonClassLoaderAncestor_findsAncestor_whenLoadersShareParent() {
+        ParentClassLoader parent = new ParentClassLoader();
+        ChildClassLoader childA = new ChildClassLoader(parent);
+        ChildClassLoader childB = new ChildClassLoader(parent);
+        ClassLoader ret = ReflectTools.findClosestCommonClassLoaderAncestor(childA,
+                childB).get();
+
+        Assert.assertEquals(parent, ret);
+    }
+
+    @Test
+    public void findClosestCommonClassLoaderAncestor_empty_whenEitherOrBothNull() {
+        ParentClassLoader loader = new ParentClassLoader();
+
+        Optional<ClassLoader> ret;
+
+        ret = ReflectTools.findClosestCommonClassLoaderAncestor(loader, null);
+        Assert.assertFalse(ret.isPresent());
+
+        ret = ReflectTools.findClosestCommonClassLoaderAncestor(null, loader);
+        Assert.assertFalse(ret.isPresent());
+
+        ret = ReflectTools.findClosestCommonClassLoaderAncestor(null, null);
+        Assert.assertFalse(ret.isPresent());
     }
 
     private Class<?> createProxyClass(Class<?> originalClass) {
