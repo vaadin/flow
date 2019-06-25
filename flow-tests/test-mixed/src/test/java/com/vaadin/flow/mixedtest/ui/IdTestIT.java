@@ -24,6 +24,7 @@ import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
 public class IdTestIT extends ChromeBrowserTest {
     @Override
@@ -34,11 +35,12 @@ public class IdTestIT extends ChromeBrowserTest {
     @Test
     public void testIds() {
         open();
-        waitUntilWithMessage(ExpectedConditions
+        waitUntilWithMessage(
+                ExpectedConditions
                         .presenceOfElementLocated(By.tagName("my-component")),
                 "Failed to load my-component", 25);
 
-        WebElement myComponent = findElement(By.tagName("my-component"));
+        TestBenchElement myComponent = $("my-component").first();
 
         // wait for polymer initalisation
         waitUntillWithMessage(driver -> getCommandExecutor().executeScript(
@@ -46,19 +48,16 @@ public class IdTestIT extends ChromeBrowserTest {
                 myComponent),
                 "Failed to load constructor.polymerElementVersion for 'my-component'");
 
-        waitUntillWithMessage(driver -> getCommandExecutor()
-                .executeScript("return arguments[0].$ !== undefined",
-                        myComponent), "Failed to load $ for 'my-component'");
+        waitUntillWithMessage(
+                driver -> getCommandExecutor().executeScript(
+                        "return arguments[0].$ !== undefined", myComponent),
+                "Failed to load $ for 'my-component'");
 
-        waitUntillWithMessage(webDriver -> ((WebElement) getCommandExecutor()
-                .executeScript("return arguments[0].shadowRoot", myComponent))
-                .findElements(By.id("content")).stream().findFirst()
-                .isPresent(), "Failed to load content element from shadowroot");
-
-        WebElement content = getInShadowRoot(myComponent, By.id("content"));
+        WebElement content = myComponent.$(TestBenchElement.class)
+                .id("content");
         Assert.assertEquals("", content.getText());
 
-        WebElement button = getInShadowRoot(myComponent, By.id("button"));
+        WebElement button = myComponent.$(TestBenchElement.class).id("button");
         button.click();
         Assert.assertEquals("1", content.getText());
 
