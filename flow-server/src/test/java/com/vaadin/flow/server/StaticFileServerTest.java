@@ -697,4 +697,23 @@ public class StaticFileServerTest implements Serializable {
         Assert.assertTrue(fileServer.serveStaticResource(request, response));
         Assert.assertArrayEquals(fileData, out.getOutput());
     }
+
+    @Test
+    public void serveStaticResourceFromWebjarWithIncorrectPathAndFixingDisabled()
+            throws IOException {
+        Mockito.when(configuration.getBooleanProperty(
+                StaticFileServer.PROPERTY_FIX_INCORRECT_WEBJAR_PATHS, false))
+                .thenReturn(false);
+
+        Mockito.when(servletService
+                .getStaticResource("/frontend/src/webjars/foo/bar.js"))
+                .thenReturn(null);
+
+        setupRequestURI("", "", "/frontend/src/webjars/foo/bar.js");
+
+        Assert.assertFalse(fileServer.isStaticResourceRequest(request));
+        Assert.assertTrue(fileServer.serveStaticResource(request, response));
+        Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND,
+                responseCode.get());
+    }
 }
