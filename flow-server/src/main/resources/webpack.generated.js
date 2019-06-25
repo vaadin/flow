@@ -31,7 +31,7 @@ const mkdirp = require('mkdirp');
 mkdirp(buildFolder);
 mkdirp(confFolder);
 
-const devMode = process.argv.find(v => v.indexOf('webpack-dev-server') !== -1);
+const devMode = process.argv.find(v => v.indexOf('webpack-dev-server') >= 0);
 let stats;
 
 exports = {
@@ -63,7 +63,7 @@ module.exports = {
     contentBase: [mavenOutputFolderForFlowBundledFiles, 'src/main/webapp'],
     after: function(app, server) {
       app.get(`/stats.json`, function(req, res) {
-        res.json(stats);
+        res.json(stats.toJson());
       });
     }
   },
@@ -111,12 +111,12 @@ module.exports = {
       compiler.hooks.afterEmit.tapAsync("FlowIdPlugin", (compilation, done) => {
         if (!devMode) {
           // eslint-disable-next-line no-console
-          console.log("Emitted " + statsFile)
+          console.log("         Emitted " + statsFile)
           fs.writeFile(statsFile, JSON.stringify(compilation.getStats().toJson(), null, 1), done);
         } else {
           // eslint-disable-next-line no-console
           console.log("         Serving the 'stats.json' file dynamically.");
-          stats = compilation.getStats().toJson();
+          stats = compilation.getStats();
           done();
         }
       });

@@ -330,16 +330,15 @@ public class FrontendUtils {
      */
     public static String getStatsContent(VaadinService service)
             throws IOException {
-
         DeploymentConfiguration config = service.getDeploymentConfiguration();
-
         InputStream content = null;
-        if (!config.isProductionMode()) {
+
+        if (!config.isProductionMode() && config.enableDevServer()) {
             content = getStatsFromWebpack(service);
         }
 
         if (content == null) {
-            content = getStatsFromClassPath(service, config);
+            content = getStatsFromClassPath(service);
         }
         return content != null ? streamToString(content) : null;
     }
@@ -355,18 +354,16 @@ public class FrontendUtils {
         return null;
     }
 
-    private static InputStream getStatsFromClassPath(VaadinService service,
-            DeploymentConfiguration config) throws IOException {
-        String statsAsResource = config
+    private static InputStream getStatsFromClassPath(VaadinService service) {
+        String stats = service.getDeploymentConfiguration()
                 .getStringProperty(SERVLET_PARAMETER_STATISTICS_JSON,
                         VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT)
                 // Remove absolute
                 .replaceFirst("^/", "");
-        InputStream stream =  service.getClassLoader().getResourceAsStream(statsAsResource);
+        InputStream stream =  service.getClassLoader().getResourceAsStream(stats);
         if (stream == null) {
-            getLogger().warn(
-                    "Cannot get the stats file i. "
-                            + "The webpack port is unavailable via VaadinContext.");
+            getLogger().error(
+                    "Cannot get the 'stats.json' from the classpath '{}'", stats);
         }
         return stream;
     }
