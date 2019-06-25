@@ -15,14 +15,14 @@
  */
 package com.vaadin.flow.router;
 
-import static org.mockito.Mockito.when;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -30,6 +30,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
@@ -41,7 +42,7 @@ import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
-import net.jcip.annotations.NotThreadSafe;
+import static org.mockito.Mockito.when;
 
 /**
  * Test event util functionality.
@@ -88,6 +89,10 @@ public class EventUtilTest {
         public void localeChange(LocaleChangeEvent event) {
 
         }
+    }
+
+    public static class CompositeWrapper extends Composite<EnterObserver> {
+
     }
 
     @Before
@@ -393,5 +398,17 @@ public class EventUtilTest {
 
         Assert.assertEquals("Wrong amount of listener instances found", 2,
                 beforeNavigationObservers.size());
+    }
+
+    @Test
+    public void getImplementingComponents_hasComposite_originalComponentIsReturned() {
+        CompositeWrapper wrapper = new CompositeWrapper();
+        List<BeforeEnterObserver> components = EventUtil
+                .getImplementingComponents(Stream.of(wrapper.getElement()),
+                        BeforeEnterObserver.class)
+                .distinct().collect(Collectors.toList());
+        Assert.assertEquals(1, components.size());
+        Assert.assertEquals(EnterObserver.class, components.get(0).getClass());
+
     }
 }
