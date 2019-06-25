@@ -194,7 +194,7 @@ public abstract class NodeUpdater implements Command {
         added = addDependency(packageJson, null, DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT) || added;
 
 
-        added = addDependency(packageJson, DEPENDENCIES, "@polymer/polymer", "^3.1.0") || added;
+        added = addDependency(packageJson, DEPENDENCIES, "@polymer/polymer", "3.2.0") || added;
         added = addDependency(packageJson, DEPENDENCIES, "@webcomponents/webcomponentsjs", "^2.2.10") || added;
         // dependency for the custom package.json placed in the generated folder.
         String customPkg = "./" + npmFolder.getAbsoluteFile().toPath()
