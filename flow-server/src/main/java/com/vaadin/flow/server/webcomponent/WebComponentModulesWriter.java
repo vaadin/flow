@@ -36,6 +36,7 @@ import org.apache.commons.io.FileUtils;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.internal.ReflectTools;
 
 /**
  * Writes web components generated from
@@ -202,9 +203,15 @@ public final class WebComponentModulesWriter implements Serializable {
             Objects.requireNonNull(outputDirectory,
                     "Parameter 'outputDirectory' must not be null");
 
+            /*
+             * We'll treat null class loader as "no shared parent" instead of
+             * bootstrap classloader - otherwise we'd have no way of ensuring
+             * that the class loaders share parentage.
+             */
             for (Class<?> exporterClass : exporterClasses) {
-                if (!writerClass.getClassLoader()
-                        .equals(exporterClass.getClassLoader())) {
+                if (!ReflectTools.findClosestCommonClassLoaderAncestor(
+                        writerClass.getClassLoader(),
+                        exporterClass.getClassLoader()).isPresent()) {
                     throw new IllegalArgumentException(String.format(
                             "Supplied writer '%s' and "
                                     + "supplied exporter '%s' have different "
