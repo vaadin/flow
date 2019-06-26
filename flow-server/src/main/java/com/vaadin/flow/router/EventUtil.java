@@ -18,11 +18,14 @@ package com.vaadin.flow.router;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
@@ -210,11 +213,11 @@ public final class EventUtil {
      */
     public static <T> Stream<T> getImplementingComponents(
             Stream<Element> elementStream, Class<T> type) {
-        return elementStream.flatMap(
-                o -> o.getComponent().map(Stream::of).orElseGet(Stream::empty))
-                .filter(component -> type
-                        .isAssignableFrom(component.getClass()))
-                .map(component -> (T) component);
+        return elementStream
+                .flatMap(element -> element.getComponent().map(Stream::of)
+                        .orElseGet(Stream::empty))
+                .map(component -> getComponent(component, type))
+                .filter(Objects::nonNull);
     }
 
     /**
@@ -242,5 +245,16 @@ public final class EventUtil {
         Collection<Element> descendants = new ArrayList<>();
         inspectHierarchy(element, descendants, recursionPredicate);
         return descendants.stream();
+    }
+
+    private static <T> T getComponent(Component component, Class<T> type) {
+        if (type.isAssignableFrom(component.getClass())) {
+            return type.cast(component);
+        }
+        if (component instanceof Composite<?>) {
+            return type.cast(getComponent(
+                    ((Composite<?>) component).getContent(), type));
+        }
+        return null;
     }
 }
