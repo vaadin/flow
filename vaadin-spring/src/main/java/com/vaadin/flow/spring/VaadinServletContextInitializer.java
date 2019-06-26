@@ -21,6 +21,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
+
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -38,6 +39,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.googlecode.gentyref.GenericTypeReflector;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
@@ -102,14 +104,27 @@ public class VaadinServletContextInitializer
             ApplicationRouteRegistry registry = ApplicationRouteRegistry
                     .getInstance(event.getServletContext());
 
+            getLogger().debug(
+                    "Servlet Context initialized. Running route discovering....");
+
             if (registry.getRegisteredRoutes().isEmpty()) {
+                getLogger().debug("There are no discovered routes yet. "
+                        + "Start to collect all routes from the classpath...");
                 try {
                     List<Class<?>> routeClasses = findByAnnotation(
                             getRoutePackages(), Route.class, RouteAlias.class)
                                     .collect(Collectors.toList());
 
+                    getLogger().debug(
+                            "Found {} route classes. Here is the list: {}",
+                            routeClasses.size(), routeClasses);
+
                     Set<Class<? extends Component>> navigationTargets = validateRouteClasses(
                             routeClasses.stream());
+
+                    getLogger().debug(
+                            "There are {} navigation targets after filtering route classes: {}",
+                            navigationTargets.size(), navigationTargets);
 
                     RouteConfiguration routeConfiguration = RouteConfiguration
                             .forRegistry(registry);
@@ -121,7 +136,12 @@ public class VaadinServletContextInitializer
                 } catch (InvalidRouteConfigurationException e) {
                     throw new IllegalStateException(e);
                 }
+            } else {
+                getLogger().debug(
+                        "Skipped discovery as there was {} routes already in registry",
+                        registry.getRegisteredRoutes().size());
             }
+
         }
 
         @Override
@@ -238,8 +258,8 @@ public class VaadinServletContextInitializer
                             ServletRegistrationBean.class);
 
             if (servletRegistrationBean == null) {
-                LoggerFactory.getLogger(VaadinServletContextInitializer.class)
-                        .warn("No servlet registration found. DevServer will not be started!");
+                getLogger().warn(
+                        "No servlet registration found. DevServer will not be started!");
                 return;
             }
 
@@ -247,24 +267,22 @@ public class VaadinServletContextInitializer
                     .createDeploymentConfiguration(event.getServletContext(),
                             servletRegistrationBean, SpringServlet.class);
 
-            if (config.isCompatibilityMode() || config.isProductionMode() || !config.enableDevServer()) {
+            if (config.isCompatibilityMode() || config.isProductionMode()
+                    || !config.enableDevServer()) {
                 return;
             }
 
-            // Handle classes Route.class, NpmPackage.class, WebComponentExporter.class
+            // Handle classes Route.class, NpmPackage.class,
+            // WebComponentExporter.class
             Set<String> allClasses = Collections.singleton("");
-            Set<Class<?>> classes = findByAnnotation(allClasses,
-                    customLoader, Route.class, NpmPackage.class)
-                    .collect(Collectors.toSet());
+            Set<Class<?>> classes = findByAnnotation(allClasses, customLoader,
+                    Route.class, NpmPackage.class).collect(Collectors.toSet());
 
-            classes.addAll(
-                    findBySuperType(allClasses, customLoader,
-                            WebComponentExporter.class)
-                            .collect(Collectors.toSet()));
+            classes.addAll(findBySuperType(allClasses, customLoader,
+                    WebComponentExporter.class).collect(Collectors.toSet()));
 
-            DevModeInitializer
-                    .initDevModeHandler(classes, event.getServletContext(),
-                            config);
+            DevModeInitializer.initDevModeHandler(classes,
+                    event.getServletContext(), config);
         }
 
         @Override
@@ -377,8 +395,8 @@ public class VaadinServletContextInitializer
         return findByAnnotation(packages, appContext, annotations);
     }
 
-    private Stream<Class<?>> findByAnnotation(Collection<String> packages, ResourceLoader loader,
-            Class<? extends Annotation>... annotations) {
+    private Stream<Class<?>> findByAnnotation(Collection<String> packages,
+            ResourceLoader loader, Class<? extends Annotation>... annotations) {
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(
                 false);
 
@@ -395,8 +413,8 @@ public class VaadinServletContextInitializer
         return findBySuperType(packages, appContext, type);
     }
 
-    private Stream<Class<?>> findBySuperType(Collection<String> packages, ResourceLoader loader,
-            Class<?> type) {
+    private Stream<Class<?>> findBySuperType(Collection<String> packages,
+            ResourceLoader loader, Class<?> type) {
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(
                 false);
         scanner.setResourceLoader(loader);
@@ -452,9 +470,9 @@ public class VaadinServletContextInitializer
 
         }
         if (!packagesList.isEmpty()) {
-            LoggerFactory.getLogger(VaadinServletContextInitializer.class)
-                    .trace("Using explicitly configured packages for scan Vaadin types at startup {}",
-                            packagesList);
+            getLogger().trace(
+                    "Using explicitly configured packages for scan Vaadin types at startup {}",
+                    packagesList);
         } else if (AutoConfigurationPackages.has(appContext)) {
             packagesList = AutoConfigurationPackages.get(appContext);
         }
@@ -462,42 +480,38 @@ public class VaadinServletContextInitializer
     }
 
     /**
-     * For NPM we scan all packages. For performance reasons and due to
-     * problems with atmosphere we skip known packaged from our resources
-     * collection.
+     * For NPM we scan all packages. For performance reasons and due to problems
+     * with atmosphere we skip known packaged from our resources collection.
      */
-    private static class CustomResourceLoader extends PathMatchingResourcePatternResolver {
+    private static class CustomResourceLoader
+            extends PathMatchingResourcePatternResolver {
 
         /**
-         * Blacklisted packages that shouldn't be scanned for
-         * when scanning all
+         * Blacklisted packages that shouldn't be scanned for when scanning all
          * packages.
          */
-        private List<String> blackListed = Stream
-                .of("antlr", "cglib", "ch/quos/logback", "commons-codec",
-                        "commons-fileupload", "commons-io",
-                        "commons-logging", "com/fasterxml", "com/google",
-                        "com/h2database", "com/helger",
-                        "com/vaadin/external/atmosphere",
-                        "com/vaadin/webjar", "javax/", "junit",
-                        "net/bytebuddy", "org/apache", "org/aspectj",
-                        "org/bouncycastle", "org/dom4j", "org/easymock", "org/hamcrest",
-                        "org/hibernate", "org/javassist", "org/jboss",
-                        "org/jsoup", "org/seleniumhq", "org/slf4j", "org/atmosphere",
-                        "org/springframework", "org/webjars/bowergithub",
-                        "org/yaml").collect(Collectors.toList());
+        private List<String> blackListed = Stream.of("antlr", "cglib",
+                "ch/quos/logback", "commons-codec", "commons-fileupload",
+                "commons-io", "commons-logging", "com/fasterxml", "com/google",
+                "com/h2database", "com/helger",
+                "com/vaadin/external/atmosphere", "com/vaadin/webjar", "javax/",
+                "junit", "net/bytebuddy", "org/apache", "org/aspectj",
+                "org/bouncycastle", "org/dom4j", "org/easymock", "org/hamcrest",
+                "org/hibernate", "org/javassist", "org/jboss", "org/jsoup",
+                "org/seleniumhq", "org/slf4j", "org/atmosphere",
+                "org/springframework", "org/webjars/bowergithub", "org/yaml")
+                .collect(Collectors.toList());
 
-        public CustomResourceLoader(ResourceLoader resourceLoader, List<String> addedBlacklist) {
+        public CustomResourceLoader(ResourceLoader resourceLoader,
+                List<String> addedBlacklist) {
             super(resourceLoader);
             blackListed.addAll(addedBlacklist);
         }
 
         /**
-         * Lock used to ensure there's only one update going on
-         * at once.
+         * Lock used to ensure there's only one update going on at once.
          * <p>
-         * The lock is configured to always guarantee a fair
-         * ordering.
+         * The lock is configured to always guarantee a fair ordering.
          */
         private final ReentrantLock lock = new ReentrantLock(true);
 
@@ -606,5 +620,9 @@ public class VaadinServletContextInitializer
                         registration.getServletName(), servletClass), e);
             }
         }
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(VaadinServletContextInitializer.class);
     }
 }
