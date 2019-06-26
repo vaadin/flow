@@ -46,7 +46,6 @@ public class PrepareFrontendMojoTest {
     public ExpectedException exception = ExpectedException.none();
 
     private final PrepareFrontendMojo mojo = new PrepareFrontendMojo();
-    private File projectFrontendResourcesDirectory;
     private File nodeModulesPath;
     private File flowPackagePath;
     private String webpackConfig;
@@ -66,15 +65,6 @@ public class PrepareFrontendMojoTest {
         MavenProject project = Mockito.mock(MavenProject.class);
         Mockito.when(project.getBasedir()).thenReturn(projectBase);
 
-        projectFrontendResourcesDirectory = new File(projectBase,
-                "flow_resources");
-
-        Assert.assertTrue("Failed to create a test project resources",
-                projectFrontendResourcesDirectory.mkdirs());
-        Assert.assertTrue("Failed to create a test project file",
-                new File(projectFrontendResourcesDirectory,
-                        "test_project_resource.js").createNewFile());
-
         nodeModulesPath = new File(projectBase, NODE_MODULES);
         flowPackagePath = new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME);
         webpackConfig = new File(projectBase, WEBPACK_CONFIG).getAbsolutePath();
@@ -82,7 +72,6 @@ public class PrepareFrontendMojoTest {
         webpackOutputDirectory = new File(projectBase, VAADIN_SERVLET_RESOURCES);
 
         ReflectionUtils.setVariableValueInObject(mojo, "project", project);
-        ReflectionUtils.setVariableValueInObject(mojo, "frontendResourcesDirectory", projectFrontendResourcesDirectory);
         ReflectionUtils.setVariableValueInObject(mojo, "jarResourcePathsToCopy", RESOURCES_FRONTEND_DEFAULT);
         ReflectionUtils.setVariableValueInObject(mojo, "includes", "**/*.js,**/*.css");
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", projectBase);
@@ -93,26 +82,6 @@ public class PrepareFrontendMojoTest {
 
         Assert.assertTrue(flowPackagePath.mkdirs());
         setProject(mojo, projectBase);
-    }
-
-    @Test
-    public void should_copyProjectFrontendResources() {
-        Assert.assertTrue("There should be no modules before the mojo is run",
-                gatherFiles(nodeModulesPath).isEmpty());
-        mojo.execute();
-
-        Set<String> projectFrontendResources = Stream
-                .of(projectFrontendResourcesDirectory.listFiles())
-                .map(File::getName).collect(Collectors.toSet());
-        List<File> filesInNodeModules = gatherFiles(nodeModulesPath);
-
-        Assert.assertEquals(
-                "All project resources should be copied into the node_modules",
-                projectFrontendResources.size(), filesInNodeModules.size());
-
-        filesInNodeModules.forEach(file -> Assert.assertTrue(String.format(
-                "Expected the copied file '%s' to be in the project resources",
-                file), projectFrontendResources.contains(file.getName())));
     }
 
     @Test
