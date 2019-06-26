@@ -718,9 +718,12 @@ public class ReflectTools implements Serializable {
 
     /**
      * Finds the common ancestor of the two {@code ClassLoaders}. The class
-     * loaders themselves are potential ancestors; if they are equal, {@code
-     * classLoaderA} is returned. This method is under the same exception and
-     * behavioral rules as {@link ClassLoader#getParent()}.
+     * loaders themselves are acceptable ancestors; If they are equal, {@code
+     * classLoaderA} is returned.
+     * An empty optional is returned if the two class loaders aren't equal,
+     * no shared ancestor is found, or the implementation of the class loader
+     * treats bootstrap class loader as {@code null} when it is the parent of
+     * a class loaders (see {@link ClassLoader#getParent()}.
      *
      * @param classLoaderA
      *            class loader A
