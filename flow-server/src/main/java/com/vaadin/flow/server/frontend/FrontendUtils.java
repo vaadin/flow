@@ -15,16 +15,11 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON;
-import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
-import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -41,6 +36,10 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinService;
+
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON;
+import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
+import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 
 /**
  * A class for static methods and definitions that might be used in different
@@ -207,13 +206,13 @@ public class FrontendUtils {
     public static boolean isWindows() {
         return getOsName().startsWith("Windows");
     }
-    
+
     /**
      * Locate <code>node</code> executable.
      *
      * @param baseDir
      *            project root folder.
-     * 
+     *
      * @return the full path to the executable
      */
     public static String getNodeExecutable(String baseDir) {
@@ -332,56 +331,41 @@ public class FrontendUtils {
     public static String getStatsContent(VaadinService service)
             throws IOException {
         DeploymentConfiguration config = service.getDeploymentConfiguration();
-        String stats = config
-                .getStringProperty(SERVLET_PARAMETER_STATISTICS_JSON,
-                        VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT)
-                // Remove absolute
-                .replaceFirst("^/", "");
+        InputStream content = null;
 
-        // Try stats as a resource from the class path
-        InputStream content = service.getClassLoader()
-                .getResourceAsStream(stats);
-        if (content != null) {
-            getLogger().debug("Found stats file as a resource file '{}'.",
-                    stats);
-        } else {
-            URL statsUrl = null;
-            if (config.isProductionMode()) {
-                statsUrl = service.getStaticResource("/" + stats);
-            } else {
-                statsUrl = getStatsFromWebpack(service, stats, statsUrl);
-            }
-            if (statsUrl != null) {
-                getLogger().debug("Found stats file at url '{}'", statsUrl);
-                content = statsUrl.openStream();
-            }
+        if (!config.isProductionMode() && config.enableDevServer()) {
+            content = getStatsFromWebpack(service);
+        }
+
+        if (content == null) {
+            content = getStatsFromClassPath(service);
         }
         return content != null ? streamToString(content) : null;
     }
 
-    private static URL getStatsFromWebpack(VaadinService service, String stats,
-            URL statsUrl) throws MalformedURLException {
+    private static InputStream getStatsFromWebpack(VaadinService service)
+            throws IOException {
         WebpackDevServerPort port = service.getContext()
                 .getAttribute(WebpackDevServerPort.class);
         if (port != null) {
-            statsUrl = new URL("http://localhost:" + port + "/" + stats);
+            URL statsUrl = new URL("http://localhost:" + port + "/stats.json");
+            return statsUrl.openStream();
         }
-        if (statsUrl == null) {
-            statsUrl = service.getStaticResource("/" + stats);
-            if (statsUrl == null) {
-                getLogger().warn(
-                        "Cannot get the stats file through webpack-dev-server. "
-                                + "The webpack port is unavailable via VaadinContext.");
-            } else {
-                getLogger().debug(
-                        "Cannot get the stats file through webpack-dev-server, "
-                                + "however it was found in the web context, "
-                                + "which means that the application was build "
-                                + "previously. To disable this message run the "
-                                + "application in PRODUCTION mode.");
-            }
+        return null;
+    }
+
+    private static InputStream getStatsFromClassPath(VaadinService service) {
+        String stats = service.getDeploymentConfiguration()
+                .getStringProperty(SERVLET_PARAMETER_STATISTICS_JSON,
+                        VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT)
+                // Remove absolute
+                .replaceFirst("^/", "");
+        InputStream stream =  service.getClassLoader().getResourceAsStream(stats);
+        if (stream == null) {
+            getLogger().error(
+                    "Cannot get the 'stats.json' from the classpath '{}'", stats);
         }
-        return statsUrl;
+        return stream;
     }
 
     /**
