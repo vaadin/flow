@@ -145,11 +145,11 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
     private void verifyUpdate(List<String> webpackContents, String entryPoint, String outputFolder) {
         Assert.assertTrue(
                 "webpack config should update fileNameOfTheFlowGeneratedMainEntryPoint",
-                webpackContents.contains("fileNameOfTheFlowGeneratedMainEntryPoint = require('path').resolve(__dirname, '" + entryPoint + "');"));
+                webpackContents.contains("const fileNameOfTheFlowGeneratedMainEntryPoint = require('path').resolve(__dirname, '" + entryPoint + "');"));
 
         Assert.assertTrue(
                 "webpack config should update fileNameOfTheFlowGeneratedMainEntryPoint",
-                webpackContents.contains("mavenOutputFolderForFlowBundledFiles = require('path').resolve(__dirname, '" + outputFolder + "');"));
+                webpackContents.contains("const mavenOutputFolderForFlowBundledFiles = require('path').resolve(__dirname, '" + outputFolder + "');"));
 
     }
 

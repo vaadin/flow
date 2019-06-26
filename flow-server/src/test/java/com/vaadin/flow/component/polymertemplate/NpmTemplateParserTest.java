@@ -3,7 +3,6 @@ package com.vaadin.flow.component.polymertemplate;
 import java.util.Collections;
 import java.util.Locale;
 
-import org.jsoup.UncheckedIOException;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.junit.Assert;
@@ -21,7 +20,6 @@ import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.frontend.WebpackDevServerPort;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
@@ -51,8 +49,6 @@ public class NpmTemplateParserTest {
                     Object[] args = invocation.getArguments();
                     return (String) args[1];
                 });
-        Mockito.when(context.getAttribute(WebpackDevServerPort.class))
-                .thenReturn(new WebpackDevServerPort(6666));
     }
 
     @Test
@@ -121,7 +117,7 @@ public class NpmTemplateParserTest {
                         .getElementById("test").tag().toString());
     }
 
-    @Test(expected = UncheckedIOException.class)
+    @Test(expected = IllegalStateException.class)
     public void should_throwException_when_LocalFileNotFound() {
         Mockito.when(configuration.getStringProperty(Mockito.anyString(),
                 Mockito.anyString()))
