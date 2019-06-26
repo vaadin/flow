@@ -86,16 +86,12 @@ public class ReflectToolsTest {
         void setId(ID id);
     }
 
-    public static class ParentClassLoader extends ClassLoader {
-
-    }
-
-    public static class ChildClassLoader extends ClassLoader {
-        protected ChildClassLoader(ClassLoader parent) {
+    public static class CustomClassLoader extends ClassLoader {
+        protected CustomClassLoader(ClassLoader parent) {
             super(parent);
         }
 
-        protected ChildClassLoader() {
+        protected CustomClassLoader() {
             super();
         }
     }
@@ -279,17 +275,28 @@ public class ReflectToolsTest {
 
     @Test
     public void findClosestCommonClassLoaderAncestor_findAncestor_whenBothArgumentsAreTheSame() {
-        ParentClassLoader loader = new ParentClassLoader();
+        CustomClassLoader loader = new CustomClassLoader();
         ClassLoader ret = ReflectTools.findClosestCommonClassLoaderAncestor(loader,
                 loader).get();
 
         Assert.assertEquals(loader, ret);
     }
 
+    public void findClosestCommonClassLoaderAncestor_null_whenNoSharedAncestor() {
+        CustomClassLoader loader1 = new CustomClassLoader();
+        CustomClassLoader loader2 = new CustomClassLoader();
+
+        Optional<ClassLoader> ret =
+                ReflectTools.findClosestCommonClassLoaderAncestor(loader1,
+                        loader2);
+
+        Assert.assertFalse(ret.isPresent());
+    }
+
     @Test
     public void findClosestCommonClassLoaderAncestor_findsAncestor_whenOneIsParentOfTheOther() {
-        ParentClassLoader parent = new ParentClassLoader();
-        ChildClassLoader child = new ChildClassLoader(parent);
+        CustomClassLoader parent = new CustomClassLoader();
+        CustomClassLoader child = new CustomClassLoader(parent);
         ClassLoader ret = ReflectTools.findClosestCommonClassLoaderAncestor(parent,
                 child).get();
 
@@ -298,9 +305,9 @@ public class ReflectToolsTest {
 
     @Test
     public void findClosestCommonClassLoaderAncestor_findsAncestor_whenLoadersShareParent() {
-        ParentClassLoader parent = new ParentClassLoader();
-        ChildClassLoader childA = new ChildClassLoader(parent);
-        ChildClassLoader childB = new ChildClassLoader(parent);
+        CustomClassLoader parent = new CustomClassLoader();
+        CustomClassLoader childA = new CustomClassLoader(parent);
+        CustomClassLoader childB = new CustomClassLoader(parent);
         ClassLoader ret = ReflectTools.findClosestCommonClassLoaderAncestor(childA,
                 childB).get();
 
@@ -308,8 +315,22 @@ public class ReflectToolsTest {
     }
 
     @Test
+    public void findClosestCommonClassLoaderAncestor_findsAncestor_whenAncestorsAreOnDifferentLevels() {
+        CustomClassLoader grandParent = new CustomClassLoader();
+        CustomClassLoader parent = new CustomClassLoader(grandParent);
+        CustomClassLoader childA = new CustomClassLoader(parent);
+        CustomClassLoader childB = new CustomClassLoader(grandParent);
+
+        ClassLoader ret =
+                ReflectTools.findClosestCommonClassLoaderAncestor(childA,
+                        childB).get();
+
+        Assert.assertEquals(grandParent, ret);
+    }
+
+    @Test
     public void findClosestCommonClassLoaderAncestor_empty_whenEitherOrBothNull() {
-        ParentClassLoader loader = new ParentClassLoader();
+        CustomClassLoader loader = new CustomClassLoader();
 
         Optional<ClassLoader> ret;
 
