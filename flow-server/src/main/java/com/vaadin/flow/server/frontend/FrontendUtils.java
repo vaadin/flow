@@ -334,7 +334,7 @@ public class FrontendUtils {
         InputStream content = null;
 
         if (!config.isProductionMode() && config.enableDevServer()) {
-            content = getStatsFromWebpack(service);
+            content = getStatsFromWebpack();
         }
 
         if (content == null) {
@@ -343,7 +343,7 @@ public class FrontendUtils {
         return content != null ? streamToString(content) : null;
     }
 
-    private static InputStream getStatsFromWebpack(VaadinService service)
+    private static InputStream getStatsFromWebpack()
             throws IOException {
         DevModeHandler handler = DevModeHandler.getDevModeHandler();
         return handler.prepareConnection("/stats.json", "GET").getInputStream();

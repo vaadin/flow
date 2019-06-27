@@ -176,10 +176,9 @@ public class DevModeInitializer
                 .collectVisitedClasses(visitedClassNames).build().execute();
 
         VaadinContext vaadinContext = new VaadinServletContext(context);
-
         vaadinContext.setAttribute(new VisitedClasses(visitedClassNames));
 
-        DevModeHandler.start(vaadinContext, config, builder.npmFolder);
+        DevModeHandler.start(config, builder.npmFolder);
     }
 
     private static Logger log() {
