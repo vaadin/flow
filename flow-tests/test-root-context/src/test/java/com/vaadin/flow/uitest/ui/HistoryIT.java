@@ -82,6 +82,13 @@ public class HistoryIT extends ChromeBrowserTest {
         Assert.assertEquals(baseUrl.resolve("qwerty"), getCurrentUrl());
         Assert.assertEquals(Arrays.asList("New location: qwerty"),
                 getStatusMessages());
+
+        // Navigate to empty string should go to the context path root
+        stateField.clear();
+        locationField.clear();
+        pushButton.click();
+
+        Assert.assertEquals(baseUrl.resolve("."), getCurrentUrl());
     }
 
     private URI getCurrentUrl() throws URISyntaxException {
