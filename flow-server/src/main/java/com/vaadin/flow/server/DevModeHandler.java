@@ -41,15 +41,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.function.SerializableRunnable;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.getNodeExecutable;
+import static com.vaadin.flow.server.frontend.FrontendUtils.getRunningDevServerPort;
 import static com.vaadin.flow.server.frontend.FrontendUtils.removeRunningDevServerPort;
 import static com.vaadin.flow.server.frontend.FrontendUtils.saveRunningDevServerPort;
 import static com.vaadin.flow.server.frontend.FrontendUtils.validateNodeAndNpmVersion;
@@ -90,25 +90,22 @@ public class DevModeHandler implements Serializable {
 
     private static final int DEFAULT_BUFFER_SIZE = 32 * 1024;
     private static final int DEFAULT_TIMEOUT = 120 * 1000;
+    private static final String WEBPACK_HOST = "http://localhost";
+
     private boolean notified = false;
 
     private String failedOutput;
-
-    private final SerializableRunnable stopProcess;
 
     /**
      * The local installation path of the webpack-dev-server node script.
      */
     public static final String WEBPACK_SERVER = "node_modules/webpack-dev-server/bin/webpack-dev-server.js";
 
-    private static final String WEBPACK_HOST = "http://localhost";
-
     private int port;
 
     // For testing purposes
     DevModeHandler(int port) {
         this.port = port;
-        stopProcess = null;
     }
 
     private DevModeHandler(VaadinContext context,
@@ -118,7 +115,6 @@ public class DevModeHandler implements Serializable {
         port = runningPort;
         // If port is defined, means that webpack is already running
         if (port > 0) {
-            stopProcess = null;
             if (checkWebpackConnection(port)) {
                 getLogger().info("Webpack is running at {}:{}", WEBPACK_HOST,
                         port);
@@ -156,18 +152,16 @@ public class DevModeHandler implements Serializable {
         }
 
         processBuilder.command(command);
-        SerializableRunnable stopCallback = null;
         try {
             Process webpackProcess = processBuilder
                     .redirectError(ProcessBuilder.Redirect.PIPE)
                     .redirectErrorStream(true).start();
-            stopCallback = () -> {
-                atomicHandler.set(null);
-                webpackProcess.destroy();
-                removeRunningDevServerPort(context);
-            };
+
             Runtime.getRuntime()
-                    .addShutdownHook(new Thread(webpackProcess::destroy));
+                    .addShutdownHook(new Thread(() -> {
+                        webpackProcess.destroy();
+                        removeRunningDevServerPort(context);
+                    }));
 
             Pattern succeed = Pattern.compile(config.getStringProperty(
                     SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN,
@@ -192,7 +186,6 @@ public class DevModeHandler implements Serializable {
             getLogger().error("Failed to start the webpack process", e);
         }
 
-        stopProcess = stopCallback;
         saveRunningDevServerPort(context, port);
     }
 
@@ -221,15 +214,6 @@ public class DevModeHandler implements Serializable {
     }
 
     /**
-     * Stops the dev server.
-     */
-    public void stop() {
-        if (stopProcess != null) {
-            stopProcess.run();
-        }
-    }
-
-    /**
      * Get the instantiated DevModeHandler.
      *
      * @return devModeHandler or {@code null} if not started
@@ -243,12 +227,12 @@ public class DevModeHandler implements Serializable {
 
         File webpack = null;
         File webpackConfig = null;
-        int runningPort = FrontendUtils.getRunningDevServerPort(context);
+        int runningPort = getRunningDevServerPort(context);
 
         // Skip checks if we have a webpack-dev-server already running
         if (runningPort == 0) {
             webpack = new File(npmFolder, WEBPACK_SERVER);
-            webpackConfig = new File(npmFolder, FrontendUtils.WEBPACK_CONFIG);
+            webpackConfig = new File(npmFolder, WEBPACK_CONFIG);
             if (!npmFolder.exists()) {
                 getLogger().warn(
                         "Instance not created because cannot change to '{}'",
@@ -472,8 +456,8 @@ public class DevModeHandler implements Serializable {
     }
 
     private static Logger getLogger() {
-        // Using an empty prefix so as webpack output is more readable
-        return LoggerFactory.getLogger("");
+        // Using an short prefix so as webpack output is more readable
+        return LoggerFactory.getLogger("dev-webpack");
     }
 
     /**

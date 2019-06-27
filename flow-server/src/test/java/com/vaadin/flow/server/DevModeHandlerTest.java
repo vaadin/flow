@@ -290,14 +290,6 @@ public class DevModeHandlerTest {
         assertEquals(HTTP_OK, responseStatus);
     }
 
-    @Test
-    public void stopDevMode_devModeHanlderNull() throws InterruptedException {
-        DevModeHandler handler = DevModeHandler.start(vaadinContext, configuration, npmFolder);
-        handler.stop();
-        assertNull(DevModeHandler.getDevModeHandler());
-        Thread.sleep(150); // NOSONAR
-    }
-
     private VaadinServlet prepareServlet() throws ServletException {
         DevModeHandler.start(vaadinContext, configuration, npmFolder);
         VaadinServlet servlet = new VaadinServlet();
