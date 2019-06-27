@@ -183,7 +183,7 @@ public class DevModeInitializer
 
         // Copy from JAR files if we don't have the node directory or generated package json is missing
         if (!flowNodeDirectory.exists() || !generatedPackages.exists()) {
-            copyFrontendFilesFromJar(flowNodeDirectory);
+            copyFrontendFilesFromJars(flowNodeDirectory);
         }
 
         // If we are missing the generated webpack configuration then generate webpack configurations
@@ -214,7 +214,7 @@ public class DevModeInitializer
         return LoggerFactory.getLogger(DevModeInitializer.class);
     }
 
-    private static void copyFrontendFilesFromJar(File flowNodeDirectory) {
+    private static void copyFrontendFilesFromJars(File flowNodeDirectory) {
 
         List<File> collect = Stream.of(System.getProperty("java.class.path").split(";"))
                 .filter(path -> path.endsWith(".jar")).map(File::new).filter(File::exists).collect(
