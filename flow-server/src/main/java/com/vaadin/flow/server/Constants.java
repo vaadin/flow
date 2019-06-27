@@ -167,15 +167,6 @@ public final class Constants implements Serializable {
     public static final String RESOURCES_FRONTEND_DEFAULT = "META-INF/resources/frontend";
 
     /**
-     * Configuration name for the parameter that indicates the tcp port of a
-     * webpack-dev-server already running. This property is automatically
-     * defined when {@link DevModeHandler} starts the webpack server. If you
-     * have your own server already running, define this property, then
-     * {@link DevModeHandler} will re-use that server and will disable updaters.
-     */
-    public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT = "devmode.webpack.running-port";
-
-    /**
      * Configuration name for the time waiting for webpack output success or
      * error pattern defined in
      * {@link Constants#SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN} and

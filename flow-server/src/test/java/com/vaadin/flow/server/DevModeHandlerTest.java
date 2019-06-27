@@ -21,6 +21,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -41,7 +42,6 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.server.frontend.WebpackDevServerPort;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
@@ -98,7 +98,7 @@ public class DevModeHandlerTest {
         if (httpServer != null) {
             httpServer.stop(0);
         }
-
+        FrontendUtils.removeRunningDevServerPort(vaadinContext);
         // Reset unique instance in DevModeHandler
         Field atomicHandler = DevModeHandler.class
                 .getDeclaredField("atomicHandler");
@@ -134,9 +134,8 @@ public class DevModeHandlerTest {
                 SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT, "100");
         createStubWebpackServer("Foo", 300, baseDir);
         assertNotNull(DevModeHandler.start(vaadinContext, configuration, npmFolder));
-        WebpackDevServerPort port = vaadinContext.getAttribute(WebpackDevServerPort.class);
-        assertNotNull(port);
-        assertTrue(port.getPort() > 0);
+        int port = FrontendUtils.getRunningDevServerPort(vaadinContext);
+        assertTrue(port > 0);
         Thread.sleep(350); // NOSONAR
     }
 
@@ -349,7 +348,7 @@ public class DevModeHandlerTest {
             exchange.close();
         });
         httpServer.start();
-        vaadinContext.setAttribute(new WebpackDevServerPort(port));
+        FrontendUtils.saveRunningDevServerPort(vaadinContext, port);
         return port;
     }
 }

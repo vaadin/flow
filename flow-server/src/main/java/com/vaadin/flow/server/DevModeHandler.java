@@ -18,6 +18,7 @@ package com.vaadin.flow.server;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -42,14 +43,16 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.frontend.WebpackDevServerPort;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
+import static com.vaadin.flow.server.frontend.FrontendUtils.getNodeExecutable;
+import static com.vaadin.flow.server.frontend.FrontendUtils.removeRunningDevServerPort;
+import static com.vaadin.flow.server.frontend.FrontendUtils.saveRunningDevServerPort;
+import static com.vaadin.flow.server.frontend.FrontendUtils.validateNodeAndNpmVersion;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 
@@ -70,9 +73,8 @@ public class DevModeHandler implements Serializable {
     private static AtomicReference<DevModeHandler> atomicHandler = new AtomicReference<>();
 
     // It's not possible to know whether webpack is ready unless reading output
-    // messages.
-    // When webpack finishes, it writes either a `Compiled` or a `Failed` in the
-    // last line
+    // messages. When webpack finishes, it writes either a `Compiled` or a
+    // `Failed` in the last line
     private static final String DEFAULT_OUTPUT_PATTERN = ": Compiled.";
     private static final String DEFAULT_ERROR_PATTERN = ": Failed to compile.";
     private static final String FAILED_MSG = "\n------------------ Frontend compilation failed. -----------------";
@@ -82,15 +84,12 @@ public class DevModeHandler implements Serializable {
     private static final String GREEN = "\u001b[38;5;35m{}\u001b[0m";
 
     // If after this time in millisecs, the pattern was not found, we unlock the
-    // process
-    // and continue. It might happen if webpack changes their output without
-    // advise.
+    // process and continue. It might happen if webpack changes their output
+    // without advise.
     private static final String DEFAULT_TIMEOUT_FOR_PATTERN = "60000";
 
     private static final int DEFAULT_BUFFER_SIZE = 32 * 1024;
     private static final int DEFAULT_TIMEOUT = 120 * 1000;
-    private static final String WEBPACK_HOST = "http://localhost";
-
     private boolean notified = false;
 
     private String failedOutput;
@@ -101,6 +100,8 @@ public class DevModeHandler implements Serializable {
      * The local installation path of the webpack-dev-server node script.
      */
     public static final String WEBPACK_SERVER = "node_modules/webpack-dev-server/bin/webpack-dev-server.js";
+
+    private static final String WEBPACK_HOST = "http://localhost";
 
     private int port;
 
@@ -118,14 +119,13 @@ public class DevModeHandler implements Serializable {
         // If port is defined, means that webpack is already running
         if (port > 0) {
             stopProcess = null;
-            if (checkWebpackConnection()) {
+            if (checkWebpackConnection(port)) {
                 getLogger().info("Webpack is running at {}:{}", WEBPACK_HOST,
                         port);
                 return;
             }
             throw new IllegalStateException(String.format(
-                    "webpack server port '%s=%d' is defined but it's not working properly",
-                    SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT, port));
+                    "webpack server port '%d' is defined but it's not working properly", port));
         }
 
         // We always compute a free port.
@@ -134,10 +134,10 @@ public class DevModeHandler implements Serializable {
         ProcessBuilder processBuilder = new ProcessBuilder()
                 .directory(npmFolder);
 
-        FrontendUtils.validateNodeAndNpmVersion(npmFolder.getAbsolutePath());
+        validateNodeAndNpmVersion(npmFolder.getAbsolutePath());
 
         List<String> command = new ArrayList<>();
-        command.add(FrontendUtils.getNodeExecutable(
+        command.add(getNodeExecutable(
                 npmFolder.getAbsolutePath()));
         command.add(webpack.getAbsolutePath());
         command.add("--config");
@@ -162,9 +162,9 @@ public class DevModeHandler implements Serializable {
                     .redirectError(ProcessBuilder.Redirect.PIPE)
                     .redirectErrorStream(true).start();
             stopCallback = () -> {
-                context.removeAttribute(WebpackDevServerPort.class);
                 atomicHandler.set(null);
                 webpackProcess.destroy();
+                removeRunningDevServerPort(context);
             };
             Runtime.getRuntime()
                     .addShutdownHook(new Thread(webpackProcess::destroy));
@@ -193,8 +193,7 @@ public class DevModeHandler implements Serializable {
         }
 
         stopProcess = stopCallback;
-
-        context.setAttribute(new WebpackDevServerPort(port));
+        saveRunningDevServerPort(context, port);
     }
 
     /**
@@ -244,7 +243,7 @@ public class DevModeHandler implements Serializable {
 
         File webpack = null;
         File webpackConfig = null;
-        int runningPort = getDevServerPort(context);
+        int runningPort = FrontendUtils.getRunningDevServerPort(context);
 
         // Skip checks if we have a webpack-dev-server already running
         if (runningPort == 0) {
@@ -313,7 +312,7 @@ public class DevModeHandler implements Serializable {
         String requestFilename = request.getPathInfo().replace(VAADIN_MAPPING,
                 "");
 
-        HttpURLConnection connection = prepareConnection(requestFilename,
+        HttpURLConnection connection = prepareConnection(port, requestFilename,
                 request.getMethod());
 
         // Copies all the headers from the original request
@@ -362,9 +361,9 @@ public class DevModeHandler implements Serializable {
         return true;
     }
 
-    private boolean checkWebpackConnection() {
+    private static boolean checkWebpackConnection(int port) {
         try {
-            prepareConnection("/", "GET").getResponseCode();
+            prepareConnection(port, "/", "GET").getResponseCode();
             return true;
         } catch (IOException e) {
             getLogger().debug("Error checking webpack dev server connection",
@@ -373,7 +372,19 @@ public class DevModeHandler implements Serializable {
         return false;
     }
 
-    private HttpURLConnection prepareConnection(String path, String method)
+    /**
+     * Prepare a HTTP connection against webpack-dev-server.
+     *
+     * @param port
+     *            the port of webpack-dev-server
+     * @param path
+     *            the file to request
+     * @param method
+     *            the http method to use
+     * @return the connection
+     * @throws IOException
+     */
+    public static HttpURLConnection prepareConnection(int port, String path, String method)
             throws IOException {
         URL uri = new URL(WEBPACK_HOST + ":" + port + path);
         HttpURLConnection connection = (HttpURLConnection) uri.openConnection();
@@ -487,18 +498,5 @@ public class DevModeHandler implements Serializable {
             throw new IllegalStateException(
                     "Unable to find a free port for running webpack", e);
         }
-    }
-
-    /**
-     * Returns the webpack running port as it's stored by the
-     * <code>context</code> argument.
-     * 
-     * @param context
-     *            the context where the port is stored.
-     * @return the webpack port or 0 if the port is not stored.
-     */
-    private static int getDevServerPort(VaadinContext context) {
-        WebpackDevServerPort attribute = context.getAttribute(WebpackDevServerPort.class);
-        return attribute == null ? 0 : attribute.getPort();
     }
 }
