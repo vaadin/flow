@@ -220,8 +220,6 @@ public class DevModeInitializer
         String[] wildcardInclusions = new String[]{
                 "**/*.js","**/*.css"};
 
-        final String JAR_PATH_SEPARATOR = "/";
-
         JarContentsManager jarContentsManager = new JarContentsManager();
         for (File jarFile : collect) {
             jarContentsManager
