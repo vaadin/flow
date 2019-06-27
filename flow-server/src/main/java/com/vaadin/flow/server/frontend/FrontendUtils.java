@@ -445,6 +445,9 @@ public class FrontendUtils {
         }
     }
 
+    private static String join(List<String> toolVersion, String separate) {
+        return toolVersion.stream().collect(Collectors.joining(separate));
+    }
     private static String join(String[] toolVersion, String separate) {
         return Stream.of(toolVersion).collect(Collectors.joining(separate));
     }
@@ -464,7 +467,7 @@ public class FrontendUtils {
          *            extra information which might be helpful to the end user
          */
         public UnknownVersionException(String tool, String extraInfo) {
-            super("Unable to detect version of " + tool + "." + extraInfo);
+            super("Unable to detect version of " + tool + ". " + extraInfo);
         }
 
         /**
@@ -480,7 +483,7 @@ public class FrontendUtils {
          */
         public UnknownVersionException(String tool, String extraInfo,
                 Exception cause) {
-            super("Unable to detect version of " + tool + "." + extraInfo,
+            super("Unable to detect version of " + tool + ". " + extraInfo,
                     cause);
 
         }
@@ -488,21 +491,20 @@ public class FrontendUtils {
 
     private static String[] getVersion(String tool, List<String> versionCommand)
             throws UnknownVersionException {
-        String[] command = versionCommand
-                .toArray(new String[versionCommand.size()]);
         try {
-            Process process = new ProcessBuilder(command).start();
+            Process process = FrontendUtils.createProcessBuilder(versionCommand)
+                    .start();
             int exitCode = process.waitFor();
             if (exitCode != 0) {
                 throw new UnknownVersionException(tool,
-                        "Using command " + join(command, " "));
+                        "Using command " + join(versionCommand, " "));
             }
             String output = streamToString(process.getInputStream());
             return output.replaceFirst("^v", "").replaceAll("\n", "")
                     .split("\\.", 3);
         } catch (InterruptedException | IOException e) {
             throw new UnknownVersionException(tool,
-                    "Using command " + join(command, " "), e);
+                    "Using command " + join(versionCommand, " "), e);
         }
     }
 
