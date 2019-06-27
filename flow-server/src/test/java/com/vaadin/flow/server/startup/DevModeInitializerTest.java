@@ -148,13 +148,13 @@ public class DevModeInitializerTest {
     }
 
     @Test
-    public void should_Not_Run_Updaters_when_NoNodeConfFiles()
+    public void should_Run_Updaters_when_NoNodeConfFiles()
             throws Exception {
         webpackFile.delete();
         mainPackageFile.delete();
         appPackageFile.delete();
         devModeInitializer.onStartup(classes, servletContext);
-        assertNull(DevModeHandler.getDevModeHandler());
+        assertNotNull(DevModeHandler.getDevModeHandler());
     }
 
     @Test
@@ -165,18 +165,18 @@ public class DevModeInitializerTest {
     }
 
     @Test
-    public void should_Not_Run_Updaters_when_NoAppPackageFile()
+    public void should_Run_Updaters_when_NoAppPackageFile()
             throws Exception {
         appPackageFile.delete();
         devModeInitializer.onStartup(classes, servletContext);
-        assertNull(DevModeHandler.getDevModeHandler());
+        assertNotNull(DevModeHandler.getDevModeHandler());
     }
 
     @Test
-    public void should_Not_Run_Updaters_when_NoWebpackFile() throws Exception {
+    public void should_Run_Updaters_when_NoWebpackFile() throws Exception {
         webpackFile.delete();
         devModeInitializer.onStartup(classes, servletContext);
-        assertNull(DevModeHandler.getDevModeHandler());
+        assertNotNull(DevModeHandler.getDevModeHandler());
     }
 
     @Test
