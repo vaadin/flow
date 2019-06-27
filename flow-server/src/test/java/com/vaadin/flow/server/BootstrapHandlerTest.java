@@ -58,36 +58,6 @@ import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
-import org.apache.commons.io.IOUtils;
-import org.hamcrest.CoreMatchers;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-
-import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
-
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static org.hamcrest.Matchers.is;
@@ -420,6 +390,7 @@ public class BootstrapHandlerTest {
         testUI = new TestUI();
 
         deploymentConfiguration = mocks.getDeploymentConfiguration();
+        deploymentConfiguration.setEnableDevServer(false);
 
         service = mocks.getService();
         service.setRouteRegistry(routeRegistry);
@@ -824,7 +795,6 @@ public class BootstrapHandlerTest {
     @Test
     public void css_body_size_overrides_annotated_body_size()
             throws InvalidRouteConfigurationException {
-
 
         initUI(testUI, createVaadinRequest(),
                 Collections.singleton(BodySizeAnnotatedAndCss.class));
