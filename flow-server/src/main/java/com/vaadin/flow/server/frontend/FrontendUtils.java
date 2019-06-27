@@ -520,12 +520,22 @@ public class FrontendUtils {
         String jvmUniqueName = ManagementFactory.getRuntimeMXBean().getName();
 
         // Use UUID for generate an unique identifier based on the thread and JVM
-        String uniqueUid = UUID.nameUUIDFromBytes((jvmUniqueName + threadGroup).getBytes()).toString();
+        String uniqueUid = UUID.nameUUIDFromBytes((jvmUniqueName + threadGroup)
+                .getBytes(StandardCharsets.UTF_8)).toString();
 
         // File is placed in the user temporary folder, it works for all platrforms
         return new File(System.getProperty("java.io.tmpdir"), uniqueUid);
     }
 
+
+    /**
+     * Get the port used by the running 'webpack-dev-server'.
+     *
+     * @param context
+     *            the vaadin context
+     * @return a number greater than 0 with the value of the listening port of
+     *         webpack-dev-server or 0 if it's not running
+     */
     public static int getRunningDevServerPort(VaadinContext context) {
         WebpackDevServerPort serverPort = context.getAttribute(WebpackDevServerPort.class);
         if (serverPort != null) {
@@ -545,18 +555,35 @@ public class FrontendUtils {
         return port;
     }
 
+    /**
+     * Save the listening port of 'webpack-dev-server' in the vaadin context in
+     * order to use it when getting the 'stats.json' file, and in a temporary
+     * file in order to be used when the servlet context is reloaded.
+     *
+     * @param context
+     *            the vaadin context
+     * @param port
+     *            the listening port of the running webpack-dev-server
+     */
     public static void saveRunningDevServerPort(VaadinContext context, int port) {
         File portFile = computeDevServerPortFileName();
         try {
             FileUtils.forceMkdir(portFile.getParentFile());
             FileUtils.writeStringToFile(portFile, String.valueOf(port), "UTF-8");
+            context.setAttribute(new WebpackDevServerPort(port));
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
     }
 
+    /**
+     * Remove the listening port from the vaadin context and from the temporary
+     * file.
+     *
+     * @param context
+     *            the vaadin context
+     */
     public static void removeRunningDevServerPort(VaadinContext context) {
-        new RuntimeException().printStackTrace();
         FileUtils.deleteQuietly(computeDevServerPortFileName());
         context.removeAttribute(WebpackDevServerPort.class);
     }
