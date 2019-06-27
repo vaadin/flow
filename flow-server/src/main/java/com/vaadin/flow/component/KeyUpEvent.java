@@ -23,7 +23,7 @@ import com.vaadin.flow.component.internal.KeyboardEvent;
  * @author Vaadin Ltd
  * @since 1.0
  */
-@DomEvent("keyup")
+@DomEvent(value = "keyup", filter = "typeof(event.key) === 'string'''k && event.key.length > 0")
 public class KeyUpEvent extends KeyboardEvent {
 
     /**
