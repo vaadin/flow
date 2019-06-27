@@ -20,26 +20,21 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.UncheckedIOException;
-import java.lang.management.ManagementFactory;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
-import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON;
@@ -350,11 +345,8 @@ public class FrontendUtils {
 
     private static InputStream getStatsFromWebpack(VaadinService service)
             throws IOException {
-        int port = getRunningDevServerPort(service.getContext());
-        if (port > 0) {
-            return DevModeHandler.prepareConnection(port, "/stats.json", "GET").getInputStream();
-        }
-        return null;
+        DevModeHandler handler = DevModeHandler.getDevModeHandler();
+        return handler.prepareConnection("/stats.json", "GET").getInputStream();
     }
 
     private static InputStream getStatsFromClassPath(VaadinService service) {
@@ -510,81 +502,5 @@ public class FrontendUtils {
 
     private static Logger getLogger() {
         return LoggerFactory.getLogger(FrontendUtils.class);
-    }
-
-    private static File computeDevServerPortFileName() {
-        // The thread group is the same in each servlet-container restart
-        String threadGroup = String.valueOf(Thread.currentThread().getThreadGroup().hashCode());
-
-        // There is an unique name for the JVM
-        String jvmUniqueName = ManagementFactory.getRuntimeMXBean().getName();
-
-        // Use UUID for generate an unique identifier based on the thread and JVM
-        String uniqueUid = UUID.nameUUIDFromBytes((jvmUniqueName + threadGroup)
-                .getBytes(StandardCharsets.UTF_8)).toString();
-
-        // File is placed in the user temporary folder, it works for all platrforms
-        return new File(System.getProperty("java.io.tmpdir"), uniqueUid);
-    }
-
-
-    /**
-     * Get the port used by the running 'webpack-dev-server'.
-     *
-     * @param context
-     *            the vaadin context
-     * @return a number greater than 0 with the value of the listening port of
-     *         webpack-dev-server or 0 if it's not running
-     */
-    public static int getRunningDevServerPort(VaadinContext context) {
-        WebpackDevServerPort serverPort = context.getAttribute(WebpackDevServerPort.class);
-        if (serverPort != null) {
-            return serverPort.getPort();
-        }
-        int port = 0;
-        File portFile = computeDevServerPortFileName();
-        if (portFile.canRead()) {
-            try {
-                String portString = FileUtils.readFileToString(portFile, "UTF-8").trim();
-                port = (int)Long.parseLong(portString);
-                context.setAttribute(new WebpackDevServerPort(port));
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
-        }
-        return port;
-    }
-
-    /**
-     * Save the listening port of 'webpack-dev-server' in the vaadin context in
-     * order to use it when getting the 'stats.json' file, and in a temporary
-     * file in order to be used when the servlet context is reloaded.
-     *
-     * @param context
-     *            the vaadin context
-     * @param port
-     *            the listening port of the running webpack-dev-server
-     */
-    public static void saveRunningDevServerPort(VaadinContext context, int port) {
-        File portFile = computeDevServerPortFileName();
-        try {
-            FileUtils.forceMkdir(portFile.getParentFile());
-            FileUtils.writeStringToFile(portFile, String.valueOf(port), "UTF-8");
-            context.setAttribute(new WebpackDevServerPort(port));
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-    }
-
-    /**
-     * Remove the listening port from the vaadin context and from the temporary
-     * file.
-     *
-     * @param context
-     *            the vaadin context
-     */
-    public static void removeRunningDevServerPort(VaadinContext context) {
-        FileUtils.deleteQuietly(computeDevServerPortFileName());
-        context.removeAttribute(WebpackDevServerPort.class);
     }
 }
