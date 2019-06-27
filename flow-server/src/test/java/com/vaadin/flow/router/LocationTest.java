@@ -266,6 +266,6 @@ public class LocationTest {
 
     @Test
     public void pathShouldNotBeEmpty() {
-        assertEquals("/", new Location("").getPathWithQueryParameters());
+        assertEquals(".", new Location("").getPathWithQueryParameters());
     }
 }
