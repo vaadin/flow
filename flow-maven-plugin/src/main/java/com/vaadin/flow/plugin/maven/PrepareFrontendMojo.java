@@ -21,7 +21,6 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.logging.Log;
@@ -78,9 +77,6 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
-
-    @Parameter(defaultValue = "${project.basedir}/src/main/resources/META-INF/resources/frontend")
-    private File frontendResourcesDirectory;
 
     /**
      * Comma separated values for the paths that should be analyzed in every
@@ -156,7 +152,6 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         File flowNodeDirectory = new File(npmFolder,
                 NODE_MODULES + FLOW_NPM_PACKAGE_NAME);
         copyFlowModuleDependencies(flowNodeDirectory);
-        copyProjectFrontendResources(flowNodeDirectory);
     }
 
     private void propagateBuildInfo() {
@@ -207,36 +202,6 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         for (String path : jarResourcePathsToCopy.split(",")) {
             copyHelper.copyFrontendJavaScriptFiles(flowNodeDirectory, includes,
                     path);
-        }
-    }
-
-    private void copyProjectFrontendResources(File flowNodeDirectory) {
-        final List<File> projectFrontendDirectories = Stream.of(
-                new File(project.getBasedir(), "src/main/webapp/frontend"),
-                new File(project.getBasedir(),
-                        "src/main/resources/META-INF/resources/frontend"),
-                new File(project.getBasedir(),
-                        "src/main/resources/public/frontend"),
-                new File(project.getBasedir(),
-                        "src/main/resources/static/frontend"),
-                new File(project.getBasedir(),
-                        "src/main/resources/resources/frontend"),
-                frontendResourcesDirectory).distinct().filter(File::isDirectory)
-                .collect(Collectors.toList());
-
-        if (projectFrontendDirectories.isEmpty()) {
-            getLog().debug("Found no local frontend resources for the project");
-        } else {
-            for (File frontendDirectory : projectFrontendDirectories) {
-                try {
-                    FileUtils.copyDirectory(frontendDirectory,
-                            flowNodeDirectory);
-                } catch (IOException e) {
-                    throw new UncheckedIOException(String.format(
-                            "Failed to copy project frontend resources from '%s' to '%s'",
-                            frontendDirectory, flowNodeDirectory), e);
-                }
-            }
         }
     }
 
