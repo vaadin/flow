@@ -11,7 +11,7 @@
     <name>Flow Maven plugin</name>
 
     <properties>
-        <maven.version>3.5.4</maven.version>
+        <maven.version>3.3.9</maven.version>
     </properties>
 
     <dependencies>
