@@ -34,7 +34,7 @@ import org.junit.rules.TemporaryFolder;
 
 import com.vaadin.flow.plugin.TestUtils;
 import com.vaadin.flow.plugin.common.ArtifactData;
-import com.vaadin.flow.plugin.common.JarContentsManager;
+import com.vaadin.flow.server.frontend.JarContentsManager;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
