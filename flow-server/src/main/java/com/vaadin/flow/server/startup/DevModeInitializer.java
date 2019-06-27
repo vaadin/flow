@@ -174,16 +174,27 @@ public class DevModeInitializer
             } catch (IOException e) {
                 throw new UncheckedIOException(String.format("Failed to create directory '%s'", builder.generatedFolder), e);
             }
-            copyFrontendFilesFromJar(builder.npmFolder);
         }
 
+        File flowNodeDirectory = new File(builder.npmFolder,
+                NODE_MODULES + FLOW_NPM_PACKAGE_NAME);
+        File generatedPackages = new File(builder.generatedFolder,
+                PACKAGE_JSON);
+
+        // Copy from JAR files if we don't have the node directory or generated package json is missing
+        if (!flowNodeDirectory.exists() || !generatedPackages.exists()) {
+            copyFrontendFilesFromJar(flowNodeDirectory);
+        }
+
+        // If we are missing the generated webpack configuration then generate webpack configurations
         if (!new File(builder.npmFolder, WEBPACK_GENERATED).exists()) {
             builder.withWebpack(builder.npmFolder, FrontendUtils.WEBPACK_CONFIG,
                     FrontendUtils.WEBPACK_GENERATED);
         }
 
-        if (!new File(builder.npmFolder, PACKAGE_JSON).exists() || !new File(
-                builder.generatedFolder, PACKAGE_JSON).exists()) {
+        // If we are missing either the base or generated package json files generate those
+        if (!new File(builder.npmFolder, PACKAGE_JSON).exists()
+                || !generatedPackages.exists()) {
             builder.createMissingPackageJson(true);
         }
 
@@ -203,15 +214,14 @@ public class DevModeInitializer
         return LoggerFactory.getLogger(DevModeInitializer.class);
     }
 
-    private static void copyFrontendFilesFromJar(File npmFolder) {
+    private static void copyFrontendFilesFromJar(File flowNodeDirectory) {
 
         List<File> collect = Stream.of(System.getProperty("java.class.path").split(";"))
                 .filter(path -> path.endsWith(".jar")).map(File::new).filter(File::exists).collect(
                         Collectors.toList());
 
-        File flowNodeDirectory = new File(npmFolder,
-                NODE_MODULES + FLOW_NPM_PACKAGE_NAME);
-
+        log().info("Found {} jars to copy files from.", collect.size());
+        
         try {
             FileUtils.forceMkdir(Objects.requireNonNull(flowNodeDirectory));
         } catch (IOException e) {
