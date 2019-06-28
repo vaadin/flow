@@ -51,4 +51,20 @@ public class KeyboardEventIT extends ChromeBrowserTest {
                 paragraph.getText()
         );
     }
+
+    @Test // #5989
+    public void verify_that_invalid_keyup_event_is_ignored() {
+        open();
+
+        WebElement input = findElement(By.id("input"));
+        WebElement sendInvalidKeyUp = findElement(By.id("sendInvalidKeyUp"));
+        WebElement paragraph = findElement(By.id("keyUpParagraph"));
+
+        input.sendKeys("q");
+        Assert.assertEquals("q", paragraph.getText());
+
+        sendInvalidKeyUp.click();
+
+        Assert.assertEquals("q", paragraph.getText());
+    }
 }
