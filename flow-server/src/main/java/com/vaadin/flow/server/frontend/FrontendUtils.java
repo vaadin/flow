@@ -416,13 +416,14 @@ public class FrontendUtils {
         if (isVersionAtLeast(tool, toolVersion, shouldWorkMajor,
                 shouldWorkMinor)) {
             getLogger().warn(String.format(SHOULD_WORK, tool,
-                    join(toolVersion, "."), supportedMajor, supportedMinor,
+                    String.join(".", toolVersion), supportedMajor,
+                    supportedMinor,
                     PARAM_IGNORE_VERSION_CHECKS));
             return;
         }
 
         throw new IllegalStateException(String.format(TOO_OLD, tool,
-                join(toolVersion, "."), supportedMajor, supportedMinor,
+                String.join(".", toolVersion), supportedMajor, supportedMinor,
                 PARAM_IGNORE_VERSION_CHECKS));
     }
 
@@ -436,15 +437,9 @@ public class FrontendUtils {
                     || (major == requiredMajor && minor >= requiredMinor));
         } catch (NumberFormatException e) {
             throw new UnknownVersionException(tool, "Reported version "
-                    + join(toolVersion, ".") + " could not be parsed", e);
+                    + String.join(".", toolVersion) + " could not be parsed",
+                    e);
         }
-    }
-
-    private static String join(List<String> toolVersion, String separate) {
-        return toolVersion.stream().collect(Collectors.joining(separate));
-    }
-    private static String join(String[] toolVersion, String separate) {
-        return Stream.of(toolVersion).collect(Collectors.joining(separate));
     }
 
     /**
@@ -491,14 +486,14 @@ public class FrontendUtils {
             int exitCode = process.waitFor();
             if (exitCode != 0) {
                 throw new UnknownVersionException(tool,
-                        "Using command " + join(versionCommand, " "));
+                        "Using command " + String.join(" ", versionCommand));
             }
             String output = streamToString(process.getInputStream());
             return output.replaceFirst("^v", "").replaceAll("\n", "")
                     .split("\\.", 3);
         } catch (InterruptedException | IOException e) {
             throw new UnknownVersionException(tool,
-                    "Using command " + join(versionCommand, " "), e);
+                    "Using command " + String.join(" ", versionCommand), e);
         }
     }
 
