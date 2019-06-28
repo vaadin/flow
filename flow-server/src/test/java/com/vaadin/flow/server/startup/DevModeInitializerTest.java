@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.vaadin.flow.server.frontend.FrontendUtils;
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
@@ -26,11 +25,11 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.server.DevModeHandler;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.DevModeInitializer.VisitedClasses;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
@@ -125,8 +124,6 @@ public class DevModeInitializerTest {
 
     @After
     public void teardown() throws Exception, SecurityException {
-        System.clearProperty(
-                "vaadin." + SERVLET_PARAMETER_DEVMODE_WEBPACK_RUNNING_PORT);
         System.clearProperty("vaadin." + SERVLET_PARAMETER_PRODUCTION_MODE);
         System.clearProperty("vaadin." + SERVLET_PARAMETER_COMPATIBILITY_MODE);
 

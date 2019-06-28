@@ -20,7 +20,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,6 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.VaadinService;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON;
@@ -334,7 +334,7 @@ public class FrontendUtils {
         InputStream content = null;
 
         if (!config.isProductionMode() && config.enableDevServer()) {
-            content = getStatsFromWebpack(service);
+            content = getStatsFromWebpack();
         }
 
         if (content == null) {
@@ -343,15 +343,10 @@ public class FrontendUtils {
         return content != null ? streamToString(content) : null;
     }
 
-    private static InputStream getStatsFromWebpack(VaadinService service)
+    private static InputStream getStatsFromWebpack()
             throws IOException {
-        WebpackDevServerPort port = service.getContext()
-                .getAttribute(WebpackDevServerPort.class);
-        if (port != null) {
-            URL statsUrl = new URL("http://localhost:" + port + "/stats.json");
-            return statsUrl.openStream();
-        }
-        return null;
+        DevModeHandler handler = DevModeHandler.getDevModeHandler();
+        return handler.prepareConnection("/stats.json", "GET").getInputStream();
     }
 
     private static InputStream getStatsFromClassPath(VaadinService service) {
@@ -482,7 +477,6 @@ public class FrontendUtils {
                 Exception cause) {
             super("Unable to detect version of " + tool + "." + extraInfo,
                     cause);
-
         }
     }
 
