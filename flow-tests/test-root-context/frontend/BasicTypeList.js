@@ -9,10 +9,10 @@ class BasicTypeList extends PolymerElement {
         <template is="dom-repeat" items="{{items}}">
             <div class="item">[[item]]</div>
         </template>
-`;
+    `;
   }
   static get is() {
-      return 'basic-type-list'
+    return 'basic-type-list'
   }
     
 }

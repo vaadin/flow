@@ -11,10 +11,10 @@ class ExistingDomElement extends PolymerElement {
             </div>
         </div>
         <button on-click="clear" id="button">Clear</button>
-`;
+    `;
   }
   static get is() {
-      return 'existing-dom-element'
+    return 'existing-dom-element'
   }
     
 }

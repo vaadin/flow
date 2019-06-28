@@ -11,7 +11,7 @@ class NpmThemedComponent extends PolymerElement {
   }
   
   static get is() {
-      return 'npm-themed-component'
+    return 'npm-themed-component'
   }
   
 }

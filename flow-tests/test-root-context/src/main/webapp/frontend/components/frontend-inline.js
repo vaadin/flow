@@ -15,19 +15,18 @@
  */
 
 function doNotifyJsExecution(){
-    var lbl = document.createElement("label");
-    lbl.setAttribute("id", "js");
-    lbl.innerHTML='Inlined JS';
-    document.body.appendChild(lbl);
+  var lbl = document.createElement("label");
+  lbl.setAttribute("id", "js");
+  lbl.innerHTML='Inlined JS';
+  document.body.appendChild(lbl);
 }
 
 function notifyJsExecution(){
-    if ( document.body) {
-        doNotifyJsExecution()
-    }
-    else {
-        setTimeout(notifyJsExecution, 50);
-    }
+  if ( document.body) {
+    doNotifyJsExecution()
+  } else {
+    setTimeout(notifyJsExecution, 50);
+  }
 }
 
 notifyJsExecution();

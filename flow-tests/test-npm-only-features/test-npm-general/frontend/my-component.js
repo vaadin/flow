@@ -6,11 +6,11 @@ class MyComponentElement extends PolymerElement {
     return html`
         <button id="button">Click</button>
         <div id="content"></div>
-`;
+    `;
   }
 
   static get is() {
-      return 'my-component'
+    return 'my-component'
   }
 }
 customElements.define(MyComponentElement.is, MyComponentElement);

@@ -16,18 +16,18 @@
 import {PolymerElement, html} from '@polymer/polymer/polymer-element.js';
 
 class ThemedComponent extends PolymerElement {
-    static get template() {
-        return html`
-            <style>
-                div {
-                    color: var( --after-content-var, rgba(0 0, 0, 1))
-                }
-            </style>
-            <div>Just a div </div>
-        `;
-    }
+  static get template() {
+    return html`
+        <style>
+            div {
+                color: var( --after-content-var, rgba(0 0, 0, 1))
+            }
+        </style>
+        <div>Just a div </div>
+    `;
+  }
 
-    static get is() { return 'themed-component' }
+  static get is() { return 'themed-component' }
 }
 
 customElements.define(ThemedComponent.is, ThemedComponent);

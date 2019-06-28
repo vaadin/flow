@@ -6,15 +6,15 @@ class ServerRequest extends PolymerElement {
     return html`
        <div style='height:2000px'></div>
         <button id='send-request' on-click="_requestServer">Send server request</button>
-`;
+    `;
   }
   static get is() {
-      return 'server-request'
+    return 'server-request'
   }
     
   _requestServer(){
-       this.$server.requestServer();
-   }
+    this.$server.requestServer();
+  }
 }
   
 customElements.define(ServerRequest.is, ServerRequest);

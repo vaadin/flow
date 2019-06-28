@@ -5,16 +5,16 @@ class EventOnAttach extends PolymerElement {
   static get template() {
     return html`
        Fires an event when attached
-`;
+    `;
   }
   static get is() {
-      return 'event-on-attach'
+    return 'event-on-attach'
   }
     
   connectedCallback() {
-      super.connectedCallback();
-      
-      this.dispatchEvent(new CustomEvent('attach'));
+    super.connectedCallback();
+
+    this.dispatchEvent(new CustomEvent('attach'));
   }
 }
   
