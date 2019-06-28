@@ -20,14 +20,19 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
-
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
-import java.util.Arrays;
+import java.io.UncheckedIOException;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,12 +47,16 @@ import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.frontend.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.JarContentsManager;
 import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.server.frontend.NodeTasks.Builder;
 import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
+import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
 
 /**
  * Servlet initializer starting node updaters as well as the webpack-dev-mode
@@ -158,16 +167,35 @@ public class DevModeInitializer
 
         log().info("Starting dev-mode updaters in {} folder.",
                 builder.npmFolder);
-        for (File file : Arrays.asList(
-                new File(builder.npmFolder, PACKAGE_JSON),
-                new File(builder.generatedFolder, PACKAGE_JSON),
-                new File(builder.npmFolder, WEBPACK_CONFIG),
-                builder.generatedFolder)) {
-            if (!file.canRead()) {
-                log().warn("Skipping DEV MODE because cannot read '{}' file.",
-                        file.getPath());
-                return;
+
+        if(!builder.generatedFolder.exists()) {
+            try {
+                FileUtils.forceMkdir(builder.generatedFolder);
+            } catch (IOException e) {
+                throw new UncheckedIOException(String.format("Failed to create directory '%s'", builder.generatedFolder), e);
             }
+        }
+
+        File flowNodeDirectory = new File(builder.npmFolder,
+                NODE_MODULES + FLOW_NPM_PACKAGE_NAME);
+        File generatedPackages = new File(builder.generatedFolder,
+                PACKAGE_JSON);
+
+        // Copy from JAR files if we don't have the node directory or generated package json is missing
+        if (!flowNodeDirectory.exists() || !generatedPackages.exists()) {
+            copyFrontendFilesFromJars(flowNodeDirectory);
+        }
+
+        // If we are missing the generated webpack configuration then generate webpack configurations
+        if (!new File(builder.npmFolder, WEBPACK_GENERATED).exists()) {
+            builder.withWebpack(builder.npmFolder, FrontendUtils.WEBPACK_CONFIG,
+                    FrontendUtils.WEBPACK_GENERATED);
+        }
+
+        // If we are missing either the base or generated package json files generate those
+        if (!new File(builder.npmFolder, PACKAGE_JSON).exists()
+                || !generatedPackages.exists()) {
+            builder.createMissingPackageJson(true);
         }
 
         Set<String> visitedClassNames = new HashSet<>();
@@ -184,5 +212,29 @@ public class DevModeInitializer
 
     private static Logger log() {
         return LoggerFactory.getLogger(DevModeInitializer.class);
+    }
+
+    private static void copyFrontendFilesFromJars(File flowNodeDirectory) {
+
+        List<File> collect = Stream.of(System.getProperty("java.class.path").split(";"))
+                .filter(path -> path.endsWith(".jar")).map(File::new).filter(File::exists).collect(
+                        Collectors.toList());
+
+        log().info("Found {} jars to copy files from.", collect.size());
+        
+        try {
+            FileUtils.forceMkdir(Objects.requireNonNull(flowNodeDirectory));
+        } catch (IOException e) {
+            throw new UncheckedIOException(String.format("Failed to create directory '%s'", flowNodeDirectory), e);
+        }
+        String[] wildcardInclusions = new String[]{
+                "**/*.js","**/*.css"};
+
+        JarContentsManager jarContentsManager = new JarContentsManager();
+        for (File jarFile : collect) {
+            jarContentsManager
+                    .copyIncludedFilesFromJarTrimmingBasePath(jarFile, RESOURCES_FRONTEND_DEFAULT,
+                            flowNodeDirectory, wildcardInclusions);
+        }
     }
 }

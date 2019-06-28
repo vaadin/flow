@@ -27,8 +27,8 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 
 import com.vaadin.flow.plugin.common.ArtifactData;
-import com.vaadin.flow.plugin.common.JarContentsManager;
 import com.vaadin.flow.plugin.production.ProductionModeCopyStep;
+import com.vaadin.flow.server.frontend.JarContentsManager;
 
 /**
  * Goal that copies all production mode files into the

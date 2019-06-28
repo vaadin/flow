@@ -37,8 +37,8 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.plugin.common.ArtifactData;
 import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
-import com.vaadin.flow.plugin.common.JarContentsManager;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.frontend.JarContentsManager;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
