@@ -72,6 +72,7 @@ public class TaskRunNpmInstall implements Command {
         command.add("install");
 
         ProcessBuilder builder = FrontendUtils.createProcessBuilder(command);
+        builder.environment().put("ADBLOCK", "1");
         builder.directory(packageUpdater.npmFolder);
 
         Process process = null;
