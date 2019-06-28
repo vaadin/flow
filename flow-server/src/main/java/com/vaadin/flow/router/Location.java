@@ -181,7 +181,7 @@ public class Location implements Serializable {
 
         String params = queryParameters.getQueryString();
         if (params.isEmpty()) {
-            return !basePath.isEmpty() ? basePath : "/";
+            return !basePath.isEmpty() ? basePath : ".";
         }
         return basePath + QUERY_SEPARATOR + params;
     }
