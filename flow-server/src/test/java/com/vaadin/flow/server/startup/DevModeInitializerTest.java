@@ -126,6 +126,9 @@ public class DevModeInitializerTest {
     public void teardown() throws Exception, SecurityException {
         System.clearProperty("vaadin." + SERVLET_PARAMETER_PRODUCTION_MODE);
         System.clearProperty("vaadin." + SERVLET_PARAMETER_COMPATIBILITY_MODE);
+        if (DevModeHandler.getDevModeHandler() != null) {
+            DevModeHandler.getDevModeHandler().removeRunningDevServerPort();
+        }
 
         webpackFile.delete();
         mainPackageFile.delete();
