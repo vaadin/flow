@@ -69,7 +69,7 @@ import static java.net.HttpURLConnection.HTTP_OK;
  * webpack server
  *
  */
-public class DevModeHandler implements Serializable {
+public final class DevModeHandler implements Serializable {
     // Non final because tests need to reset this during teardown.
     private static AtomicReference<DevModeHandler> atomicHandler = new AtomicReference<>();
 
@@ -103,11 +103,6 @@ public class DevModeHandler implements Serializable {
     public static final String WEBPACK_SERVER = "node_modules/webpack-dev-server/bin/webpack-dev-server.js";
 
     private int port;
-
-    // For testing purposes
-    DevModeHandler(int port) {
-        this.port = port;
-    }
 
     private DevModeHandler(DeploymentConfiguration config,
             int runningPort, File npmFolder,

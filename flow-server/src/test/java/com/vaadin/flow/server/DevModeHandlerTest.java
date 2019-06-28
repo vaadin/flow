@@ -218,20 +218,20 @@ public class DevModeHandlerTest {
     @Test
     public void should_HandleJavaScriptRequests() {
         HttpServletRequest request = prepareRequest("/foo.js");
-        assertTrue(new DevModeHandler(0).isDevModeRequest(request));
+        assertTrue(DevModeHandler.start(configuration, npmFolder).isDevModeRequest(request));
     }
 
     @Test
     public void shouldNot_HandleOtherRequests() {
         HttpServletRequest request = prepareRequest("/foo.bar");
-        assertFalse(new DevModeHandler(0).isDevModeRequest(request));
+        assertFalse(DevModeHandler.start(configuration, npmFolder).isDevModeRequest(request));
     }
 
     @Test(expected = ConnectException.class)
     public void should_ThrowAnException_When_WebpackNotListening()
             throws IOException {
         HttpServletRequest request = prepareRequest("/foo.js");
-        new DevModeHandler(0).serveDevModeRequest(request, null);
+        DevModeHandler.start(0, configuration, npmFolder).serveDevModeRequest(request, null);
     }
 
     @Test
@@ -240,7 +240,7 @@ public class DevModeHandlerTest {
         HttpServletResponse response = prepareResponse();
         int port = prepareHttpServer(HTTP_OK, "bar");
 
-        assertTrue(new DevModeHandler(port).serveDevModeRequest(request,
+        assertTrue(DevModeHandler.start(port, configuration, npmFolder).serveDevModeRequest(request,
                 response));
         assertEquals(HTTP_OK, responseStatus);
     }
@@ -252,7 +252,7 @@ public class DevModeHandlerTest {
         HttpServletResponse response = prepareResponse();
         int port = prepareHttpServer(HTTP_NOT_FOUND, "");
 
-        assertFalse(new DevModeHandler(port).serveDevModeRequest(request,
+        assertFalse(DevModeHandler.start(port, configuration, npmFolder).serveDevModeRequest(request,
                 response));
         assertEquals(200, responseStatus);
     }
@@ -263,7 +263,7 @@ public class DevModeHandlerTest {
         HttpServletResponse response = prepareResponse();
         int port = prepareHttpServer(HTTP_UNAUTHORIZED, "");
 
-        assertTrue(new DevModeHandler(port).serveDevModeRequest(request,
+        assertTrue(DevModeHandler.start(port, configuration, npmFolder).serveDevModeRequest(request,
                 response));
         assertEquals(HTTP_UNAUTHORIZED, responseStatus);
     }
