@@ -154,24 +154,26 @@ public class NodeTestComponents {
             }
             Map<String, String> attributes = new HashMap<>(1);
             switch (variant) {
-                case LIGHT:
-                    attributes.put("theme", LIGHT);
-                    break;
-                case DARK:
-                    attributes.put("theme", DARK);
-                    break;
-                default:
-                    LoggerFactory.getLogger(LumoTest.class.getName()).warn(
-                            "Lumo theme variant not recognized: '{}'. Using no variant.",
-                            variant);
+            case LIGHT:
+                attributes.put("theme", LIGHT);
+                break;
+            case DARK:
+                attributes.put("theme", DARK);
+                break;
+            default:
+                LoggerFactory.getLogger(LumoTest.class.getName()).warn(
+                        "Lumo theme variant not recognized: '{}'. Using no variant.",
+                        variant);
             }
             return attributes;
         }
     }
 
-
     @NpmPackage(value = "@webcomponents/webcomponentsjs", version = "2.2.9")
     public static class ExtraImport {
     }
-}
 
+    @NpmPackage(value = "@vaadin/vaadin-shrinkwrap", version = "1.2.3")
+    public static class VaadinShrinkWrap extends Component {
+    }
+}
