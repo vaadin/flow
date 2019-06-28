@@ -49,6 +49,7 @@ public final class Constants implements Serializable {
      */
     public static final String SERVLET_PARAMETER_COMPATIBILITY_MODE = "compatibilityMode";
     public static final String SERVLET_PARAMETER_ENABLE_DEV_SERVER = "enableDevServer";
+    public static final String SERVLET_PARAMETER_REUSE_DEV_SERVER = "reuseDevServer";
 
     public static final String SERVLET_PARAMETER_REQUEST_TIMING = "requestTiming";
     // Javadocs for VaadinService should be updated if this value is changed

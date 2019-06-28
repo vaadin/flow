@@ -1,12 +1,14 @@
 package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletContext;
+import javax.servlet.ServletContextListener;
 import javax.servlet.ServletRegistration;
 
 import java.io.File;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EventListener;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -21,6 +23,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.dependency.JsModule;
@@ -31,6 +34,7 @@ import com.vaadin.flow.server.startup.DevModeInitializer.VisitedClasses;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_REUSE_DEV_SERVER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubNode;
@@ -48,6 +52,7 @@ public class DevModeInitializerTest {
 
     private ServletContext servletContext;
     private DevModeInitializer devModeInitializer;
+    private Map<String, String> initParams;
     private Set<Class<?>> classes;
 
     private File mainPackageFile;
@@ -86,13 +91,11 @@ public class DevModeInitializerTest {
         createStubWebpackServer("Compiled", 0, baseDir);
 
         servletContext = Mockito.mock(ServletContext.class);
-        ServletRegistration registration = Mockito
-                .mock(ServletRegistration.class);
+        ServletRegistration registration = Mockito.mock(ServletRegistration.class);
 
-        Mockito.when(registration.getInitParameter(FrontendUtils.PROJECT_BASEDIR))
-                .thenReturn(baseDir);
-        Map<String, String> initParams = new HashMap<>();
+        initParams = new HashMap<>();
         initParams.put(FrontendUtils.PROJECT_BASEDIR, baseDir);
+
         Mockito.when(registration.getInitParameters()).thenReturn(initParams);
 
         classes = new HashSet<>();
@@ -126,6 +129,7 @@ public class DevModeInitializerTest {
     public void teardown() throws Exception, SecurityException {
         System.clearProperty("vaadin." + SERVLET_PARAMETER_PRODUCTION_MODE);
         System.clearProperty("vaadin." + SERVLET_PARAMETER_COMPATIBILITY_MODE);
+
         if (DevModeHandler.getDevModeHandler() != null) {
             DevModeHandler.getDevModeHandler().removeRunningDevServerPort();
         }
@@ -193,6 +197,38 @@ public class DevModeInitializerTest {
                 "true");
         devModeInitializer = new DevModeInitializer();
         devModeInitializer.onStartup(classes, servletContext);
+        assertNull(DevModeHandler.getDevModeHandler());
+    }
+
+
+    @Test
+    public void should_Not_AddContextListener() throws Exception {
+        ArgumentCaptor<? extends EventListener> arg = ArgumentCaptor.forClass(EventListener.class);
+
+        devModeInitializer.onStartup(classes, servletContext);
+        Mockito.verify(servletContext, Mockito.never()).addListener(arg.capture());
+    }
+
+    @Test
+    public void should_AddContextListener() throws Exception {
+        ArgumentCaptor<? extends EventListener> arg = ArgumentCaptor.forClass(EventListener.class);
+        initParams.put(SERVLET_PARAMETER_REUSE_DEV_SERVER, "false");
+
+        devModeInitializer.onStartup(classes, servletContext);
+        Mockito.verify(servletContext).addListener(arg.capture());
+    }
+
+    @Test
+    public void listener_should_stopDevModeHandler_onDestroy() throws Exception {
+        ArgumentCaptor<? extends EventListener> arg = ArgumentCaptor.forClass(EventListener.class);
+        initParams.put(SERVLET_PARAMETER_REUSE_DEV_SERVER, "false");
+
+        devModeInitializer.onStartup(classes, servletContext);
+        Mockito.verify(servletContext).addListener(arg.capture());
+
+        assertNotNull(DevModeHandler.getDevModeHandler());
+
+        ((ServletContextListener)arg.getValue()).contextDestroyed(null);
         assertNull(DevModeHandler.getDevModeHandler());
     }
 

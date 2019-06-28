@@ -103,24 +103,29 @@ public final class DevModeHandler implements Serializable {
     public static final String WEBPACK_SERVER = "node_modules/webpack-dev-server/bin/webpack-dev-server.js";
 
     private int port;
+    private Process webpackProcess;
 
     private DevModeHandler(DeploymentConfiguration config,
             int runningPort, File npmFolder,
             File webpack, File webpackConfig) {
 
         port = runningPort;
+
         // If port is defined, means that webpack is already running
         if (port > 0) {
             if (checkWebpackConnection()) {
-                getLogger().info("Webpack is running at {}:{}", WEBPACK_HOST,
-                        port);
+                getLogger().info(
+                        "Reusing webpack-dev-server running at {}:{}", WEBPACK_HOST, port);
+
+                // Save running port for next usage
+                saveRunningDevServerPort();
                 return;
             }
             throw new IllegalStateException(String.format(
-                    "webpack server port '%d' is defined but it's not working properly", port));
+                    "webpack-dev-server port '%d' is defined but it's not working properly", port));
         }
 
-        // We always compute a free port.
+        // Look for a free port
         port = getFreePort();
 
         ProcessBuilder processBuilder = new ProcessBuilder()
@@ -143,21 +148,17 @@ public final class DevModeHandler implements Serializable {
 
         if (getLogger().isInfoEnabled()) {
             getLogger().info(
-                    "Starting Webpack in dev mode, port: {} dir: {}\n   {}",
+                    "Starting webpack-dev-server, port: {} dir: {}\n   {}",
                     port, npmFolder, String.join(" ", command));
         }
 
         processBuilder.command(command);
         try {
-            Process webpackProcess = processBuilder
+            webpackProcess = processBuilder
                     .redirectError(ProcessBuilder.Redirect.PIPE)
                     .redirectErrorStream(true).start();
 
-            Runtime.getRuntime()
-                    .addShutdownHook(new Thread(() -> {
-                        webpackProcess.destroy();
-                        removeRunningDevServerPort();
-                    }));
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> stop()));
 
             Pattern succeed = Pattern.compile(config.getStringProperty(
                     SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN,
@@ -181,6 +182,8 @@ public final class DevModeHandler implements Serializable {
         } catch (IOException | InterruptedException e) {
             getLogger().error("Failed to start the webpack process", e);
         }
+
+
 
         saveRunningDevServerPort();
     }
@@ -541,10 +544,31 @@ public final class DevModeHandler implements Serializable {
 
     /**
      * Get the listening port of the 'webpack-dev-server'.
-     * 
+     *
      * @return the listening port of webpack
      */
     public int getPort() {
         return port;
+    }
+
+    /**
+     * Stop the webpack-dev-server.
+     */
+    public void stop() {
+        if (atomicHandler.get() == null) {
+            return;
+        }
+
+        try {
+            prepareConnection("/stop", "GET").getResponseCode();
+        } catch (IOException ignore) { // NOSONAR
+        }
+
+        if (webpackProcess != null && webpackProcess.isAlive()) {
+            webpackProcess.destroy();
+        }
+
+        atomicHandler = new AtomicReference<>();
+        removeRunningDevServerPort();
     }
 }

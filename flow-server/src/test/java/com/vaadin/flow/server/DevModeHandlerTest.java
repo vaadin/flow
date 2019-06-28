@@ -96,11 +96,13 @@ public class DevModeHandlerTest {
         }
         DevModeHandler handler = DevModeHandler.getDevModeHandler();
         if (handler != null) {
-            handler.removeRunningDevServerPort();
+            handler.stop();
         }
+    }
+
+    public static void removeDevModeHandlerInstance() throws Exception {
         // Reset unique instance in DevModeHandler
-        Field atomicHandler = DevModeHandler.class
-                .getDeclaredField("atomicHandler");
+        Field atomicHandler = DevModeHandler.class.getDeclaredField("atomicHandler");
         atomicHandler.setAccessible(true);
         atomicHandler.set(null, new AtomicReference<>());
     }
@@ -113,6 +115,7 @@ public class DevModeHandlerTest {
                 FrontendUtils.DEFAULT_NODE_DIR + WEBPACK_TEST_OUT_FILE)
                         .canRead());
         assertNull(DevModeHandler.getDevModeHandler().getFailedOutput());
+        assertTrue(0 < DevModeHandler.getDevModeHandler().getPort());
         Thread.sleep(150); // NOSONAR
     }
 
@@ -183,7 +186,7 @@ public class DevModeHandlerTest {
 
     @Test
     public void shouldNot_RunWebpack_When_WebpackRunning() throws Exception {
-        int port = prepareHttpServer(HTTP_OK, "bar");
+        int port = prepareHttpServer(0, HTTP_OK, "bar");
         DevModeHandler.start(port, configuration, npmFolder);
         assertFalse(new File(baseDir,
                 FrontendUtils.DEFAULT_NODE_DIR + WEBPACK_TEST_OUT_FILE)
@@ -238,7 +241,7 @@ public class DevModeHandlerTest {
     public void should_ReturnTrue_When_WebpackResponseOK() throws Exception {
         HttpServletRequest request = prepareRequest("/foo.js");
         HttpServletResponse response = prepareResponse();
-        int port = prepareHttpServer(HTTP_OK, "bar");
+        int port = prepareHttpServer(0, HTTP_OK, "bar");
 
         assertTrue(DevModeHandler.start(port, configuration, npmFolder).serveDevModeRequest(request,
                 response));
@@ -250,7 +253,7 @@ public class DevModeHandlerTest {
             throws Exception {
         HttpServletRequest request = prepareRequest("/foo.js");
         HttpServletResponse response = prepareResponse();
-        int port = prepareHttpServer(HTTP_NOT_FOUND, "");
+        int port = prepareHttpServer(0, HTTP_NOT_FOUND, "");
 
         assertFalse(DevModeHandler.start(port, configuration, npmFolder).serveDevModeRequest(request,
                 response));
@@ -261,7 +264,7 @@ public class DevModeHandlerTest {
     public void should_ReturnTrue_When_OtherResponseCodes() throws Exception {
         HttpServletRequest request = prepareRequest("/foo.js");
         HttpServletResponse response = prepareResponse();
-        int port = prepareHttpServer(HTTP_UNAUTHORIZED, "");
+        int port = prepareHttpServer(0, HTTP_UNAUTHORIZED, "");
 
         assertTrue(DevModeHandler.start(port, configuration, npmFolder).serveDevModeRequest(request,
                 response));
@@ -283,24 +286,40 @@ public class DevModeHandlerTest {
             throws Exception {
         HttpServletRequest request = prepareRequest("/foo.js");
         HttpServletResponse response = prepareResponse();
-        int port = prepareHttpServer(HTTP_OK, "");
+        int port = prepareHttpServer(0, HTTP_OK, "");
 
         prepareServlet(port).service(request, response);
         assertEquals(HTTP_OK, responseStatus);
     }
 
     @Test
-    public void servlet_should_GetStatsJson_From_Webpack()
+    public void should_GetStatsJson_From_Webpack()
             throws Exception {
         VaadinService vaadinService = mock(VaadinService.class);
         Mockito.when(vaadinService.getDeploymentConfiguration()).thenReturn(configuration);
 
         String statsContent = "{}";
-        int port = prepareHttpServer(HTTP_OK, statsContent);
+        int port = prepareHttpServer(0, HTTP_OK, statsContent);
         DevModeHandler.start(port, configuration, npmFolder);
 
-
         assertEquals(statsContent, FrontendUtils.getStatsContent(vaadinService));
+    }
+
+    @Test
+    public void should_reuseWebpackPort_AfterRestart()
+            throws Exception {
+        int port = prepareHttpServer(0, HTTP_OK, "foo");
+
+        DevModeHandler.start(port, configuration, npmFolder);
+        assertNotNull(DevModeHandler.getDevModeHandler());
+        assertEquals(port,  DevModeHandler.getDevModeHandler().getPort());
+
+        removeDevModeHandlerInstance();
+        assertNull(DevModeHandler.getDevModeHandler());
+
+        DevModeHandler.start(configuration, npmFolder);
+        assertNotNull(DevModeHandler.getDevModeHandler());
+        assertEquals(port, DevModeHandler.getDevModeHandler().getPort());
     }
 
     private VaadinServlet prepareServlet(int port) throws ServletException {
@@ -343,9 +362,11 @@ public class DevModeHandlerTest {
         return response;
     }
 
-    private int prepareHttpServer(int status, String response)
+    private int prepareHttpServer(int port, int status, String response)
             throws Exception {
-        int port = DevModeHandler.getFreePort();
+        if (port == 0) {
+            port = DevModeHandler.getFreePort();
+        }
         httpServer = HttpServer.create(new InetSocketAddress(port), 0);
         httpServer.createContext("/", exchange -> {
             exchange.sendResponseHeaders(status, response.length());

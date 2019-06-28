@@ -107,7 +107,7 @@ public class ServletDeployer implements ServletContextListener {
 
         @Override
         public String getInitParameter(String name) {
-            return registration.getInitParameter(name);
+            return registration.getInitParameters().get(name);
         }
 
         @Override
