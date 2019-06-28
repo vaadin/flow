@@ -17,9 +17,12 @@ package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -65,6 +68,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
 @HandlesTypes({ Route.class, NpmPackage.class, WebComponentExporter.class })
 public class DevModeInitializer
         implements ServletContainerInitializer, Serializable {
+
 
     /**
      * The classes that were visited when determining which frontend resources
@@ -132,6 +136,8 @@ public class DevModeInitializer
 
         initDevModeHandler(classes, context, config);
     }
+
+
 
     /**
      * Initialize the devmode server if not in production mode or compatibility
@@ -206,7 +212,20 @@ public class DevModeInitializer
         VaadinContext vaadinContext = new VaadinServletContext(context);
         vaadinContext.setAttribute(new VisitedClasses(visitedClassNames));
 
-        DevModeHandler.start(config, builder.npmFolder);
+        DevModeHandler handler = DevModeHandler.start(config, builder.npmFolder);
+
+        if (!config.reuseDevServer()) {
+            context.addListener(new ServletContextListener() {
+                @Override
+                public void contextInitialized(ServletContextEvent sce) {
+                }
+
+                @Override
+                public void contextDestroyed(ServletContextEvent sce) {
+                    handler.stop();
+                }
+            });
+        }
     }
 
     private static Logger log() {
@@ -220,7 +239,7 @@ public class DevModeInitializer
                         Collectors.toList());
 
         log().info("Found {} jars to copy files from.", collect.size());
-        
+
         try {
             FileUtils.forceMkdir(Objects.requireNonNull(flowNodeDirectory));
         } catch (IOException e) {
