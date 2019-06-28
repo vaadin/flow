@@ -21,7 +21,6 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
-
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -48,6 +47,7 @@ import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
+import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
@@ -263,9 +263,9 @@ public class VaadinServletContextInitializer
                 return;
             }
 
-            DeploymentConfiguration config = StubServletConfig
+            DeploymentConfiguration config = SpringStubServletConfig
                     .createDeploymentConfiguration(event.getServletContext(),
-                            servletRegistrationBean, SpringServlet.class);
+                            servletRegistrationBean, SpringServlet.class, appContext);
 
             if (config.isCompatibilityMode() || config.isProductionMode()
                     || !config.enableDevServer()) {
@@ -549,25 +549,29 @@ public class VaadinServletContextInitializer
     }
 
     /**
-     * Default ServletConfig implementation.
+     * ServletConfig implementation for getting initial properties for building
+     * the DeploymentConfiguration.
      */
-    @SuppressWarnings("rawtypes")
-    private static class StubServletConfig implements ServletConfig {
+    protected static class SpringStubServletConfig implements ServletConfig {
+
         private final ServletContext context;
         private final ServletRegistrationBean registration;
+        private final ApplicationContext appContext;
 
         /**
          * Constructor.
          *
          * @param context
-         *            the ServletContext
+         *         the ServletContext
          * @param registration
-         *            the ServletRegistration for this ServletConfig instance
+         *         the ServletRegistration for this ServletConfig instance
          */
-        private StubServletConfig(ServletContext context,
-                ServletRegistrationBean registration) {
+        private SpringStubServletConfig(ServletContext context,
+                ServletRegistrationBean registration,
+                ApplicationContext appContext) {
             this.context = context;
             this.registration = registration;
+            this.appContext = appContext;
         }
 
         @Override
@@ -583,6 +587,12 @@ public class VaadinServletContextInitializer
         @SuppressWarnings("unchecked")
         @Override
         public String getInitParameter(String name) {
+            Environment env = appContext.getBean(Environment.class);
+            String propertyValue = env.getProperty("vaadin." + name);
+            if (propertyValue != null) {
+                return propertyValue;
+            }
+
             return ((Map<String, String>) registration.getInitParameters())
                     .get(name);
         }
@@ -590,27 +600,32 @@ public class VaadinServletContextInitializer
         @SuppressWarnings("unchecked")
         @Override
         public Enumeration<String> getInitParameterNames() {
-            return Collections
-                    .enumeration(registration.getInitParameters().keySet());
+            Environment env = appContext.getBean(Environment.class);
+            // Collect any vaadin.XZY properties from application.properties
+            List<String> initParameters = SpringServlet.PROPERTY_NAMES.stream()
+                    .filter(name -> env.getProperty("vaadin." + name) != null)
+                    .collect(Collectors.toList());
+            initParameters.addAll(registration.getInitParameters().keySet());
+            return Collections.enumeration(initParameters);
         }
 
         /**
          * Creates a DeploymentConfiguration.
          *
          * @param context
-         *            the ServletContext
+         *         the ServletContext
          * @param registration
-         *            the ServletRegistrationBean to get servlet parameters from
+         *         the ServletRegistrationBean to get servlet parameters from
          * @param servletClass
-         *            the class to look for properties defined with annotations
+         *         the class to look for properties defined with annotations
          * @return a DeploymentConfiguration instance
          */
         public static DeploymentConfiguration createDeploymentConfiguration(
                 ServletContext context, ServletRegistrationBean registration,
-                Class<?> servletClass) {
+                Class<?> servletClass, ApplicationContext appContext) {
             try {
-                ServletConfig servletConfig = new StubServletConfig(context,
-                        registration);
+                ServletConfig servletConfig = new SpringStubServletConfig(context,
+                        registration, appContext);
                 return DeploymentConfigurationFactory
                         .createPropertyDeploymentConfiguration(servletClass,
                                 servletConfig);

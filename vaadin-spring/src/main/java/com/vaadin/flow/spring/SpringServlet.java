@@ -42,7 +42,10 @@ import com.vaadin.flow.server.VaadinSession;
  */
 public class SpringServlet extends VaadinServlet {
 
-    private static final List<String> PROPERTY_NAMES = Arrays.asList(
+    /**
+     * Property names that are read from the application.properties file
+     */
+    protected static final List<String> PROPERTY_NAMES = Arrays.asList(
             Constants.SERVLET_PARAMETER_PRODUCTION_MODE,
             Constants.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION,
             Constants.SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS,
