@@ -100,9 +100,8 @@ public class TaskUpdatePackages extends NodeUpdater {
                     dependencies.remove(key);
                 }
             }
+            ensureReleaseVersion(dependencies);
         }
-
-        ensureReleaseVersion(dependencies);
 
         return added;
     }
