@@ -16,13 +16,13 @@
 import {PolymerElement, html} from '@polymer/polymer/polymer-element.js';
 
 class DepElement extends PolymerElement {
-    static get template() {
-        return html`
-            <div id='main'>Imported element</div>
-        `;
-    }
+  static get template() {
+    return html`
+        <div id='main'>Imported element</div>
+    `;
+  }
 
-    static get is() { return 'dep-element' }
+  static get is() { return 'dep-element' }
 }
 
 customElements.define(DepElement.is, DepElement);
