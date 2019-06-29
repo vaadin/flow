@@ -310,7 +310,7 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
             } else if (change instanceof ListAddChange<?>) {
                 allChanges.add(change);
                 int i = index;
-                // put all items into "indeces" as keys and "index" as a value
+                // put all items into "indices" as keys and "index" as a value
                 // so that the "change" can be retrieved from the "allChanges"
                 // by the index
                 ((ListAddChange<T>) change).getNewItems()
@@ -318,6 +318,8 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
             } else if (change instanceof ListClearChange<?>) {
                 hasRemoveAll = true;
                 allChanges.clear();
+                indices.clear();
+                index = 0;
                 allChanges.add(change);
             } else {
                 assert false : "AbstractListChange has only three subtypes: add, remove and clear";
