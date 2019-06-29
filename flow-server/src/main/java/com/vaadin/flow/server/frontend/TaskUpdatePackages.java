@@ -17,6 +17,7 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -41,11 +42,26 @@ import elemental.json.JsonValue;
  */
 public class TaskUpdatePackages extends NodeUpdater {
 
-    /**
-     *
-     */
     private static final String VALUE = "value";
     private static final String SHRINK_WRAP = "@vaadin/vaadin-shrinkwrap";
+
+    private static class RemoveFileVisitor extends SimpleFileVisitor<Path>
+            implements Serializable {
+
+        @Override
+        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+                throws IOException {
+            Files.delete(file);
+            return super.visitFile(file, attrs);
+        }
+
+        @Override
+        public FileVisitResult postVisitDirectory(Path dir, IOException exc)
+                throws IOException {
+            Files.delete(dir);
+            return super.postVisitDirectory(dir, exc);
+        }
+    }
 
     /**
      * Create an instance of the updater given all configurable parameters.
@@ -138,21 +154,7 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     private void removeDir(File file) throws IOException {
-        Files.walkFileTree(file.toPath(), new SimpleFileVisitor<Path>() {
-            @Override
-            public FileVisitResult visitFile(Path file,
-                    BasicFileAttributes attrs) throws IOException {
-                Files.delete(file);
-                return super.visitFile(file, attrs);
-            }
-
-            @Override
-            public FileVisitResult postVisitDirectory(Path dir, IOException exc)
-                    throws IOException {
-                Files.delete(dir);
-                return super.postVisitDirectory(dir, exc);
-            }
-        });
+        Files.walkFileTree(file.toPath(), new RemoveFileVisitor());
     }
 
     private String getCurrentShrinkWrapVersion() throws IOException {
