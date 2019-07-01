@@ -28,6 +28,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.server.DevModeHandler;
+import com.vaadin.flow.server.DevModeHandlerTest;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.DevModeInitializer.VisitedClasses;
 
@@ -138,11 +139,7 @@ public class DevModeInitializerTest {
         mainPackageFile.delete();
         appPackageFile.delete();
 
-        // Reset unique instance in DevModeHandler
-        Field atomicHandler = DevModeHandler.class
-                .getDeclaredField("atomicHandler");
-        atomicHandler.setAccessible(true);
-        atomicHandler.set(null, new AtomicReference<>());
+        DevModeHandlerTest.removeDevModeHandlerInstance();
     }
 
     @Test
