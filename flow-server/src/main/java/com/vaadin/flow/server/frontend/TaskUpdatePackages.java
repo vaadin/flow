@@ -122,6 +122,17 @@ public class TaskUpdatePackages extends NodeUpdater {
         return added;
     }
 
+    /**
+     * Compares vaadin-shrinkwrap dependency version from the
+     * {@code dependencies} object with the current vaadin-shrinkwrap version
+     * (retrieved from various sources like package.json, package-lock.json).
+     * Removes package-lock.json file and node_modules,
+     * target/frontend/node_modules folders in case the versions are different.
+     *
+     * @param dependencies
+     *            dependencies object with the vaadin-shrinkwrap version
+     * @throws IOException
+     */
     private void ensureReleaseVersion(JsonObject dependencies)
             throws IOException {
         String shrinkWrapVersion = null;
