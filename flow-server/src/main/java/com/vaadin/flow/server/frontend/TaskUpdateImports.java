@@ -231,12 +231,24 @@ public class TaskUpdateImports extends NodeUpdater {
 
         for (String originalModulePath : modules) {
             String translatedModulePath = originalModulePath;
+            String localModulePath = null;
             if (theme != null
                     && translatedModulePath.contains(theme.getBaseUrl())) {
                 translatedModulePath = theme.translateUrl(translatedModulePath);
+                String themePath = theme.getThemeUrl();
+
+                // (#5964) Allows:
+                //   - custom @Theme with files placed in /frontend
+                //   - customize an already themed component
+                // @vaadin/vaadin-grid/theme/lumo/vaadin-grid.js -> theme/lumo/vaadin-grid.js
+                localModulePath = translatedModulePath.replaceFirst("@.+" + themePath, themePath);
             }
-            if (importedFileExists(translatedModulePath)) {
-                lines.add(String.format(IMPORT_TEMPLATE,
+
+            if(localModulePath != null && frontendFileExists(localModulePath)) {
+                imports.add(String.format(IMPORT_TEMPLATE,
+                        toValidBrowserImport(localModulePath)));
+            } else if (importedFileExists(translatedModulePath)) {
+                imports.add(String.format(IMPORT_TEMPLATE,
                         toValidBrowserImport(translatedModulePath)));
             } else if (importedFileExists(originalModulePath)) {
                 lines.add(String.format(IMPORT_TEMPLATE,
@@ -345,6 +357,11 @@ public class TaskUpdateImports extends NodeUpdater {
         return resolvedPath;
     }
 
+    private boolean frontendFileExists(String jsImport) {
+        File file = getFile(frontendDirectory, jsImport);
+        return file.exists();
+    }
+
     private boolean importedFileExists(String importName) {
         File file = getImportedFrontendFile(importName);
         if (file != null) {
@@ -371,9 +388,8 @@ public class TaskUpdateImports extends NodeUpdater {
 
     /**
      * Returns a file for the {@code jsImport} path ONLY if it's either in the
-     * frontend folder or {@code "node_modules/@vaadin/flow-frontend/") folder.
-     *
-    <p>
+     * {@code "frontend"} folder or {@code "node_modules/@vaadin/flow-frontend/") folder.
+     * <p>
      * This method doesn't care about "published" WC paths (like "@vaadin/vaadin-grid" and so on).
      * See the {@link #importedFileExists(String)} method implementation.
      *
