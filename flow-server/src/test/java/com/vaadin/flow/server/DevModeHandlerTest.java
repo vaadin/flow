@@ -101,10 +101,11 @@ public class DevModeHandlerTest {
     }
 
     public static void removeDevModeHandlerInstance() throws Exception {
-        // Reset unique instance in DevModeHandler
+        // Reset unique instance of DevModeHandler
         Field atomicHandler = DevModeHandler.class.getDeclaredField("atomicHandler");
         atomicHandler.setAccessible(true);
-        atomicHandler.set(null, new AtomicReference<>());
+        AtomicReference<?> reference = (AtomicReference<?>)atomicHandler.get(null);
+        reference.set(null);
     }
 
     @Test

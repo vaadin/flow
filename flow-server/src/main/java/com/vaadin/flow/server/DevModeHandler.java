@@ -70,8 +70,8 @@ import static java.net.HttpURLConnection.HTTP_OK;
  *
  */
 public final class DevModeHandler implements Serializable {
-    // Non final because tests need to reset this during teardown.
-    private static AtomicReference<DevModeHandler> atomicHandler = new AtomicReference<>();
+
+    private static final AtomicReference<DevModeHandler> atomicHandler = new AtomicReference<>();
 
     // It's not possible to know whether webpack is ready unless reading output
     // messages. When webpack finishes, it writes either a `Compiled` or a
@@ -103,7 +103,7 @@ public final class DevModeHandler implements Serializable {
     public static final String WEBPACK_SERVER = "node_modules/webpack-dev-server/bin/webpack-dev-server.js";
 
     private int port;
-    private Process webpackProcess;
+    private transient Process webpackProcess;
 
     private DevModeHandler(DeploymentConfiguration config,
             int runningPort, File npmFolder,
@@ -158,7 +158,17 @@ public final class DevModeHandler implements Serializable {
                     .redirectError(ProcessBuilder.Redirect.PIPE)
                     .redirectErrorStream(true).start();
 
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> stop()));
+            // We only can save the webpackProcess reference the first time that
+            // the DevModeHandler is created. There is no way to store
+            // it in the servlet container, and we do not want to save it in the
+            // global JVM.
+            // We instruct the JVM to stop the webpack-dev-server daemon when
+            // the JVM stops, to avoid leaving daemons running in the system.
+            // NOTE: that in the corner case that the JVM crashes or it is killed
+            // the daemon will be kept running. But anyways it will also happens
+            // if the system was configured to be stop the daemon when the
+            // servlet context is destroyed.
+            Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
 
             Pattern succeed = Pattern.compile(config.getStringProperty(
                     SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN,
@@ -182,8 +192,6 @@ public final class DevModeHandler implements Serializable {
         } catch (IOException | InterruptedException e) {
             getLogger().error("Failed to start the webpack process", e);
         }
-
-
 
         saveRunningDevServerPort();
     }
@@ -560,6 +568,9 @@ public final class DevModeHandler implements Serializable {
         }
 
         try {
+            // The most reliable way to stop the webpack-dev-server is 
+            // by informing webpack to exit. We have implemented in webpack a
+            // a listener that handles the stop command via HTTP and exits.
             prepareConnection("/stop", "GET").getResponseCode();
         } catch (IOException ignore) { // NOSONAR
         }
@@ -568,7 +579,7 @@ public final class DevModeHandler implements Serializable {
             webpackProcess.destroy();
         }
 
-        atomicHandler = new AtomicReference<>();
+        atomicHandler.set(null);
         removeRunningDevServerPort();
     }
 }

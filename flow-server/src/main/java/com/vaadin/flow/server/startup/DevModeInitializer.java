@@ -218,6 +218,7 @@ public class DevModeInitializer
             context.addListener(new ServletContextListener() {
                 @Override
                 public void contextInitialized(ServletContextEvent sce) {
+                    // No need to do anything on init
                 }
 
                 @Override
