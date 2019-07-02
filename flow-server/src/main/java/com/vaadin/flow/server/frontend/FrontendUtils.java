@@ -489,12 +489,29 @@ public class FrontendUtils {
                         "Using command " + String.join(" ", versionCommand));
             }
             String output = streamToString(process.getInputStream());
-            return output.replaceFirst("^v", "").replaceAll("\n", "")
-                    .split("\\.", 3);
+            return parseVersion(output);
         } catch (InterruptedException | IOException e) {
             throw new UnknownVersionException(tool,
                     "Using command " + String.join(" ", versionCommand), e);
         }
+    }
+
+    /**
+     * Parse the version number of node/npm from the given output.
+     *
+     * @param output
+     *            The output, typically produced by <code>tool --version</code>
+     * @return the parsed version as an array with 3 elements
+     * @throws IOException
+     *             if parsing fails
+     */
+    static String[] parseVersion(String output) throws IOException {
+        Optional<String> lastOuput = Stream.of(output.split("\n"))
+                .filter(line -> !line.matches("^[ ]*$"))
+                .reduce((first, second) -> second);
+        return lastOuput
+                .map(line -> line.replaceFirst("^v", "").split("\\.", 3))
+                .orElseThrow(() -> new IOException("No output"));
     }
 
     private static Logger getLogger() {
