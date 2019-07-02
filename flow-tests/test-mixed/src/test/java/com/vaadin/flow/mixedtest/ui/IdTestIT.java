@@ -63,6 +63,14 @@ public class IdTestIT extends ChromeBrowserTest {
 
         button.click();
         Assert.assertEquals("2", content.getText());
+
+        WebElement body = findElement(By.tagName("body"));
+
+        String padding = String.valueOf(
+                executeScript("return getComputedStyle(arguments[0]).padding", body));
+
+        Assert.assertEquals("2px", padding);
+
     }
 
     private void waitUntillWithMessage(ExpectedCondition<?> condition,

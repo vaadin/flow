@@ -24,18 +24,36 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.mixedtest.ui.IdTestView.MyTheme;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.templatemodel.TemplateModel;
+import com.vaadin.flow.theme.AbstractTheme;
+import com.vaadin.flow.theme.Theme;
 
 @Route(value = "route-path")
 @Tag("my-component")
 @JsModule("./my-component.js")
-@HtmlImport("my-component.html")
+@HtmlImport("frontend://my-component.html")
+@JsModule("./src/my-component-themed.js")
+@HtmlImport("frontend://src/my-component-themed.html")
+@Theme(MyTheme.class)
 public class IdTestView extends PolymerTemplate<TemplateModel> {
 
     @WebServlet("/servlet-path/*")
     public static class MyServlet extends VaadinServlet {
+    }
+
+    public static class MyTheme implements AbstractTheme {
+        @Override
+        public String getBaseUrl() {
+            return "src/";
+        }
+
+        @Override
+        public String getThemeUrl() {
+            return "theme/my-theme";
+        }
     }
 
     @Id
