@@ -27,7 +27,7 @@ public class NodeListAddRemoveTest
     }
 
     @Test
-    public void testClear() {
+    public void clear_onlyListClearChange() {
         resetToRemoveAfterAddCase();
 
         nodeList.clear();
@@ -233,6 +233,29 @@ public class NodeListAddRemoveTest
         Assert.assertTrue(changes.get(0) instanceof ListRemoveChange<?>);
 
         verifyRemoved(changes, Arrays.asList(items.get(index - 1)), index - 1);
+    }
+
+    @Test
+    public void clearInBetween_addRemove_removeIsAdjustedProperly() {
+        resetToRemoveAfterAddCase();
+
+        // First add some item
+        nodeList.add("foo");
+
+        // Now clear everything
+        nodeList.clear();
+
+        // Now add and remove an item : after clear any add operation should not
+        // matter anymore
+        nodeList.add("bar");
+        nodeList.remove(0);
+
+        List<NodeChange> changes = collectChanges(nodeList);
+        // only one clear changes: add is compensated by remove
+        Assert.assertEquals(1, changes.size());
+        Assert.assertEquals(ListClearChange.class, changes.get(0).getClass());
+        // what's important: no any exception causes by incorrect index
+        // (IndexOutOfBoundsException)
     }
 
     @Test
