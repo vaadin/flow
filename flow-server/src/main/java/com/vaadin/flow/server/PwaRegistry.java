@@ -264,7 +264,8 @@ public class PwaRegistry implements Serializable {
                     .getAttribute(PwaRegistry.class.getName());
 
             if (attribute == null) {
-                ApplicationRouteRegistry reg = ApplicationRouteRegistry.getInstance(servletContext);
+                ApplicationRouteRegistry reg = ApplicationRouteRegistry
+                        .getInstance(new VaadinServletContext(servletContext));
 
                 // Initialize PwaRegistry with found PWA settings
                 PWA pwa = reg.getPwaConfigurationClass() != null ? reg

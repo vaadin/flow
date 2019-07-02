@@ -56,6 +56,7 @@ import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.ServiceException;
+import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
@@ -69,8 +70,8 @@ public class NavigationStateRendererTest {
 
     @Before
     public void init() {
-        RouteRegistry registry = ApplicationRouteRegistry
-                .getInstance(Mockito.mock(ServletContext.class));
+        RouteRegistry registry = ApplicationRouteRegistry.getInstance(
+                new VaadinServletContext(Mockito.mock(ServletContext.class)));
         router = new Router(registry);
     }
 

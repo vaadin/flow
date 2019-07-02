@@ -183,12 +183,13 @@ public class ServletDeployer implements ServletContextListener {
     }
 
 
-    private void createAppServlet(ServletContext context) {
+    private void createAppServlet(ServletContext servletContext) {
+        VaadinServletContext context = new VaadinServletContext(servletContext);
         boolean createServlet = ApplicationRouteRegistry.getInstance(context)
                 .hasNavigationTargets();
 
         createServlet = createServlet || WebComponentConfigurationRegistry
-                .getInstance(new VaadinServletContext(context)).hasConfigurations();
+                .getInstance(context).hasConfigurations();
 
         if (!createServlet) {
             getLogger().info(
@@ -198,7 +199,7 @@ public class ServletDeployer implements ServletContextListener {
             return;
         }
 
-        ServletRegistration vaadinServlet = findVaadinServlet(context);
+        ServletRegistration vaadinServlet = findVaadinServlet(servletContext);
         if (vaadinServlet != null) {
             getLogger().info(
                     "{} there is already a Vaadin servlet with the name {}",
@@ -207,7 +208,7 @@ public class ServletDeployer implements ServletContextListener {
             return;
         }
 
-        createServletIfNotExists(context, getClass().getName(), "/*");
+        createServletIfNotExists(servletContext, getClass().getName(), "/*");
     }
 
     private void createServletIfNotExists(ServletContext context, String name,

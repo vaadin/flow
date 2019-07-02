@@ -20,6 +20,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.osgi.OSGiAccess;
 
 @RunWith(EnableOSGiRunner.class)
@@ -30,8 +31,8 @@ public class OSGiApplicationRouteRegistryTest
     public void cleanUp() {
         if (OSGiAccess.getInstance().getOsgiServletContext() != null) {
             ApplicationRouteRegistry
-                    .getInstance(
-                            OSGiAccess.getInstance().getOsgiServletContext())
+                    .getInstance(new VaadinServletContext(
+                            OSGiAccess.getInstance().getOsgiServletContext()))
                     .clean();
         }
     }

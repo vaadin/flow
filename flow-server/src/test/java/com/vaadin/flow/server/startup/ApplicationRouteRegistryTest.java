@@ -19,6 +19,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.server.RouteRegistry;
+import com.vaadin.flow.server.VaadinServletContext;
 
 /**
  * Tests for {@link ApplicationRouteRegistry} instance inside OSGi container.
@@ -30,7 +31,7 @@ public class ApplicationRouteRegistryTest extends RouteRegistryTestBase {
     @Before
     public void init() {
         registry = ApplicationRouteRegistry
-                .getInstance(Mockito.mock(ServletContext.class));
+                .getInstance(new VaadinServletContext(Mockito.mock(ServletContext.class)));
     }
 
     @Test

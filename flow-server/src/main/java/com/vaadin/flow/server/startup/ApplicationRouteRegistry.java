@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContext;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -30,6 +29,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.servlet.ServletContext;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.InternalServerError;
 import com.vaadin.flow.router.NotFoundException;
@@ -42,6 +43,8 @@ import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.RouteRegistry;
+import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.osgi.OSGiAccess;
 import com.vaadin.flow.shared.Registration;
 import org.slf4j.LoggerFactory;
@@ -80,7 +83,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
                 return;
             }
             OSGiDataCollector registry = (OSGiDataCollector) getInstance(
-                    osgiServletContext);
+                    new VaadinServletContext(osgiServletContext));
             if (registry.errorNavigationTargets.get() != null) {
                 setErrorNavigationTargets(
                         registry.errorNavigationTargets.get());
@@ -93,7 +96,8 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
             }
             if (OSGiAccess.getInstance().hasInitializers()) {
                 OSGiDataCollector registry = (OSGiDataCollector) getInstance(
-                        OSGiAccess.getInstance().getOsgiServletContext());
+                        new VaadinServletContext(OSGiAccess.getInstance()
+                                .getOsgiServletContext()));
                 setPwaConfigurationClass(registry.getPwaConfigurationClass());
             }
         }
@@ -192,25 +196,22 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
      * context has no route registry, a new instance is created and assigned to
      * the context.
      *
-     * @param servletContext
-     *            the servlet context for which to get a route registry, not
+     * @param context
+     *            the context for which to get a route registry, not
      *            <code>null</code>
      * @return a registry instance for the given servlet context, not
      *         <code>null</code>
      */
-    public static ApplicationRouteRegistry getInstance(
-            ServletContext servletContext) {
-        assert servletContext != null;
+    public static ApplicationRouteRegistry getInstance(VaadinContext context) {
+        assert context != null;
 
         Object attribute;
-        synchronized (servletContext) {
-            attribute = servletContext
-                    .getAttribute(RouteRegistry.class.getName());
+        synchronized (context) {
+            attribute = context.getAttribute(RouteRegistry.class);
 
             if (attribute == null) {
-                attribute = createRegistry(servletContext);
-                servletContext.setAttribute(RouteRegistry.class.getName(),
-                        attribute);
+                attribute = createRegistry(context);
+                context.setAttribute(attribute);
             }
         }
 
@@ -218,7 +219,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
             return (ApplicationRouteRegistry) attribute;
         } else {
             throw new IllegalStateException(
-                    "Unknown servlet context attribute value: " + attribute);
+                    "Unknown context attribute value: " + attribute);
         }
     }
 
@@ -357,7 +358,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
     }
 
     private static ApplicationRouteRegistry createRegistry(
-            ServletContext context) {
+            VaadinContext context) {
         if (context != null && context == OSGiAccess.getInstance()
                 .getOsgiServletContext()) {
             return new OSGiDataCollector();
@@ -367,7 +368,8 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
 
         OSGiRouteRegistry osgiRouteRegistry = new OSGiRouteRegistry();
         OSGiDataCollector osgiDataCollector = (OSGiDataCollector) getInstance(
-                OSGiAccess.getInstance().getOsgiServletContext());
+                new VaadinServletContext(
+                        OSGiAccess.getInstance().getOsgiServletContext()));
         osgiRouteRegistry.setRoutes(osgiDataCollector.getRegisteredRoutes());
         osgiRouteRegistry.subscribeToChanges(osgiDataCollector);
         return osgiRouteRegistry;

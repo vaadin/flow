@@ -27,6 +27,7 @@ import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.SessionRouteRegistry;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
@@ -40,8 +41,8 @@ public class SessionRouteRegistryTest {
 
     @Before
     public void init() {
-        registry = ApplicationRouteRegistry
-                .getInstance(Mockito.mock(ServletContext.class));
+        registry = ApplicationRouteRegistry.getInstance(
+                new VaadinServletContext(Mockito.mock(ServletContext.class)));
 
         vaadinService = Mockito.mock(MockService.class);
         Mockito.when(vaadinService.getRouteRegistry()).thenReturn(registry);

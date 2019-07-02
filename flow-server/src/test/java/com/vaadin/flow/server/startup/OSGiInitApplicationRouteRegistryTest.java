@@ -31,6 +31,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.server.RouteRegistry;
+import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.osgi.OSGiAccess;
 
 import net.jcip.annotations.NotThreadSafe;
@@ -58,11 +59,12 @@ public class OSGiInitApplicationRouteRegistryTest
         OSGiAccess.getInstance().getOsgiServletContext()
                 .setAttribute(RouteRegistry.class.getName(), null);
 
-        registry = ApplicationRouteRegistry
-                .getInstance(Mockito.mock(ServletContext.class));
+        registry = ApplicationRouteRegistry.getInstance(
+                new VaadinServletContext(Mockito.mock(ServletContext.class)));
 
         osgiCollectorRegistry = ApplicationRouteRegistry
-                .getInstance(OSGiAccess.getInstance().getOsgiServletContext());
+                .getInstance(new VaadinServletContext(
+                        OSGiAccess.getInstance().getOsgiServletContext()));
     }
 
     @Test
@@ -283,7 +285,8 @@ public class OSGiInitApplicationRouteRegistryTest
                 Collections.singletonList(MainLayout.class));
 
         ApplicationRouteRegistry anotherRegistry = ApplicationRouteRegistry
-                .getInstance(Mockito.mock(ServletContext.class));
+                .getInstance(new VaadinServletContext(
+                        Mockito.mock(ServletContext.class)));
 
         List<RouteData> routes = anotherRegistry.getRegisteredRoutes();
         Assert.assertEquals(2, routes.size());

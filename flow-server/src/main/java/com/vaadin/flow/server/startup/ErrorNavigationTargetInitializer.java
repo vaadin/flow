@@ -26,6 +26,7 @@ import javax.servlet.annotation.HandlesTypes;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.HasErrorParameter;
+import com.vaadin.flow.server.VaadinServletContext;
 
 /**
  * Servlet initializer for collecting all available error handler navigation
@@ -48,8 +49,9 @@ public class ErrorNavigationTargetInitializer
                 .map(clazz -> (Class<? extends Component>) clazz)
                 .collect(Collectors.toSet());
 
-        ApplicationRouteRegistry.getInstance(servletContext)
-                .setErrorNavigationTargets(routes);
+        ApplicationRouteRegistry
+                .getInstance(new VaadinServletContext(servletContext))
+        .setErrorNavigationTargets(routes);
     }
 
 }

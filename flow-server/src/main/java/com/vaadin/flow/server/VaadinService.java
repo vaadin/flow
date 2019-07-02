@@ -37,6 +37,7 @@ import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.communication.UidlRequestHandler;
 import com.vaadin.flow.server.communication.WebComponentBootstrapHandler;
 import com.vaadin.flow.server.communication.WebComponentProvider;
+import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.server.startup.BundleFilterFactory;
 import com.vaadin.flow.server.startup.FakeBrowser;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
@@ -332,7 +333,9 @@ public abstract class VaadinService implements Serializable {
      *
      * @return the route registry to use, not <code>null</code>
      */
-    protected abstract RouteRegistry getRouteRegistry();
+    protected RouteRegistry getRouteRegistry() {
+        return ApplicationRouteRegistry.getInstance(getContext());
+    }
 
     protected abstract PwaRegistry getPwaRegistry();
 
@@ -379,9 +382,9 @@ public abstract class VaadinService implements Serializable {
     }
 
     private boolean hasWebComponentConfigurations() {
-            WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
-                    .getInstance(this.getContext());
-            return registry.hasConfigurations();
+        WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
+                .getInstance(getContext());
+        return registry.hasConfigurations();
     }
 
     /**
