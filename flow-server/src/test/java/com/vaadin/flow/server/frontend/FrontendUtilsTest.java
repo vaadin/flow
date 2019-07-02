@@ -25,6 +25,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.util.stream.Collectors;
@@ -195,4 +196,22 @@ public class FrontendUtilsTest {
             System.clearProperty("vaadin.ignoreVersionChecks");
         }
     }
+
+    @Test
+    public void parseValidToolVersions() throws IOException {
+        Assert.assertArrayEquals(new String[] { "10", "11", "12" },
+                FrontendUtils.parseVersion("v10.11.12"));
+        Assert.assertArrayEquals(new String[] { "8", "0", "0" },
+                FrontendUtils.parseVersion("v8.0.0"));
+        Assert.assertArrayEquals(new String[] { "8", "0", "0" },
+                FrontendUtils.parseVersion("8.0.0"));
+        Assert.assertArrayEquals(new String[] { "6", "9", "0" }, FrontendUtils
+                .parseVersion("Aktive Codepage: 1252\n" + "6.9.0\n" + ""));
+    }
+
+    @Test(expected = IOException.class)
+    public void parseEmptyToolVersions() throws IOException {
+        FrontendUtils.parseVersion(" \n");
+    }
+
 }
