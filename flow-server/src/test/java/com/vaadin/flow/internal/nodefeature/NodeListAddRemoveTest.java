@@ -236,7 +236,7 @@ public class NodeListAddRemoveTest
     }
 
     @Test
-    public void clearInBetween_addRemove_removeIsAdjustedProeprly() {
+    public void clearInBetween_addRemove_removeIsAdjustedProperly() {
         resetToRemoveAfterAddCase();
 
         // First add some item
