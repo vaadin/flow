@@ -41,6 +41,7 @@ import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.Dependency.Type;
 import com.vaadin.flow.shared.ui.LoadMode;
+
 import elemental.json.JsonObject;
 import elemental.json.JsonType;
 import elemental.json.JsonValue;
@@ -299,8 +300,9 @@ public class Page implements Serializable {
     }
 
     /**
-     * Adds the given HTML import to the page and ensures that it is loaded
-     * successfully.
+     * In compatibility mode (or Flow 1.x), adds the given HTML import to the
+     * page and ensures that it is loaded successfully. In normal mode (Flow
+     * 2.x with npm support), throws an {@code UnsupportedOperationException}.
      * <p>
      * Relative URLs are interpreted as relative to the configured
      * {@code frontend} directory location. You can prefix the URL with
@@ -312,14 +314,17 @@ public class Page implements Serializable {
      *
      * @param url
      *            the URL to load the HTML import from, not <code>null</code>
+     * @throws java.lang.UnsupportedOperationException
+     *             if called outside of compatibility mode.
      */
     public void addHtmlImport(String url) {
         addHtmlImport(url, LoadMode.EAGER);
     }
 
     /**
-     * Adds the given HTML import to the page and ensures that it is loaded
-     * successfully.
+     * In compatibility mode (or Flow 1.x), adds the given HTML import to the
+     * page and ensures that it is loaded successfully. In normal mode (Flow
+     * 2.x with npm support), throws an {@code UnsupportedOperationException}.
      * <p>
      * Relative URLs are interpreted as relative to the configured
      * {@code frontend} directory location. You can prefix the URL with
@@ -331,9 +336,18 @@ public class Page implements Serializable {
      * @param loadMode
      *            determines dependency load mode, refer to {@link LoadMode} for
      *            details
+     * @throws java.lang.UnsupportedOperationException
+     *             if called outside of compatibility mode.
      */
     public void addHtmlImport(String url, LoadMode loadMode) {
-        addDependency(new Dependency(Type.HTML_IMPORT, url, loadMode));
+        if (ui.getSession().getConfiguration().isCompatibilityMode()) {
+            addDependency(new Dependency(Type.HTML_IMPORT, url, loadMode));
+        } else {
+            throw new UnsupportedOperationException("Adding html imports is "
+                    + "only supported in compatibility mode. Either run the "
+                    + "application in compatibility mode or add the "
+                    + "dependency via annotation (@NpmPackage and @JsModule).");
+        }
     }
 
     private void addDependency(Dependency dependency) {
@@ -628,21 +642,22 @@ public class Page implements Serializable {
                 return null;
             }
         };
-        ui.getInternals().setExtendedClientDetails(new ExtendedClientDetails(
-                getStringElseNull.apply("v-sw"),
-                getStringElseNull.apply("v-sh"),
-                getStringElseNull.apply("v-ww"),
-                getStringElseNull.apply("v-wh"),
-                getStringElseNull.apply("v-bw"),
-                getStringElseNull.apply("v-bh"),
-                getStringElseNull.apply("v-tzo"),
-                getStringElseNull.apply("v-rtzo"),
-                getStringElseNull.apply("v-dstd"),
-                getStringElseNull.apply("v-dston"),
-                getStringElseNull.apply("v-tzid"),
-                getStringElseNull.apply("v-curdate"),
-                getStringElseNull.apply("v-td"),
-                getStringElseNull.apply("v-pr"),
-                getStringElseNull.apply("v-wn")));
+        ui.getInternals()
+                .setExtendedClientDetails(new ExtendedClientDetails(
+                        getStringElseNull.apply("v-sw"),
+                        getStringElseNull.apply("v-sh"),
+                        getStringElseNull.apply("v-ww"),
+                        getStringElseNull.apply("v-wh"),
+                        getStringElseNull.apply("v-bw"),
+                        getStringElseNull.apply("v-bh"),
+                        getStringElseNull.apply("v-tzo"),
+                        getStringElseNull.apply("v-rtzo"),
+                        getStringElseNull.apply("v-dstd"),
+                        getStringElseNull.apply("v-dston"),
+                        getStringElseNull.apply("v-tzid"),
+                        getStringElseNull.apply("v-curdate"),
+                        getStringElseNull.apply("v-td"),
+                        getStringElseNull.apply("v-pr"),
+                        getStringElseNull.apply("v-wn")));
     }
 }
