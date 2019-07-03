@@ -22,18 +22,23 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.DependencyList;
+import com.vaadin.flow.component.internal.UIInternals;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JsonUtils;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.MockUI;
 
 import elemental.json.Json;
-import elemental.json.JsonObject;
 import elemental.json.JsonValue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class PageTest {
 
@@ -64,7 +69,7 @@ public class PageTest {
             count++;
             return null;
         }
-    };
+    }
 
     private TestPage page = new TestPage();
 
@@ -213,4 +218,49 @@ public class PageTest {
         Assert.assertEquals(1, jsInvocations);
         Assert.assertEquals(2, callbackInvocations.get());
     }
+
+    @Test
+    public void addHtmlImport_addsImportInCompatibilityMode() {
+        // given
+        UI ui = getMockUI(true);
+        Page page = new Page(ui);
+
+        // when
+        page.addHtmlImport("//url.does.not.matter");
+
+        // then
+        verify(ui).getInternals();
+    }
+
+    @Test (expected = UnsupportedOperationException.class)
+    public void addHtmlImport_throwsInNpmMode() {
+        // given
+        UI ui = getMockUI(false);
+        Page page = new Page(ui);
+
+        // when
+        page.addHtmlImport("//url.does.not.matter");
+
+        // then... throws
+    }
+
+    private static UI getMockUI(boolean compatibilityMode) {
+        UI ui = mock(UI.class);
+        VaadinSession session = mock(VaadinSession.class);
+        DeploymentConfiguration configuration =
+                mock(DeploymentConfiguration.class);
+        UIInternals internals = mock(UIInternals.class);
+        DependencyList list = mock(DependencyList.class);
+        // ui
+        when(ui.getSession()).thenReturn(session);
+        when(ui.getInternals()).thenReturn(internals);
+        // session
+        when(session.getConfiguration()).thenReturn(configuration);
+        // configuration
+        when(configuration.isCompatibilityMode()).thenReturn(compatibilityMode);
+        // internals
+        when(internals.getDependencyList()).thenReturn(list);
+        return ui;
+    }
+
 }
