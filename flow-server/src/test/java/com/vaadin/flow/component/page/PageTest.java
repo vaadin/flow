@@ -22,7 +22,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -32,7 +31,6 @@ import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.MockUI;
 
 import elemental.json.Json;
-import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 public class PageTest {
@@ -64,7 +62,7 @@ public class PageTest {
             count++;
             return null;
         }
-    };
+    }
 
     private TestPage page = new TestPage();
 
