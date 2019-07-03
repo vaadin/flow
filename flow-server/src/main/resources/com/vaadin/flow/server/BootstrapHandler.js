@@ -65,7 +65,8 @@
           isActive: function() {
             return true;
           },
-          initializing: true
+          initializing: true,
+          productionMode: mode
       };
       
       var getConfig = function(name) {
@@ -213,6 +214,7 @@
   
   var uidl = {{INITIAL_UIDL}};
   var config = {{CONFIG_JSON}};
+  var mode = {{PRODUCTION_MODE}};
   config.uidl = uidl;
 
   window.Vaadin.Flow.initApplication("{{APP_ID}}", config);

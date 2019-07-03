@@ -1574,6 +1574,34 @@ public class BootstrapHandlerTest {
                 secondInit.getUI(), uiReference.get());
     }
 
+    private void bootstrapPage_productionModeTest(boolean productionMode) {
+        mocks.setProductionMode(productionMode);
+        TestUI anotherUI = new TestUI();
+        initUI(testUI);
+
+        anotherUI.getInternals().setSession(session);
+        VaadinRequest vaadinRequest = createVaadinRequest();
+        anotherUI.doInit(vaadinRequest, 0);
+        anotherUI.getRouter().initializeUI(anotherUI, request);
+        BootstrapContext bootstrapContext = new BootstrapContext(vaadinRequest,
+                null, session, anotherUI, this::contextRootRelativePath);
+        anotherUI.getInternals().setContextRoot(contextRootRelativePath(request));
+
+        Document page = pageBuilder.getBootstrapPage(bootstrapContext);
+        Element head = page.head();
+        Assert.assertTrue(head.outerHtml().contains("mode = " + productionMode));
+    }
+
+    @Test
+    public void bootstrapPage_productionModeTrueIsReplaced() {
+        bootstrapPage_productionModeTest(true);
+    }
+
+    @Test
+    public void bootstrapPage_productionModeFalseIsReplaced() {
+        bootstrapPage_productionModeTest(false);
+    }
+
     @Route("")
     @Tag(Tag.DIV)
     @Meta(name = "apple-mobile-web-app-capable", content = "yes")
@@ -1629,7 +1657,7 @@ public class BootstrapHandlerTest {
         initUI(testUI, createVaadinRequest(),
                 Collections.singleton(MetaAnnotationsContainsNull.class));
 
-        Document page = pageBuilder.getBootstrapPage(
+        pageBuilder.getBootstrapPage(
                 new BootstrapContext(request, null, session, testUI, this::contextRootRelativePath));
     }
 
@@ -1644,7 +1672,7 @@ public class BootstrapHandlerTest {
         initUI(testUI, createVaadinRequest(),
                 Collections.singleton(MetaAnnotationsWithoutRoute.class));
 
-        Document page = pageBuilder.getBootstrapPage(
+        pageBuilder.getBootstrapPage(
                 new BootstrapContext(request, null, session, testUI, this::contextRootRelativePath));
     }
 
@@ -1749,7 +1777,7 @@ public class BootstrapHandlerTest {
 
         initUI(testUI, createVaadinRequest(),
                 Collections.singleton(InitialPageConfiguratorRoute.class));
-        Document page = pageBuilder.getBootstrapPage(
+        pageBuilder.getBootstrapPage(
                 new BootstrapContext(request, null, session, testUI, this::contextRootRelativePath));
 
         Assert.assertFalse("Default indicator theme is not themed anymore",
