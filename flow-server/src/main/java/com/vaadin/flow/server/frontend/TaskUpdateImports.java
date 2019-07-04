@@ -245,10 +245,10 @@ public class TaskUpdateImports extends NodeUpdater {
             }
 
             if(localModulePath != null && frontendFileExists(localModulePath)) {
-                imports.add(String.format(IMPORT_TEMPLATE,
+                lines.add(String.format(IMPORT_TEMPLATE,
                         toValidBrowserImport(localModulePath)));
             } else if (importedFileExists(translatedModulePath)) {
-                imports.add(String.format(IMPORT_TEMPLATE,
+                lines.add(String.format(IMPORT_TEMPLATE,
                         toValidBrowserImport(translatedModulePath)));
             } else if (importedFileExists(originalModulePath)) {
                 lines.add(String.format(IMPORT_TEMPLATE,
