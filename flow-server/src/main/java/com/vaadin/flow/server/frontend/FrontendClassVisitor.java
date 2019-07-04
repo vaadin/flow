@@ -167,7 +167,7 @@ class FrontendClassVisitor extends ClassVisitor {
 
         @Override
         public String toString() {
-            return " notheme: " + notheme + "\n name:" + name + "\n variant: "
+            return " theme.notheme: " + notheme + "\n theme.name: " + name + "\n theme.variant: "
                     + variant;
         }
     }
@@ -255,7 +255,7 @@ class FrontendClassVisitor extends ClassVisitor {
                 if (VALUE.equals(name) && endPoint.theme.name == null) {
                     themeRouteVisitor.visit(name, value);
                 } else if (VARIANT.equals(name)
-                        && endPoint.theme.variant == null) {
+                        && endPoint.theme.variant.isEmpty()) {
                     themeRouteVisitor.visit(name, value);
                 }
             }

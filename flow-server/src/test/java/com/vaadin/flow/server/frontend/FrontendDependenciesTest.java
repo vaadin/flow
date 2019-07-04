@@ -162,6 +162,7 @@ public class FrontendDependenciesTest {
     public void should_takeThemeFromLayout() throws Exception {
         FrontendDependencies deps = create(RootViewWithLayoutTheme.class);
         assertEquals(Theme1.class, deps.getThemeDefinition().getTheme());
+        assertEquals(Theme1.DARK, deps.getThemeDefinition().getVariant());
 
         assertEquals(8, deps.getModules().size());
         assertEquals(1, deps.getPackages().size());
@@ -176,7 +177,7 @@ public class FrontendDependenciesTest {
     public void should_takeThemeWhenMultipleTheme() throws Exception {
         FrontendDependencies deps = create(RootViewWithMultipleTheme.class);
         assertEquals(Theme2.class, deps.getThemeDefinition().getTheme());
-        assertEquals("foo", deps.getThemeDefinition().getVariant());
+        assertEquals(Theme2.FOO, deps.getThemeDefinition().getVariant());
 
         assertEquals(4, deps.getModules().size());
         assertEquals(0, deps.getPackages().size());
