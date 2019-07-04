@@ -16,7 +16,7 @@
         <module>test-resources</module>
         <module>test-common</module>
         <module>test-pwa</module>
-
+        <module>test-spring-misc</module>
 
         <module>test-dev-mode</module>
         <module>test-root-ui-context</module>
@@ -157,9 +157,8 @@
                             <fileset>
                                 <directory>${project.basedir}</directory>
                                 <includes>
-                                    <include>frontend/main.js</include>
                                     <include>package*.json</include>
-                                    <include>webpack.config.js</include>
+                                    <include>webpack*.js</include>
                                 </includes>
                             </fileset>
                         </filesets>
@@ -269,7 +268,7 @@
                             <!-- force default ports so that running IT tests
                                 from IDE work -->
                             <httpConnector>
-                                <port>8888</port>
+                                <port>${server.port}</port>
                             </httpConnector>
                             <stopPort>8889</stopPort>
                         </configuration>

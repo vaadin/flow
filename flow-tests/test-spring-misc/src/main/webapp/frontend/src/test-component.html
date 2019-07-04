@@ -1,0 +1,15 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/vaadin-element-mixin/vaadin-element-mixin.html">
+
+<dom-module id="test-component">
+    <template>
+        <button id="button">Click</button>
+        <div id="content"></div>
+    </template>
+    <script>
+        class TestComponent extends Vaadin.ElementMixin(Polymer.Element) {
+            static get is() { return 'test-component' }
+        }
+        customElements.define(TestComponent.is, TestComponent);
+    </script>
+</dom-module>
