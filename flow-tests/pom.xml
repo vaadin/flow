@@ -36,6 +36,11 @@
 
         <!-- tests migrated to NPM -->
         <module>web-component-test-assets</module>
+
+        <!-- tests running in both modes -->
+        <module>test-misc</module>
+        <module>test-misc/pom-bower.xml</module>
+
         <!--   Temporary disabled because the test is not stable. Will be investigated and enabled back.
         <module>test-mixed</module>
         <module>test-mixed/pom-npm-production.xml</module>
