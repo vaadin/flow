@@ -22,6 +22,7 @@ import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
+import javax.servlet.annotation.WebListener;
 
 import java.io.File;
 import java.io.IOException;
@@ -66,9 +67,9 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
  * server.
  */
 @HandlesTypes({ Route.class, NpmPackage.class, WebComponentExporter.class })
+@WebListener
 public class DevModeInitializer
-        implements ServletContainerInitializer, Serializable {
-
+        implements ServletContainerInitializer, Serializable, ServletContextListener {
 
     /**
      * The classes that were visited when determining which frontend resources
@@ -213,20 +214,6 @@ public class DevModeInitializer
         vaadinContext.setAttribute(new VisitedClasses(visitedClassNames));
 
         DevModeHandler handler = DevModeHandler.start(config, builder.npmFolder);
-
-        if (!config.reuseDevServer()) {
-            context.addListener(new ServletContextListener() {
-                @Override
-                public void contextInitialized(ServletContextEvent sce) {
-                    // No need to do anything on init
-                }
-
-                @Override
-                public void contextDestroyed(ServletContextEvent sce) {
-                    handler.stop();
-                }
-            });
-        }
     }
 
     private static Logger log() {
@@ -255,5 +242,19 @@ public class DevModeInitializer
                     .copyIncludedFilesFromJarTrimmingBasePath(jarFile, RESOURCES_FRONTEND_DEFAULT,
                             flowNodeDirectory, wildcardInclusions);
         }
+    }
+
+    @Override
+    public void contextInitialized(ServletContextEvent ctx) {
+        // No need to do anything on init
+    }
+
+    @Override
+    public void contextDestroyed(ServletContextEvent ctx) {
+        DevModeHandler handler = DevModeHandler.getDevModeHandler();
+        if (handler != null && !handler.reuseDevServer()) {
+            handler.stop();
+        }
+
     }
 }

@@ -104,12 +104,14 @@ public final class DevModeHandler implements Serializable {
 
     private int port;
     private transient Process webpackProcess;
+    private final boolean reuseDevServer;
 
     private DevModeHandler(DeploymentConfiguration config,
             int runningPort, File npmFolder,
             File webpack, File webpackConfig) {
 
         port = runningPort;
+        reuseDevServer = config.reuseDevServer();
 
         // If port is defined, means that webpack is already running
         if (port > 0) {
@@ -560,6 +562,13 @@ public final class DevModeHandler implements Serializable {
     }
 
     /**
+     * Whether the 'webpack-dev-server' should be reused on servlet reload.
+     */
+    public boolean reuseDevServer() {
+        return reuseDevServer;
+    }
+
+    /**
      * Stop the webpack-dev-server.
      */
     public void stop() {
@@ -568,11 +577,12 @@ public final class DevModeHandler implements Serializable {
         }
 
         try {
-            // The most reliable way to stop the webpack-dev-server is 
+            // The most reliable way to stop the webpack-dev-server is
             // by informing webpack to exit. We have implemented in webpack a
             // a listener that handles the stop command via HTTP and exits.
             prepareConnection("/stop", "GET").getResponseCode();
-        } catch (IOException ignore) { // NOSONAR
+        } catch (IOException e) {
+            getLogger().debug("webpack-dev-server does not support the `/stop` command.", e);
         }
 
         if (webpackProcess != null && webpackProcess.isAlive()) {
