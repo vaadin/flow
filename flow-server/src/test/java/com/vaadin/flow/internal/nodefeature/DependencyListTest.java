@@ -21,6 +21,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import net.jcip.annotations.NotThreadSafe;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.DependencyList;
 import com.vaadin.flow.internal.JsonUtils;
@@ -28,13 +33,9 @@ import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.Dependency.Type;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.tests.util.MockUI;
+
 import elemental.json.Json;
 import elemental.json.JsonObject;
-import net.jcip.annotations.NotThreadSafe;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -47,7 +48,7 @@ public class DependencyListTest {
 
     @Before
     public void before() {
-        ui = new MockUI();
+        ui = MockUI.createCompatibilityModeUI();
         deps = ui.getInternals().getDependencyList();
 
         assertEquals(0, deps.getPendingSendToClient().size());
@@ -128,6 +129,17 @@ public class DependencyListTest {
     public void addHtmlDependency_inline() {
         ui.getPage().addHtmlImport(URL, LoadMode.INLINE);
         validateDependency(URL, Type.HTML_IMPORT, LoadMode.INLINE);
+    }
+
+    @Test (expected = UnsupportedOperationException.class)
+    public void addHtmlDependency_throwsInNpmMode() {
+        // given
+        UI ui = MockUI.createNpmModeUI();
+
+        // when
+        ui.getPage().addHtmlImport("//url.does.not.matter");
+
+        // then... throws
     }
 
     private void validateDependency(String url, Type dependencyType,

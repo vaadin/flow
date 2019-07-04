@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.internal;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
@@ -23,8 +24,6 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.page.Page.ExecutionCanceler;
 import com.vaadin.tests.util.MockUI;
-
-import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class PageTest {
