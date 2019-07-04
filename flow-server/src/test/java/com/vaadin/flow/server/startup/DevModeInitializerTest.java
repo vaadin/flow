@@ -1,11 +1,9 @@
 package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletContext;
-import javax.servlet.ServletContextListener;
 import javax.servlet.ServletRegistration;
 
 import java.io.File;
-import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EventListener;
@@ -13,7 +11,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
@@ -197,7 +194,6 @@ public class DevModeInitializerTest {
         assertNull(DevModeHandler.getDevModeHandler());
     }
 
-
     @Test
     public void should_Not_AddContextListener() throws Exception {
         ArgumentCaptor<? extends EventListener> arg = ArgumentCaptor.forClass(EventListener.class);
@@ -207,25 +203,14 @@ public class DevModeInitializerTest {
     }
 
     @Test
-    public void should_AddContextListener() throws Exception {
-        ArgumentCaptor<? extends EventListener> arg = ArgumentCaptor.forClass(EventListener.class);
-        initParams.put(SERVLET_PARAMETER_REUSE_DEV_SERVER, "false");
-
-        devModeInitializer.onStartup(classes, servletContext);
-        Mockito.verify(servletContext).addListener(arg.capture());
-    }
-
-    @Test
     public void listener_should_stopDevModeHandler_onDestroy() throws Exception {
-        ArgumentCaptor<? extends EventListener> arg = ArgumentCaptor.forClass(EventListener.class);
         initParams.put(SERVLET_PARAMETER_REUSE_DEV_SERVER, "false");
 
         devModeInitializer.onStartup(classes, servletContext);
-        Mockito.verify(servletContext).addListener(arg.capture());
 
         assertNotNull(DevModeHandler.getDevModeHandler());
 
-        ((ServletContextListener)arg.getValue()).contextDestroyed(null);
+        devModeInitializer.contextDestroyed(null);
         assertNull(DevModeHandler.getDevModeHandler());
     }
 
