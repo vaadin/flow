@@ -25,6 +25,7 @@ import java.util.Map;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
@@ -81,6 +82,12 @@ public class NodeTestComponents {
     }
 
     @JsModule("./foo.js")
+    @CssImport("@vaadin/vaadin-mixed-component/bar.css")
+    @CssImport("./foo.css")
+    @CssImport(value = "./foo.css")
+    @CssImport(value = "./foo.css", include = "bar")
+    @CssImport(value = "./foo.css", id = "baz")
+    @CssImport(value = "./foo.css", themeFor = "foo-bar")
     public static class FlatImport extends Component {
     }
 

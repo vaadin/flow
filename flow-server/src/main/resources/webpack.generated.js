@@ -73,6 +73,10 @@ module.exports = {
       { // Files that Babel has to transpile
         test: /\.js$/,
         use: [BabelMultiTargetPlugin.loader()]
+      },
+      {
+        test: /\.css$/i,
+        use: ['raw-loader']
       }
     ]
   },
