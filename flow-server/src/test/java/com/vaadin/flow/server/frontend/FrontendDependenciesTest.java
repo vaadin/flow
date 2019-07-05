@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -15,10 +16,13 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.frontend.ClassFinder.DefaultClassFinder;
+import com.vaadin.flow.server.frontend.FrontendClassVisitor.CssData;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.BridgeClass;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Component0;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Component1;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Component2;
+import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.CssClass1;
+import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.CssClass2;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.FirstView;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.NoThemeExporter;
 import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.RootView2WithLayoutTheme;
@@ -339,4 +343,28 @@ public class FrontendDependenciesTest {
             assertEquals(Theme1.class.getName(), endPoint.getTheme().getName());
         });
     }
+
+    @Test
+    public void should_visitCssImports() throws Exception {
+        FrontendDependencies deps = create(CssClass1.class, CssClass2.class);
+        assertEquals(2, deps.getEndPoints().size());
+        deps.getEndPoints().forEach(endPoint -> {
+            assertEquals(4, endPoint.getCss().size());
+
+            Iterator<CssData> it = endPoint.getCss().iterator();
+            assertEquals("value: ./foo.css", it.next().toString());
+            assertEquals("value: ./foo.css include:bar", it.next().toString());
+            assertEquals("value: ./foo.css id:bar", it.next().toString());
+            assertEquals("value: ./foo.css themefor:bar", it.next().toString());
+
+        });
+    }
+
+
+    @Test
+    public void should_sumarizeCssImports() throws Exception {
+        FrontendDependencies deps = create(CssClass1.class, CssClass2.class);
+        assertEquals(4, deps.getCss().size());
+    }
+
 }

@@ -40,6 +40,7 @@ import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.frontend.FrontendClassVisitor.CssData;
 import com.vaadin.flow.server.frontend.FrontendClassVisitor.EndPointData;
 import com.vaadin.flow.server.frontend.FrontendClassVisitor.ThemeData;
 import com.vaadin.flow.theme.AbstractTheme;
@@ -193,6 +194,19 @@ public class FrontendDependencies implements Serializable {
         Set<String> all = new HashSet<>();
         for (FrontendClassVisitor.EndPointData data : endPoints.values()) {
             all.addAll(data.getScripts());
+        }
+        return all;
+    }
+
+    /**
+     * Get all the CSS files used by the application.
+     *
+     * @return the set of CSS files
+     */
+    public Set<CssData> getCss() {
+        Set<CssData> all = new HashSet<>();
+        for (FrontendClassVisitor.EndPointData data : endPoints.values()) {
+            all.addAll(data.getCss());
         }
         return all;
     }

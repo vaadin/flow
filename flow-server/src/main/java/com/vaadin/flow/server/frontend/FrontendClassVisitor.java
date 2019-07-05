@@ -29,6 +29,7 @@ import net.bytebuddy.jar.asm.MethodVisitor;
 import net.bytebuddy.jar.asm.Opcodes;
 import net.bytebuddy.jar.asm.Type;
 
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.router.Route;
@@ -44,6 +45,9 @@ class FrontendClassVisitor extends ClassVisitor {
     private static final String LAYOUT = "layout";
     static final String VALUE = "value";
     static final String VERSION = "version";
+    static final String ID = "id";
+    static final String INCLUDE = "include";
+    static final String THEME_FOR = "themeFor";
 
     /**
      * An annotation visitor implementation that enables repeated annotations.
@@ -77,6 +81,8 @@ class FrontendClassVisitor extends ClassVisitor {
         private ThemeData theme = new ThemeData();
         private final HashSet<String> modules = new HashSet<>();
         private final HashSet<String> scripts = new HashSet<>();
+        private final HashSet<CssData> css = new HashSet<>();
+
         private final HashSet<String> classes = new HashSet<>();
 
         EndPointData(Class<?> clazz) {
@@ -87,9 +93,9 @@ class FrontendClassVisitor extends ClassVisitor {
         @Override
         public String toString() {
             return String.format(
-                    "%n view: %s%n route: %s%n%s%n layout: %s%n modules: %s%n scripts: %s%n",
+                    "%n view: %s%n route: %s%n%s%n layout: %s%n modules: %s%n scripts: %s%n css: %s%n",
                     name, route, theme, layout, col2Str(modules),
-                    col2Str(scripts));
+                    col2Str(scripts), col2Str(css));
         }
 
         Set<String> getModules() {
@@ -120,8 +126,12 @@ class FrontendClassVisitor extends ClassVisitor {
             return name;
         }
 
-        private String col2Str(Collection<String> s) {
-            return String.join("\n          ", s);
+        Set<CssData> getCss() {
+            return css;
+        }
+
+        private String col2Str(Collection<?> s) {
+            return String.join("\n          ", String.valueOf(s));
         }
     }
 
@@ -159,9 +169,8 @@ class FrontendClassVisitor extends ClassVisitor {
         @Override
         public int hashCode() {
             // We might need to add variant when we wanted to fail in the
-            // case of
-            // same theme class with different variant, which was right in
-            // v13
+            // case of same theme class with different variant, which was
+            // right in v13
             return Objects.hash(name, notheme);
         }
 
@@ -169,6 +178,58 @@ class FrontendClassVisitor extends ClassVisitor {
         public String toString() {
             return " theme.notheme: " + notheme + "\n theme.name: " + name + "\n theme.variant: "
                     + variant;
+        }
+    }
+
+    /**
+     * A container for CssImport information when scanning the class path. It
+     * overrides equals and hashCode in order to use HashSet to eliminate
+     * duplicates.
+     */
+    static class CssData implements Serializable {
+
+        private String value;
+        private String id;
+        private String include;
+        private String themefor;
+
+        String getValue() {
+            return value;
+        }
+        String getId() {
+            return id;
+        }
+        String getInclude() {
+            return include;
+        }
+        String getThemefor() {
+            return themefor;
+        }
+
+
+        @Override
+        public boolean equals(Object other) {
+            if (other == null || !(other instanceof CssData)) {
+                return false;
+            }
+            CssData that = (CssData) other;
+            return Objects.equals(value, that.value)
+                    && Objects.equals(id, that.id)
+                    && Objects.equals(include, that.include)
+                    && Objects.equals(themefor, that.themefor);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(value, id, include, themefor);
+        }
+
+        @Override
+        public String toString() {
+            return "value: " + value
+                    + (id != null ? " id:" + id : "")
+                    + (include != null ? " include:" + include : "")
+                    + (themefor != null ? " themefor:" + themefor : "");
         }
     }
 
@@ -334,6 +395,41 @@ class FrontendClassVisitor extends ClassVisitor {
             if (className.equals(endPoint.layout)) {
                 return themeLayoutVisitor;
             }
+        }
+        if (cname.contains(CssImport.class.getName())) {
+            return new RepeatedAnnotationVisitor() {
+                private CssData cssData;
+                private void newData() {
+                    cssData = new CssData();
+                    endPoint.css.add(cssData);
+                }
+
+                @Override
+                public void visit(String name, Object obj) {
+                    String value = String.valueOf(obj);
+                    if (cssData == null) {
+                        // visited when only one annotation in the class
+                        newData();
+                    }
+                    if (VALUE.equals(name)) {
+                        endPoint.css.add(cssData);
+                        cssData.value = value;
+                    } else if (ID.equals(name)) {
+                        cssData.id = value;
+                    } else if (INCLUDE.equals(name)) {
+                        cssData.include = value;
+                    } else if (THEME_FOR.equals(name)) {
+                        cssData.themefor = value;
+                    }
+                }
+
+                @Override
+                public AnnotationVisitor visitAnnotation(String name, String descriptor) {
+                    // visited when annotation is repeated
+                    newData();
+                    return this;
+                }
+            };
         }
         // default visitor
         return annotationVisitor;
