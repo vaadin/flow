@@ -126,15 +126,28 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         expectedLines.add("import '@vaadin/vaadin-mixed-component/theme/lumo/vaadin-something-else'");
         // An import not found in node_modules
         expectedLines.add("import 'unresolved/component';");
-        assertFalse(importsFile.exists());
 
+        expectedLines.add("import $css_0 from 'Frontend/foo.css';");
+        expectedLines.add("import $css_1 from 'Frontend/foo.css';");
+        expectedLines.add("import $css_2 from '@vaadin/vaadin-mixed-component/bar.css';");
+        expectedLines.add("import $css_3 from 'Frontend/foo.css';");
+        expectedLines.add("import $css_4 from 'Frontend/foo.css';");
+        expectedLines.add("addCssBlock(`<dom-module id=\"baz\"><template><style>${$css_0}</style></template></dom-module>`);");
+        expectedLines.add("addCssBlock(`<dom-module id=\"flow_css_mod_1\" theme-for=\"foo-bar\"><template><style>${$css_1}</style></template></dom-module>`);");
+        expectedLines.add("addCssBlock(`<custom-style><style>${$css_2}</style></custom-style>`);");
+        expectedLines.add("addCssBlock(`<custom-style><style>${$css_3}</style></custom-style>`);");
+        expectedLines.add("addCssBlock(`<custom-style><style include=\"bar\">${$css_4}</style></custom-style>`);");
+
+        assertFalse(importsFile.exists());
 
         updater.execute();
         assertTrue(importsFile.exists());
 
+
         assertContainsImports(true, expectedLines.toArray(new String[0]));
 
         assertTrue(loggerFile.exists());
+
         String output = FileUtils.readFileToString(loggerFile, "UTF-8");
         assertContains(output, true,
                 "changing 'frontend://frontend-p3-template.js' to './frontend-p3-template.js'",
@@ -143,7 +156,9 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         // Using regex match because of the ➜ character in TC
         assertTrue(output.matches(
-                "(?s).*Failed to find the following imports in the `node_modules` tree:\\n      . unresolved/component.*"));
+                "(?s).*Failed to find the following imports in the `node_modules` tree:\\n       . unresolved/component.*"));
+        assertTrue(output.matches(
+                "(?s).*Failed to find the following css files in the `node_modules` tree:\\n       . @vaadin/vaadin-mixed-component/bar.css.*"));
 
         assertContains(output, false,
                 "changing 'frontend://foo-dir/javascript-lib.js' to './foo-dir/javascript-lib.js'");
@@ -221,6 +236,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
             throws IOException {
         String content = FileUtils.readFileToString(importsFile,
                 Charset.defaultCharset());
+
         for (String line : imports) {
             assertContains(content, contains, addWebpackPrefix(line));
         }
