@@ -39,6 +39,7 @@ public class FrontendDependenciesTestComponents {
     @JavaScript("frontend://theme-0.js")
     static class Theme0 implements AbstractTheme {
         public static final String DARK = "dark";
+        public static final String FOO = "foo";
 
         @Override
         public String getBaseUrl() {
@@ -147,7 +148,7 @@ public class FrontendDependenciesTestComponents {
     }
 
     @Route(value = "", layout = RouterLayout2.class)
-    @Theme(value = Theme2.class, variant = "foo")
+    @Theme(value = Theme2.class, variant = Theme2.FOO)
     @JsModule("./view-2.js")
     public static class RootViewWithMultipleTheme extends Component {
 
