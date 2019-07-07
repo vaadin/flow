@@ -16,7 +16,6 @@
         <module>test-resources</module>
         <module>test-common</module>
         <module>test-pwa</module>
-        <module>test-spring-misc</module>
 
         <module>test-dev-mode</module>
         <module>test-root-ui-context</module>
