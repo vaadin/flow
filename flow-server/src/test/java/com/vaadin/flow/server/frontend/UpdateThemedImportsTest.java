@@ -97,6 +97,9 @@ public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
         createImport("./theme/myTheme/subfolder/sub-template.js", "");
         createImport("./theme/myTheme/client-side-template.js", "");
         createImport("./theme/myTheme/main-template.js", "");
+        // create css files to avoid exception when files not found during the test 
+        createImport("./foo.css", "");
+        createImport("@vaadin/vaadin-mixed-component/bar.css", "");
 
         ClassFinder finder = getClassFinder();
         FrontendDependencies deps = new FrontendDependencies(finder) {

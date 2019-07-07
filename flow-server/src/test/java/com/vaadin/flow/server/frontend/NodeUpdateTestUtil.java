@@ -147,7 +147,8 @@ public class NodeUpdateTestUtil {
                 "./vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
                 "./local-template.js",
                 "./foo-dir/vaadin-npm-component.js",
-                "./foo.css");
+                "./foo.css",
+                "@vaadin/vaadin-mixed-component/bar.css");
     }
 
     void createExpectedImports(File directoryWithImportsJs,

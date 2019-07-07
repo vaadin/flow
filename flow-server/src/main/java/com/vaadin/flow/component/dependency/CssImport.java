@@ -31,18 +31,18 @@ import java.lang.annotation.Target;
  * 
  * <ul>
  * <li>When specifying only the 'value', it will be appended to the
- * 'document.head' inside a '&lt;custom-style>' block.
+ * 'document.head' inside a '&lt;custom-style&gt;' block.
  * 
  * <pre>
- *  &lt;custom-style>
- *    &lt;style>
+ *  &lt;custom-style&gt;
+ *    &lt;style&gt;
  *      CSS-CONTENT
- *    &lt;/style>
- *  &lt;/custom-style>
+ *    &lt;/style&gt;
+ *  &lt;/custom-style&gt;
  * </pre>
  * 
  * <li>When specifying 'value' and 'include', it is appended inside a
- * '&lt;custom-style>' block, but 'include' value is used for including a
+ * '&lt;custom-style&gt;' block, but 'include' value is used for including a
  * defined module.
  * 
  * <pre>
@@ -67,7 +67,7 @@ import java.lang.annotation.Target;
  * </pre>
  * 
  * <li>When 'value' and 'themeFor' are given, a new 'dom-module' for customizing
- * a themable element is created created
+ * a themable element is created
  * 
  * <pre>
  * &lt;dom-module id="RANDOM-ID" theme-for="THEME-FOR-VALUE"&gt;
@@ -86,28 +86,27 @@ import java.lang.annotation.Target;
 @Documented
 @Repeatable(CssImport.Container.class)
 public @interface CssImport {
-
     /**
      * Location of the file with the CSS content.
      * 
      * @return the value.
      */
     String value();
-    
+
     /**
      * The 'id' of a module to include in the generated 'custom-style'.
      * 
      * @return the include value.
      */
     String include() default "";
-    
+
     /**
      * The 'id' of the new 'dom-module' created.
      * 
      * @return the id.
      */
     String id() default "";
-    
+
     /**
      * The tag name of the themable element that the generated 'dom-module' will
      * target.
@@ -124,7 +123,6 @@ public @interface CssImport {
     @Target(ElementType.TYPE)
     @Documented
     @interface Container {
-
         /**
          * Internally used to enable use of multiple {@link CssImport}
          * annotations.

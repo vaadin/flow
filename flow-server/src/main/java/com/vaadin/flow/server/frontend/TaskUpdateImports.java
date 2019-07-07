@@ -203,7 +203,7 @@ public class TaskUpdateImports extends NodeUpdater {
             if (!cssNotFound.isEmpty()) {
                 String message = "\n\n  Failed to find the following css files in the `node_modules` tree:\n       ➜ "
                         + String.join("\n       ➜ ", cssNotFound) + "\n";
-                log().info(message);
+                throw new IllegalStateException(message);
             }
             lines.add("");
         }
