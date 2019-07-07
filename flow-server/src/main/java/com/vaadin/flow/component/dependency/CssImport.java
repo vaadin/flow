@@ -67,7 +67,7 @@ import java.lang.annotation.Target;
  * </pre>
  * 
  * <li>When 'value' and 'themeFor' are given, a new 'dom-module' for customizing
- * a themable element is created created
+ * a themable element is created
  * 
  * <pre>
  * &lt;dom-module id="RANDOM-ID" theme-for="THEME-FOR-VALUE"&gt;
@@ -93,21 +93,21 @@ public @interface CssImport {
      * @return the value.
      */
     String value();
-    
+
     /**
      * The 'id' of a module to include in the generated 'custom-style'.
      * 
      * @return the include value.
      */
     String include() default "";
-    
+
     /**
      * The 'id' of the new 'dom-module' created.
      * 
      * @return the id.
      */
     String id() default "";
-    
+
     /**
      * The tag name of the themable element that the generated 'dom-module' will
      * target.
@@ -124,7 +124,6 @@ public @interface CssImport {
     @Target(ElementType.TYPE)
     @Documented
     @interface Container {
-
         /**
          * Internally used to enable use of multiple {@link CssImport}
          * annotations.

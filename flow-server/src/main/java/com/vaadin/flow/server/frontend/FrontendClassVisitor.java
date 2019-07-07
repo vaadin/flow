@@ -187,7 +187,6 @@ class FrontendClassVisitor extends ClassVisitor {
      * duplicates.
      */
     static class CssData implements Serializable {
-
         private String value;
         private String id;
         private String include;
@@ -205,7 +204,6 @@ class FrontendClassVisitor extends ClassVisitor {
         String getThemefor() {
             return themefor;
         }
-
 
         @Override
         public boolean equals(Object other) {
