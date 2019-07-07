@@ -157,14 +157,17 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         // Using regex match because of the ➜ character in TC
         assertTrue(output.matches(
                 "(?s).*Failed to find the following imports in the `node_modules` tree:\\n       . unresolved/component.*"));
-        assertTrue(output.matches(
-                "(?s).*Failed to find the following css files in the `node_modules` tree:\\n       . @vaadin/vaadin-mixed-component/bar.css.*"));
-
         assertContains(output, false,
                 "changing 'frontend://foo-dir/javascript-lib.js' to './foo-dir/javascript-lib.js'");
     }
 
-
+    @Test
+    public void should_ThrowException_WhenCssFileNotFound() {
+        Assert.assertTrue(resolveImportFile(frontendDirectory,
+                nodeModulesPath, "@vaadin/vaadin-mixed-component/bar.css").delete());
+        exception.expect(IllegalStateException.class);
+        updater.execute();
+    }
 
     @Test
     public void shouldNot_UpdateJsFile_when_NoChanges() throws Exception {
