@@ -46,38 +46,39 @@ import java.lang.annotation.Target;
  * defined module.
  * 
  * <pre>
- *  &lt;custom-style>
- *    &lt;style include="INCLUDE-VALUE">
+ *  &lt;custom-style&gt;
+ *    &lt;style include="INCLUDE-VALUE"&gt;
  *      CSS-CONTENT
- *    &lt;/style>
- *  &lt;/custom-style>
+ *    &lt;/style&gt;
+ *  &lt;/custom-style&gt;
  * </pre>
  * 
  * <li>When 'value' and 'id' are given, a new 'dom-module' with the provided
  * 'id' is created
  * 
  * <pre>
- * &lt;dom-module id="ID-VALUE">
- *   &lt;template>
- *     &lt;style>
+ * &lt;dom-module id="ID-VALUE"&gt;
+ *   &lt;template&gt;
+ *     &lt;style&gt;
  *       CSS-CONTENT
- *     &lt;/style>
- *   &lt;/template>
- * &lt;/dom-module>
+ *     &lt;/style&gt;
+ *   &lt;/template&gt;
+ * &lt;/dom-module&gt;
  * </pre>
  * 
  * <li>When 'value' and 'themeFor' are given, a new 'dom-module' for customizing
  * a themable element is created created
  * 
  * <pre>
- * &lt;dom-module id="RANDOM-ID" theme-for="THEME-FOR-VALUE">
- *   &lt;template>
- *     &lt;style>
+ * &lt;dom-module id="RANDOM-ID" theme-for="THEME-FOR-VALUE"&gt;
+ *   &lt;template&gt;
+ *     &lt;style&gt;
  *       CSS-CONTENT
- *     &lt;/style>
- *   &lt;/template>
- * &lt;/dom-module>
+ *     &lt;/style&gt;
+ *   &lt;/template&gt;
+ * &lt;/dom-module&gt;
  * </pre>
+ * </ul>
  * 
  */
 @Retention(RetentionPolicy.RUNTIME)
