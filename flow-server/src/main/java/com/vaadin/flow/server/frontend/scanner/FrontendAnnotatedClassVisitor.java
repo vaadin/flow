@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server.frontend;
+package com.vaadin.flow.server.frontend.scanner;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -29,15 +29,13 @@ import net.bytebuddy.jar.asm.ClassReader;
 import net.bytebuddy.jar.asm.ClassVisitor;
 import net.bytebuddy.jar.asm.Opcodes;
 
-import com.vaadin.flow.server.frontend.FrontendClassVisitor.RepeatedAnnotationVisitor;
-
 /**
  * A class visitor for annotated classes. It's used to visit multiple classes
  * and extract all the properties of an specific annotation defined in the
  * constructor.
  *
  */
-class FrontendAnnotatedClassVisitor extends ClassVisitor {
+final class FrontendAnnotatedClassVisitor extends ClassVisitor {
     private final String annotationName;
     private final List<HashMap<String, Object>> data = new ArrayList<>();
     private final ClassFinder finder;

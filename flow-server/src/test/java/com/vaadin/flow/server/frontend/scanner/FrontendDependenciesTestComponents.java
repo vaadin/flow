@@ -14,7 +14,7 @@
  * the License.
  *
  */
-package com.vaadin.flow.server.frontend;
+package com.vaadin.flow.server.frontend.scanner;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;

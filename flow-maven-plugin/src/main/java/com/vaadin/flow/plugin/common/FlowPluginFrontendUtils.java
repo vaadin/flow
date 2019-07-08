@@ -32,7 +32,7 @@ import org.apache.maven.project.MavenProject;
 import org.reflections.Reflections;
 import org.reflections.util.ConfigurationBuilder;
 
-import com.vaadin.flow.server.frontend.ClassFinder;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 /**
  * Utility methods used by all goals.

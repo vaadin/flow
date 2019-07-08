@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
@@ -36,7 +37,9 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.server.frontend.FrontendClassVisitor.CssData;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.server.frontend.scanner.CssData;
+import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
@@ -90,6 +93,8 @@ public class TaskUpdateImports extends NodeUpdater {
             + "<dom-module id=\"flow_css_mod_%d\" theme-for=\"%s\"><template><style>${$css_%d}</style></template></dom-module>"
             + CSS_POST;
 
+    // Trim and remove new lines.
+    private static final Pattern NEW_LINE_TRIM = Pattern.compile("(?m)(^\\s+|\\s?\n)");
 
     /**
      * Create an instance of the updater given all configurable parameters.
@@ -159,9 +164,9 @@ public class TaskUpdateImports extends NodeUpdater {
         if (theme != null) {
             if (!theme.getHeaderInlineContents().isEmpty()) {
                 lines.add(THEME_PREPARE);
-                theme.getHeaderInlineContents().forEach(html -> {
-                    addLines(lines, String.format(THEME_LINE_TPL, html.replaceAll("(?m)(^\\s+|\\s?\n)", "")));
-                });
+                theme.getHeaderInlineContents().forEach(html -> addLines(lines,
+                        String.format(THEME_LINE_TPL,
+                                NEW_LINE_TRIM.matcher(html).replaceAll(""))));
             }
             theme.getHtmlAttributes(themeDef.getVariant()).forEach(
                     (key, value) -> addLines(lines, String.format(THEME_VARIANT_TPL, key, value)));
@@ -184,31 +189,38 @@ public class TaskUpdateImports extends NodeUpdater {
             int i = 0;
 
             for (CssData cssData : css) {
-                String cssFile = resolveResource(cssData.getValue(), false);
-                String cssInport = toValidBrowserImport(cssFile);
-                if (!importedFileExists(cssFile)) {
-                    cssNotFound.add(cssFile);
-                }
-                if (cssData.getThemefor() != null) {
-                    addLines(lines, String.format(CSS_THEME_FOR_TPL, i, cssInport, i, cssData.getThemefor(), i));
-                } else if (cssData.getId() != null) {
-                    addLines(lines, String.format(CSS_MODULE_TPL, i, cssInport, cssData.getId(), i));
-                } else if (cssData.getInclude() != null) {
-                    addLines(lines, String.format(CSS_INCLUDE_TPL, i, cssInport, cssData.getInclude(), i));
-                } else {
-                    addLines(lines, String.format(CSS_BASIC_TPL, i, cssInport, i));
+                if (!addCssLines(lines, cssData, i)) {
+                    cssNotFound.add(cssData.getValue());
                 }
                 i++;
             }
             if (!cssNotFound.isEmpty()) {
-                String message = "\n\n  Failed to find the following css files in the `node_modules` tree:\n       ➜ "
-                        + String.join("\n       ➜ ", cssNotFound) + "\n";
-                throw new IllegalStateException(message);
+                throw new IllegalStateException(notFoundMessage(cssNotFound,
+                        "Failed to find the following css files in the `node_modules` or `/frontend` tree:"
+                        , "Check that they exist or are installed."));
             }
             lines.add("");
         }
         return lines;
     }
+
+    private boolean addCssLines(Collection<String> lines, CssData cssData, int i) {
+        String cssFile = resolveResource(cssData.getValue(), false);
+        boolean found = importedFileExists(cssFile);
+        String cssImport = toValidBrowserImport(cssFile);
+
+        if (cssData.getThemefor() != null) {
+            addLines(lines, String.format(CSS_THEME_FOR_TPL, i, cssImport, i, cssData.getThemefor(), i));
+        } else if (cssData.getId() != null) {
+            addLines(lines, String.format(CSS_MODULE_TPL, i, cssImport, cssData.getId(), i));
+        } else if (cssData.getInclude() != null) {
+            addLines(lines, String.format(CSS_INCLUDE_TPL, i, cssImport, cssData.getInclude(), i));
+        } else {
+            addLines(lines, String.format(CSS_BASIC_TPL, i, cssImport, i));
+        }
+        return found;
+    }
+
 
     private Collection<String> getModuleLines(Set<String> modules) {
         Set<String> resourceNotFound = new HashSet<>();
@@ -242,24 +254,23 @@ public class TaskUpdateImports extends NodeUpdater {
         }
 
         if (!resourceNotFound.isEmpty()) {
-            StringBuilder errorMessage = new StringBuilder(
-                    "\n\n  Failed to resolve the following files either:"
-                            + "\n   · in the `/frontend` sources folder"
-                            + "\n   · or as a `META-INF/resources/frontend` resource in some JAR. \n       ➜ ");
-            errorMessage.append(String.join("\n       ➜ ", resourceNotFound));
-            errorMessage.append(
-                    "\n  Please, double check that those files exist.\n");
-            throw new IllegalStateException(errorMessage.toString());
+            throw new IllegalStateException(notFoundMessage(resourceNotFound,
+                    "Failed to resolve the following files either:"
+                    + "\n   · in the `/frontend` sources folder"
+                    + "\n   · or as a `META-INF/resources/frontend` resource in some JAR."
+                    , "Please, double check that those files exist."));
         }
 
         if (!npmNotFound.isEmpty()) {
-            String message = "\n\n  Failed to find the following imports in the `node_modules` tree:\n       ➜ "
-                    + String.join("\n       ➜ ", npmNotFound)
-                    + "\n  If the build fails, check that npm packages are installed.\n";
-            log().info(message);
+            log().info(notFoundMessage(npmNotFound,
+                    "Failed to find the following imports in the `node_modules` tree:"
+                    , "If the build fails, check that npm packages are installed."));
         }
         return lines;
+    }
 
+    private String notFoundMessage(Set<String> files, String prefix, String suffix) {
+        return String.format("%n%n  %s%n      - %s%n  %s%n%n", prefix, String.join("\n       - ", files), suffix);
     }
 
     private void handleImports(String path, AbstractTheme theme,

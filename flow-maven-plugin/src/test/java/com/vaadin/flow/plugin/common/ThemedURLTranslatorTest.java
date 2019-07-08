@@ -25,7 +25,8 @@ import java.util.function.Function;
 
 import com.vaadin.flow.plugin.TestUtils;
 import com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.ReflectionsClassFinder;
-import com.vaadin.flow.server.frontend.ClassFinder;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Rule;

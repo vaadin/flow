@@ -23,8 +23,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * An annotation for instructing flow to import a CSS file into the application
- * bundle.
+ * Instructs flow to import a CSS file into the application bundle.
  * <p>
  * Depending on the attributes provided, the CSS content will be appended in
  * different ways:

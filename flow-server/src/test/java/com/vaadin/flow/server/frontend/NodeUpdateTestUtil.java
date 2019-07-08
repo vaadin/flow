@@ -25,9 +25,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.vaadin.flow.server.frontend.ClassFinder.DefaultClassFinder;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
+
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 
 import static com.vaadin.flow.server.DevModeHandler.WEBPACK_SERVER;
 import static org.junit.Assert.assertNotNull;
