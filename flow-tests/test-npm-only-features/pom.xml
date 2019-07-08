@@ -31,5 +31,6 @@
     <modules>
         <module>test-default-theme</module>
         <module>test-npm-general</module>
+        <module>test-npm-no-buildmojo</module>
     </modules>
 </project>
