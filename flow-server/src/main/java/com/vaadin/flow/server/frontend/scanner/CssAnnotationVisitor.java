@@ -1,6 +1,6 @@
 package com.vaadin.flow.server.frontend.scanner;
 
-import java.util.HashSet;
+import java.util.List;
 
 import net.bytebuddy.jar.asm.AnnotationVisitor;
 
@@ -11,16 +11,22 @@ import com.vaadin.flow.component.dependency.CssImport;
  */
 final class CssAnnotationVisitor extends RepeatedAnnotationVisitor {
     private CssData cssData;
-    private final HashSet<CssData> cssSet;
-    
-    CssAnnotationVisitor(HashSet<CssData> cssSet) {
-        this.cssSet = cssSet;
+    private final List<CssData> cssList;
+
+    /**
+     * This visitor needs a list to be updated.
+     * 
+     * @param cssList
+     *            the list to update with this annotation values
+     */
+    CssAnnotationVisitor(List<CssData> cssList) {
+        this.cssList = cssList;
     }
 
     private void newData() {
         cssData = new CssData();
-        if (cssSet != null) {
-            cssSet.add(cssData);
+        if (cssList != null) {
+            cssList.add(cssData);
         }
     }
 

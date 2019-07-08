@@ -10,7 +10,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
-import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesTestComponents.Component1;
+import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.Component1;
 
 public class ClassFinderTest {
 

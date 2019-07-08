@@ -1,9 +1,12 @@
 package com.vaadin.flow.server.frontend.scanner;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.vaadin.flow.router.Route;
 
@@ -19,7 +22,7 @@ public final class EndPointData implements Serializable {
     ThemeData theme = new ThemeData();
     final HashSet<String> modules = new HashSet<>();
     final HashSet<String> scripts = new HashSet<>();
-    final HashSet<CssData> css = new HashSet<>();
+    final List<CssData> css = new ArrayList<>();
 
     private final HashSet<String> classes = new HashSet<>();
 
@@ -65,7 +68,7 @@ public final class EndPointData implements Serializable {
     }
 
     Set<CssData> getCss() {
-        return css;
+        return css.stream().collect(Collectors.toSet());
     }
 
     private String col2Str(Collection<?> s) {

@@ -34,7 +34,7 @@ import com.vaadin.flow.theme.Theme;
 /**
  * A container class for all components used in tests.
  */
-public class FrontendDependenciesTestComponents {
+public class ScannerTestComponents {
 
     @NpmPackage(value = "@vaadin/theme-0", version = "1.1.1")
     @JavaScript("frontend://theme-0.js")
