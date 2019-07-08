@@ -312,19 +312,7 @@ public class FrontendDependencies implements Serializable {
         Class<? extends AbstractTheme> theme = null;
         String variant = "";
         if (themes.isEmpty()) {
-            // No theme annotation found by the scanner
-            final Class<? extends AbstractTheme> defaultTheme = getLumoTheme();
-            // call visitClass on the default theme using the first available
-            // endpoint. If not endpoint is available, default theme won't be
-            // set.
-            if (defaultTheme != null) {
-                Optional<EndPointData> endPointData =
-                        endPoints.values().stream().findFirst();
-                if (endPointData.isPresent()) {
-                    visitClass(defaultTheme.getName(), endPointData.get());
-                    theme = defaultTheme;
-                }
-            }
+            theme = getDefaultTheme();
         } else {
             // we have a proper theme or no-theme for the app
             ThemeData themeData = themes.iterator().next();
@@ -340,6 +328,23 @@ public class FrontendDependencies implements Serializable {
             themeDefinition = new ThemeDefinition(theme, variant);
             themeInstance = new ThemeWrapper(theme);
         }
+    }
+
+    private Class<? extends AbstractTheme> getDefaultTheme() throws IOException {
+        // No theme annotation found by the scanner
+        final Class<? extends AbstractTheme> defaultTheme = getLumoTheme();
+        // call visitClass on the default theme using the first available
+        // endpoint. If not endpoint is available, default theme won't be
+        // set.
+        if (defaultTheme != null) {
+            Optional<EndPointData> endPointData =
+                    endPoints.values().stream().findFirst();
+            if (endPointData.isPresent()) {
+                visitClass(defaultTheme.getName(), endPointData.get());
+                return defaultTheme;
+            }
+        }
+        return null;
     }
 
     /**
