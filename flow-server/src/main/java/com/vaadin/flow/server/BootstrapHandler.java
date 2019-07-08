@@ -1229,6 +1229,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             // {{INITIAL_UIDL}} should be the last replaced so that it may have
             // other patterns inside it (like {{CONFIG_JSON}})
             result = result.replace("{{INITIAL_UIDL}}", initialUIDLString);
+
+            // set productionMode early because WC detector might be run before
+            // client initialization finishes.
+            result = result.replace("{{PRODUCTION_MODE}}", String.valueOf(productionMode));
             return result;
         }
     }
