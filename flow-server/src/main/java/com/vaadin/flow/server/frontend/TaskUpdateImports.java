@@ -182,7 +182,7 @@ public class TaskUpdateImports extends NodeUpdater {
     private Collection<String> getCssLines() {
         Collection<String> lines = new ArrayList<>();
         Set<CssData> css = frontDeps.getCss();
-        if (css.size() > 0) {
+        if (!css.isEmpty()) {
             addLines(lines, CSS_PREPARE);
 
             Set<String> cssNotFound = new HashSet<>();
@@ -261,7 +261,7 @@ public class TaskUpdateImports extends NodeUpdater {
                     , "Please, double check that those files exist."));
         }
 
-        if (!npmNotFound.isEmpty()) {
+        if (!npmNotFound.isEmpty() && log().isInfoEnabled()) {
             log().info(notFoundMessage(npmNotFound,
                     "Failed to find the following imports in the `node_modules` tree:"
                     , "If the build fails, check that npm packages are installed."));
