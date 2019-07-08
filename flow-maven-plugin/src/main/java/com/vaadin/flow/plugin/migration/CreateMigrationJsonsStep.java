@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
+ * Step which creates {@code bower.json} and {@code package.json} files.
+ *
  * @author Vaadin Ltd
  *
  */
@@ -33,13 +35,28 @@ public class CreateMigrationJsonsStep {
 
     private File targetDir;
 
+    /**
+     * Creates a new instance.
+     *
+     * @param target
+     *            the target folder.
+     */
     public CreateMigrationJsonsStep(File target) {
         targetDir = target;
     }
 
+    /**
+     * Creates {@code bower.json} and {@code package.json} files filled with
+     * paths provided by the {@code paths} parameter.
+     *
+     * @param paths
+     *            path of files to migrate
+     * @throws IOException
+     */
     public void createJsons(List<String> paths) throws IOException {
         String bowerTemplate = readResource("/migration/bower.json");
-        String filesList = paths.stream().collect(Collectors.joining(", "));
+        String filesList = paths.stream().collect(Collectors.joining("\", \""));
+        filesList = "\"" + filesList + "\"";
 
         bowerTemplate = bowerTemplate.replace("%files_list%", filesList);
         String packageTemplate = readResource("/migration/package.json");
