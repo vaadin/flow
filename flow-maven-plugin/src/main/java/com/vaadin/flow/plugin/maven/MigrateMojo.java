@@ -88,6 +88,15 @@ public class MigrateMojo extends AbstractMojo {
     @Parameter(defaultValue = "false")
     private boolean keepOriginal;
 
+    /**
+     * Stops the goal execution with error if modulizer has exited with not 0
+     * status.
+     * <p>
+     * By default the errors are not fatal and migration is not stopped.
+     */
+    @Parameter(defaultValue = "true")
+    private boolean ignoreModulizerErrors;
+
     private static class RemoveVisitor extends SimpleFileVisitor<Path> {
 
         @Override
@@ -147,8 +156,12 @@ public class MigrateMojo extends AbstractMojo {
         installNpmPackages();
 
         if (!runModulizer()) {
-            // TODO
-            getLog().info("?? modulizer has exited");
+            if (ignoreModulizerErrors) {
+                getLog().info("Modulizer has exited with error");
+            } else {
+                throw new MojoFailureException(
+                        "Modulizer has exited with error. Unable to proceed.");
+            }
         }
 
         // copy the result JS files into "frontend"
