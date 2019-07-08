@@ -18,157 +18,160 @@ package com.vaadin.flow.plugin.migration;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.nio.file.StandardCopyOption;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
+ * Step which copies resources from provided collection of directories to the
+ * target folder. It keeps the files hierarchical structure.
+ * <p>
+ * The content of copied file is modified to correct URI in the import.
+ *
  * @author Vaadin Ltd
  *
  */
-public class CopyResourcesStep {
-    private static final Logger LOGGER = LoggerFactory
-            .getLogger(CopyResourcesStep.class);
-
-    private static interface ContentModifier {
-        boolean accept(Path source, Path target) throws IOException;
-    }
-
-    private static class CopyFileVisitor extends SimpleFileVisitor<Path> {
-
-        private final Path sourceRoot;
-        private final Path targetRoot;
-        private final ContentModifier writer;
-
-        private List<String> paths = new ArrayList<>();
-
-        private CopyFileVisitor(Path sourceRoot, Path targetRoot,
-                ContentModifier fileProducer) {
-            this.sourceRoot = sourceRoot;
-            this.targetRoot = targetRoot;
-            this.writer = fileProducer;
-        }
-
-        @Override
-        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
-                throws IOException {
-            Path target = getTarget(file);
-            LOGGER.debug("Writing content to '{}'", target.toString());
-            if (writer.accept(file, target)) {
-                paths.add(target.toString());
-            }
-            return super.visitFile(file, attrs);
-        }
-
-        @Override
-        public FileVisitResult preVisitDirectory(Path dir,
-                BasicFileAttributes attrs) throws IOException {
-            Path target = getTarget(dir);
-            if (!target.toFile().exists()) {
-                LOGGER.debug("Creating a new {} directory", target.toString());
-                Files.createDirectory(getTarget(dir));
-            } else {
-                LOGGER.debug(
-                        "Directory/file {} already exists, skipping its creation",
-                        target.toString());
-            }
-            return super.preVisitDirectory(dir, attrs);
-        }
-
-        List<String> getVisitedPaths() {
-            return paths;
-        }
-
-        private Path getTarget(Path source) {
-            Path relativePath = sourceRoot.relativize(source);
-            return targetRoot.resolve(relativePath);
-        }
-    }
+public class CopyResourcesStep extends AbstractCopyResourcesStep {
 
     private static class HtmlImportRewriter implements ContentModifier {
+
+        private final Collection<String> bowerComponents;
+        private final File targetDir;
+
+        private HtmlImportRewriter(File target,
+                Collection<String> bowerComponents) {
+            this.bowerComponents = bowerComponents;
+            targetDir = target;
+        }
 
         @Override
         public boolean accept(Path source, Path target) throws IOException {
             if (target.toFile().exists()) {
                 Files.delete(target);
             }
-            if (source.getFileName().endsWith(".html")) {
+            if (Files.isDirectory(source)) {
+                return true;
+            }
+            if (source.getFileName().toString().toLowerCase(Locale.ENGLISH)
+                    .endsWith(".html")) {
                 Files.write(target, Collections
-                        .singletonList(adjustImports(source.toFile())));
+                        .singletonList(adjustImports(source.toFile(), target)));
+                return true;
+            }
+            if (source.getFileName().toString().toLowerCase(Locale.ENGLISH)
+                    .endsWith(".css")) {
+                Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
                 return true;
             }
             return false;
         }
-    }
 
-    private final File target;
-    private final List<String> resources;
-
-    public CopyResourcesStep(File target, String[] resourceFolders) {
-        this.target = target;
-        resources = Arrays.asList(resourceFolders);
-    }
-
-    public List<String> copyResources() throws IOException {
-        if (target.exists() && !target.isDirectory()) {
-            throw new IOException("Target path " + target.getPath()
-                    + " exists and is not a directory");
-        }
-        if (!target.exists()) {
-            target.mkdir();
-        }
-        LOGGER.debug("Use {} as source folders to copy", resources);
-        List<String> allResources = new ArrayList<>();
-        for (String resourceFolder : resources) {
-            LOGGER.debug("Copy resources from {} to {}", resourceFolder,
-                    target.getPath());
-            allResources.addAll(doCopyResources(new File(resourceFolder),
-                    target, new HtmlImportRewriter()));
-        }
-        return allResources;
-    }
-
-    private List<String> doCopyResources(File source, File target,
-            ContentModifier producer) throws IOException {
-        CopyFileVisitor visitor = new CopyFileVisitor(source.toPath(),
-                target.toPath(), producer);
-        Files.walkFileTree(source.toPath(), visitor);
-        return visitor.getVisitedPaths();
-    }
-
-    private static String adjustImports(File file) throws IOException {
-        Document doc = Jsoup.parse(file, StandardCharsets.UTF_8.name());
-        Element head = doc.head();
-        Element body = doc.body();
-        StringBuilder result = new StringBuilder();
-        for (Element child : head.children()) {
-            String elementHtml = child.outerHtml();
-            if ("link".equalsIgnoreCase(child.tagName()) && child.hasAttr("rel")
-                    && "import".equals(child.attr("rel"))
-                    && child.hasAttr("href")) {
-                String href = child.attr("href");
-                int index = href.indexOf("bower_components");
-                if (index != -1) {
-                    href = href.substring(index);
-                    child.attr("href", href);
-                    elementHtml = child.outerHtml();
+        private String adjustImports(File file, Path target)
+                throws IOException {
+            Document doc = Jsoup.parse(file, StandardCharsets.UTF_8.name());
+            Element head = doc.head();
+            Element body = doc.body();
+            StringBuilder result = new StringBuilder();
+            for (Element child : head.children()) {
+                String elementHtml = child.outerHtml();
+                if ("link".equalsIgnoreCase(child.tagName())
+                        && child.hasAttr("rel")
+                        && "import".equals(child.attr("rel"))
+                        && child.hasAttr("href")) {
+                    String href = child.attr("href");
+                    int index = href.indexOf(BOWER_COMPONENTS);
+                    if (index != -1) {
+                        href = href.substring(index);
+                        addBowerComponent(href);
+                        child.attr("href", pathToTarget(target) + href);
+                        elementHtml = child.outerHtml();
+                    }
                 }
+                result.append(elementHtml).append('\n');
             }
-            result.append(elementHtml).append('\n');
+            result.append(body.html());
+            return result.toString();
         }
-        result.append(body.html());
-        return result.toString();
+
+        private String pathToTarget(Path target) {
+            String path = target.relativize(targetDir.toPath()).toString();
+            if (path.length() >= 2) {
+                path = path.substring(2);
+            }
+            if (path.isEmpty()) {
+                return path;
+            }
+            if (!path.endsWith("/")) {
+                return path + "/";
+            }
+            return path;
+        }
+
+        private void addBowerComponent(String uri) {
+            if (bowerComponents == null) {
+                return;
+            }
+            assert uri.startsWith(BOWER_COMPONENTS);
+            String path = uri.substring(BOWER_COMPONENTS.length());
+            if (path.charAt(0) != '/') {
+                return;
+            }
+            path = path.substring(1);
+            int index = path.indexOf('/');
+            bowerComponents.add(path.substring(0, index));
+        }
     }
+
+    private final Set<String> bowerComponents;
+
+    /**
+     * Creates a new instance.
+     *
+     * @param target
+     *            the target directory
+     * @param resourceFolders
+     *            an array of source folders
+     * @param bowerComponents
+     *            an accumulator for imported bower components
+     */
+    public CopyResourcesStep(File target, String[] resourceFolders) {
+        this(target, resourceFolders, new HashSet<>());
+    }
+
+    private CopyResourcesStep(File target, String[] resourceFolders,
+            Set<String> bowerComponents) {
+        super(target, resourceFolders,
+                new HtmlImportRewriter(target, bowerComponents));
+        this.bowerComponents = bowerComponents;
+    }
+
+    @Override
+    public Map<String, List<String>> copyResources() throws IOException {
+        bowerComponents.clear();
+        return super.copyResources();
+    }
+
+    /**
+     * Gets imported bower components found in copied resources.
+     * <p>
+     * The value is available only after {@link #copyResources()} method
+     * execution.
+     *
+     * @return a set of imported bower components
+     */
+    public Set<String> getBowerComponents() {
+        return Collections.unmodifiableSet(bowerComponents);
+    }
+
 }

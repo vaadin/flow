@@ -141,7 +141,8 @@ public class FrontendUtils {
     /**
      * File used to enable npm mode.
      */
-    public static final String TOKEN_FILE = Constants.VAADIN_CONFIGURATION + "flow-build-info.json";
+    public static final String TOKEN_FILE = Constants.VAADIN_CONFIGURATION
+            + "flow-build-info.json";
 
     /**
      * A parameter informing about the location of the
@@ -238,14 +239,28 @@ public class FrontendUtils {
         File file = new File(baseDir, "node/node_modules/npm/bin/npm-cli.js");
         if (file.canRead()) {
             // We return a two element list with node binary and npm-cli script
-            return Arrays.asList(getNodeExecutable(baseDir), file.getAbsolutePath());
+            return Arrays.asList(getNodeExecutable(baseDir),
+                    file.getAbsolutePath());
         }
         // Otherwise look for regulan `npm`
         String command = isWindows() ? "npm.cmd" : "npm";
-        return Arrays.asList(getExecutable(baseDir, command, null).getAbsolutePath());
+        return Arrays.asList(
+                getExecutable(baseDir, command, null).getAbsolutePath());
     }
 
-    private static File getExecutable(String baseDir, String cmd, String defaultLocation) {
+    /**
+     * Locate <code>bower</code> executable.
+     *
+     * @return the path to the bower executable, returns {@code null} if it's
+     *         not found
+     */
+    public static File getBowerExecutable() {
+        String command = isWindows() ? "bower.cmd" : "bower";
+        return frontendToolsLocator.tryLocateTool(command).orElse(null);
+    }
+
+    private static File getExecutable(String baseDir, String cmd,
+            String defaultLocation) {
         File file = null;
         try {
             file = defaultLocation == null
@@ -343,8 +358,7 @@ public class FrontendUtils {
         return content != null ? streamToString(content) : null;
     }
 
-    private static InputStream getStatsFromWebpack()
-            throws IOException {
+    private static InputStream getStatsFromWebpack() throws IOException {
         DevModeHandler handler = DevModeHandler.getDevModeHandler();
         return handler.prepareConnection("/stats.json", "GET").getInputStream();
     }
@@ -355,10 +369,12 @@ public class FrontendUtils {
                         VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT)
                 // Remove absolute
                 .replaceFirst("^/", "");
-        InputStream stream =  service.getClassLoader().getResourceAsStream(stats);
+        InputStream stream = service.getClassLoader()
+                .getResourceAsStream(stats);
         if (stream == null) {
             getLogger().error(
-                    "Cannot get the 'stats.json' from the classpath '{}'", stats);
+                    "Cannot get the 'stats.json' from the classpath '{}'",
+                    stats);
         }
         return stream;
     }
@@ -417,8 +433,7 @@ public class FrontendUtils {
                 shouldWorkMinor)) {
             getLogger().warn(String.format(SHOULD_WORK, tool,
                     String.join(".", toolVersion), supportedMajor,
-                    supportedMinor,
-                    PARAM_IGNORE_VERSION_CHECKS));
+                    supportedMinor, PARAM_IGNORE_VERSION_CHECKS));
             return;
         }
 
