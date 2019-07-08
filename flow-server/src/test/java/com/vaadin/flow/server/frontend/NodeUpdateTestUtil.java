@@ -21,13 +21,15 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.vaadin.flow.server.frontend.ClassFinder.DefaultClassFinder;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
+
+import com.vaadin.flow.server.frontend.ClassFinder.DefaultClassFinder;
 
 import static com.vaadin.flow.server.DevModeHandler.WEBPACK_SERVER;
 import static org.junit.Assert.assertNotNull;
@@ -73,7 +75,8 @@ public class NodeUpdateTestUtil {
             File npmCli = new File(baseDir,
                     "node/node_modules/npm/bin/npm-cli.js");
             FileUtils.forceMkdirParent(npmCli);
-            npmCli.createNewFile();
+            FileUtils.writeStringToFile(npmCli,
+                    "process.argv[2] == '--version' && console.log('5.6.0');", StandardCharsets.UTF_8);
         }
         if (stubNode) {
             File node = new File(baseDir,

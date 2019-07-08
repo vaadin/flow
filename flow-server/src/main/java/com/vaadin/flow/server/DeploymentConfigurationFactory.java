@@ -43,6 +43,7 @@ import elemental.json.impl.JsonUtil;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_REUSE_DEV_SERVER;
 import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
@@ -189,18 +190,26 @@ public final class DeploymentConfigurationFactory implements Serializable {
                     System.clearProperty(VAADIN_PREFIX
                             + SERVLET_PARAMETER_COMPATIBILITY_MODE);
                 }
+
+                if (buildInfo.hasKey("npmFolder")) {
+                    initParameters.setProperty(PROJECT_BASEDIR,
+                            buildInfo.getString("npmFolder"));
+                }
+
+                // These should be internal only so if there is a System
+                // property override then the user probably knows what
+                // they are doing.
                 if(buildInfo.hasKey(SERVLET_PARAMETER_ENABLE_DEV_SERVER)) {
                     initParameters.setProperty(
                             SERVLET_PARAMETER_ENABLE_DEV_SERVER,
                             String.valueOf(buildInfo.getBoolean(
                                     SERVLET_PARAMETER_ENABLE_DEV_SERVER)));
-                    // This should be internal only so if there is a System
-                    // property override then the user probably knows what
-                    // they are doing.
                 }
-                if (buildInfo.hasKey("npmFolder")) {
-                    initParameters.setProperty(PROJECT_BASEDIR,
-                            buildInfo.getString("npmFolder"));
+                if(buildInfo.hasKey(SERVLET_PARAMETER_REUSE_DEV_SERVER)) {
+                    initParameters.setProperty(
+                            SERVLET_PARAMETER_REUSE_DEV_SERVER,
+                            String.valueOf(buildInfo.getBoolean(
+                                    SERVLET_PARAMETER_REUSE_DEV_SERVER)));
                 }
             }
         } catch (IOException e) {

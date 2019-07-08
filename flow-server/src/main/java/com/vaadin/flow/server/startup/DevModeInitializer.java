@@ -17,9 +17,13 @@ package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
+import javax.servlet.annotation.WebListener;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -63,8 +67,9 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
  * server.
  */
 @HandlesTypes({ Route.class, NpmPackage.class, WebComponentExporter.class })
+@WebListener
 public class DevModeInitializer
-        implements ServletContainerInitializer, Serializable {
+        implements ServletContainerInitializer, Serializable, ServletContextListener {
 
     /**
      * The classes that were visited when determining which frontend resources
@@ -132,6 +137,8 @@ public class DevModeInitializer
 
         initDevModeHandler(classes, context, config);
     }
+
+
 
     /**
      * Initialize the devmode server if not in production mode or compatibility
@@ -220,7 +227,7 @@ public class DevModeInitializer
                         Collectors.toList());
 
         log().info("Found {} jars to copy files from.", collect.size());
-        
+
         try {
             FileUtils.forceMkdir(Objects.requireNonNull(flowNodeDirectory));
         } catch (IOException e) {
@@ -235,5 +242,19 @@ public class DevModeInitializer
                     .copyIncludedFilesFromJarTrimmingBasePath(jarFile, RESOURCES_FRONTEND_DEFAULT,
                             flowNodeDirectory, wildcardInclusions);
         }
+    }
+
+    @Override
+    public void contextInitialized(ServletContextEvent ctx) {
+        // No need to do anything on init
+    }
+
+    @Override
+    public void contextDestroyed(ServletContextEvent ctx) {
+        DevModeHandler handler = DevModeHandler.getDevModeHandler();
+        if (handler != null && !handler.reuseDevServer()) {
+            handler.stop();
+        }
+
     }
 }
