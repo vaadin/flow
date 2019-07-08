@@ -154,9 +154,10 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 "Use the './' prefix for files in JAR files: 'ExampleConnector.js'",
                 "Use the './' prefix for files in the 'frontend' folder: 'vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js'");
 
+
         // Using regex match because of the ➜ character in TC
-        assertTrue(output.matches(
-                "(?s).*Failed to find the following imports in the `node_modules` tree:\\n       . unresolved/component.*"));
+        assertContains(output, true, "Failed to find the following imports in the `node_modules` tree:\n      - unresolved/component");
+
         assertContains(output, false,
                 "changing 'frontend://foo-dir/javascript-lib.js' to './foo-dir/javascript-lib.js'");
     }

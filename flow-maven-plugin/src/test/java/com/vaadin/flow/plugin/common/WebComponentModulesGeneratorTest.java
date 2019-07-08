@@ -40,7 +40,7 @@ import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.plugin.samplecode.AbstractExporter;
 import com.vaadin.flow.plugin.samplecode.BarExporter;
 import com.vaadin.flow.plugin.samplecode.FooExporter;
-import com.vaadin.flow.server.frontend.ClassFinder;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.webcomponent.WebComponentModulesWriter;
 
 import static org.mockito.Mockito.mock;

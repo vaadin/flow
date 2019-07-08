@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server.frontend;
+package com.vaadin.flow.server.frontend.scanner;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -40,15 +40,12 @@ import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.frontend.FrontendClassVisitor.CssData;
-import com.vaadin.flow.server.frontend.FrontendClassVisitor.EndPointData;
-import com.vaadin.flow.server.frontend.FrontendClassVisitor.ThemeData;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
-import static com.vaadin.flow.server.frontend.FrontendClassVisitor.VALUE;
-import static com.vaadin.flow.server.frontend.FrontendClassVisitor.VERSION;
+import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.VALUE;
+import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.VERSION;
 
 /**
  * Represents the class dependency tree of the application.
@@ -179,7 +176,7 @@ public class FrontendDependencies implements Serializable {
      */
     public Set<String> getModules() {
         Set<String> all = new HashSet<>();
-        for (FrontendClassVisitor.EndPointData data : endPoints.values()) {
+        for (EndPointData data : endPoints.values()) {
             all.addAll(data.getModules());
         }
         return all;
@@ -192,7 +189,7 @@ public class FrontendDependencies implements Serializable {
      */
     public Set<String> getScripts() {
         Set<String> all = new HashSet<>();
-        for (FrontendClassVisitor.EndPointData data : endPoints.values()) {
+        for (EndPointData data : endPoints.values()) {
             all.addAll(data.getScripts());
         }
         return all;
@@ -205,7 +202,7 @@ public class FrontendDependencies implements Serializable {
      */
     public Set<CssData> getCss() {
         Set<CssData> all = new HashSet<>();
-        for (FrontendClassVisitor.EndPointData data : endPoints.values()) {
+        for (EndPointData data : endPoints.values()) {
             all.addAll(data.getCss());
         }
         return all;
@@ -451,7 +448,7 @@ public class FrontendDependencies implements Serializable {
      * @throws IOException
      */
     private EndPointData visitClass(String className,
-            FrontendClassVisitor.EndPointData endPoint) throws IOException {
+            EndPointData endPoint) throws IOException {
 
         if (!isVisitable(className) || endPoint.getClasses().contains(className)) {
             return endPoint;
