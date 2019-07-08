@@ -5,9 +5,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
@@ -23,6 +20,7 @@ import org.mockito.Mockito;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
+
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.assertContainsPackage;
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.getPackageJson;
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.setProject;
@@ -54,7 +52,6 @@ public class PrepareFrontendMojoTest {
     private File webpackOutputDirectory;
     private File tokenFile;
 
-
     @Before
     public void setup() throws Exception {
         projectBase = temporaryFolder.getRoot();
@@ -69,16 +66,24 @@ public class PrepareFrontendMojoTest {
         flowPackagePath = new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME);
         webpackConfig = new File(projectBase, WEBPACK_CONFIG).getAbsolutePath();
         packageJson = new File(projectBase, PACKAGE_JSON).getAbsolutePath();
-        webpackOutputDirectory = new File(projectBase, VAADIN_SERVLET_RESOURCES);
+        webpackOutputDirectory = new File(projectBase,
+                VAADIN_SERVLET_RESOURCES);
 
         ReflectionUtils.setVariableValueInObject(mojo, "project", project);
-        ReflectionUtils.setVariableValueInObject(mojo, "jarResourcePathsToCopy", RESOURCES_FRONTEND_DEFAULT);
-        ReflectionUtils.setVariableValueInObject(mojo, "includes", "**/*.js,**/*.css");
-        ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", projectBase);
-        ReflectionUtils.setVariableValueInObject(mojo, "webpackTemplate", WEBPACK_CONFIG);
-        ReflectionUtils.setVariableValueInObject(mojo, "webpackGeneratedTemplate", WEBPACK_GENERATED);
-        ReflectionUtils.setVariableValueInObject(mojo, "generatedFolder", projectBase);
-        ReflectionUtils.setVariableValueInObject(mojo, "webpackOutputDirectory", webpackOutputDirectory);
+        ReflectionUtils.setVariableValueInObject(mojo, "jarResourcePathsToCopy",
+                RESOURCES_FRONTEND_DEFAULT);
+        ReflectionUtils.setVariableValueInObject(mojo, "includes",
+                "**/*.js,**/*.css");
+        ReflectionUtils.setVariableValueInObject(mojo, "npmFolder",
+                projectBase);
+        ReflectionUtils.setVariableValueInObject(mojo, "webpackTemplate",
+                WEBPACK_CONFIG);
+        ReflectionUtils.setVariableValueInObject(mojo,
+                "webpackGeneratedTemplate", WEBPACK_GENERATED);
+        ReflectionUtils.setVariableValueInObject(mojo, "generatedFolder",
+                projectBase);
+        ReflectionUtils.setVariableValueInObject(mojo, "webpackOutputDirectory",
+                webpackOutputDirectory);
 
         Assert.assertTrue(flowPackagePath.mkdirs());
         setProject(mojo, projectBase);
@@ -110,9 +115,8 @@ public class PrepareFrontendMojoTest {
         initialBuildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, false);
         initialBuildInfo.put(SERVLET_PARAMETER_ENABLE_DEV_SERVER, false);
         org.apache.commons.io.FileUtils.forceMkdir(tokenFile.getParentFile());
-        org.apache.commons.io.FileUtils
-                .write(tokenFile, JsonUtil.stringify(initialBuildInfo, 2) + "\n",
-                        "UTF-8");
+        org.apache.commons.io.FileUtils.write(tokenFile,
+                JsonUtil.stringify(initialBuildInfo, 2) + "\n", "UTF-8");
 
         mojo.execute();
 
@@ -143,30 +147,28 @@ public class PrepareFrontendMojoTest {
     }
 
     @Test
-    public void should_keepDependencies_when_packageJsonExists() throws Exception {
-        FileUtils.fileWrite(packageJson, "{\"dependencies\":{\"foo\":\"bar\"}}");
+    public void should_keepDependencies_when_packageJsonExists()
+            throws Exception {
+        FileUtils.fileWrite(packageJson,
+                "{\"dependencies\":{\"foo\":\"bar\"}}");
         mojo.execute();
         assertPackageJsonContent();
 
         JsonObject packageJsonObject = getPackageJson(packageJson);
-        assertContainsPackage(packageJsonObject.getObject("dependencies"), "foo");
+        assertContainsPackage(packageJsonObject.getObject("dependencies"),
+                "foo");
     }
 
     private void assertPackageJsonContent() throws IOException {
         JsonObject packageJsonObject = getPackageJson(packageJson);
 
         assertContainsPackage(packageJsonObject.getObject("dependencies"),
-                "@webcomponents/webcomponentsjs",
-                "@polymer/polymer");
+                "@webcomponents/webcomponentsjs", "@polymer/polymer");
 
         assertContainsPackage(packageJsonObject.getObject("devDependencies"),
-                "webpack",
-                "webpack-cli",
-                "webpack-dev-server",
-                "webpack-babel-multi-target-plugin",
-                "copy-webpack-plugin");
+                "webpack", "webpack-cli", "webpack-dev-server",
+                "webpack-babel-multi-target-plugin", "copy-webpack-plugin");
     }
-
 
     private List<File> gatherFiles(File root) {
         if (root.isFile()) {
