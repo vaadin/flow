@@ -13,14 +13,15 @@ import com.vaadin.flow.router.Route;
         ".MultipleNpmPackageAnnotationsView", layout = NpmPackageLayout.class)
 public class MultipleNpmPackageAnnotationsView extends Div {
 
-
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
 
         Element paperInput = new Element("paper-input");
+        paperInput.setAttribute("id", "input");
         paperInput.setText("Input");
         Element paperCheckbox = new Element("paper-checkbox");
+        paperCheckbox.setAttribute("id", "checkbox");
         paperCheckbox.setText("Checkbox");
 
         getElement().appendChild(paperInput);

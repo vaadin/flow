@@ -4,9 +4,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
 public class MultipleNpmPackageAnnotationsIT extends ChromeBrowserTest {
     @Before
@@ -16,17 +16,19 @@ public class MultipleNpmPackageAnnotationsIT extends ChromeBrowserTest {
 
     @Test
     public void pageShouldContainTwoPaperComponents() {
-        WebElement paperInput = findElement(By.tagName("paper-input"));
-        WebElement paperCheckbox = findElement(By.tagName("paper-checkbox"));
+        TestBenchElement paperInput = $(TestBenchElement.class).id("input");
+        TestBenchElement paperCheckbox = $(TestBenchElement.class).id(
+                "checkbox");
 
         Assert.assertNotNull(paperInput);
         Assert.assertNotNull(paperCheckbox);
 
         // check that the elements are upgraded by checking their shadow-roots
-        WebElement paperContainer = getInShadowRoot(paperInput, By.id(
+
+        TestBenchElement paperContainer = paperInput.findElement(By.id(
                 "container"));
 
-        WebElement checkboxContainer = getInShadowRoot(paperCheckbox, By.id(
+        TestBenchElement checkboxContainer = paperCheckbox.findElement(By.id(
                 "checkboxContainer"));
 
         Assert.assertNotNull(paperContainer);
