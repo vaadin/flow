@@ -142,8 +142,6 @@ public class CopyResourcesStep extends AbstractCopyResourcesStep {
      *            the target directory
      * @param resourceFolders
      *            an array of source folders
-     * @param bowerComponents
-     *            an accumulator for imported bower components
      */
     public CopyResourcesStep(File target, String[] resourceFolders) {
         this(target, resourceFolders, new HashSet<>());
