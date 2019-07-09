@@ -57,9 +57,6 @@ public class CopyResourcesStep extends AbstractCopyResourcesStep {
 
         @Override
         public boolean accept(Path source, Path target) throws IOException {
-            if (target.toFile().exists()) {
-                Files.delete(target);
-            }
             if (Files.isDirectory(source)) {
                 return true;
             }
@@ -111,6 +108,9 @@ public class CopyResourcesStep extends AbstractCopyResourcesStep {
             }
             if (path.isEmpty()) {
                 return path;
+            }
+            if (path.charAt(0) == '/') {
+                path = path.substring(1);
             }
             if (!path.endsWith("/")) {
                 return path + "/";
