@@ -18,6 +18,7 @@ package com.vaadin.flow.plugin.migration;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -57,10 +58,10 @@ public class CopyResourcesStepTest {
         File file1 = new File(source1, "foo.html");
         File file2 = new File(source2, "bar.css");
         File file3 = new File(source1, "baz.txt");
-        Files.write(file1.toPath(), Collections.singletonList(
-                "<link rel=\"import\" href=\"/frontend/bower_components/polymer/polymer-element.html\">\n"
-                        + "<link rel=\"import\" href=\"./bower_components/polymer/lib/elements/dom-repeat.html\">\n"
-                        + "extra text"));
+        Files.write(file1.toPath(), Arrays.asList(
+                "<link rel=\"import\" href=\"/frontend/bower_components/polymer/polymer-element.html\">",
+                "<link rel=\"import\" href=\"./bower_components/polymer/lib/elements/dom-repeat.html\">",
+                "extra text"));
 
         String cssContent = ".h1 {}";
         Files.write(file2.toPath(), Collections.singletonList(cssContent));
@@ -76,8 +77,7 @@ public class CopyResourcesStepTest {
 
         // The target file exists
         Assert.assertTrue(copiedFile1.exists());
-        String content = Files.readAllLines(copiedFile1.toPath()).stream()
-                .collect(Collectors.joining("\n"));
+        String content = readFile(copiedFile1);
 
         // The content is modified
         Assert.assertThat(content, CoreMatchers.containsString(
@@ -90,8 +90,7 @@ public class CopyResourcesStepTest {
 
         // The target css file exists
         Assert.assertTrue(copiedFile2.exists());
-        content = Files.readAllLines(copiedFile2.toPath()).stream()
-                .collect(Collectors.joining("\n"));
+        content = readFile(copiedFile2);
 
         Assert.assertEquals(cssContent, content.trim());
 
@@ -107,14 +106,14 @@ public class CopyResourcesStepTest {
 
         file1.getParentFile().mkdirs();
         file2.getParentFile().mkdirs();
-        Files.write(file1.toPath(), Collections.singletonList(
-                "<link rel=\"import\" href=\"/frontend/bower_components/polymer/polymer-element.html\">\n"
-                        + "<link rel=\"import\" href=\"../bower_components/polymer/lib/elements/dom-repeat.html\">\n"
-                        + "file1"));
+        Files.write(file1.toPath(), Arrays.asList(
+                "<link rel=\"import\" href=\"/frontend/bower_components/polymer/polymer-element.html\">",
+                "<link rel=\"import\" href=\"../bower_components/polymer/lib/elements/dom-repeat.html\">",
+                "file1"));
 
-        Files.write(file2.toPath(), Collections.singletonList(
-                "<link rel=\"import\" href=\"/frontend/bower_components/polymer/polymer-element.html\">\n"
-                        + "file2"));
+        Files.write(file2.toPath(), Arrays.asList(
+                "<link rel=\"import\" href=\"/frontend/bower_components/polymer/polymer-element.html\">",
+                "file2"));
 
         Map<String, List<String>> copiedResources = step.copyResources();
 
@@ -126,8 +125,7 @@ public class CopyResourcesStepTest {
 
         // The target file exists
         Assert.assertTrue(copiedFile1.exists());
-        String content = Files.readAllLines(copiedFile1.toPath()).stream()
-                .collect(Collectors.joining("\n"));
+        String content = readFile(copiedFile1);
 
         // The content is modified
         Assert.assertThat(content, CoreMatchers.containsString(
@@ -139,8 +137,7 @@ public class CopyResourcesStepTest {
         File copiedFile2 = new File(target, "dir/subdir/bar.html");
         // The second target file exists
         Assert.assertTrue(copiedFile2.exists());
-        content = Files.readAllLines(copiedFile2.toPath()).stream()
-                .collect(Collectors.joining("\n"));
+        content = readFile(copiedFile2);
 
         // The content is modified
         Assert.assertThat(content, CoreMatchers.containsString(
@@ -153,9 +150,9 @@ public class CopyResourcesStepTest {
             throws IOException {
         File file = new File(source1, "foo.html");
 
-        Files.write(file.toPath(), Collections.singletonList(
-                "<link rel=\"import\" href=\"bower_components/vaadin-button/vaadin-button.html\">\n"
-                        + "<link rel=\"import\" href=\"./bower_components/vaadin-text-field/vaadin-text-area.html\">\n"));
+        Files.write(file.toPath(), Arrays.asList(
+                "<link rel=\"import\" href=\"bower_components/vaadin-button/vaadin-button.html\">",
+                "<link rel=\"import\" href=\"./bower_components/vaadin-text-field/vaadin-text-area.html\">"));
 
         step.copyResources();
 
@@ -163,6 +160,11 @@ public class CopyResourcesStepTest {
         Assert.assertEquals(2, bowerComponents.size());
         Assert.assertTrue(bowerComponents.contains("vaadin-button"));
         Assert.assertTrue(bowerComponents.contains("vaadin-text-field"));
+    }
+
+    private String readFile(File file) throws IOException {
+        return Files.readAllLines(file.toPath()).stream()
+                .collect(Collectors.joining("\n"));
     }
 
     private void assertCopiedResources(Map<String, List<String>> copied,
