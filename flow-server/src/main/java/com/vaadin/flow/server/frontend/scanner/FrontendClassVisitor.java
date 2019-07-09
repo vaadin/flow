@@ -13,13 +13,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server.frontend;
+package com.vaadin.flow.server.frontend.scanner;
 
-import java.io.Serializable;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
 import net.bytebuddy.jar.asm.AnnotationVisitor;
@@ -29,6 +26,7 @@ import net.bytebuddy.jar.asm.MethodVisitor;
 import net.bytebuddy.jar.asm.Opcodes;
 import net.bytebuddy.jar.asm.Type;
 
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.router.Route;
@@ -38,139 +36,15 @@ import com.vaadin.flow.theme.Theme;
 /**
  * A class visitor for Flow components.
  */
-class FrontendClassVisitor extends ClassVisitor {
+final class FrontendClassVisitor extends ClassVisitor {
 
     private static final String VARIANT = "variant";
     private static final String LAYOUT = "layout";
     static final String VALUE = "value";
     static final String VERSION = "version";
-
-    /**
-     * An annotation visitor implementation that enables repeated annotations.
-     */
-    static class RepeatedAnnotationVisitor extends AnnotationVisitor {
-        public RepeatedAnnotationVisitor() {
-            super(Opcodes.ASM7);
-        }
-
-        @Override
-        public AnnotationVisitor visitArray(String name) {
-            return this;
-        }
-
-        @Override
-        public AnnotationVisitor visitAnnotation(String name,
-                String descriptor) {
-            return this;
-        }
-    }
-
-    /**
-     * A simple container with the information related to an application
-     * end-point, i.e. those classes annotated with the {@link Route}
-     * annotation.
-     */
-    static class EndPointData implements Serializable {
-        private final String name;
-        private String route = "";
-        private String layout;
-        private ThemeData theme = new ThemeData();
-        private final HashSet<String> modules = new HashSet<>();
-        private final HashSet<String> scripts = new HashSet<>();
-        private final HashSet<String> classes = new HashSet<>();
-
-        EndPointData(Class<?> clazz) {
-            this.name = clazz.getName();
-        }
-
-        // For debugging
-        @Override
-        public String toString() {
-            return String.format(
-                    "%n view: %s%n route: %s%n%s%n layout: %s%n modules: %s%n scripts: %s%n",
-                    name, route, theme, layout, col2Str(modules),
-                    col2Str(scripts));
-        }
-
-        Set<String> getModules() {
-            return modules;
-        }
-
-        Set<String> getScripts() {
-            return scripts;
-        }
-
-        Set<String> getClasses() {
-            return classes;
-        }
-
-        ThemeData getTheme() {
-            return theme;
-        }
-
-        String getRoute() {
-            return route;
-        }
-
-        String getLayout() {
-            return layout;
-        }
-
-        String getName() {
-            return name;
-        }
-
-        private String col2Str(Collection<String> s) {
-            return String.join("\n          ", s);
-        }
-    }
-
-    /**
-     * A container for Theme information when scanning the class path. It
-     * overrides equals and hashCode in order to use HashSet to eliminate
-     * duplicates.
-     */
-    static class ThemeData implements Serializable {
-        private String name;
-        private String variant = "";
-        private boolean notheme;
-
-        String getName() {
-            return name;
-        }
-
-        String getVariant() {
-            return variant;
-        }
-
-        boolean isNotheme() {
-            return notheme;
-        }
-
-        @Override
-        public boolean equals(Object other) {
-            if (other == null || !(other instanceof ThemeData)) {
-                return false;
-            }
-            ThemeData that = (ThemeData) other;
-            return notheme == that.notheme && Objects.equals(name, that.name);
-        }
-
-        @Override
-        public int hashCode() {
-            // We might need to add variant when we wanted to fail in the
-            // case of
-            // same theme class with different variant, which was right in
-            // v13
-            return Objects.hash(name, notheme);
-        }
-
-        @Override
-        public String toString() {
-            return " theme.notheme: " + notheme + "\n theme.name: " + name + "\n theme.variant: "
-                    + variant;
-        }
-    }
+    static final String ID = "id";
+    static final String INCLUDE = "include";
+    static final String THEME_FOR = "themeFor";
 
     private final String className;
     private final EndPointData endPoint;
@@ -334,6 +208,9 @@ class FrontendClassVisitor extends ClassVisitor {
             if (className.equals(endPoint.layout)) {
                 return themeLayoutVisitor;
             }
+        }
+        if (cname.contains(CssImport.class.getName())) {
+            return new CssAnnotationVisitor(endPoint.css);
         }
         // default visitor
         return annotationVisitor;

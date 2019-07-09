@@ -14,11 +14,12 @@
  * the License.
  *
  */
-package com.vaadin.flow.server.frontend;
+package com.vaadin.flow.server.frontend.scanner;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
@@ -33,7 +34,7 @@ import com.vaadin.flow.theme.Theme;
 /**
  * A container class for all components used in tests.
  */
-public class FrontendDependenciesTestComponents {
+public class ScannerTestComponents {
 
     @NpmPackage(value = "@vaadin/theme-0", version = "1.1.1")
     @JavaScript("frontend://theme-0.js")
@@ -247,7 +248,6 @@ public class FrontendDependenciesTestComponents {
         }
     }
 
-
     public static class UnAnnotatedClass {
     }
 
@@ -268,4 +268,19 @@ public class FrontendDependenciesTestComponents {
     public static class RoutedClass extends BridgeClass {
     }
 
+    @Route("css-route-1")
+    @CssImport("./foo.css")
+    @CssImport(value = "./foo.css", include = "bar")
+    @CssImport(value = "./foo.css", id = "bar")
+    @CssImport(value = "./foo.css", themeFor = "bar")
+    public static class CssClass1 {
+    }
+
+    @Route("css-route-2")
+    @CssImport("./foo.css")
+    @CssImport(value = "./foo.css", include = "bar")
+    @CssImport(value = "./foo.css", id = "bar")
+    @CssImport(value = "./foo.css", themeFor = "bar")
+    public static class CssClass2 extends CssClass1 {
+    }
 }

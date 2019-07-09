@@ -15,17 +15,13 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -33,6 +29,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
@@ -40,9 +37,17 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.server.frontend.scanner.CssData;
+import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
+
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
 
 /**
  * An updater that it's run when the servlet context is initialised in dev-mode
@@ -55,7 +60,41 @@ public class TaskUpdateImports extends NodeUpdater {
 
     private final File generatedFlowImports;
     private final File frontendDirectory;
-    private static final String IMPORT = "import '%s';";
+    private static final String IMPORT_TEMPLATE = "import '%s';";
+
+    private static final String THEME_PREPARE = "const div = document.createElement('div');";
+    private static final String THEME_LINE_TPL =
+            "div.innerHTML = '%s';%n"
+            + "document.head.insertBefore(div.firstElementChild, document.head.firstChild);";
+    private static final String THEME_VARIANT_TPL =
+            "document.body.setAttribute('%s', '%s');";
+
+    private static final String CSS_PREPARE =
+            "function addCssBlock(block) {\n"
+            + " const tpl = document.createElement('template');\n"
+            + " tpl.innerHTML = block;\n"
+            + " document.head.appendChild(tpl.content);\n"
+            + "}";
+    private static final String CSS_PRE =
+            "import $css_%d from '%s';%n"
+            + "addCssBlock(`";
+    private static final String CSS_POST =
+            "`);";
+    private static final String CSS_BASIC_TPL = CSS_PRE
+            + "<custom-style><style>${$css_%d}</style></custom-style>"
+            + CSS_POST;
+    private static final String CSS_INCLUDE_TPL = CSS_PRE
+            + "<custom-style><style include=\"%s\">${$css_%d}</style></custom-style>"
+            + CSS_POST;
+    private static final String CSS_MODULE_TPL = CSS_PRE
+            + "<dom-module id=\"%s\"><template><style>${$css_%d}</style></template></dom-module>"
+            + CSS_POST;
+    private static final String CSS_THEME_FOR_TPL = CSS_PRE
+            + "<dom-module id=\"flow_css_mod_%d\" theme-for=\"%s\"><template><style>${$css_%d}</style></template></dom-module>"
+            + CSS_POST;
+
+    // Trim and remove new lines.
+    private static final Pattern NEW_LINE_TRIM = Pattern.compile("(?m)(^\\s+|\\s?\n)");
 
     /**
      * Create an instance of the updater given all configurable parameters.
@@ -110,35 +149,85 @@ public class TaskUpdateImports extends NodeUpdater {
 
     private List<String> getMainJsContent(Set<String> modules) {
         List<String> lines = new ArrayList<>();
-        AbstractTheme theme = frontDeps.getTheme();
-        ThemeDefinition themeDef = frontDeps.getThemeDefinition();
-        if (theme != null) {
-            if (!theme.getHeaderInlineContents().isEmpty()) {
-                lines.add("const div = document.createElement('div');");
-                theme.getHeaderInlineContents().forEach(html -> {
-                    lines.add("div.innerHTML = '"
-                            + html.replaceAll("(?m)(^\\s+|\\s?\n)", "") + "';");
-                    lines.add(
-                            "document.head.insertBefore(div.firstElementChild, document.head.firstChild);");
-                });
-            }
-            theme.getHtmlAttributes(themeDef.getVariant()).forEach(
-                    (key, value) -> lines.add("document.body.setAttribute('"
-                            + key + "', '" + value + "');"));
-        }
 
-        Collection<String> imports = new ArrayList<>(modules.size());
-        modulesToImports(modules, theme, imports);
-        lines.addAll(imports);
+        lines.addAll(getThemeLines());
+        lines.addAll(getCssLines());
+        lines.addAll(getModuleLines(modules));
 
         return lines;
     }
 
-    private void modulesToImports(Set<String> modules, AbstractTheme theme,
-            Collection<String> imports) {
+    private Collection<String> getThemeLines() {
+        Collection<String> lines = new ArrayList<>();
+        AbstractTheme theme = frontDeps.getTheme();
+        ThemeDefinition themeDef = frontDeps.getThemeDefinition();
+        if (theme != null) {
+            if (!theme.getHeaderInlineContents().isEmpty()) {
+                lines.add(THEME_PREPARE);
+                theme.getHeaderInlineContents().forEach(html -> addLines(lines,
+                        String.format(THEME_LINE_TPL,
+                                NEW_LINE_TRIM.matcher(html).replaceAll(""))));
+            }
+            theme.getHtmlAttributes(themeDef.getVariant()).forEach(
+                    (key, value) -> addLines(lines, String.format(THEME_VARIANT_TPL, key, value)));
+            lines.add("");
+        }
+        return lines;
+    }
+
+    private void addLines(Collection<String> lines, String content) {
+        lines.addAll(Arrays.asList(content.split("\n")));
+    }
+
+    private Collection<String> getCssLines() {
+        Collection<String> lines = new ArrayList<>();
+        Set<CssData> css = frontDeps.getCss();
+        if (!css.isEmpty()) {
+            addLines(lines, CSS_PREPARE);
+
+            Set<String> cssNotFound = new HashSet<>();
+            int i = 0;
+
+            for (CssData cssData : css) {
+                if (!addCssLines(lines, cssData, i)) {
+                    cssNotFound.add(cssData.getValue());
+                }
+                i++;
+            }
+            if (!cssNotFound.isEmpty()) {
+                throw new IllegalStateException(notFoundMessage(cssNotFound,
+                        "Failed to find the following css files in the `node_modules` or `/frontend` tree:"
+                        , "Check that they exist or are installed."));
+            }
+            lines.add("");
+        }
+        return lines;
+    }
+
+    private boolean addCssLines(Collection<String> lines, CssData cssData, int i) {
+        String cssFile = resolveResource(cssData.getValue(), false);
+        boolean found = importedFileExists(cssFile);
+        String cssImport = toValidBrowserImport(cssFile);
+
+        if (cssData.getThemefor() != null) {
+            addLines(lines, String.format(CSS_THEME_FOR_TPL, i, cssImport, i, cssData.getThemefor(), i));
+        } else if (cssData.getId() != null) {
+            addLines(lines, String.format(CSS_MODULE_TPL, i, cssImport, cssData.getId(), i));
+        } else if (cssData.getInclude() != null) {
+            addLines(lines, String.format(CSS_INCLUDE_TPL, i, cssImport, cssData.getInclude(), i));
+        } else {
+            addLines(lines, String.format(CSS_BASIC_TPL, i, cssImport, i));
+        }
+        return found;
+    }
+
+
+    private Collection<String> getModuleLines(Set<String> modules) {
         Set<String> resourceNotFound = new HashSet<>();
         Set<String> npmNotFound = new HashSet<>();
         Set<String> visited = new HashSet<>();
+        AbstractTheme theme = frontDeps.getTheme();
+        Collection<String> lines = new ArrayList<>();
 
         for (String originalModulePath : modules) {
             String translatedModulePath = originalModulePath;
@@ -147,41 +236,41 @@ public class TaskUpdateImports extends NodeUpdater {
                 translatedModulePath = theme.translateUrl(translatedModulePath);
             }
             if (importedFileExists(translatedModulePath)) {
-                imports.add(String.format(IMPORT,
+                lines.add(String.format(IMPORT_TEMPLATE,
                         toValidBrowserImport(translatedModulePath)));
             } else if (importedFileExists(originalModulePath)) {
-                imports.add(String.format(IMPORT,
+                lines.add(String.format(IMPORT_TEMPLATE,
                         toValidBrowserImport(originalModulePath)));
             } else if (originalModulePath.startsWith("./")) {
                 resourceNotFound.add(originalModulePath);
             } else {
                 npmNotFound.add(originalModulePath);
-                imports.add(String.format(IMPORT, originalModulePath));
+                lines.add(String.format(IMPORT_TEMPLATE, originalModulePath));
             }
 
             if (theme != null) {
-                handleImports(originalModulePath, theme, imports, visited);
+                handleImports(originalModulePath, theme, lines, visited);
             }
         }
 
         if (!resourceNotFound.isEmpty()) {
-            StringBuilder errorMessage = new StringBuilder(
-                    "\n\n  Failed to resolve the following files either:"
-                            + "\n   · in the `/frontend` sources folder"
-                            + "\n   · or as a `META-INF/resources/frontend` resource in some JAR. \n       ➜ ");
-            errorMessage.append(String.join("\n       ➜ ", resourceNotFound));
-            errorMessage.append(
-                    "\n  Please, double check that those files exist.\n");
-            throw new IllegalStateException(errorMessage.toString());
+            throw new IllegalStateException(notFoundMessage(resourceNotFound,
+                    "Failed to resolve the following files either:"
+                    + "\n   · in the `/frontend` sources folder"
+                    + "\n   · or as a `META-INF/resources/frontend` resource in some JAR."
+                    , "Please, double check that those files exist."));
         }
 
-        if (!npmNotFound.isEmpty()) {
-            String message = "\n\n  Failed to find the following imports in the `node_modules` tree:\n      ➜ "
-                    + String.join("\n       ➜ ", npmNotFound)
-                    + "\n  If the build fails, check that npm packages are installed.\n";
-            log().info(message);
+        if (!npmNotFound.isEmpty() && log().isInfoEnabled()) {
+            log().info(notFoundMessage(npmNotFound,
+                    "Failed to find the following imports in the `node_modules` tree:"
+                    , "If the build fails, check that npm packages are installed."));
         }
+        return lines;
+    }
 
+    private String notFoundMessage(Set<String> files, String prefix, String suffix) {
+        return String.format("%n%n  %s%n      - %s%n  %s%n%n", prefix, String.join("\n       - ", files), suffix);
     }
 
     private void handleImports(String path, AbstractTheme theme,
@@ -218,7 +307,7 @@ public class TaskUpdateImports extends NodeUpdater {
             if (resolvedPath.contains(theme.getBaseUrl())) {
                 String translatedPath = theme.translateUrl(resolvedPath);
                 if (importedFileExists(translatedPath)) {
-                    imports.add(String.format(IMPORT,
+                    imports.add(String.format(IMPORT_TEMPLATE,
                             normalizeImportPath(translatedPath)));
                 }
             }
@@ -256,23 +345,28 @@ public class TaskUpdateImports extends NodeUpdater {
         return resolvedPath;
     }
 
-    private boolean importedFileExists(String jsImport) {
-        File file = getImportedFrontendFile(jsImport);
+    private boolean importedFileExists(String importName) {
+        File file = getImportedFrontendFile(importName);
         if (file != null) {
             return true;
         }
 
         // full path import e.g
         // /node_modules/@vaadin/vaadin-grid/vaadin-grid-column.js
-        boolean found = isFile(nodeModulesFolder, jsImport);
+        boolean found = isFile(nodeModulesFolder, importName);
+        if (importName.toLowerCase().endsWith(".css")) {
+            return found;
+        }
         // omitted the .js extension e.g.
         // /node_modules/@vaadin/vaadin-grid/vaadin-grid-column
-        found = found || isFile(nodeModulesFolder, jsImport + ".js");
+        found = found || isFile(nodeModulesFolder, importName + ".js");
         // has a package.json file e.g. /node_modules/package-name/package.json
-        found = found || isFile(nodeModulesFolder, jsImport, PACKAGE_JSON);
+        found = found || isFile(nodeModulesFolder, importName, PACKAGE_JSON);
         // file was generated by flow
-        return found || isFile(generatedFolder,
-                generatedResourcePathIntoRelativePath(jsImport));
+        found = found || isFile(generatedFolder,
+                generatedResourcePathIntoRelativePath(importName));
+
+        return found;
     }
 
     /**
@@ -324,6 +418,7 @@ public class TaskUpdateImports extends NodeUpdater {
         List<String> oldContent = generatedFlowImports.exists()
                 ? FileUtils.readLines(generatedFlowImports, "UTF-8")
                 : null;
+
         if (newContent.equals(oldContent)) {
             log().info("No js modules to update");
         } else {

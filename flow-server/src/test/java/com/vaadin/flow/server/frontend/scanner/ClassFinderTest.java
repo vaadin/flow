@@ -1,4 +1,4 @@
-package com.vaadin.flow.server.frontend;
+package com.vaadin.flow.server.frontend.scanner;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -9,8 +9,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import com.vaadin.flow.server.frontend.ClassFinder.DefaultClassFinder;
-import com.vaadin.flow.server.frontend.FrontendDependenciesTestComponents.Component1;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
+import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.Component1;
 
 public class ClassFinderTest {
 

@@ -29,7 +29,8 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 
-import com.vaadin.flow.server.frontend.ClassFinder.DefaultClassFinder;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 
 import static com.vaadin.flow.server.DevModeHandler.WEBPACK_SERVER;
 import static org.junit.Assert.assertNotNull;
@@ -149,7 +150,9 @@ public class NodeUpdateTestUtil {
                 "./foo.js",
                 "./vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
                 "./local-template.js",
-                "./foo-dir/vaadin-npm-component.js");
+                "./foo-dir/vaadin-npm-component.js",
+                "./foo.css",
+                "@vaadin/vaadin-mixed-component/bar.css");
     }
 
     void createExpectedImports(File directoryWithImportsJs,

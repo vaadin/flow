@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server.frontend;
+package com.vaadin.flow.server.frontend.scanner;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -40,14 +40,12 @@ import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.frontend.FrontendClassVisitor.EndPointData;
-import com.vaadin.flow.server.frontend.FrontendClassVisitor.ThemeData;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
-import static com.vaadin.flow.server.frontend.FrontendClassVisitor.VALUE;
-import static com.vaadin.flow.server.frontend.FrontendClassVisitor.VERSION;
+import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.VALUE;
+import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.VERSION;
 
 /**
  * Represents the class dependency tree of the application.
@@ -178,7 +176,7 @@ public class FrontendDependencies implements Serializable {
      */
     public Set<String> getModules() {
         Set<String> all = new HashSet<>();
-        for (FrontendClassVisitor.EndPointData data : endPoints.values()) {
+        for (EndPointData data : endPoints.values()) {
             all.addAll(data.getModules());
         }
         return all;
@@ -191,8 +189,21 @@ public class FrontendDependencies implements Serializable {
      */
     public Set<String> getScripts() {
         Set<String> all = new HashSet<>();
-        for (FrontendClassVisitor.EndPointData data : endPoints.values()) {
+        for (EndPointData data : endPoints.values()) {
             all.addAll(data.getScripts());
+        }
+        return all;
+    }
+
+    /**
+     * Get all the CSS files used by the application.
+     *
+     * @return the set of CSS files
+     */
+    public Set<CssData> getCss() {
+        Set<CssData> all = new HashSet<>();
+        for (EndPointData data : endPoints.values()) {
+            all.addAll(data.getCss());
         }
         return all;
     }
@@ -301,19 +312,7 @@ public class FrontendDependencies implements Serializable {
         Class<? extends AbstractTheme> theme = null;
         String variant = "";
         if (themes.isEmpty()) {
-            // No theme annotation found by the scanner
-            final Class<? extends AbstractTheme> defaultTheme = getLumoTheme();
-            // call visitClass on the default theme using the first available
-            // endpoint. If not endpoint is available, default theme won't be
-            // set.
-            if (defaultTheme != null) {
-                Optional<EndPointData> endPointData =
-                        endPoints.values().stream().findFirst();
-                if (endPointData.isPresent()) {
-                    visitClass(defaultTheme.getName(), endPointData.get());
-                    theme = defaultTheme;
-                }
-            }
+            theme = getDefaultTheme();
         } else {
             // we have a proper theme or no-theme for the app
             ThemeData themeData = themes.iterator().next();
@@ -329,6 +328,23 @@ public class FrontendDependencies implements Serializable {
             themeDefinition = new ThemeDefinition(theme, variant);
             themeInstance = new ThemeWrapper(theme);
         }
+    }
+
+    private Class<? extends AbstractTheme> getDefaultTheme() throws IOException {
+        // No theme annotation found by the scanner
+        final Class<? extends AbstractTheme> defaultTheme = getLumoTheme();
+        // call visitClass on the default theme using the first available
+        // endpoint. If not endpoint is available, default theme won't be
+        // set.
+        if (defaultTheme != null) {
+            Optional<EndPointData> endPointData =
+                    endPoints.values().stream().findFirst();
+            if (endPointData.isPresent()) {
+                visitClass(defaultTheme.getName(), endPointData.get());
+                return defaultTheme;
+            }
+        }
+        return null;
     }
 
     /**
@@ -437,7 +453,7 @@ public class FrontendDependencies implements Serializable {
      * @throws IOException
      */
     private EndPointData visitClass(String className,
-            FrontendClassVisitor.EndPointData endPoint) throws IOException {
+            EndPointData endPoint) throws IOException {
 
         if (!isVisitable(className) || endPoint.getClasses().contains(className)) {
             return endPoint;

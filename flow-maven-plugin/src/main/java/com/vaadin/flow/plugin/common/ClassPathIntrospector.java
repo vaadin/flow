@@ -21,7 +21,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.server.frontend.ClassFinder;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 /**
  * Abstract class which allows to find classes in the project classpath.

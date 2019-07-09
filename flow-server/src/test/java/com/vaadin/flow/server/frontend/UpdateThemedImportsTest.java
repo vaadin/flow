@@ -36,6 +36,8 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
@@ -97,6 +99,9 @@ public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
         createImport("./theme/myTheme/subfolder/sub-template.js", "");
         createImport("./theme/myTheme/client-side-template.js", "");
         createImport("./theme/myTheme/main-template.js", "");
+        // create css files to avoid exception when files not found during the test 
+        createImport("./foo.css", "");
+        createImport("@vaadin/vaadin-mixed-component/bar.css", "");
 
         ClassFinder finder = getClassFinder();
         FrontendDependencies deps = new FrontendDependencies(finder) {

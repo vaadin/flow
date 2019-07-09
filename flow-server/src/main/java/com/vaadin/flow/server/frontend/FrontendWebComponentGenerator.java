@@ -21,6 +21,7 @@ import java.io.Serializable;
 import java.util.Set;
 
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.webcomponent.WebComponentModulesWriter;
 
 /**
@@ -44,7 +45,7 @@ public class FrontendWebComponentGenerator implements Serializable {
      * {@link com.vaadin.flow.component.WebComponentExporter} classes.
      * 
      * @param finder
-     *            {@link com.vaadin.flow.server.frontend.ClassFinder}
+     *            {@link com.vaadin.flow.server.frontend.scanner.ClassFinder}
      *            implementation
      */
     public FrontendWebComponentGenerator(ClassFinder finder) {
