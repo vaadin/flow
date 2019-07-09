@@ -13,7 +13,6 @@ import com.vaadin.flow.router.Route;
         ".MultipleNpmPackageAnnotationsView", layout = NpmPackageLayout.class)
 public class MultipleNpmPackageAnnotationsView extends Div {
 
-
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
