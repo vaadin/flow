@@ -15,6 +15,7 @@ import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.BridgeClass
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.Component0;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.Component1;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.Component2;
+import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.RouteWithNestedDynamicRouteClass;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.FirstView;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.RoutedClass;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.RoutedClassWithAnnotations;
@@ -125,6 +126,12 @@ public class ScannerDependenciesTest {
     }
 
     @Test
+    public void should_visit_Constructor() throws Exception {
+        FrontendDependencies deps = getFrontendDependencies(SecondView.class);
+        assertTrue(deps.getModules().contains("./component-3.js"));
+    }
+
+    @Test
     public void should_resolveComponentFactories() throws Exception {
         FrontendDependencies deps = getFrontendDependencies(ThirdView.class);
 
@@ -176,5 +183,11 @@ public class ScannerDependenciesTest {
         }
     }
 
-
+    @Test
+    public void should_visitDynamicRoute() throws Exception {
+        FrontendDependencies deps = getFrontendDependencies(RouteWithNestedDynamicRouteClass.class);
+        assertEquals(2, deps.getModules().size());
+        assertTrue(deps.getModules().contains("dynamic-route.js"));
+        assertTrue(deps.getModules().contains("dynamic-layout.js"));
+    }
 }

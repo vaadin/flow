@@ -57,6 +57,45 @@ final class FrontendClassVisitor extends ClassVisitor {
     private final AnnotationVisitor jScriptVisitor;
     private final Set<String> children = new HashSet<>();
 
+    private final class FrontendMethodVisitor extends MethodVisitor {
+        public FrontendMethodVisitor() {
+            super(Opcodes.ASM7);
+        }
+
+        // We are interested in the new instances created inside the method
+        @Override
+        public void visitTypeInsn(int opcode, String type) {
+            addSignatureToClasses(children, type);
+        }
+
+        // We are interested in method instructions like
+        // Notification.show('bla')
+        @Override
+        public void visitMethodInsn(int opcode, String owner, String name,
+                String descriptor, boolean isInterface) {
+            addSignatureToClasses(children, owner);
+            addSignatureToClasses(children, descriptor);
+        }
+
+        // Visit instructions that stores something in a field inside the
+        // method
+        @Override
+        public void visitFieldInsn(int opcode, String owner, String name,
+                String descriptor) {
+            addSignatureToClasses(children, owner);
+            addSignatureToClasses(children, descriptor);
+        }
+
+        // Visit arguments, we only care of Types, e.g dynamic routes #5509:
+        //   routeConf.setRoute("", MyView.class, MyLayout.class);
+        @Override
+        public void visitLdcInsn(Object value) {
+            if (value instanceof Type) {
+                addSignatureToClasses(children, value.toString());
+            }
+        }
+    }
+
     /**
      * Create a new {@link ClassVisitor} that will be used for visiting a
      * specific class.
@@ -72,31 +111,7 @@ final class FrontendClassVisitor extends ClassVisitor {
         this.endPoint = endPoint;
 
         // Visitor for each method in the class.
-        methodVisitor = new MethodVisitor(Opcodes.ASM7) {
-            // We are interested in the new instances created inside the method
-            @Override
-            public void visitTypeInsn(int opcode, String type) {
-                addSignatureToClasses(children, type);
-            }
-
-            // We are interested in method instructions like
-            // Notification.show('bla')
-            @Override
-            public void visitMethodInsn(int opcode, String owner, String name,
-                    String descriptor, boolean isInterface) {
-                addSignatureToClasses(children, owner);
-                addSignatureToClasses(children, descriptor);
-            }
-
-            // Visit instructions that stores something in a field inside the
-            // method
-            @Override
-            public void visitFieldInsn(int opcode, String owner, String name,
-                    String descriptor) {
-                addSignatureToClasses(children, owner);
-                addSignatureToClasses(children, descriptor);
-            }
-        };
+        methodVisitor = new FrontendMethodVisitor();
         // Visitor for each annotation in the class.
         routeVisitor = new RepeatedAnnotationVisitor() {
             @Override
@@ -158,7 +173,6 @@ final class FrontendClassVisitor extends ClassVisitor {
                 }
             }
         };
-
     }
 
     // Executed for the class definition info.
@@ -167,6 +181,7 @@ final class FrontendClassVisitor extends ClassVisitor {
             String superName, String[] interfaces) {
         addSignatureToClasses(children, superName);
     }
+
 
     // Executed for each method defined in the class.
     @Override
@@ -223,6 +238,7 @@ final class FrontendClassVisitor extends ClassVisitor {
         addSignatureToClasses(children, descriptor);
         return null;
     }
+
 
     /**
      * Return all discovered classes in the visit.
