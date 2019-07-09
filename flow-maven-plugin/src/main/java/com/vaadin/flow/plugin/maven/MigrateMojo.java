@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -134,8 +135,8 @@ public class MigrateMojo extends AbstractMojo {
         } catch (IOException exception) {
             throw new UncheckedIOException(
                     "Couldn't copy resources from source directories "
-                            + getResources() + " to the target directory "
-                            + migrateFolder,
+                            + Arrays.asList(getResources())
+                            + " to the target directory " + migrateFolder,
                     exception);
         }
 
@@ -155,7 +156,9 @@ public class MigrateMojo extends AbstractMojo {
 
         installNpmPackages();
 
+        boolean modulizerHasErrors = false;
         if (!runModulizer()) {
+            modulizerHasErrors = true;
             if (ignoreModulizerErrors) {
                 getLog().info("Modulizer has exited with error");
             } else {
@@ -185,7 +188,7 @@ public class MigrateMojo extends AbstractMojo {
             getLog().debug("Couldn't remove ");
         }
 
-        if (!keepOriginal) {
+        if (!modulizerHasErrors && !keepOriginal) {
             removeOriginalResources(paths);
         }
     }
@@ -357,7 +360,7 @@ public class MigrateMojo extends AbstractMojo {
 
     private String[] getResources() {
         if (resources == null) {
-            File webApp = new File(project.getBasedir() + "/src/main/webapp");
+            File webApp = new File(project.getBasedir(), "src/main/webapp");
             File frontend = new File(webApp, "frontend");
             if (frontend.exists() && webApp.listFiles().length == 1) {
                 resources = new String[] { frontend.getPath() };
