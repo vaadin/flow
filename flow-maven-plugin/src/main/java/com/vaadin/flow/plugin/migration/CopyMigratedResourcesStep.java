@@ -33,9 +33,6 @@ public class CopyMigratedResourcesStep extends AbstractCopyResourcesStep {
 
     private static class CopyMigratedFiles implements ContentModifier {
 
-        /**
-         *
-         */
         private static final String NODE_MODULES = "/node_modules/";
         private static final String IMPORT = "import";
 
