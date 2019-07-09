@@ -26,6 +26,7 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
@@ -109,6 +110,8 @@ public class ScannerTestComponents {
     @Theme(value = Theme1.class, variant = Theme0.DARK)
     @JsModule("./router-layout-1.js")
     public class RouterLayout1 implements RouterLayout {
+        public RouterLayout1() {
+        }
         @Override
         public Element getElement() {
             return null;
@@ -118,6 +121,8 @@ public class ScannerTestComponents {
     @Theme(value = Theme1.class, variant = Theme0.DARK)
     @JsModule("./router-layout-2.js")
     public class RouterLayout2 extends RouterLayout1 {
+        public RouterLayout2(String a) {
+        }
     }
 
     @JavaScript("frontend://view-0.js")
@@ -184,12 +189,7 @@ public class ScannerTestComponents {
     @Route(value = "second", layout = RouterLayout2.class)
     @JsModule("./view-2.js")
     public static class SecondView extends Component {
-
         public SecondView() {
-           createView();
-        }
-
-        private void createView() {
             new Component3();
         }
     }
@@ -282,5 +282,30 @@ public class ScannerTestComponents {
     @CssImport(value = "./foo.css", id = "bar")
     @CssImport(value = "./foo.css", themeFor = "bar")
     public static class CssClass2 extends CssClass1 {
+    }
+
+    @JsModule("dynamic-component.js")
+    public static class DynamicComponentClass extends Component {
+    }
+    @JsModule("dynamic-layout.js")
+    public static class DynamicLayoutClass implements RouterLayout {
+        @Override
+        public Element getElement() {
+            return null;
+        }
+    }
+
+    @Route("dynamic-route")
+    @JsModule("dynamic-route.js")
+    public static class RouteWithNestedDynamicRouteClass {
+        public RouteWithNestedDynamicRouteClass() {
+            registerRoute();
+        }
+
+        @SuppressWarnings("unchecked")
+        private void registerRoute() {
+            RouteConfiguration.forSessionScope().setRoute("foo",
+                    null, DynamicLayoutClass.class);
+        }
     }
 }
