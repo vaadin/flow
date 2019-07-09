@@ -56,7 +56,7 @@ public abstract class AbstractCopyResourcesStep {
          * @param target
          *            the target file or directory
          * @return {@code true} if the file should be handled, if the
-         *         {@cod source} is directory then it will be skipped in case
+         *         {@code source} is directory then it will be skipped in case
          *         {@code false} is returned
          * @throws IOException
          */
@@ -126,15 +126,15 @@ public abstract class AbstractCopyResourcesStep {
      *
      * @param target
      *            the target directory
-     * @param resourceFolders
+     * @param sourceFolders
      *            an array of source folders
      * @param contentModifier
      *            a strategy which rewrites the content of copied file
      */
-    public AbstractCopyResourcesStep(File target, String[] source,
+    public AbstractCopyResourcesStep(File target, String[] sourceFolders,
             ContentModifier contentModifier) {
         this.target = target;
-        resources = Arrays.asList(source);
+        resources = Arrays.asList(sourceFolders);
         this.contentModifier = contentModifier;
     }
 
