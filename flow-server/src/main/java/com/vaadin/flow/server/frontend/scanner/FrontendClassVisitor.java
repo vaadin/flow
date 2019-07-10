@@ -86,8 +86,8 @@ final class FrontendClassVisitor extends ClassVisitor {
             addSignatureToClasses(children, descriptor);
         }
 
-        // Visit arguments, we only care of Types, e.g dynamic routes #5509:
-        //   routeConf.setRoute("", MyView.class, MyLayout.class);
+        // Visit arguments, we only care those arguments that are Types,
+        // e.g dynamic-routes #5509, or factory-beans #5658 
         @Override
         public void visitLdcInsn(Object value) {
             if (value instanceof Type) {
