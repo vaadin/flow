@@ -148,7 +148,9 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         assertTrue(loggerFile.exists());
 
-        String output = FileUtils.readFileToString(loggerFile, "UTF-8");
+        String output = FileUtils.readFileToString(loggerFile, "UTF-8")
+                // fix for windows
+                .replace("\r", "");
         assertContains(output, true,
                 "changing 'frontend://frontend-p3-template.js' to './frontend-p3-template.js'",
                 "Use the './' prefix for files in JAR files: 'ExampleConnector.js'",
