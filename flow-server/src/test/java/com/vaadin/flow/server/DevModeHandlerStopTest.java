@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URL;
+import java.util.concurrent.Executors;
 
 import com.sun.net.httpserver.HttpServer;
 import net.jcip.annotations.NotThreadSafe;
@@ -107,7 +108,8 @@ public class DevModeHandlerStopTest {
 
         DevModeHandler.start(port, configuration, npmFolder);
 
-        // Simulate a server restart by removing the handler, and starting a new one
+        // Simulate a server restart by removing the handler, and starting a new
+        // one
         DevModeHandlerTest.removeDevModeHandlerInstance();
         assertNull(DevModeHandler.getDevModeHandler());
         DevModeHandler.start(configuration, npmFolder);
@@ -120,8 +122,7 @@ public class DevModeHandlerStopTest {
         assertNull(requestWebpackServer(port, "/bar"));
     }
 
-
-    private String requestWebpackServer(int port, String path)  {
+    private String requestWebpackServer(int port, String path) {
         try {
             URL url = new URL("http://localhost:" + port + path);
             return FrontendUtils.streamToString(url.openStream());
@@ -136,13 +137,15 @@ public class DevModeHandlerStopTest {
             port = DevModeHandler.getFreePort();
         }
         httpServer = HttpServer.create(new InetSocketAddress(port), 0);
+        final HttpServer server = httpServer;
+        server.setExecutor(Executors.newSingleThreadExecutor());
         httpServer.createContext("/", exchange -> {
             exchange.sendResponseHeaders(status, response.length());
             exchange.getResponseBody().write(response.getBytes());
             exchange.close();
             String uri = exchange.getRequestURI().toString();
             if ("/stop".equals(uri)) {
-                httpServer.stop(0);
+                server.getExecutor().execute(() -> server.stop(0));
             }
         });
         httpServer.start();
