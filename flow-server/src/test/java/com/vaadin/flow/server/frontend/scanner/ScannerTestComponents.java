@@ -18,6 +18,7 @@ package com.vaadin.flow.server.frontend.scanner;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
@@ -294,7 +295,7 @@ public class ScannerTestComponents {
             return null;
         }
     }
-
+    
     @Route("dynamic-route")
     @JsModule("dynamic-route.js")
     public static class RouteWithNestedDynamicRouteClass {
@@ -305,7 +306,21 @@ public class ScannerTestComponents {
         @SuppressWarnings("unchecked")
         private void registerRoute() {
             RouteConfiguration.forSessionScope().setRoute("foo",
-                    null, DynamicLayoutClass.class);
+                    DynamicComponentClass.class,
+                    DynamicLayoutClass.class);
+        }
+    }
+    
+    @Route()
+    public static class RouteWithViewBean {
+        public RouteWithViewBean() {
+            UI.getCurrent().add(BeanFactory.getBean(DynamicComponentClass.class));
+        }
+    }
+
+    public static class BeanFactory {
+        public static <T> T getBean(Class<T> type) {
+            return null;
         }
     }
 }
