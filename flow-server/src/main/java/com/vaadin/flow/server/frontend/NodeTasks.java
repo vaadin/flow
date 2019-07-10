@@ -28,7 +28,9 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
 
@@ -274,6 +276,14 @@ public class NodeTasks implements Command {
                     classFinder, frontendDependencies, builder.npmFolder,
                     builder.generatedFolder);
             commands.add(packageUpdater);
+
+            // Copy frontend files from JARs if this is our first time
+            // running or we have cleaned everything in TaskUpdatePackages
+            File frontendDirectory = new File(builder.npmFolder,
+                    NODE_MODULES + FLOW_NPM_PACKAGE_NAME);
+            if (!frontendDirectory.exists()) {
+                commands.add(new TaskCopyFrontendFiles(frontendDirectory));
+            }
 
             if (builder.runNpmInstall) {
                 commands.add(new TaskRunNpmInstall(packageUpdater));
