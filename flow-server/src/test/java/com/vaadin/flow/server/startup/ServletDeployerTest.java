@@ -8,6 +8,7 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletRegistration;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -16,17 +17,18 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.easymock.Capture;
+import org.easymock.CaptureType;
+import org.easymock.EasyMock;
+import org.junit.Before;
+import org.junit.Test;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinServlet;
-import org.easymock.Capture;
-import org.easymock.CaptureType;
-import org.easymock.EasyMock;
-import org.junit.Before;
-import org.junit.Test;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
@@ -89,16 +91,18 @@ public class ServletDeployerTest {
     }
 
     @Test
-    public void automaticallyRegisterTwoServletsWhenNoServletsPresent() {
+    public void hasRoutes_automaticallyRegisterTwoServletsWhenNoServletsPresent()
+            throws Exception {
         deployer.contextInitialized(getContextEvent(true));
 
-        assertMappingsCount(2);
+        assertMappingsCount(2, 2);
         assertMappingIsRegistered(ServletDeployer.class.getName(), "/*");
         assertMappingIsRegistered("frontendFilesServlet", "/frontend/*");
     }
 
     @Test
-    public void doNotRegisterAnythingIfRegistrationIsDisabled() {
+    public void doNotRegisterAnythingIfRegistrationIsDisabled()
+            throws Exception {
         deployer.contextInitialized(getContextEvent(true,
                 getServletRegistration("testServlet", TestServlet.class,
                         singletonList("/test/*"),
@@ -106,29 +110,32 @@ public class ServletDeployerTest {
                                 Constants.DISABLE_AUTOMATIC_SERVLET_REGISTRATION,
                                 "true"))));
 
-        assertMappingsCount(0);
+        assertMappingsCount(0, 0);
     }
 
     @Test
-    public void mainServletIsNotRegisteredWhenNoRoutesArePresent() {
+    public void noServlets_noRoutes_servletsAreNotRegistered()
+            throws Exception {
         deployer.contextInitialized(getContextEvent(false));
 
-        assertMappingsCount(1);
+        assertMappingsCount(1, 1);
         assertMappingIsRegistered("frontendFilesServlet", "/frontend/*");
     }
 
     @Test
-    public void mainServletIsNotRegisteredWhenVaadinServletIsPresent() {
+    public void mainServletIsNotRegisteredWhenVaadinServletIsPresent_frontendServletIsRegistered()
+            throws Exception {
         deployer.contextInitialized(getContextEvent(true,
                 getServletRegistration("testServlet", TestVaadinServlet.class,
                         singletonList("/test/*"), emptyMap())));
 
-        assertMappingsCount(1);
+        assertMappingsCount(1, 1);
         assertMappingIsRegistered("frontendFilesServlet", "/frontend/*");
     }
 
     @Test
-    public void frontendServletIsNotRegisteredWhenProductionModeIsActive() {
+    public void frontendServletIsNotRegisteredWhenProductionModeIsActive()
+            throws Exception {
         deployer.contextInitialized(getContextEvent(true,
                 getServletRegistration("testServlet", TestServlet.class,
                         singletonList("/test/*"),
@@ -136,12 +143,13 @@ public class ServletDeployerTest {
                                 Constants.SERVLET_PARAMETER_PRODUCTION_MODE,
                                 "true"))));
 
-        assertMappingsCount(1);
+        assertMappingsCount(1, 1);
         assertMappingIsRegistered(ServletDeployer.class.getName(), "/*");
     }
 
     @Test
-    public void frontendServletIsRegisteredWhenAtLeastOneServletHasDevelopmentMode() {
+    public void frontendServletIsRegisteredWhenAtLeastOneServletHasDevelopmentMode()
+            throws Exception {
         deployer.contextInitialized(getContextEvent(true,
                 getServletRegistration("testServlet1", TestServlet.class,
                         singletonList("/test1/*"), singletonMap(
@@ -153,13 +161,14 @@ public class ServletDeployerTest {
                                 Constants.SERVLET_PARAMETER_PRODUCTION_MODE,
                                 "false"))));
 
-        assertMappingsCount(2);
+        assertMappingsCount(2, 2);
         assertMappingIsRegistered(ServletDeployer.class.getName(), "/*");
         assertMappingIsRegistered("frontendFilesServlet", "/frontend/*");
     }
 
     @Test
-    public void frontendServletIsRegisteredInProductionModeIfOriginalFrontendResourcesAreUsed() {
+    public void frontendServletIsRegisteredInProductionModeIfOriginalFrontendResourcesAreUsed()
+            throws Exception {
         Map<String, String> params = new HashMap<>();
         params.put(Constants.SERVLET_PARAMETER_PRODUCTION_MODE, "true");
         params.put(Constants.USE_ORIGINAL_FRONTEND_RESOURCES, "true");
@@ -168,42 +177,44 @@ public class ServletDeployerTest {
                 getContextEvent(true, getServletRegistration("test",
                         TestServlet.class, emptyList(), params)));
 
-        assertMappingsCount(2);
+        assertMappingsCount(2, 2);
         assertMappingIsRegistered(ServletDeployer.class.getName(), "/*");
         assertMappingIsRegistered("frontendFilesServlet", "/frontend/*");
     }
 
     @Test
-    public void servletIsNotRegisteredWhenAnotherHasTheSamePathMapping_mainServlet() {
+    public void servletIsNotRegisteredWhenAnotherHasTheSamePathMapping_mainServlet()
+            throws Exception {
         deployer.contextInitialized(getContextEvent(true,
                 getServletRegistration("test", TestServlet.class,
                         singletonList("/*"), Collections.emptyMap())));
 
-        assertMappingsCount(1);
+        assertMappingsCount(1, 1);
         assertMappingIsRegistered("frontendFilesServlet", "/frontend/*");
     }
 
     @Test
-    public void servletIsNotRegisteredWhenAnotherHasTheSamePathMapping_frontendServlet() {
+    public void servletIsNotRegisteredWhenAnotherHasTheSamePathMapping_frontendServlet()
+            throws Exception {
         deployer.contextInitialized(getContextEvent(true,
                 getServletRegistration("test", TestServlet.class,
                         singletonList("/frontend/*"), Collections.emptyMap())));
 
-        assertMappingsCount(1);
+        assertMappingsCount(1, 1);
         assertMappingIsRegistered(ServletDeployer.class.getName(), "/*");
     }
 
-    private void assertMappingsCount(int expectedCount) {
-        assertEquals(
-                String.format(
-                        "Expected to have exactly '%d' mappings, but got: '%s'",
-                        expectedCount, servletNames.getValues()),
-                servletNames.getValues().size(), expectedCount);
-        assertEquals(
-                String.format(
-                        "Expected to have exactly '%d' mappings, but got: '%s'",
-                        expectedCount, servletMappings.getValues()),
-                servletMappings.getValues().size(), expectedCount);
+    private void assertMappingsCount(int numServlets, int numMappings) {
+        assertEquals(String.format(
+                "Expected to have exactly '%d' servlets, but got '%d': '%s'",
+                numServlets, servletNames.getValues().size(),
+                servletNames.getValues()), servletNames.getValues().size(),
+                numServlets);
+        assertEquals(String.format(
+                "Expected to have exactly '%d' mappings, but got '%d': '%s'",
+                numMappings, servletMappings.getValues().size(),
+                servletMappings.getValues()),
+                servletMappings.getValues().size(), numMappings);
     }
 
     private void assertMappingIsRegistered(String servletName,
@@ -223,8 +234,9 @@ public class ServletDeployerTest {
                 pathIndex, servletNameIndex);
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private ServletContextEvent getContextEvent(boolean addRoutes,
-            ServletRegistration... servletRegistrations) {
+            ServletRegistration... servletRegistrations) throws Exception {
         ServletRegistration.Dynamic dynamicMock = mock(
                 ServletRegistration.Dynamic.class);
         dynamicMock.setAsyncSupported(anyBoolean());
@@ -239,9 +251,12 @@ public class ServletDeployerTest {
                 anyObject(Class.class))).andAnswer(() -> dynamicMock)
                         .anyTimes();
 
+        expect(contextMock.getResource(EasyMock.anyString())).andReturn(null)
+                .anyTimes();
+
         // seems to be a compiler bug, since fails to compile with the actual
         // types specified (or being inlined) but works with raw type
-        @SuppressWarnings("rawtypes")
+        @SuppressWarnings({ "rawtypes", "serial" })
         Map hack = Stream.of(servletRegistrations).collect(
                 Collectors.toMap(Registration::getName, Function.identity()));
         expect(contextMock.getServletRegistrations()).andReturn(hack)
@@ -256,7 +271,8 @@ public class ServletDeployerTest {
                                 .forRegistry(registry);
                         routeConfiguration.update(() -> {
                             routeConfiguration.getHandledRegistry().clean();
-                            routeConfiguration.setAnnotatedRoute(ComponentWithRoute.class);
+                            routeConfiguration.setAnnotatedRoute(
+                                    ComponentWithRoute.class);
                         });
                         return registry;
                     }).anyTimes();
