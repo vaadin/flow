@@ -16,6 +16,9 @@ import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.Component0;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.Component1;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.Component2;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.FirstView;
+import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.RouteWithNestedDynamicRouteClass;
+import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.RouteWithService;
+import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.RouteWithViewBean;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.RoutedClass;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.RoutedClassWithAnnotations;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.RoutedClassWithoutAnnotations;
@@ -125,6 +128,12 @@ public class ScannerDependenciesTest {
     }
 
     @Test
+    public void should_visit_Constructor() throws Exception {
+        FrontendDependencies deps = getFrontendDependencies(SecondView.class);
+        assertTrue(deps.getModules().contains("./component-3.js"));
+    }
+
+    @Test
     public void should_resolveComponentFactories() throws Exception {
         FrontendDependencies deps = getFrontendDependencies(ThirdView.class);
 
@@ -176,5 +185,27 @@ public class ScannerDependenciesTest {
         }
     }
 
+    @Test // #5509
+    public void should_visitDynamicRoute() throws Exception {
+        FrontendDependencies deps = getFrontendDependencies(RouteWithNestedDynamicRouteClass.class);
+        assertEquals(3, deps.getModules().size());
+        assertTrue(deps.getModules().contains("dynamic-route.js"));
+        assertTrue(deps.getModules().contains("dynamic-component.js"));
+        assertTrue(deps.getModules().contains("dynamic-layout.js"));
+    }
 
+    @Test // #5658
+    public void should_visitFactoryBeans() throws Exception {
+        FrontendDependencies deps = getFrontendDependencies(RouteWithViewBean.class);
+        assertEquals(1, deps.getModules().size());
+        assertTrue(deps.getModules().contains("dynamic-component.js"));
+    }
+
+    @Test
+    public void should_visitServices() throws Exception {
+        FrontendDependencies deps = getFrontendDependencies(RouteWithService.class);
+        assertEquals(2, deps.getModules().size());
+        assertTrue(deps.getModules().contains("dynamic-component.js"));
+        assertTrue(deps.getModules().contains("dynamic-layout.js"));
+    }
 }

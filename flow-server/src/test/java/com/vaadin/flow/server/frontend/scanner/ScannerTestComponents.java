@@ -18,6 +18,7 @@ package com.vaadin.flow.server.frontend.scanner;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
@@ -26,6 +27,7 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
@@ -184,12 +186,7 @@ public class ScannerTestComponents {
     @Route(value = "second", layout = RouterLayout2.class)
     @JsModule("./view-2.js")
     public static class SecondView extends Component {
-
         public SecondView() {
-           createView();
-        }
-
-        private void createView() {
             new Component3();
         }
     }
@@ -282,5 +279,59 @@ public class ScannerTestComponents {
     @CssImport(value = "./foo.css", id = "bar")
     @CssImport(value = "./foo.css", themeFor = "bar")
     public static class CssClass2 extends CssClass1 {
+    }
+
+    @JsModule("dynamic-component.js")
+    public static class DynamicComponentClass extends Component {
+    }
+    @JsModule("dynamic-layout.js")
+    public static class DynamicLayoutClass implements RouterLayout {
+        @Override
+        public Element getElement() {
+            return null;
+        }
+    }
+
+    @Route("dynamic-route")
+    @JsModule("dynamic-route.js")
+    public static class RouteWithNestedDynamicRouteClass {
+        public RouteWithNestedDynamicRouteClass() {
+            registerRoute();
+        }
+
+        @SuppressWarnings("unchecked")
+        private void registerRoute() {
+            RouteConfiguration.forSessionScope().setRoute("foo",
+                    DynamicComponentClass.class,
+                    DynamicLayoutClass.class);
+        }
+    }
+
+    @Route()
+    public static class RouteWithViewBean {
+        public RouteWithViewBean() {
+            UI.getCurrent().add(BeanFactory.getBean(DynamicComponentClass.class));
+        }
+    }
+
+    public static class BeanFactory {
+        public static <T> T getBean(Class<T> type) {
+            return null;
+        }
+    }
+
+
+    @Route()
+    public static class RouteWithService {
+        public RouteWithService() {
+            UserRouteService.registerUserRoute(RouteConfiguration.forSessionScope(), "donald");
+        }
+    }
+
+    public static class UserRouteService {
+        @SuppressWarnings("unchecked")
+        public static void registerUserRoute(RouteConfiguration config, String userId) {
+            config.setRoute(userId, DynamicComponentClass.class, DynamicLayoutClass.class);
+        }
     }
 }
