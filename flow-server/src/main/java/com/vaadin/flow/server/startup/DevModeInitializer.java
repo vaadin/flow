@@ -66,7 +66,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
  * Servlet initializer starting node updaters as well as the webpack-dev-mode
  * server.
  */
-@HandlesTypes({ Route.class, NpmPackage.class, WebComponentExporter.class })
+@HandlesTypes({ Route.class, NpmPackage.class, NpmPackage.Container.class, WebComponentExporter.class })
 @WebListener
 public class DevModeInitializer
         implements ServletContainerInitializer, Serializable, ServletContextListener {
@@ -137,8 +137,6 @@ public class DevModeInitializer
 
         initDevModeHandler(classes, context, config);
     }
-
-
 
     /**
      * Initialize the devmode server if not in production mode or compatibility
