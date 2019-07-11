@@ -18,8 +18,8 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -35,12 +35,21 @@ import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
  * Copies JavaScript and CSS files from JAR files into a given folder.
  */
 public class TaskCopyFrontendFiles implements Command {
+    private static final String JAR_SUFFIX = ".jar";
     private static final String CLASS_PATH_PROPERTY = "java.class.path";
     private static final String[] WILDCARD_INCLUSIONS = new String[] {
             "**/*.js", "**/*.css" };
 
     private File targetDirectory;
+    private Set<File> jarFiles = null;
 
+    /**
+     * Scans all jar files found in the class path defined by property
+     * {@code java.class.path}.
+     * 
+     * @param targetDirectory
+     *            target directory for the discovered files
+     */
     TaskCopyFrontendFiles(File targetDirectory) {
         Objects.requireNonNull(targetDirectory,
                 "Parameter 'targetDirectory' cannot be null!");
@@ -48,27 +57,57 @@ public class TaskCopyFrontendFiles implements Command {
         this.targetDirectory = targetDirectory;
     }
 
+    /**
+     * Scans the jar files given defined by {@code jarFilesToScan}. If {@code
+     * jarFilesToScan} is null, acts as
+     * {@link #TaskCopyFrontendFiles(java.io.File)} would.
+     * 
+     * @param targetDirectory
+     *            target directory for the discovered files
+     * @param jarFilesToScan
+     *            jar files to scan. Only files ending in " .jar" will be
+     *            scanned.
+     */
+    TaskCopyFrontendFiles(File targetDirectory, Set<File> jarFilesToScan) {
+        this(targetDirectory);
+        if (jarFilesToScan != null) {
+            jarFiles = jarFilesToScan.stream()
+                    .filter(file -> file.getName().endsWith(JAR_SUFFIX))
+                    .collect(Collectors.toSet());
+        }
+    }
+
     @Override
     public void execute() {
-        List<File> collect = Stream
-                .of(System.getProperty(CLASS_PATH_PROPERTY).split(";"))
-                .filter(path -> path.endsWith(".jar")).map(File::new)
-                .filter(File::exists).collect(Collectors.toList());
+        setJarFiles();
 
-        log().info("Found {} jars to copy files from.", collect.size());
+        log().info("Found {} jars to copy files from.", jarFiles.size());
 
+        createTargetFolder();
+
+        JarContentsManager jarContentsManager = new JarContentsManager();
+        for (File jarFile : jarFiles) {
+            jarContentsManager.copyIncludedFilesFromJarTrimmingBasePath(jarFile,
+                    RESOURCES_FRONTEND_DEFAULT, targetDirectory,
+                    WILDCARD_INCLUSIONS);
+        }
+    }
+
+    private void setJarFiles() {
+        if (jarFiles == null) {
+            jarFiles = Stream
+                    .of(System.getProperty(CLASS_PATH_PROPERTY).split(";"))
+                    .filter(path -> path.endsWith(JAR_SUFFIX)).map(File::new)
+                    .filter(File::exists).collect(Collectors.toSet());
+        }
+    }
+
+    private void createTargetFolder() {
         try {
             FileUtils.forceMkdir(Objects.requireNonNull(targetDirectory));
         } catch (IOException e) {
             throw new UncheckedIOException(String.format(
                     "Failed to create directory '%s'", targetDirectory), e);
-        }
-
-        JarContentsManager jarContentsManager = new JarContentsManager();
-        for (File jarFile : collect) {
-            jarContentsManager.copyIncludedFilesFromJarTrimmingBasePath(jarFile,
-                    RESOURCES_FRONTEND_DEFAULT, targetDirectory,
-                    WILDCARD_INCLUSIONS);
         }
     }
 
