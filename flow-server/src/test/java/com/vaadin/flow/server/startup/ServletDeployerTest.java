@@ -9,7 +9,6 @@ import javax.servlet.ServletRegistration;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -34,7 +33,6 @@ import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 
-import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
@@ -96,25 +94,26 @@ public class ServletDeployerTest {
     }
 
     @Test
-    public void hasRoutes_automaticallyRegisterTwoServletsWhenNoServletsPresent() throws Exception {
+    public void hasRoutes_automaticallyRegisterTwoServletsWhenNoServletsPresent()
+            throws Exception {
         deployer.contextInitialized(getContextEvent(true, false));
 
-        assertMappingsCount(2, 2);
+        assertMappingsCount(1, 1);
         assertMappingIsRegistered(ServletDeployer.class.getName(), "/*");
-        assertMappingIsRegistered("frontendFilesServlet", "/frontend/*");
     }
 
     @Test
-    public void hasWebComponents_automaticallyRegisterTwoServletsWhenNoServletsPresent() throws Exception {
+    public void hasWebComponents_automaticallyRegisterOneServletsWhenNoServletsPresent()
+            throws Exception {
         deployer.contextInitialized(getContextEvent(false, true));
 
-        assertMappingsCount(2, 2);
+        assertMappingsCount(1, 1);
         assertMappingIsRegistered(ServletDeployer.class.getName(), "/*");
-        assertMappingIsRegistered("frontendFilesServlet", "/frontend/*");
     }
 
     @Test
-    public void doNotRegisterAnythingIfRegistrationIsDisabled() throws Exception {
+    public void doNotRegisterAnythingIfRegistrationIsDisabled()
+            throws Exception {
         deployer.contextInitialized(getContextEvent(true, true,
                 getServletRegistration("testServlet", TestServlet.class,
                         singletonList("/test/*"),
@@ -126,15 +125,30 @@ public class ServletDeployerTest {
     }
 
     @Test
-    public void noRoutes_noWebComponents_mainServletIsNotRegistered() throws Exception {
+    public void noServlets_noRoutes_noWebComponents_servletsAreNotRegistered()
+            throws Exception {
         deployer.contextInitialized(getContextEvent(false, false));
 
-        assertMappingsCount(1, 1);
-        assertMappingIsRegistered("frontendFilesServlet", "/frontend/*");
+        assertMappingsCount(0, 0);
     }
 
     @Test
-    public void mainServletIsNotRegisteredWhenVaadinServletIsPresent() throws Exception {
+    public void registeredServlets_noRoutes_noWebComponents_compatibilityMode_servletsAreNotRegistered()
+            throws Exception {
+        assertservletsAreNotRegistered_registeredServlets_noRoutes_noWebComponents(
+                true);
+    }
+
+    @Test
+    public void registeredServlets_noRoutes_noWebComponents_servletsAreNotRegistered()
+            throws Exception {
+        assertservletsAreNotRegistered_registeredServlets_noRoutes_noWebComponents(
+                false);
+    }
+
+    @Test
+    public void mainServletIsNotRegisteredWhenVaadinServletIsPresent_frontendServletIsRegistered()
+            throws Exception {
         deployer.contextInitialized(getContextEvent(true, true,
                 getServletRegistration("testServlet", TestVaadinServlet.class,
                         singletonList("/test/*"), emptyMap())));
@@ -144,7 +158,8 @@ public class ServletDeployerTest {
     }
 
     @Test
-    public void frontendServletIsNotRegisteredWhenProductionModeIsActive() throws Exception {
+    public void frontendServletIsNotRegisteredWhenProductionModeIsActive()
+            throws Exception {
         deployer.contextInitialized(getContextEvent(true, true,
                 getServletRegistration("testServlet", TestServlet.class,
                         singletonList("/test/*"),
@@ -157,40 +172,69 @@ public class ServletDeployerTest {
     }
 
     @Test
-    public void frontendServletIsRegisteredWhenAtLeastOneServletHasDevelopmentMode() throws Exception {
+    public void frontendServletIsNotRegistered_whenMainServletIsRegistered()
+            throws Exception {
+        deployer.contextInitialized(getContextEvent(true, true));
+
+        assertMappingsCount(1, 1);
+        assertMappingIsRegistered(ServletDeployer.class.getName(), "/*");
+    }
+
+    @Test
+    public void frontendServletIsRegisteredWhenAtLeastOneServletHasDevelopmentAndCompatibilityMode()
+            throws Exception {
         deployer.contextInitialized(getContextEvent(true, true,
-                getServletRegistration("testServlet1", TestServlet.class,
+                getServletRegistration("testServlet1", TestVaadinServlet.class,
                         singletonList("/test1/*"), singletonMap(
                                 Constants.SERVLET_PARAMETER_PRODUCTION_MODE,
                                 "true")),
-                getServletRegistration("testServlet2", TestServlet.class,
+                getServletRegistration("testServlet2", TestVaadinServlet.class,
                         singletonList("/test2/*"),
                         singletonMap(
                                 Constants.SERVLET_PARAMETER_PRODUCTION_MODE,
                                 "false"))));
 
-        assertMappingsCount(2, 2);
-        assertMappingIsRegistered(ServletDeployer.class.getName(), "/*");
+        assertMappingsCount(1, 1);
         assertMappingIsRegistered("frontendFilesServlet", "/frontend/*");
     }
 
     @Test
-    public void frontendServletIsRegisteredInProductionModeIfOriginalFrontendResourcesAreUsed() throws Exception {
+    public void frontendServletIsNotRegisteredWhenNoServletsHaveDevelopmentAndCompatibilityMode()
+            throws Exception {
+        Map<String, String> params = new HashMap<>();
+        params.put(Constants.SERVLET_PARAMETER_PRODUCTION_MODE, "false");
+        params.put(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE, "false");
+        deployer.contextInitialized(getContextEvent(
+                true, true,
+                getServletRegistration("testServlet1", TestVaadinServlet.class,
+                        singletonList("/test1/*"),
+                        singletonMap(
+                                Constants.SERVLET_PARAMETER_PRODUCTION_MODE,
+                                "true")),
+                getServletRegistration("testServlet2", TestVaadinServlet.class,
+                        singletonList("/test2/*"), params)));
+
+        assertMappingsCount(0, 0);
+    }
+
+    @Test
+    public void frontendServletIsRegisteredInProductionModeIfOriginalFrontendResourcesAreUsed()
+            throws Exception {
         Map<String, String> params = new HashMap<>();
         params.put(Constants.SERVLET_PARAMETER_PRODUCTION_MODE, "true");
         params.put(Constants.USE_ORIGINAL_FRONTEND_RESOURCES, "true");
 
         deployer.contextInitialized(
                 getContextEvent(true, true, getServletRegistration("test",
-                        TestServlet.class, emptyList(), params)));
+                        TestVaadinServlet.class, emptyList(), params)));
 
-        assertMappingsCount(2, 2);
-        assertMappingIsRegistered(ServletDeployer.class.getName(), "/*");
+        assertMappingsCount(1, 1);
         assertMappingIsRegistered("frontendFilesServlet", "/frontend/*");
     }
 
     @Test
-    public void servletIsNotRegisteredWhenAnotherHasTheSamePathMapping_mainServlet() throws Exception {
+    public void servletIsNotRegisteredWhenAnotherHasTheSamePathMapping_mainServlet()
+            throws Exception {
         deployer.contextInitialized(getContextEvent(true, true,
                 getServletRegistration("test", TestServlet.class,
                         singletonList("/*"), Collections.emptyMap())));
@@ -200,7 +244,8 @@ public class ServletDeployerTest {
     }
 
     @Test
-    public void servletIsNotRegisteredWhenAnotherHasTheSamePathMapping_frontendServlet() throws Exception {
+    public void servletIsNotRegisteredWhenAnotherHasTheSamePathMapping_frontendServlet()
+            throws Exception {
         deployer.contextInitialized(getContextEvent(true, true,
                 getServletRegistration("test", TestServlet.class,
                         singletonList("/frontend/*"), Collections.emptyMap())));
@@ -210,17 +255,15 @@ public class ServletDeployerTest {
     }
 
     private void assertMappingsCount(int numServlets, int numMappings) {
-        assertEquals(
-                String.format(
-                        "Expected to have exactly '%d' servlets, but got '%d': '%s'",
-                        numServlets, servletNames.getValues().size(),
-                        servletNames.getValues()),
-                servletNames.getValues().size(), numServlets);
-        assertEquals(
-                String.format(
-                        "Expected to have exactly '%d' mappings, but got '%d': '%s'",
-                        numMappings, servletMappings.getValues().size(),
-                        servletMappings.getValues()),
+        assertEquals(String.format(
+                "Expected to have exactly '%d' servlets, but got '%d': '%s'",
+                numServlets, servletNames.getValues().size(),
+                servletNames.getValues()), servletNames.getValues().size(),
+                numServlets);
+        assertEquals(String.format(
+                "Expected to have exactly '%d' mappings, but got '%d': '%s'",
+                numMappings, servletMappings.getValues().size(),
+                servletMappings.getValues()),
                 servletMappings.getValues().size(), numMappings);
     }
 
@@ -259,8 +302,8 @@ public class ServletDeployerTest {
                 anyObject(Class.class))).andAnswer(() -> dynamicMock)
                         .anyTimes();
 
-        expect(contextMock.getResource(EasyMock.anyString())).andReturn(null).anyTimes();
-
+        expect(contextMock.getResource(EasyMock.anyString())).andReturn(null)
+                .anyTimes();
 
         // seems to be a compiler bug, since fails to compile with the actual
         // types specified (or being inlined) but works with raw type
@@ -289,12 +332,12 @@ public class ServletDeployerTest {
             expect(contextMock.getAttribute(
                     WebComponentConfigurationRegistry.class.getName()))
                             .andAnswer(() -> {
-                                WebComponentConfigurationRegistry registry =
-                                        new WebComponentConfigurationRegistry() {};
-                                registry.setConfigurations(Collections.singleton(
-                                        new WebComponentExporter
-                                                .WebComponentConfigurationFactory()
-                                                .create(FakeExporter.class)));
+                                WebComponentConfigurationRegistry registry = new WebComponentConfigurationRegistry() {
+                                };
+                                registry.setConfigurations(
+                                        Collections.singleton(
+                                                new WebComponentExporter.WebComponentConfigurationFactory()
+                                                        .create(FakeExporter.class)));
 
                                 return registry;
                             }).anyTimes();
@@ -334,13 +377,27 @@ public class ServletDeployerTest {
         return registrationMock;
     }
 
-    public final static class FakeExporter extends WebComponentExporter<Component> {
+    private void assertservletsAreNotRegistered_registeredServlets_noRoutes_noWebComponents(
+            boolean compatibilityMode) throws Exception {
+        deployer.contextInitialized(getContextEvent(false, false,
+                getServletRegistration("testServlet", TestServlet.class,
+                        singletonList("/test/*"),
+                        singletonMap(
+                                Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                                Boolean.toString(compatibilityMode)))));
+
+        assertMappingsCount(0, 0);
+    }
+
+    public final static class FakeExporter
+            extends WebComponentExporter<Component> {
         public FakeExporter() {
             super("tag");
         }
 
         @Override
-        public void configureInstance(WebComponent<Component> webComponent, Component component) {
+        public void configureInstance(WebComponent<Component> webComponent,
+                Component component) {
 
         }
     }
