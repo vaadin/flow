@@ -24,6 +24,7 @@ import com.sun.net.httpserver.HttpServer;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -38,6 +39,7 @@ import static org.junit.Assert.assertNull;
 
 @NotThreadSafe
 @SuppressWarnings("restriction")
+@Ignore
 public class DevModeHandlerStopTest {
 
     private MockDeploymentConfiguration configuration;
@@ -107,7 +109,8 @@ public class DevModeHandlerStopTest {
 
         DevModeHandler.start(port, configuration, npmFolder);
 
-        // Simulate a server restart by removing the handler, and starting a new one
+        // Simulate a server restart by removing the handler, and starting a new
+        // one
         DevModeHandlerTest.removeDevModeHandlerInstance();
         assertNull(DevModeHandler.getDevModeHandler());
         DevModeHandler.start(configuration, npmFolder);
@@ -120,8 +123,7 @@ public class DevModeHandlerStopTest {
         assertNull(requestWebpackServer(port, "/bar"));
     }
 
-
-    private String requestWebpackServer(int port, String path)  {
+    private String requestWebpackServer(int port, String path) {
         try {
             URL url = new URL("http://localhost:" + port + path);
             return FrontendUtils.streamToString(url.openStream());
