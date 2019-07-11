@@ -39,7 +39,8 @@ import static org.junit.Assert.assertNull;
 
 @NotThreadSafe
 @SuppressWarnings("restriction")
-@Ignore
+@Ignore("This test may cause freeze of a build. "
+        + "It happens all the time for Java 11 validation and it happens sometimes on PR validation")
 public class DevModeHandlerStopTest {
 
     private MockDeploymentConfiguration configuration;
