@@ -111,8 +111,6 @@ public class ScannerTestComponents {
     @Theme(value = Theme1.class, variant = Theme0.DARK)
     @JsModule("./router-layout-1.js")
     public class RouterLayout1 implements RouterLayout {
-        public RouterLayout1() {
-        }
         @Override
         public Element getElement() {
             return null;
@@ -122,8 +120,6 @@ public class ScannerTestComponents {
     @Theme(value = Theme1.class, variant = Theme0.DARK)
     @JsModule("./router-layout-2.js")
     public class RouterLayout2 extends RouterLayout1 {
-        public RouterLayout2(String a) {
-        }
     }
 
     @JavaScript("frontend://view-0.js")
@@ -295,7 +291,7 @@ public class ScannerTestComponents {
             return null;
         }
     }
-    
+
     @Route("dynamic-route")
     @JsModule("dynamic-route.js")
     public static class RouteWithNestedDynamicRouteClass {
@@ -310,7 +306,7 @@ public class ScannerTestComponents {
                     DynamicLayoutClass.class);
         }
     }
-    
+
     @Route()
     public static class RouteWithViewBean {
         public RouteWithViewBean() {
@@ -321,6 +317,21 @@ public class ScannerTestComponents {
     public static class BeanFactory {
         public static <T> T getBean(Class<T> type) {
             return null;
+        }
+    }
+
+
+    @Route()
+    public static class RouteWithService {
+        public RouteWithService() {
+            UserRouteService.registerUserRoute(RouteConfiguration.forSessionScope(), "donald");
+        }
+    }
+
+    public static class UserRouteService {
+        @SuppressWarnings("unchecked")
+        public static void registerUserRoute(RouteConfiguration config, String userId) {
+            config.setRoute(userId, DynamicComponentClass.class, DynamicLayoutClass.class);
         }
     }
 }

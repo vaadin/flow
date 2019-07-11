@@ -17,6 +17,7 @@ import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.Component1;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.Component2;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.FirstView;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.RouteWithNestedDynamicRouteClass;
+import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.RouteWithService;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.RouteWithViewBean;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.RoutedClass;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.RoutedClassWithAnnotations;
@@ -198,5 +199,13 @@ public class ScannerDependenciesTest {
         FrontendDependencies deps = getFrontendDependencies(RouteWithViewBean.class);
         assertEquals(1, deps.getModules().size());
         assertTrue(deps.getModules().contains("dynamic-component.js"));
+    }
+
+    @Test
+    public void should_visitServices() throws Exception {
+        FrontendDependencies deps = getFrontendDependencies(RouteWithService.class);
+        assertEquals(2, deps.getModules().size());
+        assertTrue(deps.getModules().contains("dynamic-component.js"));
+        assertTrue(deps.getModules().contains("dynamic-layout.js"));
     }
 }
