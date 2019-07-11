@@ -125,11 +125,25 @@ public class ServletDeployerTest {
     }
 
     @Test
-    public void noRoutes_noWebComponents_servletsAreNotRegistered()
+    public void noServlets_noRoutes_noWebComponents_servletsAreNotRegistered()
             throws Exception {
         deployer.contextInitialized(getContextEvent(false, false));
 
         assertMappingsCount(0, 0);
+    }
+
+    @Test
+    public void registeredServlets_noRoutes_noWebComponents_compatibilityMode_servletsAreNotRegistered()
+            throws Exception {
+        assertservletsAreNotRegistered_registeredServlets_noRoutes_noWebComponents(
+                true);
+    }
+
+    @Test
+    public void registeredServlets_noRoutes_noWebComponents_servletsAreNotRegistered()
+            throws Exception {
+        assertservletsAreNotRegistered_registeredServlets_noRoutes_noWebComponents(
+                false);
     }
 
     @Test
@@ -361,6 +375,18 @@ public class ServletDeployerTest {
                 .anyTimes();
         replay(registrationMock);
         return registrationMock;
+    }
+
+    private void assertservletsAreNotRegistered_registeredServlets_noRoutes_noWebComponents(
+            boolean compatibilityMode) throws Exception {
+        deployer.contextInitialized(getContextEvent(false, false,
+                getServletRegistration("testServlet", TestServlet.class,
+                        singletonList("/test/*"),
+                        singletonMap(
+                                Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                                Boolean.toString(compatibilityMode)))));
+
+        assertMappingsCount(0, 0);
     }
 
     public final static class FakeExporter
