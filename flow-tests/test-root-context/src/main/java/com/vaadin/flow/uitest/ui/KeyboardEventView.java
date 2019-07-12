@@ -46,7 +46,7 @@ public class KeyboardEventView extends Div {
 
         sendInvalidKeyUp.setId("sendInvalidKeyUp");
         sendInvalidKeyUp.addClickListener(event -> {
-            getUI().ifPresent(ui -> ui.getPage().executeJs(
+            getUI().ifPresent(ui -> ui.getPage().executeJavaScript(
                     "$0.dispatchEvent(new KeyboardEvent('keyup', {}))",
                     input.getElement()));
         });
