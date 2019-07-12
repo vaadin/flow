@@ -95,9 +95,8 @@ public class ServletDeployerTest {
             throws Exception {
         deployer.contextInitialized(getContextEvent(true));
 
-        assertMappingsCount(2, 2);
+        assertMappingsCount(1, 1);
         assertMappingIsRegistered(ServletDeployer.class.getName(), "/*");
-        assertMappingIsRegistered("frontendFilesServlet", "/frontend/*");
     }
 
     @Test
@@ -118,8 +117,7 @@ public class ServletDeployerTest {
             throws Exception {
         deployer.contextInitialized(getContextEvent(false));
 
-        assertMappingsCount(1, 1);
-        assertMappingIsRegistered("frontendFilesServlet", "/frontend/*");
+        assertMappingsCount(0, 0);
     }
 
     @Test
@@ -148,7 +146,7 @@ public class ServletDeployerTest {
     }
 
     @Test
-    public void frontendServletIsRegisteredWhenAtLeastOneServletHasDevelopmentMode()
+    public void frontendServletIsNotRegisteredWhenMainServletIsNotPresentAndAtLeastOneServletHasDevelopmentMode()
             throws Exception {
         deployer.contextInitialized(getContextEvent(true,
                 getServletRegistration("testServlet1", TestServlet.class,
@@ -161,13 +159,12 @@ public class ServletDeployerTest {
                                 Constants.SERVLET_PARAMETER_PRODUCTION_MODE,
                                 "false"))));
 
-        assertMappingsCount(2, 2);
+        assertMappingsCount(1, 1);
         assertMappingIsRegistered(ServletDeployer.class.getName(), "/*");
-        assertMappingIsRegistered("frontendFilesServlet", "/frontend/*");
     }
 
     @Test
-    public void frontendServletIsRegisteredInProductionModeIfOriginalFrontendResourcesAreUsed()
+    public void frontendServletIsNotRegisteredInProductionModeIfOriginalFrontendResourcesAreUsed()
             throws Exception {
         Map<String, String> params = new HashMap<>();
         params.put(Constants.SERVLET_PARAMETER_PRODUCTION_MODE, "true");
@@ -177,9 +174,8 @@ public class ServletDeployerTest {
                 getContextEvent(true, getServletRegistration("test",
                         TestServlet.class, emptyList(), params)));
 
-        assertMappingsCount(2, 2);
+        assertMappingsCount(1, 1);
         assertMappingIsRegistered(ServletDeployer.class.getName(), "/*");
-        assertMappingIsRegistered("frontendFilesServlet", "/frontend/*");
     }
 
     @Test

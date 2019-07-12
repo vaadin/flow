@@ -53,12 +53,6 @@ import com.vaadin.flow.server.VaadinServletConfiguration;
  * mode or has
  * {@link com.vaadin.flow.server.Constants#USE_ORIGINAL_FRONTEND_RESOURCES}
  * parameter set to {@code true}.</li>
- * <li>Static files servlet, mapped to '/VAADIN/static' responsible to resolve
- * files placed in the '[webcontext]/VAADIN/static' folder or in the
- * '[classpath]/META-INF/static' location. It prevents sensible files like
- * 'stats.json' and 'flow-build-info.json' to be served. It manages cache
- * headers based on the '.cache.' and '.nocache.' fragment in the file
- * name.</li>
  * </ul>
  *
  * In addition to the rules above, a servlet won't be registered, if any servlet
@@ -163,14 +157,6 @@ public class ServletDeployer implements ServletContextListener {
             hasDevelopmentMode = hasDevelopmentMode || devMode;
         }
 
-        /*
-         * The default servlet is created using root mapping, in that case no
-         * need to register extra servlet. We should register frontend servlet
-         * only if there is a registered servlet.
-         *
-         * Also we don't need a frontend servlet at all in non compatibility
-         * mode.
-         */
         if (enableServlets
                 && createAppServlet(
                         context) == VaadinServletCreation.SERVLET_EXISTS
