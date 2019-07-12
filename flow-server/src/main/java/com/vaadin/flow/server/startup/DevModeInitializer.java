@@ -186,10 +186,8 @@ public class DevModeInitializer
         File generatedPackages = new File(builder.generatedFolder,
                 PACKAGE_JSON);
 
-        // Copy from JAR files if we don't have the node directory or generated package json is missing
-        if (!flowNodeDirectory.exists() || !generatedPackages.exists()) {
-            copyFrontendFilesFromJars(flowNodeDirectory);
-        }
+        // Copy resources from JAR files, it should be execute always because classpath content might change.
+        copyFrontendFilesFromJars(flowNodeDirectory);
 
         // If we are missing the generated webpack configuration then generate webpack configurations
         if (!new File(builder.npmFolder, WEBPACK_GENERATED).exists()) {
@@ -219,13 +217,11 @@ public class DevModeInitializer
     }
 
     private static void copyFrontendFilesFromJars(File flowNodeDirectory) {
-
-        List<File> collect = Stream.of(System.getProperty("java.class.path").split(";"))
+        long start = System.nanoTime();
+        log().info("Copying frontend resources from jar files ...");
+        List<File> collect = Stream.of(System.getProperty("java.class.path").split(File.pathSeparator))
                 .filter(path -> path.endsWith(".jar")).map(File::new).filter(File::exists).collect(
                         Collectors.toList());
-
-        log().info("Found {} jars to copy files from.", collect.size());
-
         try {
             FileUtils.forceMkdir(Objects.requireNonNull(flowNodeDirectory));
         } catch (IOException e) {
@@ -240,6 +236,8 @@ public class DevModeInitializer
                     .copyIncludedFilesFromJarTrimmingBasePath(jarFile, RESOURCES_FRONTEND_DEFAULT,
                             flowNodeDirectory, wildcardInclusions);
         }
+        long ms = (System.nanoTime() - start) / 1000000;
+        log().info("Visited {} jar files. Took {} ms.", collect.size(), ms);
     }
 
     @Override
