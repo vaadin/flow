@@ -193,7 +193,9 @@ public class DevModeInitializer implements ServletContainerInitializer,
         }
 
         Set<String> visitedClassNames = new HashSet<>();
-        builder.enablePackagesUpdate(true).enableImportsUpdate(true)
+        builder.enablePackagesUpdate(true)
+                .copyResources(true, null)
+                .enableImportsUpdate(true)
                 .runNpmInstall(true).withEmbeddableWebComponents(true)
                 .collectVisitedClasses(visitedClassNames).build().execute();
 
