@@ -121,6 +121,14 @@ public class DevModeInitializer implements ServletContainerInitializer,
             }
         }
 
+        /**
+         * Ensures that all {@code clazz} dependencies are visited.
+         *
+         * @see #allDependenciesVisited(Class)
+         *
+         * @param clazz
+         *            the class to check
+         */
         public void ensureAllDependenciesVisited(Class<?> clazz) {
             DevModeInitializer.log()
                     .warn("Frontend dependencies have not been analyzed for {}."
