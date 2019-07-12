@@ -38,8 +38,6 @@ import com.vaadin.flow.server.DeploymentConfigurationFactory;
 import com.vaadin.flow.server.FrontendVaadinServlet;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletConfiguration;
-import com.vaadin.flow.server.VaadinServletContext;
-import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 
 /**
  * Context listener that automatically registers Vaadin servlets.
@@ -158,16 +156,11 @@ public class ServletDeployer implements ServletContextListener {
 
         boolean enableServlets = true;
         boolean hasDevelopmentMode = servletConfigurations.isEmpty();
-        boolean isCompatibilityMode = false;
         for (DeploymentConfiguration configuration : servletConfigurations) {
             enableServlets = enableServlets
                     && !configuration.disableAutomaticServletRegistration();
             boolean devMode = !configuration.useCompiledFrontendResources();
             hasDevelopmentMode = hasDevelopmentMode || devMode;
-            if (devMode) {
-                isCompatibilityMode = isCompatibilityMode
-                        || configuration.isCompatibilityMode();
-            }
         }
 
         /*
@@ -181,7 +174,7 @@ public class ServletDeployer implements ServletContextListener {
         if (enableServlets
                 && createAppServlet(
                         context) == VaadinServletCreation.SERVLET_EXISTS
-                && hasDevelopmentMode && isCompatibilityMode) {
+                && hasDevelopmentMode) {
             createServletIfNotExists(context, "frontendFilesServlet",
                     FrontendVaadinServlet.class, "/frontend/*");
         }
@@ -205,10 +198,6 @@ public class ServletDeployer implements ServletContextListener {
     private VaadinServletCreation createAppServlet(ServletContext context) {
         boolean createServlet = ApplicationRouteRegistry.getInstance(context)
                 .hasNavigationTargets();
-
-        createServlet = createServlet || WebComponentConfigurationRegistry
-                .getInstance(new VaadinServletContext(context))
-                .hasConfigurations();
 
         if (!createServlet) {
             getLogger().info(
