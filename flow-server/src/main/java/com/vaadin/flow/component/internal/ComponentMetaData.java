@@ -15,6 +15,22 @@
  */
 package com.vaadin.flow.component.internal;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Synchronize;
 import com.vaadin.flow.component.dependency.HtmlImport;
@@ -30,23 +46,6 @@ import com.vaadin.flow.server.startup.DevModeInitializer.VisitedClasses;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.shared.util.SharedUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Immutable meta data related to a component class.
@@ -153,25 +152,21 @@ public class ComponentMetaData {
     }
 
     /**
-     * Finds all dependencies (HTML, JavaScript, StyleSheet) for the class.
-     * Includes dependencies for all classes referred by an {@link Uses}
+     * Finds all dependencies (JsModule, HTML, JavaScript, StyleSheet) for the
+     * class. Includes dependencies for all classes referred by an {@link Uses}
      * annotation.
      *
      * @return an information object containing all the dependencies
      */
     private static DependencyInfo findDependencies(VaadinService service,
             Class<? extends Component> componentClass) {
-        VisitedClasses visitedClasses = service.getContext()
-                .getAttribute(VisitedClasses.class);
-        if (visitedClasses != null
-                && !visitedClasses.allDependenciesVisited(componentClass)) {
-            getLogger().warn(
-                    "Frontend dependencies have not been analyzed for {}."
-                            + " To make the component's frontend dependencies work, you must ensure the component class is directly referenced through an application entry point such as a class annotated with @Route.",
-                    componentClass.getName());
-        }
+        Optional.ofNullable(
+                service.getContext().getAttribute(VisitedClasses.class))
+                .ifPresent(visitedClasses -> visitedClasses
+                        .ensureAllDependenciesVisited(componentClass));
 
         DependencyInfo dependencyInfo = new DependencyInfo();
+
         findDependencies(service, componentClass, dependencyInfo,
                 new HashSet<>());
         return dependencyInfo;
@@ -233,8 +228,9 @@ public class ComponentMetaData {
     }
 
     /**
-     * Gets the dependencies, defined using annotations ({@link HtmlImport},
-     * {@link JavaScript}, {@link StyleSheet} and {@link Uses}).
+     * Gets the dependencies, defined using annotations ({@link JsModule},
+     * {@link HtmlImport}, {@link JavaScript}, {@link StyleSheet} and
+     * {@link Uses}).
      * <p>
      * Framework internal data, thus package-private.
      *
@@ -346,8 +342,10 @@ public class ComponentMetaData {
                 ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
 
         String module = value
-                .replaceFirst("^.*bower_components/(vaadin-.*)\\.html", "@vaadin/$1.js")
-                .replaceFirst("^.*bower_components/((iron|paper)-.*)\\.html", "@polymer/$1.js");
+                .replaceFirst("^.*bower_components/(vaadin-.*)\\.html",
+                        "@vaadin/$1.js")
+                .replaceFirst("^.*bower_components/((iron|paper)-.*)\\.html",
+                        "@polymer/$1.js");
 
         return jsModule(module, htmlImport.loadMode());
     }
@@ -372,10 +370,6 @@ public class ComponentMetaData {
                 return JsModule.class;
             }
         };
-    }
-
-    private static Logger getLogger() {
-        return LoggerFactory.getLogger(ComponentMetaData.class);
     }
 
 }
