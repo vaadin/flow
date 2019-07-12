@@ -19,8 +19,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.logging.Log;
@@ -30,10 +28,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 
-import com.vaadin.flow.plugin.common.ArtifactData;
-import com.vaadin.flow.plugin.production.ProductionModeCopyStep;
 import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.frontend.JarContentsManager;
 import com.vaadin.flow.server.frontend.NodeTasks;
 
 import elemental.json.Json;
@@ -44,9 +39,7 @@ import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFind
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
 /**
@@ -85,13 +78,6 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
      */
     @Parameter(defaultValue = RESOURCES_FRONTEND_DEFAULT)
     private String jarResourcePathsToCopy;
-
-    /**
-     * Comma separated wildcards for files and directories that should be
-     * copied. Default is only .js and .css files.
-     */
-    @Parameter(defaultValue = "**/*.js,**/*.css", required = true)
-    private String includes;
 
     /**
      * The folder where `package.json` file is located. Default is project root
@@ -144,14 +130,11 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         new NodeTasks.Builder(getClassFinder(project), npmFolder, generatedFolder)
                 .withWebpack(webpackOutputDirectory, webpackTemplate, webpackGeneratedTemplate)
                 .createMissingPackageJson(true)
+                .copyResources(false, null)
                 .enableImportsUpdate(false)
                 .enablePackagesUpdate(false)
                 .runNpmInstall(false)
                 .build().execute();
-
-        File flowNodeDirectory = new File(npmFolder,
-                NODE_MODULES + FLOW_NPM_PACKAGE_NAME);
-        copyFlowModuleDependencies(flowNodeDirectory);
     }
 
     private void propagateBuildInfo() {
@@ -187,21 +170,6 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
                     System.getProperty("project.basedir"), productionMode,
                     compatibilityMode, compatibility, npmFolder,
                     token.getAbsolutePath(), buildInfo.toJson()));
-        }
-    }
-
-    private void copyFlowModuleDependencies(File flowNodeDirectory) {
-        List<ArtifactData> projectArtifacts = project.getArtifacts().stream()
-                .filter(artifact -> "jar".equals(artifact.getType()))
-                .map(artifact -> new ArtifactData(artifact.getFile(),
-                        artifact.getArtifactId(), artifact.getVersion()))
-                .collect(Collectors.toList());
-
-        ProductionModeCopyStep copyHelper = new ProductionModeCopyStep(
-                new JarContentsManager(), projectArtifacts);
-        for (String path : jarResourcePathsToCopy.split(",")) {
-            copyHelper.copyFrontendJavaScriptFiles(flowNodeDirectory, includes,
-                    path);
         }
     }
 

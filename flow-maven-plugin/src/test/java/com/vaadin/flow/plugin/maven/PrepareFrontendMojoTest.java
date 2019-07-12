@@ -2,12 +2,6 @@ package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
@@ -23,6 +17,7 @@ import org.mockito.Mockito;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
+
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.assertContainsPackage;
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.getPackageJson;
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.setProject;
@@ -54,7 +49,6 @@ public class PrepareFrontendMojoTest {
     private File webpackOutputDirectory;
     private File tokenFile;
 
-
     @Before
     public void setup() throws Exception {
         projectBase = temporaryFolder.getRoot();
@@ -73,7 +67,6 @@ public class PrepareFrontendMojoTest {
 
         ReflectionUtils.setVariableValueInObject(mojo, "project", project);
         ReflectionUtils.setVariableValueInObject(mojo, "jarResourcePathsToCopy", RESOURCES_FRONTEND_DEFAULT);
-        ReflectionUtils.setVariableValueInObject(mojo, "includes", "**/*.js,**/*.css");
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", projectBase);
         ReflectionUtils.setVariableValueInObject(mojo, "webpackTemplate", WEBPACK_CONFIG);
         ReflectionUtils.setVariableValueInObject(mojo, "webpackGeneratedTemplate", WEBPACK_GENERATED);
@@ -165,22 +158,5 @@ public class PrepareFrontendMojoTest {
                 "webpack-dev-server",
                 "webpack-babel-multi-target-plugin",
                 "copy-webpack-plugin");
-    }
-
-
-    private List<File> gatherFiles(File root) {
-        if (root.isFile()) {
-            return Collections.singletonList(root);
-        } else {
-            File[] subdirectoryFiles = root.listFiles();
-            if (subdirectoryFiles != null) {
-                List<File> files = new ArrayList<>();
-                for (File subdirectoryFile : subdirectoryFiles) {
-                    files.addAll(gatherFiles(subdirectoryFile));
-                }
-                return files;
-            }
-            return Collections.emptyList();
-        }
     }
 }
