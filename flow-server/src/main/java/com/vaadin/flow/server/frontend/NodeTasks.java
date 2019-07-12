@@ -28,7 +28,9 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
 
@@ -66,6 +68,8 @@ public class NodeTasks implements Command {
         private boolean copyResources;
 
         private boolean generateEmbeddableWebComponents;
+
+        private boolean cleanNpmFiles;
 
         private Set<String> visitedClasses;
 
@@ -126,6 +130,7 @@ public class NodeTasks implements Command {
             this.classFinder = classFinder;
             this.npmFolder = npmFolder;
             this.generateEmbeddableWebComponents = true;
+            this.cleanNpmFiles = false;
             this.generatedFolder = generatedPath.isAbsolute() ? generatedPath
                     : new File(npmFolder, generatedPath.getPath());
             this.frontendDirectory = frontendDirectory.isAbsolute()
@@ -175,6 +180,21 @@ public class NodeTasks implements Command {
          */
         public Builder enablePackagesUpdate(boolean enablePackagesUpdate) {
             this.enablePackagesUpdate = enablePackagesUpdate;
+            return this;
+        }
+
+        /**
+         * Sets whether to perform always perform clean up procedure. Default is
+         * <code>false</code>. When the value is false, npm related files will
+         * only be removed when a platform version update is detected.
+         * 
+         * @param forceClean
+         *            <code>true</code> to clean npm files always, otherwise
+         *            <code>false</code>
+         * @return this builder
+         */
+        public Builder enableNpmFileCleaning(boolean forceClean) {
+            this.cleanNpmFiles = forceClean;
             return this;
         }
 
@@ -277,8 +297,8 @@ public class NodeTasks implements Command {
                     builder.classFinder);
 
             if (builder.generateEmbeddableWebComponents) {
-                FrontendWebComponentGenerator generator =
-                        new FrontendWebComponentGenerator(classFinder);
+                FrontendWebComponentGenerator generator = new FrontendWebComponentGenerator(
+                        classFinder);
                 generator.generateWebComponents(builder.generatedFolder);
             }
 
@@ -292,15 +312,10 @@ public class NodeTasks implements Command {
             commands.add(packageCreator);
         }
 
-        if (builder.copyResources) {
-            commands.add(new TaskCopyFrontendFiles(
-                    builder.npmFolder, builder.jarFiles));
-        }
-
         if (builder.enablePackagesUpdate) {
             TaskUpdatePackages packageUpdater = new TaskUpdatePackages(
                     classFinder, frontendDependencies, builder.npmFolder,
-                    builder.generatedFolder);
+                    builder.generatedFolder, builder.cleanNpmFiles);
             commands.add(packageUpdater);
 
             if (builder.runNpmInstall) {
@@ -308,8 +323,15 @@ public class NodeTasks implements Command {
             }
         }
 
-        if (builder.webpackTemplate != null && !builder.webpackTemplate
-                .isEmpty()) {
+        if (builder.copyResources) {
+            commands.add(new TaskCopyFrontendFiles(
+                    new File(builder.npmFolder,
+                            NODE_MODULES + FLOW_NPM_PACKAGE_NAME),
+                    builder.jarFiles));
+        }
+
+        if (builder.webpackTemplate != null
+                && !builder.webpackTemplate.isEmpty()) {
             commands.add(new TaskUpdateWebpack(builder.npmFolder,
                     builder.webpackOutputDirectory, builder.webpackTemplate,
                     builder.webpackGeneratedTemplate,
