@@ -46,6 +46,7 @@ public class TaskUpdatePackages extends NodeUpdater {
 
     private static final String VALUE = "value";
     private static final String SHRINK_WRAP = "@vaadin/vaadin-shrinkwrap";
+    private boolean forceCleanUp;
 
     private static class RemoveFileVisitor extends SimpleFileVisitor<Path>
             implements Serializable {
@@ -76,11 +77,16 @@ public class TaskUpdatePackages extends NodeUpdater {
      *            folder with the `package.json` file
      * @param generatedPath
      *            folder where flow generated files will be placed.
+     * @param forceCleanUp
+     *            forces the clean up process to be run. If {@code false},
+     *            clean up will be performed when platform version update is
+     *            detected.
      */
     TaskUpdatePackages(ClassFinder finder,
             FrontendDependencies frontendDependencies, File npmFolder,
-            File generatedPath) {
+            File generatedPath, boolean forceCleanUp) {
         super(finder, frontendDependencies, npmFolder, generatedPath);
+        this.forceCleanUp = forceCleanUp;
     }
 
     @Override
@@ -112,13 +118,18 @@ public class TaskUpdatePackages extends NodeUpdater {
 
         // Remove obsolete dependencies
         JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
+        boolean doCleanUp = forceCleanUp;
         if (dependencies != null) {
             for (String key : dependencies.keys()) {
                 if (!deps.containsKey(key)) {
                     dependencies.remove(key);
                 }
             }
-            ensureReleaseVersion(dependencies);
+            doCleanUp = doCleanUp || !ensureReleaseVersion(dependencies);
+        }
+
+        if (doCleanUp) {
+            cleanUp();
         }
 
         return added;
@@ -135,16 +146,15 @@ public class TaskUpdatePackages extends NodeUpdater {
      *            dependencies object with the vaadin-shrinkwrap version
      * @throws IOException
      */
-    private void ensureReleaseVersion(JsonObject dependencies)
+    private boolean ensureReleaseVersion(JsonObject dependencies)
             throws IOException {
         String shrinkWrapVersion = null;
         if (dependencies.hasKey(SHRINK_WRAP)) {
             shrinkWrapVersion = dependencies.getString(SHRINK_WRAP);
         }
 
-        if (!Objects.equals(shrinkWrapVersion, getCurrentShrinkWrapVersion())) {
-            cleanUp();
-        }
+        return Objects.equals(shrinkWrapVersion,
+                getCurrentShrinkWrapVersion());
     }
 
     private void cleanUp() throws IOException {

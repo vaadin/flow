@@ -153,24 +153,5 @@
                 </plugins>
             </build>
         </profile>
-        <profile>
-            <id>productionMode</id>
-            <activation>
-                <property>
-                    <!-- In BrowserStack tests are run on IE11, and transpilation
-                        is needed -->
-                    <name>test.use.browserstack</name>
-                    <value>true</value>
-                </property>
-            </activation>
-
-            <dependencies>
-                <dependency>
-                    <groupId>com.vaadin</groupId>
-                    <artifactId>flow-server-production-mode</artifactId>
-                    <version>${project.version}</version>
-                </dependency>
-            </dependencies>
-        </profile>
     </profiles>
 </project>

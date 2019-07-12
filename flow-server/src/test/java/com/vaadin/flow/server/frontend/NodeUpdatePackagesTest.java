@@ -67,7 +67,7 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
         packageCreator = new TaskCreatePackageJson(baseDir, generatedDir);
 
         packageUpdater = new TaskUpdatePackages(getClassFinder(), null, baseDir,
-                generatedDir);
+                generatedDir, false);
         mainPackageJson = new File(baseDir, PACKAGE_JSON);
         appPackageJson = new File(generatedDir, PACKAGE_JSON);
 
