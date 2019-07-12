@@ -297,7 +297,7 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
         JsonObject shrinkWrap = Json.createObject();
         object.put(DEPENDENCIES, deps);
         deps.put(SHRINKWRAP, shrinkWrap);
-        shrinkWrap.put("version", "1.1.1");
+        shrinkWrap.put("version", version);
         return object;
     }
 
