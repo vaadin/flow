@@ -47,6 +47,8 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
     private TaskUpdatePackages packageUpdater;
     private TaskCreatePackageJson packageCreator;
+    private File baseDir;
+    private File generatedDir;
     private File mainPackageJson;
     private File appPackageJson;
 
@@ -57,9 +59,9 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
     @Before
     public void setup() throws Exception {
-        File baseDir = temporaryFolder.getRoot();
+        baseDir = temporaryFolder.getRoot();
 
-        File generatedDir = new File(baseDir, DEFAULT_GENERATED_DIR);
+        generatedDir = new File(baseDir, DEFAULT_GENERATED_DIR);
 
         NodeUpdateTestUtil.createStubNode(true, true,
                 baseDir.getAbsolutePath());
@@ -221,6 +223,23 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
         Assert.assertTrue(mainNodeModules.exists());
         Assert.assertTrue(appNodeModules.exists());
         Assert.assertTrue(packageLock.exists());
+    }
+
+    @Test
+    public void versionsMatch_forceCleanUp_cleanUp() throws IOException {
+        // Generate package json in a proper format first
+        packageCreator.execute();
+        packageUpdater.execute();
+
+        makeNodeModulesAndPackageLock();
+
+        // create a new package updater, with forced clean up enabled
+        packageUpdater = new TaskUpdatePackages(getClassFinder(), null, baseDir,
+                generatedDir, true);
+        packageUpdater.execute();
+
+        // clean up happened
+        assertCleanUp();
     }
 
     private void makeNodeModulesAndPackageLock() throws IOException {
