@@ -30,6 +30,8 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.server.Command;
 
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 
 /**
  * Copies JavaScript and CSS files from JAR files into a given folder.
@@ -48,14 +50,14 @@ public class TaskCopyFrontendFiles implements Command {
      * jarFilesToScan} is null, acts as
      * {@link #TaskCopyFrontendFiles(java.io.File)} would.
      * 
-     * @param targetDirectory
+     * @param npmFolder
      *            target directory for the discovered files
      * @param jarFilesToScan
      *            jar files to scan. Only files ending in " .jar" will be
      *            scanned.
      */
-    TaskCopyFrontendFiles(File targetDirectory, Set<File> jarFilesToScan) {
-        this.targetDirectory = targetDirectory;
+    TaskCopyFrontendFiles(File npmFolder, Set<File> jarFilesToScan) {
+        this.targetDirectory = new File(npmFolder, NODE_MODULES + FLOW_NPM_PACKAGE_NAME);
         if (jarFilesToScan == null) {
             jarFilesToScan = Stream
                     .of(System.getProperty(CLASS_PATH_PROPERTY).split(File.pathSeparator))
