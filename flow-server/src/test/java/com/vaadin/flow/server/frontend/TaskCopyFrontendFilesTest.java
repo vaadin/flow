@@ -29,6 +29,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
+
 public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -37,19 +40,21 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
     public void should_collectJsAndCssFilesFromJars() throws IOException {
         // creating non-existing folder to make sure the execute() creates
         // the folder if missing
-        File targetFolder = new File(temporaryFolder.newFolder(), "child/");
+        File npmFolder = new File(temporaryFolder.newFolder(), "child/");
+        File targetFolder = new File(npmFolder, NODE_MODULES + FLOW_NPM_PACKAGE_NAME);
 
         // contains:
         // - ExampleConnector.js
         // - inline.css
         File jar = TestUtils.getTestJar("jar-with-frontend-resources.jar");
 
-        TaskCopyFrontendFiles task = new TaskCopyFrontendFiles(targetFolder,
+        TaskCopyFrontendFiles task = new TaskCopyFrontendFiles(npmFolder,
                 jars(jar));
 
         task.execute();
 
         List<String> files = TestUtils.listFilesRecursively(targetFolder);
+        System.err.println(files);
         Assert.assertEquals(2, files.size());
 
         Assert.assertTrue("Js resource should have been copied",

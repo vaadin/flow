@@ -28,9 +28,7 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
 
@@ -325,9 +323,7 @@ public class NodeTasks implements Command {
 
         if (builder.copyResources) {
             commands.add(new TaskCopyFrontendFiles(
-                    new File(builder.npmFolder,
-                            NODE_MODULES + FLOW_NPM_PACKAGE_NAME),
-                    builder.jarFiles));
+                    builder.npmFolder, builder.jarFiles));
         }
 
         if (builder.webpackTemplate != null

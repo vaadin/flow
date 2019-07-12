@@ -43,7 +43,7 @@ public class TaskCopyFrontendFiles implements Command {
             "**/*.js", "**/*.css" };
 
     private File targetDirectory;
-    private Set<File> jarFiles = null;
+    private transient Set<File> jarFiles = null;
 
     /**
      * Scans the jar files given defined by {@code jarFilesToScan}. If {@code
