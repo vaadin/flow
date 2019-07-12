@@ -87,7 +87,9 @@ public class NodeTestComponents {
     @CssImport(value = "./foo.css")
     @CssImport(value = "./foo.css", include = "bar")
     @CssImport(value = "./foo.css", id = "baz")
+    @CssImport(value = "./foo.css", id = "baz", include="bar")
     @CssImport(value = "./foo.css", themeFor = "foo-bar")
+    @CssImport(value = "./foo.css", themeFor = "foo-bar", include="bar")
     public static class FlatImport extends Component {
     }
 
