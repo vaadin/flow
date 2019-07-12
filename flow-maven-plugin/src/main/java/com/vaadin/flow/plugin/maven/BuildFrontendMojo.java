@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -57,6 +58,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
  * <ul>
  * <li>Update {@link Constants#PACKAGE_JSON} file with the {@link NpmPackage}
  * annotations defined in the classpath,</li>
+ * <li>Copy resource files used by flow from `.jar` files to the `node_modules` folder</li>
  * <li>Install dependencies by running <code>npm install</code></li>
  * <li>Update the {@link FrontendUtils#IMPORTS_NAME} file imports with the
  * {@link JsModule} {@link Theme} and {@link JavaScript} annotations defined in
@@ -135,9 +137,16 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
     }
 
     private void runNodeUpdater() {
+        Set<File> jarFiles = project.getArtifacts().stream()
+                .filter(artifact -> "jar".equals(artifact.getType()))
+                .map(artifact -> artifact.getFile())
+                .collect(Collectors.toSet());
+
         new NodeTasks.Builder(getClassFinder(project), npmFolder,
                 generatedFolder, frontendDirectory).runNpmInstall(runNpmInstall)
-                        .enablePackagesUpdate(true).enableImportsUpdate(true)
+                        .enablePackagesUpdate(true)
+                        .copyResources(true, jarFiles)
+                        .enableImportsUpdate(true)
                         .withEmbeddableWebComponents(
                                 generateEmbeddableWebComponents)
                         .build().execute();
