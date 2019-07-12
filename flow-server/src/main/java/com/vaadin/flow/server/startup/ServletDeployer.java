@@ -157,6 +157,11 @@ public class ServletDeployer implements ServletContextListener {
             hasDevelopmentMode = hasDevelopmentMode || devMode;
         }
 
+        /*
+         * The default servlet is created using root mapping, in that case no
+         * need to register extra servlet. We should register frontend servlet
+         * only if there is a registered servlet.
+         */
         if (enableServlets
                 && createAppServlet(
                         context) == VaadinServletCreation.SERVLET_EXISTS
