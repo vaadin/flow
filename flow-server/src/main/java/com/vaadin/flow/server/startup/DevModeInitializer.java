@@ -130,10 +130,12 @@ public class DevModeInitializer implements ServletContainerInitializer,
          *            the class to check
          */
         public void ensureAllDependenciesVisited(Class<?> clazz) {
-            DevModeInitializer.log()
-                    .warn("Frontend dependencies have not been analyzed for {}."
-                            + " To make the component's frontend dependencies work, you must ensure the component class is directly referenced through an application entry point such as a class annotated with @Route.",
-                            clazz.getName());
+            if (!allDependenciesVisited(clazz)) {
+                DevModeInitializer.log().warn(
+                        "Frontend dependencies have not been analyzed for {}."
+                                + " To make the component's frontend dependencies work, you must ensure the component class is directly referenced through an application entry point such as a class annotated with @Route.",
+                        clazz.getName());
+            }
         }
     }
 
