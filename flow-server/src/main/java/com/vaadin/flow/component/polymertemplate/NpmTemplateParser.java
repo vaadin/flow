@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
@@ -30,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.DependencyFilter;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.WebBrowser;
@@ -69,19 +71,27 @@ public class NpmTemplateParser implements TemplateParser {
     }
 
     @Override
-    public TemplateData getTemplateContent(Class<? extends PolymerTemplate<?>> clazz, String tag,
+    public TemplateData getTemplateContent(
+            Class<? extends PolymerTemplate<?>> clazz, String tag,
             VaadinService service) {
 
         WebBrowser browser = FakeBrowser.getEs6();
 
-        List<Dependency> dependencies = AnnotationReader.getAnnotationsFor(clazz, JsModule.class).stream()
-                .map(htmlImport -> new Dependency(Dependency.Type.JS_MODULE, htmlImport.value(), htmlImport.loadMode()))
+        List<Dependency> dependencies = AnnotationReader
+                .getAnnotationsFor(clazz, JsModule.class).stream()
+                .map(htmlImport -> new Dependency(Dependency.Type.JS_MODULE,
+                        htmlImport.value(), htmlImport.loadMode()))
                 .collect(Collectors.toList());
 
-        DependencyFilter.FilterContext filterContext = new DependencyFilter.FilterContext(service, browser);
+        DependencyFilter.FilterContext filterContext = new DependencyFilter.FilterContext(
+                service, browser);
         for (DependencyFilter filter : service.getDependencyFilters()) {
-            dependencies = filter.filter(new ArrayList<>(dependencies), filterContext);
+            dependencies = filter.filter(new ArrayList<>(dependencies),
+                    filterContext);
         }
+
+        Pair<Dependency, String> firstAvaialableDep = null;
+        Pair<Dependency, String> depByNameConent = null;
 
         for (Dependency dependency : dependencies) {
             if (dependency.getType() != Dependency.Type.JS_MODULE) {
@@ -97,37 +107,64 @@ public class NpmTemplateParser implements TemplateParser {
                     throw new UncheckedIOException(e);
                 }
             }
-
-            if (source != null) {
-                // Template needs to be wrapped in an element with id, to look like a P2 template
-                Element parent = new Element(tag);
-                parent.attr("id", tag);
-
-                Element templateElement = BundleParser.parseTemplateElement(url, source);
-                templateElement.appendTo(parent);
-
-                return new TemplateData(url, templateElement);
+            if (firstAvaialableDep == null) {
+                firstAvaialableDep = new Pair<>(dependency, source);
+            }
+            if (dependencyHasTagName(dependency, tag)) {
+                depByNameConent = new Pair<>(dependency, source);
+                break;
             }
         }
 
-        throw new IllegalStateException(String.format("Couldn't find the " + "definition of the element with tag '%s' "
+        Pair<Dependency, String> dep = depByNameConent == null
+                ? firstAvaialableDep
+                : depByNameConent;
+        if (dep != null) {
+            // Template needs to be wrapped in an element with id, to look
+            // like a P2 template
+            Element parent = new Element(tag);
+            parent.attr("id", tag);
+
+            Element templateElement = BundleParser.parseTemplateElement(
+                    dep.getFirst().getUrl(), dep.getSecond());
+            templateElement.appendTo(parent);
+
+            return new TemplateData(dep.getFirst().getUrl(), templateElement);
+        }
+
+        throw new IllegalStateException(String.format("Couldn't find the "
+                + "definition of the element with tag '%s' "
                 + "in any template file declared using '@%s' annotations. "
                 + "Check the availability of the template files in your WAR "
                 + "file or provide alternative implementation of the "
                 + "method getTemplateContent() which should return an element "
-                + "representing the content of the template file", tag, JsModule.class.getSimpleName()));
+                + "representing the content of the template file", tag,
+                JsModule.class.getSimpleName()));
+    }
+
+    private boolean dependencyHasTagName(Dependency dependency, String tag) {
+        String url = dependency.getUrl();
+        if (url.equalsIgnoreCase(tag + ".js")) {
+            return true;
+        }
+        url = url.toLowerCase(Locale.ENGLISH);
+        return url.endsWith("/" + tag + ".js");
     }
 
     private String getSourcesFromTemplate(String tag, String url) {
-        InputStream content = getClass().getClassLoader().getResourceAsStream(url);
+        InputStream content = getClass().getClassLoader()
+                .getResourceAsStream(url);
         if (content != null) {
-            getLogger().debug("Found sources from the tag '{}' in the template '{}'", tag, url);
+            getLogger().debug(
+                    "Found sources from the tag '{}' in the template '{}'", tag,
+                    url);
             return FrontendUtils.streamToString(content);
         }
         return null;
     }
 
-    private String getSourcesFromStats(VaadinService service, String url) throws IOException  {
+    private String getSourcesFromStats(VaadinService service, String url)
+            throws IOException {
         String content = FrontendUtils.getStatsContent(service);
         if (content != null) {
             updateCache(url, content);
@@ -136,7 +173,8 @@ public class NpmTemplateParser implements TemplateParser {
     }
 
     private void updateCache(String url, String fileContents) {
-        if (jsonStats == null || !jsonStats.getString("hash").equals(BundleParser.getHashFromStatistics(fileContents))) {
+        if (jsonStats == null || !jsonStats.getString("hash")
+                .equals(BundleParser.getHashFromStatistics(fileContents))) {
             cache.clear();
             try {
                 lock.lock();
@@ -146,7 +184,8 @@ public class NpmTemplateParser implements TemplateParser {
             }
         }
         if (!cache.containsKey(url)) {
-            cache.put(url, BundleParser.getSourceFromStatistics(url, jsonStats));
+            cache.put(url,
+                    BundleParser.getSourceFromStatistics(url, jsonStats));
         }
     }
 
