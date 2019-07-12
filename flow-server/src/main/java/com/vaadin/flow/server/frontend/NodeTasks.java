@@ -28,9 +28,7 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
 
@@ -62,6 +60,10 @@ public class NodeTasks implements Command {
         private boolean enableImportsUpdate;
 
         private boolean runNpmInstall;
+
+        private Set<File> jarFiles;
+
+        private boolean copyResources;
 
         private boolean generateEmbeddableWebComponents;
 
@@ -195,11 +197,30 @@ public class NodeTasks implements Command {
          * dependencies.
          *
          * @param runNpmInstall
-         *            run npm install. Default is <code>true</code>
+         *            run npm install. Default is <code>false</code>
          * @return the builder
          */
         public Builder runNpmInstall(boolean runNpmInstall) {
             this.runNpmInstall = runNpmInstall;
+            return this;
+        }
+
+        /**
+         * Sets whether copy resources from classpath to the `node_modules`
+         * folder as they are available for webpack build.
+         *
+         * @param runCopyResources
+         *            run copy resources. Default is <code>false</code>
+         *
+         * @param jars
+         *            set of class nodes to be visited, if null it will visit
+         *            the entire classpath
+         *
+         * @return the builder
+         */
+        public Builder copyResources(boolean runCopyResources, Set<File> jars) {
+            this.jarFiles = jars;
+            this.copyResources = runCopyResources;
             return this;
         }
 
@@ -271,19 +292,16 @@ public class NodeTasks implements Command {
             commands.add(packageCreator);
         }
 
+        if (builder.copyResources) {
+            commands.add(new TaskCopyFrontendFiles(
+                    builder.npmFolder, builder.jarFiles));
+        }
+
         if (builder.enablePackagesUpdate) {
             TaskUpdatePackages packageUpdater = new TaskUpdatePackages(
                     classFinder, frontendDependencies, builder.npmFolder,
                     builder.generatedFolder);
             commands.add(packageUpdater);
-
-            // Copy frontend files from JARs if this is our first time
-            // running or we have cleaned everything in TaskUpdatePackages
-            File frontendDirectory = new File(builder.npmFolder,
-                    NODE_MODULES + FLOW_NPM_PACKAGE_NAME);
-            if (!frontendDirectory.exists()) {
-                commands.add(new TaskCopyFrontendFiles(frontendDirectory));
-            }
 
             if (builder.runNpmInstall) {
                 commands.add(new TaskRunNpmInstall(packageUpdater));

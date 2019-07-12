@@ -152,7 +152,7 @@ public class FrontendDependencies implements Serializable {
                 computeExporters();
             }
             long ms = (System.nanoTime() - start) / 1000000;
-            log().info("took {} ms.", ms);
+            log().info("Visited {} classes. Took {} ms.", visited.size(), ms);
         } catch (ClassNotFoundException | InstantiationException
                 | IllegalAccessException | IOException e) {
             throw new IllegalStateException(
