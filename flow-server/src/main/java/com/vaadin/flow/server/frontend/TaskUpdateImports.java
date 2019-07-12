@@ -176,7 +176,7 @@ public class TaskUpdateImports extends NodeUpdater {
     }
 
     private void addLines(Collection<String> lines, String content) {
-        lines.addAll(Arrays.asList(content.replace("\r", "").split("\n")));
+        lines.addAll(Arrays.asList(content.split("\r?\n")));
     }
 
     private Collection<String> getCssLines() {
