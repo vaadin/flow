@@ -91,7 +91,7 @@ public class ServletDeployerTest {
     }
 
     @Test
-    public void hasRoutes_automaticallyRegisterTwoServletsWhenNoServletsPresent()
+    public void hasRoutes_automaticallyRegisterOneServletWhenNoServletsPresent()
             throws Exception {
         deployer.contextInitialized(getContextEvent(true));
 
