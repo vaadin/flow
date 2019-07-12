@@ -27,11 +27,11 @@ import java.lang.annotation.Target;
  * <p>
  * Depending on the attributes provided, the CSS content will be appended in
  * different ways:
- * 
+ *
  * <ul>
  * <li>When specifying only the 'value', it will be appended to the
  * 'document.head' inside a '&lt;custom-style&gt;' block.
- * 
+ *
  * <pre>
  *  &lt;custom-style&gt;
  *    &lt;style&gt;
@@ -39,11 +39,12 @@ import java.lang.annotation.Target;
  *    &lt;/style&gt;
  *  &lt;/custom-style&gt;
  * </pre>
- * 
+ *
  * <li>When specifying 'value' and 'include', it is appended inside a
  * '&lt;custom-style&gt;' block, but 'include' value is used for including a
- * defined module.
- * 
+ * defined module. Multiple modules are allowed by passing a space separated
+ * list.
+ *
  * <pre>
  *  &lt;custom-style&gt;
  *    &lt;style include="INCLUDE-VALUE"&gt;
@@ -51,34 +52,36 @@ import java.lang.annotation.Target;
  *    &lt;/style&gt;
  *  &lt;/custom-style&gt;
  * </pre>
- * 
+ *
  * <li>When 'value' and 'id' are given, a new 'dom-module' with the provided
- * 'id' is created
- * 
+ * 'id' is created, the 'include' parameter is allowed and is added to the
+ * &lt;style&gt; tag inside the module template.
+ *
  * <pre>
  * &lt;dom-module id="ID-VALUE"&gt;
  *   &lt;template&gt;
- *     &lt;style&gt;
+ *     &lt;style include="INCLUDE-VALUE"&gt;
  *       CSS-CONTENT
  *     &lt;/style&gt;
  *   &lt;/template&gt;
  * &lt;/dom-module&gt;
  * </pre>
- * 
+ *
  * <li>When 'value' and 'themeFor' are given, a new 'dom-module' for customizing
- * a themable element is created
- * 
+ * a themable element is created, the 'include' parameter is allowed and is added to the
+ * &lt;style&gt; tag inside the module template.
+ *
  * <pre>
  * &lt;dom-module id="RANDOM-ID" theme-for="THEME-FOR-VALUE"&gt;
  *   &lt;template&gt;
- *     &lt;style&gt;
+ *     &lt;style include="INCLUDE-VALUE"&gt;
  *       CSS-CONTENT
  *     &lt;/style&gt;
  *   &lt;/template&gt;
  * &lt;/dom-module&gt;
  * </pre>
  * </ul>
- * 
+ *
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
@@ -87,21 +90,21 @@ import java.lang.annotation.Target;
 public @interface CssImport {
     /**
      * Location of the file with the CSS content.
-     * 
+     *
      * @return the value.
      */
     String value();
 
     /**
      * The 'id' of a module to include in the generated 'custom-style'.
-     * 
+     *
      * @return the include value.
      */
     String include() default "";
 
     /**
      * The 'id' of the new 'dom-module' created.
-     * 
+     *
      * @return the id.
      */
     String id() default "";
@@ -109,7 +112,7 @@ public @interface CssImport {
     /**
      * The tag name of the themable element that the generated 'dom-module' will
      * target.
-     * 
+     *
      * @return the themable element.
      */
     String themeFor() default "";

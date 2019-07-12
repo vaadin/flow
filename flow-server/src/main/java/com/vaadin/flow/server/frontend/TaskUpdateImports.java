@@ -81,16 +81,13 @@ public class TaskUpdateImports extends NodeUpdater {
     private static final String CSS_POST =
             "`);";
     private static final String CSS_BASIC_TPL = CSS_PRE
-            + "<custom-style><style>${$css_%d}</style></custom-style>"
-            + CSS_POST;
-    private static final String CSS_INCLUDE_TPL = CSS_PRE
-            + "<custom-style><style include=\"%s\">${$css_%d}</style></custom-style>"
+            + "<custom-style><style%s>${$css_%d}</style></custom-style>"
             + CSS_POST;
     private static final String CSS_MODULE_TPL = CSS_PRE
-            + "<dom-module id=\"%s\"><template><style>${$css_%d}</style></template></dom-module>"
+            + "<dom-module id=\"%s\"><template><style%s>${$css_%d}</style></template></dom-module>"
             + CSS_POST;
     private static final String CSS_THEME_FOR_TPL = CSS_PRE
-            + "<dom-module id=\"flow_css_mod_%d\" theme-for=\"%s\"><template><style>${$css_%d}</style></template></dom-module>"
+            + "<dom-module id=\"flow_css_mod_%d\" theme-for=\"%s\"><template><style%s>${$css_%d}</style></template></dom-module>"
             + CSS_POST;
 
     // Trim and remove new lines.
@@ -208,15 +205,14 @@ public class TaskUpdateImports extends NodeUpdater {
         String cssFile = resolveResource(cssData.getValue(), false);
         boolean found = importedFileExists(cssFile);
         String cssImport = toValidBrowserImport(cssFile);
+        String include = cssData.getInclude() != null ? " include=\"" + cssData.getInclude() + "\"" : "";
 
         if (cssData.getThemefor() != null) {
-            addLines(lines, String.format(CSS_THEME_FOR_TPL, i, cssImport, i, cssData.getThemefor(), i));
+            addLines(lines, String.format(CSS_THEME_FOR_TPL, i, cssImport, i, cssData.getThemefor(), include, i));
         } else if (cssData.getId() != null) {
-            addLines(lines, String.format(CSS_MODULE_TPL, i, cssImport, cssData.getId(), i));
-        } else if (cssData.getInclude() != null) {
-            addLines(lines, String.format(CSS_INCLUDE_TPL, i, cssImport, cssData.getInclude(), i));
+            addLines(lines, String.format(CSS_MODULE_TPL, i, cssImport, cssData.getId(), include, i));
         } else {
-            addLines(lines, String.format(CSS_BASIC_TPL, i, cssImport, i));
+            addLines(lines, String.format(CSS_BASIC_TPL, i, cssImport, include, i));
         }
         return found;
     }
