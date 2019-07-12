@@ -66,10 +66,11 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
  * Servlet initializer starting node updaters as well as the webpack-dev-mode
  * server.
  */
-@HandlesTypes({ Route.class, NpmPackage.class, NpmPackage.Container.class, WebComponentExporter.class })
+@HandlesTypes({ Route.class, NpmPackage.class, NpmPackage.Container.class,
+        WebComponentExporter.class })
 @WebListener
-public class DevModeInitializer
-        implements ServletContainerInitializer, Serializable, ServletContextListener {
+public class DevModeInitializer implements ServletContainerInitializer,
+        Serializable, ServletContextListener {
 
     /**
      * The classes that were visited when determining which frontend resources
@@ -119,6 +120,23 @@ public class DevModeInitializer
                 return allDependenciesVisited(superclass);
             }
         }
+
+        /**
+         * Ensures that all {@code clazz} dependencies are visited.
+         *
+         * @see #allDependenciesVisited(Class)
+         *
+         * @param clazz
+         *            the class to check
+         */
+        public void ensureAllDependenciesVisited(Class<?> clazz) {
+            if (!allDependenciesVisited(clazz)) {
+                DevModeInitializer.log().warn(
+                        "Frontend dependencies have not been analyzed for {}."
+                                + " To make the component's frontend dependencies work, you must ensure the component class is directly referenced through an application entry point such as a class annotated with @Route.",
+                        clazz.getName());
+            }
+        }
     }
 
     @Override
@@ -159,13 +177,13 @@ public class DevModeInitializer
             log().debug("Skipping DEV MODE because BOWER MODE is set.");
             return;
         }
-        if(!config.enableDevServer()) {
-            log().debug("Skipping DEV MODE because dev server shouldn't be enabled.");
+        if (!config.enableDevServer()) {
+            log().debug(
+                    "Skipping DEV MODE because dev server shouldn't be enabled.");
             return;
         }
 
-        String baseDir = config.getStringProperty(
-                FrontendUtils.PROJECT_BASEDIR,
+        String baseDir = config.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
                 System.getProperty("user.dir", "."));
         Builder builder = new NodeTasks.Builder(new DefaultClassFinder(classes),
                 new File(baseDir));
@@ -173,11 +191,14 @@ public class DevModeInitializer
         log().info("Starting dev-mode updaters in {} folder.",
                 builder.npmFolder);
 
-        if(!builder.generatedFolder.exists()) {
+        if (!builder.generatedFolder.exists()) {
             try {
                 FileUtils.forceMkdir(builder.generatedFolder);
             } catch (IOException e) {
-                throw new UncheckedIOException(String.format("Failed to create directory '%s'", builder.generatedFolder), e);
+                throw new UncheckedIOException(
+                        String.format("Failed to create directory '%s'",
+                                builder.generatedFolder),
+                        e);
             }
         }
 
@@ -186,18 +207,21 @@ public class DevModeInitializer
         File generatedPackages = new File(builder.generatedFolder,
                 PACKAGE_JSON);
 
-        // Copy from JAR files if we don't have the node directory or generated package json is missing
+        // Copy from JAR files if we don't have the node directory or generated
+        // package json is missing
         if (!flowNodeDirectory.exists() || !generatedPackages.exists()) {
             copyFrontendFilesFromJars(flowNodeDirectory);
         }
 
-        // If we are missing the generated webpack configuration then generate webpack configurations
+        // If we are missing the generated webpack configuration then generate
+        // webpack configurations
         if (!new File(builder.npmFolder, WEBPACK_GENERATED).exists()) {
             builder.withWebpack(builder.npmFolder, FrontendUtils.WEBPACK_CONFIG,
                     FrontendUtils.WEBPACK_GENERATED);
         }
 
-        // If we are missing either the base or generated package json files generate those
+        // If we are missing either the base or generated package json files
+        // generate those
         if (!new File(builder.npmFolder, PACKAGE_JSON).exists()
                 || !generatedPackages.exists()) {
             builder.createMissingPackageJson(true);
@@ -220,25 +244,26 @@ public class DevModeInitializer
 
     private static void copyFrontendFilesFromJars(File flowNodeDirectory) {
 
-        List<File> collect = Stream.of(System.getProperty("java.class.path").split(";"))
-                .filter(path -> path.endsWith(".jar")).map(File::new).filter(File::exists).collect(
-                        Collectors.toList());
+        List<File> collect = Stream
+                .of(System.getProperty("java.class.path").split(";"))
+                .filter(path -> path.endsWith(".jar")).map(File::new)
+                .filter(File::exists).collect(Collectors.toList());
 
         log().info("Found {} jars to copy files from.", collect.size());
 
         try {
             FileUtils.forceMkdir(Objects.requireNonNull(flowNodeDirectory));
         } catch (IOException e) {
-            throw new UncheckedIOException(String.format("Failed to create directory '%s'", flowNodeDirectory), e);
+            throw new UncheckedIOException(String.format(
+                    "Failed to create directory '%s'", flowNodeDirectory), e);
         }
-        String[] wildcardInclusions = new String[]{
-                "**/*.js","**/*.css"};
+        String[] wildcardInclusions = new String[] { "**/*.js", "**/*.css" };
 
         JarContentsManager jarContentsManager = new JarContentsManager();
         for (File jarFile : collect) {
-            jarContentsManager
-                    .copyIncludedFilesFromJarTrimmingBasePath(jarFile, RESOURCES_FRONTEND_DEFAULT,
-                            flowNodeDirectory, wildcardInclusions);
+            jarContentsManager.copyIncludedFilesFromJarTrimmingBasePath(jarFile,
+                    RESOURCES_FRONTEND_DEFAULT, flowNodeDirectory,
+                    wildcardInclusions);
         }
     }
 
