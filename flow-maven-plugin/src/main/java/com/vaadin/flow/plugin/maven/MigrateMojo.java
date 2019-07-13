@@ -18,11 +18,7 @@ package com.vaadin.flow.plugin.maven;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -33,6 +29,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -98,31 +95,19 @@ public class MigrateMojo extends AbstractMojo {
     @Parameter(defaultValue = "true")
     private boolean ignoreModulizerErrors;
 
-    private static class RemoveVisitor extends SimpleFileVisitor<Path> {
-
-        @Override
-        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
-                throws IOException {
-            Files.delete(file);
-            return super.visitFile(file, attrs);
-        }
-
-        @Override
-        public FileVisitResult postVisitDirectory(Path dir, IOException exc)
-                throws IOException {
-            Files.delete(dir);
-            return super.postVisitDirectory(dir, exc);
-        }
-    }
-
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         prepareMigrationDirectory();
 
         File file = FrontendUtils.getBowerExecutable();
-        if (!ensureTools(file == null)) {
+        boolean needBowerInstall = file == null;
+        if (!ensureTools(needBowerInstall)) {
             throw new MojoExecutionException(
                     "Could not install tools required for migration (bower or modulizer)");
+        }
+        if (needBowerInstall) {
+            String command = FrontendUtils.isWindows() ? "bower.cmd" : "bower";
+            file = new File(migrateFolder, "node_modules/bower/bin/" + command);
         }
 
         Set<String> externalComponents;
@@ -203,14 +188,22 @@ public class MigrateMojo extends AbstractMojo {
                         exception);
             }
         }
-        migrateFolder.mkdirs();
+        try {
+            FileUtils.forceMkdir(migrateFolder);
+        } catch (IOException exception) {
+            throw new UncheckedIOException(
+                    "Unable to create a folder for migration: '" + migrateFolder
+                            + "'",
+                    exception);
+        }
+
     }
 
     private void removeOriginalResources(Map<String, List<String>> paths) {
         for (Entry<String, List<String>> entry : paths.entrySet()) {
             File resourceFolder = new File(entry.getKey());
-            List<String> resources = entry.getValue();
-            resources.forEach(path -> new File(resourceFolder, path).delete());
+            entry.getValue()
+                    .forEach(path -> new File(resourceFolder, path).delete());
         }
     }
 
@@ -316,7 +309,6 @@ public class MigrateMojo extends AbstractMojo {
         List<String> command = new ArrayList<>();
         command.addAll(npmExecutable);
         command.add("install");
-        command.add("-g");
         if (needInstallBower) {
             command.add("bower");
         }
@@ -355,7 +347,7 @@ public class MigrateMojo extends AbstractMojo {
     }
 
     private void cleanUp(File dir) throws IOException {
-        Files.walkFileTree(dir.toPath(), new RemoveVisitor());
+        FileUtils.forceDelete(dir);
     }
 
     private String[] getResources() {
