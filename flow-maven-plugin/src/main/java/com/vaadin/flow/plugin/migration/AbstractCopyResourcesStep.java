@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -155,7 +156,7 @@ public abstract class AbstractCopyResourcesStep {
                     + " exists and is not a directory");
         }
         if (!target.exists()) {
-            target.mkdir();
+            FileUtils.forceMkdir(target);
         }
         LOGGER.debug("Use {} as source folders to copy", resources);
         Map<String, List<String>> allResources = new HashMap<>();

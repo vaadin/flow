@@ -249,7 +249,7 @@ public class FrontendUtils {
     }
 
     /**
-     * Locate <code>bower</code> executable.
+     * Locate <code>bower</code> global executable.
      *
      * @return the path to the bower executable, returns {@code null} if it's
      *         not found

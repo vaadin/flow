@@ -39,9 +39,9 @@ public class CopyMigratedResourcesStep extends AbstractCopyResourcesStep {
         @Override
         public boolean accept(Path source, Path target) throws IOException {
             String name = source.getFileName().toString();
-            if (name.equals(BOWER_COMPONENTS) || name.equals("node_modules")
-                    || name.equals("bower.json") || name.equals("package.json")
-                    || name.equals("package-lock.json")) {
+            if (BOWER_COMPONENTS.equals(name) || "node_modules".equals(name)
+                    || "bower.json".equals(name) || "package.json".equals(name)
+                    || "package-lock.json".equals(name)) {
                 return false;
             }
             if (Files.isDirectory(source)) {
