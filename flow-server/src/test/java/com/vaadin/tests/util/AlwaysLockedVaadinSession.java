@@ -8,6 +8,9 @@ public class AlwaysLockedVaadinSession extends MockVaadinSession {
     public AlwaysLockedVaadinSession(VaadinService service) {
         super(service);
         lock();
+        if (service != null && service.getDeploymentConfiguration() != null) {
+            setConfiguration(service.getDeploymentConfiguration());
+        }
     }
 
 }
