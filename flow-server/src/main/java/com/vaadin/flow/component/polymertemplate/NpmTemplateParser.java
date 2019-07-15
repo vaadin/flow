@@ -107,6 +107,9 @@ public class NpmTemplateParser implements TemplateParser {
                     throw new UncheckedIOException(e);
                 }
             }
+            if (source == null) {
+                continue;
+            }
             if (firstAvaialableDep == null) {
                 firstAvaialableDep = new Pair<>(dependency, source);
             }
