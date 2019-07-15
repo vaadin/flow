@@ -28,9 +28,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
+import java.net.URLClassLoader;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -177,7 +180,18 @@ public class DevModeInitializer implements ServletContainerInitializer,
 
         String baseDir = config.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
                 System.getProperty("user.dir", "."));
-        Builder builder = new NodeTasks.Builder(new DefaultClassFinder(classes),
+
+
+        ClassLoader classLoader = classes.isEmpty()
+                ? Thread.currentThread().getContextClassLoader()
+                : classes.iterator().next().getClassLoader();
+
+        Set<File> jarFiles = Arrays.stream(((URLClassLoader)classLoader).getURLs())
+                .map(url -> new File(url.getPath()))
+                .collect(Collectors.toSet());
+
+        Builder builder = new NodeTasks.Builder(
+                new DefaultClassFinder(classLoader, classes.toArray(new Class[0])),
                 new File(baseDir));
 
         log().info("Starting dev-mode updaters in {} folder.",
@@ -213,7 +227,7 @@ public class DevModeInitializer implements ServletContainerInitializer,
 
         Set<String> visitedClassNames = new HashSet<>();
         builder.enablePackagesUpdate(true)
-                .copyResources(true, null)
+                .copyResources(true, jarFiles)
                 .enableImportsUpdate(true)
                 .runNpmInstall(true).withEmbeddableWebComponents(true)
                 .collectVisitedClasses(visitedClassNames).build().execute();

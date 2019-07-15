@@ -21,7 +21,6 @@ import java.io.UncheckedIOException;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -38,7 +37,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
  */
 public class TaskCopyFrontendFiles implements Command {
     private static final String JAR_SUFFIX = ".jar";
-    private static final String CLASS_PATH_PROPERTY = "java.class.path";
     private static final String[] WILDCARD_INCLUSIONS = new String[] {
             "**/*.js", "**/*.css" };
 
@@ -46,10 +44,8 @@ public class TaskCopyFrontendFiles implements Command {
     private transient Set<File> jarFiles = null;
 
     /**
-     * Scans the jar files given defined by {@code jarFilesToScan}. If {@code
-     * jarFilesToScan} is null, acts as
-     * {@link #TaskCopyFrontendFiles(java.io.File)} would.
-     * 
+     * Scans the jar files given defined by {@code jarFilesToScan}.
+     *
      * @param npmFolder
      *            target directory for the discovered files
      * @param jarFilesToScan
@@ -58,12 +54,6 @@ public class TaskCopyFrontendFiles implements Command {
      */
     TaskCopyFrontendFiles(File npmFolder, Set<File> jarFilesToScan) {
         this.targetDirectory = new File(npmFolder, NODE_MODULES + FLOW_NPM_PACKAGE_NAME);
-        if (jarFilesToScan == null) {
-            jarFilesToScan = Stream
-                    .of(System.getProperty(CLASS_PATH_PROPERTY).split(File.pathSeparator))
-                    .filter(path -> path.endsWith(JAR_SUFFIX))
-                    .map(File::new).collect(Collectors.toSet());
-        }
         jarFiles = jarFilesToScan.stream()
                 .filter(file -> file.getName().endsWith(JAR_SUFFIX))
                 .filter(File::exists)
@@ -95,6 +85,6 @@ public class TaskCopyFrontendFiles implements Command {
     }
 
     private static Logger log() {
-        return LoggerFactory.getLogger(TaskCopyFrontendFiles.class);
+        return LoggerFactory.getLogger("dev-updater");
     }
 }
