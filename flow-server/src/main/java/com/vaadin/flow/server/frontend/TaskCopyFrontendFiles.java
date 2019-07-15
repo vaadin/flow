@@ -48,8 +48,8 @@ public class TaskCopyFrontendFiles implements Command {
     /**
      * Scans the jar files given defined by {@code jarFilesToScan}. If {@code
      * jarFilesToScan} is null, acts as
-     * {@link #TaskCopyFrontendFiles(java.io.File)} would.
-     * 
+     * {@link #TaskCopyFrontendFiles(File, Set)} would.
+     *
      * @param npmFolder
      *            target directory for the discovered files
      * @param jarFilesToScan
@@ -84,6 +84,7 @@ public class TaskCopyFrontendFiles implements Command {
         long ms = (System.nanoTime() - start) / 1000000;
         log().info("Visited {} jar files. Took {} ms.", jarFiles.size(), ms);
     }
+
 
     private void createTargetFolder() {
         try {
