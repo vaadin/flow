@@ -61,7 +61,13 @@ public class NodeTasks implements Command {
 
         private boolean runNpmInstall;
 
+        private Set<File> jarFiles;
+
+        private boolean copyResources;
+
         private boolean generateEmbeddableWebComponents;
+
+        private boolean cleanNpmFiles;
 
         private Set<String> visitedClasses;
 
@@ -122,6 +128,7 @@ public class NodeTasks implements Command {
             this.classFinder = classFinder;
             this.npmFolder = npmFolder;
             this.generateEmbeddableWebComponents = true;
+            this.cleanNpmFiles = false;
             this.generatedFolder = generatedPath.isAbsolute() ? generatedPath
                     : new File(npmFolder, generatedPath.getPath());
             this.frontendDirectory = frontendDirectory.isAbsolute()
@@ -175,6 +182,21 @@ public class NodeTasks implements Command {
         }
 
         /**
+         * Sets whether to perform always perform clean up procedure. Default is
+         * <code>false</code>. When the value is false, npm related files will
+         * only be removed when a platform version update is detected.
+         * 
+         * @param forceClean
+         *            <code>true</code> to clean npm files always, otherwise
+         *            <code>false</code>
+         * @return this builder
+         */
+        public Builder enableNpmFileCleaning(boolean forceClean) {
+            this.cleanNpmFiles = forceClean;
+            return this;
+        }
+
+        /**
          * Sets whether to enable imports file update. Default is
          * <code>true</code>.
          *
@@ -193,11 +215,30 @@ public class NodeTasks implements Command {
          * dependencies.
          *
          * @param runNpmInstall
-         *            run npm install. Default is <code>true</code>
+         *            run npm install. Default is <code>false</code>
          * @return the builder
          */
         public Builder runNpmInstall(boolean runNpmInstall) {
             this.runNpmInstall = runNpmInstall;
+            return this;
+        }
+
+        /**
+         * Sets whether copy resources from classpath to the `node_modules`
+         * folder as they are available for webpack build.
+         *
+         * @param runCopyResources
+         *            run copy resources. Default is <code>false</code>
+         *
+         * @param jars
+         *            set of class nodes to be visited, if null it will visit
+         *            the entire classpath
+         *
+         * @return the builder
+         */
+        public Builder copyResources(boolean runCopyResources, Set<File> jars) {
+            this.jarFiles = jars;
+            this.copyResources = runCopyResources;
             return this;
         }
 
@@ -254,8 +295,8 @@ public class NodeTasks implements Command {
                     builder.classFinder);
 
             if (builder.generateEmbeddableWebComponents) {
-                FrontendWebComponentGenerator generator =
-                        new FrontendWebComponentGenerator(classFinder);
+                FrontendWebComponentGenerator generator = new FrontendWebComponentGenerator(
+                        classFinder);
                 generator.generateWebComponents(builder.generatedFolder);
             }
 
@@ -272,7 +313,7 @@ public class NodeTasks implements Command {
         if (builder.enablePackagesUpdate) {
             TaskUpdatePackages packageUpdater = new TaskUpdatePackages(
                     classFinder, frontendDependencies, builder.npmFolder,
-                    builder.generatedFolder);
+                    builder.generatedFolder, builder.cleanNpmFiles);
             commands.add(packageUpdater);
 
             if (builder.runNpmInstall) {
@@ -280,8 +321,13 @@ public class NodeTasks implements Command {
             }
         }
 
-        if (builder.webpackTemplate != null && !builder.webpackTemplate
-                .isEmpty()) {
+        if (builder.copyResources) {
+            commands.add(new TaskCopyFrontendFiles(
+                    builder.npmFolder, builder.jarFiles));
+        }
+
+        if (builder.webpackTemplate != null
+                && !builder.webpackTemplate.isEmpty()) {
             commands.add(new TaskUpdateWebpack(builder.npmFolder,
                     builder.webpackOutputDirectory, builder.webpackTemplate,
                     builder.webpackGeneratedTemplate,

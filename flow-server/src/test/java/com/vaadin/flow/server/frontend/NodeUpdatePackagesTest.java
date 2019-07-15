@@ -47,6 +47,8 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
     private TaskUpdatePackages packageUpdater;
     private TaskCreatePackageJson packageCreator;
+    private File baseDir;
+    private File generatedDir;
     private File mainPackageJson;
     private File appPackageJson;
 
@@ -57,9 +59,9 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
     @Before
     public void setup() throws Exception {
-        File baseDir = temporaryFolder.getRoot();
+        baseDir = temporaryFolder.getRoot();
 
-        File generatedDir = new File(baseDir, DEFAULT_GENERATED_DIR);
+        generatedDir = new File(baseDir, DEFAULT_GENERATED_DIR);
 
         NodeUpdateTestUtil.createStubNode(true, true,
                 baseDir.getAbsolutePath());
@@ -67,7 +69,7 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
         packageCreator = new TaskCreatePackageJson(baseDir, generatedDir);
 
         packageUpdater = new TaskUpdatePackages(getClassFinder(), null, baseDir,
-                generatedDir);
+                generatedDir, false);
         mainPackageJson = new File(baseDir, PACKAGE_JSON);
         appPackageJson = new File(generatedDir, PACKAGE_JSON);
 
@@ -223,6 +225,23 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
         Assert.assertTrue(packageLock.exists());
     }
 
+    @Test
+    public void versionsMatch_forceCleanUp_cleanUp() throws IOException {
+        // Generate package json in a proper format first
+        packageCreator.execute();
+        packageUpdater.execute();
+
+        makeNodeModulesAndPackageLock();
+
+        // create a new package updater, with forced clean up enabled
+        packageUpdater = new TaskUpdatePackages(getClassFinder(), null, baseDir,
+                generatedDir, true);
+        packageUpdater.execute();
+
+        // clean up happened
+        assertCleanUp();
+    }
+
     private void makeNodeModulesAndPackageLock() throws IOException {
         // Make two node_modules folders and package lock
         mainNodeModules.mkdirs();
@@ -297,7 +316,7 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
         JsonObject shrinkWrap = Json.createObject();
         object.put(DEPENDENCIES, deps);
         deps.put(SHRINKWRAP, shrinkWrap);
-        shrinkWrap.put("version", "1.1.1");
+        shrinkWrap.put("version", version);
         return object;
     }
 

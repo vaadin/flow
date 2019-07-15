@@ -43,13 +43,10 @@ public class LoadingIndicatorIT extends ChromeBrowserTest {
 
         WebElement loadingIndicator = findElement(
                 By.className("v-loading-indicator"));
-        String height = String.valueOf(
-                executeScript("return getComputedStyle(arguments[0]).height",
-                        loadingIndicator));
 
         Assert.assertEquals(
                 "Default loading indicator theming should be applied", "4px",
-                height);
+                loadingIndicator.getCssValue("height"));
 
         // if the next part of the test gets unstable in some environment, just
         // delete it
@@ -58,13 +55,9 @@ public class LoadingIndicatorIT extends ChromeBrowserTest {
 
         Thread.sleep(6000);
 
-        height = String.valueOf(
-                executeScript("return getComputedStyle(arguments[0]).height",
-                        loadingIndicator));
-
         // during third stage (wait) the height is bumped to 7px
         Assert.assertEquals("Default loading indicator theming is not applied",
-                "7px", height);
+                "7px", loadingIndicator.getCssValue("height"));
     }
 
     @Test
@@ -72,31 +65,24 @@ public class LoadingIndicatorIT extends ChromeBrowserTest {
             throws InterruptedException {
         open();
 
-        findElement(By.id("disable-theme")).click();
-
         WebElement loadingIndicator = findElement(
                 By.className("v-loading-indicator"));
-        String height = String.valueOf(
-                executeScript("return getComputedStyle(arguments[0]).height",
-                        loadingIndicator));
 
+        // Check that default theme is applied
+        Assert.assertEquals(
+                "Default loading indicator theming should be applied",
+                "4px", loadingIndicator.getCssValue("height"));
+        int count = findElements(By.cssSelector("head > style")).size();
+
+        // Removes the style tag with default theme from the client
+        findElement(By.id("disable-theme")).click();
+
+        // Check that one style tag was removed from head
+        Assert.assertEquals("One style tag should be removed",
+                1, count - findElements(By.cssSelector("head > style")).size());
+        // Check that default theme is not being applied
         Assert.assertEquals(
                 "Default loading indicator theming should not be applied",
-                "auto", height);
-
-        // if the next part of the test gets unstable in some environment, just
-        // delete it
-        testBench().disableWaitForVaadin();
-        findElement(By.id("wait10000")).click();
-
-        Thread.sleep(2000);
-
-        String zIndex = String.valueOf(
-                executeScript("return getComputedStyle(arguments[0]).zIndex",
-                        loadingIndicator));
-
-        // during third stage (wait) the height is bumped to 7px
-        Assert.assertEquals("Custom loading indicator theming is not applied",
-                "2147483647", zIndex);
+                "auto", loadingIndicator.getCssValue("height"));
     }
 }

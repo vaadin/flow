@@ -15,14 +15,6 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubNode;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -40,6 +32,14 @@ import org.junit.rules.TemporaryFolder;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.frontend.FrontendUtils.UnknownVersionException;
+
+import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubNode;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class FrontendUtilsTest {
 
@@ -157,7 +157,9 @@ public class FrontendUtilsTest {
         try {
             FrontendUtils.validateToolVersion("test",
                     new String[] { "9", "0", "0" }, 10, 0, 8, 0);
-            String logged = out.toString("utf-8");
+            String logged = out.toString("utf-8")
+                    // fix for windows
+                    .replace("\r", "");
             Assert.assertTrue(logged.contains(
                     "Your installed 'test' version (9.0.0) is not supported but should still work. Supported versions are 10.0+\n"));
         } finally {
