@@ -140,7 +140,12 @@ public class TaskUpdateImports extends NodeUpdater {
     }
 
     private Set<String> sortModules(Set<String> modules) {
-        return modules.stream().sorted(Comparator.reverseOrder())
+        // Sort all modules belonging to scoped packages first in order to
+        // allow local modules to override e.g. Lumo settings (#5729), then
+        // sort in reverse alphabetical order.
+        return modules.stream().sorted(
+                Comparator.<String>comparingInt(s -> s.startsWith("@") ? 0 : 1)
+                        .thenComparing(Comparator.reverseOrder()))
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
