@@ -154,7 +154,14 @@ public class MigrateMojo extends AbstractMojo {
 
         // copy the result JS files into "frontend"
         if (!frontendDirectory.exists()) {
-            frontendDirectory.mkdir();
+            try {
+                FileUtils.forceMkdir(frontendDirectory);
+            } catch (IOException exception) {
+                throw new UncheckedIOException(
+                        "Unable to create a target folder for migrated files: '"
+                                + frontendDirectory + "'",
+                        exception);
+            }
         }
         CopyMigratedResourcesStep copyMigratedStep = new CopyMigratedResourcesStep(
                 frontendDirectory, migrateFolder);
@@ -196,7 +203,6 @@ public class MigrateMojo extends AbstractMojo {
                             + "'",
                     exception);
         }
-
     }
 
     private void removeOriginalResources(Map<String, List<String>> paths) {
