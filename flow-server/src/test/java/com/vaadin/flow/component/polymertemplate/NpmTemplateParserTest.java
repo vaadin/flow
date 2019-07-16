@@ -3,6 +3,7 @@ package com.vaadin.flow.component.polymertemplate;
 import java.util.Collections;
 import java.util.Locale;
 
+import org.hamcrest.CoreMatchers;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.junit.Assert;
@@ -63,7 +64,7 @@ public class NpmTemplateParserTest {
                 "likeable-element",
                 templateContent.getTemplateElement().parent().id());
 
-        Assert.assertEquals("Expected template element to have 2 children", 2,
+        Assert.assertEquals("Expected template element to have 3 children", 3,
                 templateContent.getTemplateElement().childNodeSize());
 
         Assert.assertEquals(
@@ -242,6 +243,47 @@ public class NpmTemplateParserTest {
                 parentDiv.child(1).tag().getName().toLowerCase(Locale.ENGLISH));
     }
 
+    @Test
+    public void severalJsModuleAnnotations_theFirstFileDoesNotExist_fileWithContentIsChosen() {
+        Mockito.when(configuration.getStringProperty(Mockito.anyString(),
+                Mockito.anyString()))
+                .thenReturn(VAADIN_SERVLET_RESOURCES + "config/stats.json");
+
+        TemplateParser instance = NpmTemplateParser.getInstance();
+        TemplateParser.TemplateData templateContent = instance
+                .getTemplateContent(BrokenJsModuleAnnotation.class,
+                        "likeable-element-view", service);
+
+        Assert.assertEquals("Parent element ID not the expected one.",
+                "likeable-element-view",
+                templateContent.getTemplateElement().parent().id());
+    }
+
+    @Test
+    public void severalJsModuleAnnotations_parserSelectsByName() {
+        Mockito.when(configuration.getStringProperty(Mockito.anyString(),
+                Mockito.anyString()))
+                .thenReturn(VAADIN_SERVLET_RESOURCES + "config/stats.json");
+
+        TemplateParser instance = NpmTemplateParser.getInstance();
+        TemplateParser.TemplateData templateContent = instance
+                .getTemplateContent(SeveralJsModuleAnnotations.class,
+                        "likeable-element-view", service);
+
+        Assert.assertEquals("Parent element ID not the expected one.",
+                "likeable-element-view",
+                templateContent.getTemplateElement().parent().id());
+
+        // Two JS module annotations with almost the same content.
+        // The first one contains a string "Tag name doesn't match the JS module
+        // name", the second one doesn't contain this string.
+        // The second module should be chosen since its name matches the tag
+        // name
+        Assert.assertThat(templateContent.getTemplateElement().html(),
+                CoreMatchers.not(CoreMatchers.containsString(
+                        "Tag name doesn't match the JS module name")));
+    }
+
     @Tag("likeable-element")
     @JsModule("./frontend/LikeableElement.js")
     public class Likeable extends PolymerTemplate<TemplateModel> {
@@ -260,6 +302,20 @@ public class NpmTemplateParserTest {
     @Tag("likeable-element")
     @JsModule("./frontend/likeable-element-view.js")
     public class LikeableView extends PolymerTemplate<TemplateModel> {
+    }
+
+    @Tag("likeable-element-view")
+    @JsModule("./frontend/LikeableElement.js")
+    @JsModule("./frontend/likeable-element-view.js")
+    public class SeveralJsModuleAnnotations
+            extends PolymerTemplate<TemplateModel> {
+    }
+
+    @Tag("likeable-element-view")
+    @JsModule("./frontend/non-existant.js")
+    @JsModule("./frontend/likeable-element-view.js")
+    public class BrokenJsModuleAnnotation
+            extends PolymerTemplate<TemplateModel> {
     }
 
     @Tag("review-list")
