@@ -53,11 +53,15 @@ public class TaskCopyFrontendFiles implements Command {
      *            scanned.
      */
     TaskCopyFrontendFiles(File npmFolder, Set<File> jarFilesToScan) {
-        this.targetDirectory = new File(npmFolder, NODE_MODULES + FLOW_NPM_PACKAGE_NAME);
+        Objects.requireNonNull(npmFolder,
+                "Parameter 'npmFolder' must not be " + "null");
+        Objects.requireNonNull(jarFilesToScan,
+                "Parameter 'jarFilesToScan' must not be null");
+        this.targetDirectory = new File(npmFolder,
+                NODE_MODULES + FLOW_NPM_PACKAGE_NAME);
         jarFiles = jarFilesToScan.stream()
                 .filter(file -> file.getName().endsWith(JAR_SUFFIX))
-                .filter(File::exists)
-                .collect(Collectors.toSet());
+                .filter(File::exists).collect(Collectors.toSet());
     }
 
     @Override

@@ -186,15 +186,10 @@ public class DevModeInitializer implements ServletContainerInitializer,
         String baseDir = config.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
                 System.getProperty("user.dir", "."));
 
-        ClassLoader classLoader = classes.isEmpty()
-                ? Thread.currentThread().getContextClassLoader()
-                // Needed in spring
-                : classes.iterator().next().getClassLoader();
-
-        Set<File> jarFiles = getJarFilesFromClassloader(classLoader, RESOURCES_FRONTEND_DEFAULT);
+        Set<File> jarFiles = getJarFilesFromClassloader();
 
         Builder builder = new NodeTasks.Builder(
-                new DefaultClassFinder(classLoader, classes.toArray(new Class[0])),
+                new DefaultClassFinder(classes),
                 new File(baseDir));
 
         log().info("Starting dev-mode updaters in {} folder.",
@@ -230,7 +225,7 @@ public class DevModeInitializer implements ServletContainerInitializer,
 
         Set<String> visitedClassNames = new HashSet<>();
         builder.enablePackagesUpdate(true)
-                .copyResources(true, jarFiles)
+                .copyResources(jarFiles)
                 .enableImportsUpdate(true)
                 .runNpmInstall(true).withEmbeddableWebComponents(true)
                 .collectVisitedClasses(visitedClassNames).build().execute();
@@ -262,10 +257,11 @@ public class DevModeInitializer implements ServletContainerInitializer,
      * This method returns all jar files having a specific folder.
      * We don't use URLClassLoader because will fail in Java 9+
      */
-    private static Set<File> getJarFilesFromClassloader(ClassLoader loader, String basePath) {
+    private static Set<File> getJarFilesFromClassloader() {
         Set<File> jarFiles = new HashSet<>();
         try {
-            Enumeration<URL> en = loader.getResources(RESOURCES_FRONTEND_DEFAULT);
+            Enumeration<URL> en =
+                    ClassLoader.getSystemResources(RESOURCES_FRONTEND_DEFAULT);
             while (en.hasMoreElements()) {
                 URL url = en.nextElement();
                 Matcher matcher = JAR_FILE_REGEX.matcher(url.getPath());
