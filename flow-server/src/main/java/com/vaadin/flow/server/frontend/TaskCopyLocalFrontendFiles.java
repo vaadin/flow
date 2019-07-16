@@ -57,7 +57,6 @@ public class TaskCopyLocalFrontendFiles implements Command {
 
     @Override
     public void execute() {
-        log().info("Copying frontend resources from jar files ...");
         createTargetFolder();
 
         if (frontendResourcesDirectory != null && frontendResourcesDirectory
