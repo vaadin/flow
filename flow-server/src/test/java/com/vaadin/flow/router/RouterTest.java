@@ -2448,6 +2448,10 @@ public class RouterTest extends RoutingTestBase {
     @Test // 3384
     public void theme_is_gotten_from_the_super_class()
             throws InvalidRouteConfigurationException, Exception {
+
+        // Feature enabled only for bower mode
+        Mockito.when(configuration.isCompatibilityMode()).thenReturn(true);
+
         setNavigationTargets(ExtendingView.class);
 
         router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
@@ -2457,6 +2461,22 @@ public class RouterTest extends RoutingTestBase {
         Object themeObject = theme.get(ui.getInternals());
 
         Assert.assertEquals(MyTheme.class, themeObject.getClass());
+    }
+    
+    
+    @Test
+    public void theme_is_not_gotten_from_the_super_class_when_in_npm_mode()
+            throws InvalidRouteConfigurationException, Exception {
+
+        setNavigationTargets(ExtendingView.class);
+
+        router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
+
+        Field theme = UIInternals.class.getDeclaredField("theme");
+        theme.setAccessible(true);
+        Object themeObject = theme.get(ui.getInternals());
+
+        Assert.assertNull(themeObject);
     }
 
     @Test

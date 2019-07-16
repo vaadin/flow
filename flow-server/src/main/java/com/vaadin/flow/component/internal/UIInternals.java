@@ -28,6 +28,9 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.HasElement;
@@ -72,8 +75,6 @@ import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Holds UI-specific methods and data which are intended for internal use by the
@@ -648,7 +649,9 @@ public class UIInternals implements Serializable {
         assert target != null;
         assert viewLocation != null;
 
-        updateTheme(target, path);
+        if (getSession().getConfiguration().isCompatibilityMode()) {
+            updateTheme(target, path);
+        }
 
         HasElement oldRoot = null;
         if (!routerTargetChain.isEmpty()) {
