@@ -90,8 +90,7 @@ public class NpmTemplateParser implements TemplateParser {
                     filterContext);
         }
 
-        Pair<Dependency, String> firstAvaialableDep = null;
-        Pair<Dependency, String> depByNameConent = null;
+        Pair<Dependency, String> chosenDep = null;
 
         for (Dependency dependency : dependencies) {
             if (dependency.getType() != Dependency.Type.JS_MODULE) {
@@ -110,29 +109,27 @@ public class NpmTemplateParser implements TemplateParser {
             if (source == null) {
                 continue;
             }
-            if (firstAvaialableDep == null) {
-                firstAvaialableDep = new Pair<>(dependency, source);
+            if (chosenDep == null) {
+                chosenDep = new Pair<>(dependency, source);
             }
             if (dependencyHasTagName(dependency, tag)) {
-                depByNameConent = new Pair<>(dependency, source);
+                chosenDep = new Pair<>(dependency, source);
                 break;
             }
         }
 
-        Pair<Dependency, String> dep = depByNameConent == null
-                ? firstAvaialableDep
-                : depByNameConent;
-        if (dep != null) {
+        if (chosenDep != null) {
             // Template needs to be wrapped in an element with id, to look
             // like a P2 template
             Element parent = new Element(tag);
             parent.attr("id", tag);
 
             Element templateElement = BundleParser.parseTemplateElement(
-                    dep.getFirst().getUrl(), dep.getSecond());
+                    chosenDep.getFirst().getUrl(), chosenDep.getSecond());
             templateElement.appendTo(parent);
 
-            return new TemplateData(dep.getFirst().getUrl(), templateElement);
+            return new TemplateData(chosenDep.getFirst().getUrl(),
+                    templateElement);
         }
 
         throw new IllegalStateException(String.format("Couldn't find the "
