@@ -102,13 +102,6 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
     private String webpackGeneratedTemplate;
 
     /**
-     * Defines the project frontend directory from where resources should be
-     * copied from for use with webpack.
-     */
-    @Parameter(defaultValue = "${project.basedir}/src/main/resources/META-INF/resources/frontend")
-    protected File frontendResourcesDirectory;
-
-    /**
      * The folder where flow will put generated files that will be used by
      * webpack.
      */
@@ -142,33 +135,11 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
                 .runNpmInstall(false).build()
                 .execute();
 
-        copyProjectFrontendResources();
     }
 
     /**
-     * Copy project local frontend files from defined frontendResourcesDirectory
-     * (by default 'src/main/resources/META-INF/resources/frontend').
-     * This enables running jar projects locally.
      */
     private void copyProjectFrontendResources() {
-        File targetDirectory = new File(npmFolder, FrontendUtils.NODE_MODULES
-                + FrontendUtils.FLOW_NPM_PACKAGE_NAME);
-
-        if (frontendResourcesDirectory != null && frontendResourcesDirectory
-                .isDirectory()) {
-            getLog().info("Copying project local frontend resources.");
-            try {
-                FileUtils.copyDirectory(frontendResourcesDirectory,
-                        targetDirectory);
-            } catch (IOException e) {
-                throw new UncheckedIOException(String.format(
-                        "Failed to copy project frontend resources from '%s' to '%s'",
-                        frontendResourcesDirectory, targetDirectory), e);
-            }
-            getLog().info("Copying frontend directory completed.");
-        } else {
-            getLog().debug("Found no local frontend resources for the project");
-        }
     }
 
     private void propagateBuildInfo() {

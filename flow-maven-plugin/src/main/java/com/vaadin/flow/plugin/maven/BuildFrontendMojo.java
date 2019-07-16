@@ -111,6 +111,13 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
     @Parameter(defaultValue = "true")
     private boolean generateEmbeddableWebComponents;
 
+    /**
+     * Defines the project frontend directory from where resources should be
+     * copied from for use with webpack.
+     */
+    @Parameter(defaultValue = "${project.basedir}/src/main/resources/META-INF/resources/frontend")
+    protected File frontendResourcesDirectory;
+
     @Override
     public void execute() {
         super.execute();
@@ -146,6 +153,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                 generatedFolder, frontendDirectory).runNpmInstall(runNpmInstall)
                         .enablePackagesUpdate(true)
                         .copyResources(true, jarFiles)
+                .copyLocalResources(frontendResourcesDirectory)
                         .enableImportsUpdate(true)
                         .withEmbeddableWebComponents(
                                 generateEmbeddableWebComponents)

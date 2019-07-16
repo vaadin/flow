@@ -214,6 +214,7 @@ public class DevModeInitializer implements ServletContainerInitializer,
         Set<String> visitedClassNames = new HashSet<>();
         builder.enablePackagesUpdate(true)
                 .copyResources(true, null)
+                .copyLocalResources(new File(baseDir, "src/main/resources/META-INF/resources/frontend"))
                 .enableImportsUpdate(true)
                 .runNpmInstall(true).withEmbeddableWebComponents(true)
                 .collectVisitedClasses(visitedClassNames).build().execute();
