@@ -243,13 +243,13 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void should_addLocalModulesAfterScopedModules() throws Exception {
+    public void should_addJsModulesAfterThemeModules() throws Exception {
         updater.execute();
 
-        addImports("styles.js");
+        addImports("styles/styles.js");
 
-        assertImportOrder("@vaadin/vaadin-lumo-styles/color.js", "styles.js");
-        assertImportOrder("@vaadin/vaadin-lumo-styles/color.js", "unresolved/component");
+        assertImportOrder("@vaadin/vaadin-lumo-styles/color.js", "Frontend/foo.js");
+        assertImportOrder("@vaadin/vaadin-lumo-styles/color.js", "styles/styles.js");
     }
 
     private void assertContainsImports(boolean contains, String... imports)

@@ -117,7 +117,7 @@ public class TaskUpdateImports extends NodeUpdater {
 
     @Override
     public void execute() {
-        Set<String> modules = new HashSet<>();
+        Set<String> modules = new LinkedHashSet<>();
         modules.addAll(resolveModules(frontDeps.getModules(), true));
         modules.addAll(resolveModules(frontDeps.getScripts(), false));
 
@@ -125,10 +125,8 @@ public class TaskUpdateImports extends NodeUpdater {
                 Collections.singleton(generatedFlowImports.getName())));
 
         // filter out external URLs (including "://")
-        modules = modules.stream().filter(module -> !module.contains("://"))
-                .collect(Collectors.toSet());
+        modules.removeIf(module -> module.contains("://"));
 
-        modules = sortModules(modules);
         try {
             updateMainJsFile(getMainJsContent(modules));
         } catch (Exception e) {
@@ -137,16 +135,6 @@ public class TaskUpdateImports extends NodeUpdater {
                             generatedFlowImports),
                     e);
         }
-    }
-
-    private Set<String> sortModules(Set<String> modules) {
-        // Sort all modules belonging to scoped packages first in order to
-        // allow local modules to override e.g. Lumo settings (#5729), then
-        // sort in reverse alphabetical order.
-        return modules.stream().sorted(
-                Comparator.<String>comparingInt(s -> s.startsWith("@") ? 0 : 1)
-                        .thenComparing(Comparator.reverseOrder()))
-                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     private List<String> getMainJsContent(Set<String> modules) {
