@@ -222,6 +222,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
         File tokenFile = getTokenFile();
         if (!tokenFile.exists()) {
             getLog().warn("Couldn't update devMode token due to missing token file.");
+            return;
         }
         try {
             String json = FileUtils.readFileToString(tokenFile, StandardCharsets.UTF_8.name());
