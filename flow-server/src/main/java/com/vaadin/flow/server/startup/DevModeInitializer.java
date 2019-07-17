@@ -23,14 +23,17 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
 import javax.servlet.annotation.WebListener;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
+import java.net.URL;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -52,7 +55,9 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
+
 
 /**
  * Servlet initializer starting node updaters as well as the webpack-dev-mode
@@ -131,6 +136,8 @@ public class DevModeInitializer implements ServletContainerInitializer,
         }
     }
 
+    private static final Pattern JAR_FILE_REGEX = Pattern.compile(".*file:(.+\\.jar).*");
+
     @Override
     public void onStartup(Set<Class<?>> classes, ServletContext context)
             throws ServletException {
@@ -177,7 +184,11 @@ public class DevModeInitializer implements ServletContainerInitializer,
 
         String baseDir = config.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
                 System.getProperty("user.dir", "."));
-        Builder builder = new NodeTasks.Builder(new DefaultClassFinder(classes),
+
+        Set<File> jarFiles = getJarFilesFromClassloader();
+
+        Builder builder = new NodeTasks.Builder(
+                new DefaultClassFinder(classes),
                 new File(baseDir));
 
         log().info("Starting dev-mode updaters in {} folder.",
@@ -213,7 +224,7 @@ public class DevModeInitializer implements ServletContainerInitializer,
 
         Set<String> visitedClassNames = new HashSet<>();
         builder.enablePackagesUpdate(true)
-                .copyResources(true, null)
+                .copyResources(jarFiles)
                 .enableImportsUpdate(true)
                 .runNpmInstall(true).withEmbeddableWebComponents(true)
                 .collectVisitedClasses(visitedClassNames).build().execute();
@@ -239,5 +250,27 @@ public class DevModeInitializer implements ServletContainerInitializer,
         if (handler != null && !handler.reuseDevServer()) {
             handler.stop();
         }
+    }
+
+    /*
+     * This method returns all jar files having a specific folder.
+     * We don't use URLClassLoader because will fail in Java 9+
+     */
+    private static Set<File> getJarFilesFromClassloader() {
+        Set<File> jarFiles = new HashSet<>();
+        try {
+            Enumeration<URL> en = DevModeInitializer.class.getClassLoader()
+                    .getResources(RESOURCES_FRONTEND_DEFAULT);
+            while (en.hasMoreElements()) {
+                URL url = en.nextElement();
+                Matcher matcher = JAR_FILE_REGEX.matcher(url.getPath());
+                if (matcher.find()) {
+                    jarFiles.add(new File(matcher.group(1)));
+                }
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+        return jarFiles;
     }
 }

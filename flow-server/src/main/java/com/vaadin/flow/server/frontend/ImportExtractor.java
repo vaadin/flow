@@ -44,13 +44,20 @@ class ImportExtractor implements Serializable {
         List<String> imports = new ArrayList<>();
 
         String strippedContent = removeComments();
-        int indexFrom = 0;
+        int indexFrom;
         int index = 0;
         while (index >= 0) {
+            indexFrom = index;
             index = strippedContent.indexOf(IMPORT, indexFrom);
             if (index < 0) {
                 break;
             }
+            String betweenImports = strippedContent.substring(indexFrom, index)
+                    .trim();
+            if (!betweenImports.isEmpty() && !betweenImports.equals(";")) {
+                break;
+            }
+
             indexFrom = index + IMPORT.length();
             index = strippedContent.indexOf(";", indexFrom);
             if (index < 0) {

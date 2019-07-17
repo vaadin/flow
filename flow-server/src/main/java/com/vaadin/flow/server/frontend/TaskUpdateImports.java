@@ -270,7 +270,7 @@ public class TaskUpdateImports extends NodeUpdater {
     }
 
     private String notFoundMessage(Set<String> files, String prefix, String suffix) {
-        return String.format("%n%n  %s%n      - %s%n  %s%n%n", prefix, String.join("\n       - ", files), suffix);
+        return String.format("%n%n  %s%n      - %s%n  %s%n%n", prefix, String.join("\n      - ", files), suffix);
     }
 
     private void handleImports(String path, AbstractTheme theme,
