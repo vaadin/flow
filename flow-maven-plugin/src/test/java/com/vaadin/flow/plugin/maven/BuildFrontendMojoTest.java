@@ -33,6 +33,8 @@ import java.util.stream.Collectors;
 
 import org.apache.maven.model.Build;
 import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.ReflectionUtils;
@@ -49,6 +51,7 @@ import com.vaadin.flow.plugin.TestUtils;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
+
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
@@ -112,8 +115,8 @@ public class BuildFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", npmFolder);
         ReflectionUtils.setVariableValueInObject(mojo, "generateBundle", false);
         ReflectionUtils.setVariableValueInObject(mojo, "runNpmInstall", false);
-        ReflectionUtils
-                .setVariableValueInObject(mojo, "compatibilityMode", "false");
+        ReflectionUtils.setVariableValueInObject(mojo, "compatibilityMode",
+                "false");
 
         flowPackagPath.mkdirs();
         generatedFolder.mkdirs();
@@ -155,11 +158,11 @@ public class BuildFrontendMojoTest {
     public void should_UpdateMainJsFile() throws Exception {
         Assert.assertFalse(importsFile.exists());
 
-        List<String> expectedLines = new ArrayList<>(
-                Arrays.asList("const div = document.createElement('div');",
-                        "div.innerHTML = '<custom-style><style include=\"lumo-color lumo-typography\"></style></custom-style>';",
-                        "document.head.insertBefore(div.firstElementChild, document.head.firstChild);",
-                        "document.body.setAttribute('theme', 'dark');"));
+        List<String> expectedLines = new ArrayList<>(Arrays.asList(
+                "const div = document.createElement('div');",
+                "div.innerHTML = '<custom-style><style include=\"lumo-color lumo-typography\"></style></custom-style>';",
+                "document.head.insertBefore(div.firstElementChild, document.head.firstChild);",
+                "document.body.setAttribute('theme', 'dark');"));
         expectedLines.addAll(getExpectedImports());
 
         mojo.execute();
@@ -261,13 +264,17 @@ public class BuildFrontendMojoTest {
 
     @Test
     public void existingTokenFile_enableDevServerShouldBeAdded()
-            throws IOException, IllegalAccessException {
+            throws IOException, IllegalAccessException, MojoExecutionException,
+            MojoFailureException {
 
         File projectBase = temporaryFolder.getRoot();
-        File webpackOutputDirectory = new File(projectBase, VAADIN_SERVLET_RESOURCES);
+        File webpackOutputDirectory = new File(projectBase,
+                VAADIN_SERVLET_RESOURCES);
 
-        ReflectionUtils.setVariableValueInObject(mojo, "generatedFolder", projectBase);
-        ReflectionUtils.setVariableValueInObject(mojo, "webpackOutputDirectory", webpackOutputDirectory);
+        ReflectionUtils.setVariableValueInObject(mojo, "generatedFolder",
+                projectBase);
+        ReflectionUtils.setVariableValueInObject(mojo, "webpackOutputDirectory",
+                webpackOutputDirectory);
 
         JsonObject initialBuildInfo = Json.createObject();
         initialBuildInfo.put(SERVLET_PARAMETER_COMPATIBILITY_MODE, false);
@@ -290,7 +297,8 @@ public class BuildFrontendMojoTest {
     }
 
     @Test
-    public void noTokenFile_noTokenFileShouldBeCreated() {
+    public void noTokenFile_noTokenFileShouldBeCreated()
+            throws MojoExecutionException, MojoFailureException {
         mojo.execute();
 
         Assert.assertFalse(tokenFile.exists());
@@ -307,12 +315,14 @@ public class BuildFrontendMojoTest {
         String content = FileUtils.fileRead(importsFile);
 
         if (contains) {
-            Arrays.asList(imports).forEach(s -> Assert
-                    .assertTrue(s + " not found in:\n" + content,
+            Arrays.asList(imports)
+                    .forEach(s -> Assert.assertTrue(
+                            s + " not found in:\n" + content,
                             content.contains(addWebpackPrefix(s))));
         } else {
-            Arrays.asList(imports).forEach(s -> Assert
-                    .assertFalse(s + " found in:\n" + content,
+            Arrays.asList(imports)
+                    .forEach(s -> Assert.assertFalse(
+                            s + " found in:\n" + content,
                             content.contains(addWebpackPrefix(s))));
         }
     }
@@ -329,9 +339,10 @@ public class BuildFrontendMojoTest {
 
         List<String> current = FileUtils.loadFile(importsFile);
 
-        Set<String> removed = current.stream()
-                .filter(line -> importsList.stream().map(this::addWebpackPrefix)
-                        .anyMatch(line::contains)).collect(Collectors.toSet());
+        Set<String> removed = current
+                .stream().filter(line -> importsList.stream()
+                        .map(this::addWebpackPrefix).anyMatch(line::contains))
+                .collect(Collectors.toSet());
 
         current.removeAll(removed);
 
@@ -386,9 +397,8 @@ public class BuildFrontendMojoTest {
 
     private File resolveImportFile(File directoryWithImportsJs,
             File nodeModulesPath, String jsImport) {
-        File root = jsImport.startsWith("./") ?
-                directoryWithImportsJs :
-                nodeModulesPath;
+        File root = jsImport.startsWith("./") ? directoryWithImportsJs
+                : nodeModulesPath;
         return new File(root, jsImport);
     }
 
