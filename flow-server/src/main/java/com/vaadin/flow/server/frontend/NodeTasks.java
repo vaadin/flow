@@ -23,7 +23,8 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 
-import com.vaadin.flow.server.Command;
+import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.FallibleCommand;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 
@@ -37,7 +38,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
  * An executor that it's run when the servlet context is initialised in dev-mode
  * or when flow-maven-plugin goals are run. It can chain a set of task to run.
  */
-public class NodeTasks implements Command {
+public class NodeTasks implements FallibleCommand {
 
     /**
      * Build a <code>NodeExecutor</code> instance.
@@ -184,7 +185,7 @@ public class NodeTasks implements Command {
          * Sets whether to perform always perform clean up procedure. Default is
          * <code>false</code>. When the value is false, npm related files will
          * only be removed when a platform version update is detected.
-         * 
+         *
          * @param forceClean
          *            <code>true</code> to clean npm files always, otherwise
          *            <code>false</code>
@@ -279,7 +280,7 @@ public class NodeTasks implements Command {
         }
     }
 
-    private final Collection<Command> commands = new ArrayList<>();
+    private final Collection<FallibleCommand> commands = new ArrayList<>();
 
     private NodeTasks(Builder builder) {
 
@@ -318,8 +319,8 @@ public class NodeTasks implements Command {
         }
 
         if (builder.copyResources) {
-            commands.add(new TaskCopyFrontendFiles(
-                    builder.npmFolder, builder.jarFiles));
+            commands.add(new TaskCopyFrontendFiles(builder.npmFolder,
+                    builder.jarFiles));
         }
 
         if (builder.webpackTemplate != null
@@ -343,8 +344,10 @@ public class NodeTasks implements Command {
     }
 
     @Override
-    public void execute() {
-        commands.forEach(Command::execute);
+    public void execute() throws ExecutionFailedException {
+        for (FallibleCommand command : commands) {
+            command.execute();
+        }
     }
 
 }

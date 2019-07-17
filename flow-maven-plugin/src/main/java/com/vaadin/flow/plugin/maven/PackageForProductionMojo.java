@@ -25,6 +25,8 @@ import java.util.stream.Collectors;
 
 import com.github.eirslett.maven.plugins.frontend.lib.ProxyConfig;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -205,7 +207,7 @@ public class PackageForProductionMojo extends FlowModeAbstractMojo {
     private MavenProject project;
 
     @Override
-    public void execute() {
+    public void execute() throws MojoExecutionException, MojoFailureException {
         super.execute();
 
         // Do nothing when not in compatibility mode

@@ -28,6 +28,8 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -38,6 +40,7 @@ import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.theme.Theme;
@@ -59,7 +62,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
  * <ul>
  * <li>Update {@link Constants#PACKAGE_JSON} file with the {@link NpmPackage}
  * annotations defined in the classpath,</li>
- * <li>Copy resource files used by flow from `.jar` files to the `node_modules` folder</li>
+ * <li>Copy resource files used by flow from `.jar` files to the `node_modules`
+ * folder</li>
  * <li>Install dependencies by running <code>npm install</code></li>
  * <li>Update the {@link FrontendUtils#IMPORTS_NAME} file imports with the
  * {@link JsModule} {@link Theme} and {@link JavaScript} annotations defined in
@@ -113,7 +117,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
     private boolean generateEmbeddableWebComponents;
 
     @Override
-    public void execute() {
+    public void execute() throws MojoExecutionException, MojoFailureException {
         super.execute();
 
         // Do nothing when compatibility mode
@@ -127,7 +131,13 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
 
         long start = System.nanoTime();
 
-        runNodeUpdater();
+        try {
+            runNodeUpdater();
+        } catch (ExecutionFailedException exception) {
+            throw new MojoFailureException(
+                    "Could not run node updater. One of node tasks failed",
+                    exception);
+        }
 
         if (generateBundle) {
             runWebpack();
@@ -137,16 +147,14 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
         getLog().info("update-frontend took " + ms + "ms.");
     }
 
-    private void runNodeUpdater() {
+    private void runNodeUpdater() throws ExecutionFailedException {
         Set<File> jarFiles = project.getArtifacts().stream()
                 .filter(artifact -> "jar".equals(artifact.getType()))
-                .map(Artifact::getFile)
-                .collect(Collectors.toSet());
+                .map(Artifact::getFile).collect(Collectors.toSet());
 
         new NodeTasks.Builder(getClassFinder(project), npmFolder,
                 generatedFolder, frontendDirectory).runNpmInstall(runNpmInstall)
-                        .enablePackagesUpdate(true)
-                        .copyResources(jarFiles)
+                        .enablePackagesUpdate(true).copyResources(jarFiles)
                         .enableImportsUpdate(true)
                         .withEmbeddableWebComponents(
                                 generateEmbeddableWebComponents)
@@ -209,15 +217,18 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
     }
 
     /**
-     * Add the devMode token to build token file so we don't try to start the dev server.
+     * Add the devMode token to build token file so we don't try to start the
+     * dev server.
      */
     private void addDevModeToken() {
         File tokenFile = getTokenFile();
         if (!tokenFile.exists()) {
-            getLog().warn("Couldn't update devMode token due to missing token file.");
+            getLog().warn(
+                    "Couldn't update devMode token due to missing token file.");
         }
         try {
-            String json = FileUtils.readFileToString(tokenFile, StandardCharsets.UTF_8.name());
+            String json = FileUtils.readFileToString(tokenFile,
+                    StandardCharsets.UTF_8.name());
             JsonObject buildInfo = JsonUtil.parse(json);
 
             buildInfo.put(SERVLET_PARAMETER_ENABLE_DEV_SERVER, false);
@@ -237,7 +248,8 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
             return true;
         }
         try {
-            String json = FileUtils.readFileToString(tokenFile, StandardCharsets.UTF_8.name());
+            String json = FileUtils.readFileToString(tokenFile,
+                    StandardCharsets.UTF_8.name());
             JsonObject buildInfo = JsonUtil.parse(json);
             return buildInfo.hasKey(SERVLET_PARAMETER_COMPATIBILITY_MODE)
                     ? buildInfo.getBoolean(SERVLET_PARAMETER_COMPATIBILITY_MODE)

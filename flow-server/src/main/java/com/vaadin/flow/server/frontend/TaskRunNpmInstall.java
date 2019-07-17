@@ -20,7 +20,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.vaadin.flow.server.Command;
+import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.FallibleCommand;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.NodeUpdater.log;
@@ -28,7 +29,7 @@ import static com.vaadin.flow.server.frontend.NodeUpdater.log;
 /**
  * Run <code>npm install</code> after dependencies have been updated.
  */
-public class TaskRunNpmInstall implements Command {
+public class TaskRunNpmInstall implements FallibleCommand {
 
     private final NodeUpdater packageUpdater;
 
@@ -44,7 +45,7 @@ public class TaskRunNpmInstall implements Command {
     }
 
     @Override
-    public void execute() {
+    public void execute() throws ExecutionFailedException {
         if (packageUpdater.modified || shouldRunNpmInstall()) {
             log().info("Running `npm install` ...");
             runNpmInstall();
@@ -55,7 +56,8 @@ public class TaskRunNpmInstall implements Command {
 
     private boolean shouldRunNpmInstall() {
         if (packageUpdater.nodeModulesFolder.isDirectory()) {
-            File[] installedPackages = packageUpdater.nodeModulesFolder.listFiles();
+            File[] installedPackages = packageUpdater.nodeModulesFolder
+                    .listFiles();
             return installedPackages == null
                     || (installedPackages.length == 1 && FLOW_NPM_PACKAGE_NAME
                             .startsWith(installedPackages[0].getName()));
@@ -66,7 +68,7 @@ public class TaskRunNpmInstall implements Command {
     /**
      * Executes `npm install` after `package.json` has been updated.
      */
-    private void runNpmInstall() {
+    private void runNpmInstall() throws ExecutionFailedException {
         List<String> command = new ArrayList<>(FrontendUtils
                 .getNpmExecutable(packageUpdater.npmFolder.getAbsolutePath()));
         command.add("install");
@@ -82,11 +84,17 @@ public class TaskRunNpmInstall implements Command {
             if (errorCode != 0) {
                 log().error(
                         ">>> Dependency ERROR. Check that all required dependencies are deployed in npm repositories.");
+                throw new ExecutionFailedException(
+                        "Npm install has exited with non zero status. "
+                                + "Some dependencies are not installed. Check npm command output");
             } else {
-                log().info("package.json updated and npm dependencies installed. ");
+                log().info(
+                        "package.json updated and npm dependencies installed. ");
             }
         } catch (InterruptedException | IOException e) {
             log().error("Error when running `npm install`", e);
+            throw new ExecutionFailedException(
+                    "Npm install command has not finished.");
         } finally {
             if (process != null) {
                 process.destroyForcibly();

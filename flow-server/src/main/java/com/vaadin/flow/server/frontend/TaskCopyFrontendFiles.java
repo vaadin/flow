@@ -26,7 +26,7 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.server.Command;
+import com.vaadin.flow.server.FallibleCommand;
 
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
@@ -35,7 +35,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 /**
  * Copies JavaScript and CSS files from JAR files into a given folder.
  */
-public class TaskCopyFrontendFiles implements Command {
+public class TaskCopyFrontendFiles implements FallibleCommand {
     private static final String JAR_SUFFIX = ".jar";
     private static final String[] WILDCARD_INCLUSIONS = new String[] {
             "**/*.js", "**/*.css" };
