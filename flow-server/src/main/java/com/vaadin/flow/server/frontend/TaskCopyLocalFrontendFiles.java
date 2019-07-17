@@ -24,7 +24,7 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.server.Command;
+import com.vaadin.flow.server.FallibleCommand;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
@@ -32,18 +32,18 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 /**
  * Copies JavaScript files from the given local frontend folder.
  */
-public class TaskCopyLocalFrontendFiles implements Command {
+public class TaskCopyLocalFrontendFiles implements FallibleCommand {
 
     private final File targetDirectory;
     private final File frontendResourcesDirectory;
 
     /**
      * Copy project local frontend files from defined frontendResourcesDirectory
-     * (by default 'src/main/resources/META-INF/resources/frontend').
-     * This enables running jar projects locally.
+     * (by default 'src/main/resources/META-INF/resources/frontend'). This
+     * enables running jar projects locally.
      *
      * @param npmFolder
-     *         target directory for the discovered files
+     *            target directory for the discovered files
      */
     TaskCopyLocalFrontendFiles(File npmFolder,
             File frontendResourcesDirectory) {
@@ -56,8 +56,8 @@ public class TaskCopyLocalFrontendFiles implements Command {
     public void execute() {
         createTargetFolder();
 
-        if (frontendResourcesDirectory != null && frontendResourcesDirectory
-                .isDirectory()) {
+        if (frontendResourcesDirectory != null
+                && frontendResourcesDirectory.isDirectory()) {
             log().info("Copying project local frontend resources.");
             try {
                 FileUtils.copyDirectory(frontendResourcesDirectory,
@@ -77,9 +77,8 @@ public class TaskCopyLocalFrontendFiles implements Command {
         try {
             FileUtils.forceMkdir(Objects.requireNonNull(targetDirectory));
         } catch (IOException e) {
-            throw new UncheckedIOException(
-                    String.format("Failed to create directory '%s'",
-                            targetDirectory), e);
+            throw new UncheckedIOException(String.format(
+                    "Failed to create directory '%s'", targetDirectory), e);
         }
     }
 

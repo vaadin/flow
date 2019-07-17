@@ -23,6 +23,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
 import javax.servlet.annotation.WebListener;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -46,6 +47,7 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
+import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletContext;
@@ -59,7 +61,6 @@ import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
 
-
 /**
  * Servlet initializer starting node updaters as well as the webpack-dev-mode
  * server.
@@ -69,7 +70,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
 @WebListener
 public class DevModeInitializer implements ServletContainerInitializer,
         Serializable, ServletContextListener {
-
 
     /**
      * The classes that were visited when determining which frontend resources
@@ -138,7 +138,8 @@ public class DevModeInitializer implements ServletContainerInitializer,
         }
     }
 
-    private static final Pattern JAR_FILE_REGEX = Pattern.compile(".*file:(.+\\.jar).*");
+    private static final Pattern JAR_FILE_REGEX = Pattern
+            .compile(".*file:(.+\\.jar).*");
 
     @Override
     public void onStartup(Set<Class<?>> classes, ServletContext context)
@@ -167,9 +168,13 @@ public class DevModeInitializer implements ServletContainerInitializer,
      *            servlet context we are running in
      * @param config
      *            deployment configuration
+     *
+     * @throws ServletException
+     *             if dev mode can't be initialized
      */
     public static void initDevModeHandler(Set<Class<?>> classes,
-            ServletContext context, DeploymentConfiguration config) {
+            ServletContext context, DeploymentConfiguration config)
+            throws ServletException {
         if (config.isProductionMode()) {
             log().debug("Skipping DEV MODE because PRODUCTION MODE is set.");
             return;
@@ -189,8 +194,7 @@ public class DevModeInitializer implements ServletContainerInitializer,
 
         Set<File> jarFiles = getJarFilesFromClassloader();
 
-        Builder builder = new NodeTasks.Builder(
-                new DefaultClassFinder(classes),
+        Builder builder = new NodeTasks.Builder(new DefaultClassFinder(classes),
                 new File(baseDir));
 
         log().info("Starting dev-mode updaters in {} folder.",
@@ -225,13 +229,19 @@ public class DevModeInitializer implements ServletContainerInitializer,
         }
 
         Set<String> visitedClassNames = new HashSet<>();
-        builder.enablePackagesUpdate(true)
-                .copyResources(jarFiles)
-                .copyLocalResources(new File(baseDir,
-                        Constants.LOCAL_FRONTEND_RESOURCES_PATH))
-                .enableImportsUpdate(true)
-                .runNpmInstall(true).withEmbeddableWebComponents(true)
-                .collectVisitedClasses(visitedClassNames).build().execute();
+        try {
+            builder.enablePackagesUpdate(true).copyResources(jarFiles)
+                    .copyLocalResources(new File(baseDir,
+                            Constants.LOCAL_FRONTEND_RESOURCES_PATH))
+                    .enableImportsUpdate(true).runNpmInstall(true)
+                    .withEmbeddableWebComponents(true)
+                    .collectVisitedClasses(visitedClassNames).build().execute();
+        } catch (ExecutionFailedException exception) {
+            log().debug(
+                    "Could not initializer dev mode handler. One of the node tasks failed",
+                    exception);
+            throw new ServletException(exception);
+        }
 
         VaadinContext vaadinContext = new VaadinServletContext(context);
         vaadinContext.setAttribute(new VisitedClasses(visitedClassNames));
@@ -257,8 +267,8 @@ public class DevModeInitializer implements ServletContainerInitializer,
     }
 
     /*
-     * This method returns all jar files having a specific folder.
-     * We don't use URLClassLoader because will fail in Java 9+
+     * This method returns all jar files having a specific folder. We don't use
+     * URLClassLoader because will fail in Java 9+
      */
     private static Set<File> getJarFilesFromClassloader() {
         Set<File> jarFiles = new HashSet<>();

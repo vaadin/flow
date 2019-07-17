@@ -18,6 +18,8 @@ package com.vaadin.flow.plugin.maven;
 import java.io.File;
 
 import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
 
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
@@ -54,7 +56,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
     protected boolean compatibility;
 
     @Override
-    public void execute() {
+    public void execute() throws MojoExecutionException, MojoFailureException {
         if (compatibilityMode == null) {
             compatibilityMode = System.getProperty(VAADIN_COMPATIBILITY_MODE);
         }
