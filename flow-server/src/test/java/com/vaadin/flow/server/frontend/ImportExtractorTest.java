@@ -86,4 +86,30 @@ public class ImportExtractorTest {
         Assert.assertEquals("baz.js", importedPaths.get(2));
     }
 
+    @Test
+    public void getImports_thereAreNoImportsAtAll_noImportsFound() {
+        ImportExtractor extractor = new ImportExtractor(
+                "const container = document.createElement('template');\n" + "\n"
+                        + "        container.innerHTML = `\n"
+                        + "            <dom-module id=\"gui-styles\">\n"
+                        + "                <template>\n"
+                        + "                    <style>\n"
+                        + "                        @import url('https://fonts.googleapis.com/css?family=Montserrat:700');\n"
+                        + "                    </style>\n"
+                        + "                </template>\n"
+                        + "            </dom-module>`;\n"
+                        + "        document.head.appendChild(container.content);");
+
+        Assert.assertEquals(0, extractor.getImportedPaths().size());
+    }
+
+    @Test
+    public void getImports_onlyImportAsFirstStatementsAreCounted() {
+        ImportExtractor extractor = new ImportExtractor(
+                "import {A} from 'foo.js'; \n some text  \n  import from 'ignored.js';");
+
+        List<String> importedPaths = extractor.getImportedPaths();
+        Assert.assertEquals(1, importedPaths.size());
+        Assert.assertEquals("foo.js", importedPaths.get(0));
+    }
 }
