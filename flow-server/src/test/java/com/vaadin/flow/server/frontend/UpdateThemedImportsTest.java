@@ -107,9 +107,9 @@ public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
         FrontendDependencies deps = new FrontendDependencies(finder) {
 
             @Override
-            public Set<String> getModules() {
+            public List<String> getModules() {
                 return Stream.of("./src/main-template.js")
-                        .collect(Collectors.toSet());
+                        .collect(Collectors.toList());
             }
 
             @Override

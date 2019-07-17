@@ -242,6 +242,16 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         assertContainsImports(false, "./added-import.js");
     }
 
+    @Test
+    public void should_addJsModulesAfterThemeModules() throws Exception {
+        updater.execute();
+
+        addImports("styles/styles.js");
+
+        assertImportOrder("@vaadin/vaadin-lumo-styles/color.js", "Frontend/foo.js");
+        assertImportOrder("@vaadin/vaadin-lumo-styles/color.js", "styles/styles.js");
+    }
+
     private void assertContainsImports(boolean contains, String... imports)
             throws IOException {
         String content = FileUtils.readFileToString(importsFile,
@@ -261,6 +271,21 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
             } else {
                 assertFalse(message, result);
             }
+        }
+    }
+
+    private void assertImportOrder(String... imports)
+            throws IOException  {
+        String content = FileUtils.readFileToString(importsFile,
+                Charset.defaultCharset());
+        int curIndex = -1;
+        for (String line : imports) {
+            String prefixed = addWebpackPrefix(line);
+            int nextIndex = content.indexOf(prefixed);
+            assertTrue("import '" + prefixed + "' not found", nextIndex != -1);
+            assertTrue("import '" + prefixed + "' appears in the wrong order",
+                    curIndex <= nextIndex);
+            curIndex = nextIndex;
         }
     }
 

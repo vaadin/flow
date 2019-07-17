@@ -16,11 +16,13 @@
 
 package com.vaadin.flow.testonlynpmfeatures.defaulttheme;
 
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.router.Route;
 
-@Route("com.vaadin.flow.testonlynpmfeatures.defaulttheme.DefaultView")
+@Route("com.vaadin.flow.testonlynpmfeatures.defaulttheme.DefaultThemeView")
+@JsModule("styles/styles.js")
 public class DefaultThemeView extends Div {
     public DefaultThemeView() {
         Anchor anchor = new Anchor("https://www.google.com", "Google");

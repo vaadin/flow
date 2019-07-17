@@ -38,7 +38,21 @@ public class DefaultThemeIT extends ChromeBrowserTest {
                 .flatMap(customStyle -> customStyle.$("style").all().stream())
                 .collect(Collectors.toList());
 
-        Assert.assertEquals("Should have found 8 custom-styles", 8,
+        // 8 from Lumo and 1 custom-style from frontend/styles/styles.js
+        Assert.assertEquals("Should have found 9 custom-styles", 9,
                 customStyles.size());
+    }
+
+    @Test
+    public void theme_override_expected_last() {
+        open();
+
+        String lastStyle = $("head").first()
+                .$("custom-style").last()
+                .$("style").first()
+                .getAttribute("innerText");
+
+        Assert.assertTrue("Theme override expected last",
+                lastStyle.contains("--lumo-primary-color: red"));
     }
 }

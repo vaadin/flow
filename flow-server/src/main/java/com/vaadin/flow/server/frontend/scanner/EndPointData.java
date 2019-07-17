@@ -36,6 +36,7 @@ public final class EndPointData implements Serializable {
     String layout;
     ThemeData theme = new ThemeData();
     final HashSet<String> modules = new HashSet<>();
+    final HashSet<String> themeModules = new HashSet<>();
     final HashSet<String> scripts = new HashSet<>();
     final transient List<CssData> css = new ArrayList<>();
 
@@ -56,6 +57,10 @@ public final class EndPointData implements Serializable {
 
     Set<String> getModules() {
         return modules;
+    }
+
+    Set<String> getThemeModules() {
+        return themeModules;
     }
 
     Set<String> getScripts() {

@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -117,7 +116,7 @@ public class TaskUpdateImports extends NodeUpdater {
 
     @Override
     public void execute() {
-        Set<String> modules = new HashSet<>();
+        Set<String> modules = new LinkedHashSet<>();
         modules.addAll(resolveModules(frontDeps.getModules(), true));
         modules.addAll(resolveModules(frontDeps.getScripts(), false));
 
@@ -125,10 +124,8 @@ public class TaskUpdateImports extends NodeUpdater {
                 Collections.singleton(generatedFlowImports.getName())));
 
         // filter out external URLs (including "://")
-        modules = modules.stream().filter(module -> !module.contains("://"))
-                .collect(Collectors.toSet());
+        modules.removeIf(module -> module.contains("://"));
 
-        modules = sortModules(modules);
         try {
             updateMainJsFile(getMainJsContent(modules));
         } catch (Exception e) {
@@ -137,11 +134,6 @@ public class TaskUpdateImports extends NodeUpdater {
                             generatedFlowImports),
                     e);
         }
-    }
-
-    private Set<String> sortModules(Set<String> modules) {
-        return modules.stream().sorted(Comparator.reverseOrder())
-                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     private List<String> getMainJsContent(Set<String> modules) {

@@ -22,9 +22,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -170,16 +172,22 @@ public class FrontendDependencies implements Serializable {
     }
 
     /**
-     * Get all ES6 modules needed for run the application.
+     * Get all ES6 modules needed for run the application. Modules that are
+     * theme dependencies are guaranteed to precede other modules in the result.
      *
-     * @return the set of JS modules
+     * @return list of JS modules
      */
-    public Set<String> getModules() {
-        Set<String> all = new HashSet<>();
+    public List<String> getModules() {
+        // A module may appear in both data.getThemeModules and data.getModules,
+        // depending on how the classes were visited, hence the LinkedHashSet
+        LinkedHashSet<String> all = new LinkedHashSet<>();
+        for (EndPointData data : endPoints.values()) {
+            all.addAll(data.getThemeModules());
+        }
         for (EndPointData data : endPoints.values()) {
             all.addAll(data.getModules());
         }
-        return all;
+        return new ArrayList<>(all);
     }
 
     /**
@@ -262,7 +270,7 @@ public class FrontendDependencies implements Serializable {
         for (Class<?> route : finder.getAnnotatedClasses(routeClass)) {
             String className = route.getName();
             EndPointData data = new EndPointData(route);
-            endPoints.put(className, visitClass(className, data));
+            endPoints.put(className, visitClass(className, data, false));
         }
     }
 
@@ -281,7 +289,10 @@ public class FrontendDependencies implements Serializable {
         // entry-point visits
         for (EndPointData endPoint : endPoints.values()) {
             if (endPoint.getLayout() != null) {
-                visitClass(endPoint.getLayout(), endPoint);
+                visitClass(endPoint.getLayout(), endPoint, true);
+            }
+            if (endPoint.getTheme() != null) {
+                visitClass(endPoint.getTheme().getName(), endPoint, true);
             }
         }
 
@@ -340,7 +351,7 @@ public class FrontendDependencies implements Serializable {
             Optional<EndPointData> endPointData =
                     endPoints.values().stream().findFirst();
             if (endPointData.isPresent()) {
-                visitClass(defaultTheme.getName(), endPointData.get());
+                visitClass(defaultTheme.getName(), endPointData.get(), true);
                 return defaultTheme;
             }
         }
@@ -424,7 +435,7 @@ public class FrontendDependencies implements Serializable {
             String exporterClassName = exporter.getName();
             EndPointData exporterData = new EndPointData(exporter);
             exportedPoints.put(exporterClassName,
-                    visitClass(exporterClassName, exporterData));
+                    visitClass(exporterClassName, exporterData, false));
 
             if (!Modifier.isAbstract(exporter.getModifiers())) {
                 Class<? extends Component> componentClass = (Class<? extends Component>) ReflectTools
@@ -435,7 +446,7 @@ public class FrontendDependencies implements Serializable {
                     EndPointData configurationData = new EndPointData(
                             componentClass);
                     exportedPoints.put(componentClassName,
-                            visitClass(componentClassName, configurationData));
+                            visitClass(componentClassName, configurationData, false));
                 }
             }
         }
@@ -453,9 +464,13 @@ public class FrontendDependencies implements Serializable {
      * @throws IOException
      */
     private EndPointData visitClass(String className,
-            EndPointData endPoint) throws IOException {
+            EndPointData endPoint, boolean themeScope) throws IOException {
 
-        if (!isVisitable(className) || endPoint.getClasses().contains(className)) {
+        // In theme scope, we want to revisit already visited classes to have
+        // theme modules collected separately (in turn required for module
+        // sorting, #5729)
+        if (!isVisitable(className) ||
+                (!themeScope && endPoint.getClasses().contains(className))) {
             return endPoint;
         }
         endPoint.getClasses().add(className);
@@ -466,7 +481,7 @@ public class FrontendDependencies implements Serializable {
         }
 
         FrontendClassVisitor visitor = new FrontendClassVisitor(className,
-                endPoint);
+                endPoint, themeScope);
         ClassReader cr = new ClassReader(url.openStream());
         cr.accept(visitor, ClassReader.EXPAND_FRAMES);
 
@@ -479,7 +494,7 @@ public class FrontendDependencies implements Serializable {
             // we output all dependencies at once. When we implement
             // chunks, this will need to be considered.
             if (!visited.contains(clazz)) {
-                visitClass(clazz, endPoint);
+                visitClass(clazz, endPoint, themeScope);
             }
         }
 
