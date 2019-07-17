@@ -228,6 +228,11 @@ public final class Constants implements Serializable {
     public static final String VAADIN_BUILD_FILES_PATH = VAADIN_MAPPING
             + VAADIN_BUILD;
 
+    /**
+     * Default path for local frontend resources packaged for jar add-ons.
+     */
+    public static final String LOCAL_FRONTEND_RESOURCES_PATH = "src/main/resources/META-INF/resources/frontend";
+
     public static final int SUPPORTED_NODE_MAJOR_VERSION = 10;
     public static final int SUPPORTED_NODE_MINOR_VERSION = 0;
     public static final int SUPPORTED_NPM_MAJOR_VERSION = 5;

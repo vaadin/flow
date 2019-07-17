@@ -11,6 +11,7 @@ import com.vaadin.flow.router.Route;
 @JsModule("@polymer/paper-checkbox/paper-checkbox.js")
 @Route(value = "com.vaadin.flow.testnpmonlyfeatures.nobuildmojo" +
         ".MultipleNpmPackageAnnotationsView", layout = NpmPackageLayout.class)
+@JsModule("./connector.js")
 public class MultipleNpmPackageAnnotationsView extends Div {
 
     @Override
@@ -24,5 +25,11 @@ public class MultipleNpmPackageAnnotationsView extends Div {
 
         getElement().appendChild(paperInput);
         getElement().appendChild(paperCheckbox);
+
+        initConnector();
+    }
+
+    private void initConnector() {
+        getElement().executeJs("window.Vaadin.Flow.connector.initLazy()");
     }
 }

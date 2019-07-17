@@ -34,7 +34,6 @@ import com.vaadin.flow.server.frontend.NodeTasks;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
-
 import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFinder;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
@@ -132,8 +131,9 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
                 .createMissingPackageJson(true)
                 .enableImportsUpdate(false)
                 .enablePackagesUpdate(false)
-                .runNpmInstall(false)
-                .build().execute();
+                .runNpmInstall(false).build()
+                .execute();
+
     }
 
     private void propagateBuildInfo() {

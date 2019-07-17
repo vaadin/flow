@@ -70,6 +70,8 @@ public class NodeTasks implements Command {
 
         private boolean cleanNpmFiles = false;
 
+        private File frontendResourcesDirectory = null;
+
         private Set<String> visitedClasses = null;
 
         /**
@@ -277,6 +279,18 @@ public class NodeTasks implements Command {
             this.visitedClasses = visitedClasses;
             return this;
         }
+
+        /**
+         * Set local frontend files to be copied from given folder.
+         *
+         * @param frontendResourcesDirectory
+         *         folder to copy local frontend files from
+         * @return the builder, for chaining
+         */
+        public Builder copyLocalResources(File frontendResourcesDirectory) {
+            this.frontendResourcesDirectory = frontendResourcesDirectory;
+            return this;
+        }
     }
 
     private final Collection<Command> commands = new ArrayList<>();
@@ -320,6 +334,10 @@ public class NodeTasks implements Command {
         if (builder.copyResources) {
             commands.add(new TaskCopyFrontendFiles(
                     builder.npmFolder, builder.jarFiles));
+        }
+
+        if(builder.frontendResourcesDirectory != null) {
+            commands.add(new TaskCopyLocalFrontendFiles(builder.npmFolder, builder.frontendResourcesDirectory));
         }
 
         if (builder.webpackTemplate != null

@@ -2,6 +2,12 @@ package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;

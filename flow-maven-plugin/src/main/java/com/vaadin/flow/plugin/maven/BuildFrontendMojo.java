@@ -112,6 +112,13 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
     @Parameter(defaultValue = "true")
     private boolean generateEmbeddableWebComponents;
 
+    /**
+     * Defines the project frontend directory from where resources should be
+     * copied from for use with webpack.
+     */
+    @Parameter(defaultValue = "${project.basedir}/" + Constants.LOCAL_FRONTEND_RESOURCES_PATH)
+    protected File frontendResourcesDirectory;
+
     @Override
     public void execute() {
         super.execute();
@@ -147,6 +154,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                 generatedFolder, frontendDirectory).runNpmInstall(runNpmInstall)
                         .enablePackagesUpdate(true)
                         .copyResources(jarFiles)
+                        .copyLocalResources(frontendResourcesDirectory)
                         .enableImportsUpdate(true)
                         .withEmbeddableWebComponents(
                                 generateEmbeddableWebComponents)
@@ -215,6 +223,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
         File tokenFile = getTokenFile();
         if (!tokenFile.exists()) {
             getLog().warn("Couldn't update devMode token due to missing token file.");
+            return;
         }
         try {
             String json = FileUtils.readFileToString(tokenFile, StandardCharsets.UTF_8.name());

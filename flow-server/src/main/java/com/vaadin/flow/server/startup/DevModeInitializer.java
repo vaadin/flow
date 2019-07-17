@@ -44,6 +44,7 @@ import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServlet;
@@ -68,6 +69,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
 @WebListener
 public class DevModeInitializer implements ServletContainerInitializer,
         Serializable, ServletContextListener {
+
 
     /**
      * The classes that were visited when determining which frontend resources
@@ -225,6 +227,8 @@ public class DevModeInitializer implements ServletContainerInitializer,
         Set<String> visitedClassNames = new HashSet<>();
         builder.enablePackagesUpdate(true)
                 .copyResources(jarFiles)
+                .copyLocalResources(new File(baseDir,
+                        Constants.LOCAL_FRONTEND_RESOURCES_PATH))
                 .enableImportsUpdate(true)
                 .runNpmInstall(true).withEmbeddableWebComponents(true)
                 .collectVisitedClasses(visitedClassNames).build().execute();

@@ -79,6 +79,7 @@ public class TaskCopyFrontendFiles implements Command {
         log().info("Visited {} jar files. Took {} ms.", jarFiles.size(), ms);
     }
 
+
     private void createTargetFolder() {
         try {
             FileUtils.forceMkdir(Objects.requireNonNull(targetDirectory));
