@@ -137,11 +137,6 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
 
     }
 
-    /**
-     */
-    private void copyProjectFrontendResources() {
-    }
-
     private void propagateBuildInfo() {
         // For forked processes not accessing to System.properties we leave a
         // token file with the information about the build

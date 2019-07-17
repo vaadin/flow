@@ -19,9 +19,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -29,7 +26,6 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.Command;
 
-import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 
@@ -42,16 +38,17 @@ public class TaskCopyLocalFrontendFiles implements Command {
     private final File frontendResourcesDirectory;
 
     /**
-     *
      * Copy project local frontend files from defined frontendResourcesDirectory
      * (by default 'src/main/resources/META-INF/resources/frontend').
      * This enables running jar projects locally.
      *
      * @param npmFolder
-     *            target directory for the discovered files
+     *         target directory for the discovered files
      */
-    TaskCopyLocalFrontendFiles(File npmFolder, File frontendResourcesDirectory) {
-        this.targetDirectory = new File(npmFolder, NODE_MODULES + FLOW_NPM_PACKAGE_NAME);
+    TaskCopyLocalFrontendFiles(File npmFolder,
+            File frontendResourcesDirectory) {
+        this.targetDirectory = new File(npmFolder,
+                NODE_MODULES + FLOW_NPM_PACKAGE_NAME);
         this.frontendResourcesDirectory = frontendResourcesDirectory;
     }
 
@@ -76,13 +73,13 @@ public class TaskCopyLocalFrontendFiles implements Command {
         }
     }
 
-
     private void createTargetFolder() {
         try {
             FileUtils.forceMkdir(Objects.requireNonNull(targetDirectory));
         } catch (IOException e) {
-            throw new UncheckedIOException(String.format(
-                    "Failed to create directory '%s'", targetDirectory), e);
+            throw new UncheckedIOException(
+                    String.format("Failed to create directory '%s'",
+                            targetDirectory), e);
         }
     }
 
