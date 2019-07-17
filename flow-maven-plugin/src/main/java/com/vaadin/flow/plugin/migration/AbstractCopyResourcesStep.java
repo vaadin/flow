@@ -47,10 +47,12 @@ public abstract class AbstractCopyResourcesStep {
 
     protected static final String BOWER_COMPONENTS = "bower_components";
 
-    protected static interface ContentModifier {
+    protected interface FileTreeHandler {
         /**
-         * Accepts a {@code source} file or folder and copy its modified content
-         * to the {@code target}.
+         * Handles a {@code source} file or folder.
+         * <p>
+         * Return value is used to indicate whether the file of folder has been
+         * handled or not.
          *
          * @param source
          *            the source file or directory
@@ -61,19 +63,19 @@ public abstract class AbstractCopyResourcesStep {
          *         {@code false} is returned
          * @throws IOException
          */
-        boolean accept(Path source, Path target) throws IOException;
+        boolean handle(Path source, Path target) throws IOException;
     }
 
     private static class CopyFileVisitor extends SimpleFileVisitor<Path> {
 
         private final Path sourceRoot;
         private final Path targetRoot;
-        private final ContentModifier writer;
+        private final FileTreeHandler writer;
 
         private List<String> paths = new ArrayList<>();
 
         private CopyFileVisitor(Path sourceRoot, Path targetRoot,
-                ContentModifier fileProducer) {
+                FileTreeHandler fileProducer) {
             this.sourceRoot = sourceRoot;
             this.targetRoot = targetRoot;
             this.writer = fileProducer;
@@ -84,7 +86,7 @@ public abstract class AbstractCopyResourcesStep {
                 throws IOException {
             Path target = getTarget(file);
             LOGGER.debug("Writing content to '{}'", target.toString());
-            if (writer.accept(file, target)) {
+            if (writer.handle(file, target)) {
                 paths.add(targetRoot.relativize(target).toString());
             }
             return super.visitFile(file, attrs);
@@ -94,7 +96,7 @@ public abstract class AbstractCopyResourcesStep {
         public FileVisitResult preVisitDirectory(Path dir,
                 BasicFileAttributes attrs) throws IOException {
             Path target = getTarget(dir);
-            if (!writer.accept(dir, target)) {
+            if (!writer.handle(dir, target)) {
                 return FileVisitResult.SKIP_SUBTREE;
             }
             if (!target.toFile().exists()) {
@@ -120,7 +122,7 @@ public abstract class AbstractCopyResourcesStep {
 
     private final File target;
     private final List<String> resources;
-    private final ContentModifier contentModifier;
+    private final FileTreeHandler handler;
 
     /**
      * Creates a new instance.
@@ -129,14 +131,14 @@ public abstract class AbstractCopyResourcesStep {
      *            the target directory
      * @param sourceFolders
      *            an array of source folders
-     * @param contentModifier
-     *            a strategy which rewrites the content of copied file
+     * @param handler
+     *            a strategy which handles the files in the source directories
      */
     public AbstractCopyResourcesStep(File target, String[] sourceFolders,
-            ContentModifier contentModifier) {
+            FileTreeHandler handler) {
         this.target = target;
         resources = Arrays.asList(sourceFolders);
-        this.contentModifier = contentModifier;
+        this.handler = handler;
     }
 
     /**
@@ -164,16 +166,15 @@ public abstract class AbstractCopyResourcesStep {
         for (String resourceFolder : resources) {
             LOGGER.debug("Copy resources from {} to {}", resourceFolder,
                     target.getPath());
-            allResources.put(resourceFolder, doCopyResources(
-                    new File(resourceFolder), target, contentModifier));
+            allResources.put(resourceFolder,
+                    doCopyResources(new File(resourceFolder)));
         }
         return allResources;
     }
 
-    private List<String> doCopyResources(File source, File target,
-            ContentModifier producer) throws IOException {
+    private List<String> doCopyResources(File source) throws IOException {
         CopyFileVisitor visitor = new CopyFileVisitor(source.toPath(),
-                target.toPath(), producer);
+                target.toPath(), handler);
         Files.walkFileTree(source.toPath(), visitor);
         return visitor.getVisitedPaths();
     }

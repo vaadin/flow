@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.AbstractMojo;
@@ -220,8 +221,8 @@ public class MigrateMojo extends AbstractMojo {
         npmInstall.addAll(npmExec);
         npmInstall.add("i");
 
-        if (!executeProcess(npmInstall, "Couln't install packages using npm",
-                "Packages sucessfully installed",
+        if (!executeProcess(npmInstall, "Couldn't install packages using npm",
+                "Packages successfully installed",
                 "Error when running `npm install`")) {
             throw new MojoFailureException(
                     "Error during package installation via npm");
@@ -257,11 +258,9 @@ public class MigrateMojo extends AbstractMojo {
             JsonObject object = Json.parse(content);
             if (object.hasKey(DEPENDENCIES)) {
                 JsonObject deps = object.getObject(DEPENDENCIES);
-                for (String key : deps.keys()) {
-                    if (key.startsWith("vaadin-")) {
-                        result.add(makeVaadinDependencyMapping(deps, key));
-                    }
-                }
+                Stream.of(deps.keys()).filter(key -> key.startsWith("vaadin-"))
+                        .forEach(key -> result
+                                .add(makeVaadinDependencyMapping(deps, key)));
             }
             return result;
         } catch (IOException exception) {
@@ -281,7 +280,7 @@ public class MigrateMojo extends AbstractMojo {
     }
 
     private boolean saveBowerComponents(File bowerExecutable,
-            Collection<String> components) throws MojoExecutionException {
+            Collection<String> components) {
         List<String> command = new ArrayList<>();
         command.add(bowerExecutable.getAbsolutePath());
         // install

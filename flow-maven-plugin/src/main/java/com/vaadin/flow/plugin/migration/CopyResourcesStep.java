@@ -44,7 +44,7 @@ import org.jsoup.nodes.Element;
  */
 public class CopyResourcesStep extends AbstractCopyResourcesStep {
 
-    private static class HtmlImportRewriter implements ContentModifier {
+    private static class HtmlImportRewriter implements FileTreeHandler {
 
         private final Collection<String> bowerComponents;
         private final File targetDir;
@@ -56,7 +56,7 @@ public class CopyResourcesStep extends AbstractCopyResourcesStep {
         }
 
         @Override
-        public boolean accept(Path source, Path target) throws IOException {
+        public boolean handle(Path source, Path target) throws IOException {
             if (Files.isDirectory(source)) {
                 return true;
             }

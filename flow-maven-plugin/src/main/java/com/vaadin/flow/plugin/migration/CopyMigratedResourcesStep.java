@@ -31,13 +31,13 @@ import java.util.List;
  */
 public class CopyMigratedResourcesStep extends AbstractCopyResourcesStep {
 
-    private static class CopyMigratedFiles implements ContentModifier {
+    private static class CopyMigratedFiles implements FileTreeHandler {
 
         private static final String NODE_MODULES = "/node_modules/";
         private static final String IMPORT = "import";
 
         @Override
-        public boolean accept(Path source, Path target) throws IOException {
+        public boolean handle(Path source, Path target) throws IOException {
             String name = source.getFileName().toString();
             if (BOWER_COMPONENTS.equals(name) || "node_modules".equals(name)
                     || "bower.json".equals(name) || "package.json".equals(name)
@@ -81,7 +81,7 @@ public class CopyMigratedResourcesStep extends AbstractCopyResourcesStep {
      * Create a new instance of copy migrated files step.
      *
      * @param target
-     *            the target firectory
+     *            the target directory
      * @param source
      *            the source directory
      */
