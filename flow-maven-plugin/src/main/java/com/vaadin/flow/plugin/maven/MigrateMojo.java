@@ -244,7 +244,7 @@ public class MigrateMojo extends AbstractMojo {
         }
 
         return executeProcess(command, "Migration has finished with errors",
-                "Modulizer has completed sucessfully",
+                "Modulizer has completed successfully",
                 "Error when running moulizer");
     }
 
@@ -304,7 +304,7 @@ public class MigrateMojo extends AbstractMojo {
 
         return executeProcess(command,
                 "Couldn't install and save bower components",
-                "All components are installed and saved sucessfully",
+                "All components are installed and saved successfully",
                 "Error when running `bower install`");
     }
 
@@ -320,7 +320,7 @@ public class MigrateMojo extends AbstractMojo {
         command.add("polymer-modulizer");
 
         return executeProcess(command, "Couldn't install migration tools",
-                "Bower is installed sucessfully",
+                "Bower is installed successfully",
                 "Error when running `npm install`");
     }
 

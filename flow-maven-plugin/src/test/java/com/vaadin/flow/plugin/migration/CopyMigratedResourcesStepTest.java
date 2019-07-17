@@ -89,7 +89,7 @@ public class CopyMigratedResourcesStepTest {
 
         File copiedFile2 = new File(target, file2.getName());
 
-        // The first file is copied
+        // The second file is copied
         Assert.assertTrue(copiedFile2.exists());
         content = readFile(copiedFile2);
 
