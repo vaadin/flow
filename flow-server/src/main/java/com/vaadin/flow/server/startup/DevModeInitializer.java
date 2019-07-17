@@ -23,7 +23,6 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
 import javax.servlet.annotation.WebListener;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -260,8 +259,8 @@ public class DevModeInitializer implements ServletContainerInitializer,
     private static Set<File> getJarFilesFromClassloader() {
         Set<File> jarFiles = new HashSet<>();
         try {
-            Enumeration<URL> en =
-                    ClassLoader.getSystemResources(RESOURCES_FRONTEND_DEFAULT);
+            Enumeration<URL> en = DevModeInitializer.class.getClassLoader()
+                    .getResources(RESOURCES_FRONTEND_DEFAULT);
             while (en.hasMoreElements()) {
                 URL url = en.nextElement();
                 Matcher matcher = JAR_FILE_REGEX.matcher(url.getPath());
@@ -270,7 +269,7 @@ public class DevModeInitializer implements ServletContainerInitializer,
                 }
             }
         } catch (IOException e) {
-            throw new  UncheckedIOException(e);
+            throw new UncheckedIOException(e);
         }
         return jarFiles;
     }
