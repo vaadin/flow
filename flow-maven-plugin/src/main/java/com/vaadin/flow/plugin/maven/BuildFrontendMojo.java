@@ -116,7 +116,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
      * Defines the project frontend directory from where resources should be
      * copied from for use with webpack.
      */
-    @Parameter(defaultValue = "${project.basedir}/src/main/resources/META-INF/resources/frontend")
+    @Parameter(defaultValue = "${project.basedir}/" + Constants.LOCAL_FRONTEND_RESOURCES_PATH)
     protected File frontendResourcesDirectory;
 
     @Override
