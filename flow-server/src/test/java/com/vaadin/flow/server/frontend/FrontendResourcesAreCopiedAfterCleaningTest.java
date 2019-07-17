@@ -36,7 +36,6 @@ public class FrontendResourcesAreCopiedAfterCleaningTest {
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     private File npmFolder;
-    private NodeTasks.Builder builder;
 
     private File testJar = TestUtils
             .getTestJar("jar-with-frontend-resources.jar");
@@ -45,13 +44,6 @@ public class FrontendResourcesAreCopiedAfterCleaningTest {
     public void setup() throws IOException {
         npmFolder = temporaryFolder.getRoot();
 
-        ClassFinder classFinder = new ClassFinder.DefaultClassFinder(
-                FrontendResourcesAreCopiedAfterCleaningTest.class
-                        .getClassLoader());
-        builder = new NodeTasks.Builder(classFinder, npmFolder);
-
-        copyResources();
-        assertCopiedFrontendFileAmount(2);
     }
 
     @Test
@@ -78,19 +70,28 @@ public class FrontendResourcesAreCopiedAfterCleaningTest {
     }
 
     private void copyResources() {
+        ClassFinder classFinder = new ClassFinder.DefaultClassFinder(
+                FrontendResourcesAreCopiedAfterCleaningTest.class
+                        .getClassLoader());
+        NodeTasks.Builder builder = new NodeTasks.Builder(classFinder,
+                npmFolder);
         builder.withEmbeddableWebComponents(false).enableImportsUpdate(false)
                 .createMissingPackageJson(true).enableImportsUpdate(true)
                 .runNpmInstall(false).enablePackagesUpdate(true)
-                .copyResources(true, Collections.singleton(testJar)).build()
+                .copyResources(Collections.singleton(testJar)).build()
                 .execute();
     }
 
     private void performPackageClean() {
+        ClassFinder classFinder = new ClassFinder.DefaultClassFinder(
+                FrontendResourcesAreCopiedAfterCleaningTest.class
+                        .getClassLoader());
+        NodeTasks.Builder builder = new NodeTasks.Builder(classFinder,
+                npmFolder);
         // force cleaning
         builder.withEmbeddableWebComponents(false).enableImportsUpdate(false)
                 .createMissingPackageJson(true).enableImportsUpdate(true)
                 .runNpmInstall(false)
-                .copyResources(false, Collections.singleton(testJar))
                 .enableNpmFileCleaning(true).enablePackagesUpdate(true).build()
                 .execute();
     }

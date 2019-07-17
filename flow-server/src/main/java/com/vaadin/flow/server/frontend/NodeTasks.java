@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Set;
 
 import com.vaadin.flow.server.Command;
@@ -47,31 +48,31 @@ public class NodeTasks implements Command {
 
         private final File frontendDirectory;
 
-        private File webpackOutputDirectory;
+        private File webpackOutputDirectory = null;
 
-        private String webpackTemplate;
+        private String webpackTemplate = null;
 
-        private String webpackGeneratedTemplate;
+        private String webpackGeneratedTemplate = null;
 
-        private boolean enablePackagesUpdate;
+        private boolean enablePackagesUpdate = false;
 
-        private boolean createMissingPackageJson;
+        private boolean createMissingPackageJson = false;
 
-        private boolean enableImportsUpdate;
+        private boolean enableImportsUpdate = false;
 
-        private boolean runNpmInstall;
+        private boolean runNpmInstall = false;
 
-        private Set<File> jarFiles;
+        private Set<File> jarFiles = null;
 
-        private boolean copyResources;
+        private boolean copyResources = false;
 
-        private boolean generateEmbeddableWebComponents;
+        private boolean generateEmbeddableWebComponents = true;
 
-        private boolean cleanNpmFiles;
+        private boolean cleanNpmFiles = false;
 
         private File frontendResourcesDirectory = null;
 
-        private Set<String> visitedClasses;
+        private Set<String> visitedClasses = null;
 
         /**
          * Directory for for npm and folders and files.
@@ -129,8 +130,6 @@ public class NodeTasks implements Command {
                 File generatedPath, File frontendDirectory) {
             this.classFinder = classFinder;
             this.npmFolder = npmFolder;
-            this.generateEmbeddableWebComponents = true;
-            this.cleanNpmFiles = false;
             this.generatedFolder = generatedPath.isAbsolute() ? generatedPath
                     : new File(npmFolder, generatedPath.getPath());
             this.frontendDirectory = frontendDirectory.isAbsolute()
@@ -229,18 +228,15 @@ public class NodeTasks implements Command {
          * Sets whether copy resources from classpath to the `node_modules`
          * folder as they are available for webpack build.
          *
-         * @param runCopyResources
-         *            run copy resources. Default is <code>false</code>
-         *
          * @param jars
-         *            set of class nodes to be visited, if null it will visit
-         *            the entire classpath
+         *            set of class nodes to be visited. Not {@code null}
          *
          * @return the builder
          */
-        public Builder copyResources(boolean runCopyResources, Set<File> jars) {
+        public Builder copyResources(Set<File> jars) {
+            Objects.requireNonNull(jars, "Parameter 'jars' must not be null!");
             this.jarFiles = jars;
-            this.copyResources = runCopyResources;
+            this.copyResources = true;
             return this;
         }
 

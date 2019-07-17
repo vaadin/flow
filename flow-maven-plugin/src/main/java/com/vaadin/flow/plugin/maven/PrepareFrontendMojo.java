@@ -129,7 +129,6 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         new NodeTasks.Builder(getClassFinder(project), npmFolder, generatedFolder)
                 .withWebpack(webpackOutputDirectory, webpackTemplate, webpackGeneratedTemplate)
                 .createMissingPackageJson(true)
-                .copyResources(false, null)
                 .enableImportsUpdate(false)
                 .enablePackagesUpdate(false)
                 .runNpmInstall(false).build()

@@ -27,6 +27,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -146,14 +147,14 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
     private void runNodeUpdater() {
         Set<File> jarFiles = project.getArtifacts().stream()
                 .filter(artifact -> "jar".equals(artifact.getType()))
-                .map(artifact -> artifact.getFile())
+                .map(Artifact::getFile)
                 .collect(Collectors.toSet());
 
         new NodeTasks.Builder(getClassFinder(project), npmFolder,
                 generatedFolder, frontendDirectory).runNpmInstall(runNpmInstall)
                         .enablePackagesUpdate(true)
-                        .copyResources(true, jarFiles)
-                .copyLocalResources(frontendResourcesDirectory)
+                        .copyResources(jarFiles)
+                        .copyLocalResources(frontendResourcesDirectory)
                         .enableImportsUpdate(true)
                         .withEmbeddableWebComponents(
                                 generateEmbeddableWebComponents)

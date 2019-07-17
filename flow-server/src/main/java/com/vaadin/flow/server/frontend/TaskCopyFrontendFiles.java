@@ -21,7 +21,6 @@ import java.io.UncheckedIOException;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -38,7 +37,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
  */
 public class TaskCopyFrontendFiles implements Command {
     private static final String JAR_SUFFIX = ".jar";
-    private static final String CLASS_PATH_PROPERTY = "java.class.path";
     private static final String[] WILDCARD_INCLUSIONS = new String[] {
             "**/*.js", "**/*.css" };
 
@@ -46,9 +44,7 @@ public class TaskCopyFrontendFiles implements Command {
     private transient Set<File> jarFiles = null;
 
     /**
-     * Scans the jar files given defined by {@code jarFilesToScan}. If {@code
-     * jarFilesToScan} is null, acts as
-     * {@link #TaskCopyFrontendFiles(File, Set)} would.
+     * Scans the jar files given defined by {@code jarFilesToScan}.
      *
      * @param npmFolder
      *            target directory for the discovered files
@@ -57,17 +53,15 @@ public class TaskCopyFrontendFiles implements Command {
      *            scanned.
      */
     TaskCopyFrontendFiles(File npmFolder, Set<File> jarFilesToScan) {
-        this.targetDirectory = new File(npmFolder, NODE_MODULES + FLOW_NPM_PACKAGE_NAME);
-        if (jarFilesToScan == null) {
-            jarFilesToScan = Stream
-                    .of(System.getProperty(CLASS_PATH_PROPERTY).split(File.pathSeparator))
-                    .filter(path -> path.endsWith(JAR_SUFFIX))
-                    .map(File::new).collect(Collectors.toSet());
-        }
+        Objects.requireNonNull(npmFolder,
+                "Parameter 'npmFolder' must not be " + "null");
+        Objects.requireNonNull(jarFilesToScan,
+                "Parameter 'jarFilesToScan' must not be null");
+        this.targetDirectory = new File(npmFolder,
+                NODE_MODULES + FLOW_NPM_PACKAGE_NAME);
         jarFiles = jarFilesToScan.stream()
                 .filter(file -> file.getName().endsWith(JAR_SUFFIX))
-                .filter(File::exists)
-                .collect(Collectors.toSet());
+                .filter(File::exists).collect(Collectors.toSet());
     }
 
     @Override
@@ -96,6 +90,6 @@ public class TaskCopyFrontendFiles implements Command {
     }
 
     private static Logger log() {
-        return LoggerFactory.getLogger(TaskCopyFrontendFiles.class);
+        return LoggerFactory.getLogger("dev-updater");
     }
 }
