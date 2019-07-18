@@ -86,11 +86,7 @@ public abstract class AbstractCopyResourcesStep {
             Path target = getTarget(file);
             getLogger().debug("Writing content to '{}'", target.toString());
             if (writer.handle(file, target)) {
-                Path relativize = targetRoot.relativize(target);
-                String path = StreamSupport
-                        .stream(relativize.spliterator(), false)
-                        .map(Path::toString).collect(Collectors.joining("/"));
-                paths.add(path);
+                paths.add(getRelativePath(target, targetRoot));
             }
             return super.visitFile(file, attrs);
         }
@@ -181,6 +177,22 @@ public abstract class AbstractCopyResourcesStep {
                 target.toPath(), handler);
         Files.walkFileTree(source.toPath(), visitor);
         return visitor.getVisitedPaths();
+    }
+
+    /**
+     * Constructs a relative path between the {@code source} path and a
+     * {@code against}.
+     *
+     * @param source
+     *            the path which needs to be relativize
+     * @param against
+     *            the path to relativize against this path
+     * @return
+     */
+    protected static String getRelativePath(Path source, Path against) {
+        Path relativize = against.relativize(source);
+        return StreamSupport.stream(relativize.spliterator(), false)
+                .map(Path::toString).collect(Collectors.joining("/"));
     }
 
     private static Logger getLogger() {

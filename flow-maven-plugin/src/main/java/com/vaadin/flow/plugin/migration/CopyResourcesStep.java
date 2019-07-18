@@ -102,7 +102,7 @@ public class CopyResourcesStep extends AbstractCopyResourcesStep {
         }
 
         private String pathToTarget(Path target) {
-            String path = target.relativize(targetDir.toPath()).toString();
+            String path = getRelativePath(targetDir.toPath(), target);
             if (path.length() >= 2) {
                 path = path.substring(2);
             }
