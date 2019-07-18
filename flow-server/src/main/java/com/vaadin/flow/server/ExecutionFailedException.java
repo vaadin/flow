@@ -51,4 +51,17 @@ public class ExecutionFailedException extends Exception {
         super(cause);
     }
 
+    /**
+     * Creates a new exception instance with the given {@code message} and
+     * {@code cause}.
+     *
+     * @param message
+     *            the exception message
+     * @param cause
+     *            the exception cause
+     */
+    public ExecutionFailedException(String message, Throwable cause) {
+        // TODO Auto-generated constructor stub
+    }
+
 }

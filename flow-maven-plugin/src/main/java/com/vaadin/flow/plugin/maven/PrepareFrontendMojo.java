@@ -142,8 +142,7 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
                             .build().execute();
         } catch (ExecutionFailedException exception) {
             throw new MojoFailureException(
-                    "Could not execute prepare frontend goal. One of node tasks failed",
-                    exception);
+                    "Could not execute prepare-frontend goal.", exception);
         }
     }
 

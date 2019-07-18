@@ -135,8 +135,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
             runNodeUpdater();
         } catch (ExecutionFailedException exception) {
             throw new MojoFailureException(
-                    "Could not run node updater. One of node tasks failed",
-                    exception);
+                    "Could not execute build-frontend goal", exception);
         }
 
         if (generateBundle) {
