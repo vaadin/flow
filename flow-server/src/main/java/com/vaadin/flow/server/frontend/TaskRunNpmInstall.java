@@ -23,7 +23,6 @@ import java.util.List;
 import com.vaadin.flow.server.Command;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
-import static com.vaadin.flow.server.frontend.NodeUpdater.log;
 
 /**
  * Run <code>npm install</code> after dependencies have been updated.
@@ -46,17 +45,19 @@ public class TaskRunNpmInstall implements Command {
     @Override
     public void execute() {
         if (packageUpdater.modified || shouldRunNpmInstall()) {
-            log().info("Running `npm install` ...");
+            packageUpdater.log().info("Running `npm install` ...");
             runNpmInstall();
         } else {
-            log().info("Skipping `npm install`.");
+            packageUpdater.log().info("Skipping `npm install`.");
         }
     }
 
     private boolean shouldRunNpmInstall() {
         if (packageUpdater.nodeModulesFolder.isDirectory()) {
-            File[] installedPackages = packageUpdater.nodeModulesFolder.listFiles();
-            return installedPackages == null
+            File[] installedPackages = packageUpdater.nodeModulesFolder
+                    .listFiles();
+            assert installedPackages != null;
+            return installedPackages.length == 0
                     || (installedPackages.length == 1 && FLOW_NPM_PACKAGE_NAME
                             .startsWith(installedPackages[0].getName()));
         }
@@ -80,13 +81,14 @@ public class TaskRunNpmInstall implements Command {
             process = builder.inheritIO().start();
             int errorCode = process.waitFor();
             if (errorCode != 0) {
-                log().error(
+                packageUpdater.log().error(
                         ">>> Dependency ERROR. Check that all required dependencies are deployed in npm repositories.");
             } else {
-                log().info("package.json updated and npm dependencies installed. ");
+                packageUpdater.log().info(
+                        "package.json updated and npm dependencies installed. ");
             }
         } catch (InterruptedException | IOException e) {
-            log().error("Error when running `npm install`", e);
+            packageUpdater.log().error("Error when running `npm install`", e);
         } finally {
             if (process != null) {
                 process.destroyForcibly();

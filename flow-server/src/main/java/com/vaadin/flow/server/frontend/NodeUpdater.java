@@ -42,14 +42,15 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.shared.ApplicationConstants.FRONTEND_PROTOCOL_PREFIX;
 import static elemental.json.impl.JsonUtil.stringify;
 import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * Base abstract class for frontend updaters that needs to be run when in
  * dev-mode or from the flow maven plugin.
  */
 public abstract class NodeUpdater implements Command {
     /**
-     * Relative paths of generated should be prefixed with this value, so
-     * they can be correctly separated from {projectDir}/frontend files.
+     * Relative paths of generated should be prefixed with this value, so they
+     * can be correctly separated from {projectDir}/frontend files.
      */
     static final String GENERATED_PREFIX = "GENERATED/";
 
@@ -74,7 +75,6 @@ public abstract class NodeUpdater implements Command {
      * The path to the {@link FrontendUtils#NODE_MODULES} directory.
      */
     protected final File nodeModulesFolder;
-
 
     /**
      * Base directory for flow generated files.
@@ -103,7 +103,8 @@ public abstract class NodeUpdater implements Command {
      * @param generatedPath
      *            folder where flow generated files will be placed.
      */
-    protected NodeUpdater(ClassFinder finder, FrontendDependencies frontendDependencies, File npmFolder,
+    protected NodeUpdater(ClassFinder finder,
+            FrontendDependencies frontendDependencies, File npmFolder,
             File generatedPath) {
         this.frontDeps = finder != null && frontendDependencies == null
                 ? new FrontendDependencies(finder)
@@ -123,22 +124,23 @@ public abstract class NodeUpdater implements Command {
 
         final URI baseDir = directory.toURI();
 
-        return FileUtils.listFiles(directory, new String[]{"js"}, true)
-                .stream()
-                .filter(file -> {
+        return FileUtils.listFiles(directory, new String[] { "js" }, true)
+                .stream().filter(file -> {
                     String path = unixPath.apply(file.getPath());
                     if (path.contains("/node_modules/")) {
                         return false;
                     }
-                    return excludes.stream().noneMatch(postfix ->
-                    path.endsWith(unixPath.apply(postfix)));
+                    return excludes.stream().noneMatch(
+                            postfix -> path.endsWith(unixPath.apply(postfix)));
                 })
-                .map(file -> GENERATED_PREFIX + unixPath.apply(baseDir.relativize(file.toURI()).getPath()))
+                .map(file -> GENERATED_PREFIX + unixPath
+                        .apply(baseDir.relativize(file.toURI()).getPath()))
                 .collect(Collectors.toSet());
     }
 
     Set<String> resolveModules(Set<String> modules, boolean isJsModule) {
-        return modules.stream().map(module -> resolveResource(module, isJsModule))
+        return modules.stream()
+                .map(module -> resolveResource(module, isJsModule))
                 .collect(Collectors.toSet());
     }
 
@@ -147,7 +149,8 @@ public abstract class NodeUpdater implements Command {
         if (!importPath.startsWith("@")) {
 
             if (importPath.startsWith(FRONTEND_PROTOCOL_PREFIX)) {
-                resolved = importPath.replaceFirst(FRONTEND_PROTOCOL_PREFIX, "./");
+                resolved = importPath.replaceFirst(FRONTEND_PROTOCOL_PREFIX,
+                        "./");
                 if (isJsModule) {
                     // Remove this when all flow components annotated with
                     // @JsModule have the './' prefix instead of 'frontend://'
@@ -157,10 +160,12 @@ public abstract class NodeUpdater implements Command {
                 }
             }
 
-            // We only should check here those paths starting with './' when all flow components
+            // We only should check here those paths starting with './' when all
+            // flow components
             // have the './' prefix
             String resource = resolved.replaceFirst("^./+", "");
-            if (finder.getResource(RESOURCES_FRONTEND_DEFAULT + "/" + resource) != null) {
+            if (finder.getResource(
+                    RESOURCES_FRONTEND_DEFAULT + "/" + resource) != null) {
                 if (!resolved.startsWith("./")) {
                     log().warn(
                             "Use the './' prefix for files in JAR files: '{}', please update your component.",
@@ -171,7 +176,6 @@ public abstract class NodeUpdater implements Command {
         }
         return resolved;
     }
-
 
     JsonObject getMainPackageJson() throws IOException {
         return getPackageJson(new File(npmFolder, PACKAGE_JSON));
@@ -184,7 +188,8 @@ public abstract class NodeUpdater implements Command {
     JsonObject getPackageJson(File packageFile) throws IOException {
         JsonObject packageJson = null;
         if (packageFile.exists()) {
-            String fileContent = FileUtils.readFileToString(packageFile, UTF_8.name());
+            String fileContent = FileUtils.readFileToString(packageFile,
+                    UTF_8.name());
             packageJson = Json.parse(fileContent);
         }
         return packageJson;
@@ -192,24 +197,36 @@ public abstract class NodeUpdater implements Command {
 
     boolean updateMainDefaultDependencies(JsonObject packageJson) {
         boolean added = false;
-        added = addDependency(packageJson, null, DEP_NAME_KEY, DEP_NAME_DEFAULT) || added;
-        added = addDependency(packageJson, null, DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT) || added;
+        added = addDependency(packageJson, null, DEP_NAME_KEY, DEP_NAME_DEFAULT)
+                || added;
+        added = addDependency(packageJson, null, DEP_LICENSE_KEY,
+                DEP_LICENSE_DEFAULT) || added;
 
-
-        added = addDependency(packageJson, DEPENDENCIES, "@polymer/polymer", "3.2.0") || added;
-        added = addDependency(packageJson, DEPENDENCIES, "@webcomponents/webcomponentsjs", "^2.2.10") || added;
-        // dependency for the custom package.json placed in the generated folder.
+        added = addDependency(packageJson, DEPENDENCIES, "@polymer/polymer",
+                "3.2.0") || added;
+        added = addDependency(packageJson, DEPENDENCIES,
+                "@webcomponents/webcomponentsjs", "^2.2.10") || added;
+        // dependency for the custom package.json placed in the generated
+        // folder.
         String customPkg = "./" + npmFolder.getAbsoluteFile().toPath()
                 .relativize(generatedFolder.toPath()).toString();
-        added = addDependency(packageJson, DEPENDENCIES, DEP_NAME_FLOW_DEPS, customPkg.replaceAll("\\\\", "/")) || added;
+        added = addDependency(packageJson, DEPENDENCIES, DEP_NAME_FLOW_DEPS,
+                customPkg.replaceAll("\\\\", "/")) || added;
 
-        added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack", "4.30.0") || added;
-        added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack-cli", "3.3.0") || added;
-        added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack-dev-server", "3.3.0") || added;
-        added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack-babel-multi-target-plugin", "2.1.0") || added;
-        added = addDependency(packageJson, DEV_DEPENDENCIES, "copy-webpack-plugin", "5.0.3") || added;
-        added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack-merge", "4.2.1") || added;
-        added = addDependency(packageJson, DEV_DEPENDENCIES, "raw-loader", "3.0.0") || added;
+        added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack",
+                "4.30.0") || added;
+        added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack-cli",
+                "3.3.0") || added;
+        added = addDependency(packageJson, DEV_DEPENDENCIES,
+                "webpack-dev-server", "3.3.0") || added;
+        added = addDependency(packageJson, DEV_DEPENDENCIES,
+                "webpack-babel-multi-target-plugin", "2.1.0") || added;
+        added = addDependency(packageJson, DEV_DEPENDENCIES,
+                "copy-webpack-plugin", "5.0.3") || added;
+        added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack-merge",
+                "4.2.1") || added;
+        added = addDependency(packageJson, DEV_DEPENDENCIES, "raw-loader",
+                "3.0.0") || added;
         return added;
     }
 
@@ -219,7 +236,8 @@ public abstract class NodeUpdater implements Command {
         addDependency(packageJson, null, DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT);
     }
 
-    boolean addDependency(JsonObject json, String key, String pkg, String vers) {
+    boolean addDependency(JsonObject json, String key, String pkg,
+            String vers) {
         if (key != null) {
             if (!json.hasKey(key)) {
                 json.put(key, Json.createObject());
@@ -242,13 +260,15 @@ public abstract class NodeUpdater implements Command {
         writePackageFile(packageJson, new File(generatedFolder, PACKAGE_JSON));
     }
 
-    void writePackageFile(JsonObject json, File packageFile) throws IOException {
+    void writePackageFile(JsonObject json, File packageFile)
+            throws IOException {
         log().info("Updated npm {}.", packageFile.getAbsolutePath());
         FileUtils.forceMkdirParent(packageFile);
-        FileUtils.writeStringToFile(packageFile, stringify(json, 2) + "\n", UTF_8.name());
+        FileUtils.writeStringToFile(packageFile, stringify(json, 2) + "\n",
+                UTF_8.name());
     }
 
-    static Logger log() {
+    Logger log() {
         // Using short prefix so as npm output is more readable
         return LoggerFactory.getLogger("dev-updater");
     }
