@@ -84,7 +84,8 @@ public abstract class AbstractCopyResourcesStep {
             Path target = getTarget(file);
             getLogger().debug("Writing content to '{}'", target.toString());
             if (writer.handle(file, target)) {
-                paths.add(targetRoot.relativize(target).toString());
+                Path relativize = targetRoot.relativize(target);
+                paths.add(relativize.toFile().getPath());
             }
             return super.visitFile(file, attrs);
         }

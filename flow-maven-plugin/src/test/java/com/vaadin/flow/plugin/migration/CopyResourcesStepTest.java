@@ -118,8 +118,10 @@ public class CopyResourcesStepTest {
         Map<String, List<String>> copiedResources = step.copyResources();
 
         Assert.assertEquals(2, copiedResources.keySet().size());
-        assertCopiedResources(copiedResources, source1, "baz/foo.html");
-        assertCopiedResources(copiedResources, source2, "dir/subdir/bar.html");
+        assertCopiedResources(copiedResources, source1,
+                "baz" + File.separator + "foo.html");
+        assertCopiedResources(copiedResources, source2, "dir" + File.separator
+                + "subdir" + File.separator + "bar.html");
 
         File copiedFile1 = new File(target, "baz/foo.html");
 
