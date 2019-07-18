@@ -164,6 +164,31 @@ public class NpmTemplateParserTest {
                 templateContent.getTemplateElement().childNodeSize());
     }
 
+
+    @Test
+    public void nonLocalTemplate_sourcesShouldBeFound() {
+        // Template with no closing style tag should parse as one big style tag
+        // and thus
+        // the document body should have no elements.
+        Mockito.when(configuration.getStringProperty(Mockito.anyString(),
+                Mockito.anyString()))
+                .thenReturn(VAADIN_SERVLET_RESOURCES + "config/stats.json");
+        TemplateParser.TemplateData templateContent = NpmTemplateParser
+                .getInstance().getTemplateContent(HelloWorld.class,
+                        HelloWorld.class.getAnnotation(Tag.class).value(), service);
+
+
+        Assert.assertEquals("Template should contain one child", 1,
+                templateContent.getTemplateElement().childNodeSize());
+
+        Assert.assertEquals("Template should have 2 divs", 2,
+                templateContent.getTemplateElement().getElementsByTag("div").size());
+        Assert.assertEquals("Template should have a paper-input", 1,
+                templateContent.getTemplateElement().getElementsByTag("paper-input").size());
+        Assert.assertEquals("Template should have a button", 1,
+                templateContent.getTemplateElement().getElementsByTag("button").size());
+    }
+
     @Test
     public void bableStats_shouldAlwaysParseCorrectly() {
         Mockito.when(configuration.getStringProperty(Mockito.anyString(),
@@ -297,6 +322,11 @@ public class NpmTemplateParserTest {
     @Tag("likeable-element")
     @JsModule("./frontend/LikeableElementBrokenHtml.js")
     public class LikeableBroken extends PolymerTemplate<TemplateModel> {
+    }
+
+    @Tag("hello-world")
+    @JsModule("./src/hello-world.js")
+    public class HelloWorld extends PolymerTemplate<TemplateModel> {
     }
 
     @Tag("likeable-element")

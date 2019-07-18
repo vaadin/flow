@@ -38,6 +38,13 @@
         "likeable"
       ],
       "emitted": true
+    },
+    {
+      "name": "build\\webcomponentsjs\\entrypoints\\webcomponents-sd-ce-index.js",
+      "size": 851,
+      "chunks": ["src/hello-world.js"],
+      "chunkNames": [],
+      "emitted": true
     }
   ],
   "filteredAssets": 0,
@@ -283,6 +290,49 @@
           "optimizationBailout": [],
           "depth": 0,
           "source": "import LikeableElement from './frontend/LikeableElement.js';\nimport VaadinButton from '@vaadin/vaadin-button';\n\nvar name = function() {\n  import(\"@vaadin/vaadin-grid\");\n}"
+        },
+        {
+          "id": "../node_modules/@vaadin/flow-frontend/src/hello-world.js",
+          "identifier": "C:\\Users\\mikae\\Code\\skeleton-starter-flow\\node_modules\\babel-loader\\lib\\index.js??ref--4-0!C:\\Users\\mikae\\Code\\skeleton-starter-flow\\node_modules\\@vaadin\\flow-frontend\\src\\hello-world.js?babel-target=es6",
+          "name": "../node_modules/@vaadin/flow-frontend/src/hello-world.js",
+          "index": 84,
+          "index2": 99,
+          "size": 568,
+          "cacheable": true,
+          "built": true,
+          "optional": false,
+          "prefetched": false,
+          "chunks": [],
+          "issuer": "C:\\Users\\mikae\\Code\\skeleton-starter-flow\\node_modules\\babel-loader\\lib\\index.js??ref--4-0!C:\\Users\\mikae\\Code\\skeleton-starter-flow\\target\\frontend\\generated-flow-imports.js?babel-target=es6",
+          "issuerId": null,
+          "issuerName": "../target/frontend/generated-flow-imports.js?babel-target=es6",
+          "issuerPath": [
+            {
+              "id": null,
+              "identifier": "C:\\Users\\mikae\\Code\\skeleton-starter-flow\\node_modules\\babel-loader\\lib\\index.js??ref--4-0!C:\\Users\\mikae\\Code\\skeleton-starter-flow\\target\\frontend\\generated-flow-imports.js?babel-target=es6",
+              "name": "../target/frontend/generated-flow-imports.js?babel-target=es6"
+            }
+          ],
+          "failed": false,
+          "errors": 0,
+          "warnings": 0,
+          "assets": [],
+          "reasons": [
+            {
+              "moduleId": null,
+              "moduleIdentifier": "C:\\Users\\mikae\\Code\\skeleton-starter-flow\\node_modules\\babel-loader\\lib\\index.js??ref--4-0!C:\\Users\\mikae\\Code\\skeleton-starter-flow\\target\\frontend\\generated-flow-imports.js?babel-target=es6",
+              "module": "../target/frontend/generated-flow-imports.js?babel-target=es6",
+              "moduleName": "../target/frontend/generated-flow-imports.js?babel-target=es6",
+              "type": "harmony side effect evaluation",
+              "userRequest": "@vaadin/flow-frontend/src/hello-world.js",
+              "loc": "13:0-50"
+            }
+          ],
+          "usedExports": false,
+          "providedExports": [],
+          "optimizationBailout": [],
+          "depth": 1,
+          "source": "import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';\nimport '@polymer/paper-input/paper-input.js';\n\nclass HelloWorld extends PolymerElement {\n  static get template() {\n    return html`\n            <div>\n                <paper-input id=\"inputId\" value=\"{{userInput}}\"></paper-input>\n                <button id=\"helloButton\" on-click=\"sayHello\">Say hello</button>\n                <div id=\"greeting\">[[greeting]]</div>\n            </div>`;\n  }\n\n  static get is() {\n    return 'hello-world';\n  }\n\n}\n\ncustomElements.define(HelloWorld.is, HelloWorld);"
         },
         {
           "id": "./node_modules/@polymer/iron-a11y-keys-behavior/iron-a11y-keys-behavior.js",
