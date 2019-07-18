@@ -27,6 +27,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -85,7 +87,10 @@ public abstract class AbstractCopyResourcesStep {
             getLogger().debug("Writing content to '{}'", target.toString());
             if (writer.handle(file, target)) {
                 Path relativize = targetRoot.relativize(target);
-                paths.add(relativize.toFile().getPath());
+                String path = StreamSupport
+                        .stream(relativize.spliterator(), false)
+                        .map(Path::toString).collect(Collectors.joining("/"));
+                paths.add(path);
             }
             return super.visitFile(file, attrs);
         }
