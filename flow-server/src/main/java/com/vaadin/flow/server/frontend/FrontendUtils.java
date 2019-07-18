@@ -230,8 +230,8 @@ public class FrontendUtils {
      * @param baseDir
      *            project root folder.
      *
-     * @return the a list of all commands in sequence that need to be executed
-     *         to have npm running
+     * @return the list of all commands in sequence that need to be executed to
+     *         have npm running
      */
     public static List<String> getNpmExecutable(String baseDir) {
         // If `node` is not found in PATH, `node/node_modules/npm/bin/npm` will
@@ -257,8 +257,8 @@ public class FrontendUtils {
      * @param baseDir
      *            project root folder.
      *
-     * @return the a list of all commands in sequence that need to be executed
-     *         to have bower running, an empty list if bower is not found
+     * @return the list of all commands in sequence that need to be executed to
+     *         have bower running, an empty list if bower is not found
      */
     public static List<String> getBowerExecutable(String baseDir) {
         File file = new File(baseDir, "node_modules/bower/bin/bower");
