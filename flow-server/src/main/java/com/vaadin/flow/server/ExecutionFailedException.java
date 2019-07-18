@@ -61,7 +61,7 @@ public class ExecutionFailedException extends Exception {
      *            the exception cause
      */
     public ExecutionFailedException(String message, Throwable cause) {
-        // TODO Auto-generated constructor stub
+        super(message, cause);
     }
 
 }
