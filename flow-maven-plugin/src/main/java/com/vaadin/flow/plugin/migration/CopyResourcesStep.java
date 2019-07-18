@@ -57,7 +57,7 @@ public class CopyResourcesStep extends AbstractCopyResourcesStep {
 
         @Override
         public boolean handle(Path source, Path target) throws IOException {
-            if (Files.isDirectory(source)) {
+            if (source.toFile().isDirectory()) {
                 return true;
             }
             if (source.getFileName().toString().toLowerCase(Locale.ENGLISH)
@@ -84,7 +84,7 @@ public class CopyResourcesStep extends AbstractCopyResourcesStep {
                 String elementHtml = child.outerHtml();
                 if ("link".equalsIgnoreCase(child.tagName())
                         && child.hasAttr("rel")
-                        && "import".equals(child.attr("rel"))
+                        && "import".equalsIgnoreCase(child.attr("rel"))
                         && child.hasAttr("href")) {
                     String href = child.attr("href");
                     int index = href.indexOf(BOWER_COMPONENTS);

@@ -178,7 +178,8 @@ public class MigrateMojo extends AbstractMojo {
         try {
             cleanUp(migrateFolder);
         } catch (IOException exception) {
-            getLog().debug("Couldn't remove ");
+            getLog().debug("Couldn't remove " + migrateFolder.getPath(),
+                    exception);
         }
 
         if (!modulizerHasErrors && !keepOriginal) {
