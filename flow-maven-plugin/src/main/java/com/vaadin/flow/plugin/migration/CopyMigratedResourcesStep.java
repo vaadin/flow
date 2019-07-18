@@ -31,6 +31,25 @@ import java.util.List;
  */
 public class CopyMigratedResourcesStep extends AbstractCopyResourcesStep {
 
+    /**
+     * Performs the actual files copy using {@link FileTreeHandler} semantic.
+     * <p>
+     * The implementation does:
+     * <ul>
+     * <li>Ignores everything inside {@code node_modules} directory.
+     * <li>Ignores temporary files like bower.json, package.json,
+     * package-lock.json.
+     * <li>Modifies the content of the file if necessary.
+     * </ul>
+     *
+     * The modification of content is done because of modulizer: it adds imports
+     * which sometimes (not always) starts with {@code "node_mouldes/"} prefix.
+     * The same file may contain one import with this prefix and another import
+     * without it. I consider this as a modulizer bug. There should not be any
+     * {@code "node_mouldes/"} prefix and it's removed from the import path if
+     * it's there.
+     *
+     */
     private static class CopyMigratedFiles implements FileTreeHandler {
 
         private static final String NODE_MODULES = "/node_modules/";
@@ -44,7 +63,7 @@ public class CopyMigratedResourcesStep extends AbstractCopyResourcesStep {
                     || "package-lock.json".equals(name)) {
                 return false;
             }
-            if (Files.isDirectory(source)) {
+            if (source.toFile().isDirectory()) {
                 return true;
             }
             List<String> lines = Files.readAllLines(source);
