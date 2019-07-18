@@ -24,12 +24,13 @@ import java.nio.file.Path;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.FallibleCommand;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
-import static com.vaadin.flow.server.frontend.NodeUpdater.log;
 
 /**
  * Updates the webpack config file according with current project settings.
@@ -144,5 +145,10 @@ public class TaskUpdateWebpack implements FallibleCommand {
                 ? webpackConfigPath.relativize(path)
                 : path;
         return relativePath.toString().replaceAll("\\\\", "/");
+    }
+
+    private Logger log() {
+        // Using short prefix so as npm output is more readable
+        return LoggerFactory.getLogger("dev-updater");
     }
 }

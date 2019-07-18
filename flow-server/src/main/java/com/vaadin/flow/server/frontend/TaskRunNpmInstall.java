@@ -24,7 +24,6 @@ import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.FallibleCommand;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
-import static com.vaadin.flow.server.frontend.NodeUpdater.log;
 
 /**
  * Run <code>npm install</code> after dependencies have been updated.
@@ -47,10 +46,10 @@ public class TaskRunNpmInstall implements FallibleCommand {
     @Override
     public void execute() throws ExecutionFailedException {
         if (packageUpdater.modified || shouldRunNpmInstall()) {
-            log().info("Running `npm install` ...");
+            packageUpdater.log().info("Running `npm install` ...");
             runNpmInstall();
         } else {
-            log().info("Skipping `npm install`.");
+            packageUpdater.log().info("Skipping `npm install`.");
         }
     }
 
@@ -58,7 +57,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
         if (packageUpdater.nodeModulesFolder.isDirectory()) {
             File[] installedPackages = packageUpdater.nodeModulesFolder
                     .listFiles();
-            return installedPackages == null
+            assert installedPackages != null;
+            return installedPackages.length == 0
                     || (installedPackages.length == 1 && FLOW_NPM_PACKAGE_NAME
                             .startsWith(installedPackages[0].getName()));
         }
@@ -82,17 +82,17 @@ public class TaskRunNpmInstall implements FallibleCommand {
             process = builder.inheritIO().start();
             int errorCode = process.waitFor();
             if (errorCode != 0) {
-                log().error(
+                packageUpdater.log().error(
                         ">>> Dependency ERROR. Check that all required dependencies are deployed in npm repositories.");
                 throw new ExecutionFailedException(
                         "Npm install has exited with non zero status. "
                                 + "Some dependencies are not installed. Check npm command output");
             } else {
-                log().info(
+                packageUpdater.log().info(
                         "package.json updated and npm dependencies installed. ");
             }
         } catch (InterruptedException | IOException e) {
-            log().error("Error when running `npm install`", e);
+            packageUpdater.log().error("Error when running `npm install`", e);
             throw new ExecutionFailedException(
                     "Command 'npm install' failed to finish", e);
         } finally {
