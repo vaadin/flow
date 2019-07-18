@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component;
 
+import com.vaadin.flow.dom.Element;
+
 /**
  * Represents a component that can gain and lose focus.
  *
@@ -108,9 +110,9 @@ public interface Focusable<T extends Component>
          * attached, and after the initial rendering cycle, so webcomponents can
          * be ready by the time when the function is called.
          */
-        getElement().getNode()
-                .runWhenAttached(ui -> ui.getPage().executeJs(
-                        "setTimeout(function(){$0.focus();},0)", getElement()));
+        Element element = getElement();
+        // Using $0 since "this" won't work inside the function
+        element.executeJs("setTimeout(function(){$0.focus()},0)", element);
     }
 
     /**
