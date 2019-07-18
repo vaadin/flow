@@ -100,15 +100,21 @@ public class MigrateMojo extends AbstractMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
         prepareMigrationDirectory();
 
-        File file = FrontendUtils.getBowerExecutable();
-        boolean needBowerInstall = file == null;
-        if (!ensureTools(needBowerInstall)) {
+        List<String> bowerCommands = FrontendUtils
+                .getBowerExecutable(migrateFolder.getPath());
+        boolean needInstallBower = bowerCommands.isEmpty();
+        if (!ensureTools(needInstallBower)) {
             throw new MojoExecutionException(
                     "Could not install tools required for migration (bower or modulizer)");
         }
-        if (needBowerInstall) {
-            String command = FrontendUtils.isWindows() ? "bower.cmd" : "bower";
-            file = new File(migrateFolder, "node_modules/bower/bin/" + command);
+        if (needInstallBower) {
+            bowerCommands = FrontendUtils
+                    .getBowerExecutable(migrateFolder.getPath());
+        }
+
+        if (bowerCommands.isEmpty()) {
+            throw new MojoExecutionException(
+                    "Could not locate bower. Install it manually on your system and re-run migration goal.");
         }
 
         Set<String> externalComponents;
@@ -135,7 +141,7 @@ public class MigrateMojo extends AbstractMojo {
                     exception);
         }
 
-        if (!saveBowerComponents(file, externalComponents)) {
+        if (!saveBowerComponents(bowerCommands, externalComponents)) {
             throw new MojoFailureException(
                     "Could not install bower components");
         }
@@ -234,7 +240,9 @@ public class MigrateMojo extends AbstractMojo {
         Collection<String> depMapping = makeDependencyMapping();
 
         List<String> command = new ArrayList<>();
-        command.add("node_modules/.bin/modulizer");
+        command.add(FrontendUtils
+                .getNodeExecutable(project.getBasedir().getPath()));
+        command.add("polymer-modulizer/bin/modulizer.js");
         command.add("--force");
         command.add("--out");
         command.add(".");
@@ -280,10 +288,10 @@ public class MigrateMojo extends AbstractMojo {
         return builder.toString();
     }
 
-    private boolean saveBowerComponents(File bowerExecutable,
+    private boolean saveBowerComponents(List<String> bowerCommands,
             Collection<String> components) {
         List<String> command = new ArrayList<>();
-        command.add(bowerExecutable.getAbsolutePath());
+        command.addAll(bowerCommands);
         // install
         command.add("i");
         // -F option means: Force latest version on conflict

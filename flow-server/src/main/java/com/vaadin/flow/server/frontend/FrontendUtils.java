@@ -23,6 +23,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -249,14 +250,28 @@ public class FrontendUtils {
     }
 
     /**
-     * Locate <code>bower</code> global executable.
+     * Locate <code>bower</code> executable.
+     * <p>
+     * An empty list is returned if bower is not found
      *
-     * @return the path to the bower executable, returns {@code null} if it's
-     *         not found
+     * @param baseDir
+     *            project root folder.
+     *
+     * @return the a list of all commands in sequence that need to be executed
+     *         to have bower running, an empty list if bower is not found
      */
-    public static File getBowerExecutable() {
+    public static List<String> getBowerExecutable(String baseDir) {
+        File file = new File(baseDir, "node_modules/bower/bin/bower");
+        if (file.canRead()) {
+            // We return a two element list with node binary and bower script
+            return Arrays.asList(getNodeExecutable(baseDir),
+                    file.getAbsolutePath());
+        }
+        // Otherwise look for a regular `bower`
         String command = isWindows() ? "bower.cmd" : "bower";
-        return frontendToolsLocator.tryLocateTool(command).orElse(null);
+        return frontendToolsLocator.tryLocateTool(command).map(File::getPath)
+                .map(Collections::singletonList)
+                .orElse(Collections.emptyList());
     }
 
     private static File getExecutable(String baseDir, String cmd,

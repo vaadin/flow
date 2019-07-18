@@ -42,9 +42,6 @@ import org.slf4j.LoggerFactory;
  *
  */
 public abstract class AbstractCopyResourcesStep {
-    private static final Logger LOGGER = LoggerFactory
-            .getLogger(AbstractCopyResourcesStep.class);
-
     protected static final String BOWER_COMPONENTS = "bower_components";
 
     protected interface FileTreeHandler {
@@ -85,7 +82,7 @@ public abstract class AbstractCopyResourcesStep {
         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
                 throws IOException {
             Path target = getTarget(file);
-            LOGGER.debug("Writing content to '{}'", target.toString());
+            getLogger().debug("Writing content to '{}'", target.toString());
             if (writer.handle(file, target)) {
                 paths.add(targetRoot.relativize(target).toString());
             }
@@ -100,10 +97,11 @@ public abstract class AbstractCopyResourcesStep {
                 return FileVisitResult.SKIP_SUBTREE;
             }
             if (!target.toFile().exists()) {
-                LOGGER.debug("Creating a new {} directory", target.toString());
+                getLogger().debug("Creating a new {} directory",
+                        target.toString());
                 Files.createDirectory(getTarget(dir));
             } else {
-                LOGGER.debug(
+                getLogger().debug(
                         "Directory/file {} already exists, skipping its creation",
                         target.toString());
             }
@@ -160,11 +158,11 @@ public abstract class AbstractCopyResourcesStep {
         if (!target.exists()) {
             FileUtils.forceMkdir(target);
         }
-        LOGGER.debug("Use {} as source folders to copy", resources);
+        getLogger().debug("Use {} as source folders to copy", resources);
         Map<String, List<String>> allResources = new HashMap<>();
 
         for (String resourceFolder : resources) {
-            LOGGER.debug("Copy resources from {} to {}", resourceFolder,
+            getLogger().debug("Copy resources from {} to {}", resourceFolder,
                     target.getPath());
             allResources.put(resourceFolder,
                     doCopyResources(new File(resourceFolder)));
@@ -179,4 +177,7 @@ public abstract class AbstractCopyResourcesStep {
         return visitor.getVisitedPaths();
     }
 
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(AbstractCopyResourcesStep.class);
+    }
 }
