@@ -15,13 +15,15 @@
  */
 package com.vaadin.flow.server;
 
+import java.io.Serializable;
+
 /**
  * A generic command which may fail.
  *
  * @author Vaadin Ltd
  *
  */
-public interface FallibleCommand {
+public interface FallibleCommand extends Serializable {
 
     void execute() throws ExecutionFailedException;
 }

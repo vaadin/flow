@@ -94,7 +94,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
         } catch (InterruptedException | IOException e) {
             log().error("Error when running `npm install`", e);
             throw new ExecutionFailedException(
-                    "Npm install command has not finished.");
+                    "Command 'npm install' failed to finish", e);
         } finally {
             if (process != null) {
                 process.destroyForcibly();
