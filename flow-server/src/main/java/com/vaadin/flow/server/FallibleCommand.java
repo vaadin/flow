@@ -25,5 +25,14 @@ import java.io.Serializable;
  */
 public interface FallibleCommand extends Serializable {
 
+    /**
+     * Runs the given command.
+     * <p>
+     * If execution fails then the command may throw an exception which may give
+     * a message and a cause of the failure.
+     *
+     * @throws ExecutionFailedException
+     *             if there is an execution error
+     */
     void execute() throws ExecutionFailedException;
 }
