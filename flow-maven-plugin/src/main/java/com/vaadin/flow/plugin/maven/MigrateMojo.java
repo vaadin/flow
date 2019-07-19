@@ -367,12 +367,7 @@ public class MigrateMojo extends AbstractMojo {
     private String[] getResources() {
         if (resources == null) {
             File webApp = new File(project.getBasedir(), "src/main/webapp");
-            File frontend = new File(webApp, "frontend");
-            if (frontend.exists() && webApp.listFiles().length == 1) {
-                resources = new String[] { frontend.getPath() };
-            } else {
-                resources = new String[] { webApp.getPath() };
-            }
+            resources = new String[] { webApp.getPath() };
         }
         return resources;
     }

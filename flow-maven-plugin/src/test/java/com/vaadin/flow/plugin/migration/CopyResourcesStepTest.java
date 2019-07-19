@@ -162,15 +162,42 @@ public class CopyResourcesStepTest {
         Assert.assertTrue(bowerComponents.contains("vaadin-text-field"));
     }
 
+    @Test
+    public void copyResources_moveFrontendToRoot_copyFileAndReturnBowerComponents()
+            throws IOException {
+        File file1 = new File(source1, "foo.html");
+        File file2 = new File(source1, "frontend/bar.html");
+        file2.getParentFile().mkdirs();
+
+        Files.write(file1.toPath(), Collections.singletonList(
+                "<link rel=\"import\" href=\"bower_components/vaadin-button/vaadin-button.html\">"));
+        Files.write(file2.toPath(), Collections.singletonList(
+                "<link rel=\"import\" href=\"./bower_components/vaadin-text-field/vaadin-text-area.html\">"));
+
+        Map<String, List<String>> resources = step.copyResources();
+
+        assertCopiedResources(resources, source1, "bar.html", "foo.html");
+
+        Set<String> bowerComponents = step.getBowerComponents();
+        Assert.assertEquals(2, bowerComponents.size());
+        Assert.assertTrue(bowerComponents.contains("vaadin-button"));
+        Assert.assertTrue(bowerComponents.contains("vaadin-text-field"));
+
+        Assert.assertTrue(new File(target, "foo.html").exists());
+        Assert.assertTrue(new File(target, "bar.html").exists());
+    }
+
     private String readFile(File file) throws IOException {
         return Files.readAllLines(file.toPath()).stream()
                 .collect(Collectors.joining("\n"));
     }
 
     private void assertCopiedResources(Map<String, List<String>> copied,
-            File source, String path) {
+            File source, String... path) {
         List<String> list = copied.get(source.getPath());
-        Assert.assertEquals(1, list.size());
-        Assert.assertEquals(path, list.get(0));
+        Assert.assertEquals(path.length, list.size());
+        for (int i = 0; i < path.length; i++) {
+            Assert.assertEquals(path[i], list.get(i));
+        }
     }
 }
