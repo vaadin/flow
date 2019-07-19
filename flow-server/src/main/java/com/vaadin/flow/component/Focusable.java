@@ -17,7 +17,7 @@ package com.vaadin.flow.component;
 
 import java.security.InvalidParameterException;
 
-import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.dom.Element;
 
 /**
  * Interface with the methods implemented by components that can gain and lose
@@ -27,7 +27,7 @@ import com.vaadin.flow.shared.Registration;
  *            the type of the component which implements the interface
  * @see BlurNotifier
  * @see FocusNotifier
- * @author  Vaadin Ltd.
+ * @author Vaadin Ltd.
  * @since
  */
 public interface Focusable<T extends Component>
@@ -109,13 +109,14 @@ public interface Focusable<T extends Component>
      */
     default void focus() {
         /*
-         * Make sure to call the focus function only after the element is
+         * Use setTimeout to call the focus function only after the element is
          * attached, and after the initial rendering cycle, so webcomponents can
          * be ready by the time when the function is called.
          */
-        getElement().getNode()
-                .runWhenAttached(ui -> ui.getPage().executeJavaScript(
-                        "setTimeout(function(){$0.focus();},0)", getElement()));
+        Element element = getElement();
+        // Using $0 since "this" won't work inside the function
+        element.executeJavaScript("setTimeout(function(){$0.focus()},0)",
+                element);
     }
 
     /**
@@ -139,13 +140,13 @@ public interface Focusable<T extends Component>
      * shortcut.
      *
      * @param key
-     *              primary {@link Key} used to trigger the shortcut. Cannot
-     *              be null.
+     *            primary {@link Key} used to trigger the shortcut. Cannot be
+     *            null.
      * @param keyModifiers
-     *              {@link KeyModifier KeyModifiers} that need to be pressed
-     *              along with the {@code key} for the shortcut to trigger
-     * @return  {@link ShortcutRegistration} for configuring the shortcut and
-     *          removing
+     *            {@link KeyModifier KeyModifiers} that need to be pressed along
+     *            with the {@code key} for the shortcut to trigger
+     * @return {@link ShortcutRegistration} for configuring the shortcut and
+     *         removing
      */
     default ShortcutRegistration addFocusShortcut(Key key,
                                                   KeyModifier... keyModifiers) {
