@@ -25,6 +25,7 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 
+import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 
@@ -65,7 +66,8 @@ public class TaskRunNpmInstallTest {
     }
 
     @Test
-    public void runNpmInstall_emptyDir_npmInstallIsExecuted() {
+    public void runNpmInstall_emptyDir_npmInstallIsExecuted()
+            throws ExecutionFailedException {
         File nodeModules = new File(npmFolder, NODE_MODULES);
         nodeModules.mkdir();
         nodeUpdater.modified = false;
@@ -76,7 +78,7 @@ public class TaskRunNpmInstallTest {
 
     @Test
     public void runNpmInstall_nonEmptyDir_npmInstallIsNotExecuted()
-            throws IOException {
+            throws IOException, ExecutionFailedException {
         File nodeModules = new File(npmFolder, NODE_MODULES);
         nodeModules.mkdir();
         new File(nodeModules, "foo").createNewFile();
@@ -88,7 +90,7 @@ public class TaskRunNpmInstallTest {
 
     @Test
     public void runNpmInstall_dirContainsOnlyFlowNpmPackage_npmInstallIsNotExecuted()
-            throws IOException {
+            throws IOException, ExecutionFailedException {
         File nodeModules = new File(npmFolder, NODE_MODULES);
         nodeModules.mkdir();
         new File(nodeModules, "@vaadin/flow-frontend/").mkdirs();
@@ -99,7 +101,8 @@ public class TaskRunNpmInstallTest {
     }
 
     @Test
-    public void runNpmInstall_modified_npmInstallIsExecuted() {
+    public void runNpmInstall_modified_npmInstallIsExecuted()
+            throws ExecutionFailedException {
         nodeUpdater.modified = true;
         task.execute();
 
