@@ -1,0 +1,10 @@
+{
+"name": "migration",
+"main": [
+%files_list%
+],
+"license": "Apache-2.0",
+"dependencies": {
+"polymer": "^2.0.0"
+}
+}

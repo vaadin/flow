@@ -2,6 +2,9 @@ package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -165,5 +168,21 @@ public class PrepareFrontendMojoTest {
         assertContainsPackage(packageJsonObject.getObject("devDependencies"),
                 "webpack", "webpack-cli", "webpack-dev-server",
                 "webpack-babel-multi-target-plugin", "copy-webpack-plugin");
+    }
+
+    private List<File> gatherFiles(File root) {
+        if (root.isFile()) {
+            return Collections.singletonList(root);
+        } else {
+            File[] subdirectoryFiles = root.listFiles();
+            if (subdirectoryFiles != null) {
+                List<File> files = new ArrayList<>();
+                for (File subdirectoryFile : subdirectoryFiles) {
+                    files.addAll(gatherFiles(subdirectoryFile));
+                }
+                return files;
+            }
+            return Collections.emptyList();
+        }
     }
 }

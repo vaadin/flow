@@ -1,0 +1,11 @@
+{
+"name": "@vaadin/migration",
+"version": "14.0.0",
+"main": [
+%files_list%
+],
+"license": "Apache-2.0",
+"devDependencies": {
+"polymer-modulizer": "^0.4.3"
+}
+}

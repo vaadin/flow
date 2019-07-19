@@ -144,6 +144,7 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
             throw new MojoFailureException(
                     "Could not execute prepare-frontend goal.", exception);
         }
+
     }
 
     private void propagateBuildInfo() {
