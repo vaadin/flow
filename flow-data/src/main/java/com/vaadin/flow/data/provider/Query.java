@@ -101,7 +101,7 @@ public class Query<T, F> implements Serializable {
     }
 
     /**
-     * Gets the limit of items to fetch. The limit is only used when fetching
+     * Gets the number of items to fetch. The limit is only used when fetching
      * items, but not when counting the number of available items.
      * <p>
      * <strong>Note: </strong>It is possible that
