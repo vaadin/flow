@@ -74,8 +74,6 @@ public class PrepareFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "project", project);
         ReflectionUtils.setVariableValueInObject(mojo, "jarResourcePathsToCopy",
                 RESOURCES_FRONTEND_DEFAULT);
-        ReflectionUtils.setVariableValueInObject(mojo, "includes",
-                "**/*.js,**/*.css");
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder",
                 projectBase);
         ReflectionUtils.setVariableValueInObject(mojo, "webpackTemplate",
