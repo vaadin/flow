@@ -271,7 +271,7 @@ public abstract class NodeUpdater implements FallibleCommand {
                 UTF_8.name());
     }
 
-    static Logger log() {
+    Logger log() {
         // Using short prefix so as npm output is more readable
         return LoggerFactory.getLogger("dev-updater");
     }
