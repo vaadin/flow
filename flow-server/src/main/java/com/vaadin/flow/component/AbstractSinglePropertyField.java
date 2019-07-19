@@ -22,6 +22,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.googlecode.gentyref.GenericTypeReflector;
+
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.PropertyChangeEvent;
@@ -272,12 +273,13 @@ public class AbstractSinglePropertyField<C extends AbstractField<C, T>, T>
 
     /**
      * Sets the name of the DOM event for which property values are synchronized
-     * from the client to the server. By default, the event name is the
-     * property name with <code>-changed</code> appended. This means that if the
-     * property name is <code>value</code>, then the event default name is
+     * from the client to the server. By default, the event name is the property
+     * name with <code>-changed</code> appended. This means that if the property
+     * name is <code>value</code>, then the event default name is
      * <code>value-changed</code>.
      *
-     * @see Element#addPropertyChangeListener(String, String, PropertyChangeListener)
+     * @see Element#addPropertyChangeListener(String, String,
+     *      PropertyChangeListener)
      * @see #getSynchronizationRegistration()
      *
      * @param synchronizedEvent
@@ -293,9 +295,9 @@ public class AbstractSinglePropertyField<C extends AbstractField<C, T>, T>
      * property value. The registration is created by
      * {@link #setSynchronizedEvent(String)}.
      *
-     * @return the registration of the DOM event listener that synchronizes
-     *         the property value, or <code>null</code>
-     *         if property synchronization is disabled
+     * @return the registration of the DOM event listener that synchronizes the
+     *         property value, or <code>null</code> if property synchronization
+     *         is disabled
      */
     protected DomListenerRegistration getSynchronizationRegistration() {
         return synchronizationRegistration;
@@ -308,10 +310,16 @@ public class AbstractSinglePropertyField<C extends AbstractField<C, T>, T>
             synchronizationRegistration.remove();
         }
         if (propChangeEvent != null) {
-            synchronizationRegistration = getElement().addPropertyChangeListener(
-                    propertyName,
-                    propChangeEvent,
-                    this::handlePropertyChange);
+            synchronizationRegistration = getElement()
+                    .addPropertyChangeListener(propertyName, propChangeEvent,
+                            new PropertyChangeListener() {
+
+                                @Override
+                                public void propertyChange(
+                                        PropertyChangeEvent event) {
+                                    handlePropertyChange(event);
+                                }
+                            });
         } else {
             synchronizationRegistration = null;
         }
