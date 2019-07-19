@@ -242,7 +242,7 @@ public class MigrateMojo extends AbstractMojo {
         List<String> command = new ArrayList<>();
         command.add(FrontendUtils
                 .getNodeExecutable(project.getBasedir().getPath()));
-        command.add("polymer-modulizer/bin/modulizer.js");
+        command.add("node_modules/polymer-modulizer/bin/modulizer.js");
         command.add("--force");
         command.add("--out");
         command.add(".");
