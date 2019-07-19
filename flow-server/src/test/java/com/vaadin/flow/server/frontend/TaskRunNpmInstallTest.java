@@ -73,7 +73,7 @@ public class TaskRunNpmInstallTest {
         nodeUpdater.modified = false;
         task.execute();
 
-        Mockito.verify(logger).info("Running `npm install` ...");
+        Mockito.verify(logger).info(TaskRunNpmInstall.RUNNING_NPM_INSTALL);
     }
 
     @Test
@@ -85,7 +85,7 @@ public class TaskRunNpmInstallTest {
         nodeUpdater.modified = false;
         task.execute();
 
-        Mockito.verify(logger).info("Skipping `npm install`.");
+        Mockito.verify(logger).info(TaskRunNpmInstall.SKIPPING_NPM_INSTALL);
     }
 
     @Test
@@ -97,7 +97,7 @@ public class TaskRunNpmInstallTest {
         nodeUpdater.modified = false;
         task.execute();
 
-        Mockito.verify(logger).info("Running `npm install` ...");
+        Mockito.verify(logger).info(TaskRunNpmInstall.RUNNING_NPM_INSTALL);
     }
 
     @Test
@@ -106,6 +106,6 @@ public class TaskRunNpmInstallTest {
         nodeUpdater.modified = true;
         task.execute();
 
-        Mockito.verify(logger).info("Running `npm install` ...");
+        Mockito.verify(logger).info(TaskRunNpmInstall.RUNNING_NPM_INSTALL);
     }
 }
