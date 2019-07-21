@@ -27,6 +27,5 @@ public class DefaultThemeView extends Div {
     public DefaultThemeView() {
         Anchor anchor = new Anchor("https://www.google.com", "Google");
         add(anchor);
-        add(new TemplateWithClientSideImports());
     }
 }
