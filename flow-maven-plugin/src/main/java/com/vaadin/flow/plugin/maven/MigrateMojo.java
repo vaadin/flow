@@ -54,7 +54,7 @@ import elemental.json.JsonValue;
  * @author Vaadin Ltd
  *
  */
-@Mojo(name = "migrate-to-p3", defaultPhase = LifecyclePhase.PROCESS_RESOURCES)
+@Mojo(name = "migrate", defaultPhase = LifecyclePhase.PROCESS_RESOURCES)
 public class MigrateMojo extends AbstractMojo {
 
     private static final String DEPENDENCIES = "dependencies";
