@@ -116,14 +116,6 @@ public abstract class AbstractCopyResourcesStep {
 
         private Path getTarget(Path source) {
             Path relativePath = sourceRoot.relativize(source);
-            String topLevel = relativePath.getName(0).toString();
-            if ("frontend".equals(topLevel)) {
-                if (relativePath.getNameCount() == 1) {
-                    return targetRoot;
-                }
-                relativePath = relativePath.subpath(1,
-                        relativePath.getNameCount());
-            }
             return targetRoot.resolve(relativePath);
         }
     }
