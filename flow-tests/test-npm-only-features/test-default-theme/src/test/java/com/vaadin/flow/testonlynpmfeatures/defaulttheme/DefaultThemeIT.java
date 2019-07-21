@@ -47,12 +47,19 @@ public class DefaultThemeIT extends ChromeBrowserTest {
     public void theme_override_expected_last() {
         open();
 
-        String lastStyle = $("head").first()
-                .$("custom-style").last()
-                .$("style").first()
-                .getAttribute("innerText");
+        String lastStyle = $("head").first().$("custom-style").last().$("style")
+                .first().getAttribute("innerText");
 
         Assert.assertTrue("Theme override expected last",
                 lastStyle.contains("--lumo-primary-color: red"));
+    }
+
+    @Test
+    public void clientSideImportIsThemed() {
+        open();
+
+        TestBenchElement button = $("tempate-with-client-side-imports").first()
+                .$("vaadin-button").first();
+        Assert.assertEquals("rgba(255, 0, 0, 1)", button.getCssValue("color"));
     }
 }
