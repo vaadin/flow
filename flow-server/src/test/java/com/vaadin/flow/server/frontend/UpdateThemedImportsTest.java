@@ -93,15 +93,27 @@ public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
         createImport("./src/client-side-no-themed-template.js", "");
         createImport("./src/main-template.js",
                 "import 'xx' from './client-side-template.js';"
-                        + "import \"./client-side-no-themed-template.js\"';");
+                        + "import \"./client-side-no-themed-template.js\"';"
+                        + "import './src/wrong-themed-template.js';"
+                        + "import '@vaadin/vaadin-button/src/vaadin-button.js'");
 
         // create themed modules
         createImport("./theme/myTheme/subfolder/sub-template.js", "");
         createImport("./theme/myTheme/client-side-template.js", "");
         createImport("./theme/myTheme/main-template.js", "");
-        // create css files to avoid exception when files not found during the test 
+
+        // wrong-themed-template.js should not be resolved inside node_modules.
+        // It should be searched only inside frontend directory
+        createImport("theme/myTheme/wrong-themed-template.js", "");
+        // create css files to avoid exception when files not found during the
+        // test
         createImport("./foo.css", "");
         createImport("@vaadin/vaadin-mixed-component/bar.css", "");
+
+        // make external component's module and its themed version
+        createImport("@vaadin/vaadin-button/src/vaadin-button.js", "");
+        createImport("@vaadin/vaadin-button/theme/myTheme/vaadin-button.js",
+                "");
 
         ClassFinder finder = getClassFinder();
         FrontendDependencies deps = new FrontendDependencies(finder) {
@@ -144,8 +156,11 @@ public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
                 CoreMatchers.containsString(
                         "import 'Frontend/theme/myTheme/client-side-template.js';"),
                 CoreMatchers.containsString(
-                        "import 'Frontend/theme/myTheme/subfolder/sub-template.js';"
-                                + "")));
+                        "import 'Frontend/theme/myTheme/subfolder/sub-template.js';"),
+                CoreMatchers.containsString(
+                        "import '@vaadin/vaadin-button/theme/myTheme/vaadin-button.js';"),
+                CoreMatchers.not(CoreMatchers.containsString(
+                        "import 'theme/myTheme/wrong-themed-template.js';"))));
     }
 
     private void createImport(String path, String content) throws IOException {

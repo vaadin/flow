@@ -62,23 +62,17 @@ public class TaskUpdateImports extends NodeUpdater {
     private static final String IMPORT_TEMPLATE = "import '%s';";
 
     private static final String THEME_PREPARE = "const div = document.createElement('div');";
-    private static final String THEME_LINE_TPL =
-            "div.innerHTML = '%s';%n"
+    private static final String THEME_LINE_TPL = "div.innerHTML = '%s';%n"
             + "document.head.insertBefore(div.firstElementChild, document.head.firstChild);";
-    private static final String THEME_VARIANT_TPL =
-            "document.body.setAttribute('%s', '%s');";
+    private static final String THEME_VARIANT_TPL = "document.body.setAttribute('%s', '%s');";
 
-    private static final String CSS_PREPARE =
-            "function addCssBlock(block) {\n"
+    private static final String CSS_PREPARE = "function addCssBlock(block) {\n"
             + " const tpl = document.createElement('template');\n"
             + " tpl.innerHTML = block;\n"
-            + " document.head.appendChild(tpl.content);\n"
-            + "}";
-    private static final String CSS_PRE =
-            "import $css_%d from '%s';%n"
+            + " document.head.appendChild(tpl.content);\n" + "}";
+    private static final String CSS_PRE = "import $css_%d from '%s';%n"
             + "addCssBlock(`";
-    private static final String CSS_POST =
-            "`);";
+    private static final String CSS_POST = "`);";
     private static final String CSS_BASIC_TPL = CSS_PRE
             + "<custom-style><style%s>${$css_%d}</style></custom-style>"
             + CSS_POST;
@@ -90,7 +84,8 @@ public class TaskUpdateImports extends NodeUpdater {
             + CSS_POST;
 
     // Trim and remove new lines.
-    private static final Pattern NEW_LINE_TRIM = Pattern.compile("(?m)(^\\s+|\\s?\n)");
+    private static final Pattern NEW_LINE_TRIM = Pattern
+            .compile("(?m)(^\\s+|\\s?\n)");
 
     /**
      * Create an instance of the updater given all configurable parameters.
@@ -153,12 +148,13 @@ public class TaskUpdateImports extends NodeUpdater {
         if (theme != null) {
             if (!theme.getHeaderInlineContents().isEmpty()) {
                 lines.add(THEME_PREPARE);
-                theme.getHeaderInlineContents().forEach(html -> addLines(lines,
-                        String.format(THEME_LINE_TPL,
+                theme.getHeaderInlineContents().forEach(
+                        html -> addLines(lines, String.format(THEME_LINE_TPL,
                                 NEW_LINE_TRIM.matcher(html).replaceAll(""))));
             }
-            theme.getHtmlAttributes(themeDef.getVariant()).forEach(
-                    (key, value) -> addLines(lines, String.format(THEME_VARIANT_TPL, key, value)));
+            theme.getHtmlAttributes(themeDef.getVariant())
+                    .forEach((key, value) -> addLines(lines,
+                            String.format(THEME_VARIANT_TPL, key, value)));
             lines.add("");
         }
         return lines;
@@ -185,30 +181,35 @@ public class TaskUpdateImports extends NodeUpdater {
             }
             if (!cssNotFound.isEmpty()) {
                 throw new IllegalStateException(notFoundMessage(cssNotFound,
-                        "Failed to find the following css files in the `node_modules` or `/frontend` tree:"
-                        , "Check that they exist or are installed."));
+                        "Failed to find the following css files in the `node_modules` or `/frontend` tree:",
+                        "Check that they exist or are installed."));
             }
             lines.add("");
         }
         return lines;
     }
 
-    private boolean addCssLines(Collection<String> lines, CssData cssData, int i) {
+    private boolean addCssLines(Collection<String> lines, CssData cssData,
+            int i) {
         String cssFile = resolveResource(cssData.getValue(), false);
         boolean found = importedFileExists(cssFile);
         String cssImport = toValidBrowserImport(cssFile);
-        String include = cssData.getInclude() != null ? " include=\"" + cssData.getInclude() + "\"" : "";
+        String include = cssData.getInclude() != null
+                ? " include=\"" + cssData.getInclude() + "\""
+                : "";
 
         if (cssData.getThemefor() != null) {
-            addLines(lines, String.format(CSS_THEME_FOR_TPL, i, cssImport, i, cssData.getThemefor(), include, i));
+            addLines(lines, String.format(CSS_THEME_FOR_TPL, i, cssImport, i,
+                    cssData.getThemefor(), include, i));
         } else if (cssData.getId() != null) {
-            addLines(lines, String.format(CSS_MODULE_TPL, i, cssImport, cssData.getId(), include, i));
+            addLines(lines, String.format(CSS_MODULE_TPL, i, cssImport,
+                    cssData.getId(), include, i));
         } else {
-            addLines(lines, String.format(CSS_BASIC_TPL, i, cssImport, include, i));
+            addLines(lines,
+                    String.format(CSS_BASIC_TPL, i, cssImport, include, i));
         }
         return found;
     }
-
 
     private Collection<String> getModuleLines(Set<String> modules) {
         Set<String> resourceNotFound = new HashSet<>();
@@ -226,13 +227,16 @@ public class TaskUpdateImports extends NodeUpdater {
                 String themePath = theme.getThemeUrl();
 
                 // (#5964) Allows:
-                //   - custom @Theme with files placed in /frontend
-                //   - customize an already themed component
-                // @vaadin/vaadin-grid/theme/lumo/vaadin-grid.js -> theme/lumo/vaadin-grid.js
-                localModulePath = translatedModulePath.replaceFirst("@.+" + themePath, themePath);
+                // - custom @Theme with files placed in /frontend
+                // - customize an already themed component
+                // @vaadin/vaadin-grid/theme/lumo/vaadin-grid.js ->
+                // theme/lumo/vaadin-grid.js
+                localModulePath = translatedModulePath
+                        .replaceFirst("@.+" + themePath, themePath);
             }
 
-            if(localModulePath != null && frontendFileExists(localModulePath)) {
+            if (localModulePath != null
+                    && frontendFileExists(localModulePath)) {
                 lines.add(String.format(IMPORT_TEMPLATE,
                         toValidBrowserImport(localModulePath)));
             } else if (importedFileExists(translatedModulePath)) {
@@ -256,21 +260,23 @@ public class TaskUpdateImports extends NodeUpdater {
         if (!resourceNotFound.isEmpty()) {
             throw new IllegalStateException(notFoundMessage(resourceNotFound,
                     "Failed to resolve the following files either:"
-                    + "\n   · in the `/frontend` sources folder"
-                    + "\n   · or as a `META-INF/resources/frontend` resource in some JAR."
-                    , "Please, double check that those files exist."));
+                            + "\n   · in the `/frontend` sources folder"
+                            + "\n   · or as a `META-INF/resources/frontend` resource in some JAR.",
+                    "Please, double check that those files exist."));
         }
 
         if (!npmNotFound.isEmpty() && log().isInfoEnabled()) {
             log().info(notFoundMessage(npmNotFound,
-                    "Failed to find the following imports in the `node_modules` tree:"
-                    , "If the build fails, check that npm packages are installed."));
+                    "Failed to find the following imports in the `node_modules` tree:",
+                    "If the build fails, check that npm packages are installed."));
         }
         return lines;
     }
 
-    private String notFoundMessage(Set<String> files, String prefix, String suffix) {
-        return String.format("%n%n  %s%n      - %s%n  %s%n%n", prefix, String.join("\n      - ", files), suffix);
+    private String notFoundMessage(Set<String> files, String prefix,
+            String suffix) {
+        return String.format("%n%n  %s%n      - %s%n  %s%n%n", prefix,
+                String.join("\n      - ", files), suffix);
     }
 
     private void handleImports(String path, AbstractTheme theme,
@@ -303,7 +309,20 @@ public class TaskUpdateImports extends NodeUpdater {
         ImportExtractor extractor = new ImportExtractor(content);
         List<String> importedPaths = extractor.getImportedPaths();
         for (String importedPath : importedPaths) {
+            // try to resolve path relatively to original filePath (inside user
+            // frontend folder)
             String resolvedPath = resolve(importedPath, filePath, path);
+            File file = getImportedFrontendFile(resolvedPath);
+            if (file == null && !importedPath.startsWith("./")) {
+                // In case such file doesn't exist it may be external: inside
+                // node_modules folder
+                file = getFile(nodeModulesFolder, resolvedPath);
+                resolvedPath = importedPath;
+            }
+            if (file == null) {
+                // don't do anything if such file doesn't exist at all
+                continue;
+            }
             if (resolvedPath.contains(theme.getBaseUrl())) {
                 String translatedPath = theme.translateUrl(resolvedPath);
                 if (importedFileExists(translatedPath)) {
@@ -376,8 +395,10 @@ public class TaskUpdateImports extends NodeUpdater {
 
     /**
      * Returns a file for the {@code jsImport} path ONLY if it's either in the
-     * {@code "frontend"} folder or {@code "node_modules/@vaadin/flow-frontend/") folder.
-     * <p>
+     * {@code "frontend"} folder or
+     * {@code "node_modules/@vaadin/flow-frontend/") folder.
+     *
+    <p>
      * This method doesn't care about "published" WC paths (like "@vaadin/vaadin-grid" and so on).
      * See the {@link #importedFileExists(String)} method implementation.
      *
