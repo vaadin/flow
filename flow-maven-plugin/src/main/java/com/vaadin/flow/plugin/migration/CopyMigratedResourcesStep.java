@@ -21,6 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Copies migrated files preserving their hierarchy and modifies import path if
@@ -55,12 +56,18 @@ public class CopyMigratedResourcesStep extends AbstractCopyResourcesStep {
         private static final String NODE_MODULES = "/node_modules/";
         private static final String IMPORT = "import";
 
+        private final Path sourceRoot;
+        private final Set<String> allowedDirectoryNames;
+
+        private CopyMigratedFiles(Path sourceRoot,
+                Set<String> allowedDirectoryNames) {
+            this.sourceRoot = sourceRoot;
+            this.allowedDirectoryNames = allowedDirectoryNames;
+        }
+
         @Override
         public boolean handle(Path source, Path target) throws IOException {
-            String name = source.getFileName().toString();
-            if (BOWER_COMPONENTS.equals(name) || "node_modules".equals(name)
-                    || "bower.json".equals(name) || "package.json".equals(name)
-                    || "package-lock.json".equals(name)) {
+            if (!acceptPath(source)) {
                 return false;
             }
             if (source.toFile().isDirectory()) {
@@ -72,6 +79,32 @@ public class CopyMigratedResourcesStep extends AbstractCopyResourcesStep {
                 content.append(rewriteImport(line)).append("\n");
             }
             Files.write(target, Collections.singletonList(content.toString()));
+            return true;
+        }
+
+        private boolean acceptPath(Path path) {
+            if (sourceRoot.equals(path)) {
+                return true;
+            }
+            Path relative = sourceRoot.relativize(path);
+            String name = relative.getNameCount() <= 1 ? relative.toString()
+                    : relative.getName(0).toString();
+            // filter out temporary files which were created by us or by
+            // bower/node
+            if (BOWER_COMPONENTS.equals(name) || "node_modules".equals(name)
+                    || "bower.json".equals(name) || "package.json".equals(name)
+                    || "package-lock.json".equals(name)) {
+                return false;
+            }
+            // filter out probable unexpected files which are created by
+            // modulizer
+            if (".gitignore".equals(name)) {
+                return false;
+            }
+            if (!allowedDirectoryNames.contains(name)
+                    && new File(sourceRoot.toFile(), name).isDirectory()) {
+                return false;
+            }
             return true;
         }
 
@@ -103,10 +136,13 @@ public class CopyMigratedResourcesStep extends AbstractCopyResourcesStep {
      *            the target directory
      * @param source
      *            the source directory
+     * @param allowedDirectoryNames
+     *            the directory names which are allowed to be copied
      */
-    public CopyMigratedResourcesStep(File target, File source) {
+    public CopyMigratedResourcesStep(File target, File source,
+            Set<String> allowedDirectoryNames) {
         super(target, new String[] { source.getPath() },
-                new CopyMigratedFiles());
+                new CopyMigratedFiles(source.toPath(), allowedDirectoryNames));
     }
 
 }

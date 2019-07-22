@@ -20,8 +20,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.hamcrest.CoreMatchers;
@@ -42,17 +44,20 @@ public class CopyMigratedResourcesStepTest {
 
     private File source;
 
+    private Set<String> allowedDirs = new HashSet<>();
+
     @Before
     public void setUp() throws IOException {
         target = temporaryFolder.newFolder();
         source = temporaryFolder.newFolder();
 
-        step = new CopyMigratedResourcesStep(target, source);
+        step = new CopyMigratedResourcesStep(target, source, allowedDirs);
     }
 
     @Test
     public void copyResources_filesAreCopiedAndContentIsModified()
             throws IOException {
+        allowedDirs.add("dir");
         File file1 = new File(source, "dir/foo.js");
         File file2 = new File(source, "bar.js");
 
@@ -95,6 +100,46 @@ public class CopyMigratedResourcesStepTest {
 
         Assert.assertThat(content, CoreMatchers.containsString(
                 "import '@polymer/polymer/lib/elements/dom-repeat.js';"));
+    }
+
+    @Test
+    public void copyResources_filterOutUnnecessaryFiles() throws IOException {
+        File file = new File(source, "bar.js");
+
+        makeFile(new File(source, "bower_components/a.js"));
+        makeFile(new File(source, "node_modules/b.js"));
+        makeFile(new File(source, "bower.json"));
+        makeFile(new File(source, "package.json"));
+        makeFile(new File(source, "package-lock.json"));
+        makeFile(new File(source, "coverage/c.cov"));
+        makeFile(new File(source, "docs/d.doc"));
+        makeFile(new File(source, ".gitignore"));
+
+        Files.write(file.toPath(), Collections.singletonList(
+                "import { PolymerElement } from '/node_modules/@polymer/polymer/polymer-element.js';"));
+
+        Map<String, List<String>> copiedResources = step.copyResources();
+        Assert.assertEquals(1, copiedResources.size());
+        Assert.assertEquals(1, copiedResources.values().size());
+        Assert.assertEquals("bar.js",
+                copiedResources.values().iterator().next().get(0));
+
+        Assert.assertFalse(new File(target, "bower_components/a.js").exists());
+        Assert.assertFalse(new File(target, "bower_components").exists());
+        Assert.assertFalse(new File(target, "node_modules").exists());
+        Assert.assertFalse(new File(target, "node_modules/b.js").exists());
+        Assert.assertFalse(new File(target, "package.json").exists());
+        Assert.assertFalse(new File(target, "package-lock.json").exists());
+        Assert.assertFalse(new File(target, "coverage/c.cov").exists());
+        Assert.assertFalse(new File(target, "coverage").exists());
+        Assert.assertFalse(new File(target, "docs").exists());
+        Assert.assertFalse(new File(target, "docs/d.doc").exists());
+        Assert.assertFalse(new File(target, ".gitignore").exists());
+    }
+
+    private void makeFile(File file) throws IOException {
+        file.getParentFile().mkdirs();
+        file.createNewFile();
     }
 
     private String readFile(File file) throws IOException {
