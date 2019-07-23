@@ -76,11 +76,8 @@ public abstract class ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.data\\.validator\\.BeanValidator\\$LazyFactoryInitializer",
                 "com\\.vaadin\\.flow\\.internal\\.BeanUtil\\$LazyValidationAvailability",
                 ".*\\.slf4j\\..*", ".*\\.testbench\\..*", ".*\\.testutil\\..*",
-                ".*\\.demo\\..*", "com\\.vaadin\\..*Util(s)?(\\$\\w+)?$", // Various
-                                                                          // utils
-                                                                          // with
-                                                                          // inner
-                                                                          // classes
+                // Various utils with inner classes
+                ".*\\.demo\\..*", "com\\.vaadin\\..*Util(s)?(\\$\\w+)?$",
 
                 "com\\.vaadin\\.flow\\.data\\.provider\\.InMemoryDataProviderHelpers",
                 "com\\.vaadin\\.flow\\.dom\\.ElementConstants",
@@ -137,12 +134,10 @@ public abstract class ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.server\\.VaadinRequest",
                 "com\\.vaadin\\.flow\\.router\\.RouteNotFoundError\\$LazyInit",
                 "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.TemplateDataAnalyzer\\$.*",
-                "com\\.vaadin\\.flow\\.component\\.HtmlComponent", // De-facto
-                                                                   // abstract
-                                                                   // class
-                "com\\.vaadin\\.flow\\.component\\.HtmlContainer", // De-facto
-                                                                   // abstract
-                                                                   // class
+                // De-facto abstract class
+                "com\\.vaadin\\.flow\\.component\\.HtmlComponent",
+                // De-facto abstract class
+                "com\\.vaadin\\.flow\\.component\\.HtmlContainer",
                 "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.TemplateInitializer(\\$.*)?",
                 "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.TemplateParser(\\$.*)?",
                 "com\\.vaadin\\.flow\\.dom\\.impl\\.ThemeListImpl\\$ThemeListIterator",
@@ -422,9 +417,7 @@ public abstract class ClassesSerializableTest {
                     .findFirst();
             setChild.get().invoke(divElement, 0, getElement(instance));
             serializeAndDeserialize(div);
-        } catch (
-
-        Throwable e) {
+        } catch (Throwable e) {
             throw new AssertionError(clazz.getName(), e);
         }
     }
@@ -436,9 +429,8 @@ public abstract class ClassesSerializableTest {
         return method.invoke(obj);
     }
 
-    private Object instantiate(Class<?> clazz)
-            throws InstantiationException, IllegalAccessException,
-            IllegalArgumentException, InvocationTargetException {
+    private Object instantiate(Class<?> clazz) throws InstantiationException,
+            IllegalAccessException, InvocationTargetException {
         Optional<Constructor<?>> defaultCtor = Stream
                 .of(clazz.getDeclaredConstructors())
                 .filter(ctor -> ctor.getParameterCount() == 0).findFirst();

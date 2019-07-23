@@ -312,6 +312,11 @@ public class AbstractSinglePropertyField<C extends AbstractField<C, T>, T>
         if (propChangeEvent != null) {
             synchronizationRegistration = getElement()
                     .addPropertyChangeListener(propertyName, propChangeEvent,
+                            // This explicit class instantiation is the
+                            // workaround
+                            // which fixes a JVM optimization+serialization bug.
+                            // Do not convert to lambda.
+                            // See #5973.
                             new PropertyChangeListener() {
 
                                 @Override
