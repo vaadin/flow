@@ -58,7 +58,7 @@ public class DefaultThemeIT extends ChromeBrowserTest {
     public void clientSideImportIsThemed() {
         open();
 
-        TestBenchElement button = $("tempate-with-client-side-imports").first()
+        TestBenchElement button = $("template-with-client-side-imports").first()
                 .$("vaadin-button").first();
         Assert.assertEquals("rgba(255, 0, 0, 1)", button.getCssValue("color"));
     }
