@@ -40,6 +40,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 
+import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.plugin.common.FlowPluginFrontendUtils;
 import com.vaadin.flow.plugin.migration.CopyMigratedResourcesStep;
 import com.vaadin.flow.plugin.migration.CopyResourcesStep;
@@ -61,6 +62,10 @@ import elemental.json.JsonValue;
 public class MigrateMojo extends AbstractMojo {
 
     private static final String DEPENDENCIES = "dependencies";
+
+    public static enum HtmlImportsRewriteStrategy {
+        ALWAYS, SKIP, SKIP_ON_ERROR;
+    }
 
     /**
      * A list of directories with files to migrate.
@@ -98,6 +103,24 @@ public class MigrateMojo extends AbstractMojo {
      */
     @Parameter(defaultValue = "true")
     private boolean ignoreModulizerErrors;
+
+    /**
+     * Allows to specify the strategy to use to rewrite {@link HtmlImport}
+     * annotations in Java files.
+     * <p>
+     * Three values are available:
+     * <ul>
+     * <li>ALWAYS : if chosen then {@link HtmlImport} will be always rewritten
+     * regardless of migration of the import files content
+     * <li>SKIP : if chosen then neither {@link HtmlImport} annotation will be
+     * rewritten
+     * <li>SKIP : if chosen then {@link HtmlImport} annotations will be
+     * rewritten only if there are no errors during migration of imported files
+     * content
+     * <ul>
+     */
+    @Parameter(defaultValue = "ALWAYS")
+    private HtmlImportsRewriteStrategy htmlImportsRewrite;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -195,7 +218,19 @@ public class MigrateMojo extends AbstractMojo {
             removeOriginalResources(paths);
         }
 
-        rewrite();
+        switch (htmlImportsRewrite) {
+        case SKIP:
+            break;
+        case ALWAYS:
+            rewrite();
+            break;
+        case SKIP_ON_ERROR:
+            if (!modulizerHasErrors) {
+                rewrite();
+            }
+            break;
+        }
+
     }
 
     private void prepareMigrationDirectory() {
