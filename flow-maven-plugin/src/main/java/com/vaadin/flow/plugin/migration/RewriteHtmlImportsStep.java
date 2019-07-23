@@ -194,13 +194,14 @@ public class RewriteHtmlImportsStep extends ClassPathIntrospector {
             classDeclarationPattern = getClassDeclarationPattern(clazz);
         }
         Matcher matcher = classDeclarationPattern.matcher(content);
-        if (!matcher.find()) {
-            getLogger().warn(
+        int classDeclarationStart = content.length();
+        if (matcher.find()) {
+            classDeclarationStart = matcher.start();
+        } else {
+            getLogger().debug(
                     "Implementation issue: unable to find class declaration inside {} java source file",
                     javaFile);
-            return;
         }
-        int classDeclarationStart = matcher.start();
 
         String beforeClassDeclaration = content.substring(0,
                 classDeclarationStart);
