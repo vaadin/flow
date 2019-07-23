@@ -21,9 +21,9 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
-@JsModule("./src/tempate-with-client-side-imports.js")
+@JsModule("./src/template-with-client-side-imports.js")
 @NpmPackage(value = "@vaadin/vaadin-button", version = "2.2.0")
-@Tag("tempate-with-client-side-imports")
+@Tag("template-with-client-side-imports")
 public class TemplateWithClientSideImports
         extends PolymerTemplate<TemplateModel> {
 
