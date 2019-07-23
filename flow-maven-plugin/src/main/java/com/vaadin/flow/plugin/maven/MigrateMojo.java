@@ -37,11 +37,14 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 
+import com.vaadin.flow.plugin.common.FlowPluginFrontendUtils;
 import com.vaadin.flow.plugin.migration.CopyMigratedResourcesStep;
 import com.vaadin.flow.plugin.migration.CopyResourcesStep;
 import com.vaadin.flow.plugin.migration.CreateMigrationJsonsStep;
+import com.vaadin.flow.plugin.migration.RewriteHtmlImportsStep;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import elemental.json.Json;
@@ -54,7 +57,7 @@ import elemental.json.JsonValue;
  * @author Vaadin Ltd
  *
  */
-@Mojo(name = "migrate-to-p3", defaultPhase = LifecyclePhase.PROCESS_RESOURCES)
+@Mojo(name = "migrate-to-p3", requiresDependencyResolution = ResolutionScope.COMPILE, defaultPhase = LifecyclePhase.PROCESS_CLASSES)
 public class MigrateMojo extends AbstractMojo {
 
     private static final String DEPENDENCIES = "dependencies";
@@ -191,6 +194,8 @@ public class MigrateMojo extends AbstractMojo {
         if (!modulizerHasErrors && !keepOriginal) {
             removeOriginalResources(paths);
         }
+
+        rewrite();
     }
 
     private void prepareMigrationDirectory() {
@@ -370,6 +375,15 @@ public class MigrateMojo extends AbstractMojo {
             resources = new String[] { webApp.getPath() };
         }
         return resources;
+    }
+
+    private void rewrite() {
+        RewriteHtmlImportsStep step = new RewriteHtmlImportsStep(
+                new File(project.getBuild().getOutputDirectory()),
+                FlowPluginFrontendUtils.getClassFinder(project),
+                project.getCompileSourceRoots().stream().map(File::new)
+                        .collect(Collectors.toList()));
+        step.rewrite();
     }
 
 }
