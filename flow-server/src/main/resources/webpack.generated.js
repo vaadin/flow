@@ -55,6 +55,7 @@ module.exports = {
   },
 
   resolve: {
+    extensions: ['.ts', '.js'],
     alias: {
       Frontend: frontendFolder
     }
@@ -80,6 +81,10 @@ module.exports = {
       { // Files that Babel has to transpile
         test: /\.js$/,
         use: [BabelMultiTargetPlugin.loader()]
+      },
+      {
+        test: /\.ts$/,
+        loader: 'awesome-typescript-loader'
       },
       {
         test: /\.css$/i,
@@ -148,3 +153,4 @@ module.exports = {
     }]),
   ].filter(Boolean)
 };
+
