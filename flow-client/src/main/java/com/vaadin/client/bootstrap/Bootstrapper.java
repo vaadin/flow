@@ -125,10 +125,14 @@ public class Bootstrapper implements EntryPoint {
          */
         String serviceUrl = jsoConfiguration
                 .getConfigString(ApplicationConstants.SERVICE_URL);
+
+        conf.setWebComponent(serviceUrl != null);
+
         if (serviceUrl == null) {
             conf.setServiceUrl(WidgetUtil.getAbsoluteUrl("."));
             conf.setContextRootUrl(WidgetUtil.getAbsoluteUrl(jsoConfiguration
                     .getConfigString(ApplicationConstants.CONTEXT_ROOT_URL)));
+
         } else {
             conf.setServiceUrl(serviceUrl);
             conf.setContextRootUrl(WidgetUtil.getAbsoluteUrl(
