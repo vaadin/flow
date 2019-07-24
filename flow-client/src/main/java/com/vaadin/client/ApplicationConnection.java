@@ -57,13 +57,19 @@ public class ApplicationConnection {
         ReconnectDialogConfiguration.bind(registry.getConnectionStateHandler());
         LoadingIndicatorConfigurator.observe(rootNode, registry.getLoadingIndicator());
 
-        new PopStateHandler(registry).bind();
+
 
         Element body = Browser.getDocument().getBody();
 
         rootNode.setDomNode(body);
         Binder.bind(rootNode, body);
-        RouterLinkHandler.bind(registry, body);
+
+        // When app is run as a WC do not add listener for routing events.
+        // Routing is responsability of the hosting application (#6108)
+        if (!applicationConfiguration.isWebComponent()) {
+            new PopStateHandler(registry).bind();
+            RouterLinkHandler.bind(registry, body);
+        }
 
         Console.log("Starting application "
                 + applicationConfiguration.getApplicationId());
@@ -169,14 +175,14 @@ public class ApplicationConnection {
             var ur = ap.@ApplicationConnection::registry.@com.vaadin.client.Registry::getURIResolver()();
             return ur.@com.vaadin.client.URIResolver::resolveVaadinUri(Ljava/lang/String;)(uriToResolve);
         });
-    
+
         $wnd.Vaadin.Flow.sendEventMessage = $entry(function(nodeId, eventType, eventData) {
             var sc = ap.@ApplicationConnection::registry.@com.vaadin.client.Registry::getServerConnector()();
             sc.@com.vaadin.client.communication.ServerConnector::sendEventMessage(ILjava/lang/String;Lelemental/json/JsonObject;)(nodeId,eventType,eventData);
         });
-    
+
         client.initializing = false;
-    
+
         $wnd.Vaadin.Flow.clients[applicationId] = client;
     }-*/;
 
@@ -202,7 +208,7 @@ public class ApplicationConnection {
         client.getVersionInfo = $entry(function(parameter) {
             return { "flow": servletVersion};
         });
-    
+
     }-*/;
 
     /**
