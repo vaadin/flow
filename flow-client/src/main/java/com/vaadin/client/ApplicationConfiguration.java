@@ -37,7 +37,7 @@ public class ApplicationConfiguration {
 
     private boolean productionMode;
     private boolean requestTiming;
-    private boolean isWebComponent;
+    private boolean webComponentMode;
 
     private String servletVersion;
     private String atmosphereVersion;
@@ -102,22 +102,22 @@ public class ApplicationConfiguration {
     }
 
     /**
-     * Gets whether the application is running as a web-component in the page.
+     * Checks whether the application is running as a web-component in the page.
      *
      * @return true in case the app is a WC
      */
-    public boolean isWebComponent() {
-        return isWebComponent;
+    public boolean isWebComponentMode() {
+        return webComponentMode;
     }
 
     /**
      * Sets whether the application is running as a web-component in the page.
      *
-     * @param isWebComponent
+     * @param mode
      *            set to true if it's a WC
      */
-    public void setWebComponent(boolean isWebComponent) {
-        this.isWebComponent = isWebComponent;
+    public void setWebComponentMode(boolean mode) {
+        this.webComponentMode = mode;
     }
 
     /**

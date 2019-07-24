@@ -66,7 +66,7 @@ public class ApplicationConnection {
 
         // When app is run as a WC do not add listener for routing events.
         // Routing is responsability of the hosting application (#6108)
-        if (!applicationConfiguration.isWebComponent()) {
+        if (!applicationConfiguration.isWebComponentMode()) {
             new PopStateHandler(registry).bind();
             RouterLinkHandler.bind(registry, body);
         }
