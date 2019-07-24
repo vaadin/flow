@@ -178,7 +178,7 @@ public final class BundleParser {
         return template;
     }
 
-    // From the statistics json eecursively go through all chunks and modules to
+    // From the statistics json recursively go through all chunks and modules to
     // find the first module whose name matches the file name
     private static String getSourceFromObject(JsonObject module,
             String fileName) {
@@ -204,7 +204,7 @@ public final class BundleParser {
             String alternativeFileName = fileName
                     // Replace frontend part since webpack entry-point is
                     // already in the frontend folder
-                    .replaceFirst("^(./)frontend/", "$1")
+                    .replaceFirst("^(\\./)frontend/", "$1")
                     // Replace the flow frontend protocol
                     .replaceFirst("^frontend://", ".");
 
@@ -212,7 +212,7 @@ public final class BundleParser {
             // using ./ as the actual path contains "node_modules/@vaadin/flow-frontend/" instead of "./"
             if (name.contains(FrontendUtils.FLOW_NPM_PACKAGE_NAME)) {
                 alternativeFileName = alternativeFileName
-                        .replaceFirst("./", "");
+                        .replaceFirst("\\./", "");
             }
 
             // Remove query-string used by webpack modules like babel (e.g
