@@ -132,6 +132,10 @@ public class MigrateMojo extends AbstractMojo {
                     exception);
         }
 
+        Set<String> migratedTopLevelDirs = Stream.of(migrateFolder.listFiles())
+                .filter(file -> file.isDirectory()).map(File::getName)
+                .collect(Collectors.toSet());
+
         List<String> allPaths = new ArrayList<>();
         paths.values().stream().forEach(allPaths::addAll);
         try {
@@ -171,7 +175,7 @@ public class MigrateMojo extends AbstractMojo {
             }
         }
         CopyMigratedResourcesStep copyMigratedStep = new CopyMigratedResourcesStep(
-                frontendDirectory, migrateFolder);
+                frontendDirectory, migrateFolder, migratedTopLevelDirs);
         try {
             copyMigratedStep.copyResources();
         } catch (IOException exception) {
