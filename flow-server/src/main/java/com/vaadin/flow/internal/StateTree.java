@@ -45,26 +45,41 @@ import com.vaadin.flow.shared.Registration;
 public class StateTree implements NodeOwner {
 
     private final class RootNode extends StateNode {
+        private Boolean isAttached;
+
         private RootNode(Class<? extends NodeFeature>[] features) {
             super(features);
 
             // Bootstrap
             setTree(StateTree.this);
 
+            isAttached = true;
             // Assign id
             onAttach();
         }
 
         @Override
         public void setParent(StateNode parent) {
-            throw new IllegalStateException(
-                    "Can't set the parent of the tree root");
+            if (parent == null) {
+                super.setParent(null);
+                isAttached = false;
+            } else {
+                throw new IllegalStateException(
+                        "Can't set the parent of the tree root");
+            }
         }
 
         @Override
         public boolean isAttached() {
-            // Root is always attached
-            return true;
+            // the method is called from the super class (which is bad: call
+            // overridden method at the class init phase), at this point the
+            // value is not set yet in this (sub)class, so this trick is needed
+            // to avoid changes internal API for proper implementation (via
+            // additional parameter in CTOR)
+            if (isAttached == null) {
+                return true;
+            }
+            return isAttached;
         }
 
     }

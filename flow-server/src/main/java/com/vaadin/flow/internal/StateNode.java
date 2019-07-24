@@ -365,8 +365,8 @@ public class StateNode implements Serializable {
     }
 
     /**
-     * Removes the node from its parent and unlinks the node (and children)
-     * from the state tree.
+     * Removes the node from its parent and unlinks the node (and children) from
+     * the state tree.
      */
     public void removeFromTree() {
         visitNodeTree(StateNode::reset);
@@ -676,10 +676,10 @@ public class StateNode implements Serializable {
 
         if (owner instanceof StateTree) {
             throw new IllegalStateException(
-                    "Can't move a node from one state tree to another. " +
-                            "If this is intentional, first remove the " +
-                            "node from its current state tree by calling " +
-                            "removeFromTree");
+                    "Can't move a node from one state tree to another. "
+                            + "If this is intentional, first remove the "
+                            + "node from its current state tree by calling "
+                            + "removeFromTree");
         }
         owner = tree;
     }
