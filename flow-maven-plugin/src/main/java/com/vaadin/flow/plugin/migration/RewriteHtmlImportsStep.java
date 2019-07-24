@@ -48,10 +48,11 @@ import com.vaadin.flow.shared.ApplicationConstants;
  */
 public class RewriteHtmlImportsStep extends ClassPathIntrospector {
 
+    private static final String HTML_EXTENSION = ".html";
     private final URL compiledClassesURL;
     private final Collection<File> sourceRoots;
 
-    private static final String CLASS_DECLARATION_PATTERN = "(\\s|public|final|abstract|private|static|protected)*\\s+class\\s+%s(|<|>)*\\s+((extends\\s+(\\w|<|>)+)|(implements\\s+(\\w|<|>)+( ,(\\w|<|>))*))?\\s*\\{";
+    private static final String CLASS_DECLARATION_PATTERN = "(\\s|public|final|abstract|private|static|protected)*\\s+class\\s+%s(|<|>|\\?|\\w|\\s|,|\\&)*\\s+((extends\\s+(\\w|<|>|\\?|,)+)|(implements\\s+(|<|>|\\?|\\w|\\s|,)+( ,(\\w|<|>|\\?|\\s|,))*))?\\s*\\{";
 
     private final Map<Class<?>, Pattern> compiledPatterns = new HashMap<>();
 
@@ -222,6 +223,10 @@ public class RewriteHtmlImportsStep extends ClassPathIntrospector {
 
     private String rewritePath(String path) {
         String rewritten = path;
+        if (rewritten.endsWith(HTML_EXTENSION)) {
+            rewritten = rewritten.substring(0,
+                    rewritten.length() - HTML_EXTENSION.length()) + ".js";
+        }
         rewritten = extractPrefix(rewritten,
                 ApplicationConstants.BASE_PROTOCOL_PREFIX);
         rewritten = extractPrefix(rewritten,
@@ -232,7 +237,7 @@ public class RewriteHtmlImportsStep extends ClassPathIntrospector {
         if (rewritten.startsWith(AbstractCopyResourcesStep.BOWER_COMPONENTS)) {
             rewritten = rewritten.substring(
                     AbstractCopyResourcesStep.BOWER_COMPONENTS.length());
-            if (rewritten.startsWith("vaadin")) {
+            if (rewritten.startsWith("/vaadin")) {
                 rewritten = "@vaadin" + rewritten;
             } else {
                 getLogger().warn("Don't know how to resolve Html import '{}'",
