@@ -164,19 +164,14 @@ public class NpmTemplateParserTest {
                 templateContent.getTemplateElement().childNodeSize());
     }
 
-
     @Test
-    public void nonLocalTemplate_sourcesShouldBeFound() {
-        // Template with no closing style tag should parse as one big style tag
-        // and thus
-        // the document body should have no elements.
+    public void nonLocalTemplate_shouldParseCorrectly() {
         Mockito.when(configuration.getStringProperty(Mockito.anyString(),
                 Mockito.anyString()))
                 .thenReturn(VAADIN_SERVLET_RESOURCES + "config/stats.json");
         TemplateParser.TemplateData templateContent = NpmTemplateParser
                 .getInstance().getTemplateContent(HelloWorld.class,
                         HelloWorld.class.getAnnotation(Tag.class).value(), service);
-
 
         Assert.assertEquals("Template should contain one child", 1,
                 templateContent.getTemplateElement().childNodeSize());
