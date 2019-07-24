@@ -18,6 +18,7 @@ package com.vaadin.client.bootstrap;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
+
 import com.vaadin.client.ApplicationConfiguration;
 import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.BrowserInfo;
@@ -126,7 +127,8 @@ public class Bootstrapper implements EntryPoint {
         String serviceUrl = jsoConfiguration
                 .getConfigString(ApplicationConstants.SERVICE_URL);
 
-        conf.setWebComponent(serviceUrl != null);
+        conf.setWebComponentMode(
+                jsoConfiguration.getConfigBoolean(ApplicationConstants.APP_WC_MODE));
 
         if (serviceUrl == null) {
             conf.setServiceUrl(WidgetUtil.getAbsoluteUrl("."));
