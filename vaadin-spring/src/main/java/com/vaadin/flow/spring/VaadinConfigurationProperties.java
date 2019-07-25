@@ -24,10 +24,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 /**
  * Configuration properties for Vaadin Spring Boot.
  *
- * @see <a href=
- *      "http://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-external-config.html">http://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-external-config.html</a>
  * @author Vaadin Ltd
- *
+ * @see <a href=
+ * "http://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-external-config.html">http://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-external-config.html</a>
  */
 @ConfigurationProperties(prefix = "vaadin")
 public class VaadinConfigurationProperties {
@@ -45,7 +44,12 @@ public class VaadinConfigurationProperties {
     /**
      * Custom package blacklist that should be skipped in scanning.
      */
-    private List<String> blacklistedPackages  = new ArrayList<>();
+    private List<String> blacklistedPackages = new ArrayList<>();
+
+    /**
+     * Custom package whitelist that should be scanned.
+     */
+    private List<String> whitelistedPackages = new ArrayList<>();
 
     /**
      * Gets the url mapping for the Vaadin servlet.
@@ -68,8 +72,7 @@ public class VaadinConfigurationProperties {
     /**
      * Sets {@code urlMapping} property value.
      *
-     * @param urlMapping
-     *            the {@code urlMapping} property value
+     * @param urlMapping the {@code urlMapping} property value
      */
     public void setUrlMapping(String urlMapping) {
         this.urlMapping = urlMapping;
@@ -78,8 +81,7 @@ public class VaadinConfigurationProperties {
     /**
      * Sets {@code asyncSupported} property value.
      *
-     * @param asyncSupported
-     *            the {@code asyncSupported} property value
+     * @param asyncSupported the {@code asyncSupported} property value
      */
     public void setAsyncSupported(boolean asyncSupported) {
         this.asyncSupported = asyncSupported;
@@ -97,10 +99,28 @@ public class VaadinConfigurationProperties {
     /**
      * Set list of packages to ignore for class scanning.
      *
-     * @param blacklistedPackages
-     *         list of packages to ignore
+     * @param blacklistedPackages list of packages to ignore
      */
     public void setBlacklistedPackages(List<String> blacklistedPackages) {
         this.blacklistedPackages = new ArrayList<>(blacklistedPackages);
+    }
+
+    /**
+     * Get a list of packages that are white-listed for class scanning.
+     *
+     * @return package white-list
+     */
+    public List<String> getWhitelistedPackages() {
+        return Collections.unmodifiableList(whitelistedPackages);
+    }
+
+    /**
+     * Set list of packages to be scanned. If <code>whitelistedPackages</code>
+     * is set then <code>blacklistedPackages</code> is ignored.
+     *
+     * @param whitelistedPackages list of packages to be scanned
+     */
+    public void setWhitelistedPackages(List<String> whitelistedPackages) {
+        this.whitelistedPackages = new ArrayList<>(whitelistedPackages);
     }
 }

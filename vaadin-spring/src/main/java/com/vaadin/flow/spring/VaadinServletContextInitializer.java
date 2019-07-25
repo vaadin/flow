@@ -29,9 +29,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
@@ -266,7 +267,8 @@ public class VaadinServletContextInitializer
 
             DeploymentConfiguration config = SpringStubServletConfig
                     .createDeploymentConfiguration(event.getServletContext(),
-                            servletRegistrationBean, SpringServlet.class, appContext);
+                            servletRegistrationBean, SpringServlet.class,
+                            appContext);
 
             if (config.isCompatibilityMode() || config.isProductionMode()
                     || !config.enableDevServer()) {
@@ -346,16 +348,34 @@ public class VaadinServletContextInitializer
      */
     public VaadinServletContextInitializer(ApplicationContext context) {
         appContext = context;
-        String property = appContext.getEnvironment()
+        String blacklistProperty = appContext.getEnvironment()
                 .getProperty("vaadin.blacklisted-packages");
         List<String> blacklist;
-        if (property == null) {
+        if (blacklistProperty == null) {
             blacklist = Collections.emptyList();
         } else {
-            blacklist = Arrays.stream(property.split(",")).map(String::trim)
-                    .collect(Collectors.toList());
+            blacklist = Arrays.stream(blacklistProperty.split(","))
+                    .map(String::trim).collect(Collectors.toList());
         }
-        customLoader = new CustomResourceLoader(appContext, blacklist);
+
+        String whitelistProperty = appContext.getEnvironment()
+                .getProperty("vaadin.whitelisted-packages");
+        List<String> whitelist;
+        if (whitelistProperty == null) {
+            whitelist = Collections.emptyList();
+        } else {
+            whitelist = Arrays.stream(whitelistProperty.split(","))
+                    .map(String::trim).collect(Collectors.toList());
+        }
+
+        if (!whitelist.isEmpty() && !blacklist.isEmpty()) {
+            getLogger().warn(
+                    "vaadin.blacklisted-packages is ignored because both vaadin.whitelisted-packages and vaadin.blacklisted-packages have been set.");
+            blacklist = Collections.emptyList();
+        }
+
+        customLoader = new CustomResourceLoader(appContext, blacklist,
+                whitelist);
     }
 
     @Override
@@ -496,6 +516,19 @@ public class VaadinServletContextInitializer
             extends PathMatchingResourcePatternResolver {
 
         /**
+         * Whitelisted packages which with <code>DEFAULT_WHITE_LISTED</code> are
+         * the only packages that should be scanned.
+         */
+        private List<String> addedWhiteListed;
+
+        /**
+         * packages that are white-listed (should be scanned) by default and
+         * can't be overriden by <code>addedWhiteListed</code>.
+         */
+        private final static List<String> DEFAULT_WHITE_LISTED = Stream
+                .of("com/vaadin/flow/component").collect(Collectors.toList());
+
+        /**
          * Blacklisted packages that shouldn't be scanned for when scanning all
          * packages.
          */
@@ -512,9 +545,16 @@ public class VaadinServletContextInitializer
                 .collect(Collectors.toList());
 
         public CustomResourceLoader(ResourceLoader resourceLoader,
-                List<String> addedBlacklist) {
+                List<String> addedBlacklist, List<String> addedWhiteListed) {
             super(resourceLoader);
+
+            Objects.requireNonNull(addedBlacklist,
+                    "addedBlacklist shouldn't be null!");
+            Objects.requireNonNull(addedWhiteListed,
+                    "addedWhiteListed shouldn't be null!");
+
             blackListed.addAll(addedBlacklist);
+            this.addedWhiteListed = addedWhiteListed;
         }
 
         /**
@@ -525,6 +565,7 @@ public class VaadinServletContextInitializer
         private final ReentrantLock lock = new ReentrantLock(true);
 
         private Map<String, Resource[]> cache = new HashMap<>();
+        private Set<String> rootPaths = new HashSet<>();
 
         @Override
         public Resource[] getResources(String locationPattern)
@@ -547,13 +588,48 @@ public class VaadinServletContextInitializer
             List<Resource> resourcesList = new ArrayList<>();
             for (Resource resource : super.getResources(locationPattern)) {
                 String path = resource.getURL().getPath();
-                Optional<String> blacklisted = blackListed.stream()
-                        .filter(path::contains).findAny();
-                if (!blacklisted.isPresent()) {
+                if (path.endsWith(".jar!/")) {
                     resourcesList.add(resource);
+                } else if (path.endsWith("/")) {
+                    rootPaths.add(path);
+                    resourcesList.add(resource);
+                } else {
+                    int index = path.indexOf(".jar!/");
+                    if (index >= 0) {
+                        String relativePath = path.substring(index + 6);
+                        if (shouldPathBeScanned(relativePath)) {
+                            resourcesList.add(resource);
+                        }
+                    } else {
+                        List<String> parents = rootPaths.stream()
+                                .filter(path::startsWith)
+                                .collect(Collectors.toList());
+                        if (parents.isEmpty())
+                            throw new IllegalStateException(String.format(
+                                    "Parent resource of [%s] not found in the resources!",
+                                    path));
+
+                        if (parents.stream()
+                                .anyMatch(parent -> shouldPathBeScanned(
+                                        path.substring(parent.length())))) {
+                            resourcesList.add(resource);
+                        }
+                    }
                 }
             }
             return resourcesList.toArray(new Resource[0]);
+        }
+
+        private boolean shouldPathBeScanned(String path) {
+            if (DEFAULT_WHITE_LISTED.stream().anyMatch(path::startsWith)) {
+                return true;
+            }
+
+            if (!addedWhiteListed.isEmpty()) {
+                return addedWhiteListed.stream().anyMatch(path::startsWith);
+            }
+
+            return !blackListed.stream().anyMatch(path::startsWith);
         }
     }
 
@@ -571,9 +647,9 @@ public class VaadinServletContextInitializer
          * Constructor.
          *
          * @param context
-         *         the ServletContext
+         *            the ServletContext
          * @param registration
-         *         the ServletRegistration for this ServletConfig instance
+         *            the ServletRegistration for this ServletConfig instance
          */
         private SpringStubServletConfig(ServletContext context,
                 ServletRegistrationBean registration,
@@ -622,19 +698,19 @@ public class VaadinServletContextInitializer
          * Creates a DeploymentConfiguration.
          *
          * @param context
-         *         the ServletContext
+         *            the ServletContext
          * @param registration
-         *         the ServletRegistrationBean to get servlet parameters from
+         *            the ServletRegistrationBean to get servlet parameters from
          * @param servletClass
-         *         the class to look for properties defined with annotations
+         *            the class to look for properties defined with annotations
          * @return a DeploymentConfiguration instance
          */
         public static DeploymentConfiguration createDeploymentConfiguration(
                 ServletContext context, ServletRegistrationBean registration,
                 Class<?> servletClass, ApplicationContext appContext) {
             try {
-                ServletConfig servletConfig = new SpringStubServletConfig(context,
-                        registration, appContext);
+                ServletConfig servletConfig = new SpringStubServletConfig(
+                        context, registration, appContext);
                 return DeploymentConfigurationFactory
                         .createPropertyDeploymentConfiguration(servletClass,
                                 servletConfig);
