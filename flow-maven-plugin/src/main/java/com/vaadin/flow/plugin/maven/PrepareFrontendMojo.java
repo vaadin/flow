@@ -21,6 +21,8 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -28,12 +30,14 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 
+import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
+
 import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFinder;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
@@ -60,7 +64,8 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
     @Mojo(name = "validate", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PROCESS_RESOURCES)
     public static class VaildateMojo extends PrepareFrontendMojo {
         @Override
-        public void execute() {
+        public void execute()
+                throws MojoExecutionException, MojoFailureException {
             getLog().warn(
                     "\n\n   You are using the 'validate' goal which has been renamed to 'prepare-frontend', please update your 'pom.xml'.\n");
             super.execute();
@@ -94,9 +99,9 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
     private String webpackTemplate;
 
     /**
-     * Copy the `webapp.generated.js` from the specified URL. Default is
-     * the template provided by this plugin. Set it to empty string to disable
-     * the feature.
+     * Copy the `webapp.generated.js` from the specified URL. Default is the
+     * template provided by this plugin. Set it to empty string to disable the
+     * feature.
      */
     @Parameter(defaultValue = FrontendUtils.WEBPACK_GENERATED)
     private String webpackGeneratedTemplate;
@@ -109,7 +114,7 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
     private File generatedFolder;
 
     @Override
-    public void execute() {
+    public void execute() throws MojoExecutionException, MojoFailureException {
         super.execute();
 
         // propagate info via System properties and token file
@@ -126,13 +131,19 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         FrontendUtils.getNpmExecutable(npmFolder.getAbsolutePath());
         FrontendUtils.validateNodeAndNpmVersion(npmFolder.getAbsolutePath());
 
-        new NodeTasks.Builder(getClassFinder(project), npmFolder, generatedFolder)
-                .withWebpack(webpackOutputDirectory, webpackTemplate, webpackGeneratedTemplate)
-                .createMissingPackageJson(true)
-                .enableImportsUpdate(false)
-                .enablePackagesUpdate(false)
-                .runNpmInstall(false).build()
-                .execute();
+        try {
+            new NodeTasks.Builder(getClassFinder(project), npmFolder,
+                    generatedFolder)
+                            .withWebpack(webpackOutputDirectory,
+                                    webpackTemplate, webpackGeneratedTemplate)
+                            .createMissingPackageJson(true)
+                            .enableImportsUpdate(false)
+                            .enablePackagesUpdate(false).runNpmInstall(false)
+                            .build().execute();
+        } catch (ExecutionFailedException exception) {
+            throw new MojoFailureException(
+                    "Could not execute prepare-frontend goal.", exception);
+        }
 
     }
 

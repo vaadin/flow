@@ -13,20 +13,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package com.vaadin.flow.component.html;
 
-package com.vaadin.flow.testonlynpmfeatures.defaulttheme;
+import com.vaadin.flow.testutil.ClassesSerializableTest;
 
-import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.html.Anchor;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.router.Route;
+public class HtmlComponentSerializableTest extends ClassesSerializableTest {
 
-@Route("com.vaadin.flow.testonlynpmfeatures.defaulttheme.DefaultThemeView")
-@JsModule("styles/styles.js")
-public class DefaultThemeView extends Div {
-    public DefaultThemeView() {
-        Anchor anchor = new Anchor("https://www.google.com", "Google");
-        add(anchor);
-        add(new TemplateWithClientSideImports());
-    }
 }

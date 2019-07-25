@@ -23,6 +23,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -141,7 +142,8 @@ public class FrontendUtils {
     /**
      * File used to enable npm mode.
      */
-    public static final String TOKEN_FILE = Constants.VAADIN_CONFIGURATION + "flow-build-info.json";
+    public static final String TOKEN_FILE = Constants.VAADIN_CONFIGURATION
+            + "flow-build-info.json";
 
     /**
      * A parameter informing about the location of the
@@ -228,8 +230,8 @@ public class FrontendUtils {
      * @param baseDir
      *            project root folder.
      *
-     * @return the a list of all commands in sequence that need to be executed
-     *         to have npm running
+     * @return the list of all commands in sequence that need to be executed to
+     *         have npm running
      */
     public static List<String> getNpmExecutable(String baseDir) {
         // If `node` is not found in PATH, `node/node_modules/npm/bin/npm` will
@@ -238,14 +240,42 @@ public class FrontendUtils {
         File file = new File(baseDir, "node/node_modules/npm/bin/npm-cli.js");
         if (file.canRead()) {
             // We return a two element list with node binary and npm-cli script
-            return Arrays.asList(getNodeExecutable(baseDir), file.getAbsolutePath());
+            return Arrays.asList(getNodeExecutable(baseDir),
+                    file.getAbsolutePath());
         }
         // Otherwise look for regulan `npm`
         String command = isWindows() ? "npm.cmd" : "npm";
-        return Arrays.asList(getExecutable(baseDir, command, null).getAbsolutePath());
+        return Arrays.asList(
+                getExecutable(baseDir, command, null).getAbsolutePath());
     }
 
-    private static File getExecutable(String baseDir, String cmd, String defaultLocation) {
+    /**
+     * Locate <code>bower</code> executable.
+     * <p>
+     * An empty list is returned if bower is not found
+     *
+     * @param baseDir
+     *            project root folder.
+     *
+     * @return the list of all commands in sequence that need to be executed to
+     *         have bower running, an empty list if bower is not found
+     */
+    public static List<String> getBowerExecutable(String baseDir) {
+        File file = new File(baseDir, "node_modules/bower/bin/bower");
+        if (file.canRead()) {
+            // We return a two element list with node binary and bower script
+            return Arrays.asList(getNodeExecutable(baseDir),
+                    file.getAbsolutePath());
+        }
+        // Otherwise look for a regular `bower`
+        String command = isWindows() ? "bower.cmd" : "bower";
+        return frontendToolsLocator.tryLocateTool(command).map(File::getPath)
+                .map(Collections::singletonList)
+                .orElse(Collections.emptyList());
+    }
+
+    private static File getExecutable(String baseDir, String cmd,
+            String defaultLocation) {
         File file = null;
         try {
             file = defaultLocation == null
@@ -343,8 +373,7 @@ public class FrontendUtils {
         return content != null ? streamToString(content) : null;
     }
 
-    private static InputStream getStatsFromWebpack()
-            throws IOException {
+    private static InputStream getStatsFromWebpack() throws IOException {
         DevModeHandler handler = DevModeHandler.getDevModeHandler();
         return handler.prepareConnection("/stats.json", "GET").getInputStream();
     }
@@ -355,10 +384,12 @@ public class FrontendUtils {
                         VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT)
                 // Remove absolute
                 .replaceFirst("^/", "");
-        InputStream stream =  service.getClassLoader().getResourceAsStream(stats);
+        InputStream stream = service.getClassLoader()
+                .getResourceAsStream(stats);
         if (stream == null) {
             getLogger().error(
-                    "Cannot get the 'stats.json' from the classpath '{}'", stats);
+                    "Cannot get the 'stats.json' from the classpath '{}'",
+                    stats);
         }
         return stream;
     }
@@ -417,8 +448,7 @@ public class FrontendUtils {
                 shouldWorkMinor)) {
             getLogger().warn(String.format(SHOULD_WORK, tool,
                     String.join(".", toolVersion), supportedMajor,
-                    supportedMinor,
-                    PARAM_IGNORE_VERSION_CHECKS));
+                    supportedMinor, PARAM_IGNORE_VERSION_CHECKS));
             return;
         }
 

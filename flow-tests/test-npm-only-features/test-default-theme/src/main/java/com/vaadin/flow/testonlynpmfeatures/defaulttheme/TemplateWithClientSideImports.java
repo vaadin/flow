@@ -13,20 +13,18 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.testonlynpmfeatures.defaulttheme;
 
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.html.Anchor;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.router.Route;
+import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.templatemodel.TemplateModel;
 
-@Route("com.vaadin.flow.testonlynpmfeatures.defaulttheme.DefaultThemeView")
-@JsModule("styles/styles.js")
-public class DefaultThemeView extends Div {
-    public DefaultThemeView() {
-        Anchor anchor = new Anchor("https://www.google.com", "Google");
-        add(anchor);
-        add(new TemplateWithClientSideImports());
-    }
+@JsModule("./src/template-with-client-side-imports.js")
+@NpmPackage(value = "@vaadin/vaadin-button", version = "2.2.0")
+@Tag("template-with-client-side-imports")
+public class TemplateWithClientSideImports
+        extends PolymerTemplate<TemplateModel> {
+
 }

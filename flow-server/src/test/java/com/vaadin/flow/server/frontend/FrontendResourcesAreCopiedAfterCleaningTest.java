@@ -28,6 +28,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 public class FrontendResourcesAreCopiedAfterCleaningTest {
@@ -41,14 +42,14 @@ public class FrontendResourcesAreCopiedAfterCleaningTest {
             .getTestJar("jar-with-frontend-resources.jar");
 
     @Before
-    public void setup() throws IOException {
+    public void setup() throws IOException, ExecutionFailedException {
         npmFolder = temporaryFolder.getRoot();
 
     }
 
     @Test
     public void frontendResources_should_beCopiedFromJars_when_TaskUpdatePackagesRemovesThem()
-            throws IOException {
+            throws IOException, ExecutionFailedException {
         copyResources();
         assertCopiedFrontendFileAmount(2);
 
@@ -69,7 +70,7 @@ public class FrontendResourcesAreCopiedAfterCleaningTest {
                 files.size());
     }
 
-    private void copyResources() {
+    private void copyResources() throws ExecutionFailedException {
         ClassFinder classFinder = new ClassFinder.DefaultClassFinder(
                 FrontendResourcesAreCopiedAfterCleaningTest.class
                         .getClassLoader());
@@ -82,17 +83,15 @@ public class FrontendResourcesAreCopiedAfterCleaningTest {
                 .execute();
     }
 
-    private void performPackageClean() {
+    private void performPackageClean() throws ExecutionFailedException {
         ClassFinder classFinder = new ClassFinder.DefaultClassFinder(
                 FrontendResourcesAreCopiedAfterCleaningTest.class
                         .getClassLoader());
         NodeTasks.Builder builder = new NodeTasks.Builder(classFinder,
                 npmFolder);
-        // force cleaning
         builder.withEmbeddableWebComponents(false).enableImportsUpdate(false)
                 .createMissingPackageJson(true).enableImportsUpdate(true)
-                .runNpmInstall(false)
-                .enableNpmFileCleaning(true).enablePackagesUpdate(true).build()
-                .execute();
+                .runNpmInstall(false).enableNpmFileCleaning(true)
+                .enablePackagesUpdate(true).build().execute();
     }
 }

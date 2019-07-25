@@ -24,16 +24,18 @@ import java.nio.file.Path;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.server.Command;
+import com.vaadin.flow.server.FallibleCommand;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
-import static com.vaadin.flow.server.frontend.NodeUpdater.log;
+
 /**
  * Updates the webpack config file according with current project settings.
  */
-public class TaskUpdateWebpack implements Command {
+public class TaskUpdateWebpack implements FallibleCommand {
 
     /**
      * The name of the webpack config file.
@@ -86,7 +88,8 @@ public class TaskUpdateWebpack implements Command {
 
         File configFile = new File(webpackConfigPath.toFile(), WEBPACK_CONFIG);
 
-        // If we have an old config file we remove it and create the new one using the webpack.generated.js
+        // If we have an old config file we remove it and create the new one
+        // using the webpack.generated.js
         if (configFile.exists()) {
             if (!FileUtils.readFileToString(configFile, "UTF-8")
                     .contains("./webpack.generated.js")) {
@@ -107,30 +110,28 @@ public class TaskUpdateWebpack implements Command {
         }
 
         // Generated file is always re-written
-        File generatedFile = new File(webpackConfigPath.toFile(), WEBPACK_GENERATED);
+        File generatedFile = new File(webpackConfigPath.toFile(),
+                WEBPACK_GENERATED);
 
         URL resource = this.getClass().getClassLoader()
                 .getResource(webpackGeneratedTemplate);
         FileUtils.copyURLToFile(resource, generatedFile);
         List<String> lines = FileUtils.readLines(generatedFile, "UTF-8");
 
-        String outputLine =
-                "const mavenOutputFolderForFlowBundledFiles = require('path').resolve(__dirname, '"
-                        + getEscapedRelativeWebpackPath(webpackOutputPath)
-                        + "');";
-        String mainLine =
-                "const fileNameOfTheFlowGeneratedMainEntryPoint = require('path').resolve(__dirname, '"
-                        + getEscapedRelativeWebpackPath(flowImportsFilePath)
-                        + "');";
+        String outputLine = "const mavenOutputFolderForFlowBundledFiles = require('path').resolve(__dirname, '"
+                + getEscapedRelativeWebpackPath(webpackOutputPath) + "');";
+        String mainLine = "const fileNameOfTheFlowGeneratedMainEntryPoint = require('path').resolve(__dirname, '"
+                + getEscapedRelativeWebpackPath(flowImportsFilePath) + "');";
 
         for (int i = 0; i < lines.size(); i++) {
             String line = lines.get(i).trim();
-            if (lines.get(i)
-                    .startsWith("const fileNameOfTheFlowGeneratedMainEntryPoint")
+            if (lines.get(i).startsWith(
+                    "const fileNameOfTheFlowGeneratedMainEntryPoint")
                     && !line.equals(mainLine)) {
                 lines.set(i, mainLine);
             }
-            if (lines.get(i).startsWith("const mavenOutputFolderForFlowBundledFiles")
+            if (lines.get(i)
+                    .startsWith("const mavenOutputFolderForFlowBundledFiles")
                     && !line.equals(outputLine)) {
                 lines.set(i, outputLine);
             }
@@ -144,5 +145,10 @@ public class TaskUpdateWebpack implements Command {
                 ? webpackConfigPath.relativize(path)
                 : path;
         return relativePath.toString().replaceAll("\\\\", "/");
+    }
+
+    private Logger log() {
+        // Using short prefix so as npm output is more readable
+        return LoggerFactory.getLogger("dev-updater");
     }
 }
