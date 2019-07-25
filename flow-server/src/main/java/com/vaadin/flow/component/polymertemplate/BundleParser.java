@@ -24,11 +24,12 @@ import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.server.frontend.FrontendUtils;
+
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonType;
-
 import static elemental.json.JsonType.ARRAY;
 import static elemental.json.JsonType.OBJECT;
 import static elemental.json.JsonType.STRING;
@@ -177,7 +178,7 @@ public final class BundleParser {
         return template;
     }
 
-    // From the statistics json eecursively go through all chunks and modules to
+    // From the statistics json recursively go through all chunks and modules to
     // find the first module whose name matches the file name
     private static String getSourceFromObject(JsonObject module,
             String fileName) {
@@ -200,19 +201,26 @@ public final class BundleParser {
             // append `.js` extension if not yet as webpack does
             fileName = fileName.replaceFirst("(\\.js|)$", ".js");
 
-            String alternativeName = fileName
+            String alternativeFileName = fileName
                     // Replace frontend part since webpack entry-point is
                     // already in the frontend folder
-                    .replaceFirst("^(./)frontend/", "$1")
+                    .replaceFirst("^(\\./)frontend/", "$1")
                     // Replace the flow frontend protocol
                     .replaceFirst("^frontend://", ".");
+
+            // For polymer templates inside add-ons we will not find the sources
+            // using ./ as the actual path contains "node_modules/@vaadin/flow-frontend/" instead of "./"
+            if (name.contains(FrontendUtils.FLOW_NPM_PACKAGE_NAME)) {
+                alternativeFileName = alternativeFileName
+                        .replaceFirst("\\./", "");
+            }
 
             // Remove query-string used by webpack modules like babel (e.g
             // ?babel-target=es6)
             name = name.replaceFirst("\\?.+$", "");
 
             // Do check on the original fileName and the alternative one
-            if (name.endsWith(fileName) || name.endsWith(alternativeName)) {
+            if (name.endsWith(fileName) || name.endsWith(alternativeFileName)) {
                 source = module.getString(SOURCE);
             }
         }
