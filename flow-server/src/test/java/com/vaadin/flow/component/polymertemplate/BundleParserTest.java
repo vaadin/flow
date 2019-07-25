@@ -9,6 +9,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import elemental.json.Json;
 import elemental.json.JsonObject;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 
@@ -47,5 +48,17 @@ public class BundleParserTest {
         final String source = BundleParser.getSourceFromStatistics(
                 "frontend:///src/hello-world.js", stats);
         Assert.assertNotNull("Source expected in stats.json", source);
+    }
+
+    @Test
+    public void startsWithSingleLetterDirector_sourcesShouldNotBeFound() {
+        // This test exposes a common error in String#replaceFirst (unescaped
+        // period in regex) in BundleParser#getSourceFromObject
+        final JsonObject module = Json.createObject();
+        module.put("name","a/src/hello-world.js");
+        module.put("source","some-source.js");
+        final String source = BundleParser.getSourceFromStatistics(
+                "a/frontend/src/hello-world.js", module);
+        Assert.assertNull("Source not expected in module", source);
     }
 }
