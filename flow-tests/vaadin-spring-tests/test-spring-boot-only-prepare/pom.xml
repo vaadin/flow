@@ -31,7 +31,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-
         </dependency>
 
         <dependency>
@@ -70,7 +69,7 @@
                     <artifactId>spring-boot-maven-plugin</artifactId>
                     <version>${spring-boot.version}</version>
                     <configuration>
-                        <maxAttempts>30</maxAttempts>
+                        <maxAttempts>100</maxAttempts>
                         <wait>2500</wait>
                     </configuration>
                 </plugin>
