@@ -26,13 +26,6 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.vaadin.flow.router.AfterNavigationListener;
-import com.vaadin.flow.router.BeforeEnterListener;
-import com.vaadin.flow.router.BeforeLeaveListener;
-import com.vaadin.flow.router.ListenerPriority;
-import com.vaadin.flow.router.Location;
-import com.vaadin.flow.router.Router;
-import com.vaadin.flow.router.RouterLayout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,7 +51,14 @@ import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.PollConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.PushConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap;
+import com.vaadin.flow.router.AfterNavigationListener;
+import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.BeforeLeaveEvent.ContinueNavigationAction;
+import com.vaadin.flow.router.BeforeLeaveListener;
+import com.vaadin.flow.router.ListenerPriority;
+import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.Router;
+import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.AfterNavigationHandler;
 import com.vaadin.flow.router.internal.BeforeEnterHandler;
 import com.vaadin.flow.router.internal.BeforeLeaveHandler;
@@ -120,7 +120,6 @@ public class UIInternals implements Serializable {
         public List<Object> getParameters() {
             return Collections.unmodifiableList(parameters);
         }
-
     }
 
     /**
@@ -361,13 +360,7 @@ public class UIInternals implements Serializable {
                             + ".");
         } else {
             if (session == null) {
-                try {
-                    ComponentUtil.onComponentDetach(ui);
-                    ui.getChildren().forEach(ComponentUtil::onComponentDetach);
-                } catch (Exception e) {
-                    getLogger().warn("Error while detaching UI from session",
-                            e);
-                }
+                ui.getElement().getNode().setParent(null);
                 // Disable push when the UI is detached. Otherwise the
                 // push connection and possibly VaadinSession will live on.
                 ui.getPushConfiguration().setPushMode(PushMode.DISABLED);
@@ -472,13 +465,19 @@ public class UIInternals implements Serializable {
             Class<?> o1Class = o1.getClass();
             Class<?> o2Class = o2.getClass();
 
-            final ListenerPriority listenerPriority1 = o1Class.getAnnotation(ListenerPriority.class);
-            final ListenerPriority listenerPriority2 = o2Class.getAnnotation(ListenerPriority.class);
+            final ListenerPriority listenerPriority1 = o1Class
+                    .getAnnotation(ListenerPriority.class);
+            final ListenerPriority listenerPriority2 = o2Class
+                    .getAnnotation(ListenerPriority.class);
 
-            final int priority1 = listenerPriority1 != null ? listenerPriority1.value() : 0;
-            final int priority2 = listenerPriority2 != null ? listenerPriority2.value() : 0;
+            final int priority1 = listenerPriority1 != null
+                    ? listenerPriority1.value()
+                    : 0;
+            final int priority2 = listenerPriority2 != null
+                    ? listenerPriority2.value()
+                    : 0;
 
-            //we want to have a descending order
+            // we want to have a descending order
             return Integer.compare(priority2, priority1);
         });
 
@@ -772,7 +771,7 @@ public class UIInternals implements Serializable {
         Page page = ui.getPage();
         DependencyInfo dependencies = ComponentUtil
                 .getDependencies(session.getService(), componentClass);
-        dependencies.getHtmlImports().stream()
+        dependencies.getHtmlImports()
                 .forEach(html -> addHtmlImport(html, page));
         dependencies.getJavaScripts()
                 .forEach(js -> page.addJavaScript(js.value(), js.loadMode()));
@@ -787,7 +786,7 @@ public class UIInternals implements Serializable {
         // contain versions for which files. They must be translated before
         // added to page though, as whatever is added there is sent without
         // modifications to the client
-        dependency.getUris().stream().forEach(uri -> page
+        dependency.getUris().forEach(uri -> page
                 .addHtmlImport(translateTheme(uri), dependency.getLoadMode()));
     }
 
