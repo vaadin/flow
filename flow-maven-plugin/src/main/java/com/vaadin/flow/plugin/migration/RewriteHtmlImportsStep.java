@@ -207,10 +207,12 @@ public class RewriteHtmlImportsStep extends ClassPathIntrospector {
         String beforeClassDeclaration = content.substring(0,
                 classDeclarationStart);
 
-        String rewritten = beforeClassDeclaration.replace("HtmlImport",
+        String rewritten = beforeClassDeclaration.replaceAll("\\bHtmlImport\\b",
                 "JsModule");
         for (String path : paths) {
-            rewritten = rewritten.replace(path, rewritePath(path));
+            rewritten = rewritten.replaceAll(
+                    String.format("\"%s\"", Pattern.quote(path)),
+                    String.format("\"%s\"", rewritePath(path)));
         }
         rewritten = rewritten + content.substring(classDeclarationStart);
         try {
