@@ -114,10 +114,10 @@ public class MigrateMojo extends AbstractMojo {
      * regardless of migration of the import files content
      * <li>SKIP : if chosen then neither {@link HtmlImport} annotation will be
      * rewritten
-     * <li>SKIP : if chosen then {@link HtmlImport} annotations will be
+     * <li>SKIP_ON_ERROR : if chosen then {@link HtmlImport} annotations will be
      * rewritten only if there are no errors during migration of imported files
      * content
-     * <ul>
+     * </ul>
      */
     @Parameter(defaultValue = "ALWAYS")
     private HtmlImportsRewriteStrategy htmlImportsRewrite;

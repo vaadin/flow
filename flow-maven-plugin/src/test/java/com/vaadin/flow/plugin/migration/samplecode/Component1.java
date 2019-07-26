@@ -24,6 +24,7 @@ import com.vaadin.flow.component.dependency.HtmlImport;
 @HtmlImport("base://foo1.html")
 @HtmlImport("context://foo2.html")
 @HtmlImport("bar.html")
+@HtmlImport("/bar1.html")
 @HtmlImport("src/baz.html")
 @HtmlImport("frontend://bower_components/vaadin-button/src/vaadin-button.html")
 @HtmlImport("bower_components/vaadin-text-field/src/vaadin-text-field.html")

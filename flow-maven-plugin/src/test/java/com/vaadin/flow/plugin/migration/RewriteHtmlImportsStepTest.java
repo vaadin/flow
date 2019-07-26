@@ -92,6 +92,7 @@ public class RewriteHtmlImportsStepTest {
                 CoreMatchers.containsString("@JsModule(\"./foo1.js\")"),
                 CoreMatchers.containsString("@JsModule(\"./foo2.js\")"),
                 CoreMatchers.containsString("@JsModule(\"./bar.js\")"),
+                CoreMatchers.containsString("@JsModule(\"./bar1.js\")"),
                 CoreMatchers.containsString("@JsModule(\"./src/baz.js\")"),
                 CoreMatchers.containsString(
                         "@JsModule(\"@vaadin/vaadin-button/src/vaadin-button.js\")"),

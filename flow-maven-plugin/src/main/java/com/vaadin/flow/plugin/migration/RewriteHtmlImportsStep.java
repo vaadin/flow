@@ -227,11 +227,11 @@ public class RewriteHtmlImportsStep extends ClassPathIntrospector {
             rewritten = rewritten.substring(0,
                     rewritten.length() - HTML_EXTENSION.length()) + ".js";
         }
-        rewritten = extractPrefix(rewritten,
+        rewritten = removePrefix(rewritten,
                 ApplicationConstants.BASE_PROTOCOL_PREFIX);
-        rewritten = extractPrefix(rewritten,
+        rewritten = removePrefix(rewritten,
                 ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
-        rewritten = extractPrefix(rewritten,
+        rewritten = removePrefix(rewritten,
                 ApplicationConstants.CONTEXT_PROTOCOL_PREFIX);
 
         if (rewritten.startsWith(AbstractCopyResourcesStep.BOWER_COMPONENTS)) {
@@ -251,7 +251,7 @@ public class RewriteHtmlImportsStep extends ClassPathIntrospector {
         return rewritten;
     }
 
-    private String extractPrefix(String path, String prefix) {
+    private String removePrefix(String path, String prefix) {
         if (path.startsWith(prefix)) {
             return path.substring(prefix.length());
         }
