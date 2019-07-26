@@ -45,7 +45,6 @@ import com.vaadin.flow.shared.Registration;
 public class StateTree implements NodeOwner {
 
     private final class RootNode extends StateNode {
-        private Boolean isAttached;
 
         private RootNode(Class<? extends NodeFeature>[] features) {
             super(features);
@@ -53,7 +52,6 @@ public class StateTree implements NodeOwner {
             // Bootstrap
             setTree(StateTree.this);
 
-            isAttached = true;
             // Assign id
             onAttach();
         }
@@ -62,7 +60,7 @@ public class StateTree implements NodeOwner {
         public void setParent(StateNode parent) {
             if (parent == null) {
                 super.setParent(null);
-                isAttached = false;
+                isRootAttached = false;
             } else {
                 throw new IllegalStateException(
                         "Can't set the parent of the tree root");
@@ -72,14 +70,10 @@ public class StateTree implements NodeOwner {
         @Override
         public boolean isAttached() {
             // the method is called from the super class (which is bad: call
-            // overridden method at the class init phase), at this point the
-            // value is not set yet in this (sub)class, so this trick is needed
-            // to avoid changes internal API for proper implementation (via
-            // additional parameter in CTOR)
-            if (isAttached == null) {
-                return true;
-            }
-            return isAttached;
+            // overridden method at the class init phase), so there the field
+            // from enclosing class is used because it's already initialized at
+            // the class constructor call.
+            return isRootAttached;
         }
 
     }
@@ -149,6 +143,11 @@ public class StateTree implements NodeOwner {
     private final StateNode rootNode;
 
     private final UIInternals uiInternals;
+
+    // This field actually belongs to RootNode class but it can'be moved there
+    // because its method isAttached() is called before the RootNode class is
+    // initialization is done.
+    private boolean isRootAttached = true;
 
     /**
      * Creates a new state tree with a set of features defined for the root
