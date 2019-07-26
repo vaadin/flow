@@ -63,6 +63,10 @@ public class MigrateMojo extends AbstractMojo {
 
     private static final String DEPENDENCIES = "dependencies";
 
+    /**
+     * The strategy to rewrite {@link HtmlImport} annotations.
+     *
+     */
     public static enum HtmlImportsRewriteStrategy {
         ALWAYS, SKIP, SKIP_ON_ERROR;
     }

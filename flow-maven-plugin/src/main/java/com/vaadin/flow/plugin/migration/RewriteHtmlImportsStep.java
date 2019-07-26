@@ -89,7 +89,7 @@ public class RewriteHtmlImportsStep extends ClassPathIntrospector {
         Map<Class<?>, Collection<String>> imports = new HashMap<>();
         classes.forEach(clazz -> handleClass(clazz, imports));
 
-        imports.forEach((clazz, paths) -> rewriteImports(clazz, paths));
+        imports.forEach(this::rewriteImports);
     }
 
     private void handleClass(Class<?> clazz,
