@@ -37,11 +37,15 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 
+import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.plugin.common.FlowPluginFrontendUtils;
 import com.vaadin.flow.plugin.migration.CopyMigratedResourcesStep;
 import com.vaadin.flow.plugin.migration.CopyResourcesStep;
 import com.vaadin.flow.plugin.migration.CreateMigrationJsonsStep;
+import com.vaadin.flow.plugin.migration.RewriteHtmlImportsStep;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import elemental.json.Json;
@@ -54,10 +58,18 @@ import elemental.json.JsonValue;
  * @author Vaadin Ltd
  *
  */
-@Mojo(name = "migrate", defaultPhase = LifecyclePhase.PROCESS_RESOURCES)
+@Mojo(name = "migrate-to-p3", requiresDependencyResolution = ResolutionScope.COMPILE, defaultPhase = LifecyclePhase.PROCESS_CLASSES)
 public class MigrateMojo extends AbstractMojo {
 
     private static final String DEPENDENCIES = "dependencies";
+
+    /**
+     * The strategy to rewrite {@link HtmlImport} annotations.
+     *
+     */
+    public static enum HtmlImportsRewriteStrategy {
+        ALWAYS, SKIP, SKIP_ON_ERROR;
+    }
 
     /**
      * A list of directories with files to migrate.
@@ -95,6 +107,24 @@ public class MigrateMojo extends AbstractMojo {
      */
     @Parameter(defaultValue = "true")
     private boolean ignoreModulizerErrors;
+
+    /**
+     * Allows to specify the strategy to use to rewrite {@link HtmlImport}
+     * annotations in Java files.
+     * <p>
+     * Three values are available:
+     * <ul>
+     * <li>ALWAYS : if chosen then {@link HtmlImport} will be always rewritten
+     * regardless of migration of the import files content
+     * <li>SKIP : if chosen then neither {@link HtmlImport} annotation will be
+     * rewritten
+     * <li>SKIP_ON_ERROR : if chosen then {@link HtmlImport} annotations will be
+     * rewritten only if there are no errors during migration of imported files
+     * content
+     * </ul>
+     */
+    @Parameter(defaultValue = "ALWAYS")
+    private HtmlImportsRewriteStrategy htmlImportsRewrite;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -195,6 +225,20 @@ public class MigrateMojo extends AbstractMojo {
         if (!modulizerHasErrors && !keepOriginal) {
             removeOriginalResources(paths);
         }
+
+        switch (htmlImportsRewrite) {
+        case SKIP:
+            break;
+        case ALWAYS:
+            rewrite();
+            break;
+        case SKIP_ON_ERROR:
+            if (!modulizerHasErrors) {
+                rewrite();
+            }
+            break;
+        }
+
     }
 
     private void prepareMigrationDirectory() {
@@ -371,14 +415,18 @@ public class MigrateMojo extends AbstractMojo {
     private String[] getResources() {
         if (resources == null) {
             File webApp = new File(project.getBasedir(), "src/main/webapp");
-            File frontend = new File(webApp, "frontend");
-            if (frontend.exists() && webApp.listFiles().length == 1) {
-                resources = new String[] { frontend.getPath() };
-            } else {
-                resources = new String[] { webApp.getPath() };
-            }
+            resources = new String[] { webApp.getPath() };
         }
         return resources;
+    }
+
+    private void rewrite() {
+        RewriteHtmlImportsStep step = new RewriteHtmlImportsStep(
+                new File(project.getBuild().getOutputDirectory()),
+                FlowPluginFrontendUtils.getClassFinder(project),
+                project.getCompileSourceRoots().stream().map(File::new)
+                        .collect(Collectors.toList()));
+        step.rewrite();
     }
 
 }
