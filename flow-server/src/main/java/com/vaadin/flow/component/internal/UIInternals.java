@@ -120,7 +120,6 @@ public class UIInternals implements Serializable {
         public List<Object> getParameters() {
             return Collections.unmodifiableList(parameters);
         }
-
     }
 
     /**
@@ -361,13 +360,7 @@ public class UIInternals implements Serializable {
                             + ".");
         } else {
             if (session == null) {
-                try {
-                    ComponentUtil.onComponentDetach(ui);
-                    ui.getChildren().forEach(ComponentUtil::onComponentDetach);
-                } catch (Exception e) {
-                    getLogger().warn("Error while detaching UI from session",
-                            e);
-                }
+                ui.getElement().getNode().setParent(null);
                 // Disable push when the UI is detached. Otherwise the
                 // push connection and possibly VaadinSession will live on.
                 ui.getPushConfiguration().setPushMode(PushMode.DISABLED);
@@ -478,9 +471,11 @@ public class UIInternals implements Serializable {
                     .getAnnotation(ListenerPriority.class);
 
             final int priority1 = listenerPriority1 != null
-                    ? listenerPriority1.value() : 0;
+                    ? listenerPriority1.value()
+                    : 0;
             final int priority2 = listenerPriority2 != null
-                    ? listenerPriority2.value() : 0;
+                    ? listenerPriority2.value()
+                    : 0;
 
             // we want to have a descending order
             return Integer.compare(priority2, priority1);
