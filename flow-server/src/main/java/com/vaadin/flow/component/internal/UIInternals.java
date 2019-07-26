@@ -382,13 +382,7 @@ public class UIInternals implements Serializable {
                             + ".");
         } else {
             if (session == null) {
-                try {
-                    ComponentUtil.onComponentDetach(ui);
-                    ui.getChildren().forEach(ComponentUtil::onComponentDetach);
-                } catch (Exception e) {
-                    getLogger().warn("Error while detaching UI from session",
-                            e);
-                }
+                ui.getElement().getNode().setParent(null);
                 // Disable push when the UI is detached. Otherwise the
                 // push connection and possibly VaadinSession will live on.
                 ui.getPushConfiguration().setPushMode(PushMode.DISABLED);
@@ -397,7 +391,9 @@ public class UIInternals implements Serializable {
             this.session = session;
         }
 
-        if (session != null) {
+        if (session != null)
+
+        {
             ComponentUtil.onComponentAttach(ui, true);
         }
     }
@@ -853,8 +849,9 @@ public class UIInternals implements Serializable {
         } else {
             // In npm mode, add external JavaScripts directly to the page.
             dependencies.getJavaScripts().stream()
-                    .filter(js -> UrlUtil.isExternal(js.value())).forEach(js -> page
-                            .addJavaScript(js.value(), js.loadMode()));
+                    .filter(js -> UrlUtil.isExternal(js.value()))
+                    .forEach(js -> page.addJavaScript(js.value(),
+                            js.loadMode()));
             dependencies.getJsModules().stream()
                     .filter(js -> UrlUtil.isExternal(js.value()))
                     .forEach(js -> page.addJsModule(js.value(), js.loadMode()));
