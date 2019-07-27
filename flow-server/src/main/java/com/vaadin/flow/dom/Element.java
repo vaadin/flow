@@ -75,7 +75,7 @@ public class Element extends Node<Element> {
         illegalPropertyReplacements.put("classList", "getClassList()");
         illegalPropertyReplacements.put("className", "getClassList()");
         illegalPropertyReplacements.put("outerHTML",
-                "getParent().setProperty('innertHTML',value)");
+                "getParent().setProperty('innerHTML',value)");
     }
 
     /**
