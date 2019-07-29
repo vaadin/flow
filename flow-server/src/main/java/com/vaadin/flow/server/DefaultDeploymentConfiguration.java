@@ -60,6 +60,14 @@ public class DefaultDeploymentConfiguration
             + "and \"automatic\". The default of \"disabled\" will be used."
             + SEPARATOR;
 
+    public static final String ERROR_COMPATIBILITY_MODE_UNSET = SEPARATOR
+            + "\nERROR: Unable to determine Vaadin 13 (Flow 1) compatibility mode\n"
+            + "setting. For standard (npm) mode, ensure that 'flow-build-info.json'\n"
+            + "is on the class path by running the 'prepare-frontend' Maven goal.\n"
+            + "For compatibility mode, add the 'flow-server-compatibility-mode'\n"
+            + "dependency."
+            + SEPARATOR;
+
     /**
      * Default value for {@link #getHeartbeatInterval()} = {@value} .
      */
@@ -247,16 +255,20 @@ public class DefaultDeploymentConfiguration
      * Log a warning if Vaadin is running in bower mode.
      */
     private void checkCompatibilityMode(boolean loggWarning) {
-        String bower = getStringProperty(Constants.SERVLET_PARAMETER_BOWER_MODE,
-                null);
-        if (bower == null) {
+        if (getStringProperty(Constants.SERVLET_PARAMETER_BOWER_MODE, null)
+                != null) {
             compatibilityMode = getBooleanProperty(
-                    Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE, true);
+                    Constants.SERVLET_PARAMETER_BOWER_MODE, false);
+        } else if (getStringProperty(
+                Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE, null) != null) {
+            compatibilityMode = getBooleanProperty(
+                    Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE, false);
         } else {
-            compatibilityMode = getBooleanProperty(
-                    Constants.SERVLET_PARAMETER_BOWER_MODE, true);
+            // neither servlet parameter given -> default to npm mode and
+            // log informative warning
+            getLogger().error(ERROR_COMPATIBILITY_MODE_UNSET);
+            compatibilityMode = false;
         }
-
         if (compatibilityMode && loggWarning) {
             getLogger().warn(WARNING_COMPATIBILITY_MODE);
         }
