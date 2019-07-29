@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -34,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.plugin.common.ClassPathIntrospector;
 import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -46,15 +48,19 @@ import com.vaadin.flow.shared.ApplicationConstants;
  * @author Vaadin Ltd
  *
  */
-public class RewriteHtmlImportsStep extends ClassPathIntrospector {
+public class RewriteLegacyAnnotationsStep extends ClassPathIntrospector {
 
     private static final String HTML_EXTENSION = ".html";
+    private static final String CSS_EXTENSION = ".css";
+
     private final URL compiledClassesURL;
     private final Collection<File> sourceRoots;
 
     private static final String CLASS_DECLARATION_PATTERN = "(\\s|public|final|abstract|private|static|protected)*\\s+class\\s+%s(|<|>|\\?|\\w|\\s|,|\\&)*\\s+((extends\\s+(\\w|<|>|\\?|,)+)|(implements\\s+(|<|>|\\?|\\w|\\s|,)+( ,(\\w|<|>|\\?|\\s|,))*))?\\s*\\{";
 
-    private final Map<Class<?>, Pattern> compiledPatterns = new HashMap<>();
+    private final Map<Class<?>, Pattern> compiledClassPatterns = new HashMap<>();
+
+    private final Map<String, Pattern> compiledReplacePatterns = new HashMap<>();
 
     /**
      * Creates a new instance using the {@code compiledClassesDir} directory (to
@@ -69,8 +75,8 @@ public class RewriteHtmlImportsStep extends ClassPathIntrospector {
      * @param sourceRoots
      *            project source root directories
      */
-    public RewriteHtmlImportsStep(File compiledClassesDir, ClassFinder finder,
-            Collection<File> sourceRoots) {
+    public RewriteLegacyAnnotationsStep(File compiledClassesDir,
+            ClassFinder finder, Collection<File> sourceRoots) {
         super(finder);
         compiledClassesURL = FlowPluginFileUtils
                 .convertToUrl(compiledClassesDir);
@@ -82,44 +88,65 @@ public class RewriteHtmlImportsStep extends ClassPathIntrospector {
      * {@link JsModule} annotation with updated value.
      */
     public void rewrite() {
-        Class<? extends Annotation> annotationInProjectContext = loadClassInProjectClassLoader(
-                HtmlImport.class.getName());
-        Stream<Class<?>> classes = getAnnotatedClasses(
-                annotationInProjectContext);
-        Map<Class<?>, Collection<String>> imports = new HashMap<>();
-        classes.forEach(clazz -> handleClass(clazz, imports));
+        Map<Class<?>, Map<Class<? extends Annotation>, Collection<String>>> annotationPerClass = new HashMap<>();
 
-        imports.forEach(this::rewriteImports);
+        collectAnnotatedClasses(
+                loadClassInProjectClassLoader(HtmlImport.class.getName()),
+                annotationPerClass);
+        collectAnnotatedClasses(
+                loadClassInProjectClassLoader(StyleSheet.class.getName()),
+                annotationPerClass);
+
+        annotationPerClass.forEach(this::rewriteAnnotations);
+    }
+
+    private void collectAnnotatedClasses(Class<? extends Annotation> annotation,
+            Map<Class<?>, Map<Class<? extends Annotation>, Collection<String>>> annotationPerClass) {
+        Stream<Class<?>> classes = getAnnotatedClasses(annotation);
+
+        classes.forEach(
+                clazz -> handleClass(clazz, annotation, annotationPerClass));
     }
 
     private void handleClass(Class<?> clazz,
-            Map<Class<?>, Collection<String>> imports) {
-        Class<? extends Annotation> annotationInProjectContext = loadClassInProjectClassLoader(
-                HtmlImport.class.getName());
+            Class<? extends Annotation> annotation,
+            Map<Class<?>, Map<Class<? extends Annotation>, Collection<String>>> annotationPerClass) {
         URL location = clazz.getProtectionDomain().getCodeSource()
                 .getLocation();
         if (!compiledClassesURL.toExternalForm()
                 .equals(location.toExternalForm())) {
             return;
         }
-        Annotation[] annotationsByType = clazz
-                .getAnnotationsByType(annotationInProjectContext);
-        for (Annotation annotation : annotationsByType) {
-            String path = invokeAnnotationMethod(annotation, "value")
-                    .toString();
-            Collection<String> paths = imports.computeIfAbsent(clazz,
-                    cls -> new ArrayList<>());
-            paths.add(path);
+        Collection<String> paths = collectAnnotations(clazz, annotation);
+        if (!paths.isEmpty()) {
+            Map<Class<? extends Annotation>, Collection<String>> annotationPaths = annotationPerClass
+                    .computeIfAbsent(clazz, cl -> new HashMap<>());
+            annotationPaths.put(annotation, paths);
         }
     }
 
-    private void rewriteImports(Class<?> clazz, Collection<String> paths) {
+    private Collection<String> collectAnnotations(Class<?> clazz,
+            Class<? extends Annotation> annotationType) {
+        Annotation[] annotationsByType = clazz
+                .getAnnotationsByType(annotationType);
+        Collection<String> result = new ArrayList<>();
+        for (Annotation annotation : annotationsByType) {
+            String path = invokeAnnotationMethod(annotation, "value")
+                    .toString();
+            result.add(path);
+        }
+        return result;
+    }
+
+    private void rewriteAnnotations(Class<?> clazz,
+            Map<Class<? extends Annotation>, Collection<String>> annotations) {
         Collection<File> javaFiles = findJavaSourceFiles(clazz);
         if (javaFiles.isEmpty()) {
-            LoggerFactory.getLogger(RewriteHtmlImportsStep.class).debug(
+            LoggerFactory.getLogger(RewriteLegacyAnnotationsStep.class).debug(
                     "Could not find Java source code for class '{}'", clazz);
         } else {
-            javaFiles.forEach(javaFile -> rewrite(javaFile, clazz, paths));
+            javaFiles
+                    .forEach(javaFile -> rewrite(javaFile, clazz, annotations));
         }
     }
 
@@ -170,7 +197,7 @@ public class RewriteHtmlImportsStep extends ClassPathIntrospector {
                 continue;
             }
             Pattern classDeclarationPattern = getClassDeclarationPattern(clazz);
-            compiledPatterns.put(clazz, classDeclarationPattern);
+            compiledClassPatterns.put(clazz, classDeclarationPattern);
             if (classDeclarationPattern.matcher(content).find()) {
                 result.add(file);
             }
@@ -188,9 +215,9 @@ public class RewriteHtmlImportsStep extends ClassPathIntrospector {
     }
 
     private void rewrite(File javaFile, Class<?> clazz,
-            Collection<String> paths) {
+            Map<Class<? extends Annotation>, Collection<String>> annotations) {
         String content = readFile(javaFile);
-        Pattern classDeclarationPattern = compiledPatterns.get(clazz);
+        Pattern classDeclarationPattern = compiledClassPatterns.get(clazz);
         if (classDeclarationPattern == null) {
             classDeclarationPattern = getClassDeclarationPattern(clazz);
         }
@@ -206,51 +233,88 @@ public class RewriteHtmlImportsStep extends ClassPathIntrospector {
 
         String beforeClassDeclaration = content.substring(0,
                 classDeclarationStart);
-
-        String rewritten = beforeClassDeclaration.replaceAll("\\bHtmlImport\\b",
-                "JsModule");
-        for (String path : paths) {
-            rewritten = rewritten.replaceAll(
-                    String.format("\"%s\"", Pattern.quote(path)),
-                    String.format("\"%s\"", rewritePath(path)));
+        for (Entry<Class<? extends Annotation>, Collection<String>> entry : annotations
+                .entrySet()) {
+            beforeClassDeclaration = rewrite(beforeClassDeclaration,
+                    entry.getKey(), entry.getValue());
         }
-        rewritten = rewritten + content.substring(classDeclarationStart);
+
         try {
-            FileUtils.write(javaFile, rewritten, StandardCharsets.UTF_8);
+            FileUtils.write(javaFile,
+                    beforeClassDeclaration
+                            + content.substring(classDeclarationStart),
+                    StandardCharsets.UTF_8);
         } catch (IOException e) {
             getLogger().warn("Could not write source code back to file '{}'",
                     javaFile);
         }
     }
 
-    private String rewritePath(String path) {
-        String rewritten = path;
-        if (rewritten.endsWith(HTML_EXTENSION)) {
-            rewritten = rewritten.substring(0,
-                    rewritten.length() - HTML_EXTENSION.length()) + ".js";
+    private String rewrite(String content,
+            Class<? extends Annotation> annotation, Collection<String> paths) {
+        String result = content;
+        // replace FQN first
+        result = replace(result, JsModule.class.getName(), annotation.getName(),
+                "\\b" + annotation.getName().replace(".", "\\.") + "\\b");
+
+        // replace annotation attached to the class with @ sign
+        result = replace(result, "$1@" + JsModule.class.getSimpleName(),
+                annotation.getSimpleName(),
+                "(\\s*)@" + annotation.getSimpleName() + "\\b");
+        for (String path : paths) {
+            result = result.replaceAll(
+                    String.format("\"%s\"", Pattern.quote(path)),
+                    String.format("\"%s\"", rewritePath(path)));
         }
-        rewritten = removePrefix(rewritten,
+        return result;
+    }
+
+    /**
+     * Does the same as {@link String#replaceAll(String, String)} but caches the
+     * compiled pattern
+     */
+    private String replace(String content, String replacement,
+            String patternKey, String regexp) {
+        Pattern pattern = compiledReplacePatterns.computeIfAbsent(patternKey,
+                key -> Pattern.compile(regexp));
+        return pattern.matcher(content).replaceAll(replacement);
+    }
+
+    private String rewritePath(String path) {
+        String result = path;
+        result = rewriteExtension(result, HTML_EXTENSION);
+        result = rewriteExtension(result, CSS_EXTENSION);
+
+        result = removePrefix(result,
                 ApplicationConstants.BASE_PROTOCOL_PREFIX);
-        rewritten = removePrefix(rewritten,
+        result = removePrefix(result,
                 ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
-        rewritten = removePrefix(rewritten,
+        result = removePrefix(result,
                 ApplicationConstants.CONTEXT_PROTOCOL_PREFIX);
 
-        if (rewritten.startsWith(AbstractCopyResourcesStep.BOWER_COMPONENTS)) {
-            rewritten = rewritten.substring(
+        if (result.startsWith(AbstractCopyResourcesStep.BOWER_COMPONENTS)) {
+            result = result.substring(
                     AbstractCopyResourcesStep.BOWER_COMPONENTS.length());
-            if (rewritten.startsWith("/vaadin")) {
-                rewritten = "@vaadin" + rewritten;
+            if (result.startsWith("/vaadin")) {
+                result = "@vaadin" + result;
             } else {
                 getLogger().warn("Don't know how to resolve Html import '{}'",
                         path);
             }
-        } else if (rewritten.startsWith("/")) {
-            rewritten = "." + rewritten;
-        } else if (!rewritten.startsWith("./")) {
-            rewritten = "./" + rewritten;
+        } else if (result.startsWith("/")) {
+            result = "." + result;
+        } else if (!result.startsWith("./")) {
+            result = "./" + result;
         }
-        return rewritten;
+        return result;
+    }
+
+    private String rewriteExtension(String path, String extension) {
+        if (path.endsWith(extension)) {
+            return path.substring(0, path.length() - extension.length())
+                    + ".js";
+        }
+        return path;
     }
 
     private String removePrefix(String path, String prefix) {
@@ -274,6 +338,6 @@ public class RewriteHtmlImportsStep extends ClassPathIntrospector {
     }
 
     private Logger getLogger() {
-        return LoggerFactory.getLogger(RewriteHtmlImportsStep.class);
+        return LoggerFactory.getLogger(RewriteLegacyAnnotationsStep.class);
     }
 }

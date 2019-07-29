@@ -46,7 +46,7 @@ import com.vaadin.flow.plugin.common.FlowPluginFrontendUtils;
 import com.vaadin.flow.plugin.migration.CopyMigratedResourcesStep;
 import com.vaadin.flow.plugin.migration.CopyResourcesStep;
 import com.vaadin.flow.plugin.migration.CreateMigrationJsonsStep;
-import com.vaadin.flow.plugin.migration.RewriteHtmlImportsStep;
+import com.vaadin.flow.plugin.migration.RewriteLegacyAnnotationsStep;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import elemental.json.Json;
@@ -421,7 +421,7 @@ public class MigrateMojo extends AbstractMojo {
     }
 
     private void rewrite() {
-        RewriteHtmlImportsStep step = new RewriteHtmlImportsStep(
+        RewriteLegacyAnnotationsStep step = new RewriteLegacyAnnotationsStep(
                 new File(project.getBuild().getOutputDirectory()),
                 FlowPluginFrontendUtils.getClassFinder(project),
                 project.getCompileSourceRoots().stream().map(File::new)
