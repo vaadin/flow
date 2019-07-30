@@ -61,14 +61,11 @@ public class DefaultDeploymentConfiguration
             + SEPARATOR;
 
     public static final String ERROR_COMPATIBILITY_MODE_UNSET =
-            "Unable to determine mode of operation. Correct this by explicitly "
-            + "setting the 'compatibilityMode' boolean parameter, which is "
-            + "read from the servlet configuration as well as from the file "
-            + "'flow-build-info.json' on the class path. Maven: generate "
-            + "'flow-build-info.json' by running the 'prepare-frontend' goal "
-            + "for npm mode, or add the 'flow-server-compatibility-mode' "
-            + "dependency to your 'pom.xml' for compatibility mode.";
-
+            "Unable to determine mode of operation. To use npm mode, ensure "
+            + "'flow-build-info.json' exists on the classpath. With Maven,  "
+            + "this is handled by the 'prepare-frontend goal' To use "
+            + "compatibility mode, add the 'flow-server-compatibility-mode' "
+            + "dependency.";
     /**
      * Default value for {@link #getHeartbeatInterval()} = {@value} .
      */
