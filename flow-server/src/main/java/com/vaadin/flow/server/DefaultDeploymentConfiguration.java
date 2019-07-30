@@ -267,7 +267,7 @@ public class DefaultDeploymentConfiguration
             // neither servlet parameter given -> default to npm mode and
             // log informative warning
             getLogger().error(ERROR_COMPATIBILITY_MODE_UNSET);
-            compatibilityMode = false;
+            throw new IllegalStateException("Unable to determine mode of operation (standard/compatibility mode)");
         }
         if (compatibilityMode && loggWarning) {
             getLogger().warn(WARNING_COMPATIBILITY_MODE);

@@ -40,7 +40,10 @@ public class I18NProviderTest {
     @Test
     public void no_property_defined_should_leave_with_default_locale()
             throws ServletException, ServiceException {
-        initServletAndService(new Properties());
+        final Properties initParams = new Properties();
+        initParams.setProperty(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                Boolean.FALSE.toString());
+        initServletAndService(initParams);
 
         Assert.assertEquals("Locale was not the expected default locale",
                 Locale.getDefault(), VaadinSession.getCurrent().getLocale());
@@ -52,6 +55,8 @@ public class I18NProviderTest {
         Properties initParams = new Properties();
         initParams.setProperty(Constants.I18N_PROVIDER,
                 TestProvider.class.getName());
+        initParams.setProperty(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                Boolean.FALSE.toString());
 
         initServletAndService(initParams);
 
@@ -66,6 +71,8 @@ public class I18NProviderTest {
         Properties initParams = new Properties();
         initParams.setProperty(Constants.I18N_PROVIDER,
                 TestProvider.class.getName());
+        initParams.setProperty(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                Boolean.FALSE.toString());
 
         initServletAndService(initParams);
 
