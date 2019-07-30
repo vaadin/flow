@@ -82,10 +82,8 @@ public abstract class BasicRenderer<SOURCE, TARGET>
     private void setupTemplate(Element owner, SimpleValueRendering rendering,
             DataKeyMapper<SOURCE> keyMapper) {
         owner.getNode()
-                .runWhenAttached(ui -> ui.getInternals().getStateTree()
-                        .beforeClientResponse(owner.getNode(),
-                                context -> setupTemplateWhenAttached(owner,
-                                        rendering, keyMapper)));
+                .runWhenAttached(ui -> setupTemplateWhenAttached(owner,
+                         rendering, keyMapper));
     }
 
     private void setupTemplateWhenAttached(Element owner,

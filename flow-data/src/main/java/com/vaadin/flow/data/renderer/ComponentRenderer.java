@@ -159,11 +159,9 @@ public class ComponentRenderer<COMPONENT extends Component, SOURCE>
         rendering.setTemplateElement(contentTemplate);
 
         container.getNode()
-                .runWhenAttached(ui -> ui.getInternals().getStateTree()
-                        .beforeClientResponse(container.getNode(),
-                                context -> setupTemplateWhenAttached(
-                                        context.getUI(), container, rendering,
-                                        keyMapper)));
+                .runWhenAttached(ui -> setupTemplateWhenAttached(
+                        ui, container, rendering,
+                        keyMapper));
 
         return rendering;
     }
