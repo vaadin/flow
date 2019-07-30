@@ -41,6 +41,7 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.plugin.common.FlowPluginFrontendUtils;
 import com.vaadin.flow.plugin.migration.CopyMigratedResourcesStep;
 import com.vaadin.flow.plugin.migration.CopyResourcesStep;
@@ -64,10 +65,11 @@ public class MigrateMojo extends AbstractMojo {
     private static final String DEPENDENCIES = "dependencies";
 
     /**
-     * The strategy to rewrite {@link HtmlImport} annotations.
+     * The strategy to rewrite {@link HtmlImport}/{@link StyleSheet}
+     * annotations.
      *
      */
-    public static enum HtmlImportsRewriteStrategy {
+    public static enum AnnotationsRewriteStrategy {
         ALWAYS, SKIP, SKIP_ON_ERROR;
     }
 
@@ -109,22 +111,20 @@ public class MigrateMojo extends AbstractMojo {
     private boolean ignoreModulizerErrors;
 
     /**
-     * Allows to specify the strategy to use to rewrite {@link HtmlImport}
-     * annotations in Java files.
+     * Allows to specify the strategy to use to rewrite
+     * {@link HtmlImport}/{@link StyleSheet} annotations in Java files.
      * <p>
      * Three values are available:
      * <ul>
-     * <li>ALWAYS : if chosen then {@link HtmlImport} will be always rewritten
+     * <li>ALWAYS : if chosen then the annotations will be always rewritten
      * regardless of migration of the import files content
-     * <li>SKIP : if chosen then neither {@link HtmlImport} annotation will be
-     * rewritten
-     * <li>SKIP_ON_ERROR : if chosen then {@link HtmlImport} annotations will be
-     * rewritten only if there are no errors during migration of imported files
-     * content
+     * <li>SKIP : if chosen then neither annotation will be rewritten
+     * <li>SKIP_ON_ERROR : if chosen then the annotations will be rewritten only
+     * if there are no errors during migration of imported files content
      * </ul>
      */
     @Parameter(defaultValue = "ALWAYS")
-    private HtmlImportsRewriteStrategy htmlImportsRewrite;
+    private AnnotationsRewriteStrategy annotationsRewrite;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -226,7 +226,7 @@ public class MigrateMojo extends AbstractMojo {
             removeOriginalResources(paths);
         }
 
-        switch (htmlImportsRewrite) {
+        switch (annotationsRewrite) {
         case SKIP:
             break;
         case ALWAYS:
