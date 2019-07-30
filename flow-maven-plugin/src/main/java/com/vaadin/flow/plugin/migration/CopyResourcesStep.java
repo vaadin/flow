@@ -174,11 +174,11 @@ public class CopyResourcesStep extends AbstractCopyResourcesStep {
      * @param resourceFolders
      *            an array of source folders
      */
-    public CopyResourcesStep(File target, String[] resourceFolders) {
+    public CopyResourcesStep(File target, File[] resourceFolders) {
         this(target, resourceFolders, new HashSet<>());
     }
 
-    private CopyResourcesStep(File target, String[] resourceFolders,
+    private CopyResourcesStep(File target, File[] resourceFolders,
             Set<String> bowerComponents) {
         super(target, resourceFolders,
                 new HtmlImportRewriter(target, bowerComponents));

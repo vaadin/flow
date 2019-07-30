@@ -48,8 +48,7 @@ public class CopyResourcesStepTest {
         target = temporaryFolder.newFolder();
         source1 = temporaryFolder.newFolder();
         source2 = temporaryFolder.newFolder();
-        step = new CopyResourcesStep(target,
-                new String[] { source1.getPath(), source2.getPath() });
+        step = new CopyResourcesStep(target, new File[] { source1, source2 });
     }
 
     @Test

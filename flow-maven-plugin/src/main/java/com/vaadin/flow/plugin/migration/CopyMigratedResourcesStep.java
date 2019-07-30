@@ -141,7 +141,7 @@ public class CopyMigratedResourcesStep extends AbstractCopyResourcesStep {
      */
     public CopyMigratedResourcesStep(File target, File source,
             Set<String> allowedDirectoryNames) {
-        super(target, new String[] { source.getPath() },
+        super(target, new File[] { source },
                 new CopyMigratedFiles(source.toPath(), allowedDirectoryNames));
     }
 

@@ -129,7 +129,7 @@ public abstract class AbstractCopyResourcesStep {
     }
 
     private final File target;
-    private final List<String> resources;
+    private final List<File> resources;
     private final FileTreeHandler handler;
 
     /**
@@ -142,7 +142,7 @@ public abstract class AbstractCopyResourcesStep {
      * @param handler
      *            a strategy which handles the files in the source directories
      */
-    public AbstractCopyResourcesStep(File target, String[] sourceFolders,
+    public AbstractCopyResourcesStep(File target, File[] sourceFolders,
             FileTreeHandler handler) {
         this.target = target;
         resources = Arrays.asList(sourceFolders);
@@ -171,11 +171,11 @@ public abstract class AbstractCopyResourcesStep {
         getLogger().debug("Use {} as source folders to copy", resources);
         Map<String, List<String>> allResources = new HashMap<>();
 
-        for (String resourceFolder : resources) {
+        for (File resourceFolder : resources) {
             getLogger().debug("Copy resources from {} to {}", resourceFolder,
                     target.getPath());
-            allResources.put(resourceFolder,
-                    doCopyResources(new File(resourceFolder)));
+            allResources.put(resourceFolder.getPath(),
+                    doCopyResources(resourceFolder));
         }
         return allResources;
     }
