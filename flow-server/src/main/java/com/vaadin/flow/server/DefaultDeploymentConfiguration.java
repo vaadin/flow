@@ -60,13 +60,14 @@ public class DefaultDeploymentConfiguration
             + "and \"automatic\". The default of \"disabled\" will be used."
             + SEPARATOR;
 
-    public static final String ERROR_COMPATIBILITY_MODE_UNSET = SEPARATOR
-            + "\nERROR: Unable to determine which mode of operation to use. For\n"
-            + "standard (npm) mode, ensure that 'flow-build-info.json' is on the\n"
-            + "class path by running the 'prepare-frontend' Maven goal. For \n"
-            + "Vaadin 13 compatibility mode, add the 'flow-server-compatibility-mode'\n"
-            + "dependency."
-            + SEPARATOR;
+    public static final String ERROR_COMPATIBILITY_MODE_UNSET =
+            "Unable to determine mode of operation. Correct this by explicitly "
+            + "setting the 'compatibilityMode' boolean parameter, which is "
+            + "read from the servlet configuration as well as from the file "
+            + "'flow-build-info.json' on the class path. Maven: generate "
+            + "'flow-build-info.json' by running the 'prepare-frontend' goal "
+            + "for npm mode, or add the 'flow-server-compatibility-mode' "
+            + "dependency to your 'pom.xml' for compatibility mode.";
 
     /**
      * Default value for {@link #getHeartbeatInterval()} = {@value} .
@@ -252,7 +253,9 @@ public class DefaultDeploymentConfiguration
     }
 
     /**
-     * Log a warning if Vaadin is running in bower mode.
+     * Log a warning if Vaadin is running in compatibility mode. Throw
+     * {@link IllegalStateException} if the mode could not be determined from
+     * parameters.
      */
     private void checkCompatibilityMode(boolean loggWarning) {
         if (getStringProperty(Constants.SERVLET_PARAMETER_BOWER_MODE, null)
@@ -264,10 +267,8 @@ public class DefaultDeploymentConfiguration
             compatibilityMode = getBooleanProperty(
                     Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE, false);
         } else {
-            // neither servlet parameter given -> default to npm mode and
-            // log informative warning
-            getLogger().error(ERROR_COMPATIBILITY_MODE_UNSET);
-            throw new IllegalStateException("Unable to determine mode of operation (standard/compatibility mode)");
+            // neither parameter given -> throw exception
+            throw new IllegalStateException(ERROR_COMPATIBILITY_MODE_UNSET);
         }
         if (compatibilityMode && loggWarning) {
             getLogger().warn(WARNING_COMPATIBILITY_MODE);
