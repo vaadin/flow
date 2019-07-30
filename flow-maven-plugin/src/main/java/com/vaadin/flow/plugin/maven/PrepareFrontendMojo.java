@@ -168,7 +168,9 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
 
             // Inform m2eclipse that the directory containing the token file has
             // been updated in order to trigger server re-deployment (#6103)
-            buildContext.refresh(token.getParentFile());
+            if (buildContext != null) {
+                buildContext.refresh(token.getParentFile());
+            }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
