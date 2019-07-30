@@ -61,10 +61,10 @@ public class DefaultDeploymentConfiguration
             + SEPARATOR;
 
     public static final String ERROR_COMPATIBILITY_MODE_UNSET = SEPARATOR
-            + "\nERROR: Unable to determine Vaadin 13 (Flow 1) compatibility mode\n"
-            + "setting. For standard (npm) mode, ensure that 'flow-build-info.json'\n"
-            + "is on the class path by running the 'prepare-frontend' Maven goal.\n"
-            + "For compatibility mode, add the 'flow-server-compatibility-mode'\n"
+            + "\nERROR: Unable to determine which mode of operation to use. For\n"
+            + "standard (npm) mode, ensure that 'flow-build-info.json' is on the\n"
+            + "class path by running the 'prepare-frontend' Maven goal. For \n"
+            + "Vaadin 13 compatibility mode, add the 'flow-server-compatibility-mode'\n"
             + "dependency."
             + SEPARATOR;
 
