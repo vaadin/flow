@@ -148,14 +148,14 @@ function __MODULE_FUNC__() {
    * @param propName the name of the property being checked
    * @param propValue the property value being tested
    */
-  __gwt_isKnownPropertyValue = function(propName, propValue) {
+  var __gwt_isKnownPropertyValue = function(propName, propValue) {
     return propValue in values[propName];
   }
 
   /**
    * Returns a meta property value, if any.  Used by DefaultPropertyProvider.
    */
-  __gwt_getMetaProperty = function(name) {
+  var __gwt_getMetaProperty = function(name) {
     var value = metaProps[name];
     return (value == null) ? null : value;
   }
