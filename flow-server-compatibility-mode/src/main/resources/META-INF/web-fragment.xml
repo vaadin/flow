@@ -4,9 +4,9 @@
               xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
                   http://java.sun.com/xml/ns/javaee/web-fragment_3_0.xsd"
               id="WebAppFragment_ID" version="3.0">
-              
+
     <name>flow_server_compatibility_mode_fragment</name>
-    
+
     <context-param>
         <param-name>compatibilityMode</param-name>
         <param-value>true</param-value>
