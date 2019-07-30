@@ -346,13 +346,6 @@ public class BuildFrontendMojoTest {
         Assert.assertFalse(tokenFile.exists());
     }
 
-    @Test
-    public void skipBuildFrontend_noImportsFileCreated() throws Exception {
-        ReflectionUtils.setVariableValueInObject(mojo, "skipBuildFrontend", true);
-        mojo.execute();
-        Assert.assertFalse(importsFile.exists());
-    }
-
     static void assertContainsPackage(JsonObject dependencies,
             String... packages) {
         Arrays.asList(packages).forEach(dep -> Assert

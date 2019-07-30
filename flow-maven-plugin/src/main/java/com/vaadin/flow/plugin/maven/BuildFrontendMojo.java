@@ -124,23 +124,10 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
             + Constants.LOCAL_FRONTEND_RESOURCES_PATH)
     protected File frontendResourcesDirectory;
 
-    /**
-     * Whether to skip this goal.
-     */
-    @Parameter(defaultValue = "false", property="skipBuildFrontend")
-    private boolean skipBuildFrontend;
-
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         super.execute();
 
-        getLog().info(
-                "generateEmbeddableWebComponents has value: " + generateEmbeddableWebComponents);
-        if (skipBuildFrontend) {
-            getLog().info(
-                    "Skipped 'build-frontend' goal because 'skipBuildFrontend' is set to true.");
-            return;
-        }
         // Do nothing when compatibility mode
         if (compatibility) {
             getLog().info(
