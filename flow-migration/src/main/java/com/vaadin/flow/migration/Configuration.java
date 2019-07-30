@@ -35,7 +35,7 @@ public class Configuration implements Cloneable {
 
     private boolean keepOriginalFiles;
 
-    private boolean ignoreModulizerErrors;
+    private boolean ignoreModulizerErrors = true;
 
     private final File baseDirectory;
 

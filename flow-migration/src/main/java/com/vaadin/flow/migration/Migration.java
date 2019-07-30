@@ -31,8 +31,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,6 +56,12 @@ public class Migration {
 
     private static final String DEPENDENCIES = "dependencies";
 
+    private final File tempMigrationFolder;
+
+    private final File targetDirectory;
+
+    private final File[] resourceDirectories;
+
     /**
      * The strategy to rewrite {@link HtmlImport} annotations.
      *
@@ -76,34 +80,84 @@ public class Migration {
      */
     public Migration(Configuration configuration) {
         this.configuration = configuration;
+        if (getTempMigrationFolder() == null) {
+            try {
+                tempMigrationFolder = Files.createTempDirectory("migration")
+                        .toFile();
+            } catch (IOException e) {
+                throw new RuntimeException("Could not create a new "
+                        + "temporary folder for migration. You may specify it manually");
+            }
+        } else {
+            tempMigrationFolder = getTempMigrationFolder();
+        }
+
+        if (configuration.getBaseDirectory() == null) {
+            throw new IllegalArgumentException(
+                    "Configuration does not provide a base directory");
+        }
+
+        if (configuration.getResourceDirectories().length == 0) {
+            throw new IllegalArgumentException(
+                    "Configuration does not provide any resource directories");
+        } else if (configuration.getResourceDirectories() == null) {
+            resourceDirectories = new File[] { new File(
+                    configuration.getBaseDirectory(), "src/main/webapp") };
+        } else {
+            resourceDirectories = configuration.getResourceDirectories();
+        }
+
+        if (configuration.getTargetDirectory() == null) {
+            targetDirectory = new File(configuration.getBaseDirectory(),
+                    "frontend");
+        } else {
+            targetDirectory = configuration.getBaseDirectory();
+        }
+
+        if (configuration.getClassFinder() == null) {
+            throw new IllegalArgumentException(
+                    "Configuration does not provide a class finder");
+        }
+
+        if (configuration.getJavaSourceDirectories() == null
+                || configuration.getJavaSourceDirectories().length == 0) {
+            throw new IllegalArgumentException(
+                    "Configuration does not provide any java source directories");
+        }
+
+        if (configuration.getCompiledClassDirectories() == null) {
+            throw new IllegalArgumentException(
+                    "Configuration does not provide a compoiled class directory");
+        }
     }
 
     /**
      * Performs the migration.
      */
-    public void migrate() {
+    public void migrate()
+            throws MigrationToolsException, MigrationFailureException {
         prepareMigrationDirectory();
 
-        List<String> bowerCommands = FrontendUtils.getBowerExecutable(
-                configuration.getTempMigrationFolder().getPath());
+        List<String> bowerCommands = FrontendUtils
+                .getBowerExecutable(getTempMigrationFolder().getPath());
         boolean needInstallBower = bowerCommands.isEmpty();
         if (!ensureTools(needInstallBower)) {
-            throw new MojoExecutionException(
+            throw new MigrationToolsException(
                     "Could not install tools required for migration (bower or modulizer)");
         }
         if (needInstallBower) {
-            bowerCommands = FrontendUtils.getBowerExecutable(
-                    configuration.getTempMigrationFolder().getPath());
+            bowerCommands = FrontendUtils
+                    .getBowerExecutable(getTempMigrationFolder().getPath());
         }
 
         if (bowerCommands.isEmpty()) {
-            throw new MojoExecutionException(
+            throw new MigrationToolsException(
                     "Could not locate bower. Install it manually on your system and re-run migration goal.");
         }
 
         Set<String> externalComponents;
         CopyResourcesStep copyStep = new CopyResourcesStep(
-                configuration.getTempMigrationFolder(), getResources());
+                getTempMigrationFolder(), getResources());
         Map<String, List<String>> paths;
         try {
             paths = copyStep.copyResources();
@@ -113,19 +167,19 @@ public class Migration {
                     "Couldn't copy resources from source directories "
                             + Arrays.asList(getResources())
                             + " to the target directory "
-                            + configuration.getTempMigrationFolder(),
+                            + getTempMigrationFolder(),
                     exception);
         }
 
         Set<String> migratedTopLevelDirs = Stream
-                .of(configuration.getTempMigrationFolder().listFiles())
+                .of(getTempMigrationFolder().listFiles())
                 .filter(file -> file.isDirectory()).map(File::getName)
                 .collect(Collectors.toSet());
 
         List<String> allPaths = new ArrayList<>();
         paths.values().stream().forEach(allPaths::addAll);
         try {
-            new CreateMigrationJsonsStep(configuration.getTempMigrationFolder())
+            new CreateMigrationJsonsStep(getTempMigrationFolder())
                     .createJsons(allPaths);
         } catch (IOException exception) {
             throw new UncheckedIOException("Couldn't generate json files",
@@ -133,7 +187,7 @@ public class Migration {
         }
 
         if (!saveBowerComponents(bowerCommands, externalComponents)) {
-            throw new MojoFailureException(
+            throw new MigrationFailureException(
                     "Could not install bower components");
         }
 
@@ -145,40 +199,39 @@ public class Migration {
             if (configuration.isIgnoreModulizerErrors()) {
                 getLogger().info("Modulizer has exited with error");
             } else {
-                throw new MojoFailureException(
+                throw new MigrationFailureException(
                         "Modulizer has exited with error. Unable to proceed.");
             }
         }
 
         // copy the result JS files into target dir ("frontend")
-        if (!configuration.getTargetDirectory().exists()) {
+        if (!getTargetDirectory().exists()) {
             try {
-                FileUtils.forceMkdir(configuration.getTargetDirectory());
+                FileUtils.forceMkdir(getTargetDirectory());
             } catch (IOException exception) {
                 throw new UncheckedIOException(
                         "Unable to create a target folder for migrated files: '"
-                                + configuration.getTargetDirectory() + "'",
+                                + getTargetDirectory() + "'",
                         exception);
             }
         }
         CopyMigratedResourcesStep copyMigratedStep = new CopyMigratedResourcesStep(
-                configuration.getTargetDirectory(),
-                configuration.getTempMigrationFolder(), migratedTopLevelDirs);
+                getTargetDirectory(), getTempMigrationFolder(),
+                migratedTopLevelDirs);
         try {
             copyMigratedStep.copyResources();
         } catch (IOException exception) {
             throw new UncheckedIOException(
                     "Couldn't copy migrated resources  to the target directory "
-                            + configuration.getTargetDirectory(),
+                            + getTargetDirectory(),
                     exception);
         }
 
         try {
-            cleanUp(configuration.getTempMigrationFolder());
+            cleanUp(getTempMigrationFolder());
         } catch (IOException exception) {
             getLogger().debug(
-                    "Couldn't remove "
-                            + configuration.getTempMigrationFolder().getPath(),
+                    "Couldn't remove " + getTempMigrationFolder().getPath(),
                     exception);
         }
 
@@ -186,37 +239,35 @@ public class Migration {
             removeOriginalResources(paths);
         }
 
-        switch (htmlImportsRewrite) {
-        case SKIP:
-            break;
-        case ALWAYS:
-            rewrite();
-            break;
-        case SKIP_ON_ERROR:
-            if (!modulizerHasErrors) {
-                rewrite();
-            }
-            break;
-        }
+        // switch (htmlImportsRewrite) {
+        // case SKIP:
+        // break;
+        // case ALWAYS:
+        // rewrite();
+        // break;
+        // case SKIP_ON_ERROR:
+        // if (!modulizerHasErrors) {
+        // rewrite();
+        // }
+        // break;
+        // }
     }
 
     private void prepareMigrationDirectory() {
-        if (configuration.getTempMigrationFolder().exists()) {
+        if (getTempMigrationFolder().exists()) {
             try {
-                cleanUp(configuration.getTempMigrationFolder());
+                cleanUp(getTempMigrationFolder());
             } catch (IOException exception) {
-                throw new UncheckedIOException(
-                        "Unable to clean up directory '"
-                                + configuration.getTempMigrationFolder() + "'",
-                        exception);
+                throw new UncheckedIOException("Unable to clean up directory '"
+                        + getTempMigrationFolder() + "'", exception);
             }
         }
         try {
-            FileUtils.forceMkdir(configuration.getTempMigrationFolder());
+            FileUtils.forceMkdir(getTempMigrationFolder());
         } catch (IOException exception) {
             throw new UncheckedIOException(
                     "Unable to create a folder for migration: '"
-                            + configuration.getTempMigrationFolder() + "'",
+                            + getTempMigrationFolder() + "'",
                     exception);
         }
     }
@@ -229,7 +280,7 @@ public class Migration {
         }
     }
 
-    private void installNpmPackages() throws MojoFailureException {
+    private void installNpmPackages() throws MigrationFailureException {
         List<String> npmExec = FrontendUtils
                 .getNpmExecutable(configuration.getBaseDirectory().getPath());
         List<String> npmInstall = new ArrayList<>(npmExec.size());
@@ -239,7 +290,7 @@ public class Migration {
         if (!executeProcess(npmInstall, "Couldn't install packages using npm",
                 "Packages successfully installed",
                 "Error when running `npm install`")) {
-            throw new MojoFailureException(
+            throw new MigrationFailureException(
                     "Error during package installation via npm");
         }
     }
@@ -266,8 +317,7 @@ public class Migration {
     }
 
     private Collection<String> makeDependencyMapping() {
-        File bower = new File(configuration.getTempMigrationFolder(),
-                "bower.json");
+        File bower = new File(getTempMigrationFolder(), "bower.json");
 
         try {
             Set<String> result = new HashSet<>();
@@ -345,7 +395,7 @@ public class Migration {
     private boolean executeProcess(List<String> command, String errorMsg,
             String successMsg, String exceptionMsg) {
         ProcessBuilder builder = FrontendUtils.createProcessBuilder(command);
-        builder.directory(configuration.getTempMigrationFolder());
+        builder.directory(getTempMigrationFolder());
 
         Process process = null;
         try {
@@ -378,12 +428,12 @@ public class Migration {
     }
 
     private File[] getResources() {
-        if (configuration.getResourceDirectories() == null) {
+        if (getResourceDirectories() == null) {
             File webApp = new File(configuration.getBaseDirectory(),
                     "src/main/webapp");
             return new File[] { webApp };
         }
-        return configuration.getResourceDirectories();
+        return getResourceDirectories();
     }
 
     private void rewrite() {
@@ -393,6 +443,18 @@ public class Migration {
                 Stream.of(configuration.getJavaSourceDirectories())
                         .collect(Collectors.toList()));
         step.rewrite();
+    }
+
+    private File getTempMigrationFolder() {
+        return tempMigrationFolder;
+    }
+
+    private File getTargetDirectory() {
+        return targetDirectory;
+    }
+
+    private File[] getResourceDirectories() {
+        return resourceDirectories;
     }
 
 }
