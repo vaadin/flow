@@ -42,13 +42,21 @@ import org.apache.maven.project.MavenProject;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
 <<<<<<< Upstream, based on master
+<<<<<<< Upstream, based on master
 import com.vaadin.flow.component.dependency.StyleSheet;
 =======
+=======
+import com.vaadin.flow.component.dependency.StyleSheet;
+>>>>>>> 87583b3 Transfer code from pending PR and add javadocs
 import com.vaadin.flow.migration.CopyMigratedResourcesStep;
 import com.vaadin.flow.migration.CopyResourcesStep;
 import com.vaadin.flow.migration.CreateMigrationJsonsStep;
+<<<<<<< Upstream, based on master
 import com.vaadin.flow.migration.RewriteHtmlImportsStep;
 >>>>>>> 54a72d5 Move migration logic to the standalone module
+=======
+import com.vaadin.flow.migration.RewriteLegacyAnnotationsStep;
+>>>>>>> 87583b3 Transfer code from pending PR and add javadocs
 import com.vaadin.flow.plugin.common.FlowPluginFrontendUtils;
 <<<<<<< Upstream, based on master
 import com.vaadin.flow.plugin.migration.CopyMigratedResourcesStep;
@@ -126,11 +134,20 @@ public class MigrateMojo extends AbstractMojo {
      * <p>
      * Three values are available:
      * <ul>
+<<<<<<< Upstream, based on master
      * <li>ALWAYS : if chosen then the annotations will be always rewritten
+=======
+     * <li>ALWAYS : if chosen then annotation will be always rewritten
+>>>>>>> 87583b3 Transfer code from pending PR and add javadocs
      * regardless of migration of the import files content
      * <li>SKIP : if chosen then neither annotation will be rewritten
+<<<<<<< Upstream, based on master
      * <li>SKIP_ON_ERROR : if chosen then the annotations will be rewritten only
      * if there are no errors during migration of imported files content
+=======
+     * <li>SKIP_ON_ERROR : if chosen then annotation will be rewritten only if
+     * there are no errors during migration of imported files content
+>>>>>>> 87583b3 Transfer code from pending PR and add javadocs
      * </ul>
      */
     @Parameter(defaultValue = "ALWAYS")

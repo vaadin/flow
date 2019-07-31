@@ -34,7 +34,6 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import elemental.json.Json;
@@ -57,14 +56,6 @@ public class Migration {
     private final File targetDirectory;
 
     private final File[] resourceDirectories;
-
-    /**
-     * The strategy to rewrite {@link HtmlImport} annotations.
-     *
-     */
-    public static enum HtmlImportsRewriteStrategy {
-        ALWAYS, SKIP, SKIP_ON_ERROR;
-    }
 
     private final Configuration configuration;
 
@@ -433,7 +424,7 @@ public class Migration {
     }
 
     private void rewrite() {
-        RewriteHtmlImportsStep step = new RewriteHtmlImportsStep(
+        RewriteLegacyAnnotationsStep step = new RewriteLegacyAnnotationsStep(
                 configuration.getCompiledClassDirectories(),
                 configuration.getClassFinder(),
                 Stream.of(configuration.getJavaSourceDirectories())
