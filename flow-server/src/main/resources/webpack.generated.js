@@ -49,10 +49,12 @@ module.exports = {
 
   output: {
     filename: `${build}/vaadin-[name]-[contenthash].cache.js`,
-    path: mavenOutputFolderForFlowBundledFiles
+    path: mavenOutputFolderForFlowBundledFiles,
+    publicPath: 'VAADIN/'
   },
 
   resolve: {
+    extensions: ['.ts', '.js'],
     alias: {
       Frontend: frontendFolder
     }
@@ -80,6 +82,10 @@ module.exports = {
         use: [BabelMultiTargetPlugin.loader()]
       },
       {
+        test: /\.ts$/,
+        loader: 'awesome-typescript-loader'
+      },
+      {
         test: /\.css$/i,
         use: ['raw-loader']
       }
@@ -105,12 +111,14 @@ module.exports = {
             // covered by the webcomponents-loader.js
             'last 1 Chrome major versions'
           ],
+          esModule: true
         },
         'es5': { // IE11
           browsers: [
             'ie 11'
           ],
           tagAssetsWithKey: true, // append a suffix to the file name
+          noModule: true
         }
       }
     }),
@@ -137,5 +145,10 @@ module.exports = {
       from: `${baseDir}/node_modules/@webcomponents/webcomponentsjs`,
       to: `${build}/webcomponentsjs/`
     }]),
+
+    new CopyWebpackPlugin([{
+          from: `${frontendFolder}/index.html`,
+          to: `${mavenOutputFolderForFlowBundledFiles}/index.html`
+        }]),
   ]
 };
