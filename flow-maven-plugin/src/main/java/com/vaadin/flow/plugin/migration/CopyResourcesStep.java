@@ -40,8 +40,8 @@ import org.jsoup.select.NodeVisitor;
  * Step which copies resources from provided collection of directories to the
  * target folder. It keeps the files hierarchical structure.
  * <p>
- * The content of copied file is modified to correct URI in the importand remove
- * comments.
+ * The content of copied file is modified to correct URIs in the imports and
+ * remove the comments.
  *
  * @author Vaadin Ltd
  *

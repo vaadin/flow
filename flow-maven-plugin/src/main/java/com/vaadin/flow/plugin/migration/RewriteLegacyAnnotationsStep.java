@@ -84,20 +84,21 @@ public class RewriteLegacyAnnotationsStep extends ClassPathIntrospector {
     }
 
     /**
-     * Search for java files in the project and replace {@link HtmlImport} to
-     * {@link JsModule} annotation with updated value.
+     * Search for java files in the project and replace
+     * {@link HtmlImport}/{@link StyleSheet} annotations to {@link JsModule}
+     * annotation with updated value.
      */
     public void rewrite() {
-        Map<Class<?>, Map<Class<? extends Annotation>, Collection<String>>> annotationPerClass = new HashMap<>();
+        Map<Class<?>, Map<Class<? extends Annotation>, Collection<String>>> annotationsPerClass = new HashMap<>();
 
         collectAnnotatedClasses(
                 loadClassInProjectClassLoader(HtmlImport.class.getName()),
-                annotationPerClass);
+                annotationsPerClass);
         collectAnnotatedClasses(
                 loadClassInProjectClassLoader(StyleSheet.class.getName()),
-                annotationPerClass);
+                annotationsPerClass);
 
-        annotationPerClass.forEach(this::rewriteAnnotations);
+        annotationsPerClass.forEach(this::rewriteAnnotations);
     }
 
     private void collectAnnotatedClasses(Class<? extends Annotation> annotation,
@@ -117,7 +118,7 @@ public class RewriteLegacyAnnotationsStep extends ClassPathIntrospector {
                 .equals(location.toExternalForm())) {
             return;
         }
-        Collection<String> paths = collectAnnotations(clazz, annotation);
+        Collection<String> paths = collectAnnotationValues(clazz, annotation);
         if (!paths.isEmpty()) {
             Map<Class<? extends Annotation>, Collection<String>> annotationPaths = annotationPerClass
                     .computeIfAbsent(clazz, cl -> new HashMap<>());
@@ -125,7 +126,7 @@ public class RewriteLegacyAnnotationsStep extends ClassPathIntrospector {
         }
     }
 
-    private Collection<String> collectAnnotations(Class<?> clazz,
+    private Collection<String> collectAnnotationValues(Class<?> clazz,
             Class<? extends Annotation> annotationType) {
         Annotation[] annotationsByType = clazz
                 .getAnnotationsByType(annotationType);
@@ -246,7 +247,7 @@ public class RewriteLegacyAnnotationsStep extends ClassPathIntrospector {
                     StandardCharsets.UTF_8);
         } catch (IOException e) {
             getLogger().warn("Could not write source code back to file '{}'",
-                    javaFile);
+                    javaFile, e);
         }
     }
 
@@ -254,13 +255,13 @@ public class RewriteLegacyAnnotationsStep extends ClassPathIntrospector {
             Class<? extends Annotation> annotation, Collection<String> paths) {
         String result = content;
         // replace FQN first
-        result = replace(result, JsModule.class.getName(), annotation.getName(),
-                "\\b" + annotation.getName().replace(".", "\\.") + "\\b");
+        result = replace(annotation.getName(), result, "\\b" + annotation.getName().replace(".", "\\.") + "\\b",
+                JsModule.class.getName());
 
         // replace annotation attached to the class with @ sign
-        result = replace(result, "$1@" + JsModule.class.getSimpleName(),
-                annotation.getSimpleName(),
-                "(\\s*)@" + annotation.getSimpleName() + "\\b");
+        result = replace(annotation.getSimpleName(), result,
+                "(\\s*)@" + annotation.getSimpleName() + "\\b",
+                "$1@" + JsModule.class.getSimpleName());
         for (String path : paths) {
             result = result.replaceAll(
                     String.format("\"%s\"", Pattern.quote(path)),
@@ -273,8 +274,8 @@ public class RewriteLegacyAnnotationsStep extends ClassPathIntrospector {
      * Does the same as {@link String#replaceAll(String, String)} but caches the
      * compiled pattern
      */
-    private String replace(String content, String replacement,
-            String patternKey, String regexp) {
+    private String replace(String patternKey, String content,
+            String regexp, String replacement) {
         Pattern pattern = compiledReplacePatterns.computeIfAbsent(patternKey,
                 key -> Pattern.compile(regexp));
         return pattern.matcher(content).replaceAll(replacement);
