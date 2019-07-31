@@ -54,6 +54,7 @@ public class MigrationTool {
     private static final String STOP_ON_ERROR = "stopOnError";
     private static final String CLASSES_DIR = "classesDir";
     private static final String BASE_DIR = "baseDir";
+    private static final String ANNOTATION_REWRITE = "annRewrite";
 
     /**
      * Runs migration tool using command line {@code args}.
@@ -61,23 +62,55 @@ public class MigrationTool {
      * @param args
      *            command line arguments
      * @throws MigrationFailureException
+     *             if migration failed because of errors during execution
      * @throws MigrationToolsException
+     *             if migration failed because some necessary tools installation
+     *             failed
+     *
+     * @see #runMigration(String[])
      */
     public static void main(String[] args)
             throws MigrationToolsException, MigrationFailureException {
+        MigrationTool tool = new MigrationTool();
+
+        HelpFormatter formatter = new HelpFormatter();
+        try {
+            tool.runMigration(args);
+        } catch (CommandArgumentException exception) {
+            System.out.println(exception.getCause().getMessage());
+            if (exception.getOptions().isPresent()) {
+                formatter.printHelp("migration tool",
+                        exception.getOptions().get());
+            }
+
+            System.exit(1);
+        }
+
+    }
+
+    /**
+     * Runs migration tool using command line {@code args}.
+     *
+     * @param args
+     *            command line arguments
+     * @throws MigrationFailureException
+     *             if migration failed because of errors during execution
+     * @throws MigrationToolsException
+     *             if migration failed because some necessary tools installation
+     *             failed
+     */
+    protected void runMigration(String[] args) throws CommandArgumentException,
+            MigrationToolsException, MigrationFailureException {
         Options options = makeOptions();
 
         CommandLineParser parser = new DefaultParser();
-        HelpFormatter formatter = new HelpFormatter();
+
         CommandLine command = null;
 
         try {
             command = parser.parse(options, args);
-        } catch (ParseException e) {
-            System.out.println(e.getMessage());
-            formatter.printHelp("migration tool", options);
-
-            System.exit(1);
+        } catch (ParseException exception) {
+            throw new CommandArgumentException(options, exception);
         }
 
         File baseDirValue = new File(command.getOptionValue(BASE_DIR));
@@ -102,30 +135,63 @@ public class MigrationTool {
 
         setClassFinder(command, builder, compiledClasses);
 
-        Migration migration = new Migration(builder.build());
+        setAnnotationRewriteStrategy(command, builder);
+
+        doMigration(builder.build());
+    }
+
+    /**
+     * Runs migration using the provided {@code configuration}.
+     *
+     * @param configuration
+     *            the configuration
+     * @throws MigrationFailureException
+     *             if migration failed because of errors during execution
+     * @throws MigrationToolsException
+     *             if migration failed because some necessary tools installation
+     *             failed
+     */
+    protected void doMigration(Configuration configuration)
+            throws MigrationToolsException, MigrationFailureException {
+        Migration migration = new Migration(configuration);
         migration.migrate();
     }
 
-    private static void setClassFinder(CommandLine command, Builder builder,
-            File compiledClasses) {
-        String[] urls = command.getOptionValues(DEP_URLS);
+    private void setAnnotationRewriteStrategy(CommandLine command,
+            Builder builder) throws CommandArgumentException {
+        String annotationRewrite = command.getOptionValue(ANNOTATION_REWRITE);
+        if (annotationRewrite != null) {
+            try {
+                AnnotationsRewriteStrategy strategy = AnnotationsRewriteStrategy
+                        .valueOf(annotationRewrite);
+                builder.setAnnotationRewriteStrategy(strategy);
+                getLogger().debug(
+                        "Annotation rewrite strategy is set to " + strategy);
+            } catch (IllegalArgumentException exception) {
+                throw new CommandArgumentException(exception);
+            }
+        } else {
+            getLogger().debug(
+                    "Annotation rewrite strategy is not explicitely set");
+        }
+    }
+
+    private void setClassFinder(CommandLine command, Builder builder,
+            File compiledClasses) throws CommandArgumentException {
         URL compiledClassesURL;
         try {
             compiledClassesURL = compiledClasses.toURI().toURL();
         } catch (MalformedURLException exception) {
-            throw new IllegalArgumentException(
-                    "Could not make URL from the file path "
-                            + compiledClasses.getPath(),
-                    exception);
+            throw new CommandArgumentException(exception);
         }
+        String[] urls = command.getOptionValues(DEP_URLS);
         List<URL> depUrls = new ArrayList<>(urls.length + 1);
         depUrls.add(compiledClassesURL);
         for (String url : urls) {
             try {
                 depUrls.add(new URL(url));
             } catch (MalformedURLException exception) {
-                throw new IllegalArgumentException(
-                        "Could not make URL from the value" + url, exception);
+                throw new CommandArgumentException(exception);
             }
         }
 
@@ -133,7 +199,7 @@ public class MigrationTool {
                 depUrls.toArray(new URL[depUrls.size()])));
     }
 
-    private static void setSourceDirs(CommandLine command, Builder builder) {
+    private void setSourceDirs(CommandLine command, Builder builder) {
         String[] sourceDirs = command.getOptionValues(SOURCE_DIRS);
         List<File> sourceRoots = Stream.of(sourceDirs).map(File::new)
                 .collect(Collectors.toList());
@@ -142,7 +208,7 @@ public class MigrationTool {
         getLogger().debug("The java source directories are {}", sourceRoots);
     }
 
-    private static void setKeepOriginal(CommandLine command, Builder builder) {
+    private void setKeepOriginal(CommandLine command, Builder builder) {
         if (command.hasOption(KEEP_ORIGINAL)) {
             builder.setKeepOriginalFiles(true);
             getLogger().debug("Keep original resources value is true");
@@ -151,7 +217,7 @@ public class MigrationTool {
         }
     }
 
-    private static void setTargetDir(CommandLine command, File baseDirValue,
+    private void setTargetDir(CommandLine command, File baseDirValue,
             Builder builder) {
         String targetDir = command.getOptionValue(TARGET_DIR);
         if (targetDir != null) {
@@ -165,7 +231,7 @@ public class MigrationTool {
         }
     }
 
-    private static void setMigrationDir(CommandLine command, Builder builder) {
+    private void setMigrationDir(CommandLine command, Builder builder) {
         String tempMigrationFolder = command.getOptionValue(MIGRATION_DIR);
         if (tempMigrationFolder != null) {
             builder.setTemporaryMigrationFolder(new File(tempMigrationFolder));
@@ -177,7 +243,7 @@ public class MigrationTool {
         }
     }
 
-    private static void setResourcesDirs(CommandLine command, File baseDirValue,
+    private void setResourcesDirs(CommandLine command, File baseDirValue,
             Builder builder) {
         String[] resourceDirs = command.getOptionValues(RESOURCES_DIRS);
         if (resourceDirs != null) {
@@ -194,7 +260,7 @@ public class MigrationTool {
         }
     }
 
-    private static void setIgnoreModulizerErrors(CommandLine command,
+    private void setIgnoreModulizerErrors(CommandLine command,
             Builder builder) {
         if (command.hasOption(STOP_ON_ERROR)) {
             builder.setIgnoreModulizerErrors(false);
@@ -204,8 +270,7 @@ public class MigrationTool {
         }
     }
 
-    private static File setCompiledClasses(CommandLine command,
-            Builder builder) {
+    private File setCompiledClasses(CommandLine command, Builder builder) {
         File compiledClasses = new File(command.getOptionValue(CLASSES_DIR));
         builder.setCompiledClassDirectory(compiledClasses);
 
@@ -214,7 +279,7 @@ public class MigrationTool {
         return compiledClasses;
     }
 
-    private static Options makeOptions() {
+    private Options makeOptions() {
         Options options = new Options();
 
         // Not required
@@ -264,10 +329,14 @@ public class MigrationTool {
                 "whether the original "
                         + "resource files should not be removed. By default the migrated files are removed.");
         options.addOption(keepOriginal);
+
+        Option annotationRewrite = new Option("ars", ANNOTATION_REWRITE, true,
+                "annotation rewrite stratey. By default the value is ALWAYS");
+        options.addOption(annotationRewrite);
         return options;
     }
 
-    private static Logger getLogger() {
+    private Logger getLogger() {
         return LoggerFactory.getLogger(MigrationTool.class);
     }
 

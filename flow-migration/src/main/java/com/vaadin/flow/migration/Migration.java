@@ -84,7 +84,8 @@ public class Migration {
                     "Configuration does not provide a base directory");
         }
 
-        if (configuration.getResourceDirectories().length == 0) {
+        if (configuration.getResourceDirectories() != null
+                && configuration.getResourceDirectories().length == 0) {
             throw new IllegalArgumentException(
                     "Configuration does not provide any resource directories");
         } else if (configuration.getResourceDirectories() == null) {
@@ -112,7 +113,7 @@ public class Migration {
                     "Configuration does not provide any java source directories");
         }
 
-        if (configuration.getCompiledClassDirectories() == null) {
+        if (configuration.getCompiledClassDirectory() == null) {
             throw new IllegalArgumentException(
                     "Configuration does not provide a compoiled class directory");
         }
@@ -226,18 +227,18 @@ public class Migration {
             removeOriginalResources(paths);
         }
 
-        // switch (htmlImportsRewrite) {
-        // case SKIP:
-        // break;
-        // case ALWAYS:
-        // rewrite();
-        // break;
-        // case SKIP_ON_ERROR:
-        // if (!modulizerHasErrors) {
-        // rewrite();
-        // }
-        // break;
-        // }
+        switch (configuration.getAnnotationRewriteStrategy()) {
+        case SKIP:
+            break;
+        case ALWAYS:
+            rewrite();
+            break;
+        case SKIP_ON_ERROR:
+            if (!modulizerHasErrors) {
+                rewrite();
+            }
+            break;
+        }
     }
 
     private void prepareMigrationDirectory() {
@@ -425,7 +426,7 @@ public class Migration {
 
     private void rewrite() {
         RewriteLegacyAnnotationsStep step = new RewriteLegacyAnnotationsStep(
-                configuration.getCompiledClassDirectories(),
+                configuration.getCompiledClassDirectory(),
                 configuration.getClassFinder(),
                 Stream.of(configuration.getJavaSourceDirectories())
                         .collect(Collectors.toList()));

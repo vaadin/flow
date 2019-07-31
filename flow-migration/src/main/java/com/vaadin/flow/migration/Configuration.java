@@ -48,7 +48,7 @@ public class Configuration implements Cloneable {
 
     private File[] javaSourceDirectories;
 
-    private File compiledClassDirectories;
+    private File compiledClassDirectory;
 
     private Configuration(File baseDir) {
         baseDirectory = baseDir;
@@ -109,12 +109,12 @@ public class Configuration implements Cloneable {
     }
 
     /**
-     * Gets the compiled classes directories
+     * Gets the compiled classes directory
      *
-     * @return the compiled classes directories
+     * @return the compiled classes directory
      */
-    public File getCompiledClassDirectories() {
-        return compiledClassDirectories;
+    public File getCompiledClassDirectory() {
+        return compiledClassDirectory;
     }
 
     /**
@@ -295,7 +295,7 @@ public class Configuration implements Cloneable {
          * @return this builder
          */
         public Builder setCompiledClassDirectory(File classDirectory) {
-            config.compiledClassDirectories = Objects
+            config.compiledClassDirectory = Objects
                     .requireNonNull(classDirectory);
             return this;
         }

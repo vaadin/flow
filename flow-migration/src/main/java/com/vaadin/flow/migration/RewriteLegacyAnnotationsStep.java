@@ -41,8 +41,8 @@ import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.utils.FlowFileUtils;
 
 /**
- * Rewrites {@link HtmlImport} annotation to corresponding {@link JsModule}
- * annotation.
+ * Rewrites {@link HtmlImport}/{@link StyleSheet} annotation to corresponding
+ * {@link JsModule} annotation.
  *
  * @author Vaadin Ltd
  *
@@ -114,7 +114,7 @@ public class RewriteLegacyAnnotationsStep extends ClassPathIntrospector {
                 .equals(location.toExternalForm())) {
             return;
         }
-        Collection<String> paths = collectAnnotations(clazz, annotation);
+        Collection<String> paths = collectAnnotationValues(clazz, annotation);
         if (!paths.isEmpty()) {
             Map<Class<? extends Annotation>, Collection<String>> annotationPaths = annotationPerClass
                     .computeIfAbsent(clazz, cl -> new HashMap<>());
@@ -122,7 +122,7 @@ public class RewriteLegacyAnnotationsStep extends ClassPathIntrospector {
         }
     }
 
-    private Collection<String> collectAnnotations(Class<?> clazz,
+    private Collection<String> collectAnnotationValues(Class<?> clazz,
             Class<? extends Annotation> annotationType) {
         Annotation[] annotationsByType = clazz
                 .getAnnotationsByType(annotationType);
@@ -254,13 +254,14 @@ public class RewriteLegacyAnnotationsStep extends ClassPathIntrospector {
             Class<? extends Annotation> annotation, Collection<String> paths) {
         String result = content;
         // replace FQN first
-        result = replace(result, JsModule.class.getName(), annotation.getName(),
-                "\\b" + annotation.getName().replace(".", "\\.") + "\\b");
+        result = replace(annotation.getName(), result,
+                "\\b" + annotation.getName().replace(".", "\\.") + "\\b",
+                JsModule.class.getName());
 
         // replace annotation attached to the class with @ sign
-        result = replace(result, "$1@" + JsModule.class.getSimpleName(),
-                annotation.getSimpleName(),
-                "(\\s*)@" + annotation.getSimpleName() + "\\b");
+        result = replace(annotation.getSimpleName(), result,
+                "(\\s*)@" + annotation.getSimpleName() + "\\b",
+                "$1@" + JsModule.class.getSimpleName());
         for (String path : paths) {
             result = result.replaceAll(
                     String.format("\"%s\"", Pattern.quote(path)),
@@ -273,8 +274,8 @@ public class RewriteLegacyAnnotationsStep extends ClassPathIntrospector {
      * Does the same as {@link String#replaceAll(String, String)} but caches the
      * compiled pattern
      */
-    private String replace(String content, String replacement,
-            String patternKey, String regexp) {
+    private String replace(String patternKey, String content, String regexp,
+            String replacement) {
         Pattern pattern = compiledReplacePatterns.computeIfAbsent(patternKey,
                 key -> Pattern.compile(regexp));
         return pattern.matcher(content).replaceAll(replacement);
