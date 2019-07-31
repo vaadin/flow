@@ -82,7 +82,11 @@ public class VaadinServletService extends VaadinService {
             throws ServiceException {
         List<RequestHandler> handlers = super.createRequestHandlers();
         handlers.add(0, new FaviconHandler());
+        // TODO: BootstrapHandler and IndexHtmlRequestHandler should be added
+        // conditionally after #6136. For now, disable the BootstrapHandler
+        // temporarily.
         handlers.add(0, new BootstrapHandler());
+        handlers.add(0, new IndexHtmlRequestHandler());
         if (isAtmosphereAvailable()) {
             try {
                 handlers.add(new PushRequestHandler(this));

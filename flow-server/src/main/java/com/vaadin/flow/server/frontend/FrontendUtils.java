@@ -30,6 +30,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.jsoup.nodes.Element;
+import org.jsoup.parser.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,6 +42,7 @@ import com.vaadin.flow.server.VaadinService;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
+import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 
 /**
@@ -177,6 +180,10 @@ public class FrontendUtils {
             + "%n" //
             + "%nYou can disable the version check using -D%s=true" //
             + "%n======================================================================================================%n";
+
+    private static final String DEFER_ATTRIBUTE = "defer";
+
+    private static final String SCRIPT_TAG = "script";
 
     private static FrontendToolsLocator frontendToolsLocator = new FrontendToolsLocator();
 
@@ -360,38 +367,115 @@ public class FrontendUtils {
      */
     public static String getStatsContent(VaadinService service)
             throws IOException {
-        DeploymentConfiguration config = service.getDeploymentConfiguration();
-        InputStream content = null;
-
-        if (!config.isProductionMode() && config.enableDevServer()) {
-            content = getStatsFromWebpack();
-        }
-
-        if (content == null) {
-            content = getStatsFromClassPath(service);
-        }
-        return content != null ? streamToString(content) : null;
-    }
-
-    private static InputStream getStatsFromWebpack() throws IOException {
-        DevModeHandler handler = DevModeHandler.getDevModeHandler();
-        return handler.prepareConnection("/stats.json", "GET").getInputStream();
-    }
-
-    private static InputStream getStatsFromClassPath(VaadinService service) {
-        String stats = service.getDeploymentConfiguration()
+        String statsPathInDevMode = "/stats.json";
+        String statsPathInProductionMode = service.getDeploymentConfiguration()
                 .getStringProperty(SERVLET_PARAMETER_STATISTICS_JSON,
                         VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT)
                 // Remove absolute
                 .replaceFirst("^/", "");
+        return getFileContent(service, statsPathInDevMode,
+                statsPathInProductionMode);
+    }
+
+    /**
+     * Gets the content of the <code>frontend/index.html</code> file which is
+     * served by webpack-dev-server in dev-mode and read from classpath in
+     * production mode.
+     * 
+     * @param service
+     *            the vaadin service
+     * @return the content of the index html file as a string, null if not
+     *         found.
+     * @throws IOException
+     *             on error when reading file
+     */
+    public static String getIndexHtmlContent(VaadinService service)
+            throws IOException {
+        String indexHtmlPathInDevMode = "/" + VAADIN_MAPPING + "index.html";
+        String indexHtmlPathInProductionMode = VAADIN_SERVLET_RESOURCES
+                + "index.html";
+        return getFileContent(service, indexHtmlPathInDevMode,
+                indexHtmlPathInProductionMode);
+    }
+
+    private static String getFileContent(VaadinService service,
+            String pathInDevMode, String pathInProductionMode)
+            throws IOException {
+        DeploymentConfiguration config = service.getDeploymentConfiguration();
+        InputStream content = null;
+
+        if (!config.isProductionMode() && config.enableDevServer()) {
+            content = getFileFromWebpack(pathInDevMode);
+        }
+
+        if (content == null) {
+            content = getFileFromClassPath(service, pathInProductionMode);
+        }
+        return content != null ? streamToString(content) : null;
+    }
+
+    private static InputStream getFileFromClassPath(VaadinService service,
+            String filePath) {
         InputStream stream = service.getClassLoader()
-                .getResourceAsStream(stats);
+                .getResourceAsStream(filePath);
         if (stream == null) {
-            getLogger().error(
-                    "Cannot get the 'stats.json' from the classpath '{}'",
-                    stats);
+            getLogger().error("Cannot get the '{}' from the classpath",
+                    filePath);
         }
         return stream;
+    }
+
+    private static InputStream getFileFromWebpack(String filePath)
+            throws IOException {
+        DevModeHandler handler = DevModeHandler.getDevModeHandler();
+        return handler.prepareConnection(filePath, "GET").getInputStream();
+    }
+
+    /**
+     * Create a 'text/javascript' element.
+     * 
+     * @param sourceUrl
+     *            source url of the script
+     * @param defer
+     *            defer attribute
+     * 
+     * @return the created element
+     */
+    public static Element createJavaScriptElement(String sourceUrl,
+            boolean defer) {
+        return createJavaScriptElement(sourceUrl, defer, "text/javascript");
+    }
+
+    /**
+     * Create a JavaScript element with given information.
+     * 
+     * @param sourceUrl
+     *            source url of the script
+     * @param defer
+     *            defer attribute
+     * @param type
+     *            type attribute
+     * @return the created element
+     */
+    public static Element createJavaScriptElement(String sourceUrl,
+            boolean defer, String type) {
+        Element jsElement = new Element(Tag.valueOf(SCRIPT_TAG), "")
+                .attr("type", type).attr(DEFER_ATTRIBUTE, defer);
+        if (sourceUrl != null) {
+            jsElement = jsElement.attr("src", sourceUrl);
+        }
+        return jsElement;
+    }
+
+    /**
+     * Create a <code>'text/javascript'</code> and <code>defer</code> element.
+     * 
+     * @param sourceUrl
+     *            source url of the script
+     * @return the created element
+     */
+    public static Element createJavaScriptElement(String sourceUrl) {
+        return createJavaScriptElement(sourceUrl, true);
     }
 
     /**

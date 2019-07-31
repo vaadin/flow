@@ -829,7 +829,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 appendWebComponentsPolyfills(head, context);
             } else {
                 conf.getPolyfills().forEach(polyfill -> head.appendChild(
-                        createJavaScriptElement(
+                        FrontendUtils.createJavaScriptElement(
                                 "./" + VAADIN_MAPPING + polyfill, false)));
                 try {
                     appendNpmBundle(head, service);
@@ -845,7 +845,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
             head.appendChild(getBootstrapScript(initialUIDL, context));
             head.appendChild(
-                    createJavaScriptElement(getClientEngineUrl(context)));
+                    FrontendUtils.createJavaScriptElement(
+                            getClientEngineUrl(context)));
         }
 
         private void appendNpmBundle(Element head, VaadinService service)
@@ -862,7 +863,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     .getObject("assetsByChunkName");
 
             for (String key : chunks.keys()) {
-                Element script = createJavaScriptElement(
+                Element script = FrontendUtils.createJavaScriptElement(
                         "./" + VAADIN_MAPPING + chunks.getString(key));
                 if (key.endsWith(".es5")) {
                     head.appendChild(script.attr("nomodule", true));
@@ -1039,7 +1040,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                         createInlineJavaScriptElement(BABEL_HELPERS_JS));
 
                 if (session.getBrowser().isEs5AdapterNeeded()) {
-                    head.appendChild(createJavaScriptElement(
+                    head.appendChild(FrontendUtils
+                            .createJavaScriptElement(
                             context.getUriResolver()
                                     .resolveVaadinUri(es5AdapterUrl), false));
                 }
@@ -1047,7 +1049,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
             String resolvedUrl = context.getUriResolver()
                     .resolveVaadinUri(POLYFILLS_JS);
-            head.appendChild(createJavaScriptElement(resolvedUrl, false));
+            head.appendChild(
+                    FrontendUtils.createJavaScriptElement(resolvedUrl, false));
 
         }
 
@@ -1055,29 +1058,11 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 String javaScriptContents) {
             // defer makes no sense without src:
             // https://developer.mozilla.org/en/docs/Web/HTML/Element/script
-            Element wrapper = createJavaScriptElement(null, false);
+            Element wrapper = FrontendUtils.createJavaScriptElement(null,
+                    false);
             wrapper.appendChild(
                     new DataNode(javaScriptContents, wrapper.baseUri()));
             return wrapper;
-        }
-
-        private Element createJavaScriptElement(String sourceUrl,
-                                                boolean defer) {
-            return createJavaScriptElement(sourceUrl, defer, "text/javascript");
-        }
-
-        private Element createJavaScriptElement(String sourceUrl, boolean defer,
-                                                String type) {
-            Element jsElement = new Element(Tag.valueOf(SCRIPT_TAG), "")
-                    .attr("type", type).attr(DEFER_ATTRIBUTE, defer);
-            if (sourceUrl != null) {
-                jsElement = jsElement.attr("src", sourceUrl);
-            }
-            return jsElement;
-        }
-
-        private Element createJavaScriptElement(String sourceUrl) {
-            return createJavaScriptElement(sourceUrl, true);
         }
 
         private Element createDependencyElement(BootstrapUriResolver resolver,
@@ -1095,12 +1080,13 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 dependencyElement = createStylesheetElement(url);
                 break;
             case JAVASCRIPT:
-                dependencyElement = createJavaScriptElement(url,
+                dependencyElement = FrontendUtils.createJavaScriptElement(url,
                         !inlineElement);
                 break;
             case JS_MODULE:
                 if (url != null && UrlUtil.isExternal(url))
-                    dependencyElement = createJavaScriptElement(url,
+                    dependencyElement = FrontendUtils.createJavaScriptElement(
+                            url,
                             !inlineElement, "module");
                 else
                     dependencyElement = null;
@@ -1172,7 +1158,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
             pushJSPath += versionQueryParam;
 
-            return createJavaScriptElement(pushJSPath);
+            return FrontendUtils.createJavaScriptElement(pushJSPath);
         }
 
         private Element getBootstrapScript(JsonValue initialUIDL,
