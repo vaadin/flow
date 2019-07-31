@@ -29,7 +29,6 @@ import com.vaadin.flow.function.SerializableBiFunction;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.function.ValueProvider;
-import com.vaadin.flow.internal.StateTree;
 
 /**
  * Base class for all renderers that support arbitrary {@link Component}s.
