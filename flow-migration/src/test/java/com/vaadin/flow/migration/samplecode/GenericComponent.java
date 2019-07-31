@@ -13,19 +13,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.plugin.migration.samplecode;
+package com.vaadin.flow.migration.samplecode;
 
-import java.io.Serializable;
-import java.util.List;
+import com.vaadin.flow.component.Component;
 
-import com.vaadin.flow.component.dependency.HtmlImport;
-
-public class EnclosingClassWithNestedClass {
-
-    @HtmlImport("./foo.html")
-    public abstract static class NestedComponent<T extends List<? extends Number> & Serializable, U extends Object>
-            extends GenericComponent<T, U> {
-
-    }
+public class GenericComponent<T, U> extends Component {
 
 }

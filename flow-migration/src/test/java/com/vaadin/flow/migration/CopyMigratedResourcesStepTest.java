@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.plugin.migration;
+package com.vaadin.flow.migration;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,6 +32,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+
+import com.vaadin.flow.migration.CopyMigratedResourcesStep;
 
 public class CopyMigratedResourcesStepTest {
 

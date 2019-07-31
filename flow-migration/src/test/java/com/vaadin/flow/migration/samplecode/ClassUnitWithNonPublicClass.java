@@ -13,14 +13,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.plugin.migration.samplecode;
+package com.vaadin.flow.migration.samplecode;
 
 import java.io.Serializable;
 import java.util.List;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.plugin.migration.samplecode.NonPublicClassWithNestedClass.NestedClassInsideNonPublicClass;
+import com.vaadin.flow.migration.samplecode.NonPublicClassWithNestedClass.NestedClassInsideNonPublicClass;
 
 public class ClassUnitWithNonPublicClass {
 

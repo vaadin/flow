@@ -52,6 +52,7 @@ import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.webcomponent.WebComponent;
+import com.vaadin.flow.migration.ClassPathIntrospector;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

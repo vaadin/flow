@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.plugin.migration;
+package com.vaadin.flow.migration;
 
 import java.io.BufferedReader;
 import java.io.File;

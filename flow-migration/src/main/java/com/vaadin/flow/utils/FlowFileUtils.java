@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.flow.plugin.common;
+package com.vaadin.flow.utils;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,8 +31,8 @@ import org.apache.commons.io.FileUtils;
  * @author Vaadin Ltd
  * @since 1.0.
  */
-public final class FlowPluginFileUtils {
-    private FlowPluginFileUtils() {
+public final class FlowFileUtils {
+    private FlowFileUtils() {
     }
 
     /**

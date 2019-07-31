@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.migration.ClassPathIntrospector;
 import com.vaadin.flow.server.webcomponent.WebComponentModulesWriter;
 
 /**
@@ -29,7 +30,7 @@ import com.vaadin.flow.server.webcomponent.WebComponentModulesWriter;
  * Uses {@link com.vaadin.flow.server.webcomponent.WebComponentModulesWriter} to
  * generate web component modules files from
  * {@link com.vaadin.flow.component.WebComponentExporter} implementations found
- * by {@link com.vaadin.flow.plugin.common.ClassPathIntrospector}.
+ * by {@link com.vaadin.flow.migration.ClassPathIntrospector}.
  * 
  * @author Vaadin Ltd.
  */
@@ -43,7 +44,7 @@ public class WebComponentModulesGenerator extends ClassPathIntrospector {
      * {@link com.vaadin.flow.component.WebComponentExporter} classes.
      *
      * @param introspector
-     *            {@link com.vaadin.flow.plugin.common.ClassPathIntrospector}
+     *            {@link com.vaadin.flow.migration.ClassPathIntrospector}
      *            implementation to use as a base.
      */
     public WebComponentModulesGenerator(ClassPathIntrospector introspector) {

@@ -23,9 +23,10 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Function;
 
+import com.vaadin.flow.migration.ClassPathIntrospector;
 import com.vaadin.flow.plugin.TestUtils;
-import com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.ReflectionsClassFinder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.server.scanner.ReflectionsClassFinder;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;

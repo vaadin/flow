@@ -41,12 +41,22 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
+<<<<<<< Upstream, based on master
 import com.vaadin.flow.component.dependency.StyleSheet;
+=======
+import com.vaadin.flow.migration.CopyMigratedResourcesStep;
+import com.vaadin.flow.migration.CopyResourcesStep;
+import com.vaadin.flow.migration.CreateMigrationJsonsStep;
+import com.vaadin.flow.migration.RewriteHtmlImportsStep;
+>>>>>>> 54a72d5 Move migration logic to the standalone module
 import com.vaadin.flow.plugin.common.FlowPluginFrontendUtils;
+<<<<<<< Upstream, based on master
 import com.vaadin.flow.plugin.migration.CopyMigratedResourcesStep;
 import com.vaadin.flow.plugin.migration.CopyResourcesStep;
 import com.vaadin.flow.plugin.migration.CreateMigrationJsonsStep;
 import com.vaadin.flow.plugin.migration.RewriteLegacyAnnotationsStep;
+=======
+>>>>>>> 54a72d5 Move migration logic to the standalone module
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import elemental.json.Json;
@@ -77,7 +87,7 @@ public class MigrateMojo extends AbstractMojo {
      * A list of directories with files to migrate.
      */
     @Parameter
-    private String[] resources;
+    private File[] resources;
 
     /**
      * A temporary directory where migration is performed.
@@ -412,10 +422,10 @@ public class MigrateMojo extends AbstractMojo {
         FileUtils.forceDelete(dir);
     }
 
-    private String[] getResources() {
+    private File[] getResources() {
         if (resources == null) {
             File webApp = new File(project.getBasedir(), "src/main/webapp");
-            resources = new String[] { webApp.getPath() };
+            resources = new File[] { webApp };
         }
         return resources;
     }

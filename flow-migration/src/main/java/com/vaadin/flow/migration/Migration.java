@@ -35,10 +35,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.plugin.migration.CopyMigratedResourcesStep;
-import com.vaadin.flow.plugin.migration.CopyResourcesStep;
-import com.vaadin.flow.plugin.migration.CreateMigrationJsonsStep;
-import com.vaadin.flow.plugin.migration.RewriteHtmlImportsStep;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import elemental.json.Json;
