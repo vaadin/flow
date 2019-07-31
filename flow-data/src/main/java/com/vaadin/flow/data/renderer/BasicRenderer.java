@@ -81,13 +81,6 @@ public abstract class BasicRenderer<SOURCE, TARGET>
 
     private void setupTemplate(Element owner, SimpleValueRendering rendering,
             DataKeyMapper<SOURCE> keyMapper) {
-        setupTemplateWhenAttached(owner,
-                rendering, keyMapper);
-    }
-
-    private void setupTemplateWhenAttached(Element owner,
-            SimpleValueRendering rendering, DataKeyMapper<SOURCE> keyMapper) {
-
         Element templateElement = rendering.getTemplateElement();
         owner.appendChild(templateElement);
 

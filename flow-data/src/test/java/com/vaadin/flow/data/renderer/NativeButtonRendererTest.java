@@ -63,7 +63,7 @@ public class NativeButtonRendererTest {
             DataKeyMapper<String> keyMapper) {
         try {
             Method method = BasicRenderer.class.getDeclaredMethod(
-                    "setupTemplateWhenAttached", Element.class,
+                    "setupTemplate", Element.class,
                     SimpleValueRendering.class, DataKeyMapper.class);
             method.setAccessible(true);
             method.invoke(renderer, container, rendering, keyMapper);

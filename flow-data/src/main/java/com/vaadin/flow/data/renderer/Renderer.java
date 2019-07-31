@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 import com.vaadin.flow.data.provider.CompositeDataGenerator;
 import com.vaadin.flow.data.provider.DataGenerator;
@@ -58,7 +58,7 @@ public class Renderer<SOURCE> implements Serializable {
     private String template;
     private Map<String, ValueProvider<SOURCE, ?>> valueProviders;
     private Map<String, SerializableConsumer<SOURCE>> eventHandlers;
-    private int rendererId = new Random().nextInt(Integer.MAX_VALUE);
+    private int rendererId = ThreadLocalRandom.current().nextInt(Integer.MAX_VALUE);
 
 
     /**
@@ -248,7 +248,7 @@ public class Renderer<SOURCE> implements Serializable {
      *
      * @return unique id for the renderer
      */
-    protected int getRendererId() {
+    int getRendererId() {
         return rendererId;
     }
 
