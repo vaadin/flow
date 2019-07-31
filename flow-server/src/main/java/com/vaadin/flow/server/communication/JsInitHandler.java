@@ -16,9 +16,8 @@
 
 package com.vaadin.flow.server.communication;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Optional;
@@ -37,6 +36,7 @@ import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Router;
+import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.ServletHelper;
 import com.vaadin.flow.server.ServletHelper.RequestType;
@@ -53,8 +53,6 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 /**
  * Processes a 'start' request type from the client to initialize server session
  * and UI. It returns a JSON response with everything given for bootstrapping
@@ -66,7 +64,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * boostrapping lazily.
  *
  */
-public class JsInitHandler extends WebComponentBootstrapHandler {
+public class JsInitHandler extends BootstrapHandler {
 
     /**
      * Custom BootstrapContext for JsInitHandler
@@ -87,7 +85,7 @@ public class JsInitHandler extends WebComponentBootstrapHandler {
     /**
      * Custom UI for JsInitHandler
      */
-    public class JsInitUI extends UI {
+    public static class JsInitUI extends UI {
         public static final String NO_NAVIGATION = "Navigation is not implemented yet";
 
         @Override
@@ -176,7 +174,7 @@ public class JsInitHandler extends WebComponentBootstrapHandler {
                 pushURL = uri.resolve(new URI(pushURL)).toASCIIString();
             } catch (URISyntaxException exception) {
                 throw new IllegalStateException(String.format(
-                        "Can't resolve pushURL '%s' based on the service URL '%s'",
+                        "Can't resolve pushURL '%s'",
                         pushURL, serviceUrl), exception);
             }
         }
@@ -184,7 +182,6 @@ public class JsInitHandler extends WebComponentBootstrapHandler {
                 .getPushConfiguration();
         pushConfiguration.setPushUrl(pushURL);
 
-        assert serviceUrl.endsWith("/");
         config.put(ApplicationConstants.SERVICE_URL, serviceUrl);
         // TODO(manolo) revise this
         config.put("pushScript", getPushScript(context));
@@ -236,8 +233,7 @@ public class JsInitHandler extends WebComponentBootstrapHandler {
         }
     }
 
-    @Override
-    protected String getServiceUrl(VaadinRequest request) {
+    private String getServiceUrl(VaadinRequest request) {
         // get service url from 'url' parameter
         String url = request.getParameter("url");
         // if 'url' parameter was not available, use request url
@@ -338,10 +334,8 @@ public class JsInitHandler extends WebComponentBootstrapHandler {
     }
     private void writeResponse(VaadinResponse response, JsonObject json) throws IOException {
         response.setContentType("application/json");
-        try (BufferedWriter writer = new BufferedWriter(
-            new OutputStreamWriter(response.getOutputStream(), UTF_8))) {
-            writer.append(JsonUtil.stringify(json));
-        }
+        response.setStatus(HttpURLConnection.HTTP_OK);
+        response.getOutputStream().write(JsonUtil.stringify(json).getBytes());
     }
 
     private Logger getLogger() {
