@@ -37,6 +37,14 @@ import com.vaadin.flow.shared.ApplicationConstants;
 @NotThreadSafe
 public class I18NProviderTest {
 
+    private static Properties DEFAULT_PARAMS = new Properties();
+
+    {
+        DEFAULT_PARAMS.setProperty(
+                Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                Boolean.FALSE.toString());
+    }
+
     @Test
     public void no_property_defined_should_leave_with_default_locale()
             throws ServletException, ServiceException {
@@ -149,5 +157,4 @@ public class I18NProviderTest {
 
         return servlet;
     }
-
 }

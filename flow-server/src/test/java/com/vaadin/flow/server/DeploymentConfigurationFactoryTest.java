@@ -44,6 +44,11 @@ public class DeploymentConfigurationFactoryTest {
     private File tokenFile;
     private ServletContext contextMock;
 
+    private static Map<String, String> defaultServletParams =
+            Collections.singletonMap(
+                    Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                    Boolean.FALSE.toString());
+
     private static class NoSettings extends VaadinServlet {
     }
 
@@ -73,9 +78,7 @@ public class DeploymentConfigurationFactoryTest {
     public void servletWithEnclosingUI_hasItsNameInConfig() throws Exception {
         Class<TestUI.ServletWithEnclosingUi> servlet = TestUI.ServletWithEnclosingUi.class;
 
-        Map<String, String> servletConfigParams = new HashMap<>();
-        servletConfigParams.put(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                Boolean.FALSE.toString());
+        Map<String, String> servletConfigParams = new HashMap<>(new HashMap<>(defaultServletParams));
 
         DeploymentConfiguration config = DeploymentConfigurationFactory
                 .createDeploymentConfiguration(servlet,
@@ -96,9 +99,7 @@ public class DeploymentConfigurationFactoryTest {
             throws Exception {
         Class<NoSettings> servlet = NoSettings.class;
 
-        Map<String, String> servletConfigParams = new HashMap<>();
-        servletConfigParams.put(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                Boolean.FALSE.toString());
+        Map<String, String> servletConfigParams = new HashMap<>(defaultServletParams);
 
         DeploymentConfiguration config = DeploymentConfigurationFactory
                 .createDeploymentConfiguration(servlet,
@@ -117,9 +118,7 @@ public class DeploymentConfigurationFactoryTest {
     public void vaadinServletConfigurationRead() throws Exception {
         Class<VaadinSettings> servlet = VaadinSettings.class;
 
-        Map<String, String> servletConfigParams = new HashMap<>();
-        servletConfigParams.put(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                Boolean.FALSE.toString());
+        Map<String, String> servletConfigParams = new HashMap<>(defaultServletParams);
 
         DeploymentConfiguration config = DeploymentConfigurationFactory
                 .createDeploymentConfiguration(servlet,
@@ -141,13 +140,11 @@ public class DeploymentConfigurationFactoryTest {
         boolean overridingProductionModeValue = false;
         int overridingHeartbeatIntervalValue = 444;
 
-        Map<String, String> servletConfigParams = new HashMap<>();
+        Map<String, String> servletConfigParams = new HashMap<>(defaultServletParams);
         servletConfigParams.put(SERVLET_PARAMETER_PRODUCTION_MODE,
                 Boolean.toString(overridingProductionModeValue));
         servletConfigParams.put(Constants.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
                 Integer.toString(overridingHeartbeatIntervalValue));
-        servletConfigParams.put(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                Boolean.FALSE.toString());
 
         DeploymentConfiguration config = DeploymentConfigurationFactory
                 .createDeploymentConfiguration(servlet, createServletConfigMock(
@@ -170,13 +167,11 @@ public class DeploymentConfigurationFactoryTest {
         boolean overridingProductionModeValue = false;
         int overridingHeartbeatIntervalValue = 444;
 
-        Map<String, String> servletContextParams = new HashMap<>();
+        Map<String, String> servletContextParams = new HashMap<>(defaultServletParams);
         servletContextParams.put(SERVLET_PARAMETER_PRODUCTION_MODE,
                 Boolean.toString(overridingProductionModeValue));
         servletContextParams.put(Constants.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
                 Integer.toString(overridingHeartbeatIntervalValue));
-        servletContextParams.put(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                Boolean.FALSE.toString());
 
         DeploymentConfiguration config = DeploymentConfigurationFactory
                 .createDeploymentConfiguration(servlet, createServletConfigMock(
@@ -199,13 +194,11 @@ public class DeploymentConfigurationFactoryTest {
         boolean servletConfigProductionModeValue = true;
         int servletConfigHeartbeatIntervalValue = 333;
 
-        Map<String, String> servletConfigParams = new HashMap<>();
+        Map<String, String> servletConfigParams = new HashMap<>(defaultServletParams);
         servletConfigParams.put(SERVLET_PARAMETER_PRODUCTION_MODE,
                 Boolean.toString(servletConfigProductionModeValue));
         servletConfigParams.put(Constants.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
                 Integer.toString(servletConfigHeartbeatIntervalValue));
-        servletConfigParams.put(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                Boolean.FALSE.toString());
 
         boolean servletContextProductionModeValue = false;
         int servletContextHeartbeatIntervalValue = 444;
@@ -298,4 +291,5 @@ public class DeploymentConfigurationFactoryTest {
             }
         };
     }
+
 }
