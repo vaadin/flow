@@ -1,0 +1,13 @@
+{
+  "suites": "tests/unit/**/*.js",
+  "functionalSuites": "tests/functional/**/*.js",
+  "environments": [{
+    "browserName": "chrome",
+    "goog:chromeOptions": {
+      "args": ["headless", "disable-gpu", "window-size=1024,768"]
+    } 
+  }],
+  "instrumenterOptions": {
+    "esModules": true
+  }
+}

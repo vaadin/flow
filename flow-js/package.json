@@ -1,0 +1,34 @@
+{
+  "name": "@vaadin/flow",
+  "description": "Flow client package",
+  "version": "0.0.1",
+  "main": "src/flow",
+  "author": "Vaadin Ltd",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/vaadin/flow/issues"
+  },
+  "scripts": {
+    "build": "npm run lint && tsc",
+    "lint": "eslint 'src/**/*.js' && tslint 'src/**/*.ts'",
+    "test": "npm run build && intern"
+  },
+  "homepage": "https://vaadin.com",
+  "files": [
+    "src"
+  ],
+  "dependencies": {},
+  "devDependencies": {
+    "eslint": "^5.8.0",
+    "eslint-config-vaadin": "^0.2.7",
+    "eslint-plugin-chai-expect": "^2.0.1",
+    "eslint-plugin-chai-friendly": "^0.4.1",
+    "fetch-mock": "^7.3.0",
+    "intern": "^4.4.3",
+    "node-fetch": "^2.3.0",
+    "sinon": "^7.1.1",
+    "sinon-chai": "^3.2.0",
+    "tslint": "^5.12.1",
+    "typescript": "^3.3.1"
+  }
+}
