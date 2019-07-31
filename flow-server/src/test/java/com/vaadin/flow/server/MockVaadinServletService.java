@@ -16,15 +16,12 @@
 package com.vaadin.flow.server;
 
 import javax.servlet.ServletException;
+
 import java.util.Collections;
 import java.util.List;
 
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.server.RequestHandler;
-import com.vaadin.flow.server.ServiceException;
-import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 /**

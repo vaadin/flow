@@ -13,6 +13,8 @@ import org.mockito.MockitoAnnotations;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.ByteArrayInputStream;
@@ -28,6 +30,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MockServletServiceSessionSetup {
 
@@ -171,6 +175,10 @@ public class MockServletServiceSessionSetup {
             extends VaadinServletResponse {
         private int errorCode;
 
+        private CapturingServletOutputStream output = new CapturingServletOutputStream();
+
+        private String type;
+
         private TestVaadinServletResponse(HttpServletResponse response,
                 VaadinServletService vaadinService) {
             super(response, vaadinService);
@@ -189,6 +197,30 @@ public class MockServletServiceSessionSetup {
 
         public int getErrorCode() {
             return errorCode;
+        }
+
+        @Override
+        public void setStatus(int sc) {
+            errorCode = sc;
+        }
+
+        @Override
+        public ServletOutputStream getOutputStream() throws IOException {
+            return output;
+        }
+
+        public String getPayload() {
+            return new String(output.getOutput());
+        }
+
+        @Override
+        public void setContentType(String type) {
+            this.type = type;
+        }
+
+        @Override
+        public String getContentType() {
+            return type;
         }
     }
 
@@ -317,5 +349,37 @@ public class MockServletServiceSessionSetup {
         Mockito.when(httpServletResponse.getOutputStream()).thenReturn(out);
         return new TestVaadinServletResponse(httpServletResponse, getService());
 
+    }
+
+    public VaadinRequest createRequest(MockServletServiceSessionSetup mocks, String path) {
+        HttpServletRequest httpServletRequest = Mockito.mock(HttpServletRequest.class);
+        return new VaadinServletRequest(httpServletRequest, mocks.getService()) {
+            @Override
+            public String getPathInfo() {
+                return path.replaceFirst("\\?.*$", "");
+            }
+
+            @Override
+            public String getServletPath() {
+                return "";
+            }
+
+            @Override
+            public ServletContext getServletContext() {
+                return mocks.getServletContext();
+            }
+
+            @Override
+            public String getParameter(String name) {
+                Pattern p = Pattern.compile("^.*[\\?&]" + name + "=([^&]+).*$");
+                Matcher m = p.matcher(path);
+                return m.find() ? m.group(1) : null;
+            }
+
+            @Override
+            public StringBuffer getRequestURL() {
+                return new StringBuffer("http://localhost:8888" + getPathInfo());
+            }
+        };
     }
 }
