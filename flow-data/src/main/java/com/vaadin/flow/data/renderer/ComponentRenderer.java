@@ -29,6 +29,7 @@ import com.vaadin.flow.function.SerializableBiFunction;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.function.ValueProvider;
+import com.vaadin.flow.internal.StateTree;
 
 /**
  * Base class for all renderers that support arbitrary {@link Component}s.
@@ -158,11 +159,16 @@ public class ComponentRenderer<COMPONENT extends Component, SOURCE>
                 keyMapper == null ? null : keyMapper::key);
         rendering.setTemplateElement(contentTemplate);
 
-        container.getNode()
-                .runWhenAttached(ui -> setupTemplateWhenAttached(
-                        ui, container, rendering,
-                        keyMapper));
-
+        if (UI.getCurrent() != null) {
+            setupTemplate(UI.getCurrent()
+                    , container, rendering,
+                    keyMapper);
+        } else {
+            container.getNode()
+                    .runWhenAttached(ui -> setupTemplate(
+                            ui, container, rendering,
+                            keyMapper));
+        }
         return rendering;
     }
 
@@ -181,7 +187,7 @@ public class ComponentRenderer<COMPONENT extends Component, SOURCE>
         this.componentRendererTag = componentRendererTag;
     }
 
-    private void setupTemplateWhenAttached(UI ui, Element owner,
+    private void setupTemplate(UI ui, Element owner,
             ComponentRendering rendering, DataKeyMapper<SOURCE> keyMapper) {
         String appId = ui.getInternals().getAppId();
         Element templateElement = rendering.getTemplateElement();
@@ -191,10 +197,10 @@ public class ComponentRenderer<COMPONENT extends Component, SOURCE>
         owner.appendVirtualChild(container);
         rendering.setContainer(container);
         String templateInnerHtml;
-
+        int uniqueId = getRendererId();
         if (keyMapper != null) {
             String nodeIdPropertyName = "_renderer_"
-                    + templateElement.getNode().getId();
+                    + uniqueId;
 
             templateInnerHtml = String.format(
                     "<%s appid=\"%s\" nodeid=\"[[item.%s]]\"></%s>",
@@ -205,11 +211,10 @@ public class ComponentRenderer<COMPONENT extends Component, SOURCE>
             COMPONENT component = createComponent(null);
             if (component != null) {
                 container.appendChild(component.getElement());
-
                 templateInnerHtml = String.format(
                         "<%s appid=\"%s\" nodeid=\"%s\"></%s>",
                         componentRendererTag, appId,
-                        component.getElement().getNode().getId(),
+                        uniqueId,
                         componentRendererTag);
             } else {
                 templateInnerHtml = "";

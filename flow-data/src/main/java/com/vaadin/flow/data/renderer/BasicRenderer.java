@@ -81,9 +81,8 @@ public abstract class BasicRenderer<SOURCE, TARGET>
 
     private void setupTemplate(Element owner, SimpleValueRendering rendering,
             DataKeyMapper<SOURCE> keyMapper) {
-        owner.getNode()
-                .runWhenAttached(ui -> setupTemplateWhenAttached(owner,
-                         rendering, keyMapper));
+        setupTemplateWhenAttached(owner,
+                rendering, keyMapper);
     }
 
     private void setupTemplateWhenAttached(Element owner,
@@ -131,7 +130,7 @@ public abstract class BasicRenderer<SOURCE, TARGET>
                     "The provided rendering doesn't contain a template element");
         }
         return "_" + getClass().getSimpleName() + "_"
-                + templateElement.getNode().getId();
+                + getRendererId();
     }
 
     /**
