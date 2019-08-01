@@ -12,4 +12,6 @@
         <param-value>true</param-value>
     </context-param>
 
+    <distributable/>
+
 </web-fragment>
