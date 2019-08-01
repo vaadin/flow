@@ -29,6 +29,7 @@ public class GwtSuite extends GWTTestSuite {
          * module for each test class.
          */
         TestSuite suite = new TestSuite("Flow GWT tests");
+        suite.addTestSuite(GwtApplicationConnectionTest.class);
         suite.addTestSuite(GwtJsArrayTest.class);
         suite.addTestSuite(GwtJsMapTest.class);
         suite.addTestSuite(GwtJsWeakMapTest.class);

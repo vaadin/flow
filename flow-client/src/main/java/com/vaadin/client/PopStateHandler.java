@@ -69,8 +69,7 @@ public class PopStateHandler {
                     queryAfterPreviousResponse = Browser.getWindow()
                             .getLocation().getSearch();
                 });
-
-        Browser.getWindow().setOnpopstate(this::onPopStateEvent);
+        Browser.getWindow().addEventListener("popstate", this::onPopStateEvent);
     }
 
     private void onPopStateEvent(Event e) {
