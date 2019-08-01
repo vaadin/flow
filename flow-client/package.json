@@ -1,5 +1,5 @@
 {
-  "name": "@vaadin/flow",
+  "name": "@vaadin/flow-deps",
   "description": "Flow client package",
   "version": "0.0.1",
   "main": "src/flow",
@@ -9,11 +9,16 @@
     "url": "https://github.com/vaadin/flow/issues"
   },
   "scripts": {
-    "build": "npm run lint && tsc",
-    "lint": "eslint 'src/**/*.js' && tslint 'src/**/*.ts'",
+    "compile": "tsc",
+    "build": "npm run lint && npm run compile",
+    "lint": "eslint 'src/main/resources/META-INF/resources/frontend/**/*.js' && tslint 'src/main/resources/META-INF/resources/frontend/**/*.ts'",
     "test": "npm run build && intern"
   },
   "homepage": "https://vaadin.com",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/vaadin/flow.git"
+  },
   "files": [
     "src"
   ],
