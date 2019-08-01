@@ -28,10 +28,17 @@ import com.vaadin.flow.shared.ui.LoadMode;
 
 /**
  * Annotation for defining JavaScript Module dependencies on a {@link Component}
- * class.
- * For adding multiple JavaScript Module files for a single component, you can
- * use this
- * annotation multiple times.
+ * class. For adding multiple JavaScript Module files for a single component,
+ * you can use this annotation multiple times.
+ * <p>
+ * The JS module files should be located:
+ * <ul>
+ * <li>inside {@code frontend} directory in your root project folder in case of
+ * WAR project
+ * <li>inside {@code META-INF/resources/frontend} directory (inside a project
+ * resources folder) in case of JAR project (if you are using Maven this is
+ * {@code src/main/resources/META-INF/resources/frontend} directory).
+ * </ul>
  * <p>
  * It is guaranteed that dependencies will be loaded only once.
  * <p>
@@ -39,6 +46,8 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * {@link Inherited @Inherited} annotation, the annotations of the possible
  * parent components or implemented interfaces are read when sending the
  * dependencies to the browser.
+ *
+ * @see CssImport
  *
  * @author Vaadin Ltd
  */
@@ -49,8 +58,8 @@ import com.vaadin.flow.shared.ui.LoadMode;
 public @interface JsModule {
 
     /**
-     * JavaScript module to load before using the annotated {@link Component}
-     * in the browser.
+     * JavaScript module to load before using the annotated {@link Component} in
+     * the browser.
      *
      * @return a JavaScript module identifier
      */
