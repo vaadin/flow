@@ -34,7 +34,6 @@
         <module>flow-test-generic</module>
         <module>flow-bom</module>
         <module>build-tools</module>
-        <module>flow-js</module>
     </modules>
 
     <organization>
