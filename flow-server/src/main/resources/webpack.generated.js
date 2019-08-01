@@ -145,10 +145,5 @@ module.exports = {
       from: `${baseDir}/node_modules/@webcomponents/webcomponentsjs`,
       to: `${build}/webcomponentsjs/`
     }]),
-
-    new CopyWebpackPlugin([{
-          from: `${frontendFolder}/index.html`,
-          to: `${mavenOutputFolderForFlowBundledFiles}/index.html`
-        }]),
   ]
 };

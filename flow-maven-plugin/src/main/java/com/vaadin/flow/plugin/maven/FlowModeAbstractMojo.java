@@ -43,6 +43,12 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
     public boolean productionMode;
 
     /**
+     * Whether or not we are running in client-side bootstrap mode (CCDM).
+     */
+    @Parameter(defaultValue = "${vaadin.clientSideBootstrapMode}")
+    public boolean clientSideBootstrapMode;
+
+    /**
      * The folder where webpack should output index.js and other generated
      * files.
      */
