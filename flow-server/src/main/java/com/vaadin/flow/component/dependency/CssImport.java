@@ -25,7 +25,7 @@ import java.lang.annotation.Target;
 /**
  * Instructs flow to import a CSS file into the application bundle.
  * <p>
- * The css files should be located in the place as JS module files:
+ * The CSS files should be located in the place as JS module files:
  * <ul>
  * <li>inside {@code frontend} directory in your root project folder in case of
  * WAR project

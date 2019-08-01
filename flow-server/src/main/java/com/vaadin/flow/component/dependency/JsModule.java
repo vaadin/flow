@@ -31,7 +31,7 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * class. For adding multiple JavaScript Module files for a single component,
  * you can use this annotation multiple times.
  * <p>
- * The JS module files should be located:
+ * The JavaScript module files should be located:
  * <ul>
  * <li>inside {@code frontend} directory in your root project folder in case of
  * WAR project
