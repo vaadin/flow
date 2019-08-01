@@ -17,6 +17,7 @@ package com.vaadin.flow.data.renderer;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.ThreadLocalRandom;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
@@ -47,6 +48,7 @@ public abstract class BasicRenderer<SOURCE, TARGET>
         extends ComponentRenderer<Component, SOURCE> {
 
     private final ValueProvider<SOURCE, TARGET> valueProvider;
+    private int rendererId = ThreadLocalRandom.current().nextInt(Integer.MAX_VALUE);
 
     /**
      * Builds a new template renderer using the value provider as the source of
@@ -123,7 +125,7 @@ public abstract class BasicRenderer<SOURCE, TARGET>
                     "The provided rendering doesn't contain a template element");
         }
         return "_" + getClass().getSimpleName() + "_"
-                + getRendererId();
+                + rendererId;
     }
 
     /**
@@ -166,7 +168,6 @@ public abstract class BasicRenderer<SOURCE, TARGET>
     protected String getFormattedValue(TARGET object) {
         return String.valueOf(object);
     }
-
     /*
      * Package level visibility to allow unit testing.
      */

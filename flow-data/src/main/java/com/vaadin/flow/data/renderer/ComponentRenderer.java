@@ -17,6 +17,7 @@ package com.vaadin.flow.data.renderer;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.ThreadLocalRandom;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -54,6 +55,7 @@ public class ComponentRenderer<COMPONENT extends Component, SOURCE>
     private SerializableBiFunction<Component, SOURCE, Component> componentUpdateFunction;
     private SerializableBiConsumer<COMPONENT, SOURCE> itemConsumer;
     private String componentRendererTag = "flow-component-renderer";
+    private int rendererId = ThreadLocalRandom.current().nextInt(Integer.MAX_VALUE);
 
     /**
      * Creates a new ComponentRenderer that uses the componentSupplier to
@@ -196,10 +198,9 @@ public class ComponentRenderer<COMPONENT extends Component, SOURCE>
         owner.appendVirtualChild(container);
         rendering.setContainer(container);
         String templateInnerHtml;
-        int uniqueId = getRendererId();
         if (keyMapper != null) {
             String nodeIdPropertyName = "_renderer_"
-                    + uniqueId;
+                    + rendererId;
 
             templateInnerHtml = String.format(
                     "<%s appid=\"%s\" nodeid=\"[[item.%s]]\"></%s>",
@@ -213,7 +214,7 @@ public class ComponentRenderer<COMPONENT extends Component, SOURCE>
                 templateInnerHtml = String.format(
                         "<%s appid=\"%s\" nodeid=\"%s\"></%s>",
                         componentRendererTag, appId,
-                        uniqueId,
+                        rendererId,
                         componentRendererTag);
             } else {
                 templateInnerHtml = "";
