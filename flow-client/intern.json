@@ -1,6 +1,6 @@
 {
-  "suites": "tests/unit/**/*.js",
-  "functionalSuites": "tests/functional/**/*.js",
+  "suites": "src/test/frontend/unit/**/*.js",
+  "functionalSuites": "src/test/frontend/functional/**/*.js",
   "environments": [{
     "browserName": "chrome",
     "goog:chromeOptions": {
