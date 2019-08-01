@@ -58,7 +58,7 @@ public class JsInitHandlerTest {
     }
 
     @Test
-    public void should_handleRequest_if_not_initTypeRequest() throws Exception {
+    public void should_not_handleRequest_if_not_initTypeRequest() throws Exception {
         VaadinRequest request = mocks.createRequest(mocks, "/foo/?v-r=bar");
         Assert.assertFalse(jsInitHandler.canHandleRequest(request));
     }
