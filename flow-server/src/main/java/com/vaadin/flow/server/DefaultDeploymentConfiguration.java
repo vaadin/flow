@@ -63,7 +63,7 @@ public class DefaultDeploymentConfiguration
     public static final String ERROR_COMPATIBILITY_MODE_UNSET =
             "Unable to determine mode of operation. To use npm mode, ensure "
             + "'flow-build-info.json' exists on the classpath. With Maven, "
-            + "this is handled by the 'prepare-frontend goal'. To use "
+            + "this is handled by the 'prepare-frontend' goal. To use "
             + "compatibility mode, add the 'flow-server-compatibility-mode' "
             + "dependency.";
     /**
