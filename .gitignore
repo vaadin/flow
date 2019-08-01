@@ -43,3 +43,4 @@ flow-tests/**/package.json
 flow-tests/**/webpack*.js
 yarn.lock
 *.js.map
+flow-client/src/test/frontend/**/*.js

@@ -38,7 +38,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 public class TaskCopyFrontendFiles implements FallibleCommand {
     private static final String JAR_SUFFIX = ".jar";
     private static final String[] WILDCARD_INCLUSIONS = new String[] {
-            "**/*.js", "**/*.css" };
+            "**/*.js", "**/*.css", "**/*.ts" };
 
     private File targetDirectory;
     private transient Set<File> jarFiles = null;
