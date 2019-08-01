@@ -15,7 +15,7 @@
     "experimentalDecorators": true
   },
   "include": [
-    "src/main/resources/META-INF/resources//frontend/**/*.ts",
+    "src/main/resources/META-INF/resources/frontend/**/*.ts",
     "src/test/frontend/**/*.ts"
   ],
   "exclude": []
