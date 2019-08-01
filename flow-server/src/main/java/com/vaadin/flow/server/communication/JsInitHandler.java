@@ -24,8 +24,6 @@ import java.util.Optional;
 import java.util.function.Function;
 
 import org.jsoup.nodes.Document;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
@@ -146,7 +144,8 @@ public class JsInitHandler extends BootstrapHandler {
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
-        return ServletHelper.isRequestType(request, RequestType.INIT);
+        return !VaadinSession.getCurrent().getService().getDeploymentConfiguration().isCompatibilityMode()
+                && ServletHelper.isRequestType(request, RequestType.INIT);
     }
 
     protected String getRequestUrl(VaadinRequest request) {
@@ -199,38 +198,33 @@ public class JsInitHandler extends BootstrapHandler {
 
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session, VaadinRequest request, VaadinResponse response) throws IOException {
-        if (session.getService().getDeploymentConfiguration().isCompatibilityMode()) {
-            return super.synchronizedHandleRequest(session, request, response);
-        } else {
-            // Find UI class
-            Class<? extends UI> uiClass = getUIClass(request);
+        Class<? extends UI> uiClass = getUIClass(request);
 
-            BootstrapContext context = createAndInitUI(uiClass, request, response,
-                    session);
+        BootstrapContext context = createAndInitUI(uiClass, request, response,
+                session);
 
-            ServletHelper.setResponseNoCacheHeaders(response::setHeader,
-                    response::setDateHeader);
+        ServletHelper.setResponseNoCacheHeaders(response::setHeader,
+                response::setDateHeader);
 
-            JsonObject json = Json.createObject();
+        JsonObject json = Json.createObject();
 
-            DeploymentConfiguration config = context.getSession()
-                    .getConfiguration();
+        DeploymentConfiguration config = context.getSession()
+                .getConfiguration();
 
-            if (!config.isProductionMode()) {
-                json.put("stats", getStats());
-            }
-            json.put("errors", getErrors());
-
-            if (context.getPushMode().isEnabled()) {
-                json.put("pushScript", getPushScript(context));
-            }
-
-            JsonObject initialUIDL = getInitialUidl(context.getUI());
-            json.put("appConfig", getAppConfig(initialUIDL, context));
-
-            writeResponse(response, json);
-            return true;
+        if (!config.isProductionMode()) {
+            json.put("stats", getStats());
         }
+        json.put("errors", getErrors());
+
+        if (context.getPushMode().isEnabled()) {
+            json.put("pushScript", getPushScript(context));
+        }
+
+        JsonObject initialUIDL = getInitialUidl(context.getUI());
+        json.put("appConfig", getAppConfig(initialUIDL, context));
+
+        writeResponse(response, json);
+        return true;
     }
 
     private String getServiceUrl(VaadinRequest request) {
@@ -293,31 +287,6 @@ public class JsInitHandler extends BootstrapHandler {
         return pushJSPath;
     }
 
-    private JsonObject getInitialUidl(UI ui) {
-        JsonObject json = new UidlWriter().createUidl(ui, false);
-
-        VaadinSession session = ui.getSession();
-        if (session.getConfiguration().isXsrfProtectionEnabled()) {
-            writeSecurityKeyUIDL(json, ui);
-        }
-        writePushIdUIDL(json, session);
-        if (getLogger().isDebugEnabled()) {
-            getLogger().debug("Initial UIDL: {}", json.asString());
-        }
-        return json;
-    }
-
-    private void writePushIdUIDL(JsonObject response,
-            VaadinSession session) {
-        String pushId = session.getPushId();
-        response.put(ApplicationConstants.UIDL_PUSH_ID, pushId);
-    }
-
-    private void writeSecurityKeyUIDL(JsonObject response, UI ui) {
-        String seckey = ui.getCsrfToken();
-        response.put(ApplicationConstants.UIDL_SECURITY_TOKEN_ID, seckey);
-    }
-
     private JsonObject getAppConfig(JsonValue initialUIDL,
             BootstrapContext context) {
 
@@ -336,9 +305,5 @@ public class JsInitHandler extends BootstrapHandler {
         response.setContentType("application/json");
         response.setStatus(HttpURLConnection.HTTP_OK);
         response.getOutputStream().write(JsonUtil.stringify(json).getBytes());
-    }
-
-    private Logger getLogger() {
-        return LoggerFactory.getLogger(this.getClass().getName());
     }
 }
