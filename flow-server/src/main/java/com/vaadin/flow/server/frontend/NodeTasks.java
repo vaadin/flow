@@ -75,6 +75,8 @@ public class NodeTasks implements FallibleCommand {
 
         private Set<String> visitedClasses = null;
 
+        private boolean isClientSideBootstrapMode = false;
+
         /**
          * Directory for for npm and folders and files.
          */
@@ -292,6 +294,12 @@ public class NodeTasks implements FallibleCommand {
             this.frontendResourcesDirectory = frontendResourcesDirectory;
             return this;
         }
+
+        public Builder clientSideBootstrapMode(
+                boolean isClientSideBootstrapMode) {
+            this.isClientSideBootstrapMode = isClientSideBootstrapMode;
+            return this;
+        }
     }
 
     private final Collection<FallibleCommand> commands = new ArrayList<>();
@@ -343,10 +351,18 @@ public class NodeTasks implements FallibleCommand {
 
         if (builder.webpackTemplate != null
                 && !builder.webpackTemplate.isEmpty()) {
+            File bundleEntryPointPath;
+            if (builder.isClientSideBootstrapMode) {
+                bundleEntryPointPath = new File(builder.frontendDirectory,
+                        "index");
+            } else {
+                bundleEntryPointPath = new File(builder.generatedFolder,
+                        IMPORTS_NAME);
+            }
             commands.add(new TaskUpdateWebpack(builder.npmFolder,
                     builder.webpackOutputDirectory, builder.webpackTemplate,
                     builder.webpackGeneratedTemplate,
-                    new File(builder.generatedFolder, IMPORTS_NAME)));
+                    bundleEntryPointPath));
         }
 
         if (builder.enableImportsUpdate) {

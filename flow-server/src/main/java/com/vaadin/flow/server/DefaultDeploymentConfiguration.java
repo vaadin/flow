@@ -91,6 +91,7 @@ public class DefaultDeploymentConfiguration
 
     private boolean productionMode;
     private boolean compatibilityMode;
+    private boolean clientSideBootstrapMode;
     private boolean xsrfProtectionEnabled;
     private int heartbeatInterval;
     private int webComponentDisconnect;
@@ -121,6 +122,7 @@ public class DefaultDeploymentConfiguration
 
         checkProductionMode(log);
         checkCompatibilityMode(log);
+        checkClientSideBootstrapMode();
         checkRequestTiming();
         checkXsrfProtection(log);
         checkHeartbeatInterval();
@@ -150,6 +152,15 @@ public class DefaultDeploymentConfiguration
     @Override
     public boolean isBowerMode() {
         return compatibilityMode;
+    }
+
+    /**
+     * {@inheritDoc} The default is false.
+     * 
+     */
+    @Override
+    public boolean isClientSideBootstrapMode() {
+        return clientSideBootstrapMode;
     }
 
     /**
@@ -270,6 +281,14 @@ public class DefaultDeploymentConfiguration
         if (compatibilityMode && loggWarning) {
             getLogger().warn(WARNING_COMPATIBILITY_MODE);
         }
+    }
+
+    /**
+     * Log a warning if Vaadin is running in client-side bootstrapping mode.
+     */
+    private void checkClientSideBootstrapMode() {
+        clientSideBootstrapMode = getBooleanProperty(
+                Constants.SERVLET_PARAMETER_CLIENT_SIDE_BOOTSTRAP_MODE, false);
     }
 
     /**

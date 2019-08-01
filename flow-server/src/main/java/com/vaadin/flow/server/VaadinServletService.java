@@ -37,8 +37,6 @@ import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.theme.AbstractTheme;
 
-import static com.vaadin.flow.server.Constants.META_INF;
-
 /**
  * A service implementation connected to a {@link VaadinServlet}.
  *
@@ -82,11 +80,11 @@ public class VaadinServletService extends VaadinService {
             throws ServiceException {
         List<RequestHandler> handlers = super.createRequestHandlers();
         handlers.add(0, new FaviconHandler());
-        // TODO: BootstrapHandler and IndexHtmlRequestHandler should be added
-        // conditionally after #6136. For now, disable the BootstrapHandler
-        // temporarily.
-        handlers.add(0, new BootstrapHandler());
-        handlers.add(0, new IndexHtmlRequestHandler());
+        if (getDeploymentConfiguration().isClientSideBootstrapMode()) {
+            handlers.add(0, new IndexHtmlRequestHandler());
+        } else {
+            handlers.add(0, new BootstrapHandler());
+        }
         if (isAtmosphereAvailable()) {
             try {
                 handlers.add(new PushRequestHandler(this));
