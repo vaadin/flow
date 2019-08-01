@@ -48,6 +48,9 @@ public class VaadinServletConfigurationTest {
         servletInitParams.setProperty(
                 Constants.USE_ORIGINAL_FRONTEND_RESOURCES,
                 Boolean.TRUE.toString());
+        servletInitParams.setProperty(
+                Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                Boolean.FALSE.toString());
 
         TestServlet servlet = new TestServlet();
         servlet.init(new MockServletConfig(servletInitParams));
@@ -81,6 +84,9 @@ public class VaadinServletConfigurationTest {
         servletInitParams.setProperty(
                 Constants.USE_ORIGINAL_FRONTEND_RESOURCES,
                 Boolean.TRUE.toString());
+        servletInitParams.setProperty(
+                Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                Boolean.FALSE.toString());
 
         TestServlet servlet = new TestServlet();
         servlet.init(new MockServletConfig(servletInitParams));
