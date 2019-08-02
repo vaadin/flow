@@ -121,7 +121,7 @@ public class FrontendToolsLocator implements Serializable {
 
         boolean commandExited = false;
         try {
-            commandExited = process.waitFor(3, TimeUnit.SECONDS);
+            commandExited = process.waitFor(10, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             log().error(
                     "Unexpected interruption happened during '{}' command execution",
