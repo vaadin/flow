@@ -164,7 +164,8 @@ public class PropertyDeploymentConfiguration
 
     @Override
     public boolean isClientSideBootstrapMode() {
-        return getBooleanProperty(SERVLET_PARAMETER_CLIENT_SIDE_BOOTSTRAP_MODE, false);
+        return getBooleanProperty(SERVLET_PARAMETER_CLIENT_SIDE_BOOTSTRAP_MODE,
+                false);
     }
 
     @Override
