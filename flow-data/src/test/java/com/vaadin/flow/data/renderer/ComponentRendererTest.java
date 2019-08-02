@@ -64,7 +64,7 @@ public class ComponentRendererTest {
     }
 
     @Test
-    public void templateRenderered_() {
+    public void templateRenderered_parentAttachedBeforeChild() {
         UI ui = new TestUI();
         TestUIInternals internals = (TestUIInternals) ui.getInternals();
         
@@ -95,7 +95,7 @@ public class ComponentRendererTest {
     }
 
     @Test
-    public void templateRenderered_CR2() {
+    public void templateRenderered_childAttachedBeforeParent() {
         UI ui = new TestUI();
         TestUIInternals internals = (TestUIInternals) ui.getInternals();
         
