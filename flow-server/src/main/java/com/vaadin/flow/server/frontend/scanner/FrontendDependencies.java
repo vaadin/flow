@@ -42,6 +42,7 @@ import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
@@ -253,7 +254,8 @@ public class FrontendDependencies implements Serializable {
     }
 
     /**
-     * Visit all classes annotated with {@link Route} and update an
+     * Visit all application entry points classes (e.g. annotated with
+     * {@link Route}, {@link UIInitListener} instances, etc.) and update an
      * {@link EndPointData} object with the info found.
      * <p>
      * At the same time when the root level view is visited, compute the theme
@@ -268,10 +270,19 @@ public class FrontendDependencies implements Serializable {
         Class<? extends Annotation> routeClass = finder
                 .loadClass(Route.class.getName());
         for (Class<?> route : finder.getAnnotatedClasses(routeClass)) {
-            String className = route.getName();
-            EndPointData data = new EndPointData(route);
-            endPoints.put(className, visitClass(className, data, false));
+            collectEndpoints(route);
         }
+
+        for (Class<?> initListener : finder.getSubTypesOf(
+                finder.loadClass(UIInitListener.class.getName()))) {
+            collectEndpoints(initListener);
+        }
+    }
+
+    private void collectEndpoints(Class<?> entry) throws IOException {
+        String className = entry.getName();
+        EndPointData data = new EndPointData(entry);
+        endPoints.put(className, visitClass(className, data, false));
     }
 
     // Visit all end-points and compute the theme for the application.
@@ -341,15 +352,16 @@ public class FrontendDependencies implements Serializable {
         }
     }
 
-    private Class<? extends AbstractTheme> getDefaultTheme() throws IOException {
+    private Class<? extends AbstractTheme> getDefaultTheme()
+            throws IOException {
         // No theme annotation found by the scanner
         final Class<? extends AbstractTheme> defaultTheme = getLumoTheme();
         // call visitClass on the default theme using the first available
         // endpoint. If not endpoint is available, default theme won't be
         // set.
         if (defaultTheme != null) {
-            Optional<EndPointData> endPointData =
-                    endPoints.values().stream().findFirst();
+            Optional<EndPointData> endPointData = endPoints.values().stream()
+                    .findFirst();
             if (endPointData.isPresent()) {
                 visitClass(defaultTheme.getName(), endPointData.get(), true);
                 return defaultTheme;
@@ -445,8 +457,8 @@ public class FrontendDependencies implements Serializable {
                     String componentClassName = componentClass.getName();
                     EndPointData configurationData = new EndPointData(
                             componentClass);
-                    exportedPoints.put(componentClassName,
-                            visitClass(componentClassName, configurationData, false));
+                    exportedPoints.put(componentClassName, visitClass(
+                            componentClassName, configurationData, false));
                 }
             }
         }
@@ -463,14 +475,14 @@ public class FrontendDependencies implements Serializable {
      * @return
      * @throws IOException
      */
-    private EndPointData visitClass(String className,
-            EndPointData endPoint, boolean themeScope) throws IOException {
+    private EndPointData visitClass(String className, EndPointData endPoint,
+            boolean themeScope) throws IOException {
 
         // In theme scope, we want to revisit already visited classes to have
         // theme modules collected separately (in turn required for module
         // sorting, #5729)
-        if (!isVisitable(className) ||
-                (!themeScope && endPoint.getClasses().contains(className))) {
+        if (!isVisitable(className)
+                || (!themeScope && endPoint.getClasses().contains(className))) {
             return endPoint;
         }
         endPoint.getClasses().add(className);
