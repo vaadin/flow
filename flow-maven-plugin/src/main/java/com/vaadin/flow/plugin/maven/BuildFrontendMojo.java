@@ -147,7 +147,12 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
         }
 
         if (generateBundle) {
-            runWebpack();
+            try {
+                runWebpack();
+            } catch (IllegalStateException exception) {
+                throw new MojoExecutionException(exception.getMessage(),
+                        exception);
+            }
         }
 
         long ms = (System.nanoTime() - start) / 1000000;

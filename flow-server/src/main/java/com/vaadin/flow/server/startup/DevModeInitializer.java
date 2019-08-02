@@ -246,7 +246,13 @@ public class DevModeInitializer implements ServletContainerInitializer,
         VaadinContext vaadinContext = new VaadinServletContext(context);
         vaadinContext.setAttribute(new VisitedClasses(visitedClassNames));
 
-        DevModeHandler.start(config, builder.npmFolder);
+        try {
+            DevModeHandler.start(config, builder.npmFolder);
+        } catch (IllegalStateException exception) {
+            // wrap an ISE which can be caused by inability to find tools like
+            // node, npm into a servlet exception
+            throw new ServletException(exception);
+        }
     }
 
     private static Logger log() {
