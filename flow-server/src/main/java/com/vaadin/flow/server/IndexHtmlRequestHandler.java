@@ -1,3 +1,18 @@
+/*
+ * Copyright 2000-2018 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.server;
 
 import java.io.BufferedWriter;
@@ -7,16 +22,12 @@ import java.io.OutputStreamWriter;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
-import elemental.json.Json;
-
-import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -26,7 +37,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * folder. The handler will calculate and inject baseHref as well as the bundle
  * scripts into the template.
  */
-public class IndexHtmlRequestHandler extends BootstrapHandler {
+public class IndexHtmlRequestHandler extends SynchronizedRequestHandler {
 
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
@@ -36,7 +47,8 @@ public class IndexHtmlRequestHandler extends BootstrapHandler {
             return false;
         }
         prependBaseHref(request, indexDocument);
-        appendNpmBundle(indexDocument.head(), request.getService());
+        BootstrapHandler.appendNpmBundle(indexDocument.head(),
+                request.getService());
         response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
         try {
             writeStream(response.getOutputStream(), indexDocument.html());
@@ -72,29 +84,6 @@ public class IndexHtmlRequestHandler extends BootstrapHandler {
             getLogger().error("Can't read 'index.html'", e);
         }
         return null;
-    }
-
-    private static void appendNpmBundle(Element head, VaadinService service)
-            throws IOException {
-        String content = FrontendUtils.getStatsContent(service);
-        if (content == null) {
-            throw new IOException(
-                    "The stats file from webpack (stats.json) was not found.\n"
-                            + "This typically mean that you have started the application without executing the 'prepare-frontend' Maven target.\n"
-                            + "If you are using Spring Boot and are launching the Application class directly, "
-                            + "you need to run \"mvn install\" once first or launch the application using \"mvn spring-boot:run\"");
-        }
-        elemental.json.JsonObject chunks = Json.parse(content)
-                .getObject("assetsByChunkName");
-        for (String key : chunks.keys()) {
-            Element script = FrontendUtils.createJavaScriptElement(
-                    "./" + VAADIN_MAPPING + chunks.getString(key));
-            if (key.endsWith(".es5")) {
-                head.appendChild(script.attr("nomodule", true));
-            } else {
-                head.appendChild(script.attr("type", "module"));
-            }
-        }
     }
 
     private static Logger getLogger() {
