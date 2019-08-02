@@ -117,7 +117,6 @@ public class FrontendUtils {
      */
     public static final String IMPORTS_NAME = "generated-flow-imports.js";
 
-    public static final String INDEX_HTML = FRONTEND + "index.html";
     /**
      * A parameter for overriding the
      * {@link FrontendUtils#DEFAULT_GENERATED_DIR} folder.

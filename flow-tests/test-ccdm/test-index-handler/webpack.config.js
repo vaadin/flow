@@ -6,7 +6,7 @@ const merge = require('webpack-merge');
 const flowDefaults = require('./webpack.generated.js');
 
 /**
- * These additional configuration should be added automatically to webpack.generated.js
+ * These additional configurations should be added automatically to webpack.generated.js
  * based on the flag 'clientSideBootstrapMode'.
  */
 const CopyWebpackPlugin = require('copy-webpack-plugin');

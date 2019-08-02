@@ -844,9 +844,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             }
 
             head.appendChild(getBootstrapScript(initialUIDL, context));
-            head.appendChild(
-                    FrontendUtils.createJavaScriptElement(
-                            getClientEngineUrl(context)));
+            head.appendChild(FrontendUtils
+                    .createJavaScriptElement(getClientEngineUrl(context)));
         }
 
         private void appendNpmBundle(Element head, VaadinService service)
@@ -1041,8 +1040,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
                 if (session.getBrowser().isEs5AdapterNeeded()) {
                     head.appendChild(FrontendUtils
-                            .createJavaScriptElement(
-                            context.getUriResolver()
+                            .createJavaScriptElement(context.getUriResolver()
                                     .resolveVaadinUri(es5AdapterUrl), false));
                 }
             }
@@ -1086,8 +1084,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             case JS_MODULE:
                 if (url != null && UrlUtil.isExternal(url))
                     dependencyElement = FrontendUtils.createJavaScriptElement(
-                            url,
-                            !inlineElement, "module");
+                            url, !inlineElement, "module");
                 else
                     dependencyElement = null;
                 break;

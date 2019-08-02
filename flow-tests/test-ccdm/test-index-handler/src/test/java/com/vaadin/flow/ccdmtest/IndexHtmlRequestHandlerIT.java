@@ -1,4 +1,19 @@
-package com.vaadin.flow.ccdm;
+/*
+ * Copyright 2000-2018 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.vaadin.flow.ccdmtest;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -30,7 +45,7 @@ public class IndexHtmlRequestHandlerIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void indexHtmlRequestHandler_openURLHasParameterWithExtension_shouldNotResponseIndexHtml() {
+    public void indexHtmlRequestHandler_openURLHasParameterWithExtension_shouldResponseIndexHtml() {
         openTestUrl("/someroute?myparam=picture.png");
         waitForElementPresent(By.tagName("div"));
         String content = findElement(By.id("content")).getText();
@@ -45,7 +60,7 @@ public class IndexHtmlRequestHandlerIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void indexHtmlRequestHandler_hasLazilyLoadedBundle_shouldLazyBundleCorrectly() {
+    public void indexHtmlRequestHandler_importDynamically_shouldLoadBundleCorrectly() {
         openTestUrl("/");
         findElement(By.tagName("button")).click();
         waitForElementPresent(By.tagName("vaadin-button"));
@@ -54,7 +69,7 @@ public class IndexHtmlRequestHandlerIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void indexHtmlRequestHandler_openRootURL_shouldHasBaseHref() {
+    public void indexHtmlRequestHandler_openRootURL_shouldAddBaseHref() {
         openTestUrl("/");
         waitForElementPresent(By.tagName("div"));
         // In Selenium, getAttribute('href') won't return the exact value of
@@ -66,7 +81,7 @@ public class IndexHtmlRequestHandlerIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void indexHtmlRequestHandler_openTwoSlashesURL_shouldHasBaseHrefCorrectly() {
+    public void indexHtmlRequestHandler_openTwoSlashesURL_shouldAddBaseHrefCorrectly() {
         openTestUrl("/abc/xyz");
         waitForElementPresent(By.tagName("div"));
         String outerHTML = findElement(By.tagName("head"))

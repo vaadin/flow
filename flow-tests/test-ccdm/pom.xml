@@ -36,6 +36,11 @@
                         <goals>
                             <goal>start</goal>
                         </goals>
+                        <configuration>
+                            <skip>
+                                ${skipTests}
+                            </skip>
+                        </configuration>
                     </execution>
                     <execution>
                         <id>stop-jetty</id>
