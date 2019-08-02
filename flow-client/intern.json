@@ -1,13 +1,15 @@
 {
-  "suites": "src/test/frontend/unit/**/*.js",
-  "functionalSuites": "src/test/frontend/functional/**/*.js",
-  "environments": [{
-    "browserName": "chrome",
-    "goog:chromeOptions": {
-      "args": ["headless", "disable-gpu", "window-size=1024,768"]
-    } 
-  }],
-  "instrumenterOptions": {
-    "esModules": true
-  }
+  "environments": [
+    {
+      "browserName": "chrome",
+      "chromeOptions": {
+        "args": [
+          "headless",
+          "disable-gpu"
+        ]
+      },
+      "fixSessionCapabilities": "no-detect"
+    }
+  ],
+  "suites": "target/frontend-tests/tests.js"
 }
