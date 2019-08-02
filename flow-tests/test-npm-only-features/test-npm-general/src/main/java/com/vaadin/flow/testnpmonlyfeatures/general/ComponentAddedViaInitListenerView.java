@@ -21,6 +21,6 @@ import com.vaadin.flow.component.dependency.JsModule;
 
 @JsModule("./init-listener-component.js")
 @Tag("init-listener-component")
-public class ComponentAddedViaInitListener extends Component {
+public class ComponentAddedViaInitListenerView extends Component {
 
 }

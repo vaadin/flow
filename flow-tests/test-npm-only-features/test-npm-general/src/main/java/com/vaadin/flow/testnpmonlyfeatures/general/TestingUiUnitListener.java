@@ -22,7 +22,7 @@ public class TestingUiUnitListener implements UIInitListener {
 
     @Override
     public void uiInit(UIInitEvent event) {
-        event.getUI().add(new ComponentAddedViaInitListener());
+        event.getUI().add(new ComponentAddedViaInitListenerView());
     }
 
 }

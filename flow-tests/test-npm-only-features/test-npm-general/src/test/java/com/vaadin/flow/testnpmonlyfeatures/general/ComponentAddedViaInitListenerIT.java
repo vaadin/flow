@@ -24,10 +24,16 @@ public class ComponentAddedViaInitListenerIT extends ChromeBrowserTest {
 
     @Test
     public void componentAddedViaInitListenerIsLoaded() {
-        getDriver().get(getRootURL());
+        open();
 
         TestBenchElement component = $("init-listener-component").first();
         TestBenchElement div = component.$("div").first();
         org.junit.Assert.assertEquals("Init Listener Component", div.getText());
+    }
+
+    @Override
+    protected String getTestPath() {
+        String path = super.getTestPath();
+        return path.substring(0, path.lastIndexOf("/"));
     }
 }
