@@ -58,8 +58,6 @@ public class Renderer<SOURCE> implements Serializable {
     private Map<String, ValueProvider<SOURCE, ?>> valueProviders;
     private Map<String, SerializableConsumer<SOURCE>> eventHandlers;
 
-
-
     /**
      * Default constructor.
      */
