@@ -24,3 +24,7 @@ Run either `npm install`, `yarn install` or `mvn compile`
 
 Run either `npm test`, `yarn test` or `mvn test`
 
+3. Debug Tests
+
+Run `npm run debug` then point your browser to http://localhost:9000/__intern/ to debug tests.
+
