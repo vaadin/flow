@@ -102,7 +102,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     + "window.Vaadin.Flow.gwtStatsEvents.push(event); "
                     + "return true;};};";
     static final String CONTENT_ATTRIBUTE = "content";
-    private static final String DEFER_ATTRIBUTE = "defer";
     static final String VIEWPORT = "viewport";
     private static final String META_TAG = "meta";
     private static final String SCRIPT_TAG = "script";
@@ -797,30 +796,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     .createJavaScriptElement(getClientEngineUrl(context)));
         }
 
-        private void appendNpmBundle(Element head, VaadinService service)
-                throws IOException {
-            String content = FrontendUtils.getStatsContent(service);
-            if (content == null) {
-                throw new IOException(
-                        "The stats file from webpack (stats.json) was not found.\n"
-                        + "This typically mean that you have started the application without executing the 'prepare-frontend' Maven target.\n"
-                        + "If you are using Spring Boot and are launching the Application class directly, "
-                        + "you need to run \"mvn install\" once first or launch the application using \"mvn spring-boot:run\"");
-            }
-            JsonObject chunks = Json.parse(content)
-                    .getObject("assetsByChunkName");
-
-            for (String key : chunks.keys()) {
-                Element script = FrontendUtils.createJavaScriptElement(
-                        "./" + VAADIN_MAPPING + chunks.getString(key));
-                if (key.endsWith(".es5")) {
-                    head.appendChild(script.attr("nomodule", true));
-                } else {
-                    head.appendChild(script.attr("type", "module"));
-                }
-            }
-        }
-
         private String getClientEngineUrl(BootstrapContext context) {
             // use nocache version of client engine if it
             // has been compiled by SDM or eclipse
@@ -1290,6 +1265,30 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
              * that comes after the servlet mapping)
              */
             return ServletHelper.getCancelingRelativePath(pathInfo);
+        }
+    }
+
+    protected static void appendNpmBundle(Element head, VaadinService service)
+            throws IOException {
+        String content = FrontendUtils.getStatsContent(service);
+        if (content == null) {
+            throw new IOException(
+                    "The stats file from webpack (stats.json) was not found.\n"
+                            + "This typically mean that you have started the application without executing the 'prepare-frontend' Maven target.\n"
+                            + "If you are using Spring Boot and are launching the Application class directly, "
+                            + "you need to run \"mvn install\" once first or launch the application using \"mvn spring-boot:run\"");
+        }
+        JsonObject chunks = Json.parse(content)
+                .getObject("assetsByChunkName");
+
+        for (String key : chunks.keys()) {
+            Element script = FrontendUtils.createJavaScriptElement(
+                    "./" + VAADIN_MAPPING + chunks.getString(key));
+            if (key.endsWith(".es5")) {
+                head.appendChild(script.attr("nomodule", true));
+            } else {
+                head.appendChild(script.attr("type", "module"));
+            }
         }
     }
 
