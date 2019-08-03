@@ -134,8 +134,8 @@ public class FrontendUtils {
     /**
      * A special prefix used by webpack to map imports placed in the
      * {@link FrontendUtils#DEFAULT_FRONTEND_DIR}. e.g.
-     * <code>import 'Frontend/foo.js';</code> references the
-     * file<code>frontend/foo.js</code>.
+     * <code>import 'Frontend/foo.js';</code> references the file
+     * <code>frontend/foo.js</code>.
      */
     public static final String WEBPACK_PREFIX_ALIAS = "Frontend/";
 
