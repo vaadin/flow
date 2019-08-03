@@ -268,15 +268,17 @@ public class TaskUpdateImports extends NodeUpdater {
         if (!npmNotFound.isEmpty() && log().isInfoEnabled()) {
             log().info(notFoundMessage(npmNotFound,
                     "Failed to find the following imports in the `node_modules` tree:",
-                    "If the build fails, check that npm packages are installed."));
+                    "If the build fails, check that npm packages are installed.\n\n",
+                    "To fix the build remove `node_modules` directory to reset modules.\n",
+                    "In addition you may run `npm install` to fix `node_modules` tree structure."));
         }
         return lines;
     }
 
     private String notFoundMessage(Set<String> files, String prefix,
-            String suffix) {
+            String... suffix) {
         return String.format("%n%n  %s%n      - %s%n  %s%n%n", prefix,
-                String.join("\n      - ", files), suffix);
+                String.join("\n      - ", files), String.join("  ", suffix));
     }
 
     private void handleImports(String path, AbstractTheme theme,
