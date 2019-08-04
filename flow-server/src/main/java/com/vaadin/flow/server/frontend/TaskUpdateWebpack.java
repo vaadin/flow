@@ -122,8 +122,8 @@ public class TaskUpdateWebpack implements FallibleCommand {
         FileUtils.copyURLToFile(resource, generatedFile);
         List<String> lines = FileUtils.readLines(generatedFile, "UTF-8");
 
-        String frontendLine = "const frontendFolder = '"
-                + getEscapedRelativeWebpackPath(frontendDirectory) + "'";
+        String frontendLine = "const frontendFolder = require('path').resolve(__dirname, '"
+                + getEscapedRelativeWebpackPath(frontendDirectory) + "');";
 
         String outputLine = "const mavenOutputFolderForFlowBundledFiles = require('path').resolve(__dirname, '"
                 + getEscapedRelativeWebpackPath(webpackOutputPath) + "');";
@@ -142,8 +142,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
                     && !line.equals(outputLine)) {
                 lines.set(i, outputLine);
             }
-            if (lines.get(i).startsWith(
-                    "const frontendFolder = '[to-be-generated-by-flow]';")) {
+            if (lines.get(i).startsWith("const frontendFolder")) {
                 lines.set(i, frontendLine);
             }
         }

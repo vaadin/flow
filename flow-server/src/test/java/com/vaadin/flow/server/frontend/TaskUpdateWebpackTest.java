@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
@@ -88,6 +89,34 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
         assertWebpackConfigContent();
         assertWebpackGeneratedConfigContent(
                 "target/frontend/generated-flow-imports.js", "target/classes");
+    }
+
+    @Test
+    public void execute_webpackGeneratedConfigContainsCustomFrontendDir()
+            throws Exception {
+        Assert.assertFalse("No webpack config file should be present.",
+                webpackConfig.exists());
+        Assert.assertFalse("No generated config file should be present.",
+                webpackGenerated.exists());
+
+        frontendFolder = new File(baseDir, "my-custom-frontend");
+        webpackUpdater = new TaskUpdateWebpack(frontendFolder, baseDir,
+                new File(baseDir, TARGET + "classes"), WEBPACK_CONFIG,
+                WEBPACK_GENERATED,
+                new File(baseDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME));
+
+        webpackUpdater.execute();
+
+        Assert.assertTrue("webpack.config.js was not created.",
+                webpackConfig.exists());
+        Assert.assertTrue("webpack.generated.js was not created.",
+                webpackGenerated.exists());
+        assertWebpackConfigContent();
+        Set<String> webpackContents = Files.lines(webpackGenerated.toPath())
+                .map(String::trim).collect(Collectors.toSet());
+
+        Assert.assertTrue(webpackContents.contains(
+                "const frontendFolder = require('path').resolve(__dirname, 'my-custom-frontend');"));
     }
 
     @Test

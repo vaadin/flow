@@ -118,6 +118,12 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
     @Component
     private BuildContext buildContext; // m2eclipse integration
 
+    /**
+     * A directory with project's frontend source files.
+     */
+    @Parameter(defaultValue = "${project.basedir}/frontend")
+    private File frontendDirectory;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         super.execute();
@@ -138,7 +144,7 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
 
         try {
             new NodeTasks.Builder(getClassFinder(project), npmFolder,
-                    generatedFolder)
+                    generatedFolder, frontendDirectory)
                             .withWebpack(webpackOutputDirectory,
                                     webpackTemplate, webpackGeneratedTemplate)
                             .createMissingPackageJson(true)
