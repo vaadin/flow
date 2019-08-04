@@ -15,7 +15,7 @@
     <modules>
         <module>test-resources</module>
         <module>test-common</module>
-        <!--  module>test-pwa</module>
+        <module>test-pwa</module>
 
         <module>test-dev-mode</module>
         <module>test-root-ui-context</module>
@@ -34,20 +34,23 @@
         <module>test-web-components-production</module>
         <module>test-web-components-theme-variant</module>
 
+        <!-- tests migrated to NPM -->
         <module>web-component-test-assets</module>
 
+        <!-- tests running in both modes -->
         <module>test-misc</module>
-        <module>test-misc/pom-bower.xml</module-->
+        <module>test-misc/pom-bower.xml</module>
 
         <module>test-mixed</module>
         <module>test-mixed/pom-npm-production.xml</module>
         <module>test-mixed/pom-bower-devmode.xml</module>
         <module>test-mixed/pom-bower-production.xml</module>
-        <!-- module>test-npm-only-features</module>
+        <module>test-npm-only-features</module>
         <module>test-npm-web-components</module>
         <module>test-multi-war</module>
 
-        <module>test-root-context</module-->
+        <!-- This test fails in local -->
+        <module>test-root-context</module>
     </modules>
 
     <properties>
