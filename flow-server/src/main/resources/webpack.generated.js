@@ -11,7 +11,8 @@ const {BabelMultiTargetPlugin} = require('webpack-babel-multi-target-plugin');
 const path = require('path');
 const baseDir = path.resolve(__dirname);
 // the folder of app resources (main.js and flow templates)
-const frontendFolder = `${baseDir}/frontend`;
+const frontendFolder = '[to-be-generated-by-flow]';
+//xxxx
 
 const fileNameOfTheFlowGeneratedMainEntryPoint = '[to-be-generated-by-flow]';
 const mavenOutputFolderForFlowBundledFiles = '[to-be-generated-by-flow]';

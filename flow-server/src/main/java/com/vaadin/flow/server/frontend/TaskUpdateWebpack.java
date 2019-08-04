@@ -45,10 +45,13 @@ public class TaskUpdateWebpack implements FallibleCommand {
     private final transient Path webpackOutputPath;
     private final transient Path flowImportsFilePath;
     private final transient Path webpackConfigPath;
+    private final transient Path frontendDirectory;
 
     /**
      * Create an instance of the updater given all configurable parameters.
      *
+     * @param frontendDirectory
+     *            the directory used for {@code Frontend} alias
      * @param webpackConfigFolder
      *            folder with the `webpack.config.js` file.
      * @param webpackOutputDirectory
@@ -62,9 +65,10 @@ public class TaskUpdateWebpack implements FallibleCommand {
      * @param generatedFlowImports
      *            name of the JS file to update with the Flow project imports
      */
-    TaskUpdateWebpack(File webpackConfigFolder, File webpackOutputDirectory,
-            String webpackTemplate, String webpackGeneratedTemplate,
-            File generatedFlowImports) {
+    TaskUpdateWebpack(File frontendDirectory, File webpackConfigFolder,
+            File webpackOutputDirectory, String webpackTemplate,
+            String webpackGeneratedTemplate, File generatedFlowImports) {
+        this.frontendDirectory = frontendDirectory.toPath();
         this.webpackTemplate = webpackTemplate;
         this.webpackGeneratedTemplate = webpackGeneratedTemplate;
         this.webpackOutputPath = webpackOutputDirectory.toPath();
@@ -118,6 +122,9 @@ public class TaskUpdateWebpack implements FallibleCommand {
         FileUtils.copyURLToFile(resource, generatedFile);
         List<String> lines = FileUtils.readLines(generatedFile, "UTF-8");
 
+        String frontendLine = "const frontendFolder = '"
+                + getEscapedRelativeWebpackPath(frontendDirectory) + "'";
+
         String outputLine = "const mavenOutputFolderForFlowBundledFiles = require('path').resolve(__dirname, '"
                 + getEscapedRelativeWebpackPath(webpackOutputPath) + "');";
         String mainLine = "const fileNameOfTheFlowGeneratedMainEntryPoint = require('path').resolve(__dirname, '"
@@ -134,6 +141,10 @@ public class TaskUpdateWebpack implements FallibleCommand {
                     .startsWith("const mavenOutputFolderForFlowBundledFiles")
                     && !line.equals(outputLine)) {
                 lines.set(i, outputLine);
+            }
+            if (lines.get(i).startsWith(
+                    "const frontendFolder = '[to-be-generated-by-flow]';")) {
+                lines.set(i, frontendLine);
             }
         }
 
