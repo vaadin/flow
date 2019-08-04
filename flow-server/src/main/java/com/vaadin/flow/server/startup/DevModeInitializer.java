@@ -23,19 +23,24 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
 import javax.servlet.annotation.WebListener;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
+import java.lang.annotation.Annotation;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -76,6 +81,50 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
 @WebListener
 public class DevModeInitializer implements ServletContainerInitializer,
         Serializable, ServletContextListener {
+
+    static class DevModeClassFinder extends DefaultClassFinder {
+
+        private static final Set<String> APPLICABLE_CLASS_NAME = Collections
+                .unmodifiableSet(calculateApplicableClassNames());
+
+        public DevModeClassFinder(Set<Class<?>> classes) {
+            super(classes);
+        }
+
+        @Override
+        public Set<Class<?>> getAnnotatedClasses(
+                Class<? extends Annotation> annotation) {
+            ensureImplementation(annotation);
+            return super.getAnnotatedClasses(annotation);
+        }
+
+        @Override
+        public <T> Set<Class<? extends T>> getSubTypesOf(Class<T> type) {
+            ensureImplementation(type);
+            return super.getSubTypesOf(type);
+        }
+
+        private void ensureImplementation(Class<?> clazz) {
+            if (!getApplicableClassNames().contains(clazz.getName())) {
+                throw new IllegalArgumentException("Unexpected class name "
+                        + clazz + ". Implementation error: the class finder "
+                        + "instance is not aware of this class. "
+                        + "Fix @HandlesTypes annotation value for"
+                        + DevModeInitializer.class.getName());
+            }
+        }
+
+        private Set<String> getApplicableClassNames() {
+            return APPLICABLE_CLASS_NAME;
+        }
+
+        private static Set<String> calculateApplicableClassNames() {
+            HandlesTypes handlesTypes = DevModeInitializer.class
+                    .getAnnotation(HandlesTypes.class);
+            return Stream.of(handlesTypes.value()).map(Class::getName)
+                    .collect(Collectors.toSet());
+        }
+    }
 
     /**
      * The classes that were visited when determining which frontend resources
@@ -197,12 +246,12 @@ public class DevModeInitializer implements ServletContainerInitializer,
 
         String baseDir = config.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
                 System.getProperty("user.dir", "."));
-        String generatedDir = System
-                .getProperty(PARAM_GENERATED_DIR, DEFAULT_GENERATED_DIR);
+        String generatedDir = System.getProperty(PARAM_GENERATED_DIR,
+                DEFAULT_GENERATED_DIR);
         String frontendFolder = config.getStringProperty(PARAM_FRONTEND_DIR,
                 System.getProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR));
 
-        Builder builder = new NodeTasks.Builder(new DefaultClassFinder(classes),
+        Builder builder = new NodeTasks.Builder(new DevModeClassFinder(classes),
                 new File(baseDir), new File(generatedDir),
                 new File(frontendFolder));
 
@@ -238,7 +287,8 @@ public class DevModeInitializer implements ServletContainerInitializer,
         }
 
         Set<String> visitedClassNames = new HashSet<>();
-        Set<File> jarFiles = getJarFilesFromClassloader(DevModeInitializer.class.getClassLoader());
+        Set<File> jarFiles = getJarFilesFromClassloader(
+                DevModeInitializer.class.getClassLoader());
         try {
             builder.enablePackagesUpdate(true).copyResources(jarFiles)
                     .copyLocalResources(new File(baseDir,
