@@ -80,11 +80,7 @@ public class VaadinServletService extends VaadinService {
             throws ServiceException {
         List<RequestHandler> handlers = super.createRequestHandlers();
         handlers.add(0, new FaviconHandler());
-        if (getDeploymentConfiguration().isClientSideBootstrapMode()) {
-            handlers.add(0, new IndexHtmlRequestHandler());
-        } else {
-            handlers.add(0, new BootstrapHandler());
-        }
+        addBootstrapHandler(handlers);
         if (isAtmosphereAvailable()) {
             try {
                 handlers.add(new PushRequestHandler(this));
@@ -98,6 +94,18 @@ public class VaadinServletService extends VaadinService {
             }
         }
         return handlers;
+    }
+
+    private void addBootstrapHandler(List<RequestHandler> handlers) {
+        if (getDeploymentConfiguration().isClientSideBootstrapMode()) {
+            handlers.add(0, new IndexHtmlRequestHandler());
+            getLogger().debug("Using '{}' in client-side bootstrapping mode",
+                    IndexHtmlRequestHandler.class.getName());
+        } else {
+            handlers.add(0, new BootstrapHandler());
+            getLogger().debug("Using '{}' in default mode",
+                    BootstrapHandler.class.getName());
+        }
     }
 
     /**

@@ -15,10 +15,8 @@
  */
 package com.vaadin.flow.server;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
+import java.util.regex.Pattern;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -43,19 +41,20 @@ public class IndexHtmlRequestHandler extends SynchronizedRequestHandler {
             + "It is required to have 'frontend/index.html' file in " +
             "client-side bootstrapping mode.";
 
+    private static final Pattern PATH_WITH_EXTENSION = Pattern
+            .compile(".+\\." + ".+$");
+
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
         Document indexDocument = getIndexHtmlDocument(request);
-        if (indexDocument == null) {
-            return false;
-        }
         prependBaseHref(request, indexDocument);
         BootstrapHandler.appendNpmBundle(indexDocument.head(),
                 request.getService());
         response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
         try {
-            writeStream(response.getOutputStream(), indexDocument.html());
+            response.getOutputStream()
+                    .write(indexDocument.html().getBytes(UTF_8));
         } catch (IOException e) {
             getLogger().error("Error happens while writing 'index.html' file",
                     e);
@@ -67,7 +66,8 @@ public class IndexHtmlRequestHandler extends SynchronizedRequestHandler {
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
         String pathInfo = request.getPathInfo();
-        return pathInfo != null && !pathInfo.matches(".+\\..*$");
+        return pathInfo == null
+                || !PATH_WITH_EXTENSION.matcher(pathInfo).matches();
     }
 
     private static void prependBaseHref(VaadinRequest request,
@@ -81,28 +81,15 @@ public class IndexHtmlRequestHandler extends SynchronizedRequestHandler {
 
     private static Document getIndexHtmlDocument(VaadinRequest request)
             throws IOException {
-        try {
-            String index = FrontendUtils
-                    .getIndexHtmlContent(request.getService());
-            if (index != null) {
-                return Jsoup.parse(index);
-            }
-        } catch (IOException e) {
-            getLogger().error(INDEX_NOT_FOUND_MESSAGE, e);
+        String index = FrontendUtils.getIndexHtmlContent(request.getService());
+        if (index != null) {
+            return Jsoup.parse(index);
         }
         throw new IOException(INDEX_NOT_FOUND_MESSAGE);
     }
 
     private static Logger getLogger() {
         return LoggerFactory.getLogger(IndexHtmlRequestHandler.class);
-    }
-
-    private static void writeStream(OutputStream outputStream, String indexHtml)
-            throws IOException {
-        try (BufferedWriter writer = new BufferedWriter(
-                new OutputStreamWriter(outputStream, UTF_8))) {
-            writer.append(indexHtml);
-        }
     }
 
     /**

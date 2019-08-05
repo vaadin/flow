@@ -3,123 +3,36 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>flow-tests</artifactId>
+        <artifactId>flow-test-ccdm</artifactId>
         <groupId>com.vaadin</groupId>
         <version>3.0-SNAPSHOT</version>
     </parent>
-    <packaging>pom</packaging>
-    <modules>
-        <module>test-index-handler</module>
-        <module>test-index-handler/pom-prod.xml</module>
-    </modules>
-
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>flow-test-ccdm</artifactId>
+    <artifactId>flow-test-ccdm-index-handler</artifactId>
+    <description>CCDM IndexHtmlRequestHandler tests in dev-mode</description>
     <version>3.0-SNAPSHOT</version>
-    <properties>
-        <maven.deploy.skip>true</maven.deploy.skip>
-    </properties>
+    <packaging>war</packaging>
     <build>
         <plugins>
-            <!-- This module is mapped to default web context -->
             <plugin>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-maven-plugin</artifactId>
-                <version>${jetty.version}</version>
+                <groupId>com.vaadin</groupId>
+                <artifactId>flow-maven-plugin</artifactId>
+                <version>${project.version}</version>
                 <executions>
-                    <!-- start and stop jetty (running our app) when running
-                        integration tests -->
                     <execution>
-                        <id>start-jetty</id>
-                        <phase>pre-integration-test</phase>
                         <goals>
-                            <goal>start</goal>
-                        </goals>
-                        <configuration>
-                            <skip>
-                                ${skipTests}
-                            </skip>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>stop-jetty</id>
-                        <phase>post-integration-test</phase>
-                        <goals>
-                            <goal>stop</goal>
+                            <goal>prepare-frontend</goal>
+                            <!-- Doesn't include build-frontend to simulate pure "jetty:run" -->
                         </goals>
                     </execution>
                 </executions>
                 <configuration>
-                    <systemProperties>
-                        <systemProperty>
-                            <!-- make sure we do not leave webpack-dev-server running after IT -->
-                            <name>vaadin.reuseDevServer</name>
-                            <value>false</value>
-                        </systemProperty>
-                    </systemProperties>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-war-plugin</artifactId>
-                <version>${maven.war.plugin.version}</version>
-                <configuration>
-                    <archive>
-                        <manifestEntries>
-                            <Implementation-Title>${project.name}
-                            </Implementation-Title>
-                            <Implementation-Version>${project.version}
-                            </Implementation-Version>
-                        </manifestEntries>
-                    </archive>
+                    <compatibilityMode>false</compatibilityMode>
+                    <productionMode>false</productionMode>
+                    <clientSideBootstrapMode>true</clientSideBootstrapMode>
                 </configuration>
             </plugin>
         </plugins>
     </build>
-
-    <profiles>
-        <profile>
-            <id>local-run</id>
-            <activation>
-                <property>
-                    <name>!test.use.hub</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>com.lazerycode.selenium</groupId>
-                        <artifactId>driver-binary-downloader-maven-plugin
-                        </artifactId>
-                        <version>
-                            ${driver.binary.downloader.maven.plugin.version}
-                        </version>
-                        <configuration>
-                            <onlyGetDriversForHostOperatingSystem>true
-                            </onlyGetDriversForHostOperatingSystem>
-                            <rootStandaloneServerDirectory>
-                                ${project.rootdir}/driver
-                            </rootStandaloneServerDirectory>
-                            <downloadedZipFileDirectory>
-                                ${project.rootdir}/driver_zips
-                            </downloadedZipFileDirectory>
-                            <customRepositoryMap>
-                                ${project.rootdir}/drivers.xml
-                            </customRepositoryMap>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <phase>pre-integration-test</phase>
-                                <goals>
-                                    <goal>selenium</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
-
 </project>
