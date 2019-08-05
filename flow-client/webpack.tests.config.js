@@ -1,6 +1,7 @@
 const path = require("path");
 
 module.exports = {
+  mode: "development",
   entry: {
     tests: "./src/test/frontend/FlowTests.ts"
   },
@@ -11,7 +12,6 @@ module.exports = {
 
   resolve: {
     modules: [
-      path.resolve(__dirname, "./src/main/resources/META-INF/frontend"),
       path.resolve(__dirname, "./src/test/frontend"),
       "node_modules/"
     ],
