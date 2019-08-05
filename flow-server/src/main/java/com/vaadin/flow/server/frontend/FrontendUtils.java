@@ -380,7 +380,10 @@ public class FrontendUtils {
     /**
      * Gets the content of the <code>frontend/index.html</code> file which is
      * served by webpack-dev-server in dev-mode and read from classpath in
-     * production mode.
+     * production mode. NOTE: In dev mode, the file content file is fetched via
+     * webpack http request. So that we don't need to have a separate
+     * index.html's content watcher, auto-reloading will work automatically,
+     * like other files managed by webpack in `frontend/` folder.
      * 
      * @param service
      *            the vaadin service
@@ -388,6 +391,7 @@ public class FrontendUtils {
      *         found.
      * @throws IOException
      *             on error when reading file
+     *
      */
     public static String getIndexHtmlContent(VaadinService service)
             throws IOException {
