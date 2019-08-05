@@ -27,7 +27,6 @@
         <module>flow-theme-integrations</module>
         <module>flow-dnd</module>
         <module>flow-test-util</module>
-        <module>flow-tests</module>
         <module>flow-server-production-mode</module>
         <module>flow-server-compatibility-mode</module>
         <module>flow-components-parent</module>
@@ -693,6 +692,17 @@
                 <module>flow-server-production-mode</module>
                 <module>flow-components-parent</module>
                 <module>build-tools</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>run-tests</id>
+            <activation>
+                <property>
+                    <name>!skipTests</name>
+                </property>
+            </activation>
+            <modules>
+                <module>flow-tests</module>
             </modules>
         </profile>
     </profiles>
