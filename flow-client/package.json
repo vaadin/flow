@@ -12,8 +12,8 @@
     "lint": "eslint 'src/main/resources/META-INF/resources/frontend/**/*.js' && tslint 'src/main/resources/META-INF/resources/frontend/**/*.ts'",
     "compile": "tsc",
     "build": "npm run lint && npm run compile",
-    "test": "webpack --config=webpack.tests.config.js --mode=development && intern",
-    "debug": "webpack --config=webpack.tests.config.js --mode=development && intern serveOnly"
+    "test": "webpack --config=webpack.tests.config.js && intern",
+    "debug": "webpack --config=webpack.tests.config.js && intern serveOnly"
   },
   "homepage": "https://vaadin.com",
   "repository": {
@@ -21,7 +21,7 @@
     "url": "git://github.com/vaadin/flow.git"
   },
   "files": [
-    "src/main/resources/META-INF/frontend"
+    "src/main/resources/META-INF/resources/frontend"
   ],
   "devDependencies": {
     "eslint": "^5.8.0",
