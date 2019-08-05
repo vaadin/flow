@@ -17,7 +17,6 @@ package com.vaadin.flow.data.renderer;
 
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.ThreadLocalRandom;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
@@ -31,11 +30,11 @@ import com.vaadin.flow.function.ValueProvider;
 import elemental.json.JsonObject;
 
 /**
- * 
+ *
  * Abstract renderer used as the base implementation for renderers that outputs
  * a simple value in the UI, such as {@link NumberRenderer} and
  * {@link LocalDateRenderer}.
- * 
+ *
  * @author Vaadin Ltd
  * @since 1.0.
  *
@@ -48,12 +47,11 @@ public abstract class BasicRenderer<SOURCE, TARGET>
         extends ComponentRenderer<Component, SOURCE> {
 
     private final ValueProvider<SOURCE, TARGET> valueProvider;
-    private int rendererId = ThreadLocalRandom.current().nextInt(Integer.MAX_VALUE);
 
     /**
      * Builds a new template renderer using the value provider as the source of
      * values to be rendered.
-     * 
+     *
      * @param valueProvider
      *            the callback to provide a objects to the renderer, not
      *            <code>null</code>
@@ -83,6 +81,14 @@ public abstract class BasicRenderer<SOURCE, TARGET>
 
     private void setupTemplate(Element owner, SimpleValueRendering rendering,
             DataKeyMapper<SOURCE> keyMapper) {
+        owner.getNode()
+                .runWhenAttached(ui -> setupTemplateWhenAttached(owner,
+                         rendering, keyMapper));
+    }
+
+    private void setupTemplateWhenAttached(Element owner,
+            SimpleValueRendering rendering, DataKeyMapper<SOURCE> keyMapper) {
+
         Element templateElement = rendering.getTemplateElement();
         owner.appendChild(templateElement);
 
@@ -110,11 +116,11 @@ public abstract class BasicRenderer<SOURCE, TARGET>
      * <p>
      * This method is only called when
      * {@link #render(Element, DataKeyMapper, Element)} is invoked.
-     * 
+     *
      * @param context
      *            the rendering context
      * @return the property name to be used in template data bindings
-     * 
+     *
      * @see Rendering#getTemplateElement()
      */
     protected String getTemplatePropertyName(Rendering<SOURCE> context) {
@@ -125,7 +131,7 @@ public abstract class BasicRenderer<SOURCE, TARGET>
                     "The provided rendering doesn't contain a template element");
         }
         return "_" + getClass().getSimpleName() + "_"
-                + rendererId;
+                + templateElement.getNode().getId();
     }
 
     /**
@@ -133,14 +139,14 @@ public abstract class BasicRenderer<SOURCE, TARGET>
      * <p>
      * This method is only called when
      * {@link #render(Element, DataKeyMapper, Element)} is invoked.
-     * 
+     *
      * @param property
      *            the property to be used inside the template
      * @param context
      *            the rendering context
      * @return the template string to be used inside a {@code <template>}
      *         element
-     * 
+     *
      * @see #getTemplatePropertyName(Rendering)
      */
     protected String getTemplateForProperty(String property,
@@ -160,7 +166,7 @@ public abstract class BasicRenderer<SOURCE, TARGET>
      * the template.
      * <p>
      * By default it uses {@link String#valueOf(Object)} of the object.
-     * 
+     *
      * @param object
      *            the target object
      * @return the string representation of the object
@@ -168,6 +174,7 @@ public abstract class BasicRenderer<SOURCE, TARGET>
     protected String getFormattedValue(TARGET object) {
         return String.valueOf(object);
     }
+
     /*
      * Package level visibility to allow unit testing.
      */

@@ -19,6 +19,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import elemental.json.Json;
+import elemental.json.JsonObject;
+import elemental.json.JsonValue;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -84,6 +87,9 @@ public class ComponentRendererTest {
                         .beforeClientResponse(containerParent.getNode(),
                                 context -> {
                                     Assert.assertNotNull("NodeIdPropertyName should not be null", rendering.getNodeIdPropertyName() );
+                                    JsonObject value = Json.createObject();
+                                    rendering.generateData("item",value);
+                                    Assert.assertEquals("generateData should add one element in the jsonobject", 1, value.keys().length );
                         }));
 
         // attach the parent (ex: grid) before the child (ex: column)
@@ -114,6 +120,9 @@ public class ComponentRendererTest {
                                 context -> {
                                 	// if nodeid is null then the component won't be rendered correctly
                                     Assert.assertNotNull("NodeIdPropertyName should not be null", rendering.getNodeIdPropertyName() );
+                                    JsonObject value = Json.createObject();
+                                    rendering.generateData("item",value);
+                                    Assert.assertEquals("generateData should add one element in the jsonobject", 1, value.keys().length );
                         }));
         // attach the child (ex: container) before the parent (ex: grid)
         attachElement(ui, container);

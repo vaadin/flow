@@ -17,7 +17,6 @@ package com.vaadin.flow.data.renderer;
 
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.ThreadLocalRandom;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -55,7 +54,6 @@ public class ComponentRenderer<COMPONENT extends Component, SOURCE>
     private SerializableBiFunction<Component, SOURCE, Component> componentUpdateFunction;
     private SerializableBiConsumer<COMPONENT, SOURCE> itemConsumer;
     private String componentRendererTag = "flow-component-renderer";
-    private int rendererId = ThreadLocalRandom.current().nextInt(Integer.MAX_VALUE);
 
     /**
      * Creates a new ComponentRenderer that uses the componentSupplier to
@@ -128,7 +126,7 @@ public class ComponentRenderer<COMPONENT extends Component, SOURCE>
      * Some components may support several rendered components at once, so
      * different component instances should be created for each different item
      * for those components.
-     * 
+     *
      * @param componentFunction
      *            a function that can generate new component instances
      * @param componentUpdateFunction
@@ -160,16 +158,11 @@ public class ComponentRenderer<COMPONENT extends Component, SOURCE>
                 keyMapper == null ? null : keyMapper::key);
         rendering.setTemplateElement(contentTemplate);
 
-        if (UI.getCurrent() != null) {
-            setupTemplate(UI.getCurrent()
-                    , container, rendering,
-                    keyMapper);
-        } else {
-            container.getNode()
-                    .runWhenAttached(ui -> setupTemplate(
-                            ui, container, rendering,
-                            keyMapper));
-        }
+        container.getNode()
+                .runWhenAttached(ui -> setupTemplateWhenAttached(
+                        ui, container, rendering,
+                        keyMapper));
+
         return rendering;
     }
 
@@ -188,7 +181,7 @@ public class ComponentRenderer<COMPONENT extends Component, SOURCE>
         this.componentRendererTag = componentRendererTag;
     }
 
-    private void setupTemplate(UI ui, Element owner,
+    private void setupTemplateWhenAttached(UI ui, Element owner,
             ComponentRendering rendering, DataKeyMapper<SOURCE> keyMapper) {
         String appId = ui.getInternals().getAppId();
         Element templateElement = rendering.getTemplateElement();
@@ -198,9 +191,10 @@ public class ComponentRenderer<COMPONENT extends Component, SOURCE>
         owner.appendVirtualChild(container);
         rendering.setContainer(container);
         String templateInnerHtml;
+
         if (keyMapper != null) {
             String nodeIdPropertyName = "_renderer_"
-                    + rendererId;
+                    + templateElement.getNode().getId();
 
             templateInnerHtml = String.format(
                     "<%s appid=\"%s\" nodeid=\"[[item.%s]]\"></%s>",
@@ -211,10 +205,11 @@ public class ComponentRenderer<COMPONENT extends Component, SOURCE>
             COMPONENT component = createComponent(null);
             if (component != null) {
                 container.appendChild(component.getElement());
+
                 templateInnerHtml = String.format(
                         "<%s appid=\"%s\" nodeid=\"%s\"></%s>",
                         componentRendererTag, appId,
-                        rendererId,
+                        component.getElement().getNode().getId(),
                         componentRendererTag);
             } else {
                 templateInnerHtml = "";
