@@ -18,6 +18,7 @@ import java.util.Optional;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -215,7 +216,7 @@ public class StreamReceiverHandlerTest {
         Part part = mock(Part.class);
         when(part.getInputStream()).thenReturn(inputStream);
         when(part.getContentType()).thenReturn(contentType);
-        when(part.getName()).thenReturn(name);
+        when(part.getSubmittedFileName()).thenReturn(name);
         when(part.getSize()).thenReturn(size);
         return part;
     }
@@ -284,16 +285,26 @@ public class StreamReceiverHandlerTest {
                         + "------WebKitFormBoundary7NsWHeCJVZNwi6ll--");
         outputStream = new ByteArrayOutputStream();
         contentLength = "99";
+        final String fileName = "EBookJP.txt";
+        final String contentType = "text/plain";
 
         parts = new ArrayList<>();
-        parts.add(createPart(createInputStream("foobar"), "text/plain",
-                "EBookJP.txt", 6));
+        parts.add(createPart(createInputStream("foobar"), contentType, fileName,
+                6));
 
         handler.handleRequest(session, request, response, streamReceiver,
                 String.valueOf(uiId), expectedSecurityKey);
 
         verify(responseOutput).close();
+        ArgumentCaptor<StreamVariable.StreamingEndEvent> endEventArgumentCaptor = ArgumentCaptor
+                .forClass(StreamVariable.StreamingEndEvent.class);
+        verify(streamVariable)
+                .streamingFinished(endEventArgumentCaptor.capture());
         Assert.assertEquals("foobar", new String(
                 ((ByteArrayOutputStream) outputStream).toByteArray()));
+        Assert.assertEquals(fileName,
+                endEventArgumentCaptor.getValue().getFileName());
+        Assert.assertEquals(contentType,
+                endEventArgumentCaptor.getValue().getMimeType());
     }
 }
