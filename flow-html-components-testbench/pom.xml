@@ -9,10 +9,7 @@
     </parent>
     <artifactId>flow-html-components-testbench</artifactId>
     <name>TestBench elements for Flow HTML Components</name>
-    <packaging>jar</packaging>
-
-    <properties>
-    </properties>
+    <packaging>war</packaging>
 
     <dependencies>
         <dependency>
@@ -36,13 +33,14 @@
                 <version>${jetty.version}</version>
                 <configuration>
                     <httpConnector>
-                        <port>8888</port>
+                        <port>${server.port}</port>
                     </httpConnector>
                     <useTestClasspath>true</useTestClasspath>
                     <scanIntervalSeconds>-1</scanIntervalSeconds>
                     <stopKey>foo</stopKey>
-                    <stopPort>8889</stopPort>
+                    <stopPort>${server.stop.port}</stopPort>
                     <stopWait>5</stopWait>
+                    <skip>${skipTests}</skip>
                 </configuration>
                 <executions>
                     <execution>
@@ -61,6 +59,99 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <!-- export test server port to integration tests -->
+                    <systemPropertyVariables>
+                        <serverPort>${server.port}</serverPort>
+                        <webdriver.chrome.driver>${webdriver.chrome.driver}</webdriver.chrome.driver>
+                    </systemPropertyVariables>
+                    <excludedGroups>${test.excludegroup}</excludedGroups>
+                    <excludes>
+                        <exclude>**/*$*</exclude>
+                        <exclude>${exclude.it.tests}</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+            <!-- This project is built as a .war in order to run ITs, but it should deployed
+                 as a .jar the plugins below allow that. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>make-jar</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-jar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>attach-artifact</goal>
+                        </goals>
+                        <configuration>
+                            <artifacts>
+                                <artifact>
+                                   <file>${project.build.directory}/${project.artifactId}-${project.version}.jar</file>
+                                    <type>jar</type>                           
+                                </artifact>
+                            </artifacts>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
+    <profiles>
+        <profile>
+            <id>local-run</id>
+            <activation>
+                <property>
+                    <name>!test.use.hub</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.lazerycode.selenium</groupId>
+                        <artifactId>driver-binary-downloader-maven-plugin</artifactId>
+                        <version>${driver.binary.downloader.maven.plugin.version}</version>
+                        <configuration>
+                            <onlyGetDriversForHostOperatingSystem>true</onlyGetDriversForHostOperatingSystem>
+                            <rootStandaloneServerDirectory>${project.rootdir}/driver</rootStandaloneServerDirectory>
+                            <downloadedZipFileDirectory>${project.rootdir}/driver_zips</downloadedZipFileDirectory>
+                            <customRepositoryMap>${project.rootdir}/drivers.xml</customRepositoryMap>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>selenium</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
