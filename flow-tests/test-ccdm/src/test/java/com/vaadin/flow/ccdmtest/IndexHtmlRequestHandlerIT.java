@@ -63,9 +63,8 @@ public class IndexHtmlRequestHandlerIT extends ChromeBrowserTest {
     public void indexHtmlRequestHandler_importDynamically_shouldLoadBundleCorrectly() {
         openTestUrl("/");
         findElement(By.tagName("button")).click();
-        waitForElementPresent(By.tagName("vaadin-button"));
-        WebElement vaadinButton = findElement(By.tagName("vaadin-button"));
-        Assert.assertEquals("Vaadin Button", vaadinButton.getText());
+        WebElement contentFromJs = findElement(By.id("contentFromOtherBundle"));
+        Assert.assertEquals("Content from other bundle", contentFromJs.getText());
     }
 
     @Test
