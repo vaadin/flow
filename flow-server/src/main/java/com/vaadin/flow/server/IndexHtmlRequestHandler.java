@@ -39,6 +39,10 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class IndexHtmlRequestHandler extends SynchronizedRequestHandler {
 
+    private static final String INDEX_NOT_FOUND_MESSAGE = "Failed to load content of 'frontend/index.html'."
+            + "It is required to have 'frontend/index.html' file in " +
+            "client-side bootstrapping mode.";
+
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
@@ -75,15 +79,18 @@ public class IndexHtmlRequestHandler extends SynchronizedRequestHandler {
         }
     }
 
-    private static Document getIndexHtmlDocument(VaadinRequest request) {
+    private static Document getIndexHtmlDocument(VaadinRequest request)
+            throws IOException {
         try {
             String index = FrontendUtils
                     .getIndexHtmlContent(request.getService());
-            return index != null ? Jsoup.parse(index) : null;
+            if (index != null) {
+                return Jsoup.parse(index);
+            }
         } catch (IOException e) {
-            getLogger().error("Can't read 'index.html'", e);
+            getLogger().error(INDEX_NOT_FOUND_MESSAGE, e);
         }
-        return null;
+        throw new IOException(INDEX_NOT_FOUND_MESSAGE);
     }
 
     private static Logger getLogger() {
