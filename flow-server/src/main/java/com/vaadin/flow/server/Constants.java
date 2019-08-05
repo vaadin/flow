@@ -49,7 +49,7 @@ public final class Constants implements Serializable {
      */
     public static final String SERVLET_PARAMETER_COMPATIBILITY_MODE = "compatibilityMode";
     /**
-     * Enable it if your project is using client-side bootstrapping (CCDM)
+     * Enable it if your project is using client-side bootstrapping (CCDM).
      */
     public static final String SERVLET_PARAMETER_CLIENT_SIDE_BOOTSTRAP_MODE =
             "clientSideBootstrapMode";
