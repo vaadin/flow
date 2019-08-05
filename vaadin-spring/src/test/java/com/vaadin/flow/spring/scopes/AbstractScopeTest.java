@@ -25,6 +25,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.config.Scope;
 
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
@@ -136,9 +137,14 @@ public abstract class AbstractScopeTest {
         doCallRealMethod().when(session).getService();
 
         when(session.getState()).thenReturn(VaadinSessionState.OPEN);
+
+        final Properties initParameters = new Properties();
+        initParameters.setProperty(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                Boolean.FALSE.toString());
         when(session.getConfiguration())
                 .thenReturn(new DefaultDeploymentConfiguration(getClass(),
-                        new Properties()));
+                        initParameters));
+
         VaadinSession.setCurrent(session);
         when(session.hasLock()).thenReturn(true);
 

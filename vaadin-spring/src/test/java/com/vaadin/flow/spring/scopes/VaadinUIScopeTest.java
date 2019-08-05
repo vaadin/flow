@@ -33,6 +33,7 @@ import org.springframework.beans.factory.config.Scope;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.Router;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
@@ -197,9 +198,14 @@ public class VaadinUIScopeTest extends AbstractScopeTest {
         Router router = mock(Router.class);
         VaadinService service = session.getService();
         when(service.getRouter()).thenReturn(router);
+
+        Properties initParameters = new Properties();
+        initParameters.put(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                Boolean.FALSE.toString());
         when(service.getDeploymentConfiguration())
                 .thenReturn(new DefaultDeploymentConfiguration(getClass(),
-                        new Properties()));
+                        initParameters));
+
         when(service.getMainDivId(Mockito.any(), Mockito.any()))
                 .thenReturn(" - ");
 

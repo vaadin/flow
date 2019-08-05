@@ -23,6 +23,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
@@ -119,9 +120,12 @@ public class SpringClassesSerializableTest extends ClassesSerializableTest {
     }
 
     private TestBeanStore createStore() {
+        final Properties initParameters = new Properties();
+        initParameters.setProperty(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                Boolean.FALSE.toString());
         VaadinService service = new VaadinServletService(new VaadinServlet(),
                 new DefaultDeploymentConfiguration(getClass(),
-                        new Properties()));
+                        initParameters));
         VaadinSession session = new TestSession(service);
 
         TestBeanStore store = new TestBeanStore(session);

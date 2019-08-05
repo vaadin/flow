@@ -32,6 +32,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.spring.instantiator.SpringInstantiatorTest;
@@ -43,6 +44,13 @@ public class SpringVaadinServletServiceTest {
     private static final String FOO = "foo";
 
     private static final String BAR = "bar";
+
+    private static final Properties BASE_PROPERTIES = new Properties();
+
+    {
+        BASE_PROPERTIES.put(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                Boolean.FALSE.toString());
+    }
 
     @Autowired
     private ApplicationContext context;
@@ -93,7 +101,7 @@ public class SpringVaadinServletServiceTest {
     @Test
     public void getInstantiator_springManagedBean_instantiatorBeanReturned()
             throws ServletException {
-        Properties properties = new Properties();
+        Properties properties = new Properties(BASE_PROPERTIES);
         properties.setProperty(FOO, Boolean.TRUE.toString());
         VaadinService service = SpringInstantiatorTest.getService(context,
                 properties);
@@ -106,7 +114,7 @@ public class SpringVaadinServletServiceTest {
     @Test
     public void getInstantiator_javaSPIClass_instantiatorPojoReturned()
             throws ServletException {
-        Properties properties = new Properties();
+        Properties properties = new Properties(BASE_PROPERTIES);
         properties.setProperty(FOO, Boolean.FALSE.toString());
         VaadinService service = SpringInstantiatorTest.getService(context,
                 properties);
@@ -119,7 +127,7 @@ public class SpringVaadinServletServiceTest {
     @Test(expected = ServletException.class)
     public void getInstantiator_nonUnique_exceptionIsThrown()
             throws ServletException {
-        Properties properties = new Properties();
+        Properties properties = new Properties(BASE_PROPERTIES);
         properties.setProperty(FOO, BAR);
         SpringInstantiatorTest.getService(context, properties);
     }

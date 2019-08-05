@@ -45,6 +45,7 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.i18n.I18NProvider;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ServiceInitEvent;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.VaadinServletService;
@@ -187,7 +188,10 @@ public class SpringInstantiatorTest {
 
     public static Instantiator getInstantiator(ApplicationContext context)
             throws ServletException {
-        return getService(context, null).getInstantiator();
+        Properties initParameters = new Properties();
+        initParameters.put(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                Boolean.FALSE.toString());
+        return getService(context, initParameters).getInstantiator();
     }
 
     @Test
