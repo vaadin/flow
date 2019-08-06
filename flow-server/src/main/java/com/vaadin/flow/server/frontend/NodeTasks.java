@@ -302,7 +302,7 @@ public class NodeTasks implements FallibleCommand {
             return this;
         }
 
-        public Builder inClientSideBootstrapMode(
+        public Builder enableClientSideBootstrapMode(
                 boolean clientSideBootstrapMode) {
             this.clientSideBootstrapMode = clientSideBootstrapMode;
             return this;
