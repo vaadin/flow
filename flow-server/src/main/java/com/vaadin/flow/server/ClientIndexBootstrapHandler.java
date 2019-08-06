@@ -42,7 +42,7 @@ public class ClientIndexBootstrapHandler extends SynchronizedRequestHandler {
             + "clientSideBootstrapMode.";
 
     private static final Pattern PATH_WITH_EXTENSION = Pattern
-            .compile(".+\\.[a-z0-9]{2,}$", Pattern.CASE_INSENSITIVE);
+            .compile("\\.[A-z][A-z\\d]+$");
 
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
@@ -67,7 +67,7 @@ public class ClientIndexBootstrapHandler extends SynchronizedRequestHandler {
     protected boolean canHandleRequest(VaadinRequest request) {
         String pathInfo = request.getPathInfo();
         return pathInfo == null
-                || !PATH_WITH_EXTENSION.matcher(pathInfo).matches();
+                || !PATH_WITH_EXTENSION.matcher(pathInfo).find();
     }
 
     private static void prependBaseHref(VaadinRequest request,
