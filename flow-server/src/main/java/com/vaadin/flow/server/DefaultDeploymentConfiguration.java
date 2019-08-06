@@ -127,7 +127,7 @@ public class DefaultDeploymentConfiguration
 
         checkProductionMode(log);
         checkCompatibilityMode(log);
-        checkClientSideBootstrapMode();
+        checkClientSideBootstrapMode(log);
         checkRequestTiming();
         checkXsrfProtection(log);
         checkHeartbeatInterval();
@@ -291,10 +291,10 @@ public class DefaultDeploymentConfiguration
     /**
      * Log a message if Vaadin is running in clientSideBootstrapMode.
      */
-    private void checkClientSideBootstrapMode() {
+    private void checkClientSideBootstrapMode(boolean loggWarning) {
         clientSideBootstrapMode = getBooleanProperty(
                 Constants.SERVLET_PARAMETER_CLIENT_SIDE_BOOTSTRAP_MODE, false);
-        if (clientSideBootstrapMode) {
+        if (clientSideBootstrapMode && loggWarning) {
             getLogger().info(CLIENT_SIDE_BOOTSTRAP_MODE);
         }
     }
