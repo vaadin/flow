@@ -30,20 +30,20 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 
 @NotThreadSafe
-public class JsInitHandlerTest {
+public class JavaScriptBootstrapHandlerTest {
 
     private MockServletServiceSessionSetup mocks;
 
     private TestVaadinServletResponse response;
     private VaadinSession session;
-    private JsInitHandler jsInitHandler;
+    private JavaScriptBootstrapHandler jsInitHandler;
 
     @Before
     public void setup() throws Exception {
         mocks = new MockServletServiceSessionSetup();
         response = mocks.createResponse();
         session = mocks.getSession();
-        jsInitHandler = new JsInitHandler();
+        jsInitHandler = new JavaScriptBootstrapHandler();
     }
 
     @After

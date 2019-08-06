@@ -51,22 +51,22 @@ import elemental.json.impl.JsonUtil;
 
 /**
  * Processes a 'start' request type from the client to initialize server session
- * and UI. It returns a JSON response with everything given for bootstrapping
+ * and UI. It returns a JSON response with everything needed to bootstrapping
  * flow views.
  * <p>
- * The handler is thought for CCDM projects whose `index.html` response does not
- * have any bootstrap code, but it's responsability of the `@vaadin/flow` client
- * that is able to ask the server side to create the vaadin session and do the
- * boostrapping lazily.
+ * The handler is for client driven projects where `index.html` does not contain
+ * bootstrap data. Bootstraping is the responsability of the `@vaadin/flow`
+ * client that is able to ask the server side to create the vaadin session and
+ * do the boostrapping lazily.
  *
  */
-public class JsInitHandler extends BootstrapHandler {
+public class JavaScriptBootstrapHandler extends BootstrapHandler {
 
     /**
-     * Custom BootstrapContext for JsInitHandler.
+     * Custom BootstrapContext for {@link JavaScriptBootstrapHandler}.
      */
-    private static class JsInitBootstrapContext extends BootstrapContext {
-        private JsInitBootstrapContext(VaadinRequest request,
+    private static class JavaScriptBootstrapContext extends BootstrapContext {
+        private JavaScriptBootstrapContext(VaadinRequest request,
                                              VaadinResponse response, UI ui,
                                              Function<VaadinRequest, String> callback) {
             super(request, response, ui.getInternals().getSession(), ui, callback);
@@ -79,9 +79,9 @@ public class JsInitHandler extends BootstrapHandler {
     }
 
     /**
-     * Custom UI for JsInitHandler.
+     * Custom UI for {@link JavaScriptBootstrapHandler}.
      */
-    public static class JsInitUI extends UI {
+    public static class JavaScriptBootstrapUI extends UI {
         public static final String NO_NAVIGATION = "Navigation is not implemented yet";
 
         /**
@@ -126,7 +126,7 @@ public class JsInitHandler extends BootstrapHandler {
     /**
      * Creates a new bootstrap handler with default page builder.
      */
-    public JsInitHandler() {
+    public JavaScriptBootstrapHandler() {
         super(context -> null);
     }
 
@@ -146,7 +146,7 @@ public class JsInitHandler extends BootstrapHandler {
             Class<? extends UI> uiClass, VaadinRequest request,
             VaadinResponse response, VaadinSession session) {
 
-        BootstrapContext context = super.createAndInitUI(JsInitUI.class,
+        BootstrapContext context = super.createAndInitUI(JavaScriptBootstrapUI.class,
                 request, response, session);
         JsonObject config = context.getApplicationParameters();
 
@@ -185,7 +185,7 @@ public class JsInitHandler extends BootstrapHandler {
     @Override
     protected BootstrapContext createBootstrapContext(VaadinRequest request,
                                                       VaadinResponse response, UI ui, Function<VaadinRequest, String> callback) {
-        return new JsInitBootstrapContext(request, response, ui, callback);
+        return new JavaScriptBootstrapContext(request, response, ui, callback);
     }
 
 
