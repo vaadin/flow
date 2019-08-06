@@ -1,6 +1,9 @@
 {
   "environments": [
     {
+      "browserName": "node"
+    },
+    {
       "browserName": "chrome",
       "chromeOptions": {
         "args": [
