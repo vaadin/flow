@@ -109,7 +109,7 @@ public class NodeTasksTest {
                 webpackGeneratedContent.contains(
                         "const fileNameOfTheFlowGeneratedMainEntryPoint = "
                                 + "require('path').resolve(__dirname, '"
-                                + FRONTEND + INDEX_HTML + "');"));
+                                + FRONTEND + "index');"));
     }
 
     private Object getFieldValue(Object obj, String name) throws Exception {

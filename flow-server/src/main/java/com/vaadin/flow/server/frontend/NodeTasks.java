@@ -384,7 +384,7 @@ public class NodeTasks implements FallibleCommand {
             taskUpdateWebpack = new TaskUpdateWebpack(builder.npmFolder,
                     builder.webpackOutputDirectory, builder.webpackTemplate,
                     builder.webpackGeneratedTemplate,
-                    new File(FRONTEND, INDEX_HTML),
+                    new File(FRONTEND, "index"),
                     Collections.singleton(indexHtmlCopyPlugin));
         } else {
             taskUpdateWebpack = new TaskUpdateWebpack(builder.npmFolder,
