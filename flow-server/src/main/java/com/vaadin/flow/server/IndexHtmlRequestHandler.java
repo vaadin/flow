@@ -73,9 +73,12 @@ public class IndexHtmlRequestHandler extends SynchronizedRequestHandler {
     private static void prependBaseHref(VaadinRequest request,
             Document indexDocument) {
         Elements base = indexDocument.head().getElementsByTag("base");
+        String baseHref = getServiceUrl(request);
         if (base.isEmpty()) {
             indexDocument.head().prependElement("base").attr("href",
-                    getServiceUrl(request));
+                    baseHref);
+        } else {
+            base.first().attr("href", baseHref);
         }
     }
 
