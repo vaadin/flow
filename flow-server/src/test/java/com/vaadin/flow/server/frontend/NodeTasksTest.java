@@ -85,7 +85,7 @@ public class NodeTasksTest {
     }
 
     @Test
-    public void should_UseIndexHtmlEntryPoint_When_EnableClientSideBootstrapMode()
+    public void should_UseFrontendIndexEntryPoint_When_EnableClientSideBootstrapMode()
             throws ExecutionFailedException, IOException {
         Builder builder = new Builder(
                 new DefaultClassFinder(this.getClass().getClassLoader()),
@@ -105,7 +105,7 @@ public class NodeTasksTest {
                         + " entry point",
                 webpackGeneratedContent.contains(IMPORTS_NAME));
         Assert.assertTrue(
-                "Generated webpack should use index.html as entry point",
+                "Generated webpack should use frontend/index as entry point",
                 webpackGeneratedContent.contains(
                         "const fileNameOfTheFlowGeneratedMainEntryPoint = "
                                 + "require('path').resolve(__dirname, '"

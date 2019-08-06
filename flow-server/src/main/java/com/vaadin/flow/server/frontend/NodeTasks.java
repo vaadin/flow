@@ -19,7 +19,6 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
@@ -302,6 +301,14 @@ public class NodeTasks implements FallibleCommand {
             return this;
         }
 
+        /**
+         * Enable clientSideBootstrapMode which uses `frontend/index` as the
+         * entry point.
+         * 
+         * @param clientSideBootstrapMode
+         *            <code>true</code> to enable the mode, false otherwise.
+         * @return the builder, for chaining
+         */
         public Builder enableClientSideBootstrapMode(
                 boolean clientSideBootstrapMode) {
             this.clientSideBootstrapMode = clientSideBootstrapMode;
