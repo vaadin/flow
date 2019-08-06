@@ -32,6 +32,8 @@ import elemental.events.PopStateEvent;
 public class PopStateHandler {
 
     private String pathAfterPreviousResponse;
+    private String queryAfterPreviousResponse;
+
     private Registry registry;
 
     /**
@@ -58,12 +60,16 @@ public class PopStateHandler {
      * This method should be triggered only once per instance.
      */
     public void bind() {
-        // track the location after the latest response from server
+        // track the location and query string (#6107) after the latest response
+        // from server
         registry.getRequestResponseTracker().addResponseHandlingEndedHandler(
-                event -> pathAfterPreviousResponse = Browser.getWindow()                
-                .getLocation().getPathname());                
-
-        Browser.getWindow().setOnpopstate(this::onPopStateEvent);
+                event -> {
+                    pathAfterPreviousResponse = Browser.getWindow()
+                            .getLocation().getPathname();
+                    queryAfterPreviousResponse = Browser.getWindow()
+                            .getLocation().getSearch();
+                });
+        Browser.getWindow().addEventListener("popstate", this::onPopStateEvent);
     }
 
     private void onPopStateEvent(Event e) {
@@ -74,12 +80,14 @@ public class PopStateHandler {
         }
 
         final String path = Browser.getWindow().getLocation().getPathname();
+        final String query = Browser.getWindow().getLocation().getSearch();
 
         assert pathAfterPreviousResponse != null : "Initial response has not ended before pop state event was triggered";
 
         // don't visit server on pop state events caused by fragment change
-        boolean requiresServerSideRoundtrip = !Objects.equals(path,
-                pathAfterPreviousResponse);
+        boolean requiresServerSideRoundtrip =
+                !(Objects.equals(path, pathAfterPreviousResponse)
+                        && Objects.equals(query, queryAfterPreviousResponse));
         registry.getScrollPositionHandler().onPopStateEvent((PopStateEvent) e,
                 requiresServerSideRoundtrip);
         if (!requiresServerSideRoundtrip) {

@@ -34,6 +34,14 @@ import static org.junit.Assert.assertTrue;
  */
 public class DefaultDeploymentConfigurationTest {
 
+    private static Properties DEFAULT_PARAMS = new Properties();
+
+    {
+        DEFAULT_PARAMS.setProperty(
+                Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                Boolean.FALSE.toString());
+    }
+    
     @Test
     public void testGetSystemPropertyForDefaultPackage()
             throws ClassNotFoundException {
@@ -41,8 +49,9 @@ public class DefaultDeploymentConfigurationTest {
         String value = "value";
         String prop = "prop";
         System.setProperty(prop, value);
+        Properties initParameters = new Properties(DEFAULT_PARAMS);
         DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
-                clazz, new Properties());
+                clazz, initParameters);
         assertEquals(value, config.getSystemProperty(prop));
     }
 
@@ -54,14 +63,15 @@ public class DefaultDeploymentConfigurationTest {
                 DefaultDeploymentConfigurationTest.class.getPackage().getName()
                         + '.' + prop,
                 value);
+        Properties initParameters = new Properties(DEFAULT_PARAMS);
         DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
-                DefaultDeploymentConfigurationTest.class, new Properties());
+                DefaultDeploymentConfigurationTest.class, initParameters);
         assertEquals(value, config.getSystemProperty(prop));
     }
 
     @Test
     public void booleanValueReadIgnoreTheCase_true() {
-        Properties initParameters = new Properties();
+        Properties initParameters = new Properties(DEFAULT_PARAMS);
         initParameters.setProperty(
                 Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS, "tRUe");
 
@@ -74,7 +84,7 @@ public class DefaultDeploymentConfigurationTest {
 
     @Test
     public void booleanValueReadIgnoreTheCase_false() {
-        Properties initParameters = new Properties();
+        Properties initParameters = new Properties(DEFAULT_PARAMS);
         initParameters.setProperty(
                 Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS, "FaLsE");
 
@@ -88,7 +98,7 @@ public class DefaultDeploymentConfigurationTest {
 
     @Test
     public void booleanValueRead_emptyIsTrue() {
-        Properties initParameters = new Properties();
+        Properties initParameters = new Properties(DEFAULT_PARAMS);
         initParameters.setProperty(
                 Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS, "");
 
@@ -101,7 +111,7 @@ public class DefaultDeploymentConfigurationTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void booleanValueRead_exceptionOnNonBooleanValue() {
-        Properties initParameters = new Properties();
+        Properties initParameters = new Properties(DEFAULT_PARAMS);
         initParameters.setProperty(
                 Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
                 "incorrectValue");
@@ -111,7 +121,7 @@ public class DefaultDeploymentConfigurationTest {
 
     @Test
     public void frontendPrefixes_developmentMode() {
-        Properties initParameters = new Properties();
+        Properties initParameters = new Properties(DEFAULT_PARAMS);
         initParameters.setProperty(Constants.FRONTEND_URL_ES5,
                 "context://build/frontend-es5/");
         initParameters.setProperty(Constants.FRONTEND_URL_ES6,
@@ -137,7 +147,7 @@ public class DefaultDeploymentConfigurationTest {
         String es5Prefix = "context://build/frontend-es5/";
         String es6Prefix = "context://build/frontend-es6/";
 
-        Properties initParameters = new Properties();
+        Properties initParameters = new Properties(DEFAULT_PARAMS);
         initParameters.setProperty(Constants.FRONTEND_URL_ES5, es5Prefix);
         initParameters.setProperty(Constants.FRONTEND_URL_ES6, es6Prefix);
         initParameters.setProperty(Constants.SERVLET_PARAMETER_PRODUCTION_MODE,
@@ -164,7 +174,7 @@ public class DefaultDeploymentConfigurationTest {
 
     @Test
     public void defaultPushUrl() {
-        Properties initParameters = new Properties();
+        Properties initParameters = new Properties(DEFAULT_PARAMS);
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 initParameters);
         assertThat(config.getPushURL(), is(""));
@@ -172,7 +182,7 @@ public class DefaultDeploymentConfigurationTest {
 
     @Test
     public void pushUrl() {
-        Properties initParameters = new Properties();
+        Properties initParameters = new Properties(DEFAULT_PARAMS);
         initParameters.setProperty(Constants.SERVLET_PARAMETER_PUSH_URL, "foo");
 
         DefaultDeploymentConfiguration config = createDeploymentConfig(
@@ -182,7 +192,7 @@ public class DefaultDeploymentConfigurationTest {
 
     @Test
     public void bundleIsEnabledInProduction() {
-        Properties initParameters = new Properties();
+        Properties initParameters = new Properties(DEFAULT_PARAMS);
         initParameters.setProperty(Constants.SERVLET_PARAMETER_PRODUCTION_MODE,
                 "true");
         DefaultDeploymentConfiguration config = createDeploymentConfig(
@@ -192,7 +202,7 @@ public class DefaultDeploymentConfigurationTest {
 
     @Test
     public void bundleCanBeDisabled() {
-        Properties initParameters = new Properties();
+        Properties initParameters = new Properties(DEFAULT_PARAMS);
         initParameters.setProperty(Constants.SERVLET_PARAMETER_PRODUCTION_MODE,
                 "true");
         initParameters.setProperty(Constants.USE_ORIGINAL_FRONTEND_RESOURCES,
@@ -200,5 +210,11 @@ public class DefaultDeploymentConfigurationTest {
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 initParameters);
         Assert.assertFalse(config.useCompiledFrontendResources());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void throwsIfCompatibilityModeNotExplicitlySet() {
+        Properties initParameters = new Properties();
+        createDeploymentConfig(initParameters);
     }
 }

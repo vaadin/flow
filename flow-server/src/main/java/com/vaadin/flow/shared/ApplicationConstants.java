@@ -60,6 +60,11 @@ public class ApplicationConstants implements Serializable {
     public static final String SERVICE_URL = "serviceUrl";
 
     /**
+     * Whether the application is run in as a exported Web Component.
+     */
+    public static final String APP_WC_MODE = "webComponentMode";
+
+    /**
      * Configuration parameter giving the (in some cases relative) URL to the
      * web application context root.
      */

@@ -44,6 +44,11 @@ public class DeploymentConfigurationFactoryTest {
     private File tokenFile;
     private ServletContext contextMock;
 
+    private static Map<String, String> defaultServletParams =
+            Collections.singletonMap(
+                    Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                    Boolean.FALSE.toString());
+
     private static class NoSettings extends VaadinServlet {
     }
 
@@ -73,9 +78,11 @@ public class DeploymentConfigurationFactoryTest {
     public void servletWithEnclosingUI_hasItsNameInConfig() throws Exception {
         Class<TestUI.ServletWithEnclosingUi> servlet = TestUI.ServletWithEnclosingUi.class;
 
+        Map<String, String> servletConfigParams = new HashMap<>(new HashMap<>(defaultServletParams));
+
         DeploymentConfiguration config = DeploymentConfigurationFactory
                 .createDeploymentConfiguration(servlet,
-                        createServletConfigMock(emptyMap(), emptyMap()));
+                        createServletConfigMock(servletConfigParams, emptyMap()));
 
         Class<?> customUiClass = servlet.getEnclosingClass();
         assertTrue(String.format(
@@ -92,9 +99,11 @@ public class DeploymentConfigurationFactoryTest {
             throws Exception {
         Class<NoSettings> servlet = NoSettings.class;
 
+        Map<String, String> servletConfigParams = new HashMap<>(defaultServletParams);
+
         DeploymentConfiguration config = DeploymentConfigurationFactory
                 .createDeploymentConfiguration(servlet,
-                        createServletConfigMock(emptyMap(), emptyMap()));
+                        createServletConfigMock(servletConfigParams, emptyMap()));
 
         Class<?> notUiClass = servlet.getEnclosingClass();
         assertFalse(String.format(
@@ -109,9 +118,11 @@ public class DeploymentConfigurationFactoryTest {
     public void vaadinServletConfigurationRead() throws Exception {
         Class<VaadinSettings> servlet = VaadinSettings.class;
 
+        Map<String, String> servletConfigParams = new HashMap<>(defaultServletParams);
+
         DeploymentConfiguration config = DeploymentConfigurationFactory
                 .createDeploymentConfiguration(servlet,
-                        createServletConfigMock(emptyMap(), emptyMap()));
+                        createServletConfigMock(servletConfigParams, emptyMap()));
 
         assertTrue(String.format(
                 "Unexpected value for production mode, check '%s' class annotation",
@@ -129,7 +140,7 @@ public class DeploymentConfigurationFactoryTest {
         boolean overridingProductionModeValue = false;
         int overridingHeartbeatIntervalValue = 444;
 
-        Map<String, String> servletConfigParams = new HashMap<>();
+        Map<String, String> servletConfigParams = new HashMap<>(defaultServletParams);
         servletConfigParams.put(SERVLET_PARAMETER_PRODUCTION_MODE,
                 Boolean.toString(overridingProductionModeValue));
         servletConfigParams.put(Constants.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
@@ -156,7 +167,7 @@ public class DeploymentConfigurationFactoryTest {
         boolean overridingProductionModeValue = false;
         int overridingHeartbeatIntervalValue = 444;
 
-        Map<String, String> servletContextParams = new HashMap<>();
+        Map<String, String> servletContextParams = new HashMap<>(defaultServletParams);
         servletContextParams.put(SERVLET_PARAMETER_PRODUCTION_MODE,
                 Boolean.toString(overridingProductionModeValue));
         servletContextParams.put(Constants.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
@@ -183,7 +194,7 @@ public class DeploymentConfigurationFactoryTest {
         boolean servletConfigProductionModeValue = true;
         int servletConfigHeartbeatIntervalValue = 333;
 
-        Map<String, String> servletConfigParams = new HashMap<>();
+        Map<String, String> servletConfigParams = new HashMap<>(defaultServletParams);
         servletConfigParams.put(SERVLET_PARAMETER_PRODUCTION_MODE,
                 Boolean.toString(servletConfigProductionModeValue));
         servletConfigParams.put(Constants.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
@@ -211,11 +222,9 @@ public class DeploymentConfigurationFactoryTest {
                 config.getHeartbeatInterval());
     }
 
-    @Test
-    public void should_beInBowerModeByDefault() throws Exception {
-        DeploymentConfiguration config = createConfig(emptyMap());
-        assertTrue(config.isCompatibilityMode());
-        assertFalse(config.isProductionMode());
+    @Test(expected = IllegalStateException.class)
+    public void should_throwIfModeNotSet() throws Exception {
+        createConfig(emptyMap());
     }
 
     @Test
@@ -282,4 +291,5 @@ public class DeploymentConfigurationFactoryTest {
             }
         };
     }
+
 }

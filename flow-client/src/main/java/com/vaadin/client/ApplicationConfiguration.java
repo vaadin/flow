@@ -37,6 +37,8 @@ public class ApplicationConfiguration {
 
     private boolean productionMode;
     private boolean requestTiming;
+    private boolean webComponentMode;
+
     private String servletVersion;
     private String atmosphereVersion;
     private String atmosphereJSVersion;
@@ -97,6 +99,25 @@ public class ApplicationConfiguration {
     public void setContextRootUrl(String contextRootUrl) {
         assert contextRootUrl.endsWith("/");
         this.contextRootUrl = contextRootUrl;
+    }
+
+    /**
+     * Checks whether the application is running as a web-component in the page.
+     *
+     * @return true in case the app is a WC
+     */
+    public boolean isWebComponentMode() {
+        return webComponentMode;
+    }
+
+    /**
+     * Sets whether the application is running as a web-component in the page.
+     *
+     * @param mode
+     *            set to true if it's a WC
+     */
+    public void setWebComponentMode(boolean mode) {
+        this.webComponentMode = mode;
     }
 
     /**

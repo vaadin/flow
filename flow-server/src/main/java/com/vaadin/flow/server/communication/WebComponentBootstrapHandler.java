@@ -153,6 +153,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
 
         assert serviceUrl.endsWith("/");
         config.put(ApplicationConstants.SERVICE_URL, serviceUrl);
+        config.put(ApplicationConstants.APP_WC_MODE, true);
         return context;
     }
 

@@ -187,6 +187,28 @@ public class CopyResourcesStepTest {
         Assert.assertTrue(new File(target, "bar.html").exists());
     }
 
+    @Test
+    public void copyResources_copyFileWithContentWithoutHtmlComments()
+            throws IOException {
+        File file = new File(source1, "foo.html");
+
+        Files.write(file.toPath(), Arrays.asList("<!-- HTML comment 1 -->",
+                "<link rel='import' href='/frontend/bower_components/polymer/polymer-element.html'>",
+                "<!-- HTML comment 2 -->", "<dom-module id='foo-bar'>",
+                "<template><div>xx</div></template>", "<!-- HTML comment 3-->",
+                "<script>class A extends Polymer.Element {}</script>"));
+
+        step.copyResources();
+
+        File copiedFile1 = new File(target, file.getName());
+
+        step.getBowerComponents();
+
+        String content = readFile(copiedFile1);
+        Assert.assertThat(content,
+                CoreMatchers.not(CoreMatchers.containsString("HTML comment")));
+    }
+
     private String readFile(File file) throws IOException {
         return Files.readAllLines(file.toPath()).stream()
                 .collect(Collectors.joining("\n"));

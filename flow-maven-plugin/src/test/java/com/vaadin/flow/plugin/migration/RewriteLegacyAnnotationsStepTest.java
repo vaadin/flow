@@ -36,17 +36,20 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.plugin.migration.samplecode.ClassUnitWithNonPublicClass;
 import com.vaadin.flow.plugin.migration.samplecode.Component1;
 import com.vaadin.flow.plugin.migration.samplecode.Component2;
 import com.vaadin.flow.plugin.migration.samplecode.Component3;
 import com.vaadin.flow.plugin.migration.samplecode.EnclosingClassWithNestedClass;
 import com.vaadin.flow.plugin.migration.samplecode.EnclosingClassWithNestedClass.NestedComponent;
+import com.vaadin.flow.plugin.migration.samplecode.ShouldNotBeRewritten;
+import com.vaadin.flow.plugin.migration.samplecode.StyledComponent;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
-public class RewriteHtmlImportsStepTest {
+public class RewriteLegacyAnnotationsStepTest {
 
-    private RewriteHtmlImportsStep step;
+    private RewriteLegacyAnnotationsStep step;
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -61,12 +64,12 @@ public class RewriteHtmlImportsStepTest {
     @Before
     public void setUp()
             throws IOException, ClassNotFoundException, URISyntaxException {
-        compiledClassesDir = new File(RewriteHtmlImportsStepTest.class
+        compiledClassesDir = new File(RewriteLegacyAnnotationsStepTest.class
                 .getProtectionDomain().getCodeSource().getLocation().toURI());
 
         sourceRoot1 = temporaryFolder.newFolder();
         sourceRoot2 = temporaryFolder.newFolder();
-        step = new RewriteHtmlImportsStep(compiledClassesDir, finder,
+        step = new RewriteLegacyAnnotationsStep(compiledClassesDir, finder,
                 Arrays.asList(sourceRoot1, sourceRoot2));
 
         Mockito.doAnswer(invocation -> Class
@@ -100,6 +103,52 @@ public class RewriteHtmlImportsStepTest {
                         "@JsModule(\"@vaadin/vaadin-text-field/src/vaadin-text-field.js\")")));
     }
 
+    @SuppressWarnings("unchecked")
+    @Test
+    public void fileIsInOneSourceRoot_classIsInCompiledClassesDir_stylesheetsAreRewritten()
+            throws IOException {
+        Mockito.when(finder.getAnnotatedClasses(StyleSheet.class))
+                .thenReturn(Collections.singleton(StyledComponent.class));
+        File sourceFile = makeSourceJavaFile(sourceRoot1,
+                StyledComponent.class);
+        step.rewrite();
+
+        String content = FileUtils.readFileToString(sourceFile,
+                StandardCharsets.UTF_8);
+        Assert.assertThat(content, CoreMatchers.allOf(
+                CoreMatchers.containsString(
+                        "import com.vaadin.flow.component.dependency.JsModule;"),
+                CoreMatchers.containsString("@JsModule(\"./styles/foo.js\")"),
+                CoreMatchers.containsString("@JsModule(\"./styles/foo1.js\")"),
+                CoreMatchers.containsString("@JsModule(\"./styles/foo2.js\")"),
+                CoreMatchers.containsString("@JsModule(\"./styles/bar.js\")"),
+                CoreMatchers.containsString("@JsModule(\"./styles/bar1.js\")"),
+                CoreMatchers
+                        .containsString("@JsModule(\"./styles/src/baz.js\")")));
+    }
+
+    @Test
+    public void fileContainsHtmlImportAndStyleSheetWords_wordsAreNotReplaced()
+            throws IOException {
+        Mockito.when(finder.getAnnotatedClasses(StyleSheet.class))
+                .thenReturn(Collections.singleton(ShouldNotBeRewritten.class));
+        Mockito.when(finder.getAnnotatedClasses(HtmlImport.class))
+                .thenReturn(Collections.singleton(ShouldNotBeRewritten.class));
+        File sourceFile = makeSourceJavaFile(sourceRoot1,
+                ShouldNotBeRewritten.class);
+
+        String originalContent = FileUtils.readFileToString(sourceFile,
+                StandardCharsets.UTF_8);
+
+        step.rewrite();
+
+        String content = FileUtils.readFileToString(sourceFile,
+                StandardCharsets.UTF_8);
+
+        // nothing has changed
+        Assert.assertEquals(originalContent, content);
+    }
+
     @Test
     public void fileIsInOneSourceRoot_classIsNotInCompiledClassesDir_nothingIsDone()
             throws IOException, URISyntaxException {
@@ -108,7 +157,7 @@ public class RewriteHtmlImportsStepTest {
 
         compiledClassesDir = temporaryFolder.newFolder();
 
-        step = new RewriteHtmlImportsStep(compiledClassesDir, finder,
+        step = new RewriteLegacyAnnotationsStep(compiledClassesDir, finder,
                 Arrays.asList(sourceRoot1, sourceRoot2));
 
         File sourceFile = makeSourceJavaFile(sourceRoot1, Component1.class);

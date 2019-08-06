@@ -29,6 +29,7 @@ import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.sun.net.httpserver.HttpServer;
@@ -330,9 +331,14 @@ public class DevModeHandlerTest {
         ServletContext ctx = mock(ServletContext.class);
         Mockito.doAnswer(invocation -> ctx.getClass().getClassLoader()).when(ctx).getClassLoader();
         Mockito.doAnswer(invocation -> ctx).when(cfg).getServletContext();
+
         Mockito.doAnswer(
-                invocation -> Collections.enumeration(Collections.emptyList()))
+                invocation -> Collections.enumeration(Collections.singletonList(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE)))
                 .when(cfg).getInitParameterNames();
+        Mockito.doAnswer(
+                invocation -> Boolean.FALSE.toString())
+                .when(cfg).getInitParameter(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE);
+
         Mockito.doAnswer(
                 invocation -> Collections.enumeration(Collections.emptyList()))
                 .when(ctx).getInitParameterNames();
