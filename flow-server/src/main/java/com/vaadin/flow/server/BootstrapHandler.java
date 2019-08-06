@@ -720,57 +720,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     dependenciesToProcessOnServer);
         }
 
-        /**
-         * Generates the initial UIDL message which is included in the initial
-         * bootstrap page.
-         *
-         * @param ui
-         *         the UI for which the UIDL should be generated
-         * @return a JSON object with the initial UIDL message
-         */
-        protected JsonObject getInitialUidl(UI ui) {
-            JsonObject json = new UidlWriter().createUidl(ui, false);
-
-            VaadinSession session = ui.getSession();
-            if (session.getConfiguration().isXsrfProtectionEnabled()) {
-                writeSecurityKeyUIDL(json, ui);
-            }
-            writePushIdUIDL(json, session);
-            if (getLogger().isDebugEnabled()) {
-                getLogger().debug("Initial UIDL: {}", json.asString());
-            }
-            return json;
-        }
-
-        /**
-         * Writes the push id (and generates one if needed) to the given JSON
-         * object.
-         *
-         * @param response
-         *         the response JSON object to write security key into
-         * @param session
-         *         the vaadin session to which the security key belongs
-         */
-        private void writePushIdUIDL(JsonObject response,
-                VaadinSession session) {
-            String pushId = session.getPushId();
-            response.put(ApplicationConstants.UIDL_PUSH_ID, pushId);
-        }
-
-        /**
-         * Writes the security key (and generates one if needed) to the given
-         * JSON object.
-         *
-         * @param response
-         *         the response JSON object to write security key into
-         * @param ui
-         *         the UI to which the security key belongs
-         */
-        private void writeSecurityKeyUIDL(JsonObject response, UI ui) {
-            String seckey = ui.getCsrfToken();
-            response.put(ApplicationConstants.UIDL_SECURITY_TOKEN_ID, seckey);
-        }
-
         private List<Element> applyUserDependencies(Element head,
                 BootstrapContext context,
                 Map<LoadMode, JsonArray> dependenciesToProcessOnServer) {
@@ -1531,5 +1480,58 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return null;
         }
 
+    }
+
+
+    /**
+     * Generates the initial UIDL message which is included in the initial
+     * bootstrap page.
+     *
+     * @param ui
+     *         the UI for which the UIDL should be generated
+     * @return a JSON object with the initial UIDL message
+     */
+    protected static JsonObject getInitialUidl(UI ui) {
+        JsonObject json = new UidlWriter().createUidl(ui, false);
+
+        VaadinSession session = ui.getSession();
+        if (session.getConfiguration().isXsrfProtectionEnabled()) {
+            writeSecurityKeyUIDL(json, ui);
+        }
+        writePushIdUIDL(json, session);
+        if (getLogger().isDebugEnabled()) {
+            getLogger().debug("Initial UIDL: {}", json.asString());
+        }
+        return json;
+    }
+
+
+    /**
+     * Writes the push id (and generates one if needed) to the given JSON
+     * object.
+     *
+     * @param response
+     *         the response JSON object to write security key into
+     * @param session
+     *         the vaadin session to which the security key belongs
+     */
+    private static void writePushIdUIDL(JsonObject response,
+            VaadinSession session) {
+        String pushId = session.getPushId();
+        response.put(ApplicationConstants.UIDL_PUSH_ID, pushId);
+    }
+
+    /**
+     * Writes the security key (and generates one if needed) to the given
+     * JSON object.
+     *
+     * @param response
+     *         the response JSON object to write security key into
+     * @param ui
+     *         the UI to which the security key belongs
+     */
+    private static void writeSecurityKeyUIDL(JsonObject response, UI ui) {
+        String seckey = ui.getCsrfToken();
+        response.put(ApplicationConstants.UIDL_SECURITY_TOKEN_ID, seckey);
     }
 }

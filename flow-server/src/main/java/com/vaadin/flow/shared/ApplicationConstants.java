@@ -155,6 +155,11 @@ public class ApplicationConstants implements Serializable {
     public static final String REQUEST_TYPE_PARAMETER = "v-r";
 
     /**
+     * Request type parameter value indicating an init request.
+     */
+    public static final String REQUEST_TYPE_INIT = "init";
+
+    /**
      * Request type parameter value indicating a UIDL request.
      */
     public static final String REQUEST_TYPE_UIDL = "uidl";
