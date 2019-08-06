@@ -7,7 +7,7 @@
 const fs = require('fs');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const {BabelMultiTargetPlugin} = require('webpack-babel-multi-target-plugin');
-
+//to-be-inserted-imports
 const path = require('path');
 const baseDir = path.resolve(__dirname);
 // the folder of app resources (main.js and flow templates)
@@ -140,5 +140,7 @@ module.exports = {
       from: `${baseDir}/node_modules/@webcomponents/webcomponentsjs`,
       to: `${build}/webcomponentsjs/`
     }]),
+
+//to-be-inserted-plugins
   ]
 };
