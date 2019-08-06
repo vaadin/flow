@@ -162,10 +162,17 @@
 
                 <executions>
                     <execution>
+                        <phase>compile</phase>
                         <goals>
                             <goal>compile</goal>
-                            <goal>test</goal>
                             <goal>generateAsync</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>gwt-test</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
                         </goals>
                     </execution>
                 </executions>
@@ -243,20 +250,6 @@
                             <executable>npm</executable>
                             <arguments>
                                 <argument>install</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>npm-lint</id>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>npm</executable>
-                            <arguments>
-                                <argument>run</argument>
-                                <argument>lint</argument>
                             </arguments>
                         </configuration>
                     </execution>
