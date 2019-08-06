@@ -30,16 +30,16 @@ import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_HTML
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
- * In client-side bootstrapping mode, this class is responsible for serving
+ * In clientSideBootstrapMode, this class is responsible for serving
  * <code>index.html</code> according to the template provided in frontend
  * folder. The handler will calculate and inject baseHref as well as the bundle
  * scripts into the template.
  */
-public class IndexHtmlRequestHandler extends SynchronizedRequestHandler {
+public class ClientIndexBootstrapHandler extends SynchronizedRequestHandler {
 
     private static final String INDEX_NOT_FOUND_MESSAGE = "Failed to load content of 'frontend/index.html'."
-            + "It is required to have 'frontend/index.html' file in " +
-            "client-side bootstrapping mode.";
+            + "It is required to have 'frontend/index.html' file in "
+            + "clientSideBootstrapMode.";
 
     private static final Pattern PATH_WITH_EXTENSION = Pattern
             .compile(".+\\.[a-z0-9]{2,}$", Pattern.CASE_INSENSITIVE);
@@ -75,8 +75,7 @@ public class IndexHtmlRequestHandler extends SynchronizedRequestHandler {
         Elements base = indexDocument.head().getElementsByTag("base");
         String baseHref = getServiceUrl(request);
         if (base.isEmpty()) {
-            indexDocument.head().prependElement("base").attr("href",
-                    baseHref);
+            indexDocument.head().prependElement("base").attr("href", baseHref);
         } else {
             base.first().attr("href", baseHref);
         }
@@ -92,7 +91,7 @@ public class IndexHtmlRequestHandler extends SynchronizedRequestHandler {
     }
 
     private static Logger getLogger() {
-        return LoggerFactory.getLogger(IndexHtmlRequestHandler.class);
+        return LoggerFactory.getLogger(ClientIndexBootstrapHandler.class);
     }
 
     /**

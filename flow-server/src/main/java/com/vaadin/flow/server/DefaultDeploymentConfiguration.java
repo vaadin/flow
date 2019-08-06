@@ -66,6 +66,11 @@ public class DefaultDeploymentConfiguration
             + "this is handled by the 'prepare-frontend' goal. To use "
             + "compatibility mode, add the 'flow-server-compatibility-mode' "
             + "dependency.";
+
+    private static final String CLIENT_SIDE_BOOTSTRAP_MODE = SEPARATOR +
+            "Running the application in 'clientSideBootstrapMode' which will " +
+            "require an 'index.html' template in 'frontend' folder for " +
+            "bootstrapping the application.";
     /**
      * Default value for {@link #getHeartbeatInterval()} = {@value} .
      */
@@ -284,11 +289,14 @@ public class DefaultDeploymentConfiguration
     }
 
     /**
-     * Log a warning if Vaadin is running in client-side bootstrapping mode.
+     * Log a message if Vaadin is running in clientSideBootstrapMode.
      */
     private void checkClientSideBootstrapMode() {
         clientSideBootstrapMode = getBooleanProperty(
                 Constants.SERVLET_PARAMETER_CLIENT_SIDE_BOOTSTRAP_MODE, false);
+        if (clientSideBootstrapMode) {
+            getLogger().info(CLIENT_SIDE_BOOTSTRAP_MODE);
+        }
     }
 
     /**

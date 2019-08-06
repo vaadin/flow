@@ -69,9 +69,9 @@ public interface DeploymentConfiguration extends Serializable {
     }
 
     /**
-     * Returns whether Vaadin is running in client-side bootstrapping mode.
+     * Returns whether Vaadin is running in clientSideBootstrapMode.
      * 
-     * @return true if in client-side bootstrapping mode, false otherwise.
+     * @return true if in clientSideBootstrapMode, false otherwise.
      */
     default boolean isClientSideBootstrapMode() {
         return false;

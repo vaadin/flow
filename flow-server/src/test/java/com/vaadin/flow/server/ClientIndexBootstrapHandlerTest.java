@@ -15,11 +15,11 @@
  */
 package com.vaadin.flow.server;
 
+import javax.servlet.http.HttpServletRequest;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-
-import javax.servlet.http.HttpServletRequest;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -29,12 +29,12 @@ import org.mockito.Mockito;
 
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
-public class IndexHtmlRequestHandlerTest {
+public class ClientIndexBootstrapHandlerTest {
 
     private MockServletServiceSessionSetup mocks;
     private MockServletServiceSessionSetup.TestVaadinServletService service;
     private VaadinSession session;
-    private IndexHtmlRequestHandler indexHtmlRequestHandler;
+    private ClientIndexBootstrapHandler clientIndexBootstrapHandler;
     private VaadinResponse response;
     private ByteArrayOutputStream responseOutput;
 
@@ -50,13 +50,13 @@ public class IndexHtmlRequestHandlerTest {
                 .getDeploymentConfiguration();
         deploymentConfiguration.setEnableDevServer(false);
         deploymentConfiguration.setClientSideBootstrapMode(true);
-        indexHtmlRequestHandler = new IndexHtmlRequestHandler();
+        clientIndexBootstrapHandler = new ClientIndexBootstrapHandler();
     }
 
     @Test
     public void serveIndexHtml_requestWithRootPath_serveContentFromTemplate()
             throws IOException {
-        indexHtmlRequestHandler
+        clientIndexBootstrapHandler
                 .synchronizedHandleRequest(session, createVaadinRequest(""),
                         response);
         String indexHtml = responseOutput
@@ -67,7 +67,7 @@ public class IndexHtmlRequestHandlerTest {
     @Test
     public void serveIndexHtml_requestWithRootPath_hasBaseHrefElement()
             throws IOException {
-        indexHtmlRequestHandler
+        clientIndexBootstrapHandler
                 .synchronizedHandleRequest(session, createVaadinRequest(""),
                         response);
         String indexHtml = responseOutput
@@ -78,7 +78,7 @@ public class IndexHtmlRequestHandlerTest {
     @Test
     public void serveIndexHtml_requestWithSomePath_hasBaseHrefElement()
             throws IOException {
-        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+        clientIndexBootstrapHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/some/path"), response);
         String indexHtml = responseOutput
                 .toString(StandardCharsets.UTF_8.name());
@@ -88,7 +88,7 @@ public class IndexHtmlRequestHandlerTest {
     @Test
     public void serveIndexHtml_requestWithRootPath_hasInjectedBundles()
             throws IOException {
-        indexHtmlRequestHandler
+        clientIndexBootstrapHandler
                 .synchronizedHandleRequest(session, createVaadinRequest(""),
                         response);
         String indexHtml = responseOutput
@@ -101,34 +101,34 @@ public class IndexHtmlRequestHandlerTest {
 
     @Test
     public void canHandleRequest_requestWithRootPath_handleRequest() {
-        boolean canHandleRequest = indexHtmlRequestHandler
+        boolean canHandleRequest = clientIndexBootstrapHandler
                 .canHandleRequest(createVaadinRequest(""));
         Assert.assertTrue(canHandleRequest);
     }
 
     @Test
     public void canHandleRequest_requestWithRoute_handleRequest() {
-        Assert.assertTrue(indexHtmlRequestHandler
+        Assert.assertTrue(clientIndexBootstrapHandler
                 .canHandleRequest(createVaadinRequest("/some/route")));
-        Assert.assertTrue(indexHtmlRequestHandler
+        Assert.assertTrue(clientIndexBootstrapHandler
                 .canHandleRequest(createVaadinRequest("/myroute")));
-        Assert.assertTrue(indexHtmlRequestHandler.canHandleRequest(
+        Assert.assertTrue(clientIndexBootstrapHandler.canHandleRequest(
                 createVaadinRequest("/myroute/ends/withslash/")));
-        Assert.assertTrue(indexHtmlRequestHandler.canHandleRequest(
+        Assert.assertTrue(clientIndexBootstrapHandler.canHandleRequest(
                 createVaadinRequest("/documentation/10.0.10/flow")));
     }
 
     @Test
     public void canHandleRequest_requestWithExtension_ignoreRequest() {
-        Assert.assertFalse(indexHtmlRequestHandler
+        Assert.assertFalse(clientIndexBootstrapHandler
                 .canHandleRequest(createVaadinRequest("/nested/picture.png")));
-        Assert.assertFalse(indexHtmlRequestHandler
+        Assert.assertFalse(clientIndexBootstrapHandler
                 .canHandleRequest(createVaadinRequest("/nested/CAPITAL.PNG")));
-        Assert.assertFalse(indexHtmlRequestHandler
+        Assert.assertFalse(clientIndexBootstrapHandler
                 .canHandleRequest(createVaadinRequest("/script.js")));
-        Assert.assertFalse(indexHtmlRequestHandler
+        Assert.assertFalse(clientIndexBootstrapHandler
                 .canHandleRequest(createVaadinRequest("/music.mp3")));
-        Assert.assertFalse(indexHtmlRequestHandler
+        Assert.assertFalse(clientIndexBootstrapHandler
                 .canHandleRequest(createVaadinRequest("/.htaccess")));
     }
 

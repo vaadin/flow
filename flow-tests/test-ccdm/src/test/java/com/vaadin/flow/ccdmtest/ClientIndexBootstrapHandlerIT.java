@@ -22,7 +22,7 @@ import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-public class IndexHtmlRequestHandlerIT extends ChromeBrowserTest {
+public class ClientIndexBootstrapHandlerIT extends ChromeBrowserTest {
 
     private void openTestUrl(String url) {
         getDriver().get(getRootURL() + url);
@@ -64,7 +64,8 @@ public class IndexHtmlRequestHandlerIT extends ChromeBrowserTest {
         openTestUrl("/");
         findElement(By.tagName("button")).click();
         WebElement contentFromJs = findElement(By.id("contentFromOtherBundle"));
-        Assert.assertEquals("Content from other bundle", contentFromJs.getText());
+        Assert.assertEquals("Content from other bundle",
+                contentFromJs.getText());
     }
 
     @Test
