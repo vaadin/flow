@@ -394,9 +394,9 @@ public class FrontendUtils {
      */
     public static String getIndexHtmlContent(VaadinService service)
             throws IOException {
-        String indexHtmlPathInDevMode = "/" + VAADIN_MAPPING + "index.html";
+        String indexHtmlPathInDevMode = "/" + VAADIN_MAPPING + INDEX_HTML;
         String indexHtmlPathInProductionMode = VAADIN_SERVLET_RESOURCES
-                + "index.html";
+                + INDEX_HTML;
         return getFileContent(service, indexHtmlPathInDevMode,
                 indexHtmlPathInProductionMode);
     }
