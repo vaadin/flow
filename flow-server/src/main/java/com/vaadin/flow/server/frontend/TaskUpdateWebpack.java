@@ -41,6 +41,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
  */
 public class TaskUpdateWebpack implements FallibleCommand {
 
+    static final String PLUGINS_PLACEHOLDER = "//to-be-inserted-plugins";
+    static final String PLUGIN_IMPORTS_PLACEHOLDER = "//to-be-inserted-imports";
     /**
      * The name of the webpack config file.
      */
@@ -184,10 +186,10 @@ public class TaskUpdateWebpack implements FallibleCommand {
             // remove duplicated imports
             imports.remove(lines.get(i));
 
-            if (lines.get(i).startsWith("//to-be-inserted-imports")) {
+            if (lines.get(i).startsWith(PLUGIN_IMPORTS_PLACEHOLDER)) {
                 lines.set(i, String.join("\n", imports));
             }
-            if (lines.get(i).startsWith("//to-be-inserted-plugins")) {
+            if (lines.get(i).startsWith(PLUGINS_PLACEHOLDER)) {
                 lines.set(i, pluginsContent);
             }
         }
