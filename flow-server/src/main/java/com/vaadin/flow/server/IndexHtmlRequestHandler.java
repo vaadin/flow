@@ -42,7 +42,7 @@ public class IndexHtmlRequestHandler extends SynchronizedRequestHandler {
             "client-side bootstrapping mode.";
 
     private static final Pattern PATH_WITH_EXTENSION = Pattern
-            .compile(".+\\." + ".+$");
+            .compile(".+\\.[a-z0-9]{2,}$", Pattern.CASE_INSENSITIVE);
 
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
