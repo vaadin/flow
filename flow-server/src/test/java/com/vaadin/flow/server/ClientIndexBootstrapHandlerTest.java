@@ -61,7 +61,9 @@ public class ClientIndexBootstrapHandlerTest {
                         response);
         String indexHtml = responseOutput
                 .toString(StandardCharsets.UTF_8.name());
-        Assert.assertTrue(indexHtml.contains("index.html template content"));
+        Assert.assertTrue(
+                "Response should have content from the index.html template",
+                indexHtml.contains("index.html template content"));
     }
 
     @Test
@@ -72,7 +74,8 @@ public class ClientIndexBootstrapHandlerTest {
                         response);
         String indexHtml = responseOutput
                 .toString(StandardCharsets.UTF_8.name());
-        Assert.assertTrue(indexHtml.contains("<base href=\".\""));
+        Assert.assertTrue("Response should have correct base href",
+                indexHtml.contains("<base href=\".\""));
     }
 
     @Test
@@ -82,7 +85,8 @@ public class ClientIndexBootstrapHandlerTest {
                 createVaadinRequest("/some/path"), response);
         String indexHtml = responseOutput
                 .toString(StandardCharsets.UTF_8.name());
-        Assert.assertTrue(indexHtml.contains("<base href=\"./..\""));
+        Assert.assertTrue("Response should have correct base href",
+                indexHtml.contains("<base href=\"./..\""));
     }
 
     @Test
@@ -93,9 +97,15 @@ public class ClientIndexBootstrapHandlerTest {
                         response);
         String indexHtml = responseOutput
                 .toString(StandardCharsets.UTF_8.name());
-        Assert.assertTrue(indexHtml.contains(
+        Assert.assertTrue(
+                "Response should have ES6 bundle script based on "
+                        + "information in 'META-INF/VAADIN/config/stats.json'",
+                indexHtml.contains(
                 "<script type=\"module\" defer src=\"./VAADIN/build/index-1111.cache.js\"></script>"));
-        Assert.assertTrue(indexHtml.contains(
+        Assert.assertTrue(
+                "Response should have ES5 bundle script based on "
+                        + "information in 'META-INF/VAADIN/config/stats.json'",
+                indexHtml.contains(
                 "<script type=\"text/javascript\" defer src=\"./VAADIN/build/index.es5-2222.cache.js\" nomodule></script>"));
     }
 
@@ -103,32 +113,50 @@ public class ClientIndexBootstrapHandlerTest {
     public void canHandleRequest_requestWithRootPath_handleRequest() {
         boolean canHandleRequest = clientIndexBootstrapHandler
                 .canHandleRequest(createVaadinRequest(""));
-        Assert.assertTrue(canHandleRequest);
+        Assert.assertTrue("The handler should handle a root path request",
+                canHandleRequest);
     }
 
     @Test
     public void canHandleRequest_requestWithRoute_handleRequest() {
-        Assert.assertTrue(clientIndexBootstrapHandler
+        Assert.assertTrue(
+                "The handler should handle a route with " + "parameter",
+                clientIndexBootstrapHandler
                 .canHandleRequest(createVaadinRequest("/some/route")));
-        Assert.assertTrue(clientIndexBootstrapHandler
+        Assert.assertTrue("The handler should handle a normal route",
+                clientIndexBootstrapHandler
                 .canHandleRequest(createVaadinRequest("/myroute")));
-        Assert.assertTrue(clientIndexBootstrapHandler.canHandleRequest(
+        Assert.assertTrue("The handler should handle a directory request",
+                clientIndexBootstrapHandler.canHandleRequest(
                 createVaadinRequest("/myroute/ends/withslash/")));
-        Assert.assertTrue(clientIndexBootstrapHandler.canHandleRequest(
-                createVaadinRequest("/documentation/10.0.10/flow")));
+        Assert.assertTrue(
+                "The handler should handle a request if it has "
+                        + "extension pattern in the middle of the path",
+                clientIndexBootstrapHandler.canHandleRequest(
+                        createVaadinRequest("/documentation/10.0.x1/flow")));
     }
 
     @Test
     public void canHandleRequest_requestWithExtension_ignoreRequest() {
-        Assert.assertFalse(clientIndexBootstrapHandler
-                .canHandleRequest(createVaadinRequest("/nested/picture.png")));
-        Assert.assertFalse(clientIndexBootstrapHandler
+        Assert.assertFalse(
+                "The handler should not handle request with extension",
+                clientIndexBootstrapHandler.canHandleRequest(
+                        createVaadinRequest("/nested/picture.png")));
+        Assert.assertFalse(
+                "The handler should not handle request with capital extension",
+                clientIndexBootstrapHandler
                 .canHandleRequest(createVaadinRequest("/nested/CAPITAL.PNG")));
-        Assert.assertFalse(clientIndexBootstrapHandler
+        Assert.assertFalse(
+                "The handler should not handle request with extension",
+                clientIndexBootstrapHandler
                 .canHandleRequest(createVaadinRequest("/script.js")));
-        Assert.assertFalse(clientIndexBootstrapHandler
+        Assert.assertFalse(
+                "The handler should not handle request with extension",
+                clientIndexBootstrapHandler
                 .canHandleRequest(createVaadinRequest("/music.mp3")));
-        Assert.assertFalse(clientIndexBootstrapHandler
+        Assert.assertFalse(
+                "The handler should not handle request with only extension",
+                clientIndexBootstrapHandler
                 .canHandleRequest(createVaadinRequest("/.htaccess")));
     }
 
