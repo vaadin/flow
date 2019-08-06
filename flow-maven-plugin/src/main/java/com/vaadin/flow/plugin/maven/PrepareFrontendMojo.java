@@ -24,11 +24,13 @@ import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
+import org.sonatype.plexus.build.incremental.BuildContext;
 
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -113,6 +115,9 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
     @Parameter(defaultValue = "${project.build.directory}/" + FRONTEND)
     private File generatedFolder;
 
+    @Component
+    private BuildContext buildContext; // m2eclipse integration
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         super.execute();
@@ -160,6 +165,12 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
             FileUtils.forceMkdir(token.getParentFile());
             FileUtils.write(token, JsonUtil.stringify(buildInfo, 2) + "\n",
                     StandardCharsets.UTF_8.name());
+
+            // Inform m2eclipse that the directory containing the token file has
+            // been updated in order to trigger server re-deployment (#6103)
+            if (buildContext != null) {
+                buildContext.refresh(token.getParentFile());
+            }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

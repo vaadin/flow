@@ -30,19 +30,37 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Comment;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
+import org.jsoup.select.NodeVisitor;
 
 /**
  * Step which copies resources from provided collection of directories to the
  * target folder. It keeps the files hierarchical structure.
  * <p>
- * The content of copied file is modified to correct URI in the import.
+ * The content of copied file is modified to correct URIs in the imports and
+ * remove the comments.
  *
  * @author Vaadin Ltd
  *
  */
 public class CopyResourcesStep extends AbstractCopyResourcesStep {
+
+    private static class CommentRemover implements NodeVisitor {
+        @Override
+        public void tail(Node node, int depth) {
+            if (node instanceof Comment) {
+                node.remove();
+            }
+        }
+
+        @Override
+        public void head(Node node, int depth) {
+            // no op
+        }
+    }
 
     private static class HtmlImportRewriter implements FileTreeHandler {
 
@@ -63,7 +81,7 @@ public class CopyResourcesStep extends AbstractCopyResourcesStep {
             if (source.getFileName().toString().toLowerCase(Locale.ENGLISH)
                     .endsWith(".html")) {
                 Files.write(target, Collections
-                        .singletonList(adjustImports(source.toFile(), target)));
+                        .singletonList(adjustContent(source.toFile(), target)));
                 return true;
             }
             if (source.getFileName().toString().toLowerCase(Locale.ENGLISH)
@@ -74,7 +92,19 @@ public class CopyResourcesStep extends AbstractCopyResourcesStep {
             return false;
         }
 
-        private String adjustImports(File file, Path target)
+        /**
+         * Rewrites import URIs in {@code file} adjusting them for
+         * {@code target} path and removes HTML comments.
+         *
+         * @param file
+         *            the source file with the content to adjust
+         * @param target
+         *            the target path where the content is supposed to be
+         *            written
+         *
+         * @return the adjusted content
+         */
+        private String adjustContent(File file, Path target)
                 throws IOException {
             Document doc = Jsoup.parse(file, StandardCharsets.UTF_8.name());
             Element head = doc.head();
@@ -97,7 +127,8 @@ public class CopyResourcesStep extends AbstractCopyResourcesStep {
                 }
                 result.append(elementHtml).append('\n');
             }
-            result.append(body.html());
+            body.traverse(new CommentRemover());
+            result.append(body.outerHtml());
             return result.toString();
         }
 
