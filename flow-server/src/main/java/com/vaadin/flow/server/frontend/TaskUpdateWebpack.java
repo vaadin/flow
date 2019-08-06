@@ -21,7 +21,11 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -42,6 +46,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
      */
     private final String webpackTemplate;
     private final String webpackGeneratedTemplate;
+    private final transient Set<WebpackPlugin> plugins;
     private final transient Path webpackOutputPath;
     private final transient Path flowImportsFilePath;
     private final transient Path webpackConfigPath;
@@ -70,6 +75,36 @@ public class TaskUpdateWebpack implements FallibleCommand {
         this.webpackOutputPath = webpackOutputDirectory.toPath();
         this.flowImportsFilePath = generatedFlowImports.toPath();
         this.webpackConfigPath = webpackConfigFolder.toPath();
+        this.plugins = Collections.emptySet();
+    }
+
+    /**
+     * Create an instance of the updater given all configurable parameters.
+     *
+     * @param webpackConfigFolder
+     *            folder with the `webpack.config.js` file.
+     * @param webpackOutputDirectory
+     *            the directory to set for webpack to output its build results.
+     * @param webpackTemplate
+     *            name of the webpack resource to be used as template when
+     *            creating the <code>webpack.config.js</code> file.
+     * @param webpackGeneratedTemplate
+     *            name of the webpack resource to be used as template when
+     *            creating the <code>webpack.generated.js</code> file.
+     * @param generatedFlowImports
+     *            name of the JS file to update with the Flow project imports
+     * @param plugins
+     *            A list of webpack plugins should be inserted
+     */
+    TaskUpdateWebpack(File webpackConfigFolder, File webpackOutputDirectory,
+            String webpackTemplate, String webpackGeneratedTemplate,
+            File generatedFlowImports, Set<WebpackPlugin> plugins) {
+        this.webpackTemplate = webpackTemplate;
+        this.webpackGeneratedTemplate = webpackGeneratedTemplate;
+        this.webpackOutputPath = webpackOutputDirectory.toPath();
+        this.flowImportsFilePath = generatedFlowImports.toPath();
+        this.webpackConfigPath = webpackConfigFolder.toPath();
+        this.plugins = plugins;
     }
 
     @Override
@@ -90,8 +125,8 @@ public class TaskUpdateWebpack implements FallibleCommand {
 
         // If we have an old config file we remove it and create the new one
         // using the webpack.generated.js
-        if (configFile.exists()) {
-            if (!FileUtils.readFileToString(configFile, "UTF-8")
+        if (configFile.exists()
+                && !FileUtils.readFileToString(configFile, "UTF-8")
                     .contains("./webpack.generated.js")) {
                 log().warn(
                         "Flow generated webpack configuration was not mentioned "
@@ -99,14 +134,13 @@ public class TaskUpdateWebpack implements FallibleCommand {
                                 + "Please verify that './webpack.generated.js' is used "
                                 + "in the merge or remove the file to generate a new one.",
                         configFile);
-            }
         }
 
         if (!configFile.exists()) {
             URL resource = this.getClass().getClassLoader()
                     .getResource(webpackTemplate);
             FileUtils.copyURLToFile(resource, configFile);
-            log().info("Created webpack configuration file: " + configFile);
+            log().info("Created webpack configuration file: '{}'", configFile);
         }
 
         // Generated file is always re-written
@@ -116,13 +150,24 @@ public class TaskUpdateWebpack implements FallibleCommand {
         URL resource = this.getClass().getClassLoader()
                 .getResource(webpackGeneratedTemplate);
         FileUtils.copyURLToFile(resource, generatedFile);
+        List<String> lines = modifyWebpackConfig(generatedFile);
+
+        FileUtils.writeLines(generatedFile, lines);
+    }
+
+    private List<String> modifyWebpackConfig(File generatedFile)
+            throws IOException {
         List<String> lines = FileUtils.readLines(generatedFile, "UTF-8");
 
         String outputLine = "const mavenOutputFolderForFlowBundledFiles = require('path').resolve(__dirname, '"
                 + getEscapedRelativeWebpackPath(webpackOutputPath) + "');";
         String mainLine = "const fileNameOfTheFlowGeneratedMainEntryPoint = require('path').resolve(__dirname, '"
                 + getEscapedRelativeWebpackPath(flowImportsFilePath) + "');";
-
+        Set<String> imports = plugins.stream()
+                .map(WebpackPlugin::getImportStatement)
+                .collect(Collectors.toSet());
+        String pluginsContent = plugins.stream().map(WebpackPlugin::getContent)
+                .collect(Collectors.joining(",\n\n"));
         for (int i = 0; i < lines.size(); i++) {
             String line = lines.get(i).trim();
             if (lines.get(i).startsWith(
@@ -135,9 +180,18 @@ public class TaskUpdateWebpack implements FallibleCommand {
                     && !line.equals(outputLine)) {
                 lines.set(i, outputLine);
             }
-        }
 
-        FileUtils.writeLines(generatedFile, lines);
+            // remove duplicated imports
+            imports.remove(lines.get(i));
+
+            if (lines.get(i).startsWith("//to-be-inserted-imports")) {
+                lines.set(i, String.join("\n", imports));
+            }
+            if (lines.get(i).startsWith("//to-be-inserted-plugins")) {
+                lines.set(i, pluginsContent);
+            }
+        }
+        return lines;
     }
 
     private String getEscapedRelativeWebpackPath(Path path) {

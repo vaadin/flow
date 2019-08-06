@@ -19,7 +19,9 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 
@@ -30,7 +32,9 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
 
@@ -84,6 +88,11 @@ public class NodeTasks implements FallibleCommand {
          * Directory where generated files are written.
          */
         public final File generatedFolder;
+
+        /**
+         * Is in client-side bootstrapping mode
+         */
+        private boolean clientSideBootstrapMode;
 
         /**
          * Create a builder instance given an specific npm folder.
@@ -292,6 +301,12 @@ public class NodeTasks implements FallibleCommand {
             this.frontendResourcesDirectory = frontendResourcesDirectory;
             return this;
         }
+
+        public Builder inClientSideBootstrapMode(
+                boolean clientSideBootstrapMode) {
+            this.clientSideBootstrapMode = clientSideBootstrapMode;
+            return this;
+        }
     }
 
     private final Collection<FallibleCommand> commands = new ArrayList<>();
@@ -343,10 +358,9 @@ public class NodeTasks implements FallibleCommand {
 
         if (builder.webpackTemplate != null
                 && !builder.webpackTemplate.isEmpty()) {
-            commands.add(new TaskUpdateWebpack(builder.npmFolder,
-                    builder.webpackOutputDirectory, builder.webpackTemplate,
-                    builder.webpackGeneratedTemplate,
-                    new File(builder.generatedFolder, IMPORTS_NAME)));
+            TaskUpdateWebpack taskUpdateWebpack = createTaskUpdateWebpack(
+                    builder);
+            commands.add(taskUpdateWebpack);
         }
 
         if (builder.enableImportsUpdate) {
@@ -359,6 +373,26 @@ public class NodeTasks implements FallibleCommand {
                         .addAll(frontendDependencies.getClasses());
             }
         }
+    }
+
+    private TaskUpdateWebpack createTaskUpdateWebpack(Builder builder) {
+        TaskUpdateWebpack taskUpdateWebpack;
+        if (builder.clientSideBootstrapMode) {
+            WebpackPluginCopy indexHtmlCopyPlugin = new WebpackPluginCopy(
+                    "${frontendFolder}/" + INDEX_HTML,
+                    "${mavenOutputFolderForFlowBundledFiles}/" + INDEX_HTML);
+            taskUpdateWebpack = new TaskUpdateWebpack(builder.npmFolder,
+                    builder.webpackOutputDirectory, builder.webpackTemplate,
+                    builder.webpackGeneratedTemplate,
+                    new File(FRONTEND, INDEX_HTML),
+                    Collections.singleton(indexHtmlCopyPlugin));
+        } else {
+            taskUpdateWebpack = new TaskUpdateWebpack(builder.npmFolder,
+                    builder.webpackOutputDirectory, builder.webpackTemplate,
+                    builder.webpackGeneratedTemplate,
+                    new File(builder.generatedFolder, IMPORTS_NAME));
+        }
+        return taskUpdateWebpack;
     }
 
     @Override
