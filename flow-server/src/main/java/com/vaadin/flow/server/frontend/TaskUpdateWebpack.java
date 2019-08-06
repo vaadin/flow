@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -50,7 +49,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
     private final String webpackGeneratedTemplate;
     private final transient Set<WebpackPlugin> plugins;
     private final transient Path webpackOutputPath;
-    private final transient Path flowImportsFilePath;
+    private final transient Path webpackEntryPoint;
     private final transient Path webpackConfigPath;
 
     /**
@@ -66,18 +65,16 @@ public class TaskUpdateWebpack implements FallibleCommand {
      * @param webpackGeneratedTemplate
      *            name of the webpack resource to be used as template when
      *            creating the <code>webpack.generated.js</code> file.
-     * @param generatedFlowImports
-     *            name of the JS file to update with the Flow project imports
+     * @param webpackEntryPoint
+     *            name of the file to update as the entry point in webpack
+     *            config
      */
     TaskUpdateWebpack(File webpackConfigFolder, File webpackOutputDirectory,
             String webpackTemplate, String webpackGeneratedTemplate,
-            File generatedFlowImports) {
-        this.webpackTemplate = webpackTemplate;
-        this.webpackGeneratedTemplate = webpackGeneratedTemplate;
-        this.webpackOutputPath = webpackOutputDirectory.toPath();
-        this.flowImportsFilePath = generatedFlowImports.toPath();
-        this.webpackConfigPath = webpackConfigFolder.toPath();
-        this.plugins = Collections.emptySet();
+            File webpackEntryPoint) {
+        this(webpackConfigFolder, webpackOutputDirectory, webpackTemplate,
+                webpackGeneratedTemplate, webpackEntryPoint,
+                Collections.emptySet());
     }
 
     /**
@@ -93,18 +90,19 @@ public class TaskUpdateWebpack implements FallibleCommand {
      * @param webpackGeneratedTemplate
      *            name of the webpack resource to be used as template when
      *            creating the <code>webpack.generated.js</code> file.
-     * @param generatedFlowImports
-     *            name of the JS file to update with the Flow project imports
+     * @param webpackEntryPoint
+     *            name of the file to update as the entry point in webpack
+     *            config
      * @param plugins
      *            A list of webpack plugins should be inserted
      */
     TaskUpdateWebpack(File webpackConfigFolder, File webpackOutputDirectory,
             String webpackTemplate, String webpackGeneratedTemplate,
-            File generatedFlowImports, Set<WebpackPlugin> plugins) {
+            File webpackEntryPoint, Set<WebpackPlugin> plugins) {
         this.webpackTemplate = webpackTemplate;
         this.webpackGeneratedTemplate = webpackGeneratedTemplate;
         this.webpackOutputPath = webpackOutputDirectory.toPath();
-        this.flowImportsFilePath = generatedFlowImports.toPath();
+        this.webpackEntryPoint = webpackEntryPoint.toPath();
         this.webpackConfigPath = webpackConfigFolder.toPath();
         this.plugins = plugins;
     }
@@ -164,7 +162,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
         String outputLine = "const mavenOutputFolderForFlowBundledFiles = require('path').resolve(__dirname, '"
                 + getEscapedRelativeWebpackPath(webpackOutputPath) + "');";
         String mainLine = "const fileNameOfTheFlowGeneratedMainEntryPoint = require('path').resolve(__dirname, '"
-                + getEscapedRelativeWebpackPath(flowImportsFilePath) + "');";
+                + getEscapedRelativeWebpackPath(webpackEntryPoint) + "');";
         Set<String> imports = plugins.stream()
                 .map(WebpackPlugin::getImportStatement)
                 .collect(Collectors.toSet());
