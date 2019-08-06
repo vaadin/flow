@@ -41,11 +41,10 @@
         <module>test-misc</module>
         <module>test-misc/pom-bower.xml</module>
 
-        <!--   Temporary disabled because the test is not stable. Will be investigated and enabled back.
         <module>test-mixed</module>
         <module>test-mixed/pom-npm-production.xml</module>
         <module>test-mixed/pom-bower-devmode.xml</module>
-        <module>test-mixed/pom-bower-production.xml</module-->
+        <module>test-mixed/pom-bower-production.xml</module>
         <module>test-npm-only-features</module>
         <module>test-npm-web-components</module>
         <module>test-multi-war</module>
