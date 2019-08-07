@@ -14,7 +14,7 @@ const baseDir = path.resolve(__dirname);
 const frontendFolder = `${baseDir}/frontend`;
 
 const fileNameOfTheFlowGeneratedMainEntryPoint = '[to-be-generated-by-flow]';
-const fileNameOfFrontEndIndexMainEntryPoint = '[to-be-generated-by-flow]';
+const fileNameOfFrontendIndexMainEntryPoint = `${frontendFolder}/index`;
 const mavenOutputFolderForFlowBundledFiles = '[to-be-generated-by-flow]';
 
 // public path for resources, must match Flow VAADIN_BUILD
@@ -47,7 +47,7 @@ module.exports = {
   mode: 'production',
   context: frontendFolder,
   entry: {
-    bundle: isClientSideBootstrapMode ? fileNameOfFrontEndIndexMainEntryPoint : fileNameOfTheFlowGeneratedMainEntryPoint
+    bundle: isClientSideBootstrapMode ? fileNameOfFrontendIndexMainEntryPoint : fileNameOfTheFlowGeneratedMainEntryPoint
   },
 
   output: {

@@ -85,7 +85,7 @@ public class NodeTasksTest {
     }
 
     @Test
-    public void should_UseFrontendIndexEntryPoint_When_EnableClientSideBootstrapMode()
+    public void should_SetIsClientBootstrapMode_When_EnableClientSideBootstrapMode()
             throws ExecutionFailedException, IOException {
         Builder builder = new Builder(
                 new DefaultClassFinder(this.getClass().getClassLoader()),
@@ -100,16 +100,10 @@ public class NodeTasksTest {
         String webpackGeneratedContent = Files
                 .lines(new File(userDir, WEBPACK_GENERATED).toPath())
                 .collect(Collectors.joining("\n"));
-        Assert.assertFalse(
-                "Generated webpack should not use generated-flow-imports.js as"
-                        + " entry point",
-                webpackGeneratedContent.contains(IMPORTS_NAME));
         Assert.assertTrue(
-                "Generated webpack should use frontend/index as entry point",
+                "isClientSideBootstrapMode should be true",
                 webpackGeneratedContent.contains(
-                        "const fileNameOfTheFlowGeneratedMainEntryPoint = "
-                                + "require('path').resolve(__dirname, '"
-                                + FRONTEND + "index');"));
+                        "const isClientSideBootstrapMode = true;"));
     }
 
     private Object getFieldValue(Object obj, String name) throws Exception {

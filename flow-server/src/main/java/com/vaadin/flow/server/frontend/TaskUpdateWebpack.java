@@ -160,8 +160,6 @@ public class TaskUpdateWebpack implements FallibleCommand {
                 + getEscapedRelativeWebpackPath(webpackOutputPath) + "');";
         String mainLine = "const fileNameOfTheFlowGeneratedMainEntryPoint = require('path').resolve(__dirname, '"
                 + getEscapedRelativeWebpackPath(webpackEntryPoint) + "');";
-        String mainLineForClientSideEntryPoint = "const fileNameOfFrontEndIndexMainEntryPoint = "
-                + "require('path').resolve(__dirname, `${frontendFolder}/index`);";
         String isClientSideBootstrapModeLine = "const isClientSideBootstrapMode = "
                 + isClientSideBootstrapMode + ";";
         for (int i = 0; i < lines.size(); i++) {
@@ -175,11 +173,6 @@ public class TaskUpdateWebpack implements FallibleCommand {
                     .startsWith("const mavenOutputFolderForFlowBundledFiles")
                     && !line.equals(outputLine)) {
                 lines.set(i, outputLine);
-            }
-
-            if (lines.get(i).startsWith(
-                    "const fileNameOfFrontEndIndexMainEntryPoint")) {
-                lines.set(i, mainLineForClientSideEntryPoint);
             }
 
             if (lines.get(i).startsWith("const isClientSideBootstrapMode")) {

@@ -117,6 +117,37 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
 
     }
 
+    @Test
+    public void should_notSetClientSideBootstrapMode_when_runningByDefault()
+            throws IOException {
+        webpackUpdater.execute();
+        String webpackGeneratedContents = Files.lines(webpackGenerated.toPath())
+                .collect(Collectors.joining("\n"));
+        Assert.assertTrue(
+                "isClientSideBootstrapMode should be false by default",
+                webpackGeneratedContents
+                        .contains("const isClientSideBootstrapMode = false;"));
+
+    }
+
+    @Test
+    public void should_setClientSideBootstrapMode_when_itIsSet()
+            throws IOException {
+        webpackUpdater = new TaskUpdateWebpack(
+                baseDir,
+                new File(baseDir, TARGET + "classes"),
+                WEBPACK_CONFIG, WEBPACK_GENERATED,
+                new File(baseDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME), true);
+        webpackUpdater.execute();
+        String webpackGeneratedContents = Files.lines(webpackGenerated.toPath())
+                .collect(Collectors.joining("\n"));
+        Assert.assertTrue(
+                "isClientSideBootstrapMode should be true",
+                webpackGeneratedContents
+                        .contains("const isClientSideBootstrapMode = true;"));
+
+    }
+
     private void assertWebpackGeneratedConfigContent(String entryPoint, String outputFolder) throws IOException {
 
         List<String> webpackContents = Files.lines(webpackGenerated.toPath()).collect(Collectors.toList());
