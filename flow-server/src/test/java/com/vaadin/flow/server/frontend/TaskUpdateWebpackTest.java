@@ -20,8 +20,6 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -117,58 +115,6 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
 
         Assert.assertTrue("Custom string has disappeared", webpackContents.contains(customString));
 
-    }
-
-    @Test
-    public void should_addDeclaredPluginsToGeneratedFile() throws IOException {
-        WebpackPluginCopy webpackPluginCopy = new WebpackPluginCopy(
-                "source-file-to-copy", "destination-file");
-        WebpackPlugin myPlugin = new WebpackPlugin() {
-            @Override
-            public String getImportStatement() {
-                // use duplicated import for testing
-                return webpackPluginCopy.getImportStatement();
-            }
-
-            @Override
-            public String getContent() {
-                return "My plugin content";
-            }
-        };
-        webpackUpdater = new TaskUpdateWebpack(baseDir,
-                new File(baseDir, TARGET + "classes"), WEBPACK_CONFIG,
-                WEBPACK_GENERATED,
-                new File(baseDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME),
-                new HashSet<>(Arrays.asList(webpackPluginCopy, myPlugin)));
-        webpackUpdater.execute();
-
-        String webpackGeneratedContent = Files.lines(webpackGenerated.toPath())
-                .collect(Collectors.joining("\n"));
-        Assert.assertTrue(
-                "webpack.generated.js should have content of the declared plugin",
-                webpackGeneratedContent
-                        .contains(webpackPluginCopy.getContent()));
-        Assert.assertTrue(
-                "webpack.generated.js should have content of the declared plugin",
-                webpackGeneratedContent.contains(myPlugin.getContent()));
-        Assert.assertFalse("Plugin placeholder should not exist anymore",
-                webpackGeneratedContent
-                        .contains(TaskUpdateWebpack.PLUGINS_PLACEHOLDER));
-        Assert.assertFalse("Plugin import placeholder should not exist anymore",
-                webpackGeneratedContent.contains(
-                        TaskUpdateWebpack.PLUGIN_IMPORTS_PLACEHOLDER));
-        int countOfImport = countOccurrenceString(webpackGeneratedContent,
-                webpackPluginCopy.getImportStatement());
-        Assert.assertEquals(
-                "There should only one import of the CopyWebpackPlugin", 1,
-                countOfImport);
-    }
-
-    private int countOccurrenceString(String parentString,
-            String targetString) {
-        return (parentString.length()
-                - parentString.replace(targetString, "").length())
-                / targetString.length();
     }
 
     private void assertWebpackGeneratedConfigContent(String entryPoint, String outputFolder) throws IOException {

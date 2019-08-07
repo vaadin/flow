@@ -14,6 +14,7 @@ const baseDir = path.resolve(__dirname);
 const frontendFolder = `${baseDir}/frontend`;
 
 const fileNameOfTheFlowGeneratedMainEntryPoint = '[to-be-generated-by-flow]';
+const fileNameOfFrontEndIndexMainEntryPoint = '[to-be-generated-by-flow]';
 const mavenOutputFolderForFlowBundledFiles = '[to-be-generated-by-flow]';
 
 // public path for resources, must match Flow VAADIN_BUILD
@@ -32,6 +33,8 @@ mkdirp(buildFolder);
 mkdirp(confFolder);
 
 const devMode = process.argv.find(v => v.indexOf('webpack-dev-server') >= 0);
+const isClientSideBootstrapMode = false;
+
 let stats;
 
 exports = {
@@ -44,7 +47,7 @@ module.exports = {
   mode: 'production',
   context: frontendFolder,
   entry: {
-    bundle: fileNameOfTheFlowGeneratedMainEntryPoint
+    bundle: isClientSideBootstrapMode ? fileNameOfFrontEndIndexMainEntryPoint : fileNameOfTheFlowGeneratedMainEntryPoint
   },
 
   output: {
@@ -141,6 +144,9 @@ module.exports = {
       to: `${build}/webcomponentsjs/`
     }]),
 
-//to-be-inserted-plugins
-  ]
+    isClientSideBootstrapMode && new CopyWebpackPlugin([{
+     from: `${frontendFolder}/index.html`,
+     to: `${mavenOutputFolderForFlowBundledFiles}/index.html`
+    }]),
+  ].filter(Boolean)
 };
