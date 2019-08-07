@@ -50,7 +50,7 @@ public class ClientIndexHandler extends SynchronizedRequestHandler {
                 request.getService());
         response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
         request.getService().modifyClientIndexBootstrapPage(
-                new ClientIndexBootstrapPageResponse(request, response, session,
+                new ClientIndexResponse(request, response, session,
                         indexDocument));
         try {
             response.getOutputStream()

@@ -20,17 +20,32 @@ import java.io.Serializable;
 import java.util.EventListener;
 
 /**
- * Bootstrap listener when using {@link ClientIndexBootstrapHandler}.
+ * This event listener is notified when the bootstrap HTML is about to be
+ * generated and sent to the client. The bootstrap HTML is first constructed as
+ * an in-memory DOM representation which registered listeners can modify before
+ * the final HTML is generated.
+ * <p>
+ * BootstrapListeners are registered using the {@link ServiceInitEvent} during
+ * the initialization of the application. Bootstrap listener is used when the
+ * application is in {@link Constants#SERVLET_PARAMETER_CLIENT_SIDE_MODE}.
+ * 
+ * @see ServiceInitEvent#addClientIndexBootstrapListener(ClientIndexBootstrapListener)
+ *      (BootstrapListener).
+ * @see ClientIndexHandler
+ * @see Constants#SERVLET_PARAMETER_CLIENT_SIDE_MODE
  */
 @FunctionalInterface
 public interface ClientIndexBootstrapListener
         extends EventListener, Serializable {
     /**
-     * Modify the page response.
+     * The method allows to modify the page response before it is sent to
+     * browser.
      * 
-     * @param clientIndexBootstrapPageResponse
-     *            page response
+     * @param clientIndexResponse
+     *            the response object which includes the {@link VaadinRequest},
+     *            {@link VaadinResponse}, {@link VaadinSession} and
+     *            {@link org.jsoup.nodes.Document}
      */
     void modifyBootstrapPage(
-            ClientIndexBootstrapPageResponse clientIndexBootstrapPageResponse);
+            ClientIndexResponse clientIndexResponse);
 }

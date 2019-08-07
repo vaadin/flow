@@ -101,6 +101,24 @@ public interface Instantiator extends Serializable {
         return serviceInitListeners;
     }
 
+    /**
+     * Processes the available client index bootstrap listeners. This method can
+     * supplement the set of bootstrap listeners provided by
+     * {@link VaadinServiceInitListener} implementations.
+     * <p>
+     * The default implementation returns the original listeners without
+     * changes.
+     * <p>
+     * The order of the listeners inside the stream defines the order of the
+     * execution of those listeners by the
+     * {@link VaadinService#modifyBootstrapPage(BootstrapPageResponse)} method.
+     *
+     * @param clientIndexBootstrapListener
+     *            a stream of client index bootstrap listeners provided by
+     *            service init listeners, not <code>null</code>
+     *
+     * @return a stream of all bootstrap listeners to use, not <code>null</code>
+     */
     default Stream<ClientIndexBootstrapListener> getClientIndexBootstrapListeners(
             Stream<ClientIndexBootstrapListener> clientIndexBootstrapListener) {
         return clientIndexBootstrapListener;
