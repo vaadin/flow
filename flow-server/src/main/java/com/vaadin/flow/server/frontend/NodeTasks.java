@@ -89,7 +89,7 @@ public class NodeTasks implements FallibleCommand {
         public final File generatedFolder;
 
         /**
-         * Is in client-side bootstrapping mode
+         * Is in client-side bootstrapping mode.
          */
         private boolean clientSideBootstrapMode;
 
