@@ -10,23 +10,13 @@
         ]
       },
       "fixSessionCapabilities": "no-detect"
-    },
-    {
-      "browserName": "firefox",
-      "moz:firefoxOptions": {
-        "args": [
-          "-headless",
-          "--window-size=1024,768"
-        ]
-      }
     }
   ],
   "suites": "target/frontend-tests/tests.js",
   "tunnelOptions": {
     "version": "3.141.59",
     "drivers": [
-      {"name": "chrome", "version": "76.0.3809.68"},
-      {"name": "firefox", "version": "0.24.0"}
+      {"name": "chrome", "version": "76.0.3809.68"}
     ]
   }
 }
