@@ -27,12 +27,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Scanner;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.polymertemplate.BundleParser;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
@@ -373,9 +375,37 @@ public class FrontendUtils {
         return content != null ? streamToString(content) : null;
     }
 
-    public static String getStatsHash() throws IOException{
-        DevModeHandler handler = DevModeHandler.getDevModeHandler();
-        return streamToString(handler.prepareConnection("/stats.hash", "GET").getInputStream()).replaceAll("\"","");
+    /**
+     * Get the latest has for the stats file. In development mode it is taken
+     * from the webpack-dev-server, while in production mode and disabled dev
+     * server mode we read it from the stats.json file.
+     *
+     * @return hash string for the stats.json file, empty string if none found
+     * @throws IOException
+     *         if an I/O error occurs while creating the input stream.
+     */
+    public static String getStatsHash(VaadinService service) throws IOException {
+        DeploymentConfiguration config = service.getDeploymentConfiguration();
+        if (!config.isProductionMode() && config.enableDevServer()) {
+            DevModeHandler handler = DevModeHandler.getDevModeHandler();
+            return streamToString(
+                    handler.prepareConnection("/stats.hash", "GET").getInputStream()).replaceAll("\"", "");
+        }
+
+        String stats = service.getDeploymentConfiguration()
+                .getStringProperty(SERVLET_PARAMETER_STATISTICS_JSON,
+                        VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT)
+                // Remove absolute
+                .replaceFirst("^/", "");
+        Scanner scanner = new Scanner(new File(service.getClassLoader()
+                .getResource(stats).getFile()));
+        while (scanner.hasNextLine()) {
+            String line = scanner.nextLine();
+            if(line.trim().startsWith("\"hash\"")) {
+                return BundleParser.getHashFromStatistics(line);
+            }
+        }
+        return "";
     }
 
     private static InputStream getStatsFromWebpack() throws IOException {

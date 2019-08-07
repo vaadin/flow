@@ -165,8 +165,9 @@ public class NpmTemplateParser implements TemplateParser {
 
     private String getSourcesFromStats(VaadinService service, String url)
             throws IOException {
-        String hash = FrontendUtils.getStatsHash();
-        if(jsonStats == null || !jsonStats.get("hash").asString().equals(hash)) {
+        String hash = FrontendUtils.getStatsHash(service);
+        if (jsonStats == null || !jsonStats.get("hash").asString()
+                .equals(hash)) {
             String content = FrontendUtils.getStatsContent(service);
             if (content != null) {
                 updateCache(url, content);
