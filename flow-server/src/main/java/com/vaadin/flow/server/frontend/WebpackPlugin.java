@@ -18,7 +18,8 @@ package com.vaadin.flow.server.frontend;
 import java.io.Serializable;
 
 /**
- * Interface for webpack plugin wrapper which will be
+ * Interface for webpack plugin wrapper which can be inserted into webpack
+ * configuration by {@link TaskUpdateWebpack}.
  */
 public interface WebpackPlugin extends Serializable {
     /**
