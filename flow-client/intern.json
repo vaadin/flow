@@ -1,0 +1,18 @@
+{
+  "environments": [
+    {
+      "browserName": "node"
+    },
+    {
+      "browserName": "chrome",
+      "chromeOptions": {
+        "args": [
+          "headless",
+          "disable-gpu"
+        ]
+      },
+      "fixSessionCapabilities": "no-detect"
+    }
+  ],
+  "suites": "target/frontend-tests/tests.js"
+}

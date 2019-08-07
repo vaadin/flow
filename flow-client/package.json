@@ -1,0 +1,39 @@
+{
+  "name": "@vaadin/flow-deps",
+  "description": "Flow client package",
+  "version": "0.0.1",
+  "main": "src/main/resources/META-INF/frontend/Flow",
+  "author": "Vaadin Ltd",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/vaadin/flow/issues"
+  },
+  "scripts": {
+    "lint": "eslint 'src/main/resources/META-INF/resources/frontend/**/*.js' && tslint 'src/main/resources/META-INF/resources/frontend/**/*.ts'",
+    "compile": "tsc",
+    "build": "npm run lint && npm run compile",
+    "test": "webpack --config=webpack.tests.config.js && intern",
+    "debug": "webpack --config=webpack.tests.config.js && intern serveOnly"
+  },
+  "homepage": "https://vaadin.com",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/vaadin/flow.git"
+  },
+  "files": [
+    "src/main/resources/META-INF/resources/frontend"
+  ],
+  "devDependencies": {
+    "eslint": "^5.8.0",
+    "eslint-config-vaadin": "^0.2.7",
+    "tslint": "^5.12.1",
+    "fetch-mock": "^7.3.0",
+    "intern": "^4.4.3",
+    "ts-loader": "^6.0.4",
+    "typescript": "^3.5.3",
+    "tslint-config-prettier": "^1.18.0",
+    "tslint-eslint-rules": "^5.4.0",
+    "webpack": "^4.39.1",
+    "webpack-cli": "^3.3.6"
+  }
+}
