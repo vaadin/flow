@@ -373,6 +373,11 @@ public class FrontendUtils {
         return content != null ? streamToString(content) : null;
     }
 
+    public static String getStatsHash() throws IOException{
+        DevModeHandler handler = DevModeHandler.getDevModeHandler();
+        return streamToString(handler.prepareConnection("/stats.hash", "GET").getInputStream()).replaceAll("\"","");
+    }
+
     private static InputStream getStatsFromWebpack() throws IOException {
         DevModeHandler handler = DevModeHandler.getDevModeHandler();
         return handler.prepareConnection("/stats.json", "GET").getInputStream();
