@@ -37,6 +37,14 @@ public class ClientIndexHandlerIT extends ChromeBrowserTest {
     }
 
     @Test
+    public void clientIndexBootstrapListener_openRootURL_shouldHaveModifiedLabel() {
+        openTestUrl("/");
+        waitForElementPresent(By.tagName("div"));
+        String content = findElement(By.tagName("label")).getText();
+        Assert.assertEquals("Modified page", content);
+    }
+
+    @Test
     public void indexHtmlRequestHandler_openRandomRoute_shouldResponseIndexHtml() {
         openTestUrl("/abc");
         waitForElementPresent(By.tagName("div"));
