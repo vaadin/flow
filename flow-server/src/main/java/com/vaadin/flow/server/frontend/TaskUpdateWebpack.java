@@ -37,15 +37,13 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
  */
 public class TaskUpdateWebpack implements FallibleCommand {
 
-    static final String PLUGINS_PLACEHOLDER = "//to-be-inserted-plugins";
-    static final String PLUGIN_IMPORTS_PLACEHOLDER = "//to-be-inserted-imports";
     /**
      * The name of the webpack config file.
      */
     private final String webpackTemplate;
     private final String webpackGeneratedTemplate;
     private final transient Path webpackOutputPath;
-    private final transient Path webpackEntryPoint;
+    private final transient Path flowImportsFilePath;
     private final transient Path webpackConfigPath;
     private final boolean isClientSideBootstrapMode;
 
@@ -62,15 +60,14 @@ public class TaskUpdateWebpack implements FallibleCommand {
      * @param webpackGeneratedTemplate
      *            name of the webpack resource to be used as template when
      *            creating the <code>webpack.generated.js</code> file.
-     * @param webpackEntryPoint
-     *            name of the file to update as the entry point in webpack
-     *            config
+     * @param generatedFlowImports
+     *            name of the JS file to update with the Flow project imports
      */
     TaskUpdateWebpack(File webpackConfigFolder, File webpackOutputDirectory,
             String webpackTemplate, String webpackGeneratedTemplate,
-            File webpackEntryPoint) {
+            File generatedFlowImports) {
         this(webpackConfigFolder, webpackOutputDirectory, webpackTemplate,
-                webpackGeneratedTemplate, webpackEntryPoint,
+                webpackGeneratedTemplate, generatedFlowImports,
                 false);
     }
 
@@ -87,19 +84,18 @@ public class TaskUpdateWebpack implements FallibleCommand {
      * @param webpackGeneratedTemplate
      *            name of the webpack resource to be used as template when
      *            creating the <code>webpack.generated.js</code> file.
-     * @param webpackEntryPoint
-     *            name of the file to update as the entry point in webpack
-     *            config
+     * @param generatedFlowImports
+     *            name of the JS file to update with the Flow project imports
      * @param isClientSideBootstrapMode
      *            whether the application running with clientSideBootstrapMode
      */
     TaskUpdateWebpack(File webpackConfigFolder, File webpackOutputDirectory,
             String webpackTemplate, String webpackGeneratedTemplate,
-            File webpackEntryPoint, boolean isClientSideBootstrapMode) {
+            File generatedFlowImports, boolean isClientSideBootstrapMode) {
         this.webpackTemplate = webpackTemplate;
         this.webpackGeneratedTemplate = webpackGeneratedTemplate;
         this.webpackOutputPath = webpackOutputDirectory.toPath();
-        this.webpackEntryPoint = webpackEntryPoint.toPath();
+        this.flowImportsFilePath = generatedFlowImports.toPath();
         this.webpackConfigPath = webpackConfigFolder.toPath();
         this.isClientSideBootstrapMode = isClientSideBootstrapMode;
     }
@@ -159,7 +155,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
         String outputLine = "const mavenOutputFolderForFlowBundledFiles = require('path').resolve(__dirname, '"
                 + getEscapedRelativeWebpackPath(webpackOutputPath) + "');";
         String mainLine = "const fileNameOfTheFlowGeneratedMainEntryPoint = require('path').resolve(__dirname, '"
-                + getEscapedRelativeWebpackPath(webpackEntryPoint) + "');";
+                + getEscapedRelativeWebpackPath(flowImportsFilePath) + "');";
         String isClientSideBootstrapModeLine = "const isClientSideBootstrapMode = "
                 + isClientSideBootstrapMode + ";";
         for (int i = 0; i < lines.size(); i++) {
