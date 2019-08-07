@@ -14,6 +14,20 @@ suite("Flow", () => {
 
   beforeEach(() => {
     mock.setup();
+  });
+
+  afterEach(() => {
+    mock.teardown();
+  });
+
+  test("should accept a configuration object", () => {
+    const flow = new Flow({imports: () => {}});
+    assert.isDefined(flow.config);
+    assert.isDefined(flow.config.imports);
+  });
+
+  test("should initialize Flow client when calling start()", () => {
+    // Configure a valid server response
     mock.get('VAADIN/?v-r=init', (req, res) => {
       assert.equal('GET', req.method());
       return res
@@ -42,31 +56,40 @@ suite("Flow", () => {
         }
       `);
     });
-  });
 
-  afterEach(() => {
-    mock.teardown();
-  });
+    const $wnd = window as any;
+    assert.isUndefined($wnd.Vaadin);
 
-  test("should accept a configuration object", () => {
-    const flow = new Flow({imports: () => {}});
-    assert.isDefined(flow.config);
-    assert.isDefined(flow.config.imports);
-  });
-
-  test("should have the start() method in the API", () => {
     return new Flow()
       .start()
       .then(response => {
         assert.isDefined(response);
         assert.isDefined(response.appConfig);
-        const $wnd = window as any;
         // Check that bootstrap was initialized
         assert.isDefined($wnd.Vaadin.Flow.initApplication);
         assert.isDefined($wnd.Vaadin.Flow.registerWidgetset);
         // Check that flowClient was initialized
         assert.isDefined($wnd.Vaadin.Flow.resolveUri);
         assert.isFalse($wnd.Vaadin.Flow.clients.foobar.isActive());
+      });
+  });
+
+  test("should throw when an incorrect server response is received", () => {
+    // Configure an invalid server response
+    mock.get('VAADIN/?v-r=init', (req, res) => {
+      assert.equal('GET', req.method());
+      return res
+        .status(500)
+        .body(`Unexpected Server Error`);
+    });
+
+    return new Flow()
+      .start()
+      .then(() => {
+        throw new Error('Should not happen');
+      })
+      .catch(error => {
+        assert.match(error.toString(), /500/);
       });
   });
 
