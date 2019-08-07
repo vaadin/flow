@@ -68,9 +68,9 @@ public class DefaultDeploymentConfiguration
             + "dependency.";
 
     private static final String CLIENT_SIDE_BOOTSTRAP_MODE = SEPARATOR +
-            "Running the application in 'clientSideBootstrapMode' which will " +
-            "require an 'index.html' template in the 'frontend' folder for " +
-            "bootstrapping the application." + SEPARATOR;
+            "\nRunning the application in 'clientSideBootstrapMode' which "
+            + "will require an 'index.html' template in the 'frontend' folder for "
+            + "bootstrapping the application." + SEPARATOR;
     /**
      * Default value for {@link #getHeartbeatInterval()} = {@value} .
      */
