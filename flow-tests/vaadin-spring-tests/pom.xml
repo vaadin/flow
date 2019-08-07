@@ -346,6 +346,9 @@
                     <name>bowerMode</name>
                 </property>
             </activation>
+            <properties>
+                <vaadin.compatibilityMode>true</vaadin.compatibilityMode>
+            </properties>
             <modules>
                 <module>test-spring-common</module>
 
