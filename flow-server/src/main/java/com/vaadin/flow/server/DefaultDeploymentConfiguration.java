@@ -65,7 +65,9 @@ public class DefaultDeploymentConfiguration
             + "'flow-build-info.json' exists on the classpath. With Maven, "
             + "this is handled by the 'prepare-frontend' goal. To use "
             + "compatibility mode, add the 'flow-server-compatibility-mode' "
-            + "dependency.";
+            + "dependency. If using Vaadin with Spring Boot, instead set the "
+            + "property 'vaadin.compatibilityMode' to 'true' in "
+            + "'application.properties'.";
     /**
      * Default value for {@link #getHeartbeatInterval()} = {@value} .
      */
