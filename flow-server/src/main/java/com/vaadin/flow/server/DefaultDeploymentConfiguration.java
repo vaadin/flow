@@ -71,6 +71,7 @@ public class DefaultDeploymentConfiguration
             + "\nRunning the application in 'clientSideMode'.\n"
             + "It requires an 'index.html' template in the 'frontend' folder "
             + "for bootstrapping the application." + SEPARATOR;
+
     /**
      * Default value for {@link #getHeartbeatInterval()} = {@value} .
      */
