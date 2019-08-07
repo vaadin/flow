@@ -21,6 +21,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -158,6 +161,29 @@ public class ClientIndexHandlerTest {
                 "The handler should not handle request with only extension",
                 clientIndexBootstrapHandler
                 .canHandleRequest(createVaadinRequest("/.htaccess")));
+    }
+
+    @Test
+    public void bootstrapListener_addListener_responseIsModified()
+            throws IOException {
+        service.addClientIndexBootstrapListener(evt -> evt.getDocument().head()
+                .getElementsByTag("script").remove());
+        service.addClientIndexBootstrapListener(evt -> {
+            evt.getDocument().head().appendElement("script").attr("src",
+                    "testing.1");
+        });
+        service.addClientIndexBootstrapListener(evt -> evt.getDocument().head()
+                .appendElement("script").attr("src", "testing.2"));
+
+        clientIndexBootstrapHandler.synchronizedHandleRequest(session,
+                createVaadinRequest(""), response);
+        String indexHtml = responseOutput
+                .toString(StandardCharsets.UTF_8.name());
+        Document document = Jsoup.parse(indexHtml);
+        Elements scripts = document.head().getElementsByTag("script");
+        Assert.assertEquals(2, scripts.size());
+        Assert.assertEquals("testing.1", scripts.get(0).attr("src"));
+        Assert.assertEquals("testing.2", scripts.get(1).attr("src"));
     }
 
     @After

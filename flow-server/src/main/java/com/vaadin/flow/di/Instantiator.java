@@ -26,6 +26,7 @@ import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.server.BootstrapListener;
 import com.vaadin.flow.server.BootstrapPageResponse;
+import com.vaadin.flow.server.ClientIndexBootstrapListener;
 import com.vaadin.flow.server.DependencyFilter;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceInitListener;
@@ -98,6 +99,11 @@ public interface Instantiator extends Serializable {
     default Stream<BootstrapListener> getBootstrapListeners(
             Stream<BootstrapListener> serviceInitListeners) {
         return serviceInitListeners;
+    }
+
+    default Stream<ClientIndexBootstrapListener> getClientIndexBootstrapListeners(
+            Stream<ClientIndexBootstrapListener> clientIndexBootstrapListener) {
+        return clientIndexBootstrapListener;
     }
 
     /**

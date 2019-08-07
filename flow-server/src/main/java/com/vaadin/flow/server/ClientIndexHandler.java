@@ -49,6 +49,9 @@ public class ClientIndexHandler extends SynchronizedRequestHandler {
                 .appendNpmBundle(indexDocument.head(),
                 request.getService());
         response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
+        request.getService().modifyClientIndexBootstrapPage(
+                new ClientIndexBootstrapPageResponse(request, response, session,
+                        indexDocument));
         try {
             response.getOutputStream()
                     .write(indexDocument.html().getBytes(UTF_8));

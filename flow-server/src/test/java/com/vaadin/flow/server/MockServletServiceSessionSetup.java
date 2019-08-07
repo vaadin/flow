@@ -1,15 +1,5 @@
 package com.vaadin.flow.server;
 
-import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.internal.ResponseWriterTest.CapturingServletOutputStream;
-import com.vaadin.flow.router.Router;
-import com.vaadin.flow.router.TestRouteRegistry;
-import com.vaadin.tests.util.MockDeploymentConfiguration;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -17,6 +7,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,6 +24,17 @@ import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.ResponseWriterTest.CapturingServletOutputStream;
+import com.vaadin.flow.router.Router;
+import com.vaadin.flow.router.TestRouteRegistry;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
+
 public class MockServletServiceSessionSetup {
 
     public class TestVaadinServletService extends VaadinServletService {
@@ -41,6 +43,7 @@ public class MockServletServiceSessionSetup {
         private TestRouteRegistry routeRegistry;
         private Router router;
         private List<BootstrapListener> bootstrapListeners = new ArrayList<>();
+        private List<ClientIndexBootstrapListener> clientIndexBootstrapListeners = new ArrayList<>();
 
         public TestVaadinServletService(TestVaadinServlet testVaadinServlet,
                 DeploymentConfiguration deploymentConfiguration) {
@@ -88,12 +91,24 @@ public class MockServletServiceSessionSetup {
             bootstrapListeners.add(listener);
         }
 
+        public void addClientIndexBootstrapListener(
+                ClientIndexBootstrapListener listener) {
+            clientIndexBootstrapListeners.add(listener);
+        }
+
         @Override
         public void modifyBootstrapPage(BootstrapPageResponse response) {
             bootstrapListeners.forEach(
                     listener -> listener.modifyBootstrapPage(response));
 
             super.modifyBootstrapPage(response);
+        }
+
+        @Override
+        public void modifyClientIndexBootstrapPage(
+                ClientIndexBootstrapPageResponse response) {
+            clientIndexBootstrapListeners.forEach(
+                    listener -> listener.modifyBootstrapPage(response));
         }
     }
 

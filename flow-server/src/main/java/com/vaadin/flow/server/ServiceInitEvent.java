@@ -38,6 +38,7 @@ public class ServiceInitEvent extends EventObject {
 
     private List<RequestHandler> addedRequestHandlers = new ArrayList<>();
     private List<BootstrapListener> addedBootstrapListeners = new ArrayList<>();
+    private List<ClientIndexBootstrapListener> addedClientIndexBootstrapListeners = new ArrayList<>();
     private List<DependencyFilter> addedDependencyFilters = new ArrayList<>();
 
     /**
@@ -80,6 +81,13 @@ public class ServiceInitEvent extends EventObject {
         addedBootstrapListeners.add(bootstrapListener);
     }
 
+    public void addClientIndexBootstrapListener(
+            ClientIndexBootstrapListener response) {
+        Objects.requireNonNull(response,
+                "Client index bootstrap listener cannot be null");
+        addedClientIndexBootstrapListeners.add(response);
+    }
+
     /**
      * Adds a new dependency filter that will be used by this service.
      *
@@ -111,6 +119,10 @@ public class ServiceInitEvent extends EventObject {
      */
     public Stream<BootstrapListener> getAddedBootstrapListeners() {
         return addedBootstrapListeners.stream();
+    }
+
+    public Stream<ClientIndexBootstrapListener> getAddedClientIndexBootstrapListeners() {
+        return addedClientIndexBootstrapListeners.stream();
     }
 
     /**
