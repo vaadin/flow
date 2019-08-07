@@ -15,10 +15,12 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import java.io.Serializable;
+
 /**
  * Interface for webpack plugin wrapper which will be
  */
-public interface WebpackPlugin {
+public interface WebpackPlugin extends Serializable {
     /**
      * Get the import statement for this plugin. Note: the plugin dependency
      * must be declared in dev_dependencies of package.json.
