@@ -21,10 +21,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.file.Path;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -47,10 +44,10 @@ public class TaskUpdateWebpack implements FallibleCommand {
      */
     private final String webpackTemplate;
     private final String webpackGeneratedTemplate;
-    private final transient Set<WebpackPlugin> plugins;
     private final transient Path webpackOutputPath;
     private final transient Path webpackEntryPoint;
     private final transient Path webpackConfigPath;
+    private final boolean isClientSideBootstrapMode;
 
     /**
      * Create an instance of the updater given all configurable parameters.
@@ -74,7 +71,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
             File webpackEntryPoint) {
         this(webpackConfigFolder, webpackOutputDirectory, webpackTemplate,
                 webpackGeneratedTemplate, webpackEntryPoint,
-                Collections.emptySet());
+                false);
     }
 
     /**
@@ -93,18 +90,18 @@ public class TaskUpdateWebpack implements FallibleCommand {
      * @param webpackEntryPoint
      *            name of the file to update as the entry point in webpack
      *            config
-     * @param plugins
-     *            A list of webpack plugins should be inserted
+     * @param isClientSideBootstrapMode
+     *            whether the application running with clientSideBootstrapMode
      */
     TaskUpdateWebpack(File webpackConfigFolder, File webpackOutputDirectory,
             String webpackTemplate, String webpackGeneratedTemplate,
-            File webpackEntryPoint, Set<WebpackPlugin> plugins) {
+            File webpackEntryPoint, boolean isClientSideBootstrapMode) {
         this.webpackTemplate = webpackTemplate;
         this.webpackGeneratedTemplate = webpackGeneratedTemplate;
         this.webpackOutputPath = webpackOutputDirectory.toPath();
         this.webpackEntryPoint = webpackEntryPoint.toPath();
         this.webpackConfigPath = webpackConfigFolder.toPath();
-        this.plugins = plugins;
+        this.isClientSideBootstrapMode = isClientSideBootstrapMode;
     }
 
     @Override
@@ -163,11 +160,10 @@ public class TaskUpdateWebpack implements FallibleCommand {
                 + getEscapedRelativeWebpackPath(webpackOutputPath) + "');";
         String mainLine = "const fileNameOfTheFlowGeneratedMainEntryPoint = require('path').resolve(__dirname, '"
                 + getEscapedRelativeWebpackPath(webpackEntryPoint) + "');";
-        Set<String> imports = plugins.stream()
-                .map(WebpackPlugin::getImportStatement)
-                .collect(Collectors.toSet());
-        String pluginsContent = plugins.stream().map(WebpackPlugin::getContent)
-                .collect(Collectors.joining(",\n\n"));
+        String mainLineForClientSideEntryPoint = "const fileNameOfFrontEndIndexMainEntryPoint = "
+                + "require('path').resolve(__dirname, `${frontendFolder}/index`);";
+        String isClientSideBootstrapModeLine = "const isClientSideBootstrapMode = "
+                + isClientSideBootstrapMode + ";";
         for (int i = 0; i < lines.size(); i++) {
             String line = lines.get(i).trim();
             if (lines.get(i).startsWith(
@@ -181,14 +177,13 @@ public class TaskUpdateWebpack implements FallibleCommand {
                 lines.set(i, outputLine);
             }
 
-            // remove duplicated imports
-            imports.remove(lines.get(i));
-
-            if (lines.get(i).startsWith(PLUGIN_IMPORTS_PLACEHOLDER)) {
-                lines.set(i, String.join("\n", imports));
+            if (lines.get(i).startsWith(
+                    "const fileNameOfFrontEndIndexMainEntryPoint")) {
+                lines.set(i, mainLineForClientSideEntryPoint);
             }
-            if (lines.get(i).startsWith(PLUGINS_PLACEHOLDER)) {
-                lines.set(i, pluginsContent);
+
+            if (lines.get(i).startsWith("const isClientSideBootstrapMode")) {
+                lines.set(i, isClientSideBootstrapModeLine);
             }
         }
         return lines;

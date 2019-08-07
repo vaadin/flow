@@ -20,7 +20,6 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 
@@ -31,9 +30,7 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
 
@@ -365,8 +362,11 @@ public class NodeTasks implements FallibleCommand {
 
         if (builder.webpackTemplate != null
                 && !builder.webpackTemplate.isEmpty()) {
-            TaskUpdateWebpack taskUpdateWebpack = createTaskUpdateWebpack(
-                    builder);
+            TaskUpdateWebpack taskUpdateWebpack = new TaskUpdateWebpack(
+                    builder.npmFolder, builder.webpackOutputDirectory,
+                    builder.webpackTemplate, builder.webpackGeneratedTemplate,
+                    new File(builder.generatedFolder, IMPORTS_NAME),
+                    builder.clientSideBootstrapMode);
             commands.add(taskUpdateWebpack);
         }
 
@@ -380,26 +380,6 @@ public class NodeTasks implements FallibleCommand {
                         .addAll(frontendDependencies.getClasses());
             }
         }
-    }
-
-    private TaskUpdateWebpack createTaskUpdateWebpack(Builder builder) {
-        TaskUpdateWebpack taskUpdateWebpack;
-        if (builder.clientSideBootstrapMode) {
-            WebpackPluginCopy indexHtmlCopyPlugin = new WebpackPluginCopy(
-                    "${frontendFolder}/" + INDEX_HTML,
-                    "${mavenOutputFolderForFlowBundledFiles}/" + INDEX_HTML);
-            taskUpdateWebpack = new TaskUpdateWebpack(builder.npmFolder,
-                    builder.webpackOutputDirectory, builder.webpackTemplate,
-                    builder.webpackGeneratedTemplate,
-                    new File(FRONTEND, "index"),
-                    Collections.singleton(indexHtmlCopyPlugin));
-        } else {
-            taskUpdateWebpack = new TaskUpdateWebpack(builder.npmFolder,
-                    builder.webpackOutputDirectory, builder.webpackTemplate,
-                    builder.webpackGeneratedTemplate,
-                    new File(builder.generatedFolder, IMPORTS_NAME));
-        }
-        return taskUpdateWebpack;
     }
 
     @Override
