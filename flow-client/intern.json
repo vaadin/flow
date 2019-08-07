@@ -5,11 +5,28 @@
       "chromeOptions": {
         "args": [
           "headless",
-          "disable-gpu"
+          "disable-gpu",
+          "window-size=1024x768"
         ]
       },
       "fixSessionCapabilities": "no-detect"
+    },
+    {
+      "browserName": "firefox",
+      "moz:firefoxOptions": {
+        "args": [
+          "-headless",
+          "--window-size=1024,768"
+        ]
+      }
     }
   ],
-  "suites": "target/frontend-tests/tests.js"
+  "suites": "target/frontend-tests/tests.js",
+  "tunnelOptions": {
+    "version": "3.141.59",
+    "drivers": [
+      {"name": "chrome", "version": "76.0.3809.68"},
+      {"name": "firefox", "version": "0.24.0"}
+    ]
+  }
 }
