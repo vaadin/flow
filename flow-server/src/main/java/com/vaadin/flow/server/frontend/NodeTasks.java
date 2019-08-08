@@ -299,16 +299,15 @@ public class NodeTasks implements FallibleCommand {
         }
 
         /**
-         * Enable clientSideBootstrapMode which uses `frontend/index` as the
-         * entry point.
+         * Enable clientBootstrap which uses `frontend/index` as the entry
+         * point.
          * 
-         * @param clientSideBootstrapMode
+         * @param clientBootstrap
          *            <code>true</code> to enable the mode, false otherwise.
          * @return the builder, for chaining
          */
-        public Builder enableClientSideBootstrapMode(
-                boolean clientSideBootstrapMode) {
-            this.clientSideBootstrapMode = clientSideBootstrapMode;
+        public Builder enableClientBootstrap(boolean clientBootstrap) {
+            this.clientSideBootstrapMode = clientBootstrap;
             return this;
         }
     }
