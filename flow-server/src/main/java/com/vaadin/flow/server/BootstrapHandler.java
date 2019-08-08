@@ -803,9 +803,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             if (content == null) {
                 throw new IOException(
                         "The stats file from webpack (stats.json) was not found.\n"
-                                + "This typically mean that you have started the application without executing the 'prepare-frontend' Maven target.\n"
-                                + "If you are using Spring Boot and are launching the Application class directly, "
-                                + "you need to run \"mvn install\" once first or launch the application using \"mvn spring-boot:run\"");
+                        + "This typically mean that you have started the application without executing the 'prepare-frontend' Maven target.\n"
+                        + "If you are using Spring Boot and are launching the Application class directly, "
+                        + "you need to run \"mvn install\" once first or launch the application using \"mvn spring-boot:run\"");
             }
             JsonObject chunks = Json.parse(content)
                     .getObject("assetsByChunkName");
@@ -988,8 +988,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                         createInlineJavaScriptElement(BABEL_HELPERS_JS));
 
                 if (session.getBrowser().isEs5AdapterNeeded()) {
-                    head.appendChild(
-                            createJavaScriptElement(context.getUriResolver()
+                    head.appendChild(createJavaScriptElement(
+                            context.getUriResolver()
                                     .resolveVaadinUri(es5AdapterUrl), false));
                 }
             }
