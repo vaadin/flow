@@ -156,22 +156,20 @@ public class TaskUpdateWebpack implements FallibleCommand {
                 + getEscapedRelativeWebpackPath(webpackOutputPath) + "');";
         String mainLine = "const fileNameOfTheFlowGeneratedMainEntryPoint = require('path').resolve(__dirname, '"
                 + getEscapedRelativeWebpackPath(flowImportsFilePath) + "');";
-        String isClientSideBootstrapModeLine = "const isClientSideBootstrapMode = "
+        String isClientSideBootstrapModeLine = "const useClientSideIndexFileForBootstrapping = "
                 + isClientSideBootstrapMode + ";";
         for (int i = 0; i < lines.size(); i++) {
             String line = lines.get(i).trim();
             if (lines.get(i).startsWith(
-                    "const fileNameOfTheFlowGeneratedMainEntryPoint")
-                    && !line.equals(mainLine)) {
+                    "const fileNameOfTheFlowGeneratedMainEntryPoint")) {
                 lines.set(i, mainLine);
             }
             if (lines.get(i)
-                    .startsWith("const mavenOutputFolderForFlowBundledFiles")
-                    && !line.equals(outputLine)) {
+                    .startsWith("const mavenOutputFolderForFlowBundledFiles")) {
                 lines.set(i, outputLine);
             }
 
-            if (lines.get(i).startsWith("const isClientSideBootstrapMode")) {
+            if (lines.get(i).startsWith("const useClientSideIndexFileForBootstrapping")) {
                 lines.set(i, isClientSideBootstrapModeLine);
             }
         }

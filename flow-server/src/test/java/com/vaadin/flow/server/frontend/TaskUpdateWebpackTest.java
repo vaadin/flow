@@ -124,9 +124,11 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
         String webpackGeneratedContents = Files.lines(webpackGenerated.toPath())
                 .collect(Collectors.joining("\n"));
         Assert.assertTrue(
-                "isClientSideBootstrapMode should be false by default",
+                "useClientSideIndexFileForBootstrapping should be false by "
+                        + "default",
                 webpackGeneratedContents
-                        .contains("const isClientSideBootstrapMode = false;"));
+                        .contains(
+                                "const useClientSideIndexFileForBootstrapping = false;"));
 
     }
 
@@ -142,9 +144,10 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
         String webpackGeneratedContents = Files.lines(webpackGenerated.toPath())
                 .collect(Collectors.joining("\n"));
         Assert.assertTrue(
-                "isClientSideBootstrapMode should be true",
+                "useClientSideIndexFileForBootstrapping should be true",
                 webpackGeneratedContents
-                        .contains("const isClientSideBootstrapMode = true;"));
+                        .contains(
+                                "const useClientSideIndexFileForBootstrapping = true;"));
 
     }
 

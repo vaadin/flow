@@ -361,12 +361,11 @@ public class NodeTasks implements FallibleCommand {
 
         if (builder.webpackTemplate != null
                 && !builder.webpackTemplate.isEmpty()) {
-            TaskUpdateWebpack taskUpdateWebpack = new TaskUpdateWebpack(
-                    builder.npmFolder, builder.webpackOutputDirectory,
-                    builder.webpackTemplate, builder.webpackGeneratedTemplate,
+            commands.add(new TaskUpdateWebpack(builder.npmFolder,
+                    builder.webpackOutputDirectory, builder.webpackTemplate,
+                    builder.webpackGeneratedTemplate,
                     new File(builder.generatedFolder, IMPORTS_NAME),
-                    builder.clientSideBootstrapMode);
-            commands.add(taskUpdateWebpack);
+                    builder.clientSideBootstrapMode));
         }
 
         if (builder.enableImportsUpdate) {

@@ -101,9 +101,9 @@ public class NodeTasksTest {
                 .lines(new File(userDir, WEBPACK_GENERATED).toPath())
                 .collect(Collectors.joining("\n"));
         Assert.assertTrue(
-                "isClientSideBootstrapMode should be true",
+                "useClientSideIndexFileForBootstrapping should be true",
                 webpackGeneratedContent.contains(
-                        "const isClientSideBootstrapMode = true;"));
+                        "const useClientSideIndexFileForBootstrapping = true;"));
     }
 
     private Object getFieldValue(Object obj, String name) throws Exception {
