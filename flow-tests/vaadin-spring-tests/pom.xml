@@ -346,9 +346,17 @@
                     <name>bowerMode</name>
                 </property>
             </activation>
-            <properties>
-                <vaadin.compatibilityMode>true</vaadin.compatibilityMode>
-            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.springframework.boot</groupId>
+                        <artifactId>spring-boot-maven-plugin</artifactId>
+                        <configuration>
+                            <jvmArguments>-Dvaadin.compatibilityMode</jvmArguments>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
             <modules>
                 <module>test-spring-common</module>
 
