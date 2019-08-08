@@ -22,7 +22,7 @@ import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-public class ClientIndexBootstrapHandlerIT extends ChromeBrowserTest {
+public class ClientIndexHandlerIT extends ChromeBrowserTest {
 
     private void openTestUrl(String url) {
         getDriver().get(getRootURL() + url);

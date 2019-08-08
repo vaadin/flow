@@ -29,12 +29,12 @@ import org.mockito.Mockito;
 
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
-public class ClientIndexBootstrapHandlerTest {
+public class ClientIndexHandlerTest {
 
     private MockServletServiceSessionSetup mocks;
     private MockServletServiceSessionSetup.TestVaadinServletService service;
     private VaadinSession session;
-    private ClientIndexBootstrapHandler clientIndexBootstrapHandler;
+    private ClientIndexHandler clientIndexBootstrapHandler;
     private VaadinResponse response;
     private ByteArrayOutputStream responseOutput;
 
@@ -50,7 +50,7 @@ public class ClientIndexBootstrapHandlerTest {
                 .getDeploymentConfiguration();
         deploymentConfiguration.setEnableDevServer(false);
         deploymentConfiguration.setClientSideBootstrapMode(true);
-        clientIndexBootstrapHandler = new ClientIndexBootstrapHandler();
+        clientIndexBootstrapHandler = new ClientIndexHandler();
     }
 
     @Test

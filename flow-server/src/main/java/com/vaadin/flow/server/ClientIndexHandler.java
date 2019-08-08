@@ -35,7 +35,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * folder. The handler will calculate and inject baseHref as well as the bundle
  * scripts into the template.
  */
-public class ClientIndexBootstrapHandler extends SynchronizedRequestHandler {
+public class ClientIndexHandler extends SynchronizedRequestHandler {
 
     private static final String INDEX_NOT_FOUND_MESSAGE = "Failed to load content of 'frontend/index.html'."
             + "It is required to have 'frontend/index.html' file in "
@@ -92,7 +92,7 @@ public class ClientIndexBootstrapHandler extends SynchronizedRequestHandler {
     }
 
     private static Logger getLogger() {
-        return LoggerFactory.getLogger(ClientIndexBootstrapHandler.class);
+        return LoggerFactory.getLogger(ClientIndexHandler.class);
     }
 
     /**
