@@ -102,6 +102,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     + "window.Vaadin.Flow.gwtStatsEvents.push(event); "
                     + "return true;};};";
     static final String CONTENT_ATTRIBUTE = "content";
+    private static final String DEFER_ATTRIBUTE = "defer";
     static final String VIEWPORT = "viewport";
     private static final String META_TAG = "meta";
     private static final String SCRIPT_TAG = "script";
@@ -777,7 +778,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 appendWebComponentsPolyfills(head, context);
             } else {
                 conf.getPolyfills().forEach(polyfill -> head.appendChild(
-                        FrontendUtils.createJavaScriptElement(
+                        createJavaScriptElement(
                                 "./" + VAADIN_MAPPING + polyfill, false)));
                 try {
                     appendNpmBundle(head, service);
@@ -792,8 +793,32 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             }
 
             head.appendChild(getBootstrapScript(initialUIDL, context));
-            head.appendChild(FrontendUtils
-                    .createJavaScriptElement(getClientEngineUrl(context)));
+            head.appendChild(
+                    createJavaScriptElement(getClientEngineUrl(context)));
+        }
+
+        protected static void appendNpmBundle(Element head,
+                VaadinService service) throws IOException {
+            String content = FrontendUtils.getStatsContent(service);
+            if (content == null) {
+                throw new IOException(
+                        "The stats file from webpack (stats.json) was not found.\n"
+                                + "This typically mean that you have started the application without executing the 'prepare-frontend' Maven target.\n"
+                                + "If you are using Spring Boot and are launching the Application class directly, "
+                                + "you need to run \"mvn install\" once first or launch the application using \"mvn spring-boot:run\"");
+            }
+            JsonObject chunks = Json.parse(content)
+                    .getObject("assetsByChunkName");
+
+            for (String key : chunks.keys()) {
+                Element script = createJavaScriptElement(
+                        "./" + VAADIN_MAPPING + chunks.getString(key));
+                if (key.endsWith(".es5")) {
+                    head.appendChild(script.attr("nomodule", true));
+                } else {
+                    head.appendChild(script.attr("type", "module"));
+                }
+            }
         }
 
         private String getClientEngineUrl(BootstrapContext context) {
@@ -963,16 +988,15 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                         createInlineJavaScriptElement(BABEL_HELPERS_JS));
 
                 if (session.getBrowser().isEs5AdapterNeeded()) {
-                    head.appendChild(FrontendUtils
-                            .createJavaScriptElement(context.getUriResolver()
+                    head.appendChild(
+                            createJavaScriptElement(context.getUriResolver()
                                     .resolveVaadinUri(es5AdapterUrl), false));
                 }
             }
 
             String resolvedUrl = context.getUriResolver()
                     .resolveVaadinUri(POLYFILLS_JS);
-            head.appendChild(
-                    FrontendUtils.createJavaScriptElement(resolvedUrl, false));
+            head.appendChild(createJavaScriptElement(resolvedUrl, false));
 
         }
 
@@ -980,11 +1004,29 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 String javaScriptContents) {
             // defer makes no sense without src:
             // https://developer.mozilla.org/en/docs/Web/HTML/Element/script
-            Element wrapper = FrontendUtils.createJavaScriptElement(null,
-                    false);
+            Element wrapper = createJavaScriptElement(null, false);
             wrapper.appendChild(
                     new DataNode(javaScriptContents, wrapper.baseUri()));
             return wrapper;
+        }
+
+        private static Element createJavaScriptElement(String sourceUrl,
+                boolean defer) {
+            return createJavaScriptElement(sourceUrl, defer, "text/javascript");
+        }
+
+        private static Element createJavaScriptElement(String sourceUrl,
+                boolean defer, String type) {
+            Element jsElement = new Element(Tag.valueOf(SCRIPT_TAG), "")
+                    .attr("type", type).attr(DEFER_ATTRIBUTE, defer);
+            if (sourceUrl != null) {
+                jsElement = jsElement.attr("src", sourceUrl);
+            }
+            return jsElement;
+        }
+
+        private static Element createJavaScriptElement(String sourceUrl) {
+            return createJavaScriptElement(sourceUrl, true);
         }
 
         private Element createDependencyElement(BootstrapUriResolver resolver,
@@ -1002,13 +1044,13 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 dependencyElement = createStylesheetElement(url);
                 break;
             case JAVASCRIPT:
-                dependencyElement = FrontendUtils.createJavaScriptElement(url,
+                dependencyElement = createJavaScriptElement(url,
                         !inlineElement);
                 break;
             case JS_MODULE:
                 if (url != null && UrlUtil.isExternal(url))
-                    dependencyElement = FrontendUtils.createJavaScriptElement(
-                            url, !inlineElement, "module");
+                    dependencyElement = createJavaScriptElement(url,
+                            !inlineElement, "module");
                 else
                     dependencyElement = null;
                 break;
@@ -1079,7 +1121,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
             pushJSPath += versionQueryParam;
 
-            return FrontendUtils.createJavaScriptElement(pushJSPath);
+            return createJavaScriptElement(pushJSPath);
         }
 
         private Element getBootstrapScript(JsonValue initialUIDL,
@@ -1265,30 +1307,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
              * that comes after the servlet mapping)
              */
             return ServletHelper.getCancelingRelativePath(pathInfo);
-        }
-    }
-
-    protected static void appendNpmBundle(Element head, VaadinService service)
-            throws IOException {
-        String content = FrontendUtils.getStatsContent(service);
-        if (content == null) {
-            throw new IOException(
-                    "The stats file from webpack (stats.json) was not found.\n"
-                            + "This typically mean that you have started the application without executing the 'prepare-frontend' Maven target.\n"
-                            + "If you are using Spring Boot and are launching the Application class directly, "
-                            + "you need to run \"mvn install\" once first or launch the application using \"mvn spring-boot:run\"");
-        }
-        JsonObject chunks = Json.parse(content)
-                .getObject("assetsByChunkName");
-
-        for (String key : chunks.keys()) {
-            Element script = FrontendUtils.createJavaScriptElement(
-                    "./" + VAADIN_MAPPING + chunks.getString(key));
-            if (key.endsWith(".es5")) {
-                head.appendChild(script.attr("nomodule", true));
-            } else {
-                head.appendChild(script.attr("type", "module"));
-            }
         }
     }
 

@@ -163,12 +163,6 @@ public class PropertyDeploymentConfiguration
     }
 
     @Override
-    public boolean isClientSideBootstrapMode() {
-        return getBooleanProperty(SERVLET_PARAMETER_CLIENT_SIDE_BOOTSTRAP_MODE,
-                false);
-    }
-
-    @Override
     public boolean isRequestTiming() {
         return getBooleanProperty(SERVLET_PARAMETER_REQUEST_TIMING,
                 !isProductionMode());

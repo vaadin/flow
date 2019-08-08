@@ -30,8 +30,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.jsoup.nodes.Element;
-import org.jsoup.parser.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -180,10 +178,6 @@ public class FrontendUtils {
             + "%n" //
             + "%nYou can disable the version check using -D%s=true" //
             + "%n======================================================================================================%n";
-
-    private static final String DEFER_ATTRIBUTE = "defer";
-
-    private static final String SCRIPT_TAG = "script";
 
     private static FrontendToolsLocator frontendToolsLocator = new FrontendToolsLocator();
 
@@ -433,53 +427,6 @@ public class FrontendUtils {
             throws IOException {
         DevModeHandler handler = DevModeHandler.getDevModeHandler();
         return handler.prepareConnection(filePath, "GET").getInputStream();
-    }
-
-    /**
-     * Create a 'text/javascript' element.
-     * 
-     * @param sourceUrl
-     *            source url of the script
-     * @param defer
-     *            defer attribute
-     * 
-     * @return the created element
-     */
-    public static Element createJavaScriptElement(String sourceUrl,
-            boolean defer) {
-        return createJavaScriptElement(sourceUrl, defer, "text/javascript");
-    }
-
-    /**
-     * Create a JavaScript element with given information.
-     * 
-     * @param sourceUrl
-     *            source url of the script
-     * @param defer
-     *            defer attribute
-     * @param type
-     *            type attribute
-     * @return the created element
-     */
-    public static Element createJavaScriptElement(String sourceUrl,
-            boolean defer, String type) {
-        Element jsElement = new Element(Tag.valueOf(SCRIPT_TAG), "")
-                .attr("type", type).attr(DEFER_ATTRIBUTE, defer);
-        if (sourceUrl != null) {
-            jsElement = jsElement.attr("src", sourceUrl);
-        }
-        return jsElement;
-    }
-
-    /**
-     * Create a <code>'text/javascript'</code> and <code>defer</code> element.
-     * 
-     * @param sourceUrl
-     *            source url of the script
-     * @return the created element
-     */
-    public static Element createJavaScriptElement(String sourceUrl) {
-        return createJavaScriptElement(sourceUrl, true);
     }
 
     /**
