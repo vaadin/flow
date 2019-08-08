@@ -37,8 +37,6 @@ import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.theme.AbstractTheme;
 
-import static com.vaadin.flow.server.Constants.META_INF;
-
 /**
  * A service implementation connected to a {@link VaadinServlet}.
  *
@@ -82,7 +80,7 @@ public class VaadinServletService extends VaadinService {
             throws ServiceException {
         List<RequestHandler> handlers = super.createRequestHandlers();
         handlers.add(0, new FaviconHandler());
-        handlers.add(0, new BootstrapHandler());
+        addBootstrapHandler(handlers);
         if (isAtmosphereAvailable()) {
             try {
                 handlers.add(new PushRequestHandler(this));
@@ -96,6 +94,18 @@ public class VaadinServletService extends VaadinService {
             }
         }
         return handlers;
+    }
+
+    private void addBootstrapHandler(List<RequestHandler> handlers) {
+        if (getDeploymentConfiguration().isClientSideMode()) {
+            handlers.add(0, new ClientIndexHandler());
+            getLogger().debug("Using '{}' in clientSideMode",
+                    ClientIndexHandler.class.getName());
+        } else {
+            handlers.add(0, new BootstrapHandler());
+            getLogger().debug("Using '{}' in default mode",
+                    BootstrapHandler.class.getName());
+        }
     }
 
     /**

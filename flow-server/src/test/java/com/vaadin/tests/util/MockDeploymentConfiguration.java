@@ -15,6 +15,7 @@ public class MockDeploymentConfiguration
     private boolean enableDevServer = true;
     private boolean reuseDevServer = true;
     private boolean compatibilityMode = false;
+    private boolean clientSideMode = false;
     private boolean xsrfProtectionEnabled = true;
     private int heartbeatInterval = 300;
     private int webComponentDisconnect = 300;
@@ -165,4 +166,12 @@ public class MockDeploymentConfiguration
         compatibilityMode = compatibility;
     }
 
+    @Override
+    public boolean isClientSideMode() {
+        return clientSideMode;
+    }
+
+    public void setClientSideMode(boolean clientSideMode) {
+        this.clientSideMode = clientSideMode;
+    }
 }

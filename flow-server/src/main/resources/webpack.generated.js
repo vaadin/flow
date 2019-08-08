@@ -49,7 +49,8 @@ module.exports = {
 
   output: {
     filename: `${build}/vaadin-[name]-[contenthash].cache.js`,
-    path: mavenOutputFolderForFlowBundledFiles
+    path: mavenOutputFolderForFlowBundledFiles,
+    publicPath: 'VAADIN/'
   },
 
   resolve: {
@@ -105,12 +106,14 @@ module.exports = {
             // covered by the webcomponents-loader.js
             'last 1 Chrome major versions'
           ],
+          esModule: true
         },
         'es5': { // IE11
           browsers: [
             'ie 11'
           ],
           tagAssetsWithKey: true, // append a suffix to the file name
+          noModule: true
         }
       }
     }),

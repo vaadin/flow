@@ -66,6 +66,11 @@ public class DefaultDeploymentConfiguration
             + "this is handled by the 'prepare-frontend' goal. To use "
             + "compatibility mode, add the 'flow-server-compatibility-mode' "
             + "dependency.";
+
+    private static final String CLIENT_SIDE_BOOTSTRAP_MODE = SEPARATOR
+            + "\nRunning the application in 'clientSideMode'.\n"
+            + "It requires an 'index.html' template in the 'frontend' folder "
+            + "for bootstrapping the application." + SEPARATOR;
     /**
      * Default value for {@link #getHeartbeatInterval()} = {@value} .
      */
@@ -91,6 +96,7 @@ public class DefaultDeploymentConfiguration
 
     private boolean productionMode;
     private boolean compatibilityMode;
+    private boolean clientSideMode;
     private boolean xsrfProtectionEnabled;
     private int heartbeatInterval;
     private int webComponentDisconnect;
@@ -121,6 +127,7 @@ public class DefaultDeploymentConfiguration
 
         checkProductionMode(log);
         checkCompatibilityMode(log);
+        checkClientSideMode(log);
         checkRequestTiming();
         checkXsrfProtection(log);
         checkHeartbeatInterval();
@@ -150,6 +157,15 @@ public class DefaultDeploymentConfiguration
     @Override
     public boolean isBowerMode() {
         return compatibilityMode;
+    }
+
+    /**
+     * {@inheritDoc} The default is false.
+     * 
+     */
+    @Override
+    public boolean isClientSideMode() {
+        return clientSideMode;
     }
 
     /**
@@ -269,6 +285,17 @@ public class DefaultDeploymentConfiguration
         }
         if (compatibilityMode && loggWarning) {
             getLogger().warn(WARNING_COMPATIBILITY_MODE);
+        }
+    }
+
+    /**
+     * Log a message if Vaadin is running in clientSideMode.
+     */
+    private void checkClientSideMode(boolean loggWarning) {
+        clientSideMode = getBooleanProperty(
+                Constants.SERVLET_PARAMETER_CLIENT_SIDE_MODE, false);
+        if (clientSideMode && loggWarning) {
+            getLogger().info(CLIENT_SIDE_BOOTSTRAP_MODE);
         }
     }
 

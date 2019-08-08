@@ -48,6 +48,10 @@ public final class Constants implements Serializable {
      * enable it if your project is a Polymer 2.0 one, should be removed in V15
      */
     public static final String SERVLET_PARAMETER_COMPATIBILITY_MODE = "compatibilityMode";
+    /**
+     * Enable it if your project is using client-side bootstrapping (CCDM).
+     */
+    public static final String SERVLET_PARAMETER_CLIENT_SIDE_MODE = "clientSideMode";
     public static final String SERVLET_PARAMETER_ENABLE_DEV_SERVER = "enableDevServer";
     public static final String SERVLET_PARAMETER_REUSE_DEV_SERVER = "reuseDevServer";
 

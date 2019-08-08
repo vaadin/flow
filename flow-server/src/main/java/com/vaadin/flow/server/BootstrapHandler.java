@@ -797,8 +797,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     createJavaScriptElement(getClientEngineUrl(context)));
         }
 
-        private void appendNpmBundle(Element head, VaadinService service)
-                throws IOException {
+        protected static void appendNpmBundle(Element head,
+                VaadinService service) throws IOException {
             String content = FrontendUtils.getStatsContent(service);
             if (content == null) {
                 throw new IOException(
@@ -1010,13 +1010,13 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return wrapper;
         }
 
-        private Element createJavaScriptElement(String sourceUrl,
-                                                boolean defer) {
+        private static Element createJavaScriptElement(String sourceUrl,
+                boolean defer) {
             return createJavaScriptElement(sourceUrl, defer, "text/javascript");
         }
 
-        private Element createJavaScriptElement(String sourceUrl, boolean defer,
-                                                String type) {
+        private static Element createJavaScriptElement(String sourceUrl,
+                boolean defer, String type) {
             Element jsElement = new Element(Tag.valueOf(SCRIPT_TAG), "")
                     .attr("type", type).attr(DEFER_ATTRIBUTE, defer);
             if (sourceUrl != null) {
@@ -1025,7 +1025,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return jsElement;
         }
 
-        private Element createJavaScriptElement(String sourceUrl) {
+        private static Element createJavaScriptElement(String sourceUrl) {
             return createJavaScriptElement(sourceUrl, true);
         }
 

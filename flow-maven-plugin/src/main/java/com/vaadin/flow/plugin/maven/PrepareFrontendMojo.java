@@ -42,6 +42,7 @@ import elemental.json.impl.JsonUtil;
 
 import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFinder;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_CLIENT_SIDE_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
@@ -159,6 +160,7 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         JsonObject buildInfo = Json.createObject();
         buildInfo.put(SERVLET_PARAMETER_COMPATIBILITY_MODE, compatibility);
         buildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, productionMode);
+        buildInfo.put(SERVLET_PARAMETER_CLIENT_SIDE_MODE, clientSideMode);
         buildInfo.put("npmFolder", npmFolder.getAbsolutePath());
         buildInfo.put("generatedFolder", generatedFolder.getAbsolutePath());
         try {

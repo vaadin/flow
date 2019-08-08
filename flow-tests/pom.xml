@@ -49,6 +49,8 @@
         <module>test-npm-only-features</module>
         <module>test-npm-web-components</module>
         <module>test-multi-war</module>
+        <module>test-ccdm</module>
+        <module>test-ccdm/pom-production.xml</module>
 
         <!-- This test fails in local -->
         <module>test-root-context</module>

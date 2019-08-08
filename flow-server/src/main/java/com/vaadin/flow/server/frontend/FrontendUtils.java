@@ -40,6 +40,7 @@ import com.vaadin.flow.server.VaadinService;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
+import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 
 /**
@@ -360,38 +361,72 @@ public class FrontendUtils {
      */
     public static String getStatsContent(VaadinService service)
             throws IOException {
-        DeploymentConfiguration config = service.getDeploymentConfiguration();
-        InputStream content = null;
-
-        if (!config.isProductionMode() && config.enableDevServer()) {
-            content = getStatsFromWebpack();
-        }
-
-        if (content == null) {
-            content = getStatsFromClassPath(service);
-        }
-        return content != null ? streamToString(content) : null;
-    }
-
-    private static InputStream getStatsFromWebpack() throws IOException {
-        DevModeHandler handler = DevModeHandler.getDevModeHandler();
-        return handler.prepareConnection("/stats.json", "GET").getInputStream();
-    }
-
-    private static InputStream getStatsFromClassPath(VaadinService service) {
-        String stats = service.getDeploymentConfiguration()
+        String statsPathInDevMode = "/stats.json";
+        String statsPathInProductionMode = service.getDeploymentConfiguration()
                 .getStringProperty(SERVLET_PARAMETER_STATISTICS_JSON,
                         VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT)
                 // Remove absolute
                 .replaceFirst("^/", "");
+        return getFileContent(service, statsPathInDevMode,
+                statsPathInProductionMode);
+    }
+
+    /**
+     * Gets the content of the <code>frontend/index.html</code> file which is
+     * served by webpack-dev-server in dev-mode and read from classpath in
+     * production mode. NOTE: In dev mode, the file content file is fetched via
+     * webpack http request. So that we don't need to have a separate
+     * index.html's content watcher, auto-reloading will work automatically,
+     * like other files managed by webpack in `frontend/` folder.
+     * 
+     * @param service
+     *            the vaadin service
+     * @return the content of the index html file as a string, null if not
+     *         found.
+     * @throws IOException
+     *             on error when reading file
+     *
+     */
+    public static String getIndexHtmlContent(VaadinService service)
+            throws IOException {
+        String indexHtmlPathInDevMode = "/" + VAADIN_MAPPING + "index.html";
+        String indexHtmlPathInProductionMode = VAADIN_SERVLET_RESOURCES
+                + "index.html";
+        return getFileContent(service, indexHtmlPathInDevMode,
+                indexHtmlPathInProductionMode);
+    }
+
+    private static String getFileContent(VaadinService service,
+            String pathInDevMode, String pathInProductionMode)
+            throws IOException {
+        DeploymentConfiguration config = service.getDeploymentConfiguration();
+        InputStream content = null;
+
+        if (!config.isProductionMode() && config.enableDevServer()) {
+            content = getFileFromWebpack(pathInDevMode);
+        }
+
+        if (content == null) {
+            content = getFileFromClassPath(service, pathInProductionMode);
+        }
+        return content != null ? streamToString(content) : null;
+    }
+
+    private static InputStream getFileFromClassPath(VaadinService service,
+            String filePath) {
         InputStream stream = service.getClassLoader()
-                .getResourceAsStream(stats);
+                .getResourceAsStream(filePath);
         if (stream == null) {
-            getLogger().error(
-                    "Cannot get the 'stats.json' from the classpath '{}'",
-                    stats);
+            getLogger().error("Cannot get the '{}' from the classpath",
+                    filePath);
         }
         return stream;
+    }
+
+    private static InputStream getFileFromWebpack(String filePath)
+            throws IOException {
+        DevModeHandler handler = DevModeHandler.getDevModeHandler();
+        return handler.prepareConnection(filePath, "GET").getInputStream();
     }
 
     /**
@@ -430,6 +465,21 @@ public class FrontendUtils {
             getLogger().warn("Error checking if npm is new enough", e);
         }
 
+    }
+
+    /**
+     * Get directory where project's frontend files are located.
+     * 
+     * @param configuration
+     *            the current deployment configuration
+     *
+     * @return {@link #DEFAULT_FRONTEND_DIR} or value of
+     *         {@link #PARAM_FRONTEND_DIR} if it is set.
+     */
+    public static String getProjectFrontendDir(
+            DeploymentConfiguration configuration) {
+        return configuration.getStringProperty(PARAM_FRONTEND_DIR,
+                DEFAULT_FRONTEND_DIR);
     }
 
     static void validateToolVersion(String tool, String[] toolVersion,
