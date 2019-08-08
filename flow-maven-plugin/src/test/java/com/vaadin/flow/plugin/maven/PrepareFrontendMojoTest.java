@@ -28,7 +28,7 @@ import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.getPackageJson;
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.setProject;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_CLIENT_SIDE_BOOTSTRAP_MODE;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_CLIENT_SIDE_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
@@ -105,9 +105,8 @@ public class PrepareFrontendMojoTest {
                 buildInfo.get(SERVLET_PARAMETER_COMPATIBILITY_MODE));
         Assert.assertNotNull("productionMode token should be available",
                 buildInfo.get(SERVLET_PARAMETER_PRODUCTION_MODE));
-        Assert.assertNotNull(
-                "clientSideBootstrapMode token should be available",
-                buildInfo.get(SERVLET_PARAMETER_CLIENT_SIDE_BOOTSTRAP_MODE));
+        Assert.assertNotNull("clientSideMode token should be available",
+                buildInfo.get(SERVLET_PARAMETER_CLIENT_SIDE_MODE));
     }
 
     @Test
@@ -117,8 +116,7 @@ public class PrepareFrontendMojoTest {
         JsonObject initialBuildInfo = Json.createObject();
         initialBuildInfo.put(SERVLET_PARAMETER_COMPATIBILITY_MODE, false);
         initialBuildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, false);
-        initialBuildInfo.put(SERVLET_PARAMETER_CLIENT_SIDE_BOOTSTRAP_MODE,
-                false);
+        initialBuildInfo.put(SERVLET_PARAMETER_CLIENT_SIDE_MODE, false);
         initialBuildInfo.put(SERVLET_PARAMETER_ENABLE_DEV_SERVER, false);
         org.apache.commons.io.FileUtils.forceMkdir(tokenFile.getParentFile());
         org.apache.commons.io.FileUtils.write(tokenFile,
@@ -135,9 +133,8 @@ public class PrepareFrontendMojoTest {
                 buildInfo.get(SERVLET_PARAMETER_COMPATIBILITY_MODE));
         Assert.assertNotNull("productionMode token should be available",
                 buildInfo.get(SERVLET_PARAMETER_PRODUCTION_MODE));
-        Assert.assertNotNull(
-                "clientSideBootstrapMode token should be available",
-                buildInfo.get(SERVLET_PARAMETER_CLIENT_SIDE_BOOTSTRAP_MODE));
+        Assert.assertNotNull("clientSideMode token should be available",
+                buildInfo.get(SERVLET_PARAMETER_CLIENT_SIDE_MODE));
     }
 
     @Test

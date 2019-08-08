@@ -51,8 +51,7 @@ public final class Constants implements Serializable {
     /**
      * Enable it if your project is using client-side bootstrapping (CCDM).
      */
-    public static final String SERVLET_PARAMETER_CLIENT_SIDE_BOOTSTRAP_MODE =
-            "clientSideBootstrapMode";
+    public static final String SERVLET_PARAMETER_CLIENT_SIDE_MODE = "clientSideMode";
     public static final String SERVLET_PARAMETER_ENABLE_DEV_SERVER = "enableDevServer";
     public static final String SERVLET_PARAMETER_REUSE_DEV_SERVER = "reuseDevServer";
 

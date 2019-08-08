@@ -32,7 +32,7 @@
                             <value>false</value>
                         </systemProperty>
                         <systemProperty>
-                            <name>vaadin.clientSideBootstrapMode</name>
+                            <name>vaadin.clientSideMode</name>
                             <value>true</value>
                         </systemProperty>
                     </systemProperties>
@@ -53,7 +53,7 @@
                 <configuration>
                     <compatibilityMode>false</compatibilityMode>
                     <productionMode>false</productionMode>
-                    <clientSideBootstrapMode>true</clientSideBootstrapMode>
+                    <clientSideMode>true</clientSideMode>
                 </configuration>
             </plugin>
         </plugins>

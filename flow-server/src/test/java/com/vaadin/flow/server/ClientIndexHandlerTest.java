@@ -49,7 +49,7 @@ public class ClientIndexHandlerTest {
         MockDeploymentConfiguration deploymentConfiguration = mocks
                 .getDeploymentConfiguration();
         deploymentConfiguration.setEnableDevServer(false);
-        deploymentConfiguration.setClientSideBootstrapMode(true);
+        deploymentConfiguration.setClientSideMode(true);
         clientIndexBootstrapHandler = new ClientIndexHandler();
     }
 

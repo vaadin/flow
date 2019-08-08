@@ -30,7 +30,7 @@ import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_HTML
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
- * In clientSideBootstrapMode, this class is responsible for serving
+ * In clientSideMode, this class is responsible for serving
  * <code>index.html</code> according to the template provided in frontend
  * folder. The handler will calculate and inject baseHref as well as the bundle
  * scripts into the template.
@@ -90,7 +90,7 @@ public class ClientIndexHandler extends SynchronizedRequestHandler {
         String message = String
                 .format("Failed to load content of '%1$s/index.html'."
                         + "It is required to have '%1$s/index.html' file in "
-                        + "clientSideBootstrapMode.", frontendDir);
+                        + "clientSideMode.", frontendDir);
         throw new IOException(message);
     }
 

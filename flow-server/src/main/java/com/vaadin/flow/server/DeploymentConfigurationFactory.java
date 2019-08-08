@@ -40,7 +40,7 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
 
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_CLIENT_SIDE_BOOTSTRAP_MODE;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_CLIENT_SIDE_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
@@ -191,16 +191,15 @@ public final class DeploymentConfigurationFactory implements Serializable {
                     System.clearProperty(VAADIN_PREFIX
                             + SERVLET_PARAMETER_COMPATIBILITY_MODE);
                 }
-                if (buildInfo
-                        .hasKey(SERVLET_PARAMETER_CLIENT_SIDE_BOOTSTRAP_MODE)) {
+                if (buildInfo.hasKey(SERVLET_PARAMETER_CLIENT_SIDE_MODE)) {
                     initParameters.setProperty(
-                            SERVLET_PARAMETER_CLIENT_SIDE_BOOTSTRAP_MODE,
+                            SERVLET_PARAMETER_CLIENT_SIDE_MODE,
                             String.valueOf(buildInfo.getBoolean(
-                                    SERVLET_PARAMETER_CLIENT_SIDE_BOOTSTRAP_MODE)));
+                                    SERVLET_PARAMETER_CLIENT_SIDE_MODE)));
                     // Need to be sure that we remove the system property,
                     // because it has priority in the configuration getter
-                    System.clearProperty(VAADIN_PREFIX
-                            + SERVLET_PARAMETER_CLIENT_SIDE_BOOTSTRAP_MODE);
+                    System.clearProperty(
+                            VAADIN_PREFIX + SERVLET_PARAMETER_CLIENT_SIDE_MODE);
                 }
 
                 if (buildInfo.hasKey("npmFolder")) {

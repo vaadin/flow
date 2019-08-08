@@ -7,7 +7,7 @@ const flowDefaults = require('./webpack.generated.js');
 
 /**
  * These additional configurations should be added automatically to webpack.generated.js
- * based on the flag 'clientSideBootstrapMode'.
+ * based on the flag 'clientSideMode'.
  * TODO: This file should be removed after https://github.com/vaadin/flow/issues/6136
  */
 const CopyWebpackPlugin = require('copy-webpack-plugin');

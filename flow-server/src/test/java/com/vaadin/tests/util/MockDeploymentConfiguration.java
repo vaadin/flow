@@ -15,7 +15,7 @@ public class MockDeploymentConfiguration
     private boolean enableDevServer = true;
     private boolean reuseDevServer = true;
     private boolean compatibilityMode = false;
-    private boolean clientSideBootstrapMode = false;
+    private boolean clientSideMode = false;
     private boolean xsrfProtectionEnabled = true;
     private int heartbeatInterval = 300;
     private int webComponentDisconnect = 300;
@@ -167,11 +167,11 @@ public class MockDeploymentConfiguration
     }
 
     @Override
-    public boolean isClientSideBootstrapMode() {
-        return clientSideBootstrapMode;
+    public boolean isClientSideMode() {
+        return clientSideMode;
     }
 
-    public void setClientSideBootstrapMode(boolean clientSideBootstrapMode) {
-        this.clientSideBootstrapMode = clientSideBootstrapMode;
+    public void setClientSideMode(boolean clientSideMode) {
+        this.clientSideMode = clientSideMode;
     }
 }

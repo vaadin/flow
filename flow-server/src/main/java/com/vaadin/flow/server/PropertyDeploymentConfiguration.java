@@ -23,7 +23,6 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.shared.communication.PushMode;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_BOWER_MODE;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_CLIENT_SIDE_BOOTSTRAP_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;

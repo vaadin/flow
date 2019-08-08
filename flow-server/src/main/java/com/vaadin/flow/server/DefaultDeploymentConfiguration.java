@@ -67,10 +67,10 @@ public class DefaultDeploymentConfiguration
             + "compatibility mode, add the 'flow-server-compatibility-mode' "
             + "dependency.";
 
-    private static final String CLIENT_SIDE_BOOTSTRAP_MODE = SEPARATOR +
-            "Running the application in 'clientSideBootstrapMode' which will " +
-            "require an 'index.html' template in the 'frontend' folder for " +
-            "bootstrapping the application." + SEPARATOR;
+    private static final String CLIENT_SIDE_BOOTSTRAP_MODE = SEPARATOR
+            + "\nRunning the application in 'clientSideMode'.\n"
+            + "It requires an 'index.html' template in the 'frontend' folder "
+            + "for bootstrapping the application." + SEPARATOR;
     /**
      * Default value for {@link #getHeartbeatInterval()} = {@value} .
      */
@@ -96,7 +96,7 @@ public class DefaultDeploymentConfiguration
 
     private boolean productionMode;
     private boolean compatibilityMode;
-    private boolean clientSideBootstrapMode;
+    private boolean clientSideMode;
     private boolean xsrfProtectionEnabled;
     private int heartbeatInterval;
     private int webComponentDisconnect;
@@ -127,7 +127,7 @@ public class DefaultDeploymentConfiguration
 
         checkProductionMode(log);
         checkCompatibilityMode(log);
-        checkClientSideBootstrapMode(log);
+        checkClientSideMode(log);
         checkRequestTiming();
         checkXsrfProtection(log);
         checkHeartbeatInterval();
@@ -164,8 +164,8 @@ public class DefaultDeploymentConfiguration
      * 
      */
     @Override
-    public boolean isClientSideBootstrapMode() {
-        return clientSideBootstrapMode;
+    public boolean isClientSideMode() {
+        return clientSideMode;
     }
 
     /**
@@ -289,12 +289,12 @@ public class DefaultDeploymentConfiguration
     }
 
     /**
-     * Log a message if Vaadin is running in clientSideBootstrapMode.
+     * Log a message if Vaadin is running in clientSideMode.
      */
-    private void checkClientSideBootstrapMode(boolean loggWarning) {
-        clientSideBootstrapMode = getBooleanProperty(
-                Constants.SERVLET_PARAMETER_CLIENT_SIDE_BOOTSTRAP_MODE, false);
-        if (clientSideBootstrapMode && loggWarning) {
+    private void checkClientSideMode(boolean loggWarning) {
+        clientSideMode = getBooleanProperty(
+                Constants.SERVLET_PARAMETER_CLIENT_SIDE_MODE, false);
+        if (clientSideMode && loggWarning) {
             getLogger().info(CLIENT_SIDE_BOOTSTRAP_MODE);
         }
     }
