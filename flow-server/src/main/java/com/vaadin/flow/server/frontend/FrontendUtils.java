@@ -406,7 +406,7 @@ public class FrontendUtils {
 
         if(statsURL != null) {
             File statsFile = new File(statsURL.getFile());
-            try (Scanner scanner = new Scanner(statsFile, StandardCharsets.UTF_8)) {
+            try (Scanner scanner = new Scanner(statsFile, StandardCharsets.UTF_8.name())) {
                 while (scanner.hasNextLine()) {
                     String line = scanner.nextLine();
                     if (line.trim().startsWith("\"hash\"")) {
