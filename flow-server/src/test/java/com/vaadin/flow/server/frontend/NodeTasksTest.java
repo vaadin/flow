@@ -95,7 +95,7 @@ public class NodeTasksTest {
                                 WEBPACK_CONFIG, WEBPACK_GENERATED)
                         .enableImportsUpdate(true).runNpmInstall(false)
                         .withEmbeddableWebComponents(false)
-                        .enableClientSideBootstrapMode(true);
+                        .enableClientBootstrap(true);
         builder.build().execute();
         String webpackGeneratedContent = Files
                 .lines(new File(userDir, WEBPACK_GENERATED).toPath())
