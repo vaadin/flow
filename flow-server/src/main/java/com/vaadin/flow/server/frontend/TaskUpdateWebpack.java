@@ -159,7 +159,6 @@ public class TaskUpdateWebpack implements FallibleCommand {
         String isClientSideBootstrapModeLine = "const useClientSideIndexFileForBootstrapping = "
                 + isClientSideMode + ";";
         for (int i = 0; i < lines.size(); i++) {
-            String line = lines.get(i).trim();
             if (lines.get(i).startsWith(
                     "const fileNameOfTheFlowGeneratedMainEntryPoint")) {
                 lines.set(i, mainLine);
