@@ -17,8 +17,10 @@ package com.vaadin.flow.ccdmtest;
 
 import org.jsoup.nodes.Element;
 
+import com.vaadin.flow.server.ClientIndexResponse;
 import com.vaadin.flow.server.ServiceInitEvent;
 import com.vaadin.flow.server.VaadinServiceInitListener;
+import com.vaadin.flow.server.VaadinServletRequest;
 
 public class TestApplicationServiceInitListener
         implements VaadinServiceInitListener {
@@ -28,5 +30,24 @@ public class TestApplicationServiceInitListener
         el.text("Modified page");
         event.addClientIndexBootstrapListener(
                 response -> response.getDocument().body().appendChild(el));
+
+        Element meta = new Element("meta");
+        meta.attr("name", "og:image");
+        event.addClientIndexBootstrapListener(clientIndexResponse -> {
+            meta.attr("content",
+                    getBaseUrl(clientIndexResponse) + "/image/my_app.png");
+            clientIndexResponse.getDocument().head().appendChild(meta);
+        });
+    }
+
+    private static String getBaseUrl(ClientIndexResponse clientIndexResponse) {
+        VaadinServletRequest request = (VaadinServletRequest) clientIndexResponse
+                .getVaadinRequest();
+        String scheme = request.getScheme() + "://";
+        String serverName = request.getServerName();
+        String serverPort = (request.getServerPort() == 80) ? ""
+                : ":" + request.getServerPort();
+        String contextPath = request.getContextPath();
+        return scheme + serverName + serverPort + contextPath;
     }
 }
