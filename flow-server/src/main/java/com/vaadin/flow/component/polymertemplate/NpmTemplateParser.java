@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.DependencyFilter;
@@ -165,12 +166,17 @@ public class NpmTemplateParser implements TemplateParser {
 
     private String getSourcesFromStats(VaadinService service, String url)
             throws IOException {
+        DeploymentConfiguration config = service.getDeploymentConfiguration();
         String hash = FrontendUtils.getStatsHash(service);
+
         if (jsonStats == null || !jsonStats.get("hash").asString()
                 .equals(hash)) {
-            String content = FrontendUtils.getStatsContent(service);
-            if (content != null) {
-                updateCache(url, content);
+            // Only load for null jsonStats if we use bundle files.
+            if(jsonStats == null || !usesBundleFile(config)) {
+                String content = FrontendUtils.getStatsContent(service);
+                if (content != null) {
+                    updateCache(url, content);
+                }
             }
         }
         if (!cache.containsKey(url) && jsonStats != null) {
@@ -178,6 +184,18 @@ public class NpmTemplateParser implements TemplateParser {
                     BundleParser.getSourceFromStatistics(url, jsonStats));
         }
         return cache.get(url);
+    }
+
+    /**
+     * Check if we are running in a mode without dev server and using a pre-made
+     * bundle file.
+     *
+     * @param config
+     *         deployment configuration
+     * @return true if production mode or disabled dev server
+     */
+    private boolean usesBundleFile(DeploymentConfiguration config) {
+        return config.isProductionMode() && !config.enableDevServer();
     }
 
     private void updateCache(String url, String fileContents) {

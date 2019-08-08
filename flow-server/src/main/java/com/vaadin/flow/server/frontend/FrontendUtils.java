@@ -20,7 +20,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,14 +27,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Scanner;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.component.polymertemplate.BundleParser;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
@@ -377,10 +374,11 @@ public class FrontendUtils {
     }
 
     /**
-     * Get the latest has for the stats file. In development mode it is taken
-     * from the webpack-dev-server, while in production mode and disabled dev
-     * server mode we read it from the stats.json file.
-     * json</code> file produced by webpack.
+     * Get the latest has for the stats file in development mode. This is
+     * requested from the webpack-dev-server.
+     * <p>
+     * In production mode and disabled dev server mode an empty string is
+     * returned.
      *
      * @param service
      *         the vaadin service.
@@ -396,25 +394,6 @@ public class FrontendUtils {
                     handler.prepareConnection("/stats.hash", "GET").getInputStream()).replaceAll("\"", "");
         }
 
-        String stats = service.getDeploymentConfiguration()
-                .getStringProperty(SERVLET_PARAMETER_STATISTICS_JSON,
-                        VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT)
-                // Remove absolute
-                .replaceFirst("^/", "");
-
-        URL statsURL = service.getClassLoader().getResource(stats);
-
-        if(statsURL != null) {
-            File statsFile = new File(statsURL.getFile());
-            try (Scanner scanner = new Scanner(statsFile, StandardCharsets.UTF_8.name())) {
-                while (scanner.hasNextLine()) {
-                    String line = scanner.nextLine();
-                    if (line.trim().startsWith("\"hash\"")) {
-                        return BundleParser.getHashFromStatistics(line);
-                    }
-                }
-            }
-        }
         return "";
     }
 
