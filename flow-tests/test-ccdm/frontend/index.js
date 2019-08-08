@@ -1,4 +1,4 @@
-window.createVaadinButton = async function() {
+window.loadContent = async function() {
     await import('./another-bundle.js');
     const label = document.createElement('label');
     label.textContent = window.anotherBundle;
