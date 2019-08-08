@@ -380,7 +380,10 @@ public class FrontendUtils {
      * Get the latest has for the stats file. In development mode it is taken
      * from the webpack-dev-server, while in production mode and disabled dev
      * server mode we read it from the stats.json file.
+     * json</code> file produced by webpack.
      *
+     * @param service
+     *         the vaadin service.
      * @return hash string for the stats.json file, empty string if none found
      * @throws IOException
      *         if an I/O error occurs while creating the input stream.
@@ -402,11 +405,13 @@ public class FrontendUtils {
         URL statsURL = service.getClassLoader().getResource(stats);
 
         if(statsURL != null) {
-            Scanner scanner = new Scanner(new File(statsURL.getFile()));
-            while (scanner.hasNextLine()) {
-                String line = scanner.nextLine();
-                if (line.trim().startsWith("\"hash\"")) {
-                    return BundleParser.getHashFromStatistics(line);
+            File statsFile = new File(statsURL.getFile());
+            try (Scanner scanner = new Scanner(statsFile, StandardCharsets.UTF_8)) {
+                while (scanner.hasNextLine()) {
+                    String line = scanner.nextLine();
+                    if (line.trim().startsWith("\"hash\"")) {
+                        return BundleParser.getHashFromStatistics(line);
+                    }
                 }
             }
         }
