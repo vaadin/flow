@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.data.provider.CompositeDataGenerator;
+import com.vaadin.flow.data.provider.DataChangeEvent;
 import com.vaadin.flow.data.provider.DataCommunicator;
 import com.vaadin.flow.data.provider.DataGenerator;
 import com.vaadin.flow.data.provider.DataProvider;
@@ -158,6 +159,25 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
             update.enqueue("$connector.ensureHierarchy");
             requestFlush(update);
         }
+    }
+
+    protected void handleDataRefreshEvent(DataChangeEvent.DataRefreshEvent<T> event) {
+        if (event.isDeep()) {
+            T item = event.getItem();
+            if (isExpanded(item)) {
+                String parentKey = uniqueKeyProviderSupplier.get().apply(item);
+
+                if (!dataControllers.containsKey(parentKey)) {
+                    setParentRequestedRange(0, 50, item);
+                }
+                HierarchicalCommunicationController<T> dataController = dataControllers.get(parentKey);
+                if (dataController != null) {
+                    dataController.setResendEntireRange(true);
+                    requestFlush(dataController);
+                }
+            }
+        }
+        super.handleDataRefreshEvent(event);
     }
 
     @Override

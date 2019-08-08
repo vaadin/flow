@@ -54,8 +54,13 @@ public abstract class AbstractDataProvider<T, F> implements DataProvider<T, F> {
     }
 
     @Override
+    public void refreshItem(T item, boolean deep) {
+        fireEvent(new DataRefreshEvent<>(this, item, deep));
+    }
+
+    @Override
     public void refreshItem(T item) {
-        fireEvent(new DataRefreshEvent<>(this, item));
+        fireEvent(new DataRefreshEvent<>(this, item, false));
     }
 
     /**
