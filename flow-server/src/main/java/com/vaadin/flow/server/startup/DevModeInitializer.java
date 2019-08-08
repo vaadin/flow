@@ -218,9 +218,8 @@ public class DevModeInitializer implements ServletContainerInitializer,
         // webpack configurations
         if (!new File(builder.npmFolder, WEBPACK_GENERATED).exists()) {
             builder.withWebpack(builder.npmFolder, FrontendUtils.WEBPACK_CONFIG,
-                    FrontendUtils.WEBPACK_GENERATED);
-            builder.enableClientBootstrap(
-                    config.isClientSideBootstrapMode());
+                    FrontendUtils.WEBPACK_GENERATED)
+                    .enableClientSideMode(config.isClientSideMode());
         }
 
         // If we are missing either the base or generated package json files

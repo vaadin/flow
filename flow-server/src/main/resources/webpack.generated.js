@@ -33,7 +33,6 @@ mkdirp(buildFolder);
 mkdirp(confFolder);
 
 const devMode = process.argv.find(v => v.indexOf('webpack-dev-server') >= 0);
-
 let stats;
 
 exports = {

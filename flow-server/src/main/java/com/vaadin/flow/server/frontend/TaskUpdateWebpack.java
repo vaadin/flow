@@ -45,7 +45,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
     private final transient Path webpackOutputPath;
     private final transient Path flowImportsFilePath;
     private final transient Path webpackConfigPath;
-    private final boolean isClientSideBootstrapMode;
+    private final boolean isClientSideMode;
 
     /**
      * Create an instance of the updater given all configurable parameters.
@@ -86,18 +86,18 @@ public class TaskUpdateWebpack implements FallibleCommand {
      *            creating the <code>webpack.generated.js</code> file.
      * @param generatedFlowImports
      *            name of the JS file to update with the Flow project imports
-     * @param isClientSideBootstrapMode
+     * @param isClientSideMode
      *            whether the application running with clientSideBootstrapMode
      */
     TaskUpdateWebpack(File webpackConfigFolder, File webpackOutputDirectory,
             String webpackTemplate, String webpackGeneratedTemplate,
-            File generatedFlowImports, boolean isClientSideBootstrapMode) {
+            File generatedFlowImports, boolean isClientSideMode) {
         this.webpackTemplate = webpackTemplate;
         this.webpackGeneratedTemplate = webpackGeneratedTemplate;
         this.webpackOutputPath = webpackOutputDirectory.toPath();
         this.flowImportsFilePath = generatedFlowImports.toPath();
         this.webpackConfigPath = webpackConfigFolder.toPath();
-        this.isClientSideBootstrapMode = isClientSideBootstrapMode;
+        this.isClientSideMode = isClientSideMode;
     }
 
     @Override
@@ -157,7 +157,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
         String mainLine = "const fileNameOfTheFlowGeneratedMainEntryPoint = require('path').resolve(__dirname, '"
                 + getEscapedRelativeWebpackPath(flowImportsFilePath) + "');";
         String isClientSideBootstrapModeLine = "const useClientSideIndexFileForBootstrapping = "
-                + isClientSideBootstrapMode + ";";
+                + isClientSideMode + ";";
         for (int i = 0; i < lines.size(); i++) {
             String line = lines.get(i).trim();
             if (lines.get(i).startsWith(

@@ -88,7 +88,7 @@ public class NodeTasks implements FallibleCommand {
         /**
          * Is in client-side bootstrapping mode.
          */
-        private boolean clientSideBootstrapMode;
+        private boolean clientSideMode;
 
         /**
          * Create a builder instance given an specific npm folder.
@@ -299,15 +299,15 @@ public class NodeTasks implements FallibleCommand {
         }
 
         /**
-         * Enable clientBootstrap which uses `frontend/index` as the entry
+         * Enable clientSideMode which uses `frontend/index` as the entry
          * point.
          * 
-         * @param clientBootstrap
+         * @param clientSideMode
          *            <code>true</code> to enable the mode, false otherwise.
          * @return the builder, for chaining
          */
-        public Builder enableClientBootstrap(boolean clientBootstrap) {
-            this.clientSideBootstrapMode = clientBootstrap;
+        public Builder enableClientSideMode(boolean clientSideMode) {
+            this.clientSideMode = clientSideMode;
             return this;
         }
     }
@@ -365,7 +365,7 @@ public class NodeTasks implements FallibleCommand {
                     builder.webpackOutputDirectory, builder.webpackTemplate,
                     builder.webpackGeneratedTemplate,
                     new File(builder.generatedFolder, IMPORTS_NAME),
-                    builder.clientSideBootstrapMode));
+                    builder.clientSideMode));
         }
 
         if (builder.enableImportsUpdate) {

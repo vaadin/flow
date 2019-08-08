@@ -116,7 +116,7 @@ public class FrontendUtils {
     public static final String IMPORTS_NAME = "generated-flow-imports.js";
 
     /**
-     * File name of the entry in clientSideBootstrapMode.
+     * File name of the index.html in clientSideMode.
      */
     public static final String INDEX_HTML = "index.html";
 
