@@ -37,10 +37,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class ClientIndexHandler extends SynchronizedRequestHandler {
 
-    private static final String INDEX_NOT_FOUND_MESSAGE = "Failed to load content of 'frontend/index.html'."
-            + "It is required to have 'frontend/index.html' file in "
-            + "clientSideBootstrapMode.";
-
     private static final Pattern PATH_WITH_EXTENSION = Pattern
             .compile("\\.[A-z][A-z\\d]+$");
 
@@ -57,7 +53,8 @@ public class ClientIndexHandler extends SynchronizedRequestHandler {
             response.getOutputStream()
                     .write(indexDocument.html().getBytes(UTF_8));
         } catch (IOException e) {
-            getLogger().error("Error happens while writing 'index.html' file",
+            getLogger().error(
+                    "Error happens while writing 'index.html' response",
                     e);
             return false;
         }
@@ -88,7 +85,13 @@ public class ClientIndexHandler extends SynchronizedRequestHandler {
         if (index != null) {
             return Jsoup.parse(index);
         }
-        throw new IOException(INDEX_NOT_FOUND_MESSAGE);
+        String frontendDir = FrontendUtils.getProjectFrontendDir(
+                request.getService().getDeploymentConfiguration());
+        String message = String
+                .format("Failed to load content of '%1$s/index.html'."
+                        + "It is required to have '%1$s/index.html' file in "
+                        + "clientSideBootstrapMode.", frontendDir);
+        throw new IOException(message);
     }
 
     private static Logger getLogger() {

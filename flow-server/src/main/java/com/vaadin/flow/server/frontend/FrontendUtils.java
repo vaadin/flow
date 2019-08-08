@@ -467,6 +467,18 @@ public class FrontendUtils {
 
     }
 
+    /**
+     * Get directory where project's frontend files are located.
+     * 
+     * @return {@link #DEFAULT_FRONTEND_DIR} or value of
+     *         {@link #PARAM_FRONTEND_DIR} if it is set.
+     */
+    public static String getProjectFrontendDir(
+            DeploymentConfiguration configuration) {
+        return configuration.getStringProperty(PARAM_FRONTEND_DIR,
+                DEFAULT_FRONTEND_DIR);
+    }
+
     static void validateToolVersion(String tool, String[] toolVersion,
             int supportedMajor, int supportedMinor, int shouldWorkMajor,
             int shouldWorkMinor) throws UnknownVersionException {
