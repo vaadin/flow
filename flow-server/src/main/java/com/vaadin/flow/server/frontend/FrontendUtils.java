@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -397,12 +398,16 @@ public class FrontendUtils {
                         VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT)
                 // Remove absolute
                 .replaceFirst("^/", "");
-        Scanner scanner = new Scanner(new File(service.getClassLoader()
-                .getResource(stats).getFile()));
-        while (scanner.hasNextLine()) {
-            String line = scanner.nextLine();
-            if(line.trim().startsWith("\"hash\"")) {
-                return BundleParser.getHashFromStatistics(line);
+
+        URL statsURL = service.getClassLoader().getResource(stats);
+
+        if(statsURL != null) {
+            Scanner scanner = new Scanner(new File(statsURL.getFile()));
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                if (line.trim().startsWith("\"hash\"")) {
+                    return BundleParser.getHashFromStatistics(line);
+                }
             }
         }
         return "";
