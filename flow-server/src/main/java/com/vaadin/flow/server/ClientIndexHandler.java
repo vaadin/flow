@@ -54,7 +54,7 @@ public class ClientIndexHandler extends SynchronizedRequestHandler {
                     .write(indexDocument.html().getBytes(UTF_8));
         } catch (IOException e) {
             getLogger().error(
-                    "Error happens while writing 'index.html' response",
+                    "Error writing 'index.html' to response",
                     e);
             return false;
         }
@@ -88,8 +88,8 @@ public class ClientIndexHandler extends SynchronizedRequestHandler {
         String frontendDir = FrontendUtils.getProjectFrontendDir(
                 request.getService().getDeploymentConfiguration());
         String message = String
-                .format("Failed to load content of '%1$s/index.html'."
-                        + "It is required to have '%1$s/index.html' file in "
+                .format("Failed to load content of '%1$sindex.html'."
+                        + "It is required to have '%1$sindex.html' file in "
                         + "clientSideMode.", frontendDir);
         throw new IOException(message);
     }

@@ -470,6 +470,9 @@ public class FrontendUtils {
     /**
      * Get directory where project's frontend files are located.
      * 
+     * @param configuration
+     *            the current deployment configuration
+     *
      * @return {@link #DEFAULT_FRONTEND_DIR} or value of
      *         {@link #PARAM_FRONTEND_DIR} if it is set.
      */
