@@ -80,6 +80,17 @@ public class Migration {
                 }
             }
         } else {
+            if (!getTempMigrationFolder().isDirectory()) {
+                String message = String
+                        .format("Received temp migration folder value '%s' is not a directory.",
+                                getTempMigrationFolder());
+                throw new IllegalArgumentException(message);
+            } else if (getTempMigrationFolder().list().length > 0) {
+                String message = String
+                        .format("Received non empty directory '%s' for use as the temporary migration folder.",
+                                getTempMigrationFolder());
+                throw new IllegalArgumentException(message);
+            }
             tempMigrationFolder = getTempMigrationFolder();
         }
 
