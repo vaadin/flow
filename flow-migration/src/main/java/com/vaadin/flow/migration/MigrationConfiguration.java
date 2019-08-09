@@ -29,7 +29,8 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
  * @author Vaadin Ltd
  *
  */
-public class Configuration implements Cloneable {
+public class MigrationConfiguration implements Cloneable {
+
     private File tempMigrationFolder;
 
     private File[] resourceDirectories;
@@ -50,7 +51,7 @@ public class Configuration implements Cloneable {
 
     private File compiledClassDirectory;
 
-    private Configuration(File baseDir) {
+    private MigrationConfiguration(File baseDir) {
         baseDirectory = baseDir;
     }
 
@@ -64,7 +65,7 @@ public class Configuration implements Cloneable {
     }
 
     /**
-     * Gets the resource directory.
+     * Gets the resource directories.
      *
      * @return the resource directories
      */
@@ -144,9 +145,9 @@ public class Configuration implements Cloneable {
         return annotationRewriteStrategy;
     }
 
-    private Configuration copy() {
+    private MigrationConfiguration copy() {
         try {
-            return (Configuration) clone();
+            return (MigrationConfiguration) clone();
         } catch (CloneNotSupportedException exception) {
             // this may not happen
             throw new RuntimeException(exception);
@@ -154,7 +155,7 @@ public class Configuration implements Cloneable {
     }
 
     /**
-     * A builder for {@link Configuration}. Allows to set all required
+     * A builder for {@link MigrationConfiguration}. Allows to set all required
      * parameters via setters fluent API.
      *
      * @author Vaadin Ltd
@@ -162,7 +163,7 @@ public class Configuration implements Cloneable {
      */
     public static class Builder {
 
-        private final Configuration config;
+        private final MigrationConfiguration config;
 
         /**
          * Creates a new instance of the builded with provided {@code baseDir}.
@@ -171,7 +172,7 @@ public class Configuration implements Cloneable {
          *            base project directory
          */
         public Builder(File baseDir) {
-            config = new Configuration(baseDir);
+            config = new MigrationConfiguration(baseDir);
         }
 
         /**
@@ -323,7 +324,7 @@ public class Configuration implements Cloneable {
          *
          * @return the resulting configuration
          */
-        public Configuration build() {
+        public MigrationConfiguration build() {
             // return an immutable instance
             return config.copy();
         }

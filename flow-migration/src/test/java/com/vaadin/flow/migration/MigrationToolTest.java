@@ -40,10 +40,10 @@ public class MigrationToolTest {
 
     private static class TestMigrationTool extends MigrationTool {
 
-        private Configuration conf;
+        private MigrationConfiguration conf;
 
         @Override
-        protected void doMigration(Configuration configuration)
+        protected void doMigration(MigrationConfiguration configuration)
                 throws MigrationToolsException, MigrationFailureException {
             conf = configuration;
         }

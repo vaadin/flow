@@ -57,7 +57,7 @@ public class Migration {
 
     private final File[] resourceDirectories;
 
-    private final Configuration configuration;
+    private final MigrationConfiguration configuration;
 
     /**
      * Creates an instance with given {@code configuration} to migrate.
@@ -65,15 +65,19 @@ public class Migration {
      * @param configuration
      *            configuration to do migration
      */
-    public Migration(Configuration configuration) {
+    public Migration(MigrationConfiguration configuration) {
         this.configuration = configuration;
         if (getTempMigrationFolder() == null) {
-            try {
-                tempMigrationFolder = Files.createTempDirectory("migration")
-                        .toFile();
-            } catch (IOException e) {
-                throw new RuntimeException("Could not create a new "
-                        + "temporary folder for migration. You may specify it manually");
+            if(configuration.getTempMigrationFolder() != null) {
+                tempMigrationFolder = configuration.getTempMigrationFolder();
+            } else {
+                try {
+                    tempMigrationFolder = Files.createTempDirectory("migration")
+                            .toFile();
+                } catch (IOException e) {
+                    throw new RuntimeException("Could not create a new "
+                            + "temporary folder for migration. You may specify it manually");
+                }
             }
         } else {
             tempMigrationFolder = getTempMigrationFolder();
@@ -115,7 +119,7 @@ public class Migration {
 
         if (configuration.getCompiledClassDirectory() == null) {
             throw new IllegalArgumentException(
-                    "Configuration does not provide a compoiled class directory");
+                    "Configuration does not provide a compiled class directory");
         }
     }
 

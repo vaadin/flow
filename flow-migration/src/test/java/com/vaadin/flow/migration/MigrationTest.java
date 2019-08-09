@@ -24,7 +24,7 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 public class MigrationTest {
 
-    private Configuration configuration = Mockito.mock(Configuration.class);
+    private MigrationConfiguration configuration = Mockito.mock(MigrationConfiguration.class);
 
     @Test(expected = IllegalArgumentException.class)
     public void createMigration_noBaseDir_throw() {

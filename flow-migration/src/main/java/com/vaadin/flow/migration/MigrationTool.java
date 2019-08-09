@@ -18,7 +18,6 @@ package com.vaadin.flow.migration;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -33,7 +32,7 @@ import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.migration.Configuration.Builder;
+import com.vaadin.flow.migration.MigrationConfiguration.Builder;
 import com.vaadin.flow.server.scanner.ReflectionsClassFinder;
 
 /**
@@ -116,7 +115,7 @@ public class MigrationTool {
         File baseDirValue = new File(command.getOptionValue(BASE_DIR));
         Builder builder = new Builder(baseDirValue);
 
-        getLogger().debug("The base dir  is {}",
+        getLogger().debug("The base dir is {}",
                 command.getOptionValue(BASE_DIR));
 
         File compiledClasses = setCompiledClasses(command, builder);
@@ -151,7 +150,7 @@ public class MigrationTool {
      *             if migration failed because some necessary tools installation
      *             failed
      */
-    protected void doMigration(Configuration configuration)
+    protected void doMigration(MigrationConfiguration configuration)
             throws MigrationToolsException, MigrationFailureException {
         Migration migration = new Migration(configuration);
         migration.migrate();
@@ -172,7 +171,7 @@ public class MigrationTool {
             }
         } else {
             getLogger().debug(
-                    "Annotation rewrite strategy is not explicitely set");
+                    "Annotation rewrite strategy is not explicitly set");
         }
     }
 
@@ -185,18 +184,17 @@ public class MigrationTool {
             throw new CommandArgumentException(exception);
         }
         String[] urls = command.getOptionValues(DEP_URLS);
-        List<URL> depUrls = new ArrayList<>(urls.length + 1);
-        depUrls.add(compiledClassesURL);
-        for (String url : urls) {
+        URL[] depUrls = new URL[urls.length + 1];
+        depUrls[0] = compiledClassesURL;
+        for (int i = 0; i < urls.length; i++) {
             try {
-                depUrls.add(new URL(url));
+                depUrls[i + 1] = new URL(urls[i]);
             } catch (MalformedURLException exception) {
                 throw new CommandArgumentException(exception);
             }
         }
 
-        builder.setClassFinder(new ReflectionsClassFinder(
-                depUrls.toArray(new URL[depUrls.size()])));
+        builder.setClassFinder(new ReflectionsClassFinder(depUrls));
     }
 
     private void setSourceDirs(CommandLine command, Builder builder) {
@@ -225,8 +223,8 @@ public class MigrationTool {
             getLogger().debug("The target directory is {}", targetDir);
         } else {
             getLogger().debug(
-                    "The target directory is not set explicitely. "
-                            + "The value is implicitely set to {}",
+                    "The target directory is not set explicitly. "
+                            + "The value is implicitly set to {}",
                     new File(baseDirValue, "frontend"));
         }
     }
@@ -295,7 +293,7 @@ public class MigrationTool {
         options.addOption(baseDir);
 
         Option resourceDirectories = new Option("res", RESOURCES_DIRS, true,
-                "comma separated resource directories, by default the value is one path 'src/main/webapp' inside base direcrory");
+                "comma separated resource directories relative to the baseDir, by default the value is one path 'src/main/webapp' inside base directory");
         options.addOption(resourceDirectories);
 
         Option target = new Option("t", TARGET_DIR, true,
@@ -314,7 +312,7 @@ public class MigrationTool {
         options.addOption(javaSourceDirectories);
 
         Option compiledClassesDir = new Option("c", CLASSES_DIR, true,
-                "compiled classes directory. Java classes has to be compiled into "
+                "compiled classes directory. Java classes have to be compiled into "
                         + "this directory to be able to apply migration");
         compiledClassesDir.setRequired(true);
         options.addOption(compiledClassesDir);
@@ -327,11 +325,11 @@ public class MigrationTool {
 
         Option keepOriginal = new Option("ko", KEEP_ORIGINAL, false,
                 "whether the original "
-                        + "resource files should not be removed. By default the migrated files are removed.");
+                        + "resource files should be preserved. By default the migrated files are removed.");
         options.addOption(keepOriginal);
 
         Option annotationRewrite = new Option("ars", ANNOTATION_REWRITE, true,
-                "annotation rewrite stratey. By default the value is ALWAYS");
+                "annotation rewrite strategy. By default the value is ALWAYS. Other choices are SKIP, SKIP_ON_ERROR");
         options.addOption(annotationRewrite);
         return options;
     }

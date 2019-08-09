@@ -29,8 +29,8 @@ import org.apache.maven.project.MavenProject;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.migration.AnnotationsRewriteStrategy;
-import com.vaadin.flow.migration.Configuration;
-import com.vaadin.flow.migration.Configuration.Builder;
+import com.vaadin.flow.migration.MigrationConfiguration;
+import com.vaadin.flow.migration.MigrationConfiguration.Builder;
 import com.vaadin.flow.migration.Migration;
 import com.vaadin.flow.migration.MigrationFailureException;
 import com.vaadin.flow.migration.MigrationToolsException;
@@ -114,7 +114,7 @@ public class MigrateMojo extends AbstractMojo {
         builder.setTargetDirectory(frontendDirectory);
         builder.setTemporaryMigrationFolder(migrateFolder);
 
-        Configuration configuration = builder.build();
+        MigrationConfiguration configuration = builder.build();
         Migration migration = new Migration(configuration);
         try {
             migration.migrate();
