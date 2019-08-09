@@ -16,11 +16,18 @@
 package com.vaadin.flow.migration;
 
 /**
- * @author Vaadin Ltd
+ * Exception thrown for missing migration tools.
  *
+ * @author Vaadin Ltd
  */
 public class MigrationToolsException extends Exception {
 
+    /**
+     * Migration tool exception constructor.
+     *
+     * @param message
+     *         message on why this exception was thrown
+     */
     public MigrationToolsException(String message) {
         super(message);
     }

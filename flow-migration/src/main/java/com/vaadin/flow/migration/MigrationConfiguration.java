@@ -92,7 +92,7 @@ public class MigrationConfiguration implements Cloneable {
     }
 
     /**
-     * Checks whether Modulizer errors should be ignored
+     * Checks whether Modulizer errors should be ignored.
      *
      * @return whether Modulizer errors should be ignored
      */
@@ -110,7 +110,7 @@ public class MigrationConfiguration implements Cloneable {
     }
 
     /**
-     * Gets the compiled classes directory
+     * Gets the compiled classes directory.
      *
      * @return the compiled classes directory
      */
@@ -119,7 +119,7 @@ public class MigrationConfiguration implements Cloneable {
     }
 
     /**
-     * Gets the class finder
+     * Gets the class finder.
      *
      * @return the class finder
      */
@@ -137,7 +137,7 @@ public class MigrationConfiguration implements Cloneable {
     }
 
     /**
-     * Gets the annotation rewrite strategy
+     * Gets the annotation rewrite strategy.
      *
      * @return the annotation rewrite strategy
      */
@@ -145,13 +145,10 @@ public class MigrationConfiguration implements Cloneable {
         return annotationRewriteStrategy;
     }
 
-    private MigrationConfiguration copy() {
-        try {
-            return (MigrationConfiguration) clone();
-        } catch (CloneNotSupportedException exception) {
-            // this may not happen
-            throw new RuntimeException(exception);
-        }
+
+    @Override
+    protected MigrationConfiguration clone() throws CloneNotSupportedException {
+        return (MigrationConfiguration) super.clone();
     }
 
     /**
@@ -326,7 +323,16 @@ public class MigrationConfiguration implements Cloneable {
          */
         public MigrationConfiguration build() {
             // return an immutable instance
-            return config.copy();
+            return copy();
+        }
+
+        private MigrationConfiguration copy() {
+            try {
+                return config.clone();
+            } catch (CloneNotSupportedException exception) {
+                // this may not happen
+                throw new RuntimeException(exception);
+            }
         }
     }
 

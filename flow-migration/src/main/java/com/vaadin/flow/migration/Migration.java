@@ -136,6 +136,11 @@ public class Migration {
 
     /**
      * Performs the migration.
+     *
+     * @throws MigrationToolsException
+     *         Thrown when migration tools are missing
+     * @throws MigrationFailureException
+     *         Thrown for an exception during migration
      */
     public void migrate()
             throws MigrationToolsException, MigrationFailureException {
@@ -176,7 +181,7 @@ public class Migration {
 
         Set<String> migratedTopLevelDirs = Stream
                 .of(getTempMigrationFolder().listFiles())
-                .filter(file -> file.isDirectory()).map(File::getName)
+                .filter(File::isDirectory).map(File::getName)
                 .collect(Collectors.toSet());
 
         List<String> allPaths = new ArrayList<>();
@@ -370,7 +375,7 @@ public class Migration {
         // module file. It won't be resolved from the import properly. So we
         // have to force 2.x.x version which is P2 based.
         command.add("polymer#2.8.0");
-        components.stream().filter(component -> !component.equals("polymer"))
+        components.stream().filter(component -> !"polymer".equals(component))
                 .forEach(command::add);
 
         return executeProcess(command,
