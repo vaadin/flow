@@ -17,7 +17,7 @@ package com.vaadin.flow.ccdmtest;
 
 import org.jsoup.nodes.Element;
 
-import com.vaadin.flow.server.ClientIndexResponse;
+import com.vaadin.flow.server.ClientIndexBootstrapPage;
 import com.vaadin.flow.server.ServiceInitEvent;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.VaadinServletRequest;
@@ -33,15 +33,16 @@ public class TestApplicationServiceInitListener
 
         Element meta = new Element("meta");
         meta.attr("name", "og:image");
-        event.addClientIndexBootstrapListener(clientIndexResponse -> {
+        event.addClientIndexBootstrapListener(clientIndexBootstrapPage -> {
             meta.attr("content",
-                    getBaseUrl(clientIndexResponse) + "/image/my_app.png");
-            clientIndexResponse.getDocument().head().appendChild(meta);
+                    getBaseUrl(clientIndexBootstrapPage) + "/image/my_app.png");
+            clientIndexBootstrapPage.getDocument().head().appendChild(meta);
         });
     }
 
-    private static String getBaseUrl(ClientIndexResponse clientIndexResponse) {
-        VaadinServletRequest request = (VaadinServletRequest) clientIndexResponse
+    private static String getBaseUrl(
+            ClientIndexBootstrapPage clientIndexBootstrapPage) {
+        VaadinServletRequest request = (VaadinServletRequest) clientIndexBootstrapPage
                 .getVaadinRequest();
         String scheme = request.getScheme() + "://";
         String serverName = request.getServerName();

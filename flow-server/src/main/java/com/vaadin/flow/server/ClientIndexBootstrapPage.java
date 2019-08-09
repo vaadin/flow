@@ -23,7 +23,7 @@ import org.jsoup.nodes.Document;
  * the HTTP headers that will be included in the corresponding HTTP response.
  *
  */
-public class ClientIndexResponse {
+public class ClientIndexBootstrapPage {
 
     private final VaadinRequest vaadinRequest;
     private final VaadinResponse vaadinResponse;
@@ -42,7 +42,7 @@ public class ClientIndexResponse {
      * @param document
      *            the {@link Document} object of the response page
      */
-    public ClientIndexResponse(VaadinRequest vaadinRequest,
+    public ClientIndexBootstrapPage(VaadinRequest vaadinRequest,
             VaadinResponse vaadinResponse, VaadinSession vaadinSession,
             Document document) {
         this.vaadinRequest = vaadinRequest;

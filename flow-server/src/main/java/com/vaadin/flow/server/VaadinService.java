@@ -636,7 +636,7 @@ public abstract class VaadinService implements Serializable {
 
     /**
      * Fires the
-     * {@link ClientIndexBootstrapListener#modifyBootstrapPage(ClientIndexResponse)}
+     * {@link ClientIndexBootstrapListener#modifyBootstrapPage(ClientIndexBootstrapPage)}
      * event to all registered {@link ClientIndexBootstrapListener}. This is
      * called internally when the client index bootstrap page is created, so
      * listeners can intercept the creation and change the result HTML.
@@ -646,7 +646,7 @@ public abstract class VaadinService implements Serializable {
      *            change the client index bootstrap page.
      */
     public void modifyClientIndexBootstrapPage(
-            ClientIndexResponse response) {
+            ClientIndexBootstrapPage response) {
         clientIndexBootstrapListeners
                 .forEach(listener -> listener.modifyBootstrapPage(response));
     }

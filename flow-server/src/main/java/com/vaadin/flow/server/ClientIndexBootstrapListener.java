@@ -41,11 +41,11 @@ public interface ClientIndexBootstrapListener
      * The method allows to modify the page response before it is sent to
      * browser.
      * 
-     * @param clientIndexResponse
+     * @param clientIndexBootstrapPage
      *            the response object which includes the {@link VaadinRequest},
      *            {@link VaadinResponse}, {@link VaadinSession} and
      *            {@link org.jsoup.nodes.Document}
      */
     void modifyBootstrapPage(
-            ClientIndexResponse clientIndexResponse);
+            ClientIndexBootstrapPage clientIndexBootstrapPage);
 }

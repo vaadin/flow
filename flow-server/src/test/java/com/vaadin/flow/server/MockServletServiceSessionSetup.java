@@ -104,7 +104,7 @@ public class MockServletServiceSessionSetup {
 
         @Override
         public void modifyClientIndexBootstrapPage(
-                ClientIndexResponse response) {
+                ClientIndexBootstrapPage response) {
             clientIndexBootstrapListeners.forEach(
                     listener -> listener.modifyBootstrapPage(response));
         }
