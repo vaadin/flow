@@ -25,12 +25,28 @@ import java.lang.annotation.Target;
 /**
  * Instructs flow to import a CSS file into the application bundle.
  * <p>
+ * The CSS files should be located in the place as JS module files:
+ * <ul>
+ * <li>inside {@code frontend} directory in your root project folder in case of
+ * WAR project
+ * <li>inside {@code META-INF/resources/frontend} directory (inside a project
+ * resources folder) in case of JAR project (if you are using Maven this is
+ * {@code src/main/resources/META-INF/resources/frontend} directory).
+ * </ul>
+ * <p>
+ * The annotation doesn't have any effect in the compatibility mode: use it only
+ * for Polymer 3 templates.
+ * <p>
  * Depending on the attributes provided, the CSS content will be appended in
  * different ways:
  *
+ *
  * <ul>
+ *
  * <li>When specifying only the 'value', it will be appended to the
  * 'document.head' inside a '&lt;custom-style&gt;' block.
+ *
+ *
  *
  * <pre>
  *  &lt;custom-style&gt;
@@ -38,12 +54,17 @@ import java.lang.annotation.Target;
  *      CSS-CONTENT
  *    &lt;/style&gt;
  *  &lt;/custom-style&gt;
+ *
  * </pre>
+ *
+ *
  *
  * <li>When specifying 'value' and 'include', it is appended inside a
  * '&lt;custom-style&gt;' block, but 'include' value is used for including a
  * defined module. Multiple modules are allowed by passing a space separated
  * list.
+ *
+ *
  *
  * <pre>
  *  &lt;custom-style&gt;
@@ -51,11 +72,16 @@ import java.lang.annotation.Target;
  *      CSS-CONTENT
  *    &lt;/style&gt;
  *  &lt;/custom-style&gt;
+ *
  * </pre>
+ *
+ *
  *
  * <li>When 'value' and 'id' are given, a new 'dom-module' with the provided
  * 'id' is created, the 'include' parameter is allowed and is added to the
  * &lt;style&gt; tag inside the module template.
+ *
+ *
  *
  * <pre>
  * &lt;dom-module id="ID-VALUE"&gt;
@@ -65,11 +91,16 @@ import java.lang.annotation.Target;
  *     &lt;/style&gt;
  *   &lt;/template&gt;
  * &lt;/dom-module&gt;
+ *
  * </pre>
  *
+ *
+ *
  * <li>When 'value' and 'themeFor' are given, a new 'dom-module' for customizing
- * a themable element is created, the 'include' parameter is allowed and is added to the
- * &lt;style&gt; tag inside the module template.
+ * a themable element is created, the 'include' parameter is allowed and is
+ * added to the &lt;style&gt; tag inside the module template.
+ *
+ *
  *
  * <pre>
  * &lt;dom-module id="RANDOM-ID" theme-for="THEME-FOR-VALUE"&gt;
@@ -79,9 +110,13 @@ import java.lang.annotation.Target;
  *     &lt;/style&gt;
  *   &lt;/template&gt;
  * &lt;/dom-module&gt;
+ *
  * </pre>
+ *
+ *
  * </ul>
  *
+ * @see JsModule
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
