@@ -33,8 +33,8 @@ public class ClientIndexHandlerIT extends ChromeBrowserTest {
     @Test
     public void indexHtmlRequestHandler_openRootURL_shouldResponseIndexHtml() {
         openTestUrl("/");
-        waitForElementPresent(By.tagName("div"));
-        String content = findElement(By.id("content")).getText();
+        waitForElementPresent(By.id("div0"));
+        String content = findElement(By.id("div0")).getText();
         Assert.assertEquals("index.html content", content);
     }
 
@@ -66,16 +66,16 @@ public class ClientIndexHandlerIT extends ChromeBrowserTest {
     @Test
     public void indexHtmlRequestHandler_openRandomRoute_shouldResponseIndexHtml() {
         openTestUrl("/abc");
-        waitForElementPresent(By.tagName("div"));
-        String content = findElement(By.id("content")).getText();
+        waitForElementPresent(By.id("div0"));
+        String content = findElement(By.id("div0")).getText();
         Assert.assertEquals("index.html content", content);
     }
 
     @Test
     public void indexHtmlRequestHandler_openURLHasParameterWithExtension_shouldResponseIndexHtml() {
         openTestUrl("/someroute?myparam=picture.png");
-        waitForElementPresent(By.tagName("div"));
-        String content = findElement(By.id("content")).getText();
+        waitForElementPresent(By.id("div0"));
+        String content = findElement(By.id("div0")).getText();
         Assert.assertEquals("index.html content", content);
     }
 
@@ -89,16 +89,19 @@ public class ClientIndexHandlerIT extends ChromeBrowserTest {
     @Test
     public void indexHtmlRequestHandler_importDynamically_shouldLoadBundleCorrectly() {
         openTestUrl("/");
-        findElement(By.tagName("button")).click();
-        WebElement contentFromJs = findElement(By.id("contentFromOtherBundle"));
-        Assert.assertEquals("Content from other bundle",
-                contentFromJs.getText());
+        waitForElementPresent(By.id("button1"));
+
+        findElement(By.id("button1")).click();
+        waitForElementPresent(By.id("div1"));
+
+        String content = findElement(By.id("div1")).getText();
+        Assert.assertEquals("Content from other bundle", content);
     }
 
     @Test
     public void indexHtmlRequestHandler_openRootURL_shouldAddBaseHref() {
         openTestUrl("/");
-        waitForElementPresent(By.tagName("div"));
+        waitForElementPresent(By.id("div0"));
         // In Selenium, getAttribute('href') won't return the exact value of
         // 'href'.
         // https://stackoverflow.com/questions/35494519/how-to-get-the-exact-text-of-href-attribute-of-tag-a
@@ -110,9 +113,35 @@ public class ClientIndexHandlerIT extends ChromeBrowserTest {
     @Test
     public void indexHtmlRequestHandler_openTwoSlashesURL_shouldAddBaseHrefCorrectly() {
         openTestUrl("/abc/xyz");
-        waitForElementPresent(By.tagName("div"));
+        waitForElementPresent(By.id("div0"));
         String outerHTML = findElement(By.tagName("head"))
                 .findElement(By.tagName("base")).getAttribute("outerHTML");
         Assert.assertTrue(outerHTML.contains("href=\"./..\""));
     }
+
+    @Test
+    public void should_startFlow() {
+        openTestUrl("/");
+        waitForElementPresent(By.id("button2"));
+
+        findElement(By.id("button2")).click();
+        waitForElementPresent(By.id("div2"));
+
+        String content = findElement(By.id("div2")).getText();
+        Assert.assertEquals("true true true", content);
+    }
+
+    @Test
+    public void should_connectFlowServerSide() {
+        openTestUrl("/");
+        waitForElementPresent(By.id("button3"));
+
+
+        findElement(By.id("button3")).click();
+        waitForElementPresent(By.id("div3"));
+
+        String content = findElement(By.id("div3")).getText();
+        Assert.assertTrue(content.length() > 0);
+    }
+
 }
