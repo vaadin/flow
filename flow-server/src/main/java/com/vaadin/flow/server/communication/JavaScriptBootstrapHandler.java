@@ -25,10 +25,13 @@ import java.util.function.Function;
 
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.UsageStatistics;
+import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Router;
@@ -82,17 +85,44 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
      * Custom UI for {@link JavaScriptBootstrapHandler}.
      */
     public static class JavaScriptBootstrapUI extends UI {
-        public static final String NO_NAVIGATION = "Navigation is not implemented yet";
+        public static final String NO_NAVIGATION =
+                "Classic flow navigation is not supported for clien-side projects";
 
         /**
-         * Connect a client side with server side UI.
+         * Connect a client with the server side UI.
          *
-         * @param containerId
-         *            client side id of the element
+         * @param clientElementTag
+         *            client side element tag
+         * @param clientElementId
+         *            client side element id
+         * @param flowRoute
+         *            flow route that should be attached to the client element
          */
         @ClientCallable
-        public void connectClient(String containerId) {
-            // NOT implemented yet
+        public void connectClient(String clientElementTag, String clientElementId, String flowRoute) {
+
+            // Get the flow view that the user wants to navigate to.
+            final Element viewElement = getViewForRoute(flowRoute).getElement();
+
+            // Create flow reference for the client outlet element
+            final Element wrapperElement = new Element(clientElementTag);
+            wrapperElement.appendChild(viewElement);
+
+            // Connect server with client
+            getElement().getStateProvider().appendVirtualChild(
+                    getElement().getNode(), wrapperElement,
+                    NodeProperties.INJECT_BY_ID, clientElementId);
+
+            // Inform the client, that everything went fine.
+            wrapperElement.executeJs("$0.serverConnected()");
+        }
+
+        private Component getViewForRoute(String route) {
+            // Create a temporary view until navigation is implemented
+            HtmlContainer view = new HtmlContainer("div");
+            view.setText(String.format(
+                    "Navigation not implemented yet. cannot show '%s'", route));
+            return view;
         }
 
         @Override

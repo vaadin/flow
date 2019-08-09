@@ -27,39 +27,10 @@ suite("Flow", () => {
   });
 
   test("should initialize Flow client when calling start()", () => {
-    // Configure a valid server response
-    mock.get('VAADIN/?v-r=init', (req, res) => {
-      assert.equal('GET', req.method());
-      return res
-        .status(200)
-        .header("content-type","application/json")
-        .body(`
-        {
-          "appConfig": {
-            "heartbeatInterval" : 300,
-            "contextRootUrl" : "../",
-            "debug" : true,
-            "v-uiId" : 0,
-            "serviceUrl" : "//localhost:8080/flow/",
-            "webComponentMode" : false,
-            "productionMode": false,
-            "appId": "foobar-1111111",
-            "uidl": {
-              "syncId": 0,
-              "clientId": 0,
-              "changes": [],
-              "timings": [],
-              "Vaadin-Security-Key": "119a6005-e663-4a4c-a882-bbfa8bd0c304",
-              "Vaadin-Push-ID": "4b915ffb-4e0a-484c-9995-09500fe9fa3a"
-            }
-          }
-        }
-      `);
-    });
-
     const $wnd = window as any;
     assert.isUndefined($wnd.Vaadin);
 
+    mockInitResponse();
     return new Flow()
       .start()
       .then(response => {
@@ -93,7 +64,58 @@ suite("Flow", () => {
       });
   });
 
-  test("should have the navigate() method in the API", () => {
-    return new Flow().navigate();
+  test("should connect client and server on navigation", () => {
+    const flowRoot = (window.document.body as any);
+
+    flowRoot.$server = {
+      connectClient: () => {
+        // Resolve the promise
+        flowRoot.$['flow-foo-bar-baz-0'].serverConnected();
+      }
+    };
+
+    mockInitResponse();
+    return new Flow()
+      .navigate("Foo/Bar.baz")
+      .then(() => {
+        // Check that start() was called
+        assert.isDefined((window as any).Vaadin.Flow.resolveUri);
+
+        // Assert that element was created amd put in flowRoot so as server can find it
+        assert.equal(1, flowRoot.$.counter);
+        assert.isDefined(flowRoot.$['flow-foo-bar-baz-0']);
+      });
   });
 });
+
+function mockInitResponse() {
+  // Configure a valid server initialization response
+  mock.get('VAADIN/?v-r=init', (req, res) => {
+    assert.equal('GET', req.method());
+    return res
+      .status(200)
+      .header("content-type","application/json")
+      .body(`
+      {
+        "appConfig": {
+          "heartbeatInterval" : 300,
+          "contextRootUrl" : "../",
+          "debug" : true,
+          "v-uiId" : 0,
+          "serviceUrl" : "//localhost:8080/flow/",
+          "webComponentMode" : false,
+          "productionMode": false,
+          "appId": "foobar-1111111",
+          "uidl": {
+            "syncId": 0,
+            "clientId": 0,
+            "changes": [],
+            "timings": [],
+            "Vaadin-Security-Key": "119a6005-e663-4a4c-a882-bbfa8bd0c304",
+            "Vaadin-Push-ID": "4b915ffb-4e0a-484c-9995-09500fe9fa3a"
+          }
+        }
+      }
+    `);
+  });
+}
