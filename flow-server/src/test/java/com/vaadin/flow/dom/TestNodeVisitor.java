@@ -18,10 +18,18 @@ package com.vaadin.flow.dom;
 import java.util.HashMap;
 import java.util.Map;
 
-class TestNodeVisitor implements NodeVisitor {
+public class TestNodeVisitor implements NodeVisitor {
 
-    Map<Node<?>, ElementType> visited = new HashMap<>();
-    boolean visitDescendants = true;
+    private final Map<Node<?>, ElementType> visited = new HashMap<>();
+    private final boolean visitDescendants;
+
+    public TestNodeVisitor(boolean visitDescendants) {
+        this.visitDescendants = visitDescendants;
+    }
+
+    public Map<Node<?>, ElementType> getVisited() {
+        return visited;
+    }
 
     @Override
     public boolean visit(ElementType type, Element element) {
