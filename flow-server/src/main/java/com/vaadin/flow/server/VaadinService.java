@@ -175,7 +175,7 @@ public abstract class VaadinService implements Serializable {
 
     private Iterable<BootstrapListener> bootstrapListeners;
 
-    private Iterable<ClientIndexBootstrapListener> clientIndexBootstrapListeners;
+    private transient Iterable<ClientIndexBootstrapListener> clientIndexBootstrapListeners;
 
     private Iterable<DependencyFilter> dependencyFilters;
 
