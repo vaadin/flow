@@ -1,7 +1,10 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
+import java.nio.file.Files;
+import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -9,6 +12,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.NodeTasks.Builder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 
@@ -17,6 +21,9 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DI
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
 
 public class NodeTasksTest {
 
@@ -73,6 +80,28 @@ public class NodeTasksTest {
 
         builder.build().execute();
         Assert.assertTrue(new File(userDir, "my/custom/generated/folder/" + IMPORTS_NAME).exists());
+    }
+
+    @Test
+    public void should_SetIsClientBootstrapMode_When_EnableClientSideBootstrapMode()
+            throws ExecutionFailedException, IOException {
+        Builder builder = new Builder(
+                new DefaultClassFinder(this.getClass().getClassLoader()),
+                new File(userDir))
+                        .enablePackagesUpdate(false)
+                        .withWebpack(new File(userDir, TARGET + "classes"),
+                                WEBPACK_CONFIG, WEBPACK_GENERATED)
+                        .enableImportsUpdate(true).runNpmInstall(false)
+                        .withEmbeddableWebComponents(false)
+                        .enableClientSideMode(true);
+        builder.build().execute();
+        String webpackGeneratedContent = Files
+                .lines(new File(userDir, WEBPACK_GENERATED).toPath())
+                .collect(Collectors.joining("\n"));
+        Assert.assertTrue(
+                "useClientSideIndexFileForBootstrapping should be true",
+                webpackGeneratedContent.contains(
+                        "const useClientSideIndexFileForBootstrapping = true;"));
     }
 
     private Object getFieldValue(Object obj, String name) throws Exception {

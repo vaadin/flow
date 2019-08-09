@@ -15,6 +15,7 @@ const frontendFolder = `${baseDir}/frontend`;
 
 const fileNameOfTheFlowGeneratedMainEntryPoint = '[to-be-generated-by-flow]';
 const mavenOutputFolderForFlowBundledFiles = '[to-be-generated-by-flow]';
+const useClientSideIndexFileForBootstrapping = '[to-be-generated-by-flow]';
 
 // public path for resources, must match Flow VAADIN_BUILD
 const build = 'build';
@@ -44,7 +45,7 @@ module.exports = {
   mode: 'production',
   context: frontendFolder,
   entry: {
-    bundle: fileNameOfTheFlowGeneratedMainEntryPoint
+    bundle: useClientSideIndexFileForBootstrapping ? `${frontendFolder}/index` : fileNameOfTheFlowGeneratedMainEntryPoint
   },
 
   output: {
@@ -140,5 +141,10 @@ module.exports = {
       from: `${baseDir}/node_modules/@webcomponents/webcomponentsjs`,
       to: `${build}/webcomponentsjs/`
     }]),
-  ]
+
+    useClientSideIndexFileForBootstrapping && new CopyWebpackPlugin([{
+     from: `${frontendFolder}/index.html`,
+     to: `${mavenOutputFolderForFlowBundledFiles}/index.html`
+    }]),
+  ].filter(Boolean)
 };

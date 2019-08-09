@@ -45,6 +45,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
     private final transient Path webpackOutputPath;
     private final transient Path flowImportsFilePath;
     private final transient Path webpackConfigPath;
+    private final boolean isClientSideMode;
 
     /**
      * Create an instance of the updater given all configurable parameters.
@@ -65,11 +66,38 @@ public class TaskUpdateWebpack implements FallibleCommand {
     TaskUpdateWebpack(File webpackConfigFolder, File webpackOutputDirectory,
             String webpackTemplate, String webpackGeneratedTemplate,
             File generatedFlowImports) {
+        this(webpackConfigFolder, webpackOutputDirectory, webpackTemplate,
+                webpackGeneratedTemplate, generatedFlowImports,
+                false);
+    }
+
+    /**
+     * Create an instance of the updater given all configurable parameters.
+     *
+     * @param webpackConfigFolder
+     *            folder with the `webpack.config.js` file.
+     * @param webpackOutputDirectory
+     *            the directory to set for webpack to output its build results.
+     * @param webpackTemplate
+     *            name of the webpack resource to be used as template when
+     *            creating the <code>webpack.config.js</code> file.
+     * @param webpackGeneratedTemplate
+     *            name of the webpack resource to be used as template when
+     *            creating the <code>webpack.generated.js</code> file.
+     * @param generatedFlowImports
+     *            name of the JS file to update with the Flow project imports
+     * @param isClientSideMode
+     *            whether the application running with clientSideBootstrapMode
+     */
+    TaskUpdateWebpack(File webpackConfigFolder, File webpackOutputDirectory,
+            String webpackTemplate, String webpackGeneratedTemplate,
+            File generatedFlowImports, boolean isClientSideMode) {
         this.webpackTemplate = webpackTemplate;
         this.webpackGeneratedTemplate = webpackGeneratedTemplate;
         this.webpackOutputPath = webpackOutputDirectory.toPath();
         this.flowImportsFilePath = generatedFlowImports.toPath();
         this.webpackConfigPath = webpackConfigFolder.toPath();
+        this.isClientSideMode = isClientSideMode;
     }
 
     @Override
@@ -90,8 +118,8 @@ public class TaskUpdateWebpack implements FallibleCommand {
 
         // If we have an old config file we remove it and create the new one
         // using the webpack.generated.js
-        if (configFile.exists()) {
-            if (!FileUtils.readFileToString(configFile, "UTF-8")
+        if (configFile.exists()
+                && !FileUtils.readFileToString(configFile, "UTF-8")
                     .contains("./webpack.generated.js")) {
                 log().warn(
                         "Flow generated webpack configuration was not mentioned "
@@ -99,14 +127,13 @@ public class TaskUpdateWebpack implements FallibleCommand {
                                 + "Please verify that './webpack.generated.js' is used "
                                 + "in the merge or remove the file to generate a new one.",
                         configFile);
-            }
         }
 
         if (!configFile.exists()) {
             URL resource = this.getClass().getClassLoader()
                     .getResource(webpackTemplate);
             FileUtils.copyURLToFile(resource, configFile);
-            log().info("Created webpack configuration file: " + configFile);
+            log().info("Created webpack configuration file: '{}'", configFile);
         }
 
         // Generated file is always re-written
@@ -116,28 +143,36 @@ public class TaskUpdateWebpack implements FallibleCommand {
         URL resource = this.getClass().getClassLoader()
                 .getResource(webpackGeneratedTemplate);
         FileUtils.copyURLToFile(resource, generatedFile);
+        List<String> lines = modifyWebpackConfig(generatedFile);
+
+        FileUtils.writeLines(generatedFile, lines);
+    }
+
+    private List<String> modifyWebpackConfig(File generatedFile)
+            throws IOException {
         List<String> lines = FileUtils.readLines(generatedFile, "UTF-8");
 
         String outputLine = "const mavenOutputFolderForFlowBundledFiles = require('path').resolve(__dirname, '"
                 + getEscapedRelativeWebpackPath(webpackOutputPath) + "');";
         String mainLine = "const fileNameOfTheFlowGeneratedMainEntryPoint = require('path').resolve(__dirname, '"
                 + getEscapedRelativeWebpackPath(flowImportsFilePath) + "');";
-
+        String isClientSideBootstrapModeLine = "const useClientSideIndexFileForBootstrapping = "
+                + isClientSideMode + ";";
         for (int i = 0; i < lines.size(); i++) {
-            String line = lines.get(i).trim();
             if (lines.get(i).startsWith(
-                    "const fileNameOfTheFlowGeneratedMainEntryPoint")
-                    && !line.equals(mainLine)) {
+                    "const fileNameOfTheFlowGeneratedMainEntryPoint")) {
                 lines.set(i, mainLine);
             }
             if (lines.get(i)
-                    .startsWith("const mavenOutputFolderForFlowBundledFiles")
-                    && !line.equals(outputLine)) {
+                    .startsWith("const mavenOutputFolderForFlowBundledFiles")) {
                 lines.set(i, outputLine);
             }
-        }
 
-        FileUtils.writeLines(generatedFile, lines);
+            if (lines.get(i).startsWith("const useClientSideIndexFileForBootstrapping")) {
+                lines.set(i, isClientSideBootstrapModeLine);
+            }
+        }
+        return lines;
     }
 
     private String getEscapedRelativeWebpackPath(Path path) {

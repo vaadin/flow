@@ -116,6 +116,11 @@ public class FrontendUtils {
     public static final String IMPORTS_NAME = "generated-flow-imports.js";
 
     /**
+     * File name of the index.html in clientSideMode.
+     */
+    public static final String INDEX_HTML = "index.html";
+
+    /**
      * A parameter for overriding the
      * {@link FrontendUtils#DEFAULT_GENERATED_DIR} folder.
      */
@@ -389,9 +394,9 @@ public class FrontendUtils {
      */
     public static String getIndexHtmlContent(VaadinService service)
             throws IOException {
-        String indexHtmlPathInDevMode = "/" + VAADIN_MAPPING + "index.html";
+        String indexHtmlPathInDevMode = "/" + VAADIN_MAPPING + INDEX_HTML;
         String indexHtmlPathInProductionMode = VAADIN_SERVLET_RESOURCES
-                + "index.html";
+                + INDEX_HTML;
         return getFileContent(service, indexHtmlPathInDevMode,
                 indexHtmlPathInProductionMode);
     }

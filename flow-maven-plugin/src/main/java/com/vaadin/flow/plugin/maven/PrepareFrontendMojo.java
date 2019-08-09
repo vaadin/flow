@@ -142,6 +142,7 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
                     generatedFolder)
                             .withWebpack(webpackOutputDirectory,
                                     webpackTemplate, webpackGeneratedTemplate)
+                            .enableClientSideMode(clientSideMode)
                             .createMissingPackageJson(true)
                             .enableImportsUpdate(false)
                             .enablePackagesUpdate(false).runNpmInstall(false)
