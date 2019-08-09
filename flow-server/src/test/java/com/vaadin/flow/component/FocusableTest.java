@@ -17,10 +17,10 @@ package com.vaadin.flow.component;
 
 import java.util.List;
 
+import com.vaadin.flow.component.internal.UIInternals;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.tests.util.MockUI;
 
 public class FocusableTest {
@@ -36,6 +36,7 @@ public class FocusableTest {
     @Test
     public void focusUnattached_nothingScheduled() {
         component.focus();
+
 
         assertPendingInvocationCount(
                 "Nothing should be scheduled when component is not attached",
@@ -75,7 +76,7 @@ public class FocusableTest {
 
     private void assertPendingInvocationCount(String message, int expected) {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
-        List<PendingJavaScriptInvocation> invocations = ui.getInternals()
+        List<UIInternals.JavaScriptInvocation> invocations = ui.getInternals()
                 .dumpPendingJavaScriptInvocations();
         Assert.assertEquals(message, expected, invocations.size());
     }
