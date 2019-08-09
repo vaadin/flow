@@ -26,6 +26,11 @@
             <groupId>org.webjars.bowergithub.polymer</groupId>
             <artifactId>polymer</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-server-compatibility-mode</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
     <build>

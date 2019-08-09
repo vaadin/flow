@@ -219,7 +219,8 @@ public class CopyResourcesStepTest {
         List<String> list = copied.get(source.getPath());
         Assert.assertEquals(path.length, list.size());
         for (int i = 0; i < path.length; i++) {
-            Assert.assertEquals(path[i], list.get(i));
+            Assert.assertTrue(String.format("copied files %s did not contain expected file '%s'", list.toString(), path[i]),
+                    list.contains(path[i]));
         }
     }
 }
