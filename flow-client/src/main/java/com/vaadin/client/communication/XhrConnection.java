@@ -184,17 +184,13 @@ public class XhrConnection {
      * @return The URI to use for server messages.
      */
     protected String getUri() {
-        String uri = registry.getApplicationConfiguration().getServiceUrl();
-        uri = SharedUtil.addGetParameter(uri,
-                ApplicationConstants.REQUEST_TYPE_PARAMETER,
-                ApplicationConstants.REQUEST_TYPE_UIDL);
-
-        uri = SharedUtil.addGetParameter(uri,
-                ApplicationConstants.UI_ID_PARAMETER,
-                registry.getApplicationConfiguration().getUIId());
-
-        return uri;
-
+        return SharedUtil.addGetParameter(
+                    SharedUtil.addGetParameter(
+                        registry.getApplicationConfiguration().getServiceUrl(),
+                        ApplicationConstants.REQUEST_TYPE_PARAMETER,
+                        ApplicationConstants.REQUEST_TYPE_UIDL),
+                    ApplicationConstants.UI_ID_PARAMETER,
+                    registry.getApplicationConfiguration().getUIId());
     }
 
     private static native boolean resendRequest(XMLHttpRequest xhr)
