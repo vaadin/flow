@@ -23,12 +23,13 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
 import javax.servlet.annotation.WebListener;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.net.URL;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -278,7 +279,8 @@ public class DevModeInitializer implements ServletContainerInitializer,
                     .getResources(RESOURCES_FRONTEND_DEFAULT);
             while (en.hasMoreElements()) {
                 URL url = en.nextElement();
-                Matcher matcher = JAR_FILE_REGEX.matcher(url.getPath());
+                Matcher matcher = JAR_FILE_REGEX.matcher(URLDecoder
+                        .decode(url.getPath(), StandardCharsets.UTF_8.name()));
                 if (matcher.find()) {
                     jarFiles.add(new File(matcher.group(1)));
                 }
