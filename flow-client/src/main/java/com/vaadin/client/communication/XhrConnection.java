@@ -184,6 +184,11 @@ public class XhrConnection {
      * @return The URI to use for server messages.
      */
     protected String getUri() {
+        // This code is in one line because an odd bug in GWT
+        // compiler inlining this piece of code and not declaring
+        // the variable in JS scope, breaking strict mode which is
+        // needed for ES6 imports.
+        // See https://github.com/vaadin/flow/pull/6227
         return SharedUtil.addGetParameter(
                     SharedUtil.addGetParameter(
                         registry.getApplicationConfiguration().getServiceUrl(),
