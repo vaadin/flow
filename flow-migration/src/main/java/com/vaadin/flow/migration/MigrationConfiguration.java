@@ -57,14 +57,14 @@ public class MigrationConfiguration {
 
     private MigrationConfiguration(MigrationConfiguration configuration) {
         this.tempMigrationFolder = configuration.getTempMigrationFolder();
-        this.resourceDirectories = configuration.getResourceDirectories();
+        this.resourceDirectories = configuration.getResourceDirectories().clone();
         this.targetDirectory = configuration.getTargetDirectory();
         this.keepOriginalFiles = configuration.isKeepOriginalFiles();
         this.ignoreModulizerErrors = configuration.isIgnoreModulizerErrors();
         this.annotationRewriteStrategy = configuration.getAnnotationRewriteStrategy();
         this.baseDirectory  = configuration.getBaseDirectory();
         this.classFinder = configuration.getClassFinder();
-        this.javaSourceDirectories = configuration.getJavaSourceDirectories();
+        this.javaSourceDirectories = configuration.getJavaSourceDirectories().clone();
         this.compiledClassDirectory = configuration.getCompiledClassDirectory();
     }
 
