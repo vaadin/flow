@@ -29,7 +29,7 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
  * @author Vaadin Ltd
  *
  */
-public class MigrationConfiguration implements Cloneable {
+public class MigrationConfiguration {
 
     private File tempMigrationFolder;
 
@@ -53,6 +53,19 @@ public class MigrationConfiguration implements Cloneable {
 
     private MigrationConfiguration(File baseDir) {
         baseDirectory = baseDir;
+    }
+
+    private MigrationConfiguration(MigrationConfiguration configuration) {
+        this.tempMigrationFolder = configuration.getTempMigrationFolder();
+        this.resourceDirectories = configuration.getResourceDirectories();
+        this.targetDirectory = configuration.getTargetDirectory();
+        this.keepOriginalFiles = configuration.isKeepOriginalFiles();
+        this.ignoreModulizerErrors = configuration.isIgnoreModulizerErrors();
+        this.annotationRewriteStrategy = configuration.getAnnotationRewriteStrategy();
+        this.baseDirectory  = configuration.getBaseDirectory();
+        this.classFinder = configuration.getClassFinder();
+        this.javaSourceDirectories = configuration.getJavaSourceDirectories();
+        this.compiledClassDirectory = configuration.getCompiledClassDirectory();
     }
 
     /**
@@ -323,16 +336,7 @@ public class MigrationConfiguration implements Cloneable {
          */
         public MigrationConfiguration build() {
             // return an immutable instance
-            return copy();
-        }
-
-        private MigrationConfiguration copy() {
-            try {
-                return config.clone();
-            } catch (CloneNotSupportedException exception) {
-                // this may not happen
-                throw new RuntimeException(exception);
-            }
+            return  new MigrationConfiguration(config);
         }
     }
 
