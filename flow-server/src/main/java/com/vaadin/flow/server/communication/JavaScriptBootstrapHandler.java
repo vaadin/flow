@@ -202,6 +202,9 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
 
         config.put(ApplicationConstants.SERVICE_URL, serviceUrl);
 
+        // Do not listen to pushState and routerLink events.
+        config.put(ApplicationConstants.APP_WC_MODE, true);
+
         // TODO(manolo) this comment is left intentionally because we
         // need to revise whether the info passed to client is valid
         // when initialising push. Right now ccdm is not doing

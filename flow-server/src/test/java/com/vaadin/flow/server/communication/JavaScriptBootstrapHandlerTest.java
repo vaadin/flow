@@ -33,6 +33,7 @@ import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletRe
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler.JavaScriptBootstrapUI;
+import com.vaadin.flow.shared.ApplicationConstants;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -88,6 +89,7 @@ public class JavaScriptBootstrapHandlerTest {
         Assert.assertTrue(json.getObject("appConfig").hasKey("appId"));
         Assert.assertTrue(json.getObject("appConfig").getObject("uidl").hasKey("changes"));
         Assert.assertTrue(json.getObject("appConfig").getBoolean("debug"));
+        Assert.assertTrue(json.getObject("appConfig").getBoolean("webComponentMode"));
 
         Assert.assertEquals("./", json.getObject("appConfig").getString("contextRootUrl"));
         Assert.assertEquals("//localhost:8888/foo/", json.getObject("appConfig").getString("serviceUrl"));
