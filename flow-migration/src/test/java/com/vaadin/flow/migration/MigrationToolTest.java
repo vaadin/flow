@@ -43,8 +43,7 @@ public class MigrationToolTest {
         private MigrationConfiguration conf;
 
         @Override
-        protected void doMigration(MigrationConfiguration configuration)
-                throws MigrationToolsException, MigrationFailureException {
+        protected void doMigration(MigrationConfiguration configuration) {
             conf = configuration;
         }
     }
@@ -54,7 +53,7 @@ public class MigrationToolTest {
     @Test
     public void passRequiredArguments_configurationIsPassed()
             throws CommandArgumentException, MigrationToolsException,
-            MigrationFailureException, MalformedURLException, IOException {
+            MigrationFailureException, IOException {
         tool.runMigration(new String[] { "-b", "fooBaseDir", "-src", "barSrcs",
                 "-c", makeSomeFolder().getPath(), "-d",
                 makeSomeFolder().toURI().toURL().toExternalForm() });
@@ -63,7 +62,7 @@ public class MigrationToolTest {
     @Test
     public void noBaseDir_throw()
             throws CommandArgumentException, MigrationToolsException,
-            MigrationFailureException, MalformedURLException, IOException {
+            MigrationFailureException, IOException {
         exception.expect(CommandArgumentException.class);
         exception.expectCause(Matchers.any(ParseException.class));
         tool.runMigration(new String[] { "-src", "barSrcs", "-c",
@@ -74,7 +73,7 @@ public class MigrationToolTest {
     @Test
     public void noSourceRoot_throw()
             throws CommandArgumentException, MigrationToolsException,
-            MigrationFailureException, MalformedURLException, IOException {
+            MigrationFailureException, IOException {
         exception.expect(CommandArgumentException.class);
         exception.expectCause(Matchers.any(ParseException.class));
         tool.runMigration(new String[] { "-b", "fooBaseDir", "-c",
@@ -85,7 +84,7 @@ public class MigrationToolTest {
     @Test
     public void noClassesDir_throw()
             throws CommandArgumentException, MigrationToolsException,
-            MigrationFailureException, MalformedURLException, IOException {
+            MigrationFailureException, IOException {
         exception.expect(CommandArgumentException.class);
         exception.expectCause(Matchers.any(ParseException.class));
         tool.runMigration(new String[] { "-b", "fooBaseDir", "-src", "barSrcs",
@@ -95,7 +94,7 @@ public class MigrationToolTest {
     @Test
     public void noDependeciesUrls_throw()
             throws CommandArgumentException, MigrationToolsException,
-            MigrationFailureException, MalformedURLException, IOException {
+            MigrationFailureException, IOException {
         exception.expect(CommandArgumentException.class);
         exception.expectCause(Matchers.any(ParseException.class));
         tool.runMigration(new String[] { "-b", "fooBaseDir", "-src", "barSrcs",
@@ -105,7 +104,7 @@ public class MigrationToolTest {
     @Test
     public void passBadDependencyUrl_throw()
             throws CommandArgumentException, MigrationToolsException,
-            MigrationFailureException, MalformedURLException, IOException {
+            MigrationFailureException, IOException {
         exception.expect(CommandArgumentException.class);
         exception.expectCause(Matchers.any(MalformedURLException.class));
         tool.runMigration(new String[] { "-b", "fooBaseDir", "-src", "barSrcs",
@@ -115,7 +114,7 @@ public class MigrationToolTest {
     @Test
     public void passBaseDir_baseDirIsConfigured()
             throws CommandArgumentException, MigrationToolsException,
-            MigrationFailureException, MalformedURLException, IOException {
+            MigrationFailureException, IOException {
         tool.runMigration(new String[] { "-b", "fooBaseDir", "-src", "barSrcs",
                 "-c", makeSomeFolder().getPath(), "-d",
                 makeSomeFolder().toURI().toURL().toExternalForm() });
@@ -136,7 +135,7 @@ public class MigrationToolTest {
     @Test
     public void passCompiledClassesDir_compiledClassesDirIsConfigured()
             throws CommandArgumentException, MigrationToolsException,
-            MigrationFailureException, MalformedURLException, IOException {
+            MigrationFailureException, IOException {
         File compileClasessDir = makeSomeFolder();
         tool.runMigration(new String[] { "-b", "fooBaseDir", "-src", "barSrcs",
                 "-c", compileClasessDir.getPath(), "-d",
@@ -160,7 +159,7 @@ public class MigrationToolTest {
     @Test
     public void passIgnoreModulizerError_theValueIsConfigured()
             throws CommandArgumentException, MigrationToolsException,
-            MigrationFailureException, MalformedURLException, IOException {
+            MigrationFailureException, IOException {
         tool.runMigration(new String[] { "-stopOnError", "-b", "fooBaseDir",
                 "-src", "barSrcs", "-c", makeSomeFolder().getPath(), "-d",
                 makeSomeFolder().toURI().toURL().toExternalForm() });
@@ -187,7 +186,7 @@ public class MigrationToolTest {
     @Test
     public void passKeepOriginal_theValueIsConfigured()
             throws CommandArgumentException, MigrationToolsException,
-            MigrationFailureException, MalformedURLException, IOException {
+            MigrationFailureException, IOException {
         tool.runMigration(new String[] { "-keepOriginal", "-b", "fooBaseDir",
                 "-src", "barSrcs", "-c", makeSomeFolder().getPath(), "-d",
                 makeSomeFolder().toURI().toURL().toExternalForm() });
@@ -214,7 +213,7 @@ public class MigrationToolTest {
     @Test
     public void passResourcesDirs_resourcesDirsAreConfigured()
             throws CommandArgumentException, MigrationToolsException,
-            MigrationFailureException, MalformedURLException, IOException {
+            MigrationFailureException, IOException {
         tool.runMigration(
                 new String[] { "-res", "fooBarRes", "-b", "fooBaseDir", "-src",
                         "barSrcs", "-c", makeSomeFolder().getPath(), "-d",
@@ -241,7 +240,7 @@ public class MigrationToolTest {
     @Test
     public void dontPassResourcesDir_resourcesDirIsNotConfigured_noException()
             throws CommandArgumentException, MigrationToolsException,
-            MigrationFailureException, MalformedURLException, IOException {
+            MigrationFailureException, IOException {
         tool.runMigration(new String[] { "-b", "fooBaseDir", "-src", "barSrcs",
                 "-c", makeSomeFolder().getPath(), "-d",
                 makeSomeFolder().toURI().toURL().toExternalForm() });
@@ -252,7 +251,7 @@ public class MigrationToolTest {
     @Test
     public void passMigrationDir_migrationDirIsConfigured()
             throws CommandArgumentException, MigrationToolsException,
-            MigrationFailureException, MalformedURLException, IOException {
+            MigrationFailureException, IOException {
         tool.runMigration(new String[] { "-md", "migrationFoo", "-b",
                 "fooBaseDir", "-src", "barSrcs", "-c",
                 makeSomeFolder().getPath(), "-d",
@@ -276,7 +275,7 @@ public class MigrationToolTest {
     @Test
     public void dontPassMigrationDir_MigrationDirIsNotConfigured_noException()
             throws CommandArgumentException, MigrationToolsException,
-            MigrationFailureException, MalformedURLException, IOException {
+            MigrationFailureException, IOException {
         tool.runMigration(new String[] { "-b", "fooBaseDir", "-src", "barSrcs",
                 "-c", makeSomeFolder().getPath(), "-d",
                 makeSomeFolder().toURI().toURL().toExternalForm() });
@@ -287,7 +286,7 @@ public class MigrationToolTest {
     @Test
     public void passTargetDir_migrationTargetIsConfigured()
             throws CommandArgumentException, MigrationToolsException,
-            MigrationFailureException, MalformedURLException, IOException {
+            MigrationFailureException, IOException {
         tool.runMigration(new String[] { "-t", "targetFoo", "-b", "fooBaseDir",
                 "-src", "barSrcs", "-c", makeSomeFolder().getPath(), "-d",
                 makeSomeFolder().toURI().toURL().toExternalForm() });
@@ -310,7 +309,7 @@ public class MigrationToolTest {
     @Test
     public void dontPassTargetnDir_MigrationDirIsNotConfigured_noException()
             throws CommandArgumentException, MigrationToolsException,
-            MigrationFailureException, MalformedURLException, IOException {
+            MigrationFailureException, IOException {
         tool.runMigration(new String[] { "-b", "fooBaseDir", "-src", "barSrcs",
                 "-c", makeSomeFolder().getPath(), "-d",
                 makeSomeFolder().toURI().toURL().toExternalForm() });
@@ -321,7 +320,7 @@ public class MigrationToolTest {
     @Test
     public void passJavaSourceDirs_sourceDirsAreConfigured()
             throws CommandArgumentException, MigrationToolsException,
-            MigrationFailureException, MalformedURLException, IOException {
+            MigrationFailureException, IOException {
         tool.runMigration(new String[] { "-b", "fooBaseDir", "-src", "barSrcs",
                 "-c", makeSomeFolder().getPath(), "-d",
                 makeSomeFolder().toURI().toURL().toExternalForm() });
@@ -347,7 +346,7 @@ public class MigrationToolTest {
     @Test
     public void passDpeUrls_classFinderIsConfigured()
             throws CommandArgumentException, MigrationToolsException,
-            MigrationFailureException, MalformedURLException, IOException,
+            MigrationFailureException, IOException,
             URISyntaxException {
         File depDir = makeSomeFolder();
         File file = new File(depDir, "foo");
@@ -376,7 +375,7 @@ public class MigrationToolTest {
     @Test
     public void passAnnotationRewriteStrategy_strategyIsConfigured()
             throws CommandArgumentException, MigrationToolsException,
-            MigrationFailureException, MalformedURLException, IOException {
+            MigrationFailureException, IOException {
         tool.runMigration(new String[] { "-ars", "SKIP", "-t", "targetFoo",
                 "-b", "fooBaseDir", "-src", "barSrcs", "-c",
                 makeSomeFolder().getPath(), "-d",
@@ -400,7 +399,7 @@ public class MigrationToolTest {
     @Test
     public void passBadAnnotationRewriteStrategy_throw()
             throws CommandArgumentException, MigrationToolsException,
-            MigrationFailureException, MalformedURLException, IOException {
+            MigrationFailureException, IOException {
         exception.expect(CommandArgumentException.class);
         exception.expectCause(Matchers.any(IllegalArgumentException.class));
         tool.runMigration(new String[] { "-ars", "bar", "-t", "targetFoo", "-b",
@@ -412,7 +411,7 @@ public class MigrationToolTest {
     @Test
     public void dontPassAnnotationRewriteStrategy_defaultStrategyIsInConfiguration()
             throws CommandArgumentException, MigrationToolsException,
-            MigrationFailureException, MalformedURLException, IOException {
+            MigrationFailureException, IOException {
         tool.runMigration(new String[] { "-t", "targetFoo", "-b", "fooBaseDir",
                 "-src", "barSrcs", "-c", makeSomeFolder().getPath(), "-d",
                 makeSomeFolder().toURI().toURL().toExternalForm() });

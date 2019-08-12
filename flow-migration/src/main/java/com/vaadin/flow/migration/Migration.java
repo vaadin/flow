@@ -400,7 +400,7 @@ public class Migration {
                 "Error when running `npm install`");
     }
 
-    private boolean executeProcess(List<String> command, String errorMsg,
+    protected boolean executeProcess(List<String> command, String errorMsg,
             String successMsg, String exceptionMsg) {
         ProcessBuilder builder = FrontendUtils.createProcessBuilder(command);
         builder.directory(getTempMigrationFolder());
