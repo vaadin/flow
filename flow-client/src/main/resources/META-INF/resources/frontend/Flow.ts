@@ -12,6 +12,10 @@ interface AppInitResponse {
     appConfig: AppConfig;
 }
 
+export interface NavigationParameters {
+    path: string;
+}
+
 /**
  * Client API for flow UI operations.
  */
@@ -53,9 +57,9 @@ export class Flow {
     /**
      * Go to a route defined in server.
      */
-    async navigate(path : string): Promise<HTMLElement> {
+    async navigate(params : NavigationParameters): Promise<HTMLElement> {
         await this.start();
-        return this.getFlowElement(path);
+        return this.getFlowElement(params.path);
     }
 
     private async getFlowElement(routePath : string): Promise<HTMLElement> {
