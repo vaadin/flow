@@ -76,7 +76,7 @@ suite("Flow", () => {
 
     mockInitResponse();
     return new Flow()
-      .navigate("Foo/Bar.baz")
+      .navigate({path: "Foo/Bar.baz"})
       .then(() => {
         // Check that start() was called
         assert.isDefined((window as any).Vaadin.Flow.resolveUri);
