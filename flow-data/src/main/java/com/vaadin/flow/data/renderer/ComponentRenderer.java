@@ -54,6 +54,7 @@ public class ComponentRenderer<COMPONENT extends Component, SOURCE>
     private SerializableBiFunction<Component, SOURCE, Component> componentUpdateFunction;
     private SerializableBiConsumer<COMPONENT, SOURCE> itemConsumer;
     private String componentRendererTag = "flow-component-renderer";
+    private Element owner;
 
     /**
      * Creates a new ComponentRenderer that uses the componentSupplier to
@@ -158,6 +159,8 @@ public class ComponentRenderer<COMPONENT extends Component, SOURCE>
                 keyMapper == null ? null : keyMapper::key);
         rendering.setTemplateElement(contentTemplate);
 
+        owner = container;
+
         container.getNode()
                 .runWhenAttached(ui -> ui.getInternals().getStateTree()
                         .beforeClientResponse(container.getNode(),
@@ -231,9 +234,12 @@ public class ComponentRenderer<COMPONENT extends Component, SOURCE>
      */
     public COMPONENT createComponent(SOURCE item) {
         if (componentFunction != null) {
-            return componentFunction.apply(item);
+            COMPONENT component = componentFunction.apply(item);
+            component.onEnabledStateChanged(owner.isEnabled());
+            return component;
         }
         COMPONENT component = componentSupplier.get();
+        component.onEnabledStateChanged(owner.isEnabled());
         if (itemConsumer != null) {
             itemConsumer.accept(component, item);
         }
