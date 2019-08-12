@@ -175,6 +175,8 @@ public abstract class VaadinService implements Serializable {
 
     private Iterable<BootstrapListener> bootstrapListeners;
 
+    private transient Iterable<ClientIndexBootstrapListener> clientIndexBootstrapListeners;
+
     private Iterable<DependencyFilter> dependencyFilters;
 
     private boolean atmosphereAvailable = checkAtmosphereSupport();
@@ -283,6 +285,10 @@ public abstract class VaadinService implements Serializable {
                     .collect(Collectors.toList());
             bootstrapListeners = instantiator
                     .getBootstrapListeners(event.getAddedBootstrapListeners())
+                    .collect(Collectors.toList());
+            clientIndexBootstrapListeners = instantiator
+                    .getClientIndexBootstrapListeners(
+                            event.getAddedClientIndexBootstrapListeners())
                     .collect(Collectors.toList());
         });
 
@@ -625,6 +631,23 @@ public abstract class VaadinService implements Serializable {
      */
     public void modifyBootstrapPage(BootstrapPageResponse response) {
         bootstrapListeners
+                .forEach(listener -> listener.modifyBootstrapPage(response));
+    }
+
+    /**
+     * Fires the
+     * {@link ClientIndexBootstrapListener#modifyBootstrapPage(ClientIndexBootstrapPage)}
+     * event to all registered {@link ClientIndexBootstrapListener}. This is
+     * called internally when the client index bootstrap page is created, so
+     * listeners can intercept the creation and change the result HTML.
+     *
+     * @param response
+     *            The object containing all relevant info needed by listeners to
+     *            change the client index bootstrap page.
+     */
+    public void modifyClientIndexBootstrapPage(
+            ClientIndexBootstrapPage response) {
+        clientIndexBootstrapListeners
                 .forEach(listener -> listener.modifyBootstrapPage(response));
     }
 

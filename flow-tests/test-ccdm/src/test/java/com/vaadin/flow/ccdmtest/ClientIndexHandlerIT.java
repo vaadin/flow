@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.ccdmtest;
 
+import java.util.Optional;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
@@ -34,6 +36,31 @@ public class ClientIndexHandlerIT extends ChromeBrowserTest {
         waitForElementPresent(By.tagName("div"));
         String content = findElement(By.id("content")).getText();
         Assert.assertEquals("index.html content", content);
+    }
+
+    @Test
+    public void clientIndexBootstrapListener_openRootURL_shouldHaveModifiedLabel() {
+        openTestUrl("/");
+        waitForElementPresent(By.tagName("div"));
+        String content = findElement(By.tagName("label")).getText();
+        Assert.assertEquals(
+                "The page should have label element which is added by a listener",
+                "Modified page", content);
+    }
+
+    public void clientIndexBootstrapListener_openRootURL_shouldDynamicMetaContent() {
+        openTestUrl("/");
+        waitForElementPresent(By.tagName("div"));
+        Optional<WebElement> ogImageMeta = findElements(By.tagName("meta"))
+                .stream().filter(webElement -> webElement.getAttribute("name")
+                        .equals("og:image"))
+                .findFirst();
+        Assert.assertTrue("The response should have ogImage meta element",
+                ogImageMeta.isPresent());
+        Assert.assertEquals(
+                "ogImage meta element should have correct image URL",
+                "http://localhost:8888/image/my_app.png",
+                ogImageMeta.get().getAttribute("content"));
     }
 
     @Test
