@@ -12,6 +12,10 @@ interface AppInitResponse {
     appConfig: AppConfig;
 }
 
+export interface NavigationParameters {
+    path: string;
+}
+
 /**
  * Client API for flow UI operations.
  */
@@ -53,8 +57,32 @@ export class Flow {
     /**
      * Go to a route defined in server.
      */
-    navigate(): Promise<void> {
-        return Promise.resolve();
+    async navigate(params : NavigationParameters): Promise<HTMLElement> {
+        await this.start();
+        return this.getFlowElement(params.path);
+    }
+
+    private async getFlowElement(routePath : string): Promise<HTMLElement> {
+        return new Promise(resolve => {
+            // we create any tag using the route as reference
+            const tag = 'flow-' + routePath.replace(/[^\w]+/g, "-").toLowerCase();
+
+            // flow use body for keep references
+            const flowRoot = document.body as any;
+            flowRoot.$ = flowRoot.$ || {counter: 0};
+
+            // Create the wrapper element with an unique id
+            const id  = `${tag}-${flowRoot.$.counter ++}`;
+            const element = flowRoot.$[id] = document.createElement(tag);
+            element.id = id;
+            window.console.log("Created new element for a flow view: " + id);
+
+            // The callback run from server side once the view is ready
+            (element as any).serverConnected = () => resolve(element);
+
+            // Call server side to navigate to the given route
+            flowRoot.$server.connectClient(tag, id, routePath);
+        });
     }
 
     private async initFlowClient(clientMod: any): Promise<void> {

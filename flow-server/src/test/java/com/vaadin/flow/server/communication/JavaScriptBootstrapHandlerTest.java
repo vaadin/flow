@@ -15,16 +15,24 @@
  */
 package com.vaadin.flow.server.communication;
 
+import java.util.regex.Pattern;
+
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.dom.NodeVisitor.ElementType;
+import com.vaadin.flow.dom.TestNodeVisitor;
+import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletResponse;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler.JavaScriptBootstrapUI;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -84,8 +92,49 @@ public class JavaScriptBootstrapHandlerTest {
         Assert.assertEquals("./", json.getObject("appConfig").getString("contextRootUrl"));
         Assert.assertEquals("//localhost:8888/foo/", json.getObject("appConfig").getString("serviceUrl"));
         Assert.assertEquals("http://localhost:8888/foo/", json.getObject("appConfig").getString("requestURL"));
+
         // Using regex, because version depends on the build
         Assert.assertTrue(json.getObject("appConfig").getString("pushScript")
                 .matches("^\\./VAADIN/static/push/vaadinPush\\.js\\?v=[\\w\\.\\-]+$"));
     }
+
+    @Test
+    public void should_initialize_UI() throws Exception {
+        VaadinRequest request = mocks.createRequest(mocks, "/foo/?v-r=init&foo");
+        jsInitHandler.handleRequest(session, request, response);
+
+        Assert.assertNotNull(UI.getCurrent());
+        Assert.assertEquals(JavaScriptBootstrapUI.class, UI.getCurrent().getClass());
+    }
+
+
+    @Test
+    public void should_attachViewToUI() throws Exception {
+        VaadinRequest request = mocks.createRequest(mocks, "/foo/?v-r=init&foo");
+        jsInitHandler.handleRequest(session, request, response);
+
+        JavaScriptBootstrapUI ui = Mockito.spy((JavaScriptBootstrapUI) UI.getCurrent());
+        ui.connectClient("a-tag", "an-id", "a-route");
+
+        TestNodeVisitor visitor = new TestNodeVisitor(true);
+        BasicElementStateProvider.get().visit(ui.getElement().getNode(), visitor);
+
+        Assert.assertTrue(hasNodeTag(visitor, "^<body>.*", ElementType.REGULAR));
+        Assert.assertTrue(hasNodeTag(visitor, "^<a-tag>.*", ElementType.VIRTUAL_ATTACHED));
+        Assert.assertTrue(hasNodeTag(visitor, "^<div>.*", ElementType.REGULAR));
+        Assert.assertTrue(hasNodeTag(visitor, "^<div>.*Navigation not implemented yet.*", ElementType.REGULAR));
+
+    }
+
+    private boolean hasNodeTag(TestNodeVisitor visitor, String htmContent, ElementType type) {
+        Pattern regex = Pattern.compile(htmContent, Pattern.DOTALL);
+        return visitor
+                .getVisited()
+                .entrySet()
+                .stream()
+                .anyMatch(entry -> {
+                    return entry.getValue().equals(type) && regex.matcher(entry.getKey().toString()).find();
+                });
+    }
+
 }
