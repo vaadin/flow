@@ -65,16 +65,10 @@ suite("Flow", () => {
   });
 
   test("should connect client and server on navigation", () => {
-    const flowRoot = (window.document.body as any);
-
-    flowRoot.$server = {
-      connectClient: () => {
-        // Resolve the promise
-        flowRoot.$['flow-foo-bar-baz-0'].serverConnected();
-      }
-    };
-
+    stubServerRemoteFunction('flow-foo-bar-baz');
     mockInitResponse();
+
+    const flowRoot = (window.document.body as any);
     return new Flow()
       .navigate({path: "Foo/Bar.baz"})
       .then(() => {
@@ -86,7 +80,51 @@ suite("Flow", () => {
         assert.isDefined(flowRoot.$['flow-foo-bar-baz-0']);
       });
   });
+
+  test("should bind Flow navigate function to the flow context", () => {
+    // A mock class for router
+    class TestRouter {
+      config: any;
+
+      constructor(config: any) {
+        this.config = config;
+      }
+
+      navigate(params: any) : Promise<HTMLElement> {
+        return this.config.navigate(params);
+      }
+    }
+
+    stubServerRemoteFunction('flow-another-route');
+    mockInitResponse();
+
+    const flow = new Flow();
+    const router = new TestRouter ({
+      // we'd rather this API syntax instead of () => flow.navigate();
+      navigate: flow.navigate
+    });
+
+    return router
+      .navigate({path: 'another-route'})
+      .then(elem => {
+        assert.isDefined(elem);
+      });
+  });
 });
+
+function stubServerRemoteFunction(tag: string) {
+  const flowRoot = (window.document.body as any);
+  // Reset counter for id generator
+  delete flowRoot.$;
+  // Stub remote function exported in JavaScriptBootstrapUI.
+  flowRoot.$server = {
+    connectClient: () => {
+      // Resolve the promise
+      flowRoot.$[`${tag}-0`].serverConnected();
+    }
+  };
+}
+
 
 function mockInitResponse() {
   // Configure a valid server initialization response

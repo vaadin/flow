@@ -57,7 +57,11 @@ export class Flow {
     /**
      * Go to a route defined in server.
      */
-    async navigate(params : NavigationParameters): Promise<HTMLElement> {
+    get navigate(): (params: NavigationParameters) => Promise<HTMLElement> {
+        return (params: NavigationParameters) => this.doFlowNavigation(params);
+    }
+
+    private async doFlowNavigation(params : NavigationParameters): Promise<HTMLElement> {
         await this.start();
         return this.getFlowElement(params.path);
     }
