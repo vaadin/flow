@@ -158,12 +158,6 @@ public class MigrationConfiguration {
         return annotationRewriteStrategy;
     }
 
-
-    @Override
-    protected MigrationConfiguration clone() throws CloneNotSupportedException {
-        return (MigrationConfiguration) super.clone();
-    }
-
     /**
      * A builder for {@link MigrationConfiguration}. Allows to set all required
      * parameters via setters fluent API.
