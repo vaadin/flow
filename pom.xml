@@ -31,6 +31,7 @@
         <module>flow-server-production-mode</module>
         <module>flow-server-compatibility-mode</module>
         <module>flow-components-parent</module>
+        <module>flow-migration</module>
         <module>flow-maven-plugin</module>
         <module>flow-test-generic</module>
         <module>flow-bom</module>

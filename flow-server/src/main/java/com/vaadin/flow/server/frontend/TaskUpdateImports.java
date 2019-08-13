@@ -291,7 +291,7 @@ public class TaskUpdateImports extends NodeUpdater {
             return;
         }
         Path filePath = file.toPath();
-        visitedImports.add(filePath.normalize().toString());
+        visitedImports.add(filePath.normalize().toString().replace("\\", "/"));
         try {
             visitImportsRecursively(filePath, path, theme, imports,
                     visitedImports);
@@ -339,7 +339,7 @@ public class TaskUpdateImports extends NodeUpdater {
     private String normalizeImportPath(String path) {
         String importPath = toValidBrowserImport(path);
         File file = new File(importPath);
-        return file.toPath().normalize().toString();
+        return file.toPath().normalize().toString().replace("\\", "/");
     }
 
     /**

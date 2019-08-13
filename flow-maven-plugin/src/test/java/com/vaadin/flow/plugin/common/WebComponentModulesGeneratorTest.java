@@ -37,6 +37,7 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.migration.ClassPathIntrospector;
 import com.vaadin.flow.plugin.samplecode.AbstractExporter;
 import com.vaadin.flow.plugin.samplecode.BarExporter;
 import com.vaadin.flow.plugin.samplecode.FooExporter;
