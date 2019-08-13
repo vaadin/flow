@@ -171,9 +171,11 @@ public class NpmTemplateParser implements TemplateParser {
 
         try {
             lock.lock();
+            // - always load if jsonStats is null.
+            // - always load a new stats if the hash has changed, but we do not have a bundle.
+            // - else never load again when we have a bundle as it never changes.
             if (jsonStats == null || !jsonStats.get("hash").asString()
                     .equals(hash)) {
-                // Only load stats for null jsonStats or if we don't use bundle files.
                 if(jsonStats == null || !usesBundleFile(config)) {
                     String content = FrontendUtils.getStatsContent(service);
                     if (content != null) {
