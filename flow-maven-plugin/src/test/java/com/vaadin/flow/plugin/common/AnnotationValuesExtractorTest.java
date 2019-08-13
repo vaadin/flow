@@ -21,8 +21,8 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
-import com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.ReflectionsClassFinder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.server.scanner.ReflectionsClassFinder;
 
 import org.apache.maven.plugins.annotations.Mojo;
 import org.junit.Rule;

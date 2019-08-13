@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.migration.ClassPathIntrospector;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 /**

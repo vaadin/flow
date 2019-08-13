@@ -39,6 +39,7 @@ import com.google.common.collect.ImmutableMap;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.migration.ClassPathIntrospector;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.shared.ApplicationConstants;
 
