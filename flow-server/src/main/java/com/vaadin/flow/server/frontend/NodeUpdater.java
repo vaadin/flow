@@ -230,6 +230,10 @@ public abstract class NodeUpdater implements FallibleCommand {
                 "4.2.1") || added;
         added = addDependency(packageJson, DEV_DEPENDENCIES, "raw-loader",
                 "3.0.0") || added;
+        added = addDependency(packageJson, DEV_DEPENDENCIES, "typescript",
+                "3.5.3") || added;
+        added = addDependency(packageJson, DEV_DEPENDENCIES, "awesome-typescript-loader",
+                "5.2.1") || added;
         return added;
     }
 
