@@ -55,7 +55,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class TaskUpdateImportsTest extends NodeUpdateTestUtil {
+public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -214,7 +214,9 @@ public class TaskUpdateImportsTest extends NodeUpdateTestUtil {
         assertContains(output, true,
                 "changing 'frontend://frontend-p3-template.js' to './frontend-p3-template.js'",
                 "Use the './' prefix for files in JAR files: 'ExampleConnector.js'",
-                "Use the './' prefix for files in the 'frontend' folder: 'vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js'");
+                "Use the './' prefix for files in the '"
+                        + frontendDirectory.getPath()
+                        + "' folder: 'vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js'");
 
         // Using regex match because of the ➜ character in TC
         assertContains(output, true,
@@ -320,7 +322,7 @@ public class TaskUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     private void assertContains(String content, boolean contains,
-            String... checks) {
+                                String... checks) {
         for (String importString : checks) {
             boolean result = content.contains(importString);
             String message = "\n  " + (contains ? "NOT " : "") + "FOUND '"

@@ -180,9 +180,16 @@ public class TaskUpdateImports extends NodeUpdater {
                 i++;
             }
             if (!cssNotFound.isEmpty()) {
-                throw new IllegalStateException(notFoundMessage(cssNotFound,
-                        "Failed to find the following css files in the `node_modules` or `/frontend` tree:",
-                        "Check that they exist or are installed."));
+                String prefix = String.format(
+                        "Failed to find the following css files in the `node_modules` or `%s` directory tree:",
+                        frontendDirectory.getPath());
+                String suffix = String.format(
+                        "Check that they exist or are installed. If you use a custom directory "
+                                + "for your resource files instead of the default `frontend` folder "
+                                + "then make sure it's correctly configured (e.g. set '%s' property)",
+                        FrontendUtils.PARAM_FRONTEND_DIR);
+                throw new IllegalStateException(
+                        notFoundMessage(cssNotFound, prefix, suffix));
             }
             lines.add("");
         }
@@ -258,11 +265,19 @@ public class TaskUpdateImports extends NodeUpdater {
         }
 
         if (!resourceNotFound.isEmpty()) {
-            throw new IllegalStateException(notFoundMessage(resourceNotFound,
+            String prefix = String.format(
                     "Failed to resolve the following files either:"
-                            + "\n   · in the `/frontend` sources folder"
-                            + "\n   · or as a `META-INF/resources/frontend` resource in some JAR.",
-                    "Please, double check that those files exist."));
+                            + "%n   · in the `%s` sources folder"
+                            + "%n   · or as a `META-INF/resources/frontend` resource in some JAR.",
+                    frontendDirectory.getPath());
+            String suffix = String.format(
+                    "Please, double check that those files exist. If you use a custom directory "
+                            + "for your resource files instead of default "
+                            + "`frontend` folder then make sure you it's correctly configured "
+                            + "(e.g. set '%s' property)",
+                    FrontendUtils.PARAM_FRONTEND_DIR);
+            throw new IllegalStateException(
+                    notFoundMessage(resourceNotFound, prefix, suffix));
         }
 
         if (!npmNotFound.isEmpty() && log().isInfoEnabled()) {
@@ -433,8 +448,8 @@ public class TaskUpdateImports extends NodeUpdater {
         } else if (isFile(frontendDirectory, jsImport)) {
             if (!jsImport.startsWith("./")) {
                 log().warn(
-                        "Use the './' prefix for files in the 'frontend' folder: '{}', please update your annotations.",
-                        jsImport);
+                        "Use the './' prefix for files in the '{}' folder: '{}', please update your annotations.",
+                        frontendDirectory, jsImport);
             }
             return WEBPACK_PREFIX_ALIAS + jsImport.replaceFirst("^\\./", "");
         }
