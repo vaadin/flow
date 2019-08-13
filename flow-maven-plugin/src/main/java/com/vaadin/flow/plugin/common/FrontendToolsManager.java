@@ -35,6 +35,8 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.utils.FlowFileUtils;
+
 /**
  * Entity to operate frontend tools to transpile files.
  * <p>
@@ -85,7 +87,7 @@ public class FrontendToolsManager {
             String es5OutputDirectoryName, String es6OutputDirectoryName,
             FrontendDataProvider frontendDataProvider,
             RunnerManager runnerManager) {
-        FlowPluginFileUtils
+        FlowFileUtils
                 .forceMkdir(Objects.requireNonNull(workingDirectory));
         this.runnerManager = Objects.requireNonNull(runnerManager);
         this.workingDirectory = workingDirectory;
