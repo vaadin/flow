@@ -18,9 +18,15 @@ package com.vaadin.flow.migration;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import org.apache.commons.io.FileUtils;
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -29,6 +35,9 @@ import org.mockito.Mockito;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 public class MigrationTest {
+
+    @Rule
+    public final TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     private MigrationConfiguration configuration = Mockito.mock(MigrationConfiguration.class);
 
@@ -102,8 +111,7 @@ public class MigrationTest {
             throws MigrationFailureException, MigrationToolsException,
             IOException {
         File sourcesFolder = makeTempDirectoryStructure();
-        File targetFolder = temporaryFolder.newFolder();
-        targetFolder.mkdirs();
+        File targetFolder = populateTargetWithApplications();
 
         Mockito.when(configuration.getBaseDirectory())
                 .thenReturn(Paths.get(sourcesFolder.getPath(), "foo").toFile());
@@ -120,24 +128,48 @@ public class MigrationTest {
         Mockito.when(configuration.getCompiledClassDirectory()).thenReturn(
                 Paths.get(sourcesFolder.getPath(), "foobar").toFile());
 
+        // Expected execution calls:
+        // 1 - npm install polymer-modulizer
+        // 2 - node {tempFolder} i -F --confid.interactive=false -S polymer#2.8.0
+        // 3 - npm i
+        // 4 - node node_modules/polymer-modulizer/bin/modulizer.js --force --out , --import-style=name
+
+        LinkedList<Integer> excecuteExpectations = Stream.of(3, 7, 2, 6)
+                .collect(Collectors.toCollection(LinkedList::new));
+        
         Migration migration = new Migration(configuration) {
             @Override
             protected boolean executeProcess(List<String> command,
                     String errorMsg, String successMsg, String exceptionMsg) {
-                // Do actually install migration tools as else we will fail the build
-                // Skip actual execution of other commands.
-                if (errorMsg.equals("Couldn't install migration tools")) {
-                    return super.executeProcess(command, errorMsg, successMsg,
-                            exceptionMsg);
-                }
+                Assert.assertEquals("Unexpected command", (int)excecuteExpectations.pop(), command.size());
+                // Skip actual execution of commands.
                 return true;
             }
         };
         migration.migrate();
     }
 
-    @Rule
-    public final TemporaryFolder temporaryFolder = new TemporaryFolder();
+    private File populateTargetWithApplications() throws IOException {
+        File targetFolder = temporaryFolder.newFolder();
+        targetFolder.mkdirs();
+        Path bowerBin = Files.createDirectories(
+                Paths.get(targetFolder.getAbsolutePath(), "node_modules",
+                        "bower", "bin"));
+        new File(bowerBin.toFile(), "bower").createNewFile();
+
+        // Add stub node for test. !note! will not work on windows which will
+        // need to have node installed
+        Path nodeDirectory = Files.createDirectories(
+                Paths.get(targetFolder.getAbsolutePath(), "node"));
+        File node = new File(nodeDirectory.toFile(),"node");
+        node.createNewFile();
+        node.setExecutable(true);
+        FileUtils.write(node,
+                "#!/bin/sh\n[ \"$1\" = -v ] && echo 8.0.0 || sleep 1\n",
+                "UTF-8");
+
+        return targetFolder;
+    }
 
     private File makeTempDirectoryStructure() throws IOException {
         File folder = temporaryFolder.newFolder();
