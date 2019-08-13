@@ -267,8 +267,8 @@ public class TaskUpdateImports extends NodeUpdater {
         if (!resourceNotFound.isEmpty()) {
             String prefix = String.format(
                     "Failed to resolve the following files either:"
-                            + "\n   · in the `%s` sources folder"
-                            + "\n   · or as a `META-INF/resources/frontend` resource in some JAR.",
+                            + "%n   · in the `%s` sources folder"
+                            + "%n   · or as a `META-INF/resources/frontend` resource in some JAR.",
                     frontendDirectory.getPath());
             String suffix = String.format(
                     "Please, double check that those files exist. If you use a custom directory "
