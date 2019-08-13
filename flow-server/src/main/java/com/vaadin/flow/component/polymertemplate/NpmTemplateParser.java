@@ -169,15 +169,20 @@ public class NpmTemplateParser implements TemplateParser {
         DeploymentConfiguration config = service.getDeploymentConfiguration();
         String hash = FrontendUtils.getStatsHash(service);
 
-        if (jsonStats == null || !jsonStats.get("hash").asString()
-                .equals(hash)) {
-            // Only load for null jsonStats if we use bundle files.
-            if(jsonStats == null || !usesBundleFile(config)) {
-                String content = FrontendUtils.getStatsContent(service);
-                if (content != null) {
-                    updateCache(url, content);
+        try {
+            lock.lock();
+            if (jsonStats == null || !jsonStats.get("hash").asString()
+                    .equals(hash)) {
+                // Only load stats for null jsonStats or if we don't use bundle files.
+                if(jsonStats == null || !usesBundleFile(config)) {
+                    String content = FrontendUtils.getStatsContent(service);
+                    if (content != null) {
+                        resetCache(content);
+                    }
                 }
             }
+        } finally {
+            lock.unlock();
         }
         if (!cache.containsKey(url) && jsonStats != null) {
             cache.put(url,
@@ -198,15 +203,9 @@ public class NpmTemplateParser implements TemplateParser {
         return config.isProductionMode() && !config.enableDevServer();
     }
 
-    private void updateCache(String url, String fileContents) {
+    private void resetCache(String fileContents) {
         cache.clear();
-        try {
-            lock.lock();
-            jsonStats = BundleParser.parseJsonStatistics(fileContents);
-        } finally {
-            lock.unlock();
-        }
-        cache.put(url, BundleParser.getSourceFromStatistics(url, jsonStats));
+        jsonStats = BundleParser.parseJsonStatistics(fileContents);
     }
 
     private Logger getLogger() {
