@@ -41,7 +41,7 @@ public class ClientIndexHandlerIT extends ChromeBrowserTest {
     @Test
     public void clientIndexBootstrapListener_openRootURL_shouldHaveModifiedLabel() {
         openTestUrl("/");
-        waitForElementPresent(By.tagName("div"));
+        waitForElementPresent(By.tagName("label"));
         String content = findElement(By.tagName("label")).getText();
         Assert.assertEquals(
                 "The page should have label element which is added by a listener",
@@ -50,7 +50,7 @@ public class ClientIndexHandlerIT extends ChromeBrowserTest {
 
     public void clientIndexBootstrapListener_openRootURL_shouldDynamicMetaContent() {
         openTestUrl("/");
-        waitForElementPresent(By.tagName("div"));
+        waitForElementPresent(By.cssSelector("meta[name]"));
         Optional<WebElement> ogImageMeta = findElements(By.tagName("meta"))
                 .stream().filter(webElement -> webElement.getAttribute("name")
                         .equals("og:image"))
