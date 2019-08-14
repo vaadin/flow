@@ -23,12 +23,13 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
 import javax.servlet.annotation.WebListener;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.net.URL;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -48,6 +49,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletContext;
@@ -69,7 +71,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
  * server.
  */
 @HandlesTypes({ Route.class, NpmPackage.class, NpmPackage.Container.class,
-        WebComponentExporter.class })
+        WebComponentExporter.class, UIInitListener.class })
 @WebListener
 public class DevModeInitializer implements ServletContainerInitializer,
         Serializable, ServletContextListener {
@@ -198,7 +200,6 @@ public class DevModeInitializer implements ServletContainerInitializer,
                 .getProperty(PARAM_GENERATED_DIR, DEFAULT_GENERATED_DIR);
         String frontendFolder = config.getStringProperty(PARAM_FRONTEND_DIR,
                 System.getProperty(PARAM_FRONTEND_DIR, PARAM_FRONTEND_DIR));
-        Set<File> jarFiles = getJarFilesFromClassloader();
 
         Builder builder = new NodeTasks.Builder(new DefaultClassFinder(classes),
                 new File(baseDir), new File(generatedDir),
@@ -236,6 +237,7 @@ public class DevModeInitializer implements ServletContainerInitializer,
         }
 
         Set<String> visitedClassNames = new HashSet<>();
+        Set<File> jarFiles = getJarFilesFromClassloader(DevModeInitializer.class.getClassLoader());
         try {
             builder.enablePackagesUpdate(true).copyResources(jarFiles)
                     .copyLocalResources(new File(baseDir,
@@ -253,7 +255,13 @@ public class DevModeInitializer implements ServletContainerInitializer,
         VaadinContext vaadinContext = new VaadinServletContext(context);
         vaadinContext.setAttribute(new VisitedClasses(visitedClassNames));
 
-        DevModeHandler.start(config, builder.npmFolder);
+        try {
+            DevModeHandler.start(config, builder.npmFolder);
+        } catch (IllegalStateException exception) {
+            // wrap an ISE which can be caused by inability to find tools like
+            // node, npm into a servlet exception
+            throw new ServletException(exception);
+        }
     }
 
     private static Logger log() {
@@ -277,14 +285,16 @@ public class DevModeInitializer implements ServletContainerInitializer,
      * This method returns all jar files having a specific folder. We don't use
      * URLClassLoader because will fail in Java 9+
      */
-    private static Set<File> getJarFilesFromClassloader() {
+    protected static Set<File> getJarFilesFromClassloader(
+            ClassLoader classLoader) {
         Set<File> jarFiles = new HashSet<>();
         try {
-            Enumeration<URL> en = DevModeInitializer.class.getClassLoader()
+            Enumeration<URL> en = classLoader
                     .getResources(RESOURCES_FRONTEND_DEFAULT);
             while (en.hasMoreElements()) {
                 URL url = en.nextElement();
-                Matcher matcher = JAR_FILE_REGEX.matcher(url.getPath());
+                Matcher matcher = JAR_FILE_REGEX.matcher(URLDecoder
+                        .decode(url.getPath(), StandardCharsets.UTF_8.name()));
                 if (matcher.find()) {
                     jarFiles.add(new File(matcher.group(1)));
                 }

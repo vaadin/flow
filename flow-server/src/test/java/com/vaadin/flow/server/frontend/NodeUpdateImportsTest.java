@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
+import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -40,6 +41,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
+import org.slf4j.Logger;
 import org.slf4j.impl.SimpleLogger;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
@@ -50,7 +54,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-
 
 public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
@@ -67,15 +70,21 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
     private File loggerFile;
     private TaskUpdateImports updater;
 
+    private boolean useMockLog;
+
+    private Logger logger = Mockito.mock(Logger.class);
+
     @Before
     public void setup() throws Exception {
         File tmpRoot = temporaryFolder.getRoot();
 
-        // Use a file for logs so as tests can assert the warnings shown to the user.
+        // Use a file for logs so as tests can assert the warnings shown to the
+        // user.
         loggerFile = new File(tmpRoot, "test.log");
         loggerFile.createNewFile();
         // Setting a system property we make SimpleLogger to output to a file
-        System.setProperty(SimpleLogger.LOG_FILE_KEY, loggerFile.getAbsolutePath());
+        System.setProperty(SimpleLogger.LOG_FILE_KEY,
+                loggerFile.getAbsolutePath());
         // re-init logger to get new configuration
         initLogger();
 
@@ -84,16 +93,26 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         generatedPath = new File(tmpRoot, DEFAULT_GENERATED_DIR);
         importsFile = new File(generatedPath, IMPORTS_NAME);
 
-        updater = new TaskUpdateImports(getClassFinder(), null,
-                tmpRoot, generatedPath, frontendDirectory);
+        updater = new TaskUpdateImports(getClassFinder(), null, tmpRoot,
+                generatedPath, frontendDirectory) {
+            @Override
+            Logger log() {
+                if (useMockLog) {
+                    return logger;
+                } else {
+                    return super.log();
+                }
+            }
+        };
 
         Assert.assertTrue(nodeModulesPath.mkdirs());
         createExpectedImports(frontendDirectory, nodeModulesPath);
-        Assert.assertTrue(new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME + "ExampleConnector.js").exists());
+        Assert.assertTrue(new File(nodeModulesPath,
+                FLOW_NPM_PACKAGE_NAME + "ExampleConnector.js").exists());
     }
 
     @After
-    public void tearDown() throws Exception  {
+    public void tearDown() throws Exception {
         // re-init logger to reset to default
         System.clearProperty(SimpleLogger.LOG_FILE_KEY);
         initLogger();
@@ -114,6 +133,35 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
+    public void getModuleLines_npmPackagesDontExist_logExplanation() {
+        useMockLog = true;
+        Mockito.when(logger.isInfoEnabled()).thenReturn(true);
+        boolean atLeastOneRemoved = false;
+        for (String imprt : getExpectedImports()) {
+            if (imprt.startsWith("@vaadin") && imprt.endsWith(".js")) {
+                Assert.assertTrue(resolveImportFile(nodeModulesPath,
+                        nodeModulesPath, imprt).delete());
+                atLeastOneRemoved = true;
+            }
+        }
+        Assert.assertTrue(atLeastOneRemoved);
+        updater.execute();
+
+        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+        Mockito.verify(logger).info(captor.capture());
+
+        Assert.assertThat(captor.getValue(), CoreMatchers.allOf(
+                CoreMatchers.containsString(
+                        "@vaadin/vaadin-lumo-styles/spacing.js"),
+                CoreMatchers.containsString(
+                        "If the build fails, check that npm packages are installed."),
+                CoreMatchers.containsString(
+                        "To fix the build remove `node_modules` directory to reset modules."),
+                CoreMatchers.containsString(
+                        "In addition you may run `npm install` to fix `node_modules` tree structure.")));
+    }
+
+    @Test
     public void should_UpdateMainJsFile() throws Exception {
         List<String> expectedLines = new ArrayList<>(Arrays.asList(
                 "const div = document.createElement('div');",
@@ -123,30 +171,38 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         expectedLines.addAll(getExpectedImports());
 
         // An import without `.js` extension
-        expectedLines.add("import '@vaadin/vaadin-mixed-component/theme/lumo/vaadin-something-else'");
+        expectedLines.add(
+                "import '@vaadin/vaadin-mixed-component/theme/lumo/vaadin-something-else'");
         // An import not found in node_modules
         expectedLines.add("import 'unresolved/component';");
 
         expectedLines.add("import $css_0 from 'Frontend/foo.css';");
         expectedLines.add("import $css_1 from 'Frontend/foo.css';");
         expectedLines.add("import $css_2 from 'Frontend/foo.css';");
-        expectedLines.add("import $css_3 from '@vaadin/vaadin-mixed-component/bar.css';");
+        expectedLines.add(
+                "import $css_3 from '@vaadin/vaadin-mixed-component/bar.css';");
         expectedLines.add("import $css_4 from 'Frontend/foo.css';");
         expectedLines.add("import $css_5 from 'Frontend/foo.css';");
         expectedLines.add("import $css_6 from 'Frontend/foo.css';");
-        expectedLines.add("addCssBlock(`<dom-module id=\"baz\"><template><style>${$css_0}</style></template></dom-module>`);");
-        expectedLines.add("addCssBlock(`<dom-module id=\"flow_css_mod_1\" theme-for=\"foo-bar\"><template><style>${$css_1}</style></template></dom-module>`);");
-        expectedLines.add("addCssBlock(`<dom-module id=\"flow_css_mod_2\" theme-for=\"foo-bar\"><template><style include=\"bar\">${$css_2}</style></template></dom-module>`);");
-        expectedLines.add("addCssBlock(`<custom-style><style>${$css_3}</style></custom-style>`);");
-        expectedLines.add("addCssBlock(`<custom-style><style>${$css_4}</style></custom-style>`);");
-        expectedLines.add("addCssBlock(`<custom-style><style include=\"bar\">${$css_5}</style></custom-style>`);");
-        expectedLines.add("addCssBlock(`<dom-module id=\"baz\"><template><style include=\"bar\">${$css_6}</style></template></dom-module>`);");
+        expectedLines.add(
+                "addCssBlock(`<dom-module id=\"baz\"><template><style>${$css_0}</style></template></dom-module>`);");
+        expectedLines.add(
+                "addCssBlock(`<dom-module id=\"flow_css_mod_1\" theme-for=\"foo-bar\"><template><style>${$css_1}</style></template></dom-module>`);");
+        expectedLines.add(
+                "addCssBlock(`<dom-module id=\"flow_css_mod_2\" theme-for=\"foo-bar\"><template><style include=\"bar\">${$css_2}</style></template></dom-module>`);");
+        expectedLines.add(
+                "addCssBlock(`<custom-style><style>${$css_3}</style></custom-style>`);");
+        expectedLines.add(
+                "addCssBlock(`<custom-style><style>${$css_4}</style></custom-style>`);");
+        expectedLines.add(
+                "addCssBlock(`<custom-style><style include=\"bar\">${$css_5}</style></custom-style>`);");
+        expectedLines.add(
+                "addCssBlock(`<dom-module id=\"baz\"><template><style include=\"bar\">${$css_6}</style></template></dom-module>`);");
 
         assertFalse(importsFile.exists());
 
         updater.execute();
         assertTrue(importsFile.exists());
-
 
         assertContainsImports(true, expectedLines.toArray(new String[0]));
 
@@ -158,11 +214,13 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         assertContains(output, true,
                 "changing 'frontend://frontend-p3-template.js' to './frontend-p3-template.js'",
                 "Use the './' prefix for files in JAR files: 'ExampleConnector.js'",
-                "Use the './' prefix for files in the 'frontend' folder: 'vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js'");
-
+                "Use the './' prefix for files in the '"
+                        + frontendDirectory.getPath()
+                        + "' folder: 'vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js'");
 
         // Using regex match because of the ➜ character in TC
-        assertContains(output, true, "Failed to find the following imports in the `node_modules` tree:\n      - unresolved/component");
+        assertContains(output, true,
+                "Failed to find the following imports in the `node_modules` tree:\n      - unresolved/component");
 
         assertContains(output, false,
                 "changing 'frontend://foo-dir/javascript-lib.js' to './foo-dir/javascript-lib.js'");
@@ -170,8 +228,8 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
     @Test
     public void should_ThrowException_WhenCssFileNotFound() {
-        Assert.assertTrue(resolveImportFile(frontendDirectory,
-                nodeModulesPath, "@vaadin/vaadin-mixed-component/bar.css").delete());
+        Assert.assertTrue(resolveImportFile(frontendDirectory, nodeModulesPath,
+                "@vaadin/vaadin-mixed-component/bar.css").delete());
         exception.expect(IllegalStateException.class);
         updater.execute();
     }
@@ -193,8 +251,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
     public void should_ContainLumoThemeFiles() throws Exception {
         updater.execute();
 
-        assertContainsImports(true,
-                "@vaadin/vaadin-lumo-styles/color.js",
+        assertContainsImports(true, "@vaadin/vaadin-lumo-styles/color.js",
                 "@vaadin/vaadin-lumo-styles/typography.js",
                 "@vaadin/vaadin-lumo-styles/sizing.js",
                 "@vaadin/vaadin-lumo-styles/spacing.js",
@@ -248,8 +305,10 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         addImports("styles/styles.js");
 
-        assertImportOrder("@vaadin/vaadin-lumo-styles/color.js", "Frontend/foo.js");
-        assertImportOrder("@vaadin/vaadin-lumo-styles/color.js", "styles/styles.js");
+        assertImportOrder("@vaadin/vaadin-lumo-styles/color.js",
+                "Frontend/foo.js");
+        assertImportOrder("@vaadin/vaadin-lumo-styles/color.js",
+                "styles/styles.js");
     }
 
     private void assertContainsImports(boolean contains, String... imports)
@@ -262,10 +321,12 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         }
     }
 
-    private void assertContains(String content, boolean contains, String... checks) {
+    private void assertContains(String content, boolean contains,
+                                String... checks) {
         for (String importString : checks) {
             boolean result = content.contains(importString);
-            String message = "\n  " + (contains ? "NOT " : "") + "FOUND '" + importString + " IN: \n" + content;
+            String message = "\n  " + (contains ? "NOT " : "") + "FOUND '"
+                    + importString + " IN: \n" + content;
             if (contains) {
                 assertTrue(message, result);
             } else {
@@ -274,8 +335,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         }
     }
 
-    private void assertImportOrder(String... imports)
-            throws IOException  {
+    private void assertImportOrder(String... imports) throws IOException {
         String content = FileUtils.readFileToString(importsFile,
                 Charset.defaultCharset());
         int curIndex = -1;
@@ -302,8 +362,9 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         List<String> current = FileUtils.readLines(importsFile,
                 Charset.defaultCharset());
 
-        Set<String> removed = current.stream()
-                .filter(line -> importsList.stream().map(this::addWebpackPrefix).anyMatch(line::contains))
+        Set<String> removed = current
+                .stream().filter(line -> importsList.stream()
+                        .map(this::addWebpackPrefix).anyMatch(line::contains))
                 .collect(Collectors.toSet());
 
         current.removeAll(removed);
@@ -314,7 +375,8 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     private void addImports(String... imports) throws IOException {
-        String content = Arrays.stream(imports).map(this::addWebpackPrefix).map(s -> "import '" + s + "';")
+        String content = Arrays.stream(imports).map(this::addWebpackPrefix)
+                .map(s -> "import '" + s + "';")
                 .collect(Collectors.joining("\n"));
 
         replaceJsFile(content + "\n", StandardOpenOption.APPEND);

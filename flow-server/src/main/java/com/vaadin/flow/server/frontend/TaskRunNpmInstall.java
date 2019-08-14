@@ -72,8 +72,15 @@ public class TaskRunNpmInstall implements FallibleCommand {
      * Executes `npm install` after `package.json` has been updated.
      */
     private void runNpmInstall() throws ExecutionFailedException {
-        List<String> command = new ArrayList<>(FrontendUtils
-                .getNpmExecutable(packageUpdater.npmFolder.getAbsolutePath()));
+        List<String> npmExecutable;
+        try {
+            npmExecutable = FrontendUtils.getNpmExecutable(
+                    packageUpdater.npmFolder.getAbsolutePath());
+        } catch (IllegalStateException exception) {
+            throw new ExecutionFailedException(exception.getMessage(),
+                    exception);
+        }
+        List<String> command = new ArrayList<>(npmExecutable);
         command.add("install");
 
         ProcessBuilder builder = FrontendUtils.createProcessBuilder(command);

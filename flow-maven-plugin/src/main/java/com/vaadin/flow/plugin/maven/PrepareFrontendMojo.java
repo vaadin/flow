@@ -139,9 +139,14 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
             return;
         }
 
-        FrontendUtils.getNodeExecutable(npmFolder.getAbsolutePath());
-        FrontendUtils.getNpmExecutable(npmFolder.getAbsolutePath());
-        FrontendUtils.validateNodeAndNpmVersion(npmFolder.getAbsolutePath());
+        try {
+            FrontendUtils.getNodeExecutable(npmFolder.getAbsolutePath());
+            FrontendUtils.getNpmExecutable(npmFolder.getAbsolutePath());
+            FrontendUtils
+                    .validateNodeAndNpmVersion(npmFolder.getAbsolutePath());
+        } catch (IllegalStateException exception) {
+            throw new MojoExecutionException(exception.getMessage(), exception);
+        }
 
         try {
             new NodeTasks.Builder(getClassFinder(project), npmFolder,
