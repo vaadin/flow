@@ -16,13 +16,10 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,11 +29,11 @@ import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 
+
 /**
  * Copies JavaScript and CSS files from JAR files into a given folder.
  */
 public class TaskCopyFrontendFiles implements FallibleCommand {
-    private static final String JAR_SUFFIX = ".jar";
     private static final String[] WILDCARD_INCLUSIONS = new String[] {
             "**/*.js", "**/*.css", "**/*.ts" };
 
@@ -60,7 +57,6 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
         this.targetDirectory = new File(npmFolder,
                 NODE_MODULES + FLOW_NPM_PACKAGE_NAME);
         jarFiles = jarFilesToScan.stream()
-                .filter(file -> file.getName().endsWith(JAR_SUFFIX))
                 .filter(File::exists).collect(Collectors.toSet());
     }
 
@@ -68,25 +64,21 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
     public void execute() {
         long start = System.nanoTime();
         log().info("Copying frontend resources from jar files ...");
-        createTargetFolder();
+        TaskCopyLocalFrontendFiles.createTargetFolder(targetDirectory);
         JarContentsManager jarContentsManager = new JarContentsManager();
         for (File jarFile : jarFiles) {
-            jarContentsManager.copyIncludedFilesFromJarTrimmingBasePath(jarFile,
-                    RESOURCES_FRONTEND_DEFAULT, targetDirectory,
-                    WILDCARD_INCLUSIONS);
+            if (jarFile.isDirectory()) {
+                TaskCopyLocalFrontendFiles.copyLocalResources(
+                        new File(jarFile, RESOURCES_FRONTEND_DEFAULT),
+                        targetDirectory);
+            } else {
+                jarContentsManager.copyIncludedFilesFromJarTrimmingBasePath(jarFile,
+                        RESOURCES_FRONTEND_DEFAULT, targetDirectory,
+                        WILDCARD_INCLUSIONS);
+            }
         }
         long ms = (System.nanoTime() - start) / 1000000;
         log().info("Visited {} jar files. Took {} ms.", jarFiles.size(), ms);
-    }
-
-
-    private void createTargetFolder() {
-        try {
-            FileUtils.forceMkdir(Objects.requireNonNull(targetDirectory));
-        } catch (IOException e) {
-            throw new UncheckedIOException(String.format(
-                    "Failed to create directory '%s'", targetDirectory), e);
-        }
     }
 
     private static Logger log() {

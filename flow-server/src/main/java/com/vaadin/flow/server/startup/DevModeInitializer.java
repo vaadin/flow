@@ -141,6 +141,9 @@ public class DevModeInitializer implements ServletContainerInitializer,
     private static final Pattern JAR_FILE_REGEX = Pattern
             .compile(".*file:(.+\\.jar).*");
 
+    private static final Pattern DIR_REGEX = Pattern
+            .compile("^(?:file:)?(.+)" + RESOURCES_FRONTEND_DEFAULT + "$");
+
     @Override
     public void onStartup(Set<Class<?>> classes, ServletContext context)
             throws ServletException {
@@ -276,11 +279,19 @@ public class DevModeInitializer implements ServletContainerInitializer,
         try {
             Enumeration<URL> en = DevModeInitializer.class.getClassLoader()
                     .getResources(RESOURCES_FRONTEND_DEFAULT);
+
             while (en.hasMoreElements()) {
                 URL url = en.nextElement();
-                Matcher matcher = JAR_FILE_REGEX.matcher(url.getPath());
-                if (matcher.find()) {
-                    jarFiles.add(new File(matcher.group(1)));
+                Matcher jarMatcher = JAR_FILE_REGEX.matcher(url.getPath());
+                Matcher dirMatcher = DIR_REGEX.matcher(url.getPath());
+                if (jarMatcher.find()) {
+                    jarFiles.add(new File(jarMatcher.group(1)));
+                } else if (dirMatcher.find()) {
+                    jarFiles.add(new File(dirMatcher.group(1)));
+                } else {
+                    log().warn(
+                            "Artifact {} not visited because does not meet supported formats.",
+                            url.getPath());
                 }
             }
         } catch (IOException e) {
