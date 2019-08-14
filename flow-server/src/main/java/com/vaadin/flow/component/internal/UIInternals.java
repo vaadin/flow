@@ -655,8 +655,39 @@ public class UIInternals implements Serializable {
         }
 
         this.viewLocation = viewLocation;
+        HasElement root = constructComponentWithLayouts(target, layouts);
 
         Element uiElement = ui.getElement();
+        Element rootElement = root.getElement();
+
+        if (!uiElement.equals(rootElement.getParent())) {
+            if (oldRoot != null) {
+                oldRoot.getElement().removeFromParent();
+            }
+            rootElement.removeFromParent();
+            uiElement.appendChild(rootElement);
+        }
+    }
+
+    /**
+     * Construct a new root component based on the given target component and
+     * its layouts.
+     * <p>
+     * <b>NOTE:</b> This method is intended for internal use only, e.g. by
+     * {@link UIInternals#showRouteTarget(Location, String, Component, List)}
+     * and JavaScriptBootstrapUI#getViewForRoute(String) in CCDM. The method
+     * also accesses and modifies the {@link UIInternals#routerTargetChain}
+     * field as well so please use it with caution.
+     * 
+     * @param target
+     *            the target component.
+     * @param layouts
+     *            Layouts of the component.
+     * @return the new root component.
+     * 
+     */
+    public HasElement constructComponentWithLayouts(HasElement target,
+            List<RouterLayout> layouts) {
 
         // Assemble previous parent-child relationships to enable detecting
         // changes
@@ -711,15 +742,7 @@ public class UIInternals implements Serializable {
                     "Root can't be null here since we know there's at least one item in the chain");
         }
 
-        Element rootElement = root.getElement();
-
-        if (!uiElement.equals(rootElement.getParent())) {
-            if (oldRoot != null) {
-                oldRoot.getElement().removeFromParent();
-            }
-            rootElement.removeFromParent();
-            uiElement.appendChild(rootElement);
-        }
+        return root;
     }
 
     private void updateTheme(Component target, String path) {
