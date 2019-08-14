@@ -32,6 +32,7 @@
         <module>test-default-theme</module>
         <module>test-npm-general</module>
         <module>test-npm-no-buildmojo</module>
+        <module>test-npm-custom-frontend-directory</module>
     </modules>
 
     <build>
