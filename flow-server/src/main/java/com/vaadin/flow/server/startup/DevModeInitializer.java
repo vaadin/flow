@@ -59,6 +59,9 @@ import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
 
 /**
@@ -191,11 +194,15 @@ public class DevModeInitializer implements ServletContainerInitializer,
 
         String baseDir = config.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
                 System.getProperty("user.dir", "."));
-
+        String generatedDir = System
+                .getProperty(PARAM_GENERATED_DIR, DEFAULT_GENERATED_DIR);
+        String frontendFolder = config.getStringProperty(PARAM_FRONTEND_DIR,
+                System.getProperty(PARAM_FRONTEND_DIR, PARAM_FRONTEND_DIR));
         Set<File> jarFiles = getJarFilesFromClassloader();
 
         Builder builder = new NodeTasks.Builder(new DefaultClassFinder(classes),
-                new File(baseDir));
+                new File(baseDir), new File(generatedDir),
+                new File(frontendFolder));
 
         log().info("Starting dev-mode updaters in {} folder.",
                 builder.npmFolder);

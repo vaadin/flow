@@ -44,6 +44,7 @@ import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFind
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
@@ -167,6 +168,7 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         buildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, productionMode);
         buildInfo.put("npmFolder", npmFolder.getAbsolutePath());
         buildInfo.put("generatedFolder", generatedFolder.getAbsolutePath());
+        buildInfo.put("frontendFolder", frontendDirectory.getAbsolutePath());
         try {
             FileUtils.forceMkdir(token.getParentFile());
             FileUtils.write(token, JsonUtil.stringify(buildInfo, 2) + "\n",
