@@ -23,12 +23,13 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
 import javax.servlet.annotation.WebListener;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.net.URL;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -193,8 +194,6 @@ public class DevModeInitializer implements ServletContainerInitializer,
         String baseDir = config.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
                 System.getProperty("user.dir", "."));
 
-        Set<File> jarFiles = getJarFilesFromClassloader();
-
         Builder builder = new NodeTasks.Builder(new DefaultClassFinder(classes),
                 new File(baseDir));
 
@@ -230,6 +229,7 @@ public class DevModeInitializer implements ServletContainerInitializer,
         }
 
         Set<String> visitedClassNames = new HashSet<>();
+        Set<File> jarFiles = getJarFilesFromClassloader(DevModeInitializer.class.getClassLoader());
         try {
             builder.enablePackagesUpdate(true).copyResources(jarFiles)
                     .copyLocalResources(new File(baseDir,
@@ -277,14 +277,16 @@ public class DevModeInitializer implements ServletContainerInitializer,
      * This method returns all jar files having a specific folder. We don't use
      * URLClassLoader because will fail in Java 9+
      */
-    private static Set<File> getJarFilesFromClassloader() {
+    protected static Set<File> getJarFilesFromClassloader(
+            ClassLoader classLoader) {
         Set<File> jarFiles = new HashSet<>();
         try {
-            Enumeration<URL> en = DevModeInitializer.class.getClassLoader()
+            Enumeration<URL> en = classLoader
                     .getResources(RESOURCES_FRONTEND_DEFAULT);
             while (en.hasMoreElements()) {
                 URL url = en.nextElement();
-                Matcher matcher = JAR_FILE_REGEX.matcher(url.getPath());
+                Matcher matcher = JAR_FILE_REGEX.matcher(URLDecoder
+                        .decode(url.getPath(), StandardCharsets.UTF_8.name()));
                 if (matcher.find()) {
                     jarFiles.add(new File(matcher.group(1)));
                 }
