@@ -381,7 +381,7 @@ public class FrontendUtils {
      * returned.
      *
      * @param service
-     *         the vaadin service.
+     *         the Vaadin service.
      * @return hash string for the stats.json file, empty string if none found
      * @throws IOException
      *         if an I/O error occurs while creating the input stream.

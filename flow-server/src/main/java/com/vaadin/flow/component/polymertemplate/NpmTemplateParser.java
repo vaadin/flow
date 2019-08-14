@@ -166,21 +166,12 @@ public class NpmTemplateParser implements TemplateParser {
 
     private String getSourcesFromStats(VaadinService service, String url)
             throws IOException {
-        DeploymentConfiguration config = service.getDeploymentConfiguration();
-        String hash = FrontendUtils.getStatsHash(service);
-
         try {
             lock.lock();
-            // - always load if jsonStats is null.
-            // - always load a new stats if the hash has changed, but we do not have a bundle.
-            // - else never load again when we have a bundle as it never changes.
-            if (jsonStats == null || !jsonStats.get("hash").asString()
-                    .equals(hash)) {
-                if(jsonStats == null || !usesBundleFile(config)) {
-                    String content = FrontendUtils.getStatsContent(service);
-                    if (content != null) {
-                        resetCache(content);
-                    }
+            if (isStatsFileReadNeeded(service)) {
+                String content = FrontendUtils.getStatsContent(service);
+                if (content != null) {
+                    resetCache(content);
                 }
             }
         } finally {
@@ -191,6 +182,30 @@ public class NpmTemplateParser implements TemplateParser {
                     BundleParser.getSourceFromStatistics(url, jsonStats));
         }
         return cache.get(url);
+    }
+
+    /**
+     * Check status to see if stats.json needs to be loaded and parsed.
+     * <p>
+     * Always load if jsonStats is null, never load again when we have a bundle
+     * as it never changes, always load a new stats if the hash has changed and
+     * we do not have a bundle.
+     *
+     * @param service
+     *         the Vaadin service.
+     * @return {@code true} if we need to re-load and parse stats.json, else
+     * {@code false}
+     */
+    protected boolean isStatsFileReadNeeded(VaadinService service)
+            throws IOException {
+        DeploymentConfiguration config = service.getDeploymentConfiguration();
+        if (jsonStats == null) {
+            return true;
+        } else if (usesBundleFile(config)) {
+            return false;
+        }
+        return !jsonStats.get("hash").asString()
+                .equals(FrontendUtils.getStatsHash(service));
     }
 
     /**
