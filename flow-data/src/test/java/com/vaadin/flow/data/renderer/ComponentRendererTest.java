@@ -123,11 +123,12 @@ public class ComponentRendererTest {
         Element child = Element.get(stateNode);
         Assert.assertFalse("After attach child should be disabled",
                 child.isEnabled());
-        Assert.assertTrue(child.getComponent().isPresent());
+        Assert.assertTrue("The child should have a component", child.getComponent().isPresent());
         // Fetch the actual MyCheckbox component
         Component checkboxComponent = child.getChildren().findFirst().get()
                 .getComponent().get();
-        Assert.assertTrue(checkboxComponent instanceof MyCheckbox);
+        Assert.assertTrue("Component is of wrong type", checkboxComponent instanceof MyCheckbox);
+        Assert.assertFalse("The component should be disabled", checkboxComponent.getElement().isEnabled());
     }
 
     @Tag("div")
