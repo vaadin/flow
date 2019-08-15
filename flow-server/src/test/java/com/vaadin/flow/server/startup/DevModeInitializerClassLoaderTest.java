@@ -25,7 +25,7 @@ public class DevModeInitializerClassLoaderTest {
         // Add a couple of locations with test resources
         path.add(TestUtils.getTestJar("jar-with-frontend-resources.jar").toURI()
                 .toURL());
-        path.add(TestUtils.getTestJar("dir-with-frontend-resources/").toURI()
+        path.add(TestUtils.getTestFolder("dir-with-frontend-resources/").toURI()
                 .toURL());
 
         // Create our custom classLoader

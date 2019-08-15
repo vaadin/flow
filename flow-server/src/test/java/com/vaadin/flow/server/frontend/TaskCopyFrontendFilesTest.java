@@ -49,7 +49,7 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
         File jar = TestUtils.getTestJar("jar-with-frontend-resources.jar");
         // Contains:
         // - resourceInFolder.js
-        File dir = TestUtils.getTestJar("dir-with-frontend-resources/");
+        File dir = TestUtils.getTestFolder("dir-with-frontend-resources/");
 
         TaskCopyFrontendFiles task = new TaskCopyFrontendFiles(npmFolder,
                 jars(jar, dir));

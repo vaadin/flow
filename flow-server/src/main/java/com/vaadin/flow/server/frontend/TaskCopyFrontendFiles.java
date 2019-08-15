@@ -38,25 +38,24 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
             "**/*.js", "**/*.css", "**/*.ts" };
 
     private File targetDirectory;
-    private transient Set<File> jarFiles = null;
+    private transient Set<File> resourceLocations = null;
 
     /**
-     * Scans the jar files given defined by {@code jarFilesToScan}.
+     * Scans the jar files given defined by {@code resourcesToScan}.
      *
      * @param npmFolder
      *            target directory for the discovered files
-     * @param jarFilesToScan
-     *            jar files to scan. Only files ending in " .jar" will be
-     *            scanned.
+     * @param resourcesToScan
+     *            folders and jar files to scan.
      */
-    TaskCopyFrontendFiles(File npmFolder, Set<File> jarFilesToScan) {
+    TaskCopyFrontendFiles(File npmFolder, Set<File> resourcesToScan) {
         Objects.requireNonNull(npmFolder,
                 "Parameter 'npmFolder' must not be " + "null");
-        Objects.requireNonNull(jarFilesToScan,
+        Objects.requireNonNull(resourcesToScan,
                 "Parameter 'jarFilesToScan' must not be null");
         this.targetDirectory = new File(npmFolder,
                 NODE_MODULES + FLOW_NPM_PACKAGE_NAME);
-        jarFiles = jarFilesToScan.stream()
+        resourceLocations = resourcesToScan.stream()
                 .filter(File::exists).collect(Collectors.toSet());
     }
 
@@ -66,19 +65,19 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
         log().info("Copying frontend resources from jar files ...");
         TaskCopyLocalFrontendFiles.createTargetFolder(targetDirectory);
         JarContentsManager jarContentsManager = new JarContentsManager();
-        for (File jarFile : jarFiles) {
-            if (jarFile.isDirectory()) {
+        for (File location : resourceLocations) {
+            if (location.isDirectory()) {
                 TaskCopyLocalFrontendFiles.copyLocalResources(
-                        new File(jarFile, RESOURCES_FRONTEND_DEFAULT),
+                        new File(location, RESOURCES_FRONTEND_DEFAULT),
                         targetDirectory);
             } else {
-                jarContentsManager.copyIncludedFilesFromJarTrimmingBasePath(jarFile,
+                jarContentsManager.copyIncludedFilesFromJarTrimmingBasePath(location,
                         RESOURCES_FRONTEND_DEFAULT, targetDirectory,
                         WILDCARD_INCLUSIONS);
             }
         }
         long ms = (System.nanoTime() - start) / 1000000;
-        log().info("Visited {} jar files. Took {} ms.", jarFiles.size(), ms);
+        log().info("Visited {} resources. Took {} ms.", resourceLocations.size(), ms);
     }
 
     private static Logger log() {

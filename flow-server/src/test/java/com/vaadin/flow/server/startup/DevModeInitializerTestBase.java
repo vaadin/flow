@@ -16,6 +16,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
@@ -35,11 +37,10 @@ import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubWebpa
 /**
  * Base class for DevModeInitializer tests. It is an independent class so as it
  * can be created and executed with custom classloaders.
- * It is final so as it's not extended.
  */
-final public class DevModeInitializerTestBase {
+public class DevModeInitializerTestBase {
 
-    private DevModeInitializer devModeInitializer;
+    DevModeInitializer devModeInitializer;
 
     // These fields are intentionally scoped default so
     // as they can be used in package tests
@@ -53,6 +54,7 @@ final public class DevModeInitializerTestBase {
 
     public final TemporaryFolder temporaryFolder = new TemporaryFolder();
 
+    @Before
     @SuppressWarnings({"unchecked", "rawtypes"})
     public void setup() throws Exception {
         temporaryFolder.create();
@@ -98,6 +100,7 @@ final public class DevModeInitializerTestBase {
         devModeInitializer = new DevModeInitializer();
     }
 
+    @After
     public void teardown() throws Exception, SecurityException {
         System.clearProperty("vaadin." + SERVLET_PARAMETER_COMPATIBILITY_MODE);
         System.clearProperty("vaadin." + SERVLET_PARAMETER_PRODUCTION_MODE);

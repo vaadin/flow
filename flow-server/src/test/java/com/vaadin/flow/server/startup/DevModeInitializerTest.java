@@ -5,8 +5,6 @@ import java.util.EventListener;
 import java.util.HashSet;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -26,7 +24,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 @NotThreadSafe
-public class DevModeInitializerTest {
+public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
     @JsModule("foo")
     public static class Visited {
@@ -50,61 +48,50 @@ public class DevModeInitializerTest {
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
-    private DevModeInitializerTestBase baseInitializer = new DevModeInitializerTestBase();
-
-    @Before
-    public void setup() throws Exception {
-        baseInitializer.setup();
-    }
-
-    @After
-    public void teardown() throws Exception, SecurityException {
-        baseInitializer.teardown();
-    }
 
     @Test
     public void should_Run_Updaters() throws Exception {
-        baseInitializer.runOnStartup();
+        runOnStartup();
         assertNotNull(DevModeHandler.getDevModeHandler());
     }
 
     @Test
     public void should_Run_Updaters_when_NoNodeConfFiles()
             throws Exception {
-        baseInitializer.webpackFile.delete();
-        baseInitializer.mainPackageFile.delete();
-        baseInitializer.appPackageFile.delete();
-        baseInitializer.runOnStartup();
-        assertNotNull(baseInitializer.getDevModeHandler());
+        webpackFile.delete();
+        mainPackageFile.delete();
+        appPackageFile.delete();
+        runOnStartup();
+        assertNotNull(getDevModeHandler());
     }
 
     @Test
     public void should_Not_Run_Updaters_when_NoMainPackageFile()
             throws Exception {
-        baseInitializer.mainPackageFile.delete();
-        assertNull(baseInitializer.getDevModeHandler());
+        mainPackageFile.delete();
+        assertNull(getDevModeHandler());
     }
 
     @Test
     public void should_Run_Updaters_when_NoAppPackageFile()
             throws Exception {
-        baseInitializer.appPackageFile.delete();
-        baseInitializer.runOnStartup();
-        assertNotNull(baseInitializer.getDevModeHandler());
+        appPackageFile.delete();
+        runOnStartup();
+        assertNotNull(getDevModeHandler());
     }
 
     @Test
     public void should_Run_Updaters_when_NoWebpackFile() throws Exception {
-        baseInitializer.webpackFile.delete();
-        baseInitializer.runOnStartup();
-        assertNotNull(baseInitializer.getDevModeHandler());
+        webpackFile.delete();
+        runOnStartup();
+        assertNotNull(getDevModeHandler());
     }
 
     @Test
     public void should_Not_Run_Updaters_inBowerMode() throws Exception {
         System.clearProperty("vaadin." + SERVLET_PARAMETER_COMPATIBILITY_MODE);
         DevModeInitializer devModeInitializer = new DevModeInitializer();
-        devModeInitializer.onStartup(baseInitializer.classes, baseInitializer.servletContext);
+        devModeInitializer.onStartup(classes, servletContext);
         assertNull(DevModeHandler.getDevModeHandler());
     }
 
@@ -113,26 +100,26 @@ public class DevModeInitializerTest {
         System.setProperty("vaadin." + SERVLET_PARAMETER_PRODUCTION_MODE,
                 "true");
         DevModeInitializer devModeInitializer = new DevModeInitializer();
-        devModeInitializer.onStartup(baseInitializer.classes, baseInitializer.servletContext);
+        devModeInitializer.onStartup(classes, servletContext);
         assertNull(DevModeHandler.getDevModeHandler());
     }
 
     @Test
     public void should_Not_AddContextListener() throws Exception {
         ArgumentCaptor<? extends EventListener> arg = ArgumentCaptor.forClass(EventListener.class);
-        baseInitializer.runOnStartup();
-        Mockito.verify(baseInitializer.servletContext, Mockito.never()).addListener(arg.capture());
+        runOnStartup();
+        Mockito.verify(servletContext, Mockito.never()).addListener(arg.capture());
     }
 
     @Test
     public void listener_should_stopDevModeHandler_onDestroy() throws Exception {
-        baseInitializer.initParams.put(SERVLET_PARAMETER_REUSE_DEV_SERVER, "false");
+        initParams.put(SERVLET_PARAMETER_REUSE_DEV_SERVER, "false");
 
-        baseInitializer.runOnStartup();
+        runOnStartup();
 
         assertNotNull(DevModeHandler.getDevModeHandler());
 
-        baseInitializer.runDestroy();
+        runDestroy();
 
         assertNull(DevModeHandler.getDevModeHandler());
     }

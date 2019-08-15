@@ -195,7 +195,7 @@ public class DevModeInitializer implements ServletContainerInitializer,
         String baseDir = config.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
                 System.getProperty("user.dir", "."));
 
-        Set<File> jarFiles = getJarFilesFromClassloader();
+        Set<File> frontendLocations = getFrontendLocationsFromClassloader();
 
         Builder builder = new NodeTasks.Builder(new DefaultClassFinder(classes),
                 new File(baseDir));
@@ -234,7 +234,7 @@ public class DevModeInitializer implements ServletContainerInitializer,
 
         Set<String> visitedClassNames = new HashSet<>();
         try {
-            builder.enablePackagesUpdate(true).copyResources(jarFiles)
+            builder.enablePackagesUpdate(true).copyResources(frontendLocations)
                     .copyLocalResources(new File(baseDir,
                             Constants.LOCAL_FRONTEND_RESOURCES_PATH))
                     .enableImportsUpdate(true).runNpmInstall(true)
@@ -271,10 +271,11 @@ public class DevModeInitializer implements ServletContainerInitializer,
     }
 
     /*
-     * This method returns all jar files having a specific folder. We don't use
-     * URLClassLoader because will fail in Java 9+
+     * This method returns all folders of jar files having files in the
+     * META-INF/resources/frontend folder. We don't use URLClassLoader because
+     * will fail in Java 9+
      */
-    private static Set<File> getJarFilesFromClassloader() {
+    private static Set<File> getFrontendLocationsFromClassloader() {
         Set<File> jarFiles = new HashSet<>();
         try {
             Enumeration<URL> en = DevModeInitializer.class.getClassLoader()
@@ -290,7 +291,7 @@ public class DevModeInitializer implements ServletContainerInitializer,
                     jarFiles.add(new File(dirMatcher.group(1)));
                 } else {
                     log().warn(
-                            "Artifact {} not visited because does not meet supported formats.",
+                            "Resource {} not visited because does not meet supported formats.",
                             url.getPath());
                 }
             }
