@@ -141,6 +141,9 @@ public class DevModeInitializer implements ServletContainerInitializer,
     private static final Pattern JAR_FILE_REGEX = Pattern
             .compile(".*file:(.+\\.jar).*");
 
+    private static final Pattern DIR_REGEX = Pattern
+            .compile("^(?:file:)?(.+)" + RESOURCES_FRONTEND_DEFAULT + "$");
+
     @Override
     public void onStartup(Set<Class<?>> classes, ServletContext context)
             throws ServletException {
@@ -192,7 +195,7 @@ public class DevModeInitializer implements ServletContainerInitializer,
         String baseDir = config.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
                 System.getProperty("user.dir", "."));
 
-        Set<File> jarFiles = getJarFilesFromClassloader();
+        Set<File> frontendLocations = getFrontendLocationsFromClassloader();
 
         Builder builder = new NodeTasks.Builder(new DefaultClassFinder(classes),
                 new File(baseDir));
@@ -231,7 +234,7 @@ public class DevModeInitializer implements ServletContainerInitializer,
 
         Set<String> visitedClassNames = new HashSet<>();
         try {
-            builder.enablePackagesUpdate(true).copyResources(jarFiles)
+            builder.enablePackagesUpdate(true).copyResources(frontendLocations)
                     .copyLocalResources(new File(baseDir,
                             Constants.LOCAL_FRONTEND_RESOURCES_PATH))
                     .enableImportsUpdate(true).runNpmInstall(true)
@@ -268,19 +271,28 @@ public class DevModeInitializer implements ServletContainerInitializer,
     }
 
     /*
-     * This method returns all jar files having a specific folder. We don't use
-     * URLClassLoader because will fail in Java 9+
+     * This method returns all folders of jar files having files in the
+     * META-INF/resources/frontend folder. We don't use URLClassLoader because
+     * will fail in Java 9+
      */
-    private static Set<File> getJarFilesFromClassloader() {
+    private static Set<File> getFrontendLocationsFromClassloader() {
         Set<File> jarFiles = new HashSet<>();
         try {
             Enumeration<URL> en = DevModeInitializer.class.getClassLoader()
                     .getResources(RESOURCES_FRONTEND_DEFAULT);
+
             while (en.hasMoreElements()) {
                 URL url = en.nextElement();
-                Matcher matcher = JAR_FILE_REGEX.matcher(url.getPath());
-                if (matcher.find()) {
-                    jarFiles.add(new File(matcher.group(1)));
+                Matcher jarMatcher = JAR_FILE_REGEX.matcher(url.getPath());
+                Matcher dirMatcher = DIR_REGEX.matcher(url.getPath());
+                if (jarMatcher.find()) {
+                    jarFiles.add(new File(jarMatcher.group(1)));
+                } else if (dirMatcher.find()) {
+                    jarFiles.add(new File(dirMatcher.group(1)));
+                } else {
+                    log().warn(
+                            "Resource {} not visited because does not meet supported formats.",
+                            url.getPath());
                 }
             }
         } catch (IOException e) {
