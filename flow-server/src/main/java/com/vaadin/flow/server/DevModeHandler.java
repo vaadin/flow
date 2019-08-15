@@ -50,6 +50,7 @@ import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
+import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.getNodeExecutable;
 import static com.vaadin.flow.server.frontend.FrontendUtils.validateNodeAndNpmVersion;
@@ -292,7 +293,7 @@ public final class DevModeHandler implements Serializable {
      */
     public boolean isDevModeRequest(HttpServletRequest request) {
         return request.getPathInfo() != null
-                && request.getPathInfo().matches(".+\\.js");
+                && request.getPathInfo().matches("/" + VAADIN_MAPPING + ".+\\.js");
     }
 
     /**
