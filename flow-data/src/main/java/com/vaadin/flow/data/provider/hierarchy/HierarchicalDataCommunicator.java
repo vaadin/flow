@@ -161,14 +161,15 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         }
     }
 
+    @Override
     protected void handleDataRefreshEvent(DataChangeEvent.DataRefreshEvent<T> event) {
-        if (event.isDeep()) {
+        if (event.isRefreshChildren()) {
             T item = event.getItem();
             if (isExpanded(item)) {
                 String parentKey = uniqueKeyProviderSupplier.get().apply(item);
 
                 if (!dataControllers.containsKey(parentKey)) {
-                    setParentRequestedRange(0, 50, item);
+                    setParentRequestedRange(0, mapper.countChildItems(item), item);
                 }
                 HierarchicalCommunicationController<T> dataController = dataControllers.get(parentKey);
                 if (dataController != null) {

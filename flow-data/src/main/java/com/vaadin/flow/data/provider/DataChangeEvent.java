@@ -41,7 +41,7 @@ public class DataChangeEvent<T> extends EventObject {
     public static class DataRefreshEvent<T> extends DataChangeEvent<T> {
 
         private final T item;
-        private boolean deep;
+        private boolean refreshChildren;
 
         /**
          * Creates a new data refresh event originating from the given data
@@ -64,14 +64,14 @@ public class DataChangeEvent<T> extends EventObject {
          *            the data provider, not null
          * @param item
          *            the updated item, not null
-         * @param deep
+         * @param refreshChildren
          *            whether, in hierarchical providers, subelements should be refreshed as well
          */
-        public DataRefreshEvent(DataProvider<T, ?> source, T item, boolean deep) {
+        public DataRefreshEvent(DataProvider<T, ?> source, T item, boolean refreshChildren) {
             super(source);
             Objects.requireNonNull(item, "Refreshed item can't be null");
             this.item = item;
-            this.deep = deep;
+            this.refreshChildren = refreshChildren;
         }
 
         /**
@@ -84,10 +84,12 @@ public class DataChangeEvent<T> extends EventObject {
         }
 
         /**
+         * Gets the a boolean whether the refresh is supposed to be refreshChildren (in hierarchical data providers).
+         *
          * @return whether, in hierarchical providers, subelements should be refreshed as well
          */
-        public boolean isDeep() {
-            return deep;
+        public boolean isRefreshChildren() {
+            return refreshChildren;
         }
     }
 
