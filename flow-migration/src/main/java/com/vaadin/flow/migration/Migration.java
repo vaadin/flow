@@ -114,7 +114,7 @@ public class Migration {
             targetDirectory = new File(configuration.getBaseDirectory(),
                     "frontend");
         } else {
-            targetDirectory = configuration.getBaseDirectory();
+            targetDirectory = configuration.getTargetDirectory();
         }
 
         if (configuration.getClassFinder() == null) {
