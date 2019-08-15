@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.DependencyFilter;
@@ -165,28 +166,63 @@ public class NpmTemplateParser implements TemplateParser {
 
     private String getSourcesFromStats(VaadinService service, String url)
             throws IOException {
-        String content = FrontendUtils.getStatsContent(service);
-        if (content != null) {
-            updateCache(url, content);
+        try {
+            lock.lock();
+            if (isStatsFileReadNeeded(service)) {
+                String content = FrontendUtils.getStatsContent(service);
+                if (content != null) {
+                    resetCache(content);
+                }
+            }
+        } finally {
+            lock.unlock();
+        }
+        if (!cache.containsKey(url) && jsonStats != null) {
+            cache.put(url,
+                    BundleParser.getSourceFromStatistics(url, jsonStats));
         }
         return cache.get(url);
     }
 
-    private void updateCache(String url, String fileContents) {
-        if (jsonStats == null || !jsonStats.getString("hash")
-                .equals(BundleParser.getHashFromStatistics(fileContents))) {
-            cache.clear();
-            try {
-                lock.lock();
-                jsonStats = BundleParser.parseJsonStatistics(fileContents);
-            } finally {
-                lock.unlock();
-            }
+    /**
+     * Check status to see if stats.json needs to be loaded and parsed.
+     * <p>
+     * Always load if jsonStats is null, never load again when we have a bundle
+     * as it never changes, always load a new stats if the hash has changed and
+     * we do not have a bundle.
+     *
+     * @param service
+     *         the Vaadin service.
+     * @return {@code true} if we need to re-load and parse stats.json, else
+     * {@code false}
+     */
+    protected boolean isStatsFileReadNeeded(VaadinService service)
+            throws IOException {
+        DeploymentConfiguration config = service.getDeploymentConfiguration();
+        if (jsonStats == null) {
+            return true;
+        } else if (usesBundleFile(config)) {
+            return false;
         }
-        if (!cache.containsKey(url)) {
-            cache.put(url,
-                    BundleParser.getSourceFromStatistics(url, jsonStats));
-        }
+        return !jsonStats.get("hash").asString()
+                .equals(FrontendUtils.getStatsHash(service));
+    }
+
+    /**
+     * Check if we are running in a mode without dev server and using a pre-made
+     * bundle file.
+     *
+     * @param config
+     *         deployment configuration
+     * @return true if production mode or disabled dev server
+     */
+    private boolean usesBundleFile(DeploymentConfiguration config) {
+        return config.isProductionMode() && !config.enableDevServer();
+    }
+
+    private void resetCache(String fileContents) {
+        cache.clear();
+        jsonStats = BundleParser.parseJsonStatistics(fileContents);
     }
 
     private Logger getLogger() {

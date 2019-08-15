@@ -12,50 +12,6 @@
     <description>Test modules for Flow</description>
     <packaging>pom</packaging>
 
-    <modules>
-        <module>test-resources</module>
-        <module>test-common</module>
-        <module>test-pwa</module>
-
-        <module>test-dev-mode</module>
-        <module>test-root-ui-context</module>
-        <module>test-frontend-production-custom-context</module>
-        <module>test-router-custom-context</module>
-        <module>test-subcontext</module>
-        <module>test-scalability</module>
-        <module>test-memory-leaks</module>
-        <module>test-servlet</module>
-        <module>test-themes</module>
-        <module>test-themes/pom-npm.xml</module>
-        <module>test-lumo-theme</module>
-        <module>test-material-theme</module>
-        <module>servlet-containers</module>
-        <module>test-web-components</module>
-        <module>test-web-components-production</module>
-        <module>test-web-components-theme-variant</module>
-
-        <!-- tests migrated to NPM -->
-        <module>web-component-test-assets</module>
-
-        <!-- tests running in both modes -->
-        <module>test-misc</module>
-        <module>test-misc/pom-bower.xml</module>
-
-        <!--   Temporary disabled because the test is not stable. Will be investigated and enabled back.
-        <module>test-mixed</module>
-        <module>test-mixed/pom-npm-production.xml</module>
-        <module>test-mixed/pom-bower-devmode.xml</module>
-        <module>test-mixed/pom-bower-production.xml</module-->
-        <module>test-npm-only-features</module>
-        <module>test-npm-web-components</module>
-        <module>test-multi-war</module>
-        <module>test-ccdm</module>
-        <module>test-ccdm/pom-production.xml</module>
-
-        <!-- This test fails in local -->
-        <module>test-root-context</module>
-    </modules>
-
     <properties>
         <!-- Don't care about coding style or licenses for tests -->
         <sonar.skip>true</sonar.skip>
@@ -248,6 +204,57 @@
     </build>
 
     <profiles>
+        <profile>
+            <id>run-tests</id>
+            <activation>
+                <property>
+                    <name>!skipTests</name>
+                </property>
+            </activation>
+
+            <modules>
+                <module>test-resources</module>
+                <module>test-common</module>
+                <module>test-pwa</module>
+
+                <module>test-dev-mode</module>
+                <module>test-root-ui-context</module>
+                <module>test-frontend-production-custom-context</module>
+                <module>test-router-custom-context</module>
+                <module>test-subcontext</module>
+                <module>test-scalability</module>
+                <module>test-memory-leaks</module>
+                <module>test-servlet</module>
+                <module>test-themes</module>
+                <module>test-themes/pom-npm.xml</module>
+                <module>test-lumo-theme</module>
+                <module>test-material-theme</module>
+                <module>servlet-containers</module>
+                <module>test-web-components</module>
+                <module>test-web-components-production</module>
+                <module>test-web-components-theme-variant</module>
+
+                <!-- tests migrated to NPM -->
+                <module>web-component-test-assets</module>
+
+                <!-- tests running in both modes -->
+                <module>test-misc</module>
+                <module>test-misc/pom-bower.xml</module>
+
+                <module>test-mixed</module>
+                <module>test-mixed/pom-npm-production.xml</module>
+                <module>test-mixed/pom-bower-devmode.xml</module>
+                <module>test-mixed/pom-bower-production.xml</module>
+                <module>test-npm-only-features</module>
+                <module>test-npm-web-components</module>
+                <module>test-multi-war</module>
+                <module>test-ccdm</module>
+                <module>test-ccdm/pom-production.xml</module>                
+
+                <!-- This test fails in local -->
+                <module>test-root-context</module>
+            </modules>
+        </profile>
         <profile>
             <id>eclipse</id>
             <build>

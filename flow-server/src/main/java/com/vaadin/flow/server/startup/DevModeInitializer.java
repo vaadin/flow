@@ -23,12 +23,13 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
 import javax.servlet.annotation.WebListener;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.net.URL;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -48,6 +49,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletContext;
@@ -59,6 +61,10 @@ import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
 
 /**
@@ -66,7 +72,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
  * server.
  */
 @HandlesTypes({ Route.class, NpmPackage.class, NpmPackage.Container.class,
-        WebComponentExporter.class })
+        WebComponentExporter.class, UIInitListener.class })
 @WebListener
 public class DevModeInitializer implements ServletContainerInitializer,
         Serializable, ServletContextListener {
@@ -195,10 +201,14 @@ public class DevModeInitializer implements ServletContainerInitializer,
         String baseDir = config.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
                 System.getProperty("user.dir", "."));
 
-        Set<File> frontendLocations = getFrontendLocationsFromClassloader();
+        String generatedDir = System
+                .getProperty(PARAM_GENERATED_DIR, DEFAULT_GENERATED_DIR);
+        String frontendFolder = config.getStringProperty(PARAM_FRONTEND_DIR,
+                System.getProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR));
 
         Builder builder = new NodeTasks.Builder(new DefaultClassFinder(classes),
-                new File(baseDir));
+                new File(baseDir), new File(generatedDir),
+                new File(frontendFolder));
 
         log().info("Starting dev-mode updaters in {} folder.",
                 builder.npmFolder);
@@ -233,6 +243,10 @@ public class DevModeInitializer implements ServletContainerInitializer,
         }
 
         Set<String> visitedClassNames = new HashSet<>();
+
+        Set<File> frontendLocations = getFrontendLocationsFromClassloader(
+                DevModeInitializer.class.getClassLoader());
+
         try {
             builder.enablePackagesUpdate(true).copyResources(frontendLocations)
                     .copyLocalResources(new File(baseDir,
@@ -250,7 +264,13 @@ public class DevModeInitializer implements ServletContainerInitializer,
         VaadinContext vaadinContext = new VaadinServletContext(context);
         vaadinContext.setAttribute(new VisitedClasses(visitedClassNames));
 
-        DevModeHandler.start(config, builder.npmFolder);
+        try {
+            DevModeHandler.start(config, builder.npmFolder);
+        } catch (IllegalStateException exception) {
+            // wrap an ISE which can be caused by inability to find tools like
+            // node, npm into a servlet exception
+            throw new ServletException(exception);
+        }
     }
 
     private static Logger log() {
@@ -275,20 +295,22 @@ public class DevModeInitializer implements ServletContainerInitializer,
      * META-INF/resources/frontend folder. We don't use URLClassLoader because
      * will fail in Java 9+
      */
-    private static Set<File> getFrontendLocationsFromClassloader() {
-        Set<File> jarFiles = new HashSet<>();
+    protected static Set<File> getFrontendLocationsFromClassloader(
+            ClassLoader classLoader) {
+        Set<File> frontendLocations = new HashSet<>();
         try {
-            Enumeration<URL> en = DevModeInitializer.class.getClassLoader()
+            Enumeration<URL> en = classLoader
                     .getResources(RESOURCES_FRONTEND_DEFAULT);
 
             while (en.hasMoreElements()) {
                 URL url = en.nextElement();
-                Matcher jarMatcher = JAR_FILE_REGEX.matcher(url.getPath());
-                Matcher dirMatcher = DIR_REGEX.matcher(url.getPath());
+                String path = URLDecoder.decode(url.getPath(), StandardCharsets.UTF_8.name());
+                Matcher jarMatcher = JAR_FILE_REGEX.matcher(path);
+                Matcher dirMatcher = DIR_REGEX.matcher(path);
                 if (jarMatcher.find()) {
-                    jarFiles.add(new File(jarMatcher.group(1)));
+                    frontendLocations.add(new File(jarMatcher.group(1)));
                 } else if (dirMatcher.find()) {
-                    jarFiles.add(new File(dirMatcher.group(1)));
+                    frontendLocations.add(new File(dirMatcher.group(1)));
                 } else {
                     log().warn(
                             "Resource {} not visited because does not meet supported formats.",
@@ -298,6 +320,6 @@ public class DevModeInitializer implements ServletContainerInitializer,
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
-        return jarFiles;
+        return frontendLocations;
     }
 }

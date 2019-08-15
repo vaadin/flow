@@ -36,9 +36,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.plugin.common.ArtifactData;
-import com.vaadin.flow.plugin.common.FlowPluginFileUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.JarContentsManager;
+import com.vaadin.flow.utils.FlowFileUtils;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -172,7 +172,7 @@ public class ProductionModeCopyStep {
      */
     public void copyWebApplicationFiles(File outputDirectory, File frontendWorkingDirectory, String commaSeparatedWildcardPathExclusions) {
         LOGGER.info("Copying web application files to '{}'", outputDirectory);
-        FlowPluginFileUtils.forceMkdir(outputDirectory);
+        FlowFileUtils.forceMkdir(outputDirectory);
 
         String[] wildcardExclusions = getWildcardPaths(commaSeparatedWildcardPathExclusions);
 
@@ -188,7 +188,7 @@ public class ProductionModeCopyStep {
             File bowerComponents = new File(outputDirectory, BOWER_COMPONENTS_DIRECTORY_NAME);
             webJarNameToPackage.forEach((name, webJarPackage) -> {
                 File webJarDirectory = new File(bowerComponents, name);
-                FlowPluginFileUtils.forceMkdir(webJarDirectory);
+                FlowFileUtils.forceMkdir(webJarDirectory);
                 jarContentsManager.copyFilesFromJarTrimmingBasePath(webJarPackage.getWebJar().getFileOrDirectory(), webJarPackage.getPathToPackage(), webJarDirectory, wildcardExclusions);
             });
         }
@@ -216,7 +216,7 @@ public class ProductionModeCopyStep {
             String commaSeparatedWildcardPathInclusions,
             String jsResourcePath) {
         LOGGER.info("Copying frontend '.js' files to '{}'", frontendDirectory);
-        FlowPluginFileUtils.forceMkdir(frontendDirectory);
+        FlowFileUtils.forceMkdir(frontendDirectory);
 
         String[] wildcardInclusions = getWildcardPaths(
                 commaSeparatedWildcardPathInclusions);

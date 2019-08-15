@@ -45,35 +45,14 @@ public class TaskUpdateWebpack implements FallibleCommand {
     private final transient Path webpackOutputPath;
     private final transient Path flowImportsFilePath;
     private final transient Path webpackConfigPath;
+    private final transient Path frontendDirectory;
     private final boolean isClientSideMode;
 
     /**
      * Create an instance of the updater given all configurable parameters.
      *
-     * @param webpackConfigFolder
-     *            folder with the `webpack.config.js` file.
-     * @param webpackOutputDirectory
-     *            the directory to set for webpack to output its build results.
-     * @param webpackTemplate
-     *            name of the webpack resource to be used as template when
-     *            creating the <code>webpack.config.js</code> file.
-     * @param webpackGeneratedTemplate
-     *            name of the webpack resource to be used as template when
-     *            creating the <code>webpack.generated.js</code> file.
-     * @param generatedFlowImports
-     *            name of the JS file to update with the Flow project imports
-     */
-    TaskUpdateWebpack(File webpackConfigFolder, File webpackOutputDirectory,
-            String webpackTemplate, String webpackGeneratedTemplate,
-            File generatedFlowImports) {
-        this(webpackConfigFolder, webpackOutputDirectory, webpackTemplate,
-                webpackGeneratedTemplate, generatedFlowImports,
-                false);
-    }
-
-    /**
-     * Create an instance of the updater given all configurable parameters.
-     *
+     * @param frontendDirectory
+     *            the directory used for {@code Frontend} alias
      * @param webpackConfigFolder
      *            folder with the `webpack.config.js` file.
      * @param webpackOutputDirectory
@@ -87,11 +66,13 @@ public class TaskUpdateWebpack implements FallibleCommand {
      * @param generatedFlowImports
      *            name of the JS file to update with the Flow project imports
      * @param isClientSideMode
-     *            whether the application running with clientSideBootstrapMode
+     *            whether the application running with clientSideBootstrapMode* 
      */
-    TaskUpdateWebpack(File webpackConfigFolder, File webpackOutputDirectory,
-            String webpackTemplate, String webpackGeneratedTemplate,
-            File generatedFlowImports, boolean isClientSideMode) {
+    TaskUpdateWebpack(File frontendDirectory, File webpackConfigFolder,
+            File webpackOutputDirectory, String webpackTemplate,
+            String webpackGeneratedTemplate, File generatedFlowImports,
+            boolean isClientSideMode) {
+        this.frontendDirectory = frontendDirectory.toPath();
         this.webpackTemplate = webpackTemplate;
         this.webpackGeneratedTemplate = webpackGeneratedTemplate;
         this.webpackOutputPath = webpackOutputDirectory.toPath();
@@ -152,6 +133,9 @@ public class TaskUpdateWebpack implements FallibleCommand {
             throws IOException {
         List<String> lines = FileUtils.readLines(generatedFile, "UTF-8");
 
+        String frontendLine = "const frontendFolder = require('path').resolve(__dirname, '"
+                + getEscapedRelativeWebpackPath(frontendDirectory) + "');";
+
         String outputLine = "const mavenOutputFolderForFlowBundledFiles = require('path').resolve(__dirname, '"
                 + getEscapedRelativeWebpackPath(webpackOutputPath) + "');";
         String mainLine = "const fileNameOfTheFlowGeneratedMainEntryPoint = require('path').resolve(__dirname, '"
@@ -167,7 +151,9 @@ public class TaskUpdateWebpack implements FallibleCommand {
                     .startsWith("const mavenOutputFolderForFlowBundledFiles")) {
                 lines.set(i, outputLine);
             }
-
+            if (lines.get(i).startsWith("const frontendFolder")) {
+                lines.set(i, frontendLine);
+            }
             if (lines.get(i).startsWith("const useClientSideIndexFileForBootstrapping")) {
                 lines.set(i, isClientSideBootstrapModeLine);
             }

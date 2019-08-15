@@ -1,27 +1,36 @@
 package com.vaadin.flow.server.startup;
 
+import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_REUSE_DEV_SERVER;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EventListener;
 import java.util.HashSet;
+import java.util.List;
 
-import net.jcip.annotations.NotThreadSafe;
+import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.server.DevModeHandler;
+import com.vaadin.flow.server.startup.DevModeInitializer.VisitedClasses;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.server.DevModeHandler;
-import com.vaadin.flow.server.startup.DevModeInitializer.VisitedClasses;
-
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_REUSE_DEV_SERVER;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class DevModeInitializerTest extends DevModeInitializerTestBase {
@@ -48,6 +57,32 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
+
+    @Test
+    public void loadingJars_allFilesExist() throws IOException {
+        // Create jar urls for test
+        URL jar = new URL("jar:" + this.getClass().getResource("/").toString()
+                .replace("target/test-classes/", "")
+                + "src/test/resources/with%20space/jar-with-frontend-resources.jar!/META-INF/resources/frontend");
+        List<URL> urls = new ArrayList<>();
+        urls.add(jar);
+
+        // Create mock loader with the single jar to be found
+        ClassLoader classLoader = Mockito.mock(ClassLoader.class);
+        Mockito.when(classLoader.getResources(RESOURCES_FRONTEND_DEFAULT))
+                .thenReturn(Collections.enumeration(urls));
+
+        // load jars from classloader
+        List<File> jarFilesFromClassloader = new ArrayList<>(
+                DevModeInitializer.getFrontendLocationsFromClassloader(classLoader));
+
+        // Assert that jar was found and accepted
+        assertEquals("One jar should have been found and added as a File", 1,
+                jarFilesFromClassloader.size());
+        // Assert that the file can be found from the filesystem by the given path.
+        assertTrue("File in path 'with space' doesn't load from given path",
+                jarFilesFromClassloader.get(0).exists());
+    }
 
     @Test
     public void should_Run_Updaters() throws Exception {

@@ -207,6 +207,11 @@ public final class DeploymentConfigurationFactory implements Serializable {
                             buildInfo.getString("npmFolder"));
                 }
 
+                if (buildInfo.hasKey("frontendFolder")) {
+                    initParameters.setProperty(FrontendUtils.PARAM_FRONTEND_DIR,
+                            buildInfo.getString("frontendFolder"));
+                }
+
                 // These should be internal only so if there is a System
                 // property override then the user probably knows what
                 // they are doing.
