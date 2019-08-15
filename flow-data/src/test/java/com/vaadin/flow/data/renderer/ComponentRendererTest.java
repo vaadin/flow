@@ -17,11 +17,17 @@ package com.vaadin.flow.data.renderer;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.vaadin.flow.data.binder.testcomponents.TestLabel;
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasComponents;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.data.binder.testcomponents.TestLabel;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 
 public class ComponentRendererTest {
 
@@ -91,6 +97,45 @@ public class ComponentRendererTest {
 
         Assert.assertEquals("The two components should be the same", div,
                 updatedComponent);
+    }
+
+    @Test
+    public void enabledStateChangeOnAttachCalledForRenderedComponent() {
+        UI ui = new UI();
+
+        ComponentRenderer<MyCheckbox, ?> componentRenderer = new ComponentRenderer<>(
+                item -> new MyCheckbox());
+
+        MyDiv parent = new MyDiv();
+        parent.setEnabled(false);
+        ui.add(parent);
+
+        Assert.assertFalse("Parent should be disabled", parent.isEnabled());
+
+        componentRenderer.render(parent.getElement(), null, new Element("div"));
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        // fetch the virtual child of the parent that gets created when the
+        // component is rendered
+        StateNode stateNode = parent.getElement().getNode()
+                .getFeatureIfInitialized(VirtualChildrenList.class).get()
+                .get(0);
+        Element child = Element.get(stateNode);
+        Assert.assertFalse("After attach child should be disabled",
+                child.isEnabled());
+        Assert.assertTrue(child.getComponent().isPresent());
+        // Fetch the actual MyCheckbox component
+        Component checkboxComponent = child.getChildren().findFirst().get()
+                .getComponent().get();
+        Assert.assertTrue(checkboxComponent instanceof MyCheckbox);
+    }
+
+    @Tag("div")
+    private static class MyDiv extends Component implements HasComponents {
+    }
+
+    @Tag("my-checkbox")
+    private static class MyCheckbox extends Component {
     }
 
 }

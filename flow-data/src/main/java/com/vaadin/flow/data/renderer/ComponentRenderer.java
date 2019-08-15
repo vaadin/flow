@@ -19,6 +19,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.data.provider.ComponentDataGenerator;
 import com.vaadin.flow.data.provider.DataGenerator;
@@ -189,7 +190,8 @@ public class ComponentRenderer<COMPONENT extends Component, SOURCE>
         Element templateElement = rendering.getTemplateElement();
         owner.appendChild(templateElement);
 
-        Element container = new Element("div");
+        ContainerComponent containerComponent = new ContainerComponent();
+        Element container = containerComponent.getElement();
         owner.appendVirtualChild(container);
         rendering.setContainer(container);
         String templateInnerHtml;
@@ -219,6 +221,10 @@ public class ComponentRenderer<COMPONENT extends Component, SOURCE>
         }
 
         templateElement.setProperty("innerHTML", templateInnerHtml);
+    }
+
+    @Tag(Tag.DIV)
+    private static class ContainerComponent extends Component {
     }
 
     /**
