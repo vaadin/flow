@@ -17,6 +17,7 @@ package com.vaadin.flow.migration;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -111,7 +112,7 @@ public class MigrationTest {
             throws MigrationFailureException, MigrationToolsException,
             IOException {
         File sourcesFolder = makeTempDirectoryStructure();
-        File targetFolder = populateTargetWithApplications();
+        File targetFolder = temporaryFolder.newFolder();
 
         Mockito.when(configuration.getBaseDirectory())
                 .thenReturn(Paths.get(sourcesFolder.getPath(), "foo").toFile());
@@ -139,6 +140,21 @@ public class MigrationTest {
         
         Migration migration = new Migration(configuration) {
             @Override
+            protected void prepareMigrationDirectory() {
+                super.prepareMigrationDirectory();
+
+                // Temporary folder is empty at this stage and whether to
+                // install bower or not is determined by existence of bower
+                // on path. To force deterministic test add bower mock to
+                // temporary folder here.
+                try {
+                    populateTargetWithApplications(targetFolder);
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+            }
+
+            @Override
             protected boolean executeProcess(List<String> command,
                     String errorMsg, String successMsg, String exceptionMsg) {
                 Assert.assertEquals("Unexpected command", (int)excecuteExpectations.pop(), command.size());
@@ -149,8 +165,7 @@ public class MigrationTest {
         migration.migrate();
     }
 
-    private File populateTargetWithApplications() throws IOException {
-        File targetFolder = temporaryFolder.newFolder();
+    private void populateTargetWithApplications(File targetFolder) throws IOException {
         targetFolder.mkdirs();
         Path bowerBin = Files.createDirectories(
                 Paths.get(targetFolder.getAbsolutePath(), "node_modules",
@@ -167,8 +182,6 @@ public class MigrationTest {
         FileUtils.write(node,
                 "#!/bin/sh\n[ \"$1\" = -v ] && echo 8.0.0 || sleep 1\n",
                 "UTF-8");
-
-        return targetFolder;
     }
 
     private File makeTempDirectoryStructure() throws IOException {

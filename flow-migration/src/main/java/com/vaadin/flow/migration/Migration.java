@@ -265,34 +265,24 @@ public class Migration {
      * Prepare migration by cleaning everything, except if only node_modules
      * exists in the target directory.
      */
-    private void prepareMigrationDirectory() {
+    protected void prepareMigrationDirectory() {
         if (getTempMigrationFolder().exists()) {
-            String[] list = getTempMigrationFolder().list();
-            if (list.length == 1 && list[0].equals("node_modules")) {
-                return;
-            } else if (list.length == 2 &&
-                    Stream.of(list).filter(file -> file.startsWith("node"))
-                            .count() == 2) {
-                return;
-            }
             try {
                 FileUtils.forceDelete(getTempMigrationFolder());
-                FileUtils.forceMkdir(getTempMigrationFolder());
             } catch (IOException exception) {
                 String message = String
-                        .format("Unable to clean up directory '%s'",
+                        .format("Unable to delete directory '%s'",
                                 getTempMigrationFolder());
                 throw new UncheckedIOException(message, exception);
             }
-        } else {
-            try {
-                FileUtils.forceMkdir(getTempMigrationFolder());
-            } catch (IOException exception) {
-                String message = String
-                        .format("Failed in creating migration folder '%s'",
-                                getTempMigrationFolder());
-                throw new UncheckedIOException(message, exception);
-            }
+        }
+        try {
+            FileUtils.forceMkdir(getTempMigrationFolder());
+        } catch (IOException exception) {
+            String message = String
+                    .format("Failed in creating migration folder '%s'",
+                            getTempMigrationFolder());
+            throw new UncheckedIOException(message, exception);
         }
     }
 
