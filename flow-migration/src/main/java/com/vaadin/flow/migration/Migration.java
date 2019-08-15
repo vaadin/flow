@@ -236,7 +236,7 @@ public class Migration {
         }
 
         try {
-            cleanUp(getTempMigrationFolder());
+            FileUtils.forceDelete(getTempMigrationFolder());
         } catch (IOException exception) {
             getLogger().debug(
                     "Couldn't remove " + getTempMigrationFolder().getPath(),
@@ -276,7 +276,8 @@ public class Migration {
                 return;
             }
             try {
-                cleanUp(getTempMigrationFolder());
+                FileUtils.forceDelete(getTempMigrationFolder());
+                FileUtils.forceMkdir(getTempMigrationFolder());
             } catch (IOException exception) {
                 String message = String
                         .format("Unable to clean up directory '%s'",
@@ -444,10 +445,6 @@ public class Migration {
 
     private Logger getLogger() {
         return LoggerFactory.getLogger(Migration.class);
-    }
-
-    private void cleanUp(File dir) throws IOException {
-        FileUtils.forceDelete(dir);
     }
 
     private File[] getResources() {
