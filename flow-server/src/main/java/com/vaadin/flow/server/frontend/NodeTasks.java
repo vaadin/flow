@@ -285,7 +285,7 @@ public class NodeTasks implements FallibleCommand {
          * Set local frontend files to be copied from given folder.
          *
          * @param frontendResourcesDirectory
-         *         folder to copy local frontend files from
+         *            folder to copy local frontend files from
          * @return the builder, for chaining
          */
         public Builder copyLocalResources(File frontendResourcesDirectory) {
@@ -337,15 +337,16 @@ public class NodeTasks implements FallibleCommand {
                     builder.jarFiles));
         }
 
-        if(builder.frontendResourcesDirectory != null) {
-            commands.add(new TaskCopyLocalFrontendFiles(builder.npmFolder, builder.frontendResourcesDirectory));
+        if (builder.frontendResourcesDirectory != null) {
+            commands.add(new TaskCopyLocalFrontendFiles(builder.npmFolder,
+                    builder.frontendResourcesDirectory));
         }
 
         if (builder.webpackTemplate != null
                 && !builder.webpackTemplate.isEmpty()) {
-            commands.add(new TaskUpdateWebpack(builder.npmFolder,
-                    builder.webpackOutputDirectory, builder.webpackTemplate,
-                    builder.webpackGeneratedTemplate,
+            commands.add(new TaskUpdateWebpack(builder.frontendDirectory,
+                    builder.npmFolder, builder.webpackOutputDirectory,
+                    builder.webpackTemplate, builder.webpackGeneratedTemplate,
                     new File(builder.generatedFolder, IMPORTS_NAME)));
         }
 
