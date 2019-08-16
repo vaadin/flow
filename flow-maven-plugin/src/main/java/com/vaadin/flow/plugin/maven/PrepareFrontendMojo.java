@@ -39,12 +39,10 @@ import com.vaadin.flow.server.frontend.NodeTasks;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
-
 import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFinder;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
@@ -192,10 +190,13 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         Log log = getLog();
         if (log.isDebugEnabled()) {
             log.debug(String.format(
-                    "%n>>> Running prepare-package in %s project%nSystem.properties:%n"
-                            + " productionMode: %s%n bowerMode: %s%n compatibilityMode: %s%n webpackPort: %s%n project.basedir: %s%n"
-                            + "Goal parameters:%n productionMode: %s%n compatibilityMode: %s%n compatibility: %b%n npmFolder: %s%n"
-                            + "Token file: %s%n" + "Token content: %s%n",
+                    "%n>>> Running prepare-frontend in %s project%nSystem"
+                            + ".properties:%n productionMode: %s%n bowerMode:" +
+                            " %s%n compatibilityMode: %s%n webpackPort: %s%n " +
+                            "project.basedir: %s%nGoal parameters:%n " +
+                            "productionMode: %s%n compatibilityMode: %s%n " +
+                            "compatibility: %b%n npmFolder: %s%nToken file: " +
+                            "%s%n" + "Token content: %s%n",
                     project.getName(),
                     System.getProperty("vaadin.productionMode"),
                     System.getProperty("vaadin.bowerMode"),
