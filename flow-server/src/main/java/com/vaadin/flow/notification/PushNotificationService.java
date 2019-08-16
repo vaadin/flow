@@ -2,6 +2,7 @@ package com.vaadin.flow.notification;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.vaadin.flow.component.UI;
 import nl.martijndwars.webpush.Notification;
 import nl.martijndwars.webpush.PushService;
 import nl.martijndwars.webpush.Subscription;
@@ -15,20 +16,12 @@ import java.util.concurrent.CompletableFuture;
 
 public class PushNotificationService {
 
-  private PushNotificationHelper helper;
   private PushService pushService;
-  private String vapidPubKey;
-
-  private PushNotificationHelper getHelper() {
-    if(helper == null){
-      helper = new PushNotificationHelper(vapidPubKey);
-    }
-    return helper;
-  }
 
   public PushNotificationService(String vapidPubKey, String vapidPrivateKey, String subject) {
     Security.addProvider(new BouncyCastleProvider());
-    this.vapidPubKey = vapidPubKey;
+    UI.getCurrent().getPage().addJavaScript("frontend://push-notification-helper.js");
+    UI.getCurrent().getPage().executeJs("window.Vaadin.pushHelper.vapidPubKey='" + vapidPubKey+"';");
     try {
       pushService = new PushService(vapidPubKey, vapidPrivateKey, subject);
     } catch (GeneralSecurityException e) {
@@ -37,19 +30,19 @@ public class PushNotificationService {
   }
 
   public CompletableFuture<Boolean> browserSupportsPushNotifications() {
-    return getHelper().browserSupportsPushNotifications();
+    return UI.getCurrent().getPage().executeJs("return window.Vaadin.pushHelper.checkBrowserSupport()").toCompletableFuture(Boolean.class);
   }
 
   public CompletableFuture<Boolean> notificationsEnabled() {
-    return getHelper().notificationsEnabled();
+    return UI.getCurrent().getPage().executeJs("return window.Vaadin.pushHelper.checkNotificationStatus()").toCompletableFuture(Boolean.class);
   }
 
   public CompletableFuture<String> subscribeToNotifications() {
-    return getHelper().subscribeToNotifications();
+    return UI.getCurrent().getPage().executeJs("return window.Vaadin.pushHelper.subscribeToNotifications()").toCompletableFuture(String.class);
   }
 
   public void unsubscribeFromNotifications() {
-    getHelper().unsubscribeFromNotifications();
+    UI.getCurrent().getPage().executeJs("window.Vaadin.pushHelper.unsubscribeFromNotifications()");
   }
 
   public void sendPushMessage(String subscription, String title, String body, String url){

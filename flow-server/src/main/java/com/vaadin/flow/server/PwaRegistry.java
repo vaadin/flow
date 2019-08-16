@@ -241,6 +241,7 @@ public class PwaRegistry implements Serializable {
                 .append("        })\n    );\n  }\n });");
 
         stringBuilder
+            .append("\n")
             .append("self.addEventListener('push', event => {\n")
             .append("  const data = event.data.json();\n\n")
             .append("  const title = data.title;\n")
@@ -249,8 +250,11 @@ public class PwaRegistry implements Serializable {
             .append("    icon: '").append(getManifestIcons().get(0).getHref()).append("',\n")
             .append("    badge: '").append(getManifestIcons().get(0).getHref()).append("',\n")
             .append("  };\n")
+            .append("  self.registration.showNotification(title, options);\n")
             .append("\n")
-            .append("  self.addEventListener('notificationclick', event => {\n" +
+            .append("});")
+            .append("\n")
+            .append("self.addEventListener('notificationclick', event => {\n" +
                 "  event.notification.close();\n" +
                 "  const url = event.notification.data.json().url;\n" +
                 "  const urlToOpen = new URL(url, self.location.origin).href;\n" +
