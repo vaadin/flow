@@ -258,7 +258,8 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
         File tokenFile = getTokenFile();
         if (!tokenFile.exists()) {
             getLog().warn(
-                    "'build-frontend' goal was called without previously calling 'prepare-package'");
+                    "'build-frontend' goal was called without previously " +
+                            "calling 'prepare-frontend'");
             return true;
         }
         try {
