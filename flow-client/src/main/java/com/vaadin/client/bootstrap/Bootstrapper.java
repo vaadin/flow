@@ -18,6 +18,7 @@ package com.vaadin.client.bootstrap;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
+
 import com.vaadin.client.ApplicationConfiguration;
 import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.BrowserInfo;
@@ -123,10 +124,23 @@ public class Bootstrapper implements EntryPoint {
          * locations even if the base URL of the page changes later (e.g. with
          * pushState)
          */
-        conf.setServiceUrl(WidgetUtil.getAbsoluteUrl("."));
+        String serviceUrl = jsoConfiguration
+                .getConfigString(ApplicationConstants.SERVICE_URL);
 
-        conf.setContextRootUrl(WidgetUtil.getAbsoluteUrl(jsoConfiguration
-                .getConfigString(ApplicationConstants.CONTEXT_ROOT_URL)));
+        conf.setWebComponentMode(
+                jsoConfiguration.getConfigBoolean(ApplicationConstants.APP_WC_MODE));
+
+        if (serviceUrl == null) {
+            conf.setServiceUrl(WidgetUtil.getAbsoluteUrl("."));
+            conf.setContextRootUrl(WidgetUtil.getAbsoluteUrl(jsoConfiguration
+                    .getConfigString(ApplicationConstants.CONTEXT_ROOT_URL)));
+
+        } else {
+            conf.setServiceUrl(serviceUrl);
+            conf.setContextRootUrl(WidgetUtil.getAbsoluteUrl(
+                    serviceUrl + jsoConfiguration.getConfigString(
+                            ApplicationConstants.CONTEXT_ROOT_URL)));
+        }
 
         if (BrowserInfo.get().isEs6Supported()) {
             conf.setFrontendRootUrl(jsoConfiguration

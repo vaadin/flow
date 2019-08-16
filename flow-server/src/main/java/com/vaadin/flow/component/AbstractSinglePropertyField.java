@@ -22,8 +22,11 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.googlecode.gentyref.GenericTypeReflector;
+
+import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.PropertyChangeEvent;
+import com.vaadin.flow.dom.PropertyChangeListener;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableBiFunction;
 import com.vaadin.flow.function.SerializableFunction;
@@ -133,7 +136,7 @@ public class AbstractSinglePropertyField<C extends AbstractField<C, T>, T>
     private final SerializableBiFunction<C, T, T> propertyReader;
     private final String propertyName;
 
-    private String synchronizedEvent;
+    private DomListenerRegistration synchronizationRegistration;
 
     /**
      * Creates a new field that uses a property value without any conversion.
@@ -239,9 +242,6 @@ public class AbstractSinglePropertyField<C extends AbstractField<C, T>, T>
         propertyReader = typeHandler.createReader(element, propertyName,
                 presentationToModel);
 
-        element.addPropertyChangeListener(propertyName,
-                this::handlePropertyChange);
-
         doSetSynchronizedEvent(
                 SharedUtil.camelCaseToDashSeparated(propertyName) + "-changed");
     }
@@ -273,12 +273,14 @@ public class AbstractSinglePropertyField<C extends AbstractField<C, T>, T>
 
     /**
      * Sets the name of the DOM event for which property values are synchronized
-     * from the client to the server. By default, the event event name is the
-     * property name with <code>-changed</code> appended. This means that if the
-     * property name is <code>value</code>, then the event default name is
+     * from the client to the server. By default, the event name is the property
+     * name with <code>-changed</code> appended. This means that if the property
+     * name is <code>value</code>, then the event default name is
      * <code>value-changed</code>.
      *
-     * @see Element#addSynchronizedPropertyEvent(String)
+     * @see Element#addPropertyChangeListener(String, String,
+     *      PropertyChangeListener)
+     * @see #getSynchronizationRegistration()
      *
      * @param synchronizedEvent
      *            the property name to synchronize, or <code>null</code> to
@@ -288,19 +290,43 @@ public class AbstractSinglePropertyField<C extends AbstractField<C, T>, T>
         doSetSynchronizedEvent(synchronizedEvent);
     }
 
-    // Delegated method so that constructor doens't have to call protected
+    /**
+     * Returns the registration of the DOM event listener that synchronizes the
+     * property value. The registration is created by
+     * {@link #setSynchronizedEvent(String)}.
+     *
+     * @return the registration of the DOM event listener that synchronizes the
+     *         property value, or <code>null</code> if property synchronization
+     *         is disabled
+     */
+    protected DomListenerRegistration getSynchronizationRegistration() {
+        return synchronizationRegistration;
+    }
+
+    // Delegated method so that constructor doesn't have to call protected
     // method
-    private void doSetSynchronizedEvent(String newEvent) {
-        Element element = getElement();
-        if (this.synchronizedEvent != null) {
-            element.removeSynchronizedPropertyEvent(this.synchronizedEvent);
-            element.removeSynchronizedProperty(propertyName);
+    private void doSetSynchronizedEvent(String propChangeEvent) {
+        if (synchronizationRegistration != null) {
+            synchronizationRegistration.remove();
         }
+        if (propChangeEvent != null) {
+            synchronizationRegistration = getElement()
+                    .addPropertyChangeListener(propertyName, propChangeEvent,
+                            // This explicit class instantiation is the
+                            // workaround
+                            // which fixes a JVM optimization+serialization bug.
+                            // Do not convert to lambda.
+                            // See #5973.
+                            new PropertyChangeListener() {
 
-        this.synchronizedEvent = newEvent;
-
-        if (newEvent != null) {
-            element.synchronizeProperty(propertyName, newEvent);
+                                @Override
+                                public void propertyChange(
+                                        PropertyChangeEvent event) {
+                                    handlePropertyChange(event);
+                                }
+                            });
+        } else {
+            synchronizationRegistration = null;
         }
     }
 

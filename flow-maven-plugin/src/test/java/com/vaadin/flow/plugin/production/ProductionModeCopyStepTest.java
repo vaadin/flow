@@ -34,7 +34,7 @@ import org.junit.rules.TemporaryFolder;
 
 import com.vaadin.flow.plugin.TestUtils;
 import com.vaadin.flow.plugin.common.ArtifactData;
-import com.vaadin.flow.plugin.common.JarContentsManager;
+import com.vaadin.flow.server.frontend.JarContentsManager;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -91,6 +91,120 @@ public class ProductionModeCopyStepTest {
     }
 
     @Test
+    public void jarWithJSNoInclusions_nothingGetsCopied() {
+        File outputDirectory = testDirectory.getRoot();
+        assertTrue(
+                "No files should be in output directory before the beginning",
+                TestUtils.listFilesRecursively(outputDirectory).isEmpty());
+
+        new ProductionModeCopyStep(Collections
+                .singleton(getWebJarData("10.0.0-alpha1", "TimeSelector")))
+                .copyFrontendJavaScriptFiles(outputDirectory, null,
+                        "META-INF/frontend");
+
+        List<String> resultingFiles = TestUtils
+                .listFilesRecursively(outputDirectory);
+        assertTrue("No files should have been copied from the test Jar",
+                resultingFiles.isEmpty());
+    }
+
+    @Test
+    public void jarWithJS_copiedCorrectly() {
+        File outputDirectory = testDirectory.getRoot();
+        assertTrue(
+                "No files should be in output directory before the beginning",
+                TestUtils.listFilesRecursively(outputDirectory).isEmpty());
+
+        new ProductionModeCopyStep(Collections
+                .singleton(getWebJarData("10.0.0-alpha1", "TimeSelector")))
+                .copyFrontendJavaScriptFiles(outputDirectory, "**/*.js",
+                        "META-INF/frontend");
+
+        List<String> resultingFiles = TestUtils
+                .listFilesRecursively(outputDirectory);
+        assertFalse("JavaScript files should be copied from the test Jar",
+                resultingFiles.isEmpty());
+        assertEquals("Jar with multiple js files gets all files copied", 4,
+                resultingFiles.stream().filter(path -> path.endsWith(".js"))
+                        .count());
+
+        assertTrue("Missing 'test/test.js'", resultingFiles.stream()
+                .filter(path -> path
+                        .endsWith("test" + File.separator + "test.js"))
+                .findFirst().isPresent());
+        assertTrue("Missing 'CircleSelector.js'", resultingFiles.stream()
+                .filter(path -> path.endsWith("CircleSelector.js")).findFirst()
+                .isPresent());
+        assertTrue("Missing 'PopupSelector.js'", resultingFiles.stream()
+                .filter(path -> path.endsWith("PopupSelector.js")).findFirst()
+                .isPresent());
+        assertTrue("Missing 'TimeSelector.js'", resultingFiles.stream()
+                .filter(path -> path.endsWith("TimeSelector.js")).findFirst()
+                .isPresent());
+    }
+
+    @Test
+    public void jarWithJsAndHtml_copiedCorrectly() {
+        File outputDirectory = testDirectory.getRoot();
+        assertTrue(
+                "No files should be in output directory before the beginning",
+                TestUtils.listFilesRecursively(outputDirectory).isEmpty());
+
+        new ProductionModeCopyStep(Collections
+                .singleton(getWebJarData("10.0.0-alpha1", "TimeSelector")))
+                .copyFrontendJavaScriptFiles(outputDirectory,
+                        "**/*.js,**/*.html", "META-INF");
+
+        List<String> resultingFiles = TestUtils
+                .listFilesRecursively(outputDirectory);
+        assertFalse("JavaScript files should be copied from the test Jar",
+                resultingFiles.isEmpty());
+
+        assertEquals("All files matching inclusions should be copied", 7,
+                resultingFiles.size());
+
+        assertEquals("Jar with multiple js files gets all files copied", 4,
+                resultingFiles.stream().filter(path -> path.endsWith(".js"))
+                        .count());
+        assertEquals("Jar with multiple html files gets all files copied", 3,
+                resultingFiles.stream().filter(path -> path.endsWith(".html"))
+                        .count());
+
+        assertTrue("Missing 'frontend/test/test.js'", resultingFiles.stream()
+                .filter(path -> path.endsWith(
+                        "frontend" + File.separator + "test" + File.separator
+                                + "test.js")).findFirst().isPresent());
+        assertTrue("Missing 'frontend/CircleSelector.js'",
+                resultingFiles.stream().filter(path -> path.endsWith(
+                        "frontend" + File.separator + "CircleSelector.js"))
+                        .findFirst().isPresent());
+        assertTrue("Missing 'frontend/PopupSelector.js'",
+                resultingFiles.stream().filter(path -> path.endsWith(
+                        "frontend" + File.separator + "PopupSelector.js"))
+                        .findFirst().isPresent());
+        assertTrue("Missing 'frontend/TimeSelector.js'", resultingFiles.stream()
+                .filter(path -> path.endsWith(
+                        "frontend" + File.separator + "TimeSelector.js"))
+                .findFirst().isPresent());
+
+        assertTrue("Missing 'resources/frontend/CircleSelector.html'",
+                resultingFiles.stream().filter(path -> path.endsWith(
+                        "resources" + File.separator + "frontend"
+                                + File.separator + "CircleSelector.html"))
+                        .findFirst().isPresent());
+        assertTrue("Missing 'resources/frontend/PopupSelector.html'",
+                resultingFiles.stream().filter(path -> path.endsWith(
+                        "resources" + File.separator + "frontend"
+                                + File.separator + "PopupSelector.html"))
+                        .findFirst().isPresent());
+        assertTrue("Missing 'resources/frontend/TimeSelector.html'",
+                resultingFiles.stream().filter(path -> path.endsWith(
+                        "resources" + File.separator + "frontend"
+                                + File.separator + "TimeSelector.html"))
+                        .findFirst().isPresent());
+    }
+
+    @Test
     public void webJarsWithMultiplePackages_work() {
         File outputDirectory = testDirectory.getRoot();
         assertTrue("No files should be in output directory before the beginning", TestUtils.listFilesRecursively(outputDirectory).isEmpty());
@@ -103,6 +217,25 @@ public class ProductionModeCopyStepTest {
         assertFalse("Files should be copied from the test WebJar", resultingFiles.isEmpty());
         assertEquals("WebJar with multiple bower.json are handled correctly and copied",
                 2, resultingFiles.stream().filter(path -> path.endsWith(File.separator + "bower.json")).count());
+    }
+
+    /*
+    Test for issue:
+        flow fails to serve static resources from latest webjars #6241
+        https://github.com/vaadin/flow/issues/6241
+     */
+    @Test
+    public void webJarsWithMissingDirectoryListings_work() {
+        File outputDirectory = testDirectory.getRoot();
+        assertTrue("No files should be in output directory before the beginning", TestUtils.listFilesRecursively(outputDirectory).isEmpty());
+
+        new ProductionModeCopyStep(Collections.singleton(
+                getWebJarData("6241", "test-jar-issue")))
+                .copyWebApplicationFiles(outputDirectory, null, null);
+
+        List<String> resultingFiles =
+                TestUtils.listFilesRecursively(outputDirectory);
+        assertFalse("Files should be copied from the test WebJar", resultingFiles.isEmpty());
     }
 
     @Test

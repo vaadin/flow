@@ -55,10 +55,10 @@ public class RPCLoggerIT extends ChromeBrowserTest {
         WebElement input = findElement(By.tagName("input"));
         input.sendKeys("foo");
         input.sendKeys(Keys.TAB);
-        // set text in the input -> server RPC with type "pSync" and required
-        // node
+        // set text in the input -> RPCs for property synchronization, and dom event
         logs = findElements(By.className("log"));
-        Assert.assertEquals(2, logs.size());
+        Assert.assertEquals(3, logs.size());
+
         Assert.assertEquals("Node is 3",
                 logs.get(1).findElement(By.className("node")).getText());
         json = logs.get(1).findElement(By.className("json")).getText();
@@ -67,6 +67,13 @@ public class RPCLoggerIT extends ChromeBrowserTest {
                 .contains("\"feature\":" + NodeFeatures.ELEMENT_PROPERTIES));
         Assert.assertTrue(json.contains("\"node\":3"));
         Assert.assertTrue(json.contains("\"value\":\"foo\""));
+
+        Assert.assertEquals("Node is 3",
+                logs.get(2).findElement(By.className("node")).getText());
+        json = logs.get(2).findElement(By.className("json")).getText();
+        Assert.assertTrue(json.contains("\"type\":\"event\""));
+        Assert.assertTrue(json.contains("\"node\":3"));
+        Assert.assertTrue(json.contains("\"event\":\"change\""));
     }
 
     @Override

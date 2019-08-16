@@ -25,6 +25,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,14 +40,16 @@ import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.internal.ComponentMetaData.DependencyInfo;
 import com.vaadin.flow.component.internal.ComponentMetaData.HtmlImportDependency;
+import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.component.page.Page;
-import com.vaadin.flow.component.page.Page.ExecutionCanceler;
+import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ConstantPool;
-import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.internal.nodefeature.LoadingIndicatorConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.PollConfigurationMap;
@@ -82,8 +86,8 @@ import com.vaadin.flow.theme.ThemeDefinition;
 public class UIInternals implements Serializable {
 
     /**
-     * A {@link Page#executeJavaScript(String, Serializable...)} invocation that
-     * has not yet been sent to the client.
+     * A {@link Page#executeJs(String, Serializable...)} invocation that has not
+     * yet been sent to the client.
      */
     public static class JavaScriptInvocation implements Serializable {
         private final String expression;
@@ -99,6 +103,17 @@ public class UIInternals implements Serializable {
          */
         public JavaScriptInvocation(String expression,
                 Serializable... parameters) {
+            /*
+             * To ensure attached elements are actually attached, the parameters
+             * won't be serialized until the phase the UIDL message is created.
+             * To give the user immediate feedback if using a parameter type
+             * that can't be serialized, we do a dry run at this point.
+             */
+            for (Object argument : parameters) {
+                // Throws IAE for unsupported types
+                JsonCodec.encodeWithTypeInfo(argument);
+            }
+
             this.expression = expression;
             Collections.addAll(this.parameters, parameters);
         }
@@ -120,7 +135,6 @@ public class UIInternals implements Serializable {
         public List<Object> getParameters() {
             return Collections.unmodifiableList(parameters);
         }
-
     }
 
     /**
@@ -142,7 +156,7 @@ public class UIInternals implements Serializable {
      */
     private long lastHeartbeatTimestamp = System.currentTimeMillis();
 
-    private List<JavaScriptInvocation> pendingJsInvocations = new ArrayList<>();
+    private List<PendingJavaScriptInvocation> pendingJsInvocations = new ArrayList<>();
 
     /**
      * The related UI.
@@ -151,7 +165,7 @@ public class UIInternals implements Serializable {
 
     private String title;
 
-    private ExecutionCanceler pendingTitleUpdateCanceler;
+    private PendingJavaScriptInvocation pendingTitleUpdateCanceler;
 
     private Location viewLocation = new Location("");
     private ArrayList<HasElement> routerTargetChain = new ArrayList<>();
@@ -181,6 +195,10 @@ public class UIInternals implements Serializable {
     private String contextRootRelativePath;
 
     private String appId;
+
+    private Component activeDragSourceComponent;
+
+    private ExtendedClientDetails extendedClientDetails = null;
 
     /**
      * Creates a new instance for the given UI.
@@ -306,6 +324,9 @@ public class UIInternals implements Serializable {
      */
     public void setLastHeartbeatTimestamp(long lastHeartbeat) {
         lastHeartbeatTimestamp = lastHeartbeat;
+        HeartbeatEvent heartbeatEvent = new HeartbeatEvent(ui, lastHeartbeat);
+        getListeners(HeartbeatListener.class)
+                .forEach(listener -> listener.heartbeat(heartbeatEvent));
     }
 
     @SuppressWarnings("unchecked")
@@ -361,13 +382,7 @@ public class UIInternals implements Serializable {
                             + ".");
         } else {
             if (session == null) {
-                try {
-                    ComponentUtil.onComponentDetach(ui);
-                    ui.getChildren().forEach(ComponentUtil::onComponentDetach);
-                } catch (Exception e) {
-                    getLogger().warn("Error while detaching UI from session",
-                            e);
-                }
+                ui.getElement().getNode().setParent(null);
                 // Disable push when the UI is detached. Otherwise the
                 // push connection and possibly VaadinSession will live on.
                 ui.getPushConfiguration().setPushMode(PushMode.DISABLED);
@@ -376,7 +391,9 @@ public class UIInternals implements Serializable {
             this.session = session;
         }
 
-        if (session != null) {
+        if (session != null)
+
+        {
             ComponentUtil.onComponentAttach(ui, true);
         }
     }
@@ -434,7 +451,7 @@ public class UIInternals implements Serializable {
      * @return handler to remove the event listener
      */
     public Registration addBeforeEnterListener(BeforeEnterListener listener) {
-        return addNavigationListener(BeforeEnterHandler.class, listener);
+        return addListener(BeforeEnterHandler.class, listener);
     }
 
     /**
@@ -445,7 +462,7 @@ public class UIInternals implements Serializable {
      * @return handler to remove the event listener
      */
     public Registration addBeforeLeaveListener(BeforeLeaveListener listener) {
-        return addNavigationListener(BeforeLeaveHandler.class, listener);
+        return addListener(BeforeLeaveHandler.class, listener);
     }
 
     /**
@@ -458,13 +475,16 @@ public class UIInternals implements Serializable {
      */
     public Registration addAfterNavigationListener(
             AfterNavigationListener listener) {
-        return addNavigationListener(AfterNavigationHandler.class, listener);
+        return addListener(AfterNavigationHandler.class, listener);
     }
 
-    private <E> Registration addNavigationListener(Class<E> navigationHandler,
-            E listener) {
+    public Registration addHeartbeatListener(HeartbeatListener listener) {
+        return addListener(HeartbeatListener.class, listener);
+    }
+
+    private <E> Registration addListener(Class<E> handler, E listener) {
         session.checkHasLock();
-        List<E> list = (List<E>) listeners.computeIfAbsent(navigationHandler,
+        List<E> list = (List<E>) listeners.computeIfAbsent(handler,
                 key -> new ArrayList<>());
         list.add(listener);
 
@@ -478,9 +498,11 @@ public class UIInternals implements Serializable {
                     .getAnnotation(ListenerPriority.class);
 
             final int priority1 = listenerPriority1 != null
-                    ? listenerPriority1.value() : 0;
+                    ? listenerPriority1.value()
+                    : 0;
             final int priority2 = listenerPriority2 != null
-                    ? listenerPriority2.value() : 0;
+                    ? listenerPriority2.value()
+                    : 0;
 
             // we want to have a descending order
             return Integer.compare(priority2, priority1);
@@ -492,15 +514,15 @@ public class UIInternals implements Serializable {
     /**
      * Get all registered listeners for given navigation handler type.
      *
-     * @param navigationHandler
+     * @param handler
      *            handler to get listeners for
      * @param <E>
      *            the handler type
      * @return unmodifiable list of registered listeners for navigation handler
      */
-    public <E> List<E> getNavigationListeners(Class<E> navigationHandler) {
+    public <E> List<E> getListeners(Class<E> handler) {
         List<E> registeredListeners = (List<E>) listeners
-                .computeIfAbsent(navigationHandler, key -> new ArrayList<>());
+                .computeIfAbsent(handler, key -> new ArrayList<>());
 
         return Collections.unmodifiableList(registeredListeners);
     }
@@ -510,13 +532,11 @@ public class UIInternals implements Serializable {
      *
      * @param invocation
      *            the invocation to add
-     * @return a callback for canceling the execution if not yet sent to browser
      */
-    public ExecutionCanceler addJavaScriptInvocation(
-            JavaScriptInvocation invocation) {
+    public void addJavaScriptInvocation(
+            PendingJavaScriptInvocation invocation) {
         session.checkHasLock();
         pendingJsInvocations.add(invocation);
-        return () -> pendingJsInvocations.remove(invocation);
     }
 
     /**
@@ -524,14 +544,16 @@ public class UIInternals implements Serializable {
      *
      * @return a list of pending JavaScript invocations
      */
-    public List<JavaScriptInvocation> dumpPendingJavaScriptInvocations() {
+    public List<PendingJavaScriptInvocation> dumpPendingJavaScriptInvocations() {
         pendingTitleUpdateCanceler = null;
 
         if (pendingJsInvocations.isEmpty()) {
             return Collections.emptyList();
         }
 
-        List<JavaScriptInvocation> currentList = pendingJsInvocations;
+        List<PendingJavaScriptInvocation> currentList = getPendingJavaScriptInvocations()
+                .peek(PendingJavaScriptInvocation::setSentToBrowser)
+                .collect(Collectors.toList());
 
         pendingJsInvocations = new ArrayList<>();
 
@@ -540,14 +562,15 @@ public class UIInternals implements Serializable {
 
     /**
      * Gets the pending javascript invocations added with
-     * {@link #addJavaScriptInvocation(JavaScriptInvocation)} after last
+     * {@link #addJavaScriptInvocation(PendingJavaScriptInvocation)} after last
      * {@link #dumpPendingJavaScriptInvocations()}.
      *
      * @return the pending javascript invocations, never <code>null</code>
      */
     // Non-private for testing purposes
-    List<JavaScriptInvocation> getPendingJavaScriptInvocations() {
-        return pendingJsInvocations;
+    Stream<PendingJavaScriptInvocation> getPendingJavaScriptInvocations() {
+        return pendingJsInvocations.stream()
+                .filter(invocation -> !invocation.isCanceled());
     }
 
     /**
@@ -564,7 +587,9 @@ public class UIInternals implements Serializable {
         JavaScriptInvocation invocation = new JavaScriptInvocation(
                 "document.title = $0", title);
 
-        pendingTitleUpdateCanceler = addJavaScriptInvocation(invocation);
+        pendingTitleUpdateCanceler = new PendingJavaScriptInvocation(
+                getStateTree().getRootNode(), invocation);
+        addJavaScriptInvocation(pendingTitleUpdateCanceler);
 
         this.title = title;
     }
@@ -620,7 +645,9 @@ public class UIInternals implements Serializable {
         assert target != null;
         assert viewLocation != null;
 
-        updateTheme(target, path);
+        if (getSession().getConfiguration().isCompatibilityMode()) {
+            updateTheme(target, path);
+        }
 
         HasElement oldRoot = null;
         if (!routerTargetChain.isEmpty()) {
@@ -649,25 +676,35 @@ public class UIInternals implements Serializable {
         }
 
         // Ensure the entire chain is connected
-        HasElement root = null;
-        for (HasElement part : routerTargetChain) {
-            if (root != null) {
-                assert part instanceof RouterLayout : "All parts of the chain except the first must implement "
+        HasElement previous = null;
+        for (HasElement current : routerTargetChain) {
+            if (previous != null || oldChildren.containsKey(current)) {
+                /*
+                 * Either we're beyond the initial leaf entry, or then it's now
+                 * the leaf but was previously a non-leaf.
+                 *
+                 * In either case, we should update the contents of the current
+                 * entry based on its current position in the chain.
+                 */
+                assert current instanceof RouterLayout : "All parts of the chain except the first must implement "
                         + RouterLayout.class.getSimpleName();
-                RouterLayout parent = (RouterLayout) part;
-                HasElement oldChild = oldChildren.get(parent);
-                if (oldChild != root) {
-                    removeFromParent(oldChild);
-                    parent.showRouterLayoutContent(root);
+
+                HasElement oldContent = oldChildren.get(current);
+                HasElement newContent = previous;
+
+                if (oldContent != newContent) {
+                    RouterLayout layout = (RouterLayout) current;
+                    if (oldContent != null) {
+                        layout.removeRouterLayoutContent(oldContent);
+                    }
+                    layout.showRouterLayoutContent(newContent);
                 }
-            } else if (part instanceof RouterLayout
-                    && oldChildren.containsKey(part)) {
-                // Remove old child view from leaf view if it had one
-                removeFromParent(oldChildren.get(part));
-                ((RouterLayout) part).showRouterLayoutContent(null);
             }
-            root = part;
+            previous = current;
         }
+
+        // Final "previous" from the chain is the root component
+        HasElement root = previous;
 
         if (root == null) {
             throw new IllegalArgumentException(
@@ -690,13 +727,9 @@ public class UIInternals implements Serializable {
                 .getThemeFor(target.getClass(), path);
 
         if (themeDefinition.isPresent()) {
-            Class<? extends AbstractTheme> themeClass = themeDefinition.get()
-                    .getTheme();
-            if (theme == null || !theme.getClass().equals(themeClass)) {
-                theme = ReflectTools.createInstance(themeClass);
-            }
+            setTheme(themeDefinition.get().getTheme());
         } else {
-            theme = null;
+            setTheme((Class<? extends AbstractTheme>) null);
             if (!AnnotationReader
                     .getAnnotationFor(target.getClass(), NoTheme.class)
                     .isPresent()) {
@@ -707,9 +740,45 @@ public class UIInternals implements Serializable {
         }
     }
 
-    private void removeFromParent(HasElement component) {
-        if (component != null) {
-            component.getElement().removeFromParent();
+    /**
+     * Set the Theme to use for HTML import theme translations.
+     * <p>
+     * Note! The set theme will be overridden for each call to
+     * {@link #showRouteTarget(Location, String, Component, List)} if the new
+     * theme is not the same as the set theme.
+     * <p>
+     * This method is intended for managed internal use only.
+     *
+     * @param theme
+     *            theme implementation to set
+     * @deprecated use {@link #setTheme(Class)} instead
+     */
+    @Deprecated
+    public void setTheme(AbstractTheme theme) {
+        this.theme = theme;
+    }
+
+    /**
+     * Sets the theme using its {@code themeClass}.
+     * <p>
+     * Note! The set theme will be overridden for each call to
+     * {@link #showRouteTarget(Location, String, Component, List)} if the new
+     * theme is not the same as the set theme.
+     * <p>
+     * This method is intended for managed internal use only.
+     *
+     * @see #setTheme(AbstractTheme)
+     *
+     * @param themeClass
+     *            theme class to set, may be {@code null}
+     */
+    public void setTheme(Class<? extends AbstractTheme> themeClass) {
+        if (themeClass == null) {
+            setTheme((AbstractTheme) null);
+        } else {
+            if (theme == null || !theme.getClass().equals(themeClass)) {
+                setTheme(Instantiator.get(getUI()).getOrCreate(themeClass));
+            }
         }
     }
 
@@ -772,10 +841,21 @@ public class UIInternals implements Serializable {
         Page page = ui.getPage();
         DependencyInfo dependencies = ComponentUtil
                 .getDependencies(session.getService(), componentClass);
-        dependencies.getHtmlImports()
-                .forEach(html -> addHtmlImport(html, page));
-        dependencies.getJavaScripts()
-                .forEach(js -> page.addJavaScript(js.value(), js.loadMode()));
+        if (getSession().getConfiguration().isCompatibilityMode()) {
+            dependencies.getHtmlImports()
+                    .forEach(html -> addHtmlImport(html, page));
+            dependencies.getJavaScripts().forEach(
+                    js -> page.addJavaScript(js.value(), js.loadMode()));
+        } else {
+            // In npm mode, add external JavaScripts directly to the page.
+            dependencies.getJavaScripts().stream()
+                    .filter(js -> UrlUtil.isExternal(js.value()))
+                    .forEach(js -> page.addJavaScript(js.value(),
+                            js.loadMode()));
+            dependencies.getJsModules().stream()
+                    .filter(js -> UrlUtil.isExternal(js.value()))
+                    .forEach(js -> page.addJsModule(js.value(), js.loadMode()));
+        }
         dependencies.getStyleSheets().forEach(styleSheet -> page
                 .addStyleSheet(styleSheet.value(), styleSheet.loadMode()));
     }
@@ -917,7 +997,7 @@ public class UIInternals implements Serializable {
      */
     public boolean isDirty() {
         return getStateTree().isDirty()
-                || !getPendingJavaScriptInvocations().isEmpty();
+                || getPendingJavaScriptInvocations().count() != 0;
     }
 
     /**
@@ -940,11 +1020,54 @@ public class UIInternals implements Serializable {
     }
 
     /**
+     * Sets the drag source of an active HTML5 drag event.
+     *
+     * @param activeDragSourceComponent
+     *            the drag source component
+     * @since 2.0
+     */
+    public void setActiveDragSourceComponent(
+            Component activeDragSourceComponent) {
+        this.activeDragSourceComponent = activeDragSourceComponent;
+    }
+
+    /**
+     * Gets the drag source of an active HTML5 drag event.
+     *
+     * @return Extension of the drag source component if the drag event is
+     *         active and originated from this UI, {@literal null} otherwise.
+     * @since 2.0
+     */
+    public Component getActiveDragSourceComponent() {
+        return activeDragSourceComponent;
+    }
+
+    /**
      * Gets the UI that this instance belongs to.
      *
      * @return the UI instance.
      */
     public UI getUI() {
         return ui;
+    }
+
+    /**
+     * The extended client details, if obtained, are cached in this field.
+     *
+     * @return the extended client details, or {@literal null} if not yet
+     *         received.
+     */
+    public ExtendedClientDetails getExtendedClientDetails() {
+        return extendedClientDetails;
+    }
+
+    /**
+     * Updates the extended client details.
+     *
+     * @param details
+     *            the updated extended client details.
+     */
+    public void setExtendedClientDetails(ExtendedClientDetails details) {
+        this.extendedClientDetails = details;
     }
 }

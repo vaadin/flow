@@ -61,14 +61,6 @@ import elemental.json.impl.JsonUtil;
  */
 public class ServerRpcHandler implements Serializable {
 
-    public static final String WIDGETSET_MISMATCH_INFO = "\n"
-            + "=================================================================\n"
-            + "The widgetset in use does not seem to be built for the Vaadin\n"
-            + "version in use. This might cause strange problems - a\n"
-            + "recompile/deploy is strongly recommended.\n"
-            + " Vaadin version: %s\n" + " Widgetset version: %s\n"
-            + "=================================================================";
-
     /**
      * A data transfer object representing an RPC request sent by the client
      * side.
@@ -247,8 +239,7 @@ public class ServerRpcHandler implements Serializable {
 
         // Security: double cookie submission pattern unless disabled by
         // property
-        if (!VaadinService.isCsrfTokenValid(ui.getSession(),
-                rpcRequest.getCsrfToken())) {
+        if (!VaadinService.isCsrfTokenValid(ui, rpcRequest.getCsrfToken())) {
             throw new InvalidUIDLSecurityKeyException();
         }
 
@@ -364,8 +355,16 @@ public class ServerRpcHandler implements Serializable {
             }
         }
 
-        pendingChangeEvents.forEach(Runnable::run);
+        pendingChangeEvents.forEach(runnable -> runMapSyncTask(ui, runnable));
         data.forEach(json -> handleInvocationData(ui, json));
+    }
+
+    private void runMapSyncTask(UI ui, Runnable runnable) {
+        try {
+            runnable.run();
+        } catch (Throwable throwable) {
+            ui.getSession().getErrorHandler().error(new ErrorEvent(throwable));
+        }
     }
 
     private void handleInvocationData(UI ui, JsonObject invocationJson) {
@@ -380,8 +379,8 @@ public class ServerRpcHandler implements Serializable {
             assert !handle.isPresent() : "RPC handler "
                     + handler.getClass().getName()
                     + " returned a Runnable even though it shouldn't";
-        } catch (Exception e) {
-            ui.getSession().getErrorHandler().error(new ErrorEvent(e));
+        } catch (Throwable throwable) {
+            ui.getSession().getErrorHandler().error(new ErrorEvent(throwable));
         }
     }
 
@@ -430,6 +429,7 @@ public class ServerRpcHandler implements Serializable {
             list.add(new PublishedServerEventHandlerRpcHandler());
             list.add(new AttachExistingElementRpcHandler());
             list.add(new AttachTemplateChildRpcHandler());
+            list.add(new ReturnChannelHandler());
             return list;
         }
     }

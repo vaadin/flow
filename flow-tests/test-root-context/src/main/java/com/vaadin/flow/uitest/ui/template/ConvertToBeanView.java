@@ -21,6 +21,7 @@ import java.util.Date;
 
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.router.Route;
@@ -34,6 +35,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 @Route(value = "com.vaadin.flow.uitest.ui.template.ConvertToBeanView", layout = ViewTestLayout.class)
 @Tag("convert-to-bean")
 @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/ConvertToBean.html")
+@JsModule("ConvertToBean.js")
 public class ConvertToBeanView
         extends PolymerTemplate<ConvertToBeanView.ConvertToBeanModel> {
 

@@ -17,12 +17,17 @@
 package com.vaadin.flow.function;
 
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 import java.util.function.Function;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.WrappedSession;
 import com.vaadin.flow.shared.communication.PushMode;
+
+import static com.vaadin.flow.server.Constants.POLYFILLS_DEFAULT_VALUE;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_POLYFILLS;
 
 /**
  * A collection of properties configured at deploy time as well as a way of
@@ -39,6 +44,29 @@ public interface DeploymentConfiguration extends Serializable {
      * @return true if in production mode, false otherwise.
      */
     boolean isProductionMode();
+
+    /**
+     * Returns whether Vaadin is running in Vaadin 13 compatibility mode.
+     *
+     * NOTE: compatibility mode will be unsupported in future versions.
+     *
+     * @deprecated use {@link #isCompatibilityMode()}
+     *
+     * @return true if in compatibility mode, false otherwise.
+     */
+    @Deprecated
+    boolean isBowerMode();
+
+    /**
+     * Returns whether Vaadin is running in Vaadin 13 compatibility mode.
+     *
+     * NOTE: compatibility mode will be unsupported in future versions.
+     *
+     * @return true if in compatibility mode, false otherwise.
+     */
+    default boolean isCompatibilityMode() {
+        return isBowerMode();
+    }
 
     /**
      * Returns whether the server provides timing info to the client.
@@ -71,6 +99,14 @@ public interface DeploymentConfiguration extends Serializable {
      * @return The time between heartbeats.
      */
     int getHeartbeatInterval();
+
+    /**
+     * Returns the number of seconds that a WebComponent will wait for a
+     * reconnect before removing the server-side component from memory.
+     *
+     * @return time to wait after a disconnect has happened
+     */
+    int getWebComponentDisconnect();
 
     /**
      * Returns whether the sending of URL's as GET and POST parameters in
@@ -260,6 +296,15 @@ public interface DeploymentConfiguration extends Serializable {
     }
 
     /**
+     * Gets the URL from which frontend resources should be loaded in NPM mode.
+     *
+     * @return the NPM resource URL
+     */
+    default String getNpmFrontendPrefix() {
+        return getDevelopmentFrontendPrefix();
+    }
+
+    /**
      * Determines if webJars mechanism is enabled. It is disabled if the user
      * have explicitly set the {@link Constants#DISABLE_WEBJARS} property to
      * {@code true}, or the user have not set the property at all and the
@@ -311,5 +356,47 @@ public interface DeploymentConfiguration extends Serializable {
      */
     default boolean isBrotli() {
         return getBooleanProperty(Constants.SERVLET_PARAMETER_BROTLI, false);
+    }
+
+    default String getCompiledWebComponentsPath() {
+        return getStringProperty(Constants.COMPILED_WEB_COMPONENTS_PATH,
+                "vaadin-web-components");
+    }
+
+    /**
+     * Returns an array with polyfills to be loaded when the app is loaded.
+     *
+     * The default value is
+     * <code>build/webcomponentsjs/webcomponents-loader.js</code> but it can be
+     * changed by setting the {@link Constants#SERVLET_PARAMETER_POLYFILLS} as a
+     * comma separated list of JS files to load.
+     *
+     * @return polyfills to load
+     */
+    default List<String> getPolyfills() {
+        return Arrays.asList(getStringProperty(SERVLET_PARAMETER_POLYFILLS,
+                POLYFILLS_DEFAULT_VALUE).split("[, ]+"));
+    }
+
+    /**
+     * Get if the dev server should be enabled. True by default
+     *
+     * @return true if dev server should be used
+     */
+    default boolean enableDevServer() {
+        return getBooleanProperty(
+                Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER, true);
+    }
+
+    /**
+     * Get if the dev server should be reused on each reload.
+     * True by default, set it to false in tests so as dev server
+     * is not kept as a daemon after the test.
+     *
+     * @return true if dev server should be reused
+     */
+    default boolean reuseDevServer() {
+        return getBooleanProperty(
+                Constants.SERVLET_PARAMETER_REUSE_DEV_SERVER, true);
     }
 }

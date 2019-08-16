@@ -1,10 +1,6 @@
 package com.vaadin.flow.server;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import javax.servlet.http.HttpServletRequest;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,11 +10,10 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
-
-import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.io.IOUtils;
 import org.hamcrest.CoreMatchers;
@@ -64,9 +59,28 @@ import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
+import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
 public class BootstrapHandlerTest {
 
+
     static final String UI_TITLE = "UI_TITLE";
+
+    private static final String EXPECTED_THEME_CONTENTS = "<script id=\"_theme-header-injection\">\n"
+            + "function _inlineHeader(tag, content){\n"
+            + "var customStyle = document.createElement(tag);\n"
+            + "customStyle.innerHTML= content;\n"
+            + "var firstScript=document.head.querySelector('script');\n"
+            + "document.head.insertBefore(customStyle,firstScript);\n" + "}\n"
+            + "_inlineHeader('custom-style','<style include=\"lumo-typography\"></style>');\n"
+            + "var script = document.getElementById('_theme-header-injection');"
+            + "if ( script ) { document.head.removeChild(script);}\n"
+            + "</script>";
 
     @PageTitle(UI_TITLE)
     @JavaScript(value = "lazy.js", loadMode = LoadMode.LAZY)
@@ -303,6 +317,11 @@ public class BootstrapHandlerTest {
             return Arrays.asList(
                     "<custom-style><style include=\"lumo-typography\"></style></custom-style>");
         }
+
+        @Override
+        public Map<String, String> getHtmlAttributes(String variant) {
+            return Collections.singletonMap("foo", "bar");
+        }
     }
 
     @Route("")
@@ -359,9 +378,8 @@ public class BootstrapHandlerTest {
     private VaadinSession session;
     private TestVaadinServletService service;
     private MockDeploymentConfiguration deploymentConfiguration;
-    private WebBrowser browser;
-    private VaadinServlet servlet;
     private MockServletServiceSessionSetup mocks;
+    private BootstrapHandler.BootstrapPageBuilder pageBuilder = new BootstrapHandler.BootstrapPageBuilder();
 
     @Before
     public void setup() throws Exception {
@@ -372,8 +390,8 @@ public class BootstrapHandlerTest {
         testUI = new TestUI();
 
         deploymentConfiguration = mocks.getDeploymentConfiguration();
+        deploymentConfiguration.setEnableDevServer(false);
 
-        servlet = mocks.getServlet();
         service = mocks.getService();
         service.setRouteRegistry(routeRegistry);
         service.setRouter(new Router(routeRegistry) {
@@ -392,7 +410,8 @@ public class BootstrapHandlerTest {
         // Update sessionRegistry due to after init change of global registry
         SessionRouteRegistry sessionRegistry = new SessionRouteRegistry(session,
                 service);
-        Mockito.when(session.getAttribute(SessionRouteRegistry.class)).thenReturn(sessionRegistry);
+        Mockito.when(session.getAttribute(SessionRouteRegistry.class))
+                .thenReturn(sessionRegistry);
 
         testUI.getInternals().setSession(session);
 
@@ -414,24 +433,27 @@ public class BootstrapHandlerTest {
 
         ui.doInit(request, 0);
         ui.getRouter().initializeUI(ui, request);
-        context = new BootstrapContext(request, null, session, ui);
-        ui.getInternals().setContextRoot(
-                ServletHelper.getContextRootRelativePath(request) + "/");
+        context = new BootstrapContext(request, null, session, ui, this::contextRootRelativePath);
+        ui.getInternals().setContextRoot(contextRootRelativePath(request));
     }
 
     private void initUI(UI ui, VaadinRequest request,
             Set<Class<? extends Component>> navigationTargets)
             throws InvalidRouteConfigurationException {
 
-        RouteConfiguration.forRegistry(service.getRouteRegistry()).setRoutes(navigationTargets);
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(service.getRouteRegistry());
+        routeConfiguration.update(() -> {
+            routeConfiguration.getHandledRegistry().clean();
+            navigationTargets.forEach(routeConfiguration::setAnnotatedRoute);
+        });
 
         this.request = request;
 
         ui.doInit(request, 0);
         ui.getRouter().initializeUI(ui, request);
-        context = new BootstrapContext(request, null, session, ui);
-        ui.getInternals().setContextRoot(
-                ServletHelper.getContextRootRelativePath(request) + "/");
+        context = new BootstrapContext(request, null, session, ui, this::contextRootRelativePath);
+        ui.getInternals().setContextRoot(contextRootRelativePath(request));
     }
 
     @Test
@@ -461,12 +483,11 @@ public class BootstrapHandlerTest {
         VaadinRequest vaadinRequest = createVaadinRequest();
         anotherUI.doInit(vaadinRequest, 0);
         anotherUI.getRouter().initializeUI(anotherUI, request);
-        anotherUI.getInternals().setContextRoot(
-                ServletHelper.getContextRootRelativePath(request) + "/");
+        anotherUI.getInternals().setContextRoot(contextRootRelativePath(request));
         BootstrapContext bootstrapContext = new BootstrapContext(vaadinRequest,
-                null, session, anotherUI);
+                null, session, anotherUI, this::contextRootRelativePath);
 
-        Document page = BootstrapHandler.getBootstrapPage(bootstrapContext);
+        Document page = pageBuilder.getBootstrapPage(bootstrapContext);
         Element body = page.body();
 
         assertEquals(2, body.childNodeSize());
@@ -477,8 +498,8 @@ public class BootstrapHandlerTest {
     public void testBody() throws Exception {
         initUI(testUI, createVaadinRequest());
 
-        Document page = BootstrapHandler.getBootstrapPage(
-                new BootstrapContext(request, null, session, testUI));
+        Document page = pageBuilder.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI, this::contextRootRelativePath));
 
         Element body = page.head().nextElementSibling();
 
@@ -492,8 +513,8 @@ public class BootstrapHandlerTest {
         initUI(testUI, createVaadinRequest());
         testUI.setLocale(Locale.FRENCH);
 
-        Document page = BootstrapHandler.getBootstrapPage(
-                new BootstrapContext(request, null, session, testUI));
+        Document page = pageBuilder.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI, this::contextRootRelativePath));
 
         Element body = page.head().nextElementSibling();
 
@@ -514,8 +535,8 @@ public class BootstrapHandlerTest {
         initUI(testUI, createVaadinRequest(),
                 Collections.singleton(RootNavigationTarget.class));
 
-        Document page = BootstrapHandler.getBootstrapPage(
-                new BootstrapContext(request, null, session, testUI));
+        Document page = pageBuilder.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI, this::contextRootRelativePath));
 
         Assert.assertTrue("Viewport meta tag was missing",
                 page.toString().contains(
@@ -529,8 +550,8 @@ public class BootstrapHandlerTest {
         initUI(testUI, createVaadinRequest(),
                 Collections.singleton(RootWithParent.class));
 
-        Document page = BootstrapHandler.getBootstrapPage(
-                new BootstrapContext(request, null, session, testUI));
+        Document page = pageBuilder.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI, this::contextRootRelativePath));
 
         Assert.assertTrue("Viewport meta tag was missing",
                 page.toString().contains(
@@ -544,8 +565,8 @@ public class BootstrapHandlerTest {
         initUI(testUI, createVaadinRequest(),
                 Collections.singleton(RootWithParents.class));
 
-        Document page = BootstrapHandler.getBootstrapPage(
-                new BootstrapContext(request, null, session, testUI));
+        Document page = pageBuilder.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI, this::contextRootRelativePath));
 
         Assert.assertTrue("Viewport meta tag was missing",
                 page.toString().contains(
@@ -562,8 +583,8 @@ public class BootstrapHandlerTest {
 
         initUI(testUI, vaadinRequest, Collections.singleton(AliasLayout.class));
 
-        Document page = BootstrapHandler.getBootstrapPage(
-                new BootstrapContext(vaadinRequest, null, session, testUI));
+        Document page = pageBuilder.getBootstrapPage(
+                new BootstrapContext(vaadinRequest, null, session, testUI, this::contextRootRelativePath));
 
         Assert.assertFalse("Viewport found even though not part of Route",
                 page.toString().contains(
@@ -572,8 +593,8 @@ public class BootstrapHandlerTest {
         Mockito.doAnswer(invocation -> "/alias").when(httpRequest)
                 .getPathInfo();
 
-        page = BootstrapHandler.getBootstrapPage(
-                new BootstrapContext(vaadinRequest, null, session, testUI));
+        page = pageBuilder.getBootstrapPage(
+                new BootstrapContext(vaadinRequest, null, session, testUI, this::contextRootRelativePath));
 
         Assert.assertTrue(
                 "Viewport meta tag was missing even tough alias route parent has annotation",
@@ -588,8 +609,8 @@ public class BootstrapHandlerTest {
         initUI(testUI, createVaadinRequest(), Collections
                 .singleton(InitialPageConfiguratorViewportOverride.class));
 
-        Document page = BootstrapHandler.getBootstrapPage(
-                new BootstrapContext(request, null, session, testUI));
+        Document page = pageBuilder.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI, this::contextRootRelativePath));
 
         Assert.assertFalse(
                 "Viewport annotation value found even if it should be overridden.",
@@ -608,8 +629,8 @@ public class BootstrapHandlerTest {
         initUI(testUI, createVaadinRequest(), Collections
                 .singleton(InitialPageConfiguratorPrependContents.class));
 
-        Document page = BootstrapHandler.getBootstrapPage(
-                new BootstrapContext(request, null, session, testUI));
+        Document page = pageBuilder.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI, this::contextRootRelativePath));
 
         Elements allElements = page.head().getAllElements();
         // Note element 0 is the full head element.
@@ -627,8 +648,8 @@ public class BootstrapHandlerTest {
         initUI(testUI, createVaadinRequest(), Collections
                 .singleton(InitialPageConfiguratorPrependFile.class));
 
-        Document page = BootstrapHandler.getBootstrapPage(
-                new BootstrapContext(request, null, session, testUI));
+        Document page = pageBuilder.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI, this::contextRootRelativePath));
 
         Elements allElements = page.head().getAllElements();
         // Note element 0 is the full head element.
@@ -646,8 +667,8 @@ public class BootstrapHandlerTest {
         initUI(testUI, createVaadinRequest(), Collections
                 .singleton(InitialPageConfiguratorAppendFiles.class));
 
-        Document page = BootstrapHandler.getBootstrapPage(
-                new BootstrapContext(request, null, session, testUI));
+        Document page = pageBuilder.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI, this::contextRootRelativePath));
 
         Elements allElements = page.head().getAllElements();
         // Note element 0 is the full head element.
@@ -680,8 +701,8 @@ public class BootstrapHandlerTest {
         initUI(testUI, createVaadinRequest(),
                 Collections.singleton(InitialPageConfiguratorLinks.class));
 
-        Document page = BootstrapHandler.getBootstrapPage(
-                new BootstrapContext(request, null, session, testUI));
+        Document page = pageBuilder.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI, this::contextRootRelativePath));
 
         Elements allElements = page.head().getAllElements();
 
@@ -700,8 +721,8 @@ public class BootstrapHandlerTest {
         initUI(testUI, createVaadinRequest(),
                 Collections.singleton(InitialPageConfiguratorMetaTag.class));
 
-        Document page = BootstrapHandler.getBootstrapPage(
-                new BootstrapContext(request, null, session, testUI));
+        Document page = pageBuilder.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI, this::contextRootRelativePath));
 
         Elements allElements = page.head().getAllElements();
 
@@ -716,8 +737,8 @@ public class BootstrapHandlerTest {
         initUI(testUI, createVaadinRequest(), Collections
                 .singleton(InitialPageConfiguratorLinkShorthands.class));
 
-        Document page = BootstrapHandler.getBootstrapPage(
-                new BootstrapContext(request, null, session, testUI));
+        Document page = pageBuilder.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI, this::contextRootRelativePath));
 
         Elements allElements = page.head().getAllElements();
 
@@ -736,8 +757,8 @@ public class BootstrapHandlerTest {
         initUI(testUI, createVaadinRequest(),
                 Collections.singleton(InitialPageConfiguratorBodyStyle.class));
 
-        Document page = BootstrapHandler.getBootstrapPage(
-                new BootstrapContext(request, null, session, testUI));
+        Document page = pageBuilder.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI, this::contextRootRelativePath));
 
         Elements allElements = page.head().getAllElements();
 
@@ -753,8 +774,8 @@ public class BootstrapHandlerTest {
         initUI(testUI, createVaadinRequest(),
                 Collections.singleton(BodySizeAnnotated.class));
 
-        Document page = BootstrapHandler.getBootstrapPage(
-                new BootstrapContext(request, null, session, testUI));
+        Document page = pageBuilder.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI, this::contextRootRelativePath));
 
         Elements allElements = page.head().getAllElements();
 
@@ -778,8 +799,8 @@ public class BootstrapHandlerTest {
         initUI(testUI, createVaadinRequest(),
                 Collections.singleton(BodySizeAnnotatedAndCss.class));
 
-        Document page = BootstrapHandler.getBootstrapPage(
-                new BootstrapContext(request, null, session, testUI));
+        Document page = pageBuilder.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI, this::contextRootRelativePath));
 
         Elements allElements = page.head().getAllElements();
 
@@ -816,8 +837,8 @@ public class BootstrapHandlerTest {
         initUI(testUI, createVaadinRequest(),
                 Collections.singleton(RootNavigationTarget.class));
 
-        Document page = BootstrapHandler.getBootstrapPage(
-                new BootstrapContext(request, null, session, testUI));
+        Document page = pageBuilder.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI, this::contextRootRelativePath));
 
         Elements allElements = page.head().getAllElements();
 
@@ -841,8 +862,8 @@ public class BootstrapHandlerTest {
         initUI(testUI, createVaadinRequest(),
                 Collections.singleton(EmptyBodySizeAnnotated.class));
 
-        Document page = BootstrapHandler.getBootstrapPage(
-                new BootstrapContext(request, null, session, testUI));
+        Document page = pageBuilder.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI, this::contextRootRelativePath));
 
         Elements allElements = page.head().getAllElements();
 
@@ -865,8 +886,8 @@ public class BootstrapHandlerTest {
         initUI(testUI, createVaadinRequest(),
                 Collections.singleton(InlineAnnotations.class));
 
-        Document page = BootstrapHandler.getBootstrapPage(
-                new BootstrapContext(request, null, session, testUI));
+        Document page = pageBuilder.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI, this::contextRootRelativePath));
 
         Elements allElements = page.head().getAllElements();
         assertStringEquals(
@@ -897,8 +918,8 @@ public class BootstrapHandlerTest {
         initUI(testUI, createVaadinRequest(),
                 Collections.singleton(PrependInlineAnnotations.class));
 
-        Document page = BootstrapHandler.getBootstrapPage(
-                new BootstrapContext(request, null, session, testUI));
+        Document page = pageBuilder.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI, this::contextRootRelativePath));
 
         Elements allElements = page.head().getAllElements();
         // Note element 0 is the full head element.
@@ -931,8 +952,8 @@ public class BootstrapHandlerTest {
         initUI(testUI, createVaadinRequest(),
                 Collections.singleton(InlineAnnotationsBodyTarget.class));
 
-        Document page = BootstrapHandler.getBootstrapPage(
-                new BootstrapContext(request, null, session, testUI));
+        Document page = pageBuilder.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI, this::contextRootRelativePath));
 
         Elements allElements = page.body().getAllElements();
         assertStringEquals("File css should have been appended to body element",
@@ -963,8 +984,8 @@ public class BootstrapHandlerTest {
         initUI(testUI, createVaadinRequest(), Collections
                 .singleton(PrependInlineAnnotationsBodyTarget.class));
 
-        Document page = BootstrapHandler.getBootstrapPage(
-                new BootstrapContext(request, null, session, testUI));
+        Document page = pageBuilder.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI, this::contextRootRelativePath));
 
         Elements allElements = page.body().getAllElements();
         // Note element 0 is the full head element.
@@ -997,8 +1018,8 @@ public class BootstrapHandlerTest {
         initUI(testUI, createVaadinRequest(),
                 Collections.singleton(ForcedWrapping.class));
 
-        Document page = BootstrapHandler.getBootstrapPage(
-                new BootstrapContext(request, null, session, testUI));
+        Document page = pageBuilder.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI, this::contextRootRelativePath));
 
         Elements allElements = page.head().getAllElements();
 
@@ -1012,11 +1033,14 @@ public class BootstrapHandlerTest {
     @Test // 3197
     public void theme_contents_are_appended_to_head()
             throws InvalidRouteConfigurationException {
+
+        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
+
         initUI(testUI, createVaadinRequest(),
                 Collections.singleton(MyThemeTest.class));
 
-        Document page = BootstrapHandler.getBootstrapPage(
-                new BootstrapContext(request, null, session, testUI));
+        Document page = pageBuilder.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI, this::contextRootRelativePath));
 
         Elements allElements = page.head().getAllElements();
         Assert.assertTrue("Custom style should have been added to head.",
@@ -1026,25 +1050,71 @@ public class BootstrapHandlerTest {
 
         allElements = page.head().getAllElements();
         // Note element 0 is the full head element.
-        String expected = "<script id=\"_theme-header-injection\">\n"
-                + "function _inlineHeader(tag, content){\n"
-                + "var customStyle = document.createElement(tag);\n"
-                + "customStyle.innerHTML= content;\n"
-                + "var firstScript=document.head.querySelector('script');\n"
-                + "document.head.insertBefore(customStyle,firstScript);\n"
-                + "}\n"
-                + "_inlineHeader('custom-style','<style include=\"lumo-typography\"></style>');\n"
-                + "document.head.removeChild(document.getElementById('_theme-header-injection'));\n"
-                + "</script>";
         // Custom style should have been added to head.
         Assert.assertTrue("Custom style should have been added to head.",
                 allElements.stream().map(Element::toString)
-                        .anyMatch(s -> s.equals(expected)));
+                        .anyMatch(s -> s.equals(EXPECTED_THEME_CONTENTS)));
+    }
+
+    @Test
+    public void theme_not_appended_to_head_in_npm()
+            throws InvalidRouteConfigurationException {
+
+        initUI(testUI, createVaadinRequest(),
+                Collections.singleton(MyThemeTest.class));
+
+        Document page = pageBuilder.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI, this::contextRootRelativePath));
+
+        Elements allElements = page.head().getAllElements();
+        Assert.assertTrue("Custom style should not have been added to head.",
+                allElements.stream().map(Object::toString)
+                        .noneMatch(element -> element.equals(
+                                "<link rel=\"import\" href=\"./frontend/bower_components/vaadin-lumo-styles/color.html\">")));
+    }
+
+    @Test
+    public void index_appended_to_head_in_npm()
+            throws InvalidRouteConfigurationException {
+
+        initUI(testUI, createVaadinRequest(),
+                Collections.singleton(MyThemeTest.class));
+
+        Document page = pageBuilder.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI, this::contextRootRelativePath));
+
+        Elements allElements = page.head().getAllElements();
+
+        Assert.assertTrue(
+                "webcomponents-loader.js should be added to head. (not deferred)",
+                allElements.stream().map(Object::toString)
+                        .anyMatch(element -> element.equals(
+                                "<script type=\"text/javascript\" src=\"./"
+                                        + VAADIN_MAPPING
+                                        + "build/webcomponentsjs/webcomponents-loader.js\"></script>")));
+
+        Assert.assertTrue(
+                "index.js should be added to head for ES6 browsers. (deferred and type module)",
+                allElements.stream().map(Object::toString)
+                        .anyMatch(element -> element.equals(
+                                "<script type=\"module\" defer src=\"./"
+                                        + VAADIN_MAPPING
+                                        + "build/index-1111.cache.js\"></script>")));
+
+        Assert.assertTrue(
+                "index.js should be added to head for ES5 browsers. (deferred and nomodule)",
+                allElements.stream().map(Object::toString)
+                        .anyMatch(element -> element.equals(
+                                "<script type=\"text/javascript\" defer src=\"./"
+                                        + VAADIN_MAPPING
+                                        + "build/index.es5-2222.cache.js\" nomodule></script>")));
     }
 
     @Test // 3333
     public void theme_contents_are_appended_to_head_for_alias_route()
             throws InvalidRouteConfigurationException {
+        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
+
         HttpServletRequest request = createRequest();
         Mockito.doAnswer(invocation -> "/alias").when(request).getPathInfo();
         VaadinServletRequest aliasRequest = new VaadinServletRequest(request,
@@ -1053,8 +1123,8 @@ public class BootstrapHandlerTest {
         initUI(testUI, aliasRequest,
                 Collections.singleton(MyAliasThemeTest.class));
 
-        Document page = BootstrapHandler.getBootstrapPage(
-                new BootstrapContext(aliasRequest, null, session, testUI));
+        Document page = pageBuilder.getBootstrapPage(
+                new BootstrapContext(aliasRequest, null, session, testUI, this::contextRootRelativePath));
 
         Elements allElements = page.head().getAllElements();
         Assert.assertTrue("Custom style should have been added to head.",
@@ -1064,20 +1134,10 @@ public class BootstrapHandlerTest {
         allElements = page.head().getAllElements();
 
         // Note element 0 is the full head element.
-        String expected = "<script id=\"_theme-header-injection\">\n"
-                + "function _inlineHeader(tag, content){\n"
-                + "var customStyle = document.createElement(tag);\n"
-                + "customStyle.innerHTML= content;\n"
-                + "var firstScript=document.head.querySelector('script');\n"
-                + "document.head.insertBefore(customStyle,firstScript);\n"
-                + "}\n"
-                + "_inlineHeader('custom-style','<style include=\"lumo-typography\"></style>');\n"
-                + "document.head.removeChild(document.getElementById('_theme-header-injection'));\n"
-                + "</script>";
         // Custom style should have been added to head.
         Assert.assertTrue("Custom style should have been added to head.",
                 allElements.stream().map(Element::toString)
-                        .anyMatch(s -> s.equals(expected)));
+                        .anyMatch(s -> s.equals(EXPECTED_THEME_CONTENTS)));
     }
 
     @Test // 3333
@@ -1086,8 +1146,8 @@ public class BootstrapHandlerTest {
         initUI(testUI, createVaadinRequest(),
                 Collections.singleton(MyAliasThemeTest.class));
 
-        Document page = BootstrapHandler.getBootstrapPage(
-                new BootstrapContext(request, null, session, testUI));
+        Document page = pageBuilder.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI, this::contextRootRelativePath));
 
         Assert.assertFalse("Page head should not contain any Lumo imports.",
                 page.head().toString().contains("vaadin-lumo"));
@@ -1098,11 +1158,14 @@ public class BootstrapHandlerTest {
     @Test // 3384
     public void theme_contents_added_also_when_theme_in_super_class()
             throws InvalidRouteConfigurationException {
+
+        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
+
         initUI(testUI, createVaadinRequest(),
                 Collections.singleton(ExtendingView.class));
 
-        Document page = BootstrapHandler.getBootstrapPage(
-                new BootstrapContext(request, null, session, testUI));
+        Document page = pageBuilder.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI, this::contextRootRelativePath));
 
         Elements allElements = page.head().getAllElements();
         Assert.assertTrue("Custom style should have been added to head.",
@@ -1112,28 +1175,36 @@ public class BootstrapHandlerTest {
 
         allElements = page.head().getAllElements();
         // Note element 0 is the full head element.
-        String expected = "<script id=\"_theme-header-injection\">\n"
-                + "function _inlineHeader(tag, content){\n"
-                + "var customStyle = document.createElement(tag);\n"
-                + "customStyle.innerHTML= content;\n"
-                + "var firstScript=document.head.querySelector('script');\n"
-                + "document.head.insertBefore(customStyle,firstScript);\n"
-                + "}\n"
-                + "_inlineHeader('custom-style','<style include=\"lumo-typography\"></style>');\n"
-                + "document.head.removeChild(document.getElementById('_theme-header-injection'));\n"
-                + "</script>";
         // Custom style should have been added to head.
         Assert.assertTrue("Custom style should have been added to head.",
                 allElements.stream().map(Element::toString)
-                        .anyMatch(s -> s.equals(expected)));
+                        .anyMatch(s -> s.equals(EXPECTED_THEME_CONTENTS)));
+    }
+
+    @Test
+    public void themeContents_htmlAttributesAreAddedToHtmlTag() {
+        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
+
+        initUI(testUI, createVaadinRequest(),
+                Collections.singleton(MyThemeTest.class));
+
+        Document page = pageBuilder.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI, this::contextRootRelativePath));
+
+        Element html = page.body().parent();
+
+        // self check
+        Assert.assertEquals("html", html.tagName());
+
+        Assert.assertEquals("bar", html.attr("foo"));
     }
 
     @Test
     public void headHasMetaTags() throws Exception {
         initUI(testUI, createVaadinRequest());
 
-        Document page = BootstrapHandler.getBootstrapPage(
-                new BootstrapContext(request, null, session, testUI));
+        Document page = pageBuilder.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI, this::contextRootRelativePath));
 
         Element head = page.head();
         Elements metas = head.getElementsByTag("meta");
@@ -1169,8 +1240,8 @@ public class BootstrapHandlerTest {
         initUI(testUI);
 
         BootstrapContext bootstrapContext = new BootstrapContext(request, null,
-                session, testUI);
-        Document page = BootstrapHandler.getBootstrapPage(bootstrapContext);
+                session, testUI, this::contextRootRelativePath);
+        Document page = pageBuilder.getBootstrapPage(bootstrapContext);
 
         Elements scripts = page.head().getElementsByTag("script");
         assertEquals(2, scripts.size());
@@ -1215,8 +1286,8 @@ public class BootstrapHandlerTest {
         initUI(testUI);
 
         BootstrapContext bootstrapContext = new BootstrapContext(request, null,
-                session, testUI);
-        Document page = BootstrapHandler.getBootstrapPage(bootstrapContext);
+                session, testUI, this::contextRootRelativePath);
+        Document page = pageBuilder.getBootstrapPage(bootstrapContext);
 
         Elements scripts = page.head().getElementsByTag("script");
         boolean found = scripts.stream().anyMatch(element -> element.attr("src")
@@ -1250,9 +1321,11 @@ public class BootstrapHandlerTest {
                 found);
     }
 
+    // This test is not applicable for npm mode
     @Test
     public void frontendProtocol_productionMode_es5Url() {
         mocks.setProductionMode(true);
+        deploymentConfiguration.setCompatibilityMode(true);
         initUI(testUI);
         WebBrowser mockedWebBrowser = Mockito.mock(WebBrowser.class);
         Mockito.when(session.getBrowser()).thenReturn(mockedWebBrowser);
@@ -1269,8 +1342,10 @@ public class BootstrapHandlerTest {
                 + "foo", urlES5);
     }
 
+    // This test is not applicable for npm mode
     @Test
     public void frontendProtocol_productionMode_useDifferentUrlsForEs5AndEs6() {
+        deploymentConfiguration.setCompatibilityMode(true);
         initUI(testUI);
         mocks.setProductionMode(true);
         WebBrowser mockedWebBrowser = Mockito.mock(WebBrowser.class);
@@ -1313,8 +1388,10 @@ public class BootstrapHandlerTest {
         assertEquals(resolvedContext + "frontend/foo", urlES5);
     }
 
+    // This test is not applicable for npm mode
     @Test
     public void frontendProtocol_productionModeAndWithProperties_useProperties_es5() {
+        deploymentConfiguration.setCompatibilityMode(true);
         String es5Prefix = "bar/es5/";
         deploymentConfiguration.setApplicationOrSystemProperty(
                 Constants.FRONTEND_URL_ES5, es5Prefix);
@@ -1333,8 +1410,10 @@ public class BootstrapHandlerTest {
                 Constants.FRONTEND_URL_ES5), urlES5, is(es5Prefix + urlPart));
     }
 
+    // This test is not applicable for npm mode
     @Test
     public void frontendProtocol_productionModeAndWithProperties_useProperties_es6() {
+        deploymentConfiguration.setCompatibilityMode(true);
         String es6Prefix = "bar/es6/";
         deploymentConfiguration.setApplicationOrSystemProperty(
                 Constants.FRONTEND_URL_ES6, es6Prefix);
@@ -1400,17 +1479,18 @@ public class BootstrapHandlerTest {
         anotherUI.doInit(vaadinRequest, 0);
         anotherUI.getRouter().initializeUI(anotherUI, request);
         BootstrapContext bootstrapContext = new BootstrapContext(vaadinRequest,
-                null, session, anotherUI);
-        anotherUI.getInternals().setContextRoot(
-                ServletHelper.getContextRootRelativePath(request) + "/");
+                null, session, anotherUI, this::contextRootRelativePath);
+        anotherUI.getInternals().setContextRoot(contextRootRelativePath(request));
 
-        Document page = BootstrapHandler.getBootstrapPage(bootstrapContext);
+        Document page = pageBuilder.getBootstrapPage(bootstrapContext);
         Element head = page.head();
         Assert.assertTrue(head.outerHtml().contains(url));
     }
 
     @Test
     public void es6NotSupported_webcomponentsPolyfillBasePresent_polyfillsLoaded() {
+        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
+
         mocks.setBrowserEs6(false);
         mocks.getServlet().addServletContextResource(
                 "/frontend/bower_components/webcomponentsjs/webcomponents-loader.js");
@@ -1494,6 +1574,34 @@ public class BootstrapHandlerTest {
                 secondInit.getUI(), uiReference.get());
     }
 
+    private void bootstrapPage_productionModeTest(boolean productionMode) {
+        mocks.setProductionMode(productionMode);
+        TestUI anotherUI = new TestUI();
+        initUI(testUI);
+
+        anotherUI.getInternals().setSession(session);
+        VaadinRequest vaadinRequest = createVaadinRequest();
+        anotherUI.doInit(vaadinRequest, 0);
+        anotherUI.getRouter().initializeUI(anotherUI, request);
+        BootstrapContext bootstrapContext = new BootstrapContext(vaadinRequest,
+                null, session, anotherUI, this::contextRootRelativePath);
+        anotherUI.getInternals().setContextRoot(contextRootRelativePath(request));
+
+        Document page = pageBuilder.getBootstrapPage(bootstrapContext);
+        Element head = page.head();
+        Assert.assertTrue(head.outerHtml().contains("mode = " + productionMode));
+    }
+
+    @Test
+    public void bootstrapPage_productionModeTrueIsReplaced() {
+        bootstrapPage_productionModeTest(true);
+    }
+
+    @Test
+    public void bootstrapPage_productionModeFalseIsReplaced() {
+        bootstrapPage_productionModeTest(false);
+    }
+
     @Route("")
     @Tag(Tag.DIV)
     @Meta(name = "apple-mobile-web-app-capable", content = "yes")
@@ -1507,8 +1615,8 @@ public class BootstrapHandlerTest {
         initUI(testUI, createVaadinRequest(),
                 Collections.singleton(MetaAnnotations.class));
 
-        Document page = BootstrapHandler.getBootstrapPage(
-                new BootstrapContext(request, null, session, testUI));
+        Document page = pageBuilder.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI, this::contextRootRelativePath));
 
         Element head = page.head();
         Elements metas = head.getElementsByTag("meta");
@@ -1549,8 +1657,8 @@ public class BootstrapHandlerTest {
         initUI(testUI, createVaadinRequest(),
                 Collections.singleton(MetaAnnotationsContainsNull.class));
 
-        Document page = BootstrapHandler.getBootstrapPage(
-                new BootstrapContext(request, null, session, testUI));
+        pageBuilder.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI, this::contextRootRelativePath));
     }
 
     @Tag(Tag.DIV)
@@ -1564,8 +1672,8 @@ public class BootstrapHandlerTest {
         initUI(testUI, createVaadinRequest(),
                 Collections.singleton(MetaAnnotationsWithoutRoute.class));
 
-        Document page = BootstrapHandler.getBootstrapPage(
-                new BootstrapContext(request, null, session, testUI));
+        pageBuilder.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI, this::contextRootRelativePath));
     }
 
     private void assertStringEquals(String message, String expected,
@@ -1579,17 +1687,20 @@ public class BootstrapHandlerTest {
         TestUI anotherUI = new TestUI();
         initUI(testUI);
         anotherUI.getInternals().setSession(session);
-        VaadinRequest vaadinRequest = createVaadinRequest();
+        VaadinServletRequest vaadinRequest = createVaadinRequest();
         anotherUI.doInit(vaadinRequest, 0);
         anotherUI.getRouter().initializeUI(anotherUI, request);
         BootstrapContext bootstrapContext = new BootstrapContext(vaadinRequest,
-                null, session, anotherUI);
-        anotherUI.getInternals().setContextRoot(
-                ServletHelper.getContextRootRelativePath(request) + "/");
-        return BootstrapHandler.getBootstrapPage(bootstrapContext).head();
+                null, session, anotherUI, this::contextRootRelativePath);
+        anotherUI.getInternals().setContextRoot(contextRootRelativePath(vaadinRequest));
+        return pageBuilder.getBootstrapPage(bootstrapContext).head();
     }
 
-    private VaadinRequest createVaadinRequest() {
+    private String contextRootRelativePath(VaadinRequest request) {
+        return ServletHelper.getContextRootRelativePath((VaadinServletRequest)request) + "/";
+    }
+
+    private VaadinServletRequest createVaadinRequest() {
         HttpServletRequest request = createRequest();
         return new VaadinServletRequest(request, service);
     }
@@ -1626,7 +1737,7 @@ public class BootstrapHandlerTest {
     @Test
     public void defaultViewport() {
         initUI(testUI);
-        Document page = BootstrapHandler.getBootstrapPage(context);
+        Document page = pageBuilder.getBootstrapPage(context);
         Element head = page.head();
         Elements viewports = head.getElementsByAttributeValue("name",
                 BootstrapHandler.VIEWPORT);
@@ -1648,7 +1759,7 @@ public class BootstrapHandlerTest {
     public void viewportAnnotationOverridesDefault() throws Exception {
         initUI(testUI, createVaadinRequest(),
                 Collections.singleton(RouteWithViewport.class));
-        Document page = BootstrapHandler.getBootstrapPage(context);
+        Document page = pageBuilder.getBootstrapPage(context);
         Element head = page.head();
         Elements viewports = head.getElementsByAttributeValue("name",
                 BootstrapHandler.VIEWPORT);
@@ -1666,8 +1777,8 @@ public class BootstrapHandlerTest {
 
         initUI(testUI, createVaadinRequest(),
                 Collections.singleton(InitialPageConfiguratorRoute.class));
-        Document page = BootstrapHandler.getBootstrapPage(
-                new BootstrapContext(request, null, session, testUI));
+        pageBuilder.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI, this::contextRootRelativePath));
 
         Assert.assertFalse("Default indicator theme is not themed anymore",
                 testUI.getLoadingIndicatorConfiguration()

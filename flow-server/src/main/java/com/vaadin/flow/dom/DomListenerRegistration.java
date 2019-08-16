@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.dom;
 
+import java.util.Set;
+
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
@@ -173,6 +175,54 @@ public interface DomListenerRegistration extends Registration {
     }
 
     /**
+     * Gets the debounce timeout that is configured by debounce or throttle.
+     *
+     * @see #debounce(int, DebouncePhase, DebouncePhase...)
+     * @see #debounce(int)
+     * @see #throttle(int)
+     *
+     * @return timeout in milliseconds,
+     *         or <code>0</code> if debouncing is disabled
+     */
+    default int getDebounceTimeout() {
+        /*
+         * Dummy backwards compatibility implementation to keep old custom code
+         * compiling.
+         */
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Gets the debouncing phases for which this listener should be triggered.
+     *
+     * @see #debounce(int, DebouncePhase, DebouncePhase...)
+     * @see #debounce(int)
+     * @see #throttle(int)
+     *
+     * @return debounce phases
+     */
+    default Set<DebouncePhase> getDebouncePhases() {
+        /*
+         * Dummy backwards compatibility implementation to keep old custom code
+         * compiling.
+         */
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Gets the event type that the listener is registered for.
+     *
+     * @return DOM event type of the listener
+     */
+    default String getEventType() {
+        /*
+         * Dummy backwards compatibility implementation to keep old custom code
+         * compiling.
+         */
+        throw new UnsupportedOperationException();
+    }
+
+    /**
      * Adds a handler that will be run when this registration is removed.
      *
      * @param unregisterHandler
@@ -180,7 +230,6 @@ public interface DomListenerRegistration extends Registration {
      *            <code>null</code>
      * @return this registration, for chaining
      *
-     * @since
      */
     default DomListenerRegistration onUnregister(
             SerializableRunnable unregisterHandler) {

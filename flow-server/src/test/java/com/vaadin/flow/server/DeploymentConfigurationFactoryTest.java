@@ -2,19 +2,32 @@ package com.vaadin.flow.server;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.io.FileUtils;
 import org.easymock.Capture;
 import org.easymock.EasyMock;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
+import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
+import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 import static java.util.Collections.emptyMap;
 import static org.easymock.EasyMock.capture;
 import static org.easymock.EasyMock.expect;
@@ -26,6 +39,16 @@ import static org.junit.Assert.assertTrue;
 
 public class DeploymentConfigurationFactoryTest {
 
+    @Rule
+    public final TemporaryFolder temporaryFolder = new TemporaryFolder();
+    private File tokenFile;
+    private ServletContext contextMock;
+
+    private static Map<String, String> defaultServletParams =
+            Collections.singletonMap(
+                    Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                    Boolean.FALSE.toString());
+
     private static class NoSettings extends VaadinServlet {
     }
 
@@ -36,17 +59,30 @@ public class DeploymentConfigurationFactoryTest {
 
     @VaadinServletConfiguration(productionMode = true, heartbeatInterval = 222)
     private static class VaadinSettings extends VaadinServlet {
+    }
 
+    @Before
+    public void setup() throws IOException {
+        System.setProperty("user.dir",
+                temporaryFolder.getRoot().getAbsolutePath());
+        tokenFile = new File(temporaryFolder.getRoot(),
+                VAADIN_SERVLET_RESOURCES + TOKEN_FILE);
+        contextMock = mock(ServletContext.class);
+    }
+
+    public void tearDown() {
+        tokenFile.delete();
     }
 
     @Test
-    public void servletWithEnclosingUI_hasItsNameInConfig()
-            throws ServletException {
+    public void servletWithEnclosingUI_hasItsNameInConfig() throws Exception {
         Class<TestUI.ServletWithEnclosingUi> servlet = TestUI.ServletWithEnclosingUi.class;
+
+        Map<String, String> servletConfigParams = new HashMap<>(new HashMap<>(defaultServletParams));
 
         DeploymentConfiguration config = DeploymentConfigurationFactory
                 .createDeploymentConfiguration(servlet,
-                        createServletConfigMock(emptyMap(), emptyMap()));
+                        createServletConfigMock(servletConfigParams, emptyMap()));
 
         Class<?> customUiClass = servlet.getEnclosingClass();
         assertTrue(String.format(
@@ -60,12 +96,14 @@ public class DeploymentConfigurationFactoryTest {
 
     @Test
     public void servletWithNoEnclosingUI_hasDefaultUiInConfig()
-            throws ServletException {
+            throws Exception {
         Class<NoSettings> servlet = NoSettings.class;
+
+        Map<String, String> servletConfigParams = new HashMap<>(defaultServletParams);
 
         DeploymentConfiguration config = DeploymentConfigurationFactory
                 .createDeploymentConfiguration(servlet,
-                        createServletConfigMock(emptyMap(), emptyMap()));
+                        createServletConfigMock(servletConfigParams, emptyMap()));
 
         Class<?> notUiClass = servlet.getEnclosingClass();
         assertFalse(String.format(
@@ -77,12 +115,14 @@ public class DeploymentConfigurationFactoryTest {
     }
 
     @Test
-    public void vaadinServletConfigurationRead() throws ServletException {
+    public void vaadinServletConfigurationRead() throws Exception {
         Class<VaadinSettings> servlet = VaadinSettings.class;
+
+        Map<String, String> servletConfigParams = new HashMap<>(defaultServletParams);
 
         DeploymentConfiguration config = DeploymentConfigurationFactory
                 .createDeploymentConfiguration(servlet,
-                        createServletConfigMock(emptyMap(), emptyMap()));
+                        createServletConfigMock(servletConfigParams, emptyMap()));
 
         assertTrue(String.format(
                 "Unexpected value for production mode, check '%s' class annotation",
@@ -94,14 +134,14 @@ public class DeploymentConfigurationFactoryTest {
 
     @Test
     public void servletConfigParametersOverrideVaadinParameters()
-            throws ServletException {
+            throws Exception {
         Class<VaadinSettings> servlet = VaadinSettings.class;
 
         boolean overridingProductionModeValue = false;
         int overridingHeartbeatIntervalValue = 444;
 
-        Map<String, String> servletConfigParams = new HashMap<>();
-        servletConfigParams.put(Constants.SERVLET_PARAMETER_PRODUCTION_MODE,
+        Map<String, String> servletConfigParams = new HashMap<>(defaultServletParams);
+        servletConfigParams.put(SERVLET_PARAMETER_PRODUCTION_MODE,
                 Boolean.toString(overridingProductionModeValue));
         servletConfigParams.put(Constants.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
                 Integer.toString(overridingHeartbeatIntervalValue));
@@ -121,14 +161,14 @@ public class DeploymentConfigurationFactoryTest {
 
     @Test
     public void servletContextParametersOverrideVaadinParameters()
-            throws ServletException {
+            throws Exception {
         Class<VaadinSettings> servlet = VaadinSettings.class;
 
         boolean overridingProductionModeValue = false;
         int overridingHeartbeatIntervalValue = 444;
 
-        Map<String, String> servletContextParams = new HashMap<>();
-        servletContextParams.put(Constants.SERVLET_PARAMETER_PRODUCTION_MODE,
+        Map<String, String> servletContextParams = new HashMap<>(defaultServletParams);
+        servletContextParams.put(SERVLET_PARAMETER_PRODUCTION_MODE,
                 Boolean.toString(overridingProductionModeValue));
         servletContextParams.put(Constants.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
                 Integer.toString(overridingHeartbeatIntervalValue));
@@ -148,14 +188,14 @@ public class DeploymentConfigurationFactoryTest {
 
     @Test
     public void servletConfigParametersOverrideServletContextParameters()
-            throws ServletException {
+            throws Exception {
         Class<NoSettings> servlet = NoSettings.class;
 
         boolean servletConfigProductionModeValue = true;
         int servletConfigHeartbeatIntervalValue = 333;
 
-        Map<String, String> servletConfigParams = new HashMap<>();
-        servletConfigParams.put(Constants.SERVLET_PARAMETER_PRODUCTION_MODE,
+        Map<String, String> servletConfigParams = new HashMap<>(defaultServletParams);
+        servletConfigParams.put(SERVLET_PARAMETER_PRODUCTION_MODE,
                 Boolean.toString(servletConfigProductionModeValue));
         servletConfigParams.put(Constants.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
                 Integer.toString(servletConfigHeartbeatIntervalValue));
@@ -164,7 +204,7 @@ public class DeploymentConfigurationFactoryTest {
         int servletContextHeartbeatIntervalValue = 444;
 
         Map<String, String> servletContextParams = new HashMap<>();
-        servletContextParams.put(Constants.SERVLET_PARAMETER_PRODUCTION_MODE,
+        servletContextParams.put(SERVLET_PARAMETER_PRODUCTION_MODE,
                 Boolean.toString(servletContextProductionModeValue));
         servletContextParams.put(Constants.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
                 Integer.toString(servletContextHeartbeatIntervalValue));
@@ -182,19 +222,50 @@ public class DeploymentConfigurationFactoryTest {
                 config.getHeartbeatInterval());
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void should_throwIfModeNotSet() throws Exception {
+        createConfig(emptyMap());
+    }
+
+    @Test
+    public void should_readConfigurationFromTokenFile() throws Exception {
+        FileUtils.writeLines(tokenFile,
+                Arrays.asList("{", "\"compatibilityMode\": false,",
+                        "\"productionMode\": true", "}"));
+
+        DeploymentConfiguration config = createConfig(Collections
+                .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
+        assertFalse(config.isCompatibilityMode());
+        assertTrue(config.isProductionMode());
+    }
+
+    private DeploymentConfiguration createConfig(Map<String, String> map)
+            throws Exception {
+        return DeploymentConfigurationFactory.createDeploymentConfiguration(
+                VaadinServlet.class, createServletConfigMock(map, emptyMap()));
+    }
+
     private ServletConfig createServletConfigMock(
             Map<String, String> servletConfigParameters,
-            Map<String, String> servletContextParameters) {
-        ServletContext contextMock = mock(ServletContext.class);
+            Map<String, String> servletContextParameters) throws Exception {
+
+        URLClassLoader classLoader = new URLClassLoader(
+                new URL[] { temporaryFolder.getRoot().toURI().toURL() });
+
         expect(contextMock.getInitParameterNames())
                 .andAnswer(() -> Collections
                         .enumeration(servletContextParameters.keySet()))
                 .anyTimes();
+        expect(contextMock.getClassLoader()).andReturn(classLoader).anyTimes();
         Capture<String> initParameterNameCapture = EasyMock.newCapture();
         expect(contextMock.getInitParameter(capture(initParameterNameCapture)))
                 .andAnswer(() -> servletContextParameters
                         .get(initParameterNameCapture.getValue()))
                 .anyTimes();
+
+        Capture<String> resourceCapture = EasyMock.newCapture();
+        expect(contextMock.getResource(capture(resourceCapture)))
+                .andReturn(null).anyTimes();
         replay(contextMock);
 
         return new ServletConfig() {
@@ -220,4 +291,5 @@ public class DeploymentConfigurationFactoryTest {
             }
         };
     }
+
 }

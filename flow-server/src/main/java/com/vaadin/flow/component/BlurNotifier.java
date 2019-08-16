@@ -53,7 +53,7 @@ public interface BlurNotifier<T extends Component> extends Serializable {
     }
 
     /**
-     * Class that represents the DOM event "blur".
+     * Represents the DOM event "blur".
      *
      * @param <C>
      *            The source component type.

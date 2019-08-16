@@ -24,6 +24,8 @@ import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.data.value.HasValueChangeMode;
+import com.vaadin.flow.data.value.ValueChangeMode;
 
 /**
  * Component representing an <code>&lt;input&gt;</code> element.
@@ -33,7 +35,7 @@ import com.vaadin.flow.component.Tag;
  */
 @Tag(Tag.INPUT)
 public class Input extends AbstractSinglePropertyField<Input, String>
-        implements Focusable<Input>, HasSize, HasStyle {
+        implements Focusable<Input>, HasSize, HasStyle, HasValueChangeMode {
 
     private static final PropertyDescriptor<String, Optional<String>> placeholderDescriptor = PropertyDescriptors
             .optionalAttributeWithDefault("placeholder", "");
@@ -41,13 +43,28 @@ public class Input extends AbstractSinglePropertyField<Input, String>
     private static final PropertyDescriptor<String, String> typeDescriptor = PropertyDescriptors
             .attributeWithDefault("type", "text");
 
+    private int valueChangeTimeout = DEFAULT_CHANGE_TIMEOUT;
+
+    private ValueChangeMode currentMode;
+
     /**
-     * Creates a new input without any specific type.
+     * Creates a new input without any specific type,
+     * with {@link ValueChangeMode#ON_CHANGE ON_CHANGE} value change mode.
      */
     public Input() {
-        super("value", "", false);
+        this(ValueChangeMode.ON_CHANGE);
+    }
 
-        setSynchronizedEvent("change");
+    /**
+     * Creates a new input without any specific type.
+     *
+     * @param valueChangeMode
+     *            initial value change mode, or <code>null</code>
+     *            to disable the value synchronization
+     */
+    public Input(ValueChangeMode valueChangeMode) {
+        super("value", "", false);
+        setValueChangeMode(valueChangeMode);
     }
 
     /**
@@ -96,4 +113,37 @@ public class Input extends AbstractSinglePropertyField<Input, String>
         return get(typeDescriptor);
     }
 
+    @Override
+    public ValueChangeMode getValueChangeMode() {
+        return currentMode;
+    }
+
+    @Override
+    public void setValueChangeMode(ValueChangeMode valueChangeMode) {
+        currentMode = valueChangeMode;
+        setSynchronizedEvent(
+                ValueChangeMode.eventForMode(valueChangeMode, "input"));
+        applyChangeTimeout();
+    }
+
+    @Override
+    public void setValueChangeTimeout(int valueChangeTimeout) {
+        this.valueChangeTimeout = valueChangeTimeout;
+        applyChangeTimeout();
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * The default value is {@link HasValueChangeMode#DEFAULT_CHANGE_TIMEOUT}.
+     */
+    @Override
+    public int getValueChangeTimeout() {
+        return valueChangeTimeout;
+    }
+
+    private void applyChangeTimeout() {
+        ValueChangeMode.applyChangeTimeout(currentMode, valueChangeTimeout,
+                getSynchronizationRegistration());
+    }
 }

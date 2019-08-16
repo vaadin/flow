@@ -18,7 +18,7 @@ package com.vaadin.client;
 import com.vaadin.client.bootstrap.ErrorMessage;
 
 /**
- * Class containing the configuration for an application.
+ * Application configuration data.
  * <p>
  * This class is effectively immutable although setters exist to assign the
  * values during construction.
@@ -37,6 +37,8 @@ public class ApplicationConfiguration {
 
     private boolean productionMode;
     private boolean requestTiming;
+    private boolean webComponentMode;
+
     private String servletVersion;
     private String atmosphereVersion;
     private String atmosphereJSVersion;
@@ -97,6 +99,25 @@ public class ApplicationConfiguration {
     public void setContextRootUrl(String contextRootUrl) {
         assert contextRootUrl.endsWith("/");
         this.contextRootUrl = contextRootUrl;
+    }
+
+    /**
+     * Checks whether the application is running as a web-component in the page.
+     *
+     * @return true in case the app is a WC
+     */
+    public boolean isWebComponentMode() {
+        return webComponentMode;
+    }
+
+    /**
+     * Sets whether the application is running as a web-component in the page.
+     *
+     * @param mode
+     *            set to true if it's a WC
+     */
+    public void setWebComponentMode(boolean mode) {
+        this.webComponentMode = mode;
     }
 
     /**
@@ -274,7 +295,7 @@ public class ApplicationConfiguration {
 
     /**
      * Gets the base URL of the frontend components on the server.
-     * 
+     *
      * @return the base URL on the server for the {@literal frontend://}
      *         protocol.
      */
@@ -284,7 +305,7 @@ public class ApplicationConfiguration {
 
     /**
      * Sets the base URL of the frontend components on the server.
-     * 
+     *
      * @param frontendRootUrl
      *            the base URL on the server for the {@literal frontend://}
      *            protocol.

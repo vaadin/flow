@@ -18,6 +18,8 @@ package com.vaadin.flow.uitest.ui.frontend;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.Route;
@@ -28,16 +30,18 @@ import com.vaadin.flow.uitest.ui.template.HiddenTemplateView;
 // Devmode detector detects bundling based on whether polymer-element.html is loaded
 @HtmlImport("bower_components/polymer/polymer-element.html")
 @HtmlImport("bower_components/vaadin-development-mode-detector/vaadin-development-mode-detector.html")
+@NpmPackage(value = "@vaadin/vaadin-development-mode-detector", version = "1.1.0")
+@JsModule("@vaadin/vaadin-development-mode-detector/vaadin-development-mode-detector.js")
 @Route(value = "com.vaadin.flow.uitest.ui.frontend.UsageStatisticsView", layout = ViewTestLayout.class)
 public class UsageStatisticsView extends Div {
     public UsageStatisticsView() {
         NativeButton print = new NativeButton(
                 "Print usage statistics to the console", e -> {
-                    getUI().get().getPage().executeJavaScript(
+                    getUI().get().getPage().executeJs(
                             "var basket = localStorage.getItem('vaadin.statistics.basket'); if (basket) basket = JSON.parse(basket); console.log(basket)");
                 });
         NativeButton clear = new NativeButton("Clear usage statistics", e -> {
-            getUI().get().getPage().executeJavaScript(
+            getUI().get().getPage().executeJs(
                     "localStorage.removeItem('vaadin.statistics.basket')");
         });
         NativeButton push = new NativeButton("Enable push", e -> getUI().get()
@@ -54,7 +58,7 @@ public class UsageStatisticsView extends Div {
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
-        attachEvent.getUI().getPage().executeJavaScript(
+        attachEvent.getUI().getPage().executeJs(
                 "window.Vaadin.runIfDevelopmentMode('vaadin-usage-statistics');");
     }
 }

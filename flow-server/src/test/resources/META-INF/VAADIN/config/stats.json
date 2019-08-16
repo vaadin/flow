@@ -1,0 +1,1802 @@
+{
+  "errors": [],
+  "warnings": [],
+  "version": "4.29.1",
+  "hash": "64bb80639ef116681818",
+  "time": 1148,
+  "builtAt": 1549540586721,
+  "publicPath": "",
+  "outputPath": "/Volumes/Framework/updates/skeleton-starter-flow/src/main/webapp/frontend/dist",
+  "assetsByChunkName" :{
+    "index": "build/index-1111.cache.js",
+    "index.es5": "build/index.es5-2222.cache.js"
+  },
+  "assets": [
+    {
+      "name": "0.fragment.js",
+      "size": 618382,
+      "chunks": [
+        0
+      ],
+      "chunkNames": [],
+      "emitted": true
+    },
+    {
+      "name": "index.html",
+      "size": 199,
+      "chunks": [],
+      "chunkNames": [],
+      "emitted": true
+    },
+    {
+      "name": "likeable.fragment.js",
+      "size": 1905577,
+      "chunks": [
+        "likeable"
+      ],
+      "chunkNames": [
+        "likeable"
+      ],
+      "emitted": true
+    },
+    {
+      "name": "build\\webcomponentsjs\\entrypoints\\webcomponents-sd-ce-index.js",
+      "size": 851,
+      "chunks": ["src/hello-world.js"],
+      "chunkNames": [],
+      "emitted": true
+    }
+  ],
+  "filteredAssets": 0,
+  "entrypoints": {
+    "likeable": {
+      "chunks": [
+        "likeable"
+      ],
+      "assets": [
+        "likeable.fragment.js"
+      ],
+      "children": {},
+      "childAssets": {}
+    }
+  },
+  "namedChunkGroups": {
+    "likeable": {
+      "chunks": [
+        "likeable"
+      ],
+      "assets": [
+        "likeable.fragment.js"
+      ],
+      "children": {},
+      "childAssets": {}
+    }
+  },
+  "chunks": [
+    {
+      "id": "likeable",
+      "rendered": true,
+      "initial": true,
+      "entry": true,
+      "size": 669676,
+      "names": [
+        "likeable"
+      ],
+      "files": [
+        "likeable.fragment.js"
+      ],
+      "hash": "947764a0e14f567f2bc3",
+      "siblings": [],
+      "parents": [],
+      "children": [
+        0
+      ],
+      "childrenByOrder": {},
+      "modules": [
+        {
+          "id": "./frontend/LikeableElement.js",
+          "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/frontend/LikeableElement.js",
+          "name": "./frontend/LikeableElement.js",
+          "index": 1,
+          "index2": 67,
+          "size": 850,
+          "cacheable": true,
+          "built": true,
+          "optional": false,
+          "prefetched": false,
+          "chunks": [
+            "likeable"
+          ],
+          "issuer": "/Volumes/Framework/updates/skeleton-starter-flow/index.js",
+          "issuerId": "./index.js",
+          "issuerName": "./index.js",
+          "issuerPath": [
+            {
+              "id": "./index.js",
+              "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/index.js",
+              "name": "./index.js",
+              "profile": {
+                "factory": 22,
+                "building": 20
+              }
+            }
+          ],
+          "profile": {
+            "factory": 218,
+            "building": 12
+          },
+          "failed": false,
+          "errors": 0,
+          "warnings": 0,
+          "assets": [],
+          "reasons": [
+            {
+              "moduleId": "./index.js",
+              "moduleIdentifier": "/Volumes/Framework/updates/skeleton-starter-flow/index.js",
+              "module": "./index.js",
+              "moduleName": "./index.js",
+              "type": "harmony side effect evaluation",
+              "userRequest": "./frontend/LikeableElement.js",
+              "loc": "1:0-60"
+            }
+          ],
+          "providedExports": [],
+          "optimizationBailout": [],
+          "depth": 1,
+          "source": "// Import an element\nimport '@polymer/paper-checkbox/paper-checkbox.js';\n\n// Import the PolymerElement base class and html helper\nimport {PolymerElement, html} from '@polymer/polymer';\n\n// Define an element class\nclass LikeableElement extends PolymerElement {\n\n  // Define public API properties\n  static get properties() { return { liked: Boolean }}\n\n  // Define the element's template\n  static get template() {\n    return html`\n      <style>\n        :host{ \n          margin: 5px; \n        }\n      \n        .response { margin-top: 10px; } \n      </style>\n   <div>Tag name doesn't match the JS module name</div>   <paper-checkbox checked=\"{{liked}}\">I like web components!</paper-checkbox>\n\n      <div id=\"test\" hidden$=\"[[!liked]]\" class=\"response\">Web components like you, too.</div>\n    `;\n  }\n}\n\n// Register the element with the browser\ncustomElements.define('likeable-element', LikeableElement);\n\n"
+        },
+        {
+          "id": "./frontend/LikeableElementFaultyMethods.js",
+          "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/frontend/LikeableElementFaultyMethods.js",
+          "name": "./frontend/LikeableElementFaultyMethods.js",
+          "index": 3,
+          "index2": 67,
+          "size": 850,
+          "cacheable": true,
+          "built": true,
+          "optional": false,
+          "prefetched": false,
+          "chunks": [
+            "likeable"
+          ],
+          "issuer": "/Volumes/Framework/updates/skeleton-starter-flow/index.js",
+          "issuerId": "./index.js",
+          "issuerName": "./index.js",
+          "issuerPath": [
+            {
+              "id": "./index.js",
+              "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/index.js",
+              "name": "./index.js",
+              "profile": {
+                "factory": 22,
+                "building": 20
+              }
+            }
+          ],
+          "profile": {
+            "factory": 218,
+            "building": 12
+          },
+          "failed": false,
+          "errors": 0,
+          "warnings": 0,
+          "assets": [],
+          "reasons": [
+            {
+              "moduleId": "./index.js",
+              "moduleIdentifier": "/Volumes/Framework/updates/skeleton-starter-flow/index.js",
+              "module": "./index.js",
+              "moduleName": "./index.js",
+              "type": "harmony side effect evaluation",
+              "userRequest": "./frontend/LikeableElementFaultyMethods.js",
+              "loc": "1:0-60"
+            }
+          ],
+          "providedExports": [],
+          "optimizationBailout": [],
+          "depth": 1,
+          "source": "// Import an element\nimport '@polymer/paper-checkbox/paper-checkbox.js';\n\n// Import the PolymerElement base class and html helper\nimport {PolymerElement, html} from '@polymer/polymer';\n\n// Define an element class\nclass LikeableElement extends PolymerElement {\n\n  // Define public API properties\n  static get properties() { return { liked: Boolean }}\n\n  // Define the element's template\n  static get template() {\n    return `\n      <style>\n        :host{ \n          margin: 5px; \n        }\n      \n        .response { margin-top: 10px; } \n      </style>\n      <paper-checkbox checked=\"{{liked}}\">I like web components!</paper-checkbox>\n\n      <div id=\"test\" hidden$=\"[[!liked]]\" class=\"response\">Web components like you, too.</div>\n    `;\n  }\n}\n\n// Register the element with the browser\ncustomElements.define('likeable-element', LikeableElement);\n\n"
+        },
+        {
+          "id": "./frontend/LikeableElementBrokenHtml.js",
+          "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/frontend/LikeableElementBrokenHtml.js",
+          "name": "./frontend/LikeableElementBrokenHtml.js",
+          "index": 2,
+          "index2": 67,
+          "size": 850,
+          "cacheable": true,
+          "built": true,
+          "optional": false,
+          "prefetched": false,
+          "chunks": [
+            "likeable"
+          ],
+          "issuer": "/Volumes/Framework/updates/skeleton-starter-flow/index.js",
+          "issuerId": "./index.js",
+          "issuerName": "./index.js",
+          "issuerPath": [
+            {
+              "id": "./index.js",
+              "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/index.js",
+              "name": "./index.js",
+              "profile": {
+                "factory": 22,
+                "building": 20
+              }
+            }
+          ],
+          "profile": {
+            "factory": 218,
+            "building": 12
+          },
+          "failed": false,
+          "errors": 0,
+          "warnings": 0,
+          "assets": [],
+          "reasons": [
+            {
+              "moduleId": "./index.js",
+              "moduleIdentifier": "/Volumes/Framework/updates/skeleton-starter-flow/index.js",
+              "module": "./index.js",
+              "moduleName": "./index.js",
+              "type": "harmony side effect evaluation",
+              "userRequest": "./frontend/LikeableElementBrokenHtml.js",
+              "loc": "1:0-60"
+            }
+          ],
+          "providedExports": [],
+          "optimizationBailout": [],
+          "depth": 1,
+          "source": "// Import an element\nimport '@polymer/paper-checkbox/paper-checkbox.js';\n\n// Import the PolymerElement base class and html helper\nimport {PolymerElement, html} from '@polymer/polymer';\n\n// Define an element class\nclass LikeableElement extends PolymerElement {\n\n  // Define public API properties\n  static get properties() { return { liked: Boolean }}\n\n  // Define the element's template\n  static get template() {\n    return html`\n      <style>\n        :host{ \n          margin: 5px; \n        }\n      \n        .response { margin-top: 10px; } \n      <paper-checkbox checked=\"{{liked}}\">I like web components!</paper-checkbox>\n\n      <div id=\"test\" hidden$=\"[[!liked]]\" class=\"response\">Web components like you, too.</div>\n    `;\n  }\n}\n\n// Register the element with the browser\ncustomElements.define('likeable-element', LikeableElement);\n\n"
+        },
+        {
+          "id": "./index.js",
+          "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/index.js",
+          "name": "./index.js",
+          "index": 0,
+          "index2": 84,
+          "size": 170,
+          "cacheable": true,
+          "built": true,
+          "optional": false,
+          "prefetched": false,
+          "chunks": [
+            "likeable"
+          ],
+          "issuer": null,
+          "issuerId": null,
+          "issuerName": null,
+          "issuerPath": null,
+          "profile": {
+            "factory": 22,
+            "building": 20
+          },
+          "failed": false,
+          "errors": 0,
+          "warnings": 0,
+          "assets": [],
+          "reasons": [
+            {
+              "moduleId": null,
+              "moduleIdentifier": null,
+              "module": null,
+              "moduleName": null,
+              "type": "single entry",
+              "userRequest": "./index.js",
+              "loc": "likeable"
+            }
+          ],
+          "providedExports": [],
+          "optimizationBailout": [],
+          "depth": 0,
+          "source": "import LikeableElement from './frontend/LikeableElement.js';\nimport VaadinButton from '@vaadin/vaadin-button';\n\nvar name = function() {\n  import(\"@vaadin/vaadin-grid\");\n}"
+        },
+        {
+          "id": "../node_modules/@vaadin/flow-frontend/src/hello-world.js",
+          "identifier": "C:\\Users\\mikae\\Code\\skeleton-starter-flow\\node_modules\\babel-loader\\lib\\index.js??ref--4-0!C:\\Users\\mikae\\Code\\skeleton-starter-flow\\node_modules\\@vaadin\\flow-frontend\\src\\hello-world.js?babel-target=es6",
+          "name": "../node_modules/@vaadin/flow-frontend/src/hello-world.js",
+          "index": 84,
+          "index2": 99,
+          "size": 568,
+          "cacheable": true,
+          "built": true,
+          "optional": false,
+          "prefetched": false,
+          "chunks": [],
+          "issuer": "C:\\Users\\mikae\\Code\\skeleton-starter-flow\\node_modules\\babel-loader\\lib\\index.js??ref--4-0!C:\\Users\\mikae\\Code\\skeleton-starter-flow\\target\\frontend\\generated-flow-imports.js?babel-target=es6",
+          "issuerId": null,
+          "issuerName": "../target/frontend/generated-flow-imports.js?babel-target=es6",
+          "issuerPath": [
+            {
+              "id": null,
+              "identifier": "C:\\Users\\mikae\\Code\\skeleton-starter-flow\\node_modules\\babel-loader\\lib\\index.js??ref--4-0!C:\\Users\\mikae\\Code\\skeleton-starter-flow\\target\\frontend\\generated-flow-imports.js?babel-target=es6",
+              "name": "../target/frontend/generated-flow-imports.js?babel-target=es6"
+            }
+          ],
+          "failed": false,
+          "errors": 0,
+          "warnings": 0,
+          "assets": [],
+          "reasons": [
+            {
+              "moduleId": null,
+              "moduleIdentifier": "C:\\Users\\mikae\\Code\\skeleton-starter-flow\\node_modules\\babel-loader\\lib\\index.js??ref--4-0!C:\\Users\\mikae\\Code\\skeleton-starter-flow\\target\\frontend\\generated-flow-imports.js?babel-target=es6",
+              "module": "../target/frontend/generated-flow-imports.js?babel-target=es6",
+              "moduleName": "../target/frontend/generated-flow-imports.js?babel-target=es6",
+              "type": "harmony side effect evaluation",
+              "userRequest": "@vaadin/flow-frontend/src/hello-world.js",
+              "loc": "13:0-50"
+            }
+          ],
+          "usedExports": false,
+          "providedExports": [],
+          "optimizationBailout": [],
+          "depth": 1,
+          "source": "import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';\nimport '@polymer/paper-input/paper-input.js';\n\nclass HelloWorld extends PolymerElement {\n  static get template() {\n    return html`\n            <div>\n                <paper-input id=\"inputId\" value=\"{{userInput}}\"></paper-input>\n                <button id=\"helloButton\" on-click=\"sayHello\">Say hello</button>\n                <div id=\"greeting\">[[greeting]]</div>\n            </div>`;\n  }\n\n  static get is() {\n    return 'hello-world';\n  }\n\n}\n\ncustomElements.define(HelloWorld.is, HelloWorld);"
+        },
+        {
+          "id": "./node_modules/@polymer/iron-a11y-keys-behavior/iron-a11y-keys-behavior.js",
+          "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/iron-a11y-keys-behavior/iron-a11y-keys-behavior.js",
+          "name": "./node_modules/@polymer/iron-a11y-keys-behavior/iron-a11y-keys-behavior.js",
+          "index": 66,
+          "index2": 60,
+          "size": 14110,
+          "cacheable": true,
+          "built": true,
+          "optional": false,
+          "prefetched": false,
+          "chunks": [
+            "likeable"
+          ],
+          "issuer": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/iron-behaviors/iron-button-state.js",
+          "issuerId": "./node_modules/@polymer/iron-behaviors/iron-button-state.js",
+          "issuerName": "./node_modules/@polymer/iron-behaviors/iron-button-state.js",
+          "issuerPath": [
+            {
+              "id": "./index.js",
+              "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/index.js",
+              "name": "./index.js",
+              "profile": {
+                "factory": 22,
+                "building": 20
+              }
+            },
+            {
+              "id": "./frontend/LikeableElement.js",
+              "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/frontend/LikeableElement.js",
+              "name": "./frontend/LikeableElement.js",
+              "profile": {
+                "factory": 218,
+                "building": 12
+              }
+            },
+            {
+              "id": "./node_modules/@polymer/paper-checkbox/paper-checkbox.js",
+              "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-checkbox/paper-checkbox.js",
+              "name": "./node_modules/@polymer/paper-checkbox/paper-checkbox.js",
+              "profile": {
+                "factory": 216,
+                "building": 36,
+                "dependencies": 0
+              }
+            },
+            {
+              "id": "./node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+              "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+              "name": "./node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+              "profile": {
+                "factory": 12,
+                "building": 41,
+                "dependencies": 26
+              }
+            },
+            {
+              "id": "./node_modules/@polymer/iron-behaviors/iron-button-state.js",
+              "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/iron-behaviors/iron-button-state.js",
+              "name": "./node_modules/@polymer/iron-behaviors/iron-button-state.js",
+              "profile": {
+                "factory": 97,
+                "building": 118,
+                "dependencies": 4
+              }
+            }
+          ],
+          "profile": {
+            "factory": 87,
+            "building": 27,
+            "dependencies": 18
+          },
+          "failed": false,
+          "errors": 0,
+          "warnings": 0,
+          "assets": [],
+          "reasons": [
+            {
+              "moduleId": "./node_modules/@polymer/iron-behaviors/iron-button-state.js",
+              "moduleIdentifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/iron-behaviors/iron-button-state.js",
+              "module": "./node_modules/@polymer/iron-behaviors/iron-button-state.js",
+              "moduleName": "./node_modules/@polymer/iron-behaviors/iron-button-state.js",
+              "type": "harmony side effect evaluation",
+              "userRequest": "@polymer/iron-a11y-keys-behavior/iron-a11y-keys-behavior.js",
+              "loc": "14:0-97"
+            },
+            {
+              "moduleId": "./node_modules/@polymer/iron-behaviors/iron-button-state.js",
+              "moduleIdentifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/iron-behaviors/iron-button-state.js",
+              "module": "./node_modules/@polymer/iron-behaviors/iron-button-state.js",
+              "moduleName": "./node_modules/@polymer/iron-behaviors/iron-button-state.js",
+              "type": "harmony import specifier",
+              "userRequest": "@polymer/iron-a11y-keys-behavior/iron-a11y-keys-behavior.js",
+              "loc": "212:32-52"
+            },
+            {
+              "moduleId": "./node_modules/@polymer/paper-ripple/paper-ripple.js",
+              "moduleIdentifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-ripple/paper-ripple.js",
+              "module": "./node_modules/@polymer/paper-ripple/paper-ripple.js",
+              "moduleName": "./node_modules/@polymer/paper-ripple/paper-ripple.js",
+              "type": "harmony side effect evaluation",
+              "userRequest": "@polymer/iron-a11y-keys-behavior/iron-a11y-keys-behavior.js",
+              "loc": "13:0-97"
+            },
+            {
+              "moduleId": "./node_modules/@polymer/paper-ripple/paper-ripple.js",
+              "moduleIdentifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-ripple/paper-ripple.js",
+              "module": "./node_modules/@polymer/paper-ripple/paper-ripple.js",
+              "moduleName": "./node_modules/@polymer/paper-ripple/paper-ripple.js",
+              "type": "harmony import specifier",
+              "userRequest": "@polymer/iron-a11y-keys-behavior/iron-a11y-keys-behavior.js",
+              "loc": "429:14-34"
+            }
+          ],
+          "providedExports": [
+            "IronA11yKeysBehavior"
+          ],
+          "optimizationBailout": [],
+          "depth": 5,
+          "source": "/**\n@license\nCopyright (c) 2015 The Polymer Project Authors. All rights reserved.\nThis code may only be used under the BSD style license found at\nhttp://polymer.github.io/LICENSE.txt The complete set of authors may be found at\nhttp://polymer.github.io/AUTHORS.txt The complete set of contributors may be\nfound at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by Google as\npart of the polymer project is also subject to an additional IP rights grant\nfound at http://polymer.github.io/PATENTS.txt\n*/\nimport '@polymer/polymer/polymer-legacy.js';\n\n/**\n * Chrome uses an older version of DOM Level 3 Keyboard Events\n *\n * Most keys are labeled as text, but some are Unicode codepoints.\n * Values taken from:\n * http://www.w3.org/TR/2007/WD-DOM-Level-3-Events-20071221/keyset.html#KeySet-Set\n */\nvar KEY_IDENTIFIER = {\n  'U+0008': 'backspace',\n  'U+0009': 'tab',\n  'U+001B': 'esc',\n  'U+0020': 'space',\n  'U+007F': 'del'\n};\n\n/**\n * Special table for KeyboardEvent.keyCode.\n * KeyboardEvent.keyIdentifier is better, and KeyBoardEvent.key is even better\n * than that.\n *\n * Values from:\n * https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent.keyCode#Value_of_keyCode\n */\nvar KEY_CODE = {\n  8: 'backspace',\n  9: 'tab',\n  13: 'enter',\n  27: 'esc',\n  33: 'pageup',\n  34: 'pagedown',\n  35: 'end',\n  36: 'home',\n  32: 'space',\n  37: 'left',\n  38: 'up',\n  39: 'right',\n  40: 'down',\n  46: 'del',\n  106: '*'\n};\n\n/**\n * MODIFIER_KEYS maps the short name for modifier keys used in a key\n * combo string to the property name that references those same keys\n * in a KeyboardEvent instance.\n */\nvar MODIFIER_KEYS = {\n  'shift': 'shiftKey',\n  'ctrl': 'ctrlKey',\n  'alt': 'altKey',\n  'meta': 'metaKey'\n};\n\n/**\n * KeyboardEvent.key is mostly represented by printable character made by\n * the keyboard, with unprintable keys labeled nicely.\n *\n * However, on OS X, Alt+char can make a Unicode character that follows an\n * Apple-specific mapping. In this case, we fall back to .keyCode.\n */\nvar KEY_CHAR = /[a-z0-9*]/;\n\n/**\n * Matches a keyIdentifier string.\n */\nvar IDENT_CHAR = /U\\+/;\n\n/**\n * Matches arrow keys in Gecko 27.0+\n */\nvar ARROW_KEY = /^arrow/;\n\n/**\n * Matches space keys everywhere (notably including IE10's exceptional name\n * `spacebar`).\n */\nvar SPACE_KEY = /^space(bar)?/;\n\n/**\n * Matches ESC key.\n *\n * Value from: http://w3c.github.io/uievents-key/#key-Escape\n */\nvar ESC_KEY = /^escape$/;\n\n/**\n * Transforms the key.\n * @param {string} key The KeyBoardEvent.key\n * @param {Boolean} [noSpecialChars] Limits the transformation to\n * alpha-numeric characters.\n */\nfunction transformKey(key, noSpecialChars) {\n  var validKey = '';\n  if (key) {\n    var lKey = key.toLowerCase();\n    if (lKey === ' ' || SPACE_KEY.test(lKey)) {\n      validKey = 'space';\n    } else if (ESC_KEY.test(lKey)) {\n      validKey = 'esc';\n    } else if (lKey.length == 1) {\n      if (!noSpecialChars || KEY_CHAR.test(lKey)) {\n        validKey = lKey;\n      }\n    } else if (ARROW_KEY.test(lKey)) {\n      validKey = lKey.replace('arrow', '');\n    } else if (lKey == 'multiply') {\n      // numpad '*' can map to Multiply on IE/Windows\n      validKey = '*';\n    } else {\n      validKey = lKey;\n    }\n  }\n  return validKey;\n}\n\nfunction transformKeyIdentifier(keyIdent) {\n  var validKey = '';\n  if (keyIdent) {\n    if (keyIdent in KEY_IDENTIFIER) {\n      validKey = KEY_IDENTIFIER[keyIdent];\n    } else if (IDENT_CHAR.test(keyIdent)) {\n      keyIdent = parseInt(keyIdent.replace('U+', '0x'), 16);\n      validKey = String.fromCharCode(keyIdent).toLowerCase();\n    } else {\n      validKey = keyIdent.toLowerCase();\n    }\n  }\n  return validKey;\n}\n\nfunction transformKeyCode(keyCode) {\n  var validKey = '';\n  if (Number(keyCode)) {\n    if (keyCode >= 65 && keyCode <= 90) {\n      // ascii a-z\n      // lowercase is 32 offset from uppercase\n      validKey = String.fromCharCode(32 + keyCode);\n    } else if (keyCode >= 112 && keyCode <= 123) {\n      // function keys f1-f12\n      validKey = 'f' + (keyCode - 112 + 1);\n    } else if (keyCode >= 48 && keyCode <= 57) {\n      // top 0-9 keys\n      validKey = String(keyCode - 48);\n    } else if (keyCode >= 96 && keyCode <= 105) {\n      // num pad 0-9\n      validKey = String(keyCode - 96);\n    } else {\n      validKey = KEY_CODE[keyCode];\n    }\n  }\n  return validKey;\n}\n\n/**\n * Calculates the normalized key for a KeyboardEvent.\n * @param {KeyboardEvent} keyEvent\n * @param {Boolean} [noSpecialChars] Set to true to limit keyEvent.key\n * transformation to alpha-numeric chars. This is useful with key\n * combinations like shift + 2, which on FF for MacOS produces\n * keyEvent.key = @\n * To get 2 returned, set noSpecialChars = true\n * To get @ returned, set noSpecialChars = false\n */\nfunction normalizedKeyForEvent(keyEvent, noSpecialChars) {\n  // Fall back from .key, to .detail.key for artifical keyboard events,\n  // and then to deprecated .keyIdentifier and .keyCode.\n  if (keyEvent.key) {\n    return transformKey(keyEvent.key, noSpecialChars);\n  }\n  if (keyEvent.detail && keyEvent.detail.key) {\n    return transformKey(keyEvent.detail.key, noSpecialChars);\n  }\n  return transformKeyIdentifier(keyEvent.keyIdentifier) ||\n      transformKeyCode(keyEvent.keyCode) || '';\n}\n\nfunction keyComboMatchesEvent(keyCombo, event) {\n  // For combos with modifiers we support only alpha-numeric keys\n  var keyEvent = normalizedKeyForEvent(event, keyCombo.hasModifiers);\n  return keyEvent === keyCombo.key &&\n      (!keyCombo.hasModifiers ||\n       (!!event.shiftKey === !!keyCombo.shiftKey &&\n        !!event.ctrlKey === !!keyCombo.ctrlKey &&\n        !!event.altKey === !!keyCombo.altKey &&\n        !!event.metaKey === !!keyCombo.metaKey));\n}\n\nfunction parseKeyComboString(keyComboString) {\n  if (keyComboString.length === 1) {\n    return {combo: keyComboString, key: keyComboString, event: 'keydown'};\n  }\n  return keyComboString.split('+')\n      .reduce(function(parsedKeyCombo, keyComboPart) {\n        var eventParts = keyComboPart.split(':');\n        var keyName = eventParts[0];\n        var event = eventParts[1];\n\n        if (keyName in MODIFIER_KEYS) {\n          parsedKeyCombo[MODIFIER_KEYS[keyName]] = true;\n          parsedKeyCombo.hasModifiers = true;\n        } else {\n          parsedKeyCombo.key = keyName;\n          parsedKeyCombo.event = event || 'keydown';\n        }\n\n        return parsedKeyCombo;\n      }, {combo: keyComboString.split(':').shift()});\n}\n\nfunction parseEventString(eventString) {\n  return eventString.trim().split(' ').map(function(keyComboString) {\n    return parseKeyComboString(keyComboString);\n  });\n}\n\n/**\n * `Polymer.IronA11yKeysBehavior` provides a normalized interface for processing\n * keyboard commands that pertain to [WAI-ARIA best\n * practices](http://www.w3.org/TR/wai-aria-practices/#kbd_general_binding). The\n * element takes care of browser differences with respect to Keyboard events and\n * uses an expressive syntax to filter key presses.\n *\n * Use the `keyBindings` prototype property to express what combination of keys\n * will trigger the callback. A key binding has the format\n * `\"KEY+MODIFIER:EVENT\": \"callback\"` (`\"KEY\": \"callback\"` or\n * `\"KEY:EVENT\": \"callback\"` are valid as well). Some examples:\n *\n *      keyBindings: {\n *        'space': '_onKeydown', // same as 'space:keydown'\n *        'shift+tab': '_onKeydown',\n *        'enter:keypress': '_onKeypress',\n *        'esc:keyup': '_onKeyup'\n *      }\n *\n * The callback will receive with an event containing the following information\n * in `event.detail`:\n *\n *      _onKeydown: function(event) {\n *        console.log(event.detail.combo); // KEY+MODIFIER, e.g. \"shift+tab\"\n *        console.log(event.detail.key); // KEY only, e.g. \"tab\"\n *        console.log(event.detail.event); // EVENT, e.g. \"keydown\"\n *        console.log(event.detail.keyboardEvent); // the original KeyboardEvent\n *      }\n *\n * Use the `keyEventTarget` attribute to set up event handlers on a specific\n * node.\n *\n * See the [demo source\n * code](https://github.com/PolymerElements/iron-a11y-keys-behavior/blob/master/demo/x-key-aware.html)\n * for an example.\n *\n * @demo demo/index.html\n * @polymerBehavior\n */\nexport const IronA11yKeysBehavior = {\n  properties: {\n    /**\n     * The EventTarget that will be firing relevant KeyboardEvents. Set it to\n     * `null` to disable the listeners.\n     * @type {?EventTarget}\n     */\n    keyEventTarget: {\n      type: Object,\n      value: function() {\n        return this;\n      }\n    },\n\n    /**\n     * If true, this property will cause the implementing element to\n     * automatically stop propagation on any handled KeyboardEvents.\n     */\n    stopKeyboardEventPropagation: {type: Boolean, value: false},\n\n    _boundKeyHandlers: {\n      type: Array,\n      value: function() {\n        return [];\n      }\n    },\n\n    // We use this due to a limitation in IE10 where instances will have\n    // own properties of everything on the \"prototype\".\n    _imperativeKeyBindings: {\n      type: Object,\n      value: function() {\n        return {};\n      }\n    }\n  },\n\n  observers: ['_resetKeyEventListeners(keyEventTarget, _boundKeyHandlers)'],\n\n\n  /**\n   * To be used to express what combination of keys  will trigger the relative\n   * callback. e.g. `keyBindings: { 'esc': '_onEscPressed'}`\n   * @type {!Object}\n   */\n  keyBindings: {},\n\n  registered: function() {\n    this._prepKeyBindings();\n  },\n\n  attached: function() {\n    this._listenKeyEventListeners();\n  },\n\n  detached: function() {\n    this._unlistenKeyEventListeners();\n  },\n\n  /**\n   * Can be used to imperatively add a key binding to the implementing\n   * element. This is the imperative equivalent of declaring a keybinding\n   * in the `keyBindings` prototype property.\n   *\n   * @param {string} eventString\n   * @param {string} handlerName\n   */\n  addOwnKeyBinding: function(eventString, handlerName) {\n    this._imperativeKeyBindings[eventString] = handlerName;\n    this._prepKeyBindings();\n    this._resetKeyEventListeners();\n  },\n\n  /**\n   * When called, will remove all imperatively-added key bindings.\n   */\n  removeOwnKeyBindings: function() {\n    this._imperativeKeyBindings = {};\n    this._prepKeyBindings();\n    this._resetKeyEventListeners();\n  },\n\n  /**\n   * Returns true if a keyboard event matches `eventString`.\n   *\n   * @param {KeyboardEvent} event\n   * @param {string} eventString\n   * @return {boolean}\n   */\n  keyboardEventMatchesKeys: function(event, eventString) {\n    var keyCombos = parseEventString(eventString);\n    for (var i = 0; i < keyCombos.length; ++i) {\n      if (keyComboMatchesEvent(keyCombos[i], event)) {\n        return true;\n      }\n    }\n    return false;\n  },\n\n  _collectKeyBindings: function() {\n    var keyBindings = this.behaviors.map(function(behavior) {\n      return behavior.keyBindings;\n    });\n\n    if (keyBindings.indexOf(this.keyBindings) === -1) {\n      keyBindings.push(this.keyBindings);\n    }\n\n    return keyBindings;\n  },\n\n  _prepKeyBindings: function() {\n    this._keyBindings = {};\n\n    this._collectKeyBindings().forEach(function(keyBindings) {\n      for (var eventString in keyBindings) {\n        this._addKeyBinding(eventString, keyBindings[eventString]);\n      }\n    }, this);\n\n    for (var eventString in this._imperativeKeyBindings) {\n      this._addKeyBinding(\n          eventString, this._imperativeKeyBindings[eventString]);\n    }\n\n    // Give precedence to combos with modifiers to be checked first.\n    for (var eventName in this._keyBindings) {\n      this._keyBindings[eventName].sort(function(kb1, kb2) {\n        var b1 = kb1[0].hasModifiers;\n        var b2 = kb2[0].hasModifiers;\n        return (b1 === b2) ? 0 : b1 ? -1 : 1;\n      })\n    }\n  },\n\n  _addKeyBinding: function(eventString, handlerName) {\n    parseEventString(eventString).forEach(function(keyCombo) {\n      this._keyBindings[keyCombo.event] =\n          this._keyBindings[keyCombo.event] || [];\n\n      this._keyBindings[keyCombo.event].push([keyCombo, handlerName]);\n    }, this);\n  },\n\n  _resetKeyEventListeners: function() {\n    this._unlistenKeyEventListeners();\n\n    if (this.isAttached) {\n      this._listenKeyEventListeners();\n    }\n  },\n\n  _listenKeyEventListeners: function() {\n    if (!this.keyEventTarget) {\n      return;\n    }\n    Object.keys(this._keyBindings).forEach(function(eventName) {\n      var keyBindings = this._keyBindings[eventName];\n      var boundKeyHandler = this._onKeyBindingEvent.bind(this, keyBindings);\n\n      this._boundKeyHandlers.push(\n          [this.keyEventTarget, eventName, boundKeyHandler]);\n\n      this.keyEventTarget.addEventListener(eventName, boundKeyHandler);\n    }, this);\n  },\n\n  _unlistenKeyEventListeners: function() {\n    var keyHandlerTuple;\n    var keyEventTarget;\n    var eventName;\n    var boundKeyHandler;\n\n    while (this._boundKeyHandlers.length) {\n      // My kingdom for block-scope binding and destructuring assignment..\n      keyHandlerTuple = this._boundKeyHandlers.pop();\n      keyEventTarget = keyHandlerTuple[0];\n      eventName = keyHandlerTuple[1];\n      boundKeyHandler = keyHandlerTuple[2];\n\n      keyEventTarget.removeEventListener(eventName, boundKeyHandler);\n    }\n  },\n\n  _onKeyBindingEvent: function(keyBindings, event) {\n    if (this.stopKeyboardEventPropagation) {\n      event.stopPropagation();\n    }\n\n    // if event has been already prevented, don't do anything\n    if (event.defaultPrevented) {\n      return;\n    }\n\n    for (var i = 0; i < keyBindings.length; i++) {\n      var keyCombo = keyBindings[i][0];\n      var handlerName = keyBindings[i][1];\n      if (keyComboMatchesEvent(keyCombo, event)) {\n        this._triggerKeyHandler(keyCombo, handlerName, event);\n        // exit the loop if eventDefault was prevented\n        if (event.defaultPrevented) {\n          return;\n        }\n      }\n    }\n  },\n\n  _triggerKeyHandler: function(keyCombo, handlerName, keyboardEvent) {\n    var detail = Object.create(keyCombo);\n    detail.keyboardEvent = keyboardEvent;\n    var event =\n        new CustomEvent(keyCombo.event, {detail: detail, cancelable: true});\n    this[handlerName].call(this, event);\n    if (event.defaultPrevented) {\n      keyboardEvent.preventDefault();\n    }\n  }\n};\n"
+        },
+        {
+          "id": "./node_modules/@polymer/iron-behaviors/iron-button-state.js",
+          "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/iron-behaviors/iron-button-state.js",
+          "name": "./node_modules/@polymer/iron-behaviors/iron-button-state.js",
+          "index": 64,
+          "index2": 61,
+          "size": 5725,
+          "cacheable": true,
+          "built": true,
+          "optional": false,
+          "prefetched": false,
+          "chunks": [
+            "likeable"
+          ],
+          "issuer": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+          "issuerId": "./node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+          "issuerName": "./node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+          "issuerPath": [
+            {
+              "id": "./index.js",
+              "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/index.js",
+              "name": "./index.js",
+              "profile": {
+                "factory": 22,
+                "building": 20
+              }
+            },
+            {
+              "id": "./frontend/LikeableElement.js",
+              "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/frontend/LikeableElement.js",
+              "name": "./frontend/LikeableElement.js",
+              "profile": {
+                "factory": 218,
+                "building": 12
+              }
+            },
+            {
+              "id": "./node_modules/@polymer/paper-checkbox/paper-checkbox.js",
+              "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-checkbox/paper-checkbox.js",
+              "name": "./node_modules/@polymer/paper-checkbox/paper-checkbox.js",
+              "profile": {
+                "factory": 216,
+                "building": 36,
+                "dependencies": 0
+              }
+            },
+            {
+              "id": "./node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+              "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+              "name": "./node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+              "profile": {
+                "factory": 12,
+                "building": 41,
+                "dependencies": 26
+              }
+            }
+          ],
+          "profile": {
+            "factory": 97,
+            "building": 118,
+            "dependencies": 4
+          },
+          "failed": false,
+          "errors": 0,
+          "warnings": 0,
+          "assets": [],
+          "reasons": [
+            {
+              "moduleId": "./node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+              "moduleIdentifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+              "module": "./node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+              "moduleName": "./node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+              "type": "harmony side effect evaluation",
+              "userRequest": "@polymer/iron-behaviors/iron-button-state.js",
+              "loc": "13:0-77"
+            },
+            {
+              "moduleId": "./node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+              "moduleIdentifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+              "module": "./node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+              "moduleName": "./node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+              "type": "harmony import specifier",
+              "userRequest": "@polymer/iron-behaviors/iron-button-state.js",
+              "loc": "47:2-17"
+            },
+            {
+              "moduleId": "./node_modules/@polymer/paper-behaviors/paper-ripple-behavior.js",
+              "moduleIdentifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-behaviors/paper-ripple-behavior.js",
+              "module": "./node_modules/@polymer/paper-behaviors/paper-ripple-behavior.js",
+              "moduleName": "./node_modules/@polymer/paper-behaviors/paper-ripple-behavior.js",
+              "type": "harmony side effect evaluation",
+              "userRequest": "@polymer/iron-behaviors/iron-button-state.js",
+              "loc": "14:0-81"
+            },
+            {
+              "moduleId": "./node_modules/@polymer/paper-behaviors/paper-ripple-behavior.js",
+              "moduleIdentifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-behaviors/paper-ripple-behavior.js",
+              "module": "./node_modules/@polymer/paper-behaviors/paper-ripple-behavior.js",
+              "moduleName": "./node_modules/@polymer/paper-behaviors/paper-ripple-behavior.js",
+              "type": "harmony import specifier",
+              "userRequest": "@polymer/iron-behaviors/iron-button-state.js",
+              "loc": "57:4-23"
+            }
+          ],
+          "providedExports": [
+            "IronButtonStateImpl",
+            "IronButtonState"
+          ],
+          "optimizationBailout": [],
+          "depth": 4,
+          "source": "/**\n@license\nCopyright (c) 2015 The Polymer Project Authors. All rights reserved.\nThis code may only be used under the BSD style license found at\nhttp://polymer.github.io/LICENSE.txt The complete set of authors may be found at\nhttp://polymer.github.io/AUTHORS.txt The complete set of contributors may be\nfound at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by Google as\npart of the polymer project is also subject to an additional IP rights grant\nfound at http://polymer.github.io/PATENTS.txt\n*/\nimport '@polymer/polymer/polymer-legacy.js';\nimport './iron-control-state.js';\n\nimport {IronA11yKeysBehavior} from '@polymer/iron-a11y-keys-behavior/iron-a11y-keys-behavior.js';\nimport {dom} from '@polymer/polymer/lib/legacy/polymer.dom.js';\n\n/**\n * @demo demo/index.html\n * @polymerBehavior IronButtonState\n */\nexport const IronButtonStateImpl = {\n\n  properties: {\n\n    /**\n     * If true, the user is currently holding down the button.\n     */\n    pressed: {\n      type: Boolean,\n      readOnly: true,\n      value: false,\n      reflectToAttribute: true,\n      observer: '_pressedChanged'\n    },\n\n    /**\n     * If true, the button toggles the active state with each tap or press\n     * of the spacebar.\n     */\n    toggles: {type: Boolean, value: false, reflectToAttribute: true},\n\n    /**\n     * If true, the button is a toggle and is currently in the active state.\n     */\n    active:\n        {type: Boolean, value: false, notify: true, reflectToAttribute: true},\n\n    /**\n     * True if the element is currently being pressed by a \"pointer,\" which\n     * is loosely defined as mouse or touch input (but specifically excluding\n     * keyboard input).\n     */\n    pointerDown: {type: Boolean, readOnly: true, value: false},\n\n    /**\n     * True if the input device that caused the element to receive focus\n     * was a keyboard.\n     */\n    receivedFocusFromKeyboard: {type: Boolean, readOnly: true},\n\n    /**\n     * The aria attribute to be set if the button is a toggle and in the\n     * active state.\n     */\n    ariaActiveAttribute: {\n      type: String,\n      value: 'aria-pressed',\n      observer: '_ariaActiveAttributeChanged'\n    }\n  },\n\n  listeners: {down: '_downHandler', up: '_upHandler', tap: '_tapHandler'},\n\n  observers:\n      ['_focusChanged(focused)', '_activeChanged(active, ariaActiveAttribute)'],\n\n  /**\n   * @type {!Object}\n   */\n  keyBindings: {\n    'enter:keydown': '_asyncClick',\n    'space:keydown': '_spaceKeyDownHandler',\n    'space:keyup': '_spaceKeyUpHandler',\n  },\n\n  _mouseEventRe: /^mouse/,\n\n  _tapHandler: function() {\n    if (this.toggles) {\n      // a tap is needed to toggle the active state\n      this._userActivate(!this.active);\n    } else {\n      this.active = false;\n    }\n  },\n\n  _focusChanged: function(focused) {\n    this._detectKeyboardFocus(focused);\n\n    if (!focused) {\n      this._setPressed(false);\n    }\n  },\n\n  _detectKeyboardFocus: function(focused) {\n    this._setReceivedFocusFromKeyboard(!this.pointerDown && focused);\n  },\n\n  // to emulate native checkbox, (de-)activations from a user interaction fire\n  // 'change' events\n  _userActivate: function(active) {\n    if (this.active !== active) {\n      this.active = active;\n      this.fire('change');\n    }\n  },\n\n  _downHandler: function(event) {\n    this._setPointerDown(true);\n    this._setPressed(true);\n    this._setReceivedFocusFromKeyboard(false);\n  },\n\n  _upHandler: function() {\n    this._setPointerDown(false);\n    this._setPressed(false);\n  },\n\n  /**\n   * @param {!KeyboardEvent} event .\n   */\n  _spaceKeyDownHandler: function(event) {\n    var keyboardEvent = event.detail.keyboardEvent;\n    var target = dom(keyboardEvent).localTarget;\n\n    // Ignore the event if this is coming from a focused light child, since that\n    // element will deal with it.\n    if (this.isLightDescendant(/** @type {Node} */ (target)))\n      return;\n\n    keyboardEvent.preventDefault();\n    keyboardEvent.stopImmediatePropagation();\n    this._setPressed(true);\n  },\n\n  /**\n   * @param {!KeyboardEvent} event .\n   */\n  _spaceKeyUpHandler: function(event) {\n    var keyboardEvent = event.detail.keyboardEvent;\n    var target = dom(keyboardEvent).localTarget;\n\n    // Ignore the event if this is coming from a focused light child, since that\n    // element will deal with it.\n    if (this.isLightDescendant(/** @type {Node} */ (target)))\n      return;\n\n    if (this.pressed) {\n      this._asyncClick();\n    }\n    this._setPressed(false);\n  },\n\n  // trigger click asynchronously, the asynchrony is useful to allow one\n  // event handler to unwind before triggering another event\n  _asyncClick: function() {\n    this.async(function() {\n      this.click();\n    }, 1);\n  },\n\n  // any of these changes are considered a change to button state\n\n  _pressedChanged: function(pressed) {\n    this._changedButtonState();\n  },\n\n  _ariaActiveAttributeChanged: function(value, oldValue) {\n    if (oldValue && oldValue != value && this.hasAttribute(oldValue)) {\n      this.removeAttribute(oldValue);\n    }\n  },\n\n  _activeChanged: function(active, ariaActiveAttribute) {\n    if (this.toggles) {\n      this.setAttribute(this.ariaActiveAttribute, active ? 'true' : 'false');\n    } else {\n      this.removeAttribute(this.ariaActiveAttribute);\n    }\n    this._changedButtonState();\n  },\n\n  _controlStateChanged: function() {\n    if (this.disabled) {\n      this._setPressed(false);\n    } else {\n      this._changedButtonState();\n    }\n  },\n\n  // provide hook for follow-on behaviors to react to button-state\n\n  _changedButtonState: function() {\n    if (this._buttonStateChanged) {\n      this._buttonStateChanged();  // abstract\n    }\n  }\n\n};\n\n/** @polymerBehavior */\nexport const IronButtonState = [IronA11yKeysBehavior, IronButtonStateImpl];\n"
+        },
+        {
+          "id": "./node_modules/@polymer/iron-behaviors/iron-control-state.js",
+          "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/iron-behaviors/iron-control-state.js",
+          "name": "./node_modules/@polymer/iron-behaviors/iron-control-state.js",
+          "index": 65,
+          "index2": 59,
+          "size": 2963,
+          "cacheable": true,
+          "built": true,
+          "optional": false,
+          "prefetched": false,
+          "chunks": [
+            "likeable"
+          ],
+          "issuer": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+          "issuerId": "./node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+          "issuerName": "./node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+          "issuerPath": [
+            {
+              "id": "./index.js",
+              "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/index.js",
+              "name": "./index.js",
+              "profile": {
+                "factory": 22,
+                "building": 20
+              }
+            },
+            {
+              "id": "./frontend/LikeableElement.js",
+              "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/frontend/LikeableElement.js",
+              "name": "./frontend/LikeableElement.js",
+              "profile": {
+                "factory": 218,
+                "building": 12
+              }
+            },
+            {
+              "id": "./node_modules/@polymer/paper-checkbox/paper-checkbox.js",
+              "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-checkbox/paper-checkbox.js",
+              "name": "./node_modules/@polymer/paper-checkbox/paper-checkbox.js",
+              "profile": {
+                "factory": 216,
+                "building": 36,
+                "dependencies": 0
+              }
+            },
+            {
+              "id": "./node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+              "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+              "name": "./node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+              "profile": {
+                "factory": 12,
+                "building": 41,
+                "dependencies": 26
+              }
+            }
+          ],
+          "profile": {
+            "factory": 97,
+            "building": 118,
+            "dependencies": 4
+          },
+          "failed": false,
+          "errors": 0,
+          "warnings": 0,
+          "assets": [],
+          "reasons": [
+            {
+              "moduleId": "./node_modules/@polymer/iron-behaviors/iron-button-state.js",
+              "moduleIdentifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/iron-behaviors/iron-button-state.js",
+              "module": "./node_modules/@polymer/iron-behaviors/iron-button-state.js",
+              "moduleName": "./node_modules/@polymer/iron-behaviors/iron-button-state.js",
+              "type": "harmony side effect evaluation",
+              "userRequest": "./iron-control-state.js",
+              "loc": "12:0-33"
+            },
+            {
+              "moduleId": "./node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+              "moduleIdentifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+              "module": "./node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+              "moduleName": "./node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+              "type": "harmony side effect evaluation",
+              "userRequest": "@polymer/iron-behaviors/iron-control-state.js",
+              "loc": "14:0-79"
+            },
+            {
+              "moduleId": "./node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+              "moduleIdentifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+              "module": "./node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+              "moduleName": "./node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+              "type": "harmony import specifier",
+              "userRequest": "@polymer/iron-behaviors/iron-control-state.js",
+              "loc": "48:2-18"
+            }
+          ],
+          "providedExports": [
+            "IronControlState"
+          ],
+          "optimizationBailout": [],
+          "depth": 4,
+          "source": "/**\n@license\nCopyright (c) 2015 The Polymer Project Authors. All rights reserved.\nThis code may only be used under the BSD style license found at\nhttp://polymer.github.io/LICENSE.txt The complete set of authors may be found at\nhttp://polymer.github.io/AUTHORS.txt The complete set of contributors may be\nfound at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by Google as\npart of the polymer project is also subject to an additional IP rights grant\nfound at http://polymer.github.io/PATENTS.txt\n*/\nimport '@polymer/polymer/polymer-legacy.js';\n\nimport {dom} from '@polymer/polymer/lib/legacy/polymer.dom.js';\n\n/**\n * @demo demo/index.html\n * @polymerBehavior\n */\nexport const IronControlState = {\n\n  properties: {\n\n    /**\n     * If true, the element currently has focus.\n     */\n    focused: {\n      type: Boolean,\n      value: false,\n      notify: true,\n      readOnly: true,\n      reflectToAttribute: true\n    },\n\n    /**\n     * If true, the user cannot interact with this element.\n     */\n    disabled: {\n      type: Boolean,\n      value: false,\n      notify: true,\n      observer: '_disabledChanged',\n      reflectToAttribute: true\n    },\n\n    /**\n     * Value of the `tabindex` attribute before `disabled` was activated.\n     * `null` means the attribute was not present.\n     * @type {?string|undefined}\n     */\n    _oldTabIndex: {type: String},\n\n    _boundFocusBlurHandler: {\n      type: Function,\n      value: function() {\n        return this._focusBlurHandler.bind(this);\n      }\n    }\n  },\n\n  observers: ['_changedControlState(focused, disabled)'],\n\n  /**\n   * @return {void}\n   */\n  ready: function() {\n    this.addEventListener('focus', this._boundFocusBlurHandler, true);\n    this.addEventListener('blur', this._boundFocusBlurHandler, true);\n  },\n\n  _focusBlurHandler: function(event) {\n    // Polymer takes care of retargeting events.\n    this._setFocused(event.type === 'focus');\n    return;\n  },\n\n  _disabledChanged: function(disabled, old) {\n    this.setAttribute('aria-disabled', disabled ? 'true' : 'false');\n    this.style.pointerEvents = disabled ? 'none' : '';\n    if (disabled) {\n      // Read the `tabindex` attribute instead of the `tabIndex` property.\n      // The property returns `-1` if there is no `tabindex` attribute.\n      // This distinction is important when restoring the value because\n      // leaving `-1` hides shadow root children from the tab order.\n      this._oldTabIndex = this.getAttribute('tabindex');\n      this._setFocused(false);\n      this.tabIndex = -1;\n      this.blur();\n    } else if (this._oldTabIndex !== undefined) {\n      if (this._oldTabIndex === null) {\n        this.removeAttribute('tabindex');\n      } else {\n        this.setAttribute('tabindex', this._oldTabIndex);\n      }\n    }\n  },\n\n  _changedControlState: function() {\n    // _controlStateChanged is abstract, follow-on behaviors may implement it\n    if (this._controlStateChanged) {\n      this._controlStateChanged();\n    }\n  }\n\n};\n"
+        },
+        {
+          "id": "./node_modules/@polymer/iron-checked-element-behavior/iron-checked-element-behavior.js",
+          "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/iron-checked-element-behavior/iron-checked-element-behavior.js",
+          "name": "./node_modules/@polymer/iron-checked-element-behavior/iron-checked-element-behavior.js",
+          "index": 59,
+          "index2": 58,
+          "size": 3278,
+          "cacheable": true,
+          "built": true,
+          "optional": false,
+          "prefetched": false,
+          "chunks": [
+            "likeable"
+          ],
+          "issuer": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-behaviors/paper-checked-element-behavior.js",
+          "issuerId": "./node_modules/@polymer/paper-behaviors/paper-checked-element-behavior.js",
+          "issuerName": "./node_modules/@polymer/paper-behaviors/paper-checked-element-behavior.js",
+          "issuerPath": [
+            {
+              "id": "./index.js",
+              "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/index.js",
+              "name": "./index.js",
+              "profile": {
+                "factory": 22,
+                "building": 20
+              }
+            },
+            {
+              "id": "./frontend/LikeableElement.js",
+              "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/frontend/LikeableElement.js",
+              "name": "./frontend/LikeableElement.js",
+              "profile": {
+                "factory": 218,
+                "building": 12
+              }
+            },
+            {
+              "id": "./node_modules/@polymer/paper-checkbox/paper-checkbox.js",
+              "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-checkbox/paper-checkbox.js",
+              "name": "./node_modules/@polymer/paper-checkbox/paper-checkbox.js",
+              "profile": {
+                "factory": 216,
+                "building": 36,
+                "dependencies": 0
+              }
+            },
+            {
+              "id": "./node_modules/@polymer/paper-behaviors/paper-checked-element-behavior.js",
+              "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-behaviors/paper-checked-element-behavior.js",
+              "name": "./node_modules/@polymer/paper-behaviors/paper-checked-element-behavior.js",
+              "profile": {
+                "factory": 12,
+                "building": 41,
+                "dependencies": 26
+              }
+            }
+          ],
+          "profile": {
+            "factory": 100,
+            "building": 113,
+            "dependencies": 7
+          },
+          "failed": false,
+          "errors": 0,
+          "warnings": 0,
+          "assets": [],
+          "reasons": [
+            {
+              "moduleId": "./node_modules/@polymer/paper-behaviors/paper-checked-element-behavior.js",
+              "moduleIdentifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-behaviors/paper-checked-element-behavior.js",
+              "module": "./node_modules/@polymer/paper-behaviors/paper-checked-element-behavior.js",
+              "moduleName": "./node_modules/@polymer/paper-behaviors/paper-checked-element-behavior.js",
+              "type": "harmony side effect evaluation",
+              "userRequest": "@polymer/iron-checked-element-behavior/iron-checked-element-behavior.js",
+              "loc": "13:0-147"
+            },
+            {
+              "moduleId": "./node_modules/@polymer/paper-behaviors/paper-checked-element-behavior.js",
+              "moduleIdentifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-behaviors/paper-checked-element-behavior.js",
+              "module": "./node_modules/@polymer/paper-behaviors/paper-checked-element-behavior.js",
+              "moduleName": "./node_modules/@polymer/paper-behaviors/paper-checked-element-behavior.js",
+              "type": "harmony import specifier",
+              "userRequest": "@polymer/iron-checked-element-behavior/iron-checked-element-behavior.js",
+              "loc": "29:4-34"
+            },
+            {
+              "moduleId": "./node_modules/@polymer/paper-behaviors/paper-checked-element-behavior.js",
+              "moduleIdentifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-behaviors/paper-checked-element-behavior.js",
+              "module": "./node_modules/@polymer/paper-behaviors/paper-checked-element-behavior.js",
+              "moduleName": "./node_modules/@polymer/paper-behaviors/paper-checked-element-behavior.js",
+              "type": "harmony import specifier",
+              "userRequest": "@polymer/iron-checked-element-behavior/iron-checked-element-behavior.js",
+              "loc": "56:2-28"
+            }
+          ],
+          "providedExports": [
+            "IronCheckedElementBehaviorImpl",
+            "IronCheckedElementBehavior"
+          ],
+          "optimizationBailout": [],
+          "depth": 4,
+          "source": "/**\n@license\nCopyright (c) 2015 The Polymer Project Authors. All rights reserved.\nThis code may only be used under the BSD style license found at\nhttp://polymer.github.io/LICENSE.txt The complete set of authors may be found at\nhttp://polymer.github.io/AUTHORS.txt The complete set of contributors may be\nfound at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by Google as\npart of the polymer project is also subject to an additional IP rights grant\nfound at http://polymer.github.io/PATENTS.txt\n*/\nimport '@polymer/polymer/polymer-legacy.js';\n\nimport {IronFormElementBehavior} from '@polymer/iron-form-element-behavior/iron-form-element-behavior.js';\nimport {IronValidatableBehavior} from '@polymer/iron-validatable-behavior/iron-validatable-behavior.js';\n\n/**\n * Use `IronCheckedElementBehavior` to implement a custom element that has a\n * `checked` property, which can be used for validation if the element is also\n * `required`. Element instances implementing this behavior will also be\n * registered for use in an `iron-form` element.\n *\n * @demo demo/index.html\n * @polymerBehavior IronCheckedElementBehavior\n */\nexport const IronCheckedElementBehaviorImpl = {\n\n  properties: {\n    /**\n     * Fired when the checked state changes.\n     *\n     * @event iron-change\n     */\n\n    /**\n     * Gets or sets the state, `true` is checked and `false` is unchecked.\n     */\n    checked: {\n      type: Boolean,\n      value: false,\n      reflectToAttribute: true,\n      notify: true,\n      observer: '_checkedChanged'\n    },\n\n    /**\n     * If true, the button toggles the active state with each tap or press\n     * of the spacebar.\n     */\n    toggles: {type: Boolean, value: true, reflectToAttribute: true},\n\n    /* Overriden from IronFormElementBehavior */\n    value: {type: String, value: 'on', observer: '_valueChanged'}\n  },\n\n  observers: ['_requiredChanged(required)'],\n\n  created: function() {\n    // Used by `iron-form` to handle the case that an element with this behavior\n    // doesn't have a role of 'checkbox' or 'radio', but should still only be\n    // included when the form is serialized if `this.checked === true`.\n    this._hasIronCheckedElementBehavior = true;\n  },\n\n  /**\n   * Returns false if the element is required and not checked, and true\n   * otherwise.\n   * @param {*=} _value Ignored.\n   * @return {boolean} true if `required` is false or if `checked` is true.\n   */\n  _getValidity: function(_value) {\n    return this.disabled || !this.required || this.checked;\n  },\n\n  /**\n   * Update the aria-required label when `required` is changed.\n   */\n  _requiredChanged: function() {\n    if (this.required) {\n      this.setAttribute('aria-required', 'true');\n    } else {\n      this.removeAttribute('aria-required');\n    }\n  },\n\n  /**\n   * Fire `iron-changed` when the checked state changes.\n   */\n  _checkedChanged: function() {\n    this.active = this.checked;\n    this.fire('iron-change');\n  },\n\n  /**\n   * Reset value to 'on' if it is set to `undefined`.\n   */\n  _valueChanged: function() {\n    if (this.value === undefined || this.value === null) {\n      this.value = 'on';\n    }\n  }\n};\n\n/** @polymerBehavior */\nexport const IronCheckedElementBehavior = [\n  IronFormElementBehavior,\n  IronValidatableBehavior,\n  IronCheckedElementBehaviorImpl\n];\n"
+        },
+        {
+          "id": "./node_modules/@polymer/iron-form-element-behavior/iron-form-element-behavior.js",
+          "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/iron-form-element-behavior/iron-form-element-behavior.js",
+          "name": "./node_modules/@polymer/iron-form-element-behavior/iron-form-element-behavior.js",
+          "index": 60,
+          "index2": 55,
+          "size": 1619,
+          "cacheable": true,
+          "built": true,
+          "optional": false,
+          "prefetched": false,
+          "chunks": [
+            "likeable"
+          ],
+          "issuer": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/iron-checked-element-behavior/iron-checked-element-behavior.js",
+          "issuerId": "./node_modules/@polymer/iron-checked-element-behavior/iron-checked-element-behavior.js",
+          "issuerName": "./node_modules/@polymer/iron-checked-element-behavior/iron-checked-element-behavior.js",
+          "issuerPath": [
+            {
+              "id": "./index.js",
+              "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/index.js",
+              "name": "./index.js",
+              "profile": {
+                "factory": 22,
+                "building": 20
+              }
+            },
+            {
+              "id": "./frontend/LikeableElement.js",
+              "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/frontend/LikeableElement.js",
+              "name": "./frontend/LikeableElement.js",
+              "profile": {
+                "factory": 218,
+                "building": 12
+              }
+            },
+            {
+              "id": "./node_modules/@polymer/paper-checkbox/paper-checkbox.js",
+              "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-checkbox/paper-checkbox.js",
+              "name": "./node_modules/@polymer/paper-checkbox/paper-checkbox.js",
+              "profile": {
+                "factory": 216,
+                "building": 36,
+                "dependencies": 0
+              }
+            },
+            {
+              "id": "./node_modules/@polymer/paper-behaviors/paper-checked-element-behavior.js",
+              "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-behaviors/paper-checked-element-behavior.js",
+              "name": "./node_modules/@polymer/paper-behaviors/paper-checked-element-behavior.js",
+              "profile": {
+                "factory": 12,
+                "building": 41,
+                "dependencies": 26
+              }
+            },
+            {
+              "id": "./node_modules/@polymer/iron-checked-element-behavior/iron-checked-element-behavior.js",
+              "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/iron-checked-element-behavior/iron-checked-element-behavior.js",
+              "name": "./node_modules/@polymer/iron-checked-element-behavior/iron-checked-element-behavior.js",
+              "profile": {
+                "factory": 100,
+                "building": 113,
+                "dependencies": 7
+              }
+            }
+          ],
+          "profile": {
+            "factory": 90,
+            "building": 12,
+            "dependencies": 33
+          },
+          "failed": false,
+          "errors": 0,
+          "warnings": 0,
+          "assets": [],
+          "reasons": [
+            {
+              "moduleId": "./node_modules/@polymer/iron-checked-element-behavior/iron-checked-element-behavior.js",
+              "moduleIdentifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/iron-checked-element-behavior/iron-checked-element-behavior.js",
+              "module": "./node_modules/@polymer/iron-checked-element-behavior/iron-checked-element-behavior.js",
+              "moduleName": "./node_modules/@polymer/iron-checked-element-behavior/iron-checked-element-behavior.js",
+              "type": "harmony side effect evaluation",
+              "userRequest": "@polymer/iron-form-element-behavior/iron-form-element-behavior.js",
+              "loc": "13:0-106"
+            },
+            {
+              "moduleId": "./node_modules/@polymer/iron-checked-element-behavior/iron-checked-element-behavior.js",
+              "moduleIdentifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/iron-checked-element-behavior/iron-checked-element-behavior.js",
+              "module": "./node_modules/@polymer/iron-checked-element-behavior/iron-checked-element-behavior.js",
+              "moduleName": "./node_modules/@polymer/iron-checked-element-behavior/iron-checked-element-behavior.js",
+              "type": "harmony import specifier",
+              "userRequest": "@polymer/iron-form-element-behavior/iron-form-element-behavior.js",
+              "loc": "105:2-25"
+            }
+          ],
+          "providedExports": [
+            "IronFormElementBehavior"
+          ],
+          "optimizationBailout": [],
+          "depth": 5,
+          "source": "/**\n@license\nCopyright (c) 2015 The Polymer Project Authors. All rights reserved.\nThis code may only be used under the BSD style license found at\nhttp://polymer.github.io/LICENSE.txt The complete set of authors may be found at\nhttp://polymer.github.io/AUTHORS.txt The complete set of contributors may be\nfound at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by Google as\npart of the polymer project is also subject to an additional IP rights grant\nfound at http://polymer.github.io/PATENTS.txt\n*/\nimport '@polymer/polymer/polymer-legacy.js';\n\n/**\n  IronFormElementBehavior adds a `name`, `value` and `required` properties to\n  a custom element. It mostly exists for backcompatibility with Polymer 1.x, and\n  is probably not something you want to use.\n\n  @demo demo/index.html\n  @polymerBehavior\n */\nexport const IronFormElementBehavior = {\n\n  properties: {\n    /**\n     * The name of this element.\n     */\n    name: {type: String},\n\n    /**\n     * The value for this element.\n     * @type {*}\n     */\n    value: {notify: true, type: String},\n\n    /**\n     * Set to true to mark the input as required. If used in a form, a\n     * custom element that uses this behavior should also use\n     * IronValidatableBehavior and define a custom validation method.\n     * Otherwise, a `required` element will always be considered valid.\n     * It's also strongly recommended to provide a visual style for the element\n     * when its value is invalid.\n     */\n    required: {type: Boolean, value: false},\n  },\n\n  // Empty implementations for backcompatibility.\n  attached: function() {},\n  detached: function() {}\n};\n"
+        },
+        {
+          "id": "./node_modules/@polymer/iron-meta/iron-meta.js",
+          "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/iron-meta/iron-meta.js",
+          "name": "./node_modules/@polymer/iron-meta/iron-meta.js",
+          "index": 62,
+          "index2": 56,
+          "size": 4996,
+          "cacheable": true,
+          "built": true,
+          "optional": false,
+          "prefetched": false,
+          "chunks": [
+            "likeable"
+          ],
+          "issuer": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/iron-validatable-behavior/iron-validatable-behavior.js",
+          "issuerId": "./node_modules/@polymer/iron-validatable-behavior/iron-validatable-behavior.js",
+          "issuerName": "./node_modules/@polymer/iron-validatable-behavior/iron-validatable-behavior.js",
+          "issuerPath": [
+            {
+              "id": "./index.js",
+              "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/index.js",
+              "name": "./index.js",
+              "profile": {
+                "factory": 22,
+                "building": 20
+              }
+            },
+            {
+              "id": "./frontend/LikeableElement.js",
+              "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/frontend/LikeableElement.js",
+              "name": "./frontend/LikeableElement.js",
+              "profile": {
+                "factory": 218,
+                "building": 12
+              }
+            },
+            {
+              "id": "./node_modules/@polymer/paper-checkbox/paper-checkbox.js",
+              "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-checkbox/paper-checkbox.js",
+              "name": "./node_modules/@polymer/paper-checkbox/paper-checkbox.js",
+              "profile": {
+                "factory": 216,
+                "building": 36,
+                "dependencies": 0
+              }
+            },
+            {
+              "id": "./node_modules/@polymer/paper-behaviors/paper-checked-element-behavior.js",
+              "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-behaviors/paper-checked-element-behavior.js",
+              "name": "./node_modules/@polymer/paper-behaviors/paper-checked-element-behavior.js",
+              "profile": {
+                "factory": 12,
+                "building": 41,
+                "dependencies": 26
+              }
+            },
+            {
+              "id": "./node_modules/@polymer/iron-checked-element-behavior/iron-checked-element-behavior.js",
+              "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/iron-checked-element-behavior/iron-checked-element-behavior.js",
+              "name": "./node_modules/@polymer/iron-checked-element-behavior/iron-checked-element-behavior.js",
+              "profile": {
+                "factory": 100,
+                "building": 113,
+                "dependencies": 7
+              }
+            },
+            {
+              "id": "./node_modules/@polymer/iron-validatable-behavior/iron-validatable-behavior.js",
+              "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/iron-validatable-behavior/iron-validatable-behavior.js",
+              "name": "./node_modules/@polymer/iron-validatable-behavior/iron-validatable-behavior.js",
+              "profile": {
+                "factory": 90,
+                "building": 12,
+                "dependencies": 33
+              }
+            }
+          ],
+          "profile": {
+            "factory": 45,
+            "building": 8,
+            "dependencies": 1
+          },
+          "failed": false,
+          "errors": 0,
+          "warnings": 0,
+          "assets": [],
+          "reasons": [
+            {
+              "moduleId": "./node_modules/@polymer/iron-validatable-behavior/iron-validatable-behavior.js",
+              "moduleIdentifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/iron-validatable-behavior/iron-validatable-behavior.js",
+              "module": "./node_modules/@polymer/iron-validatable-behavior/iron-validatable-behavior.js",
+              "moduleName": "./node_modules/@polymer/iron-validatable-behavior/iron-validatable-behavior.js",
+              "type": "harmony side effect evaluation",
+              "userRequest": "@polymer/iron-meta/iron-meta.js",
+              "loc": "13:0-57"
+            },
+            {
+              "moduleId": "./node_modules/@polymer/iron-validatable-behavior/iron-validatable-behavior.js",
+              "moduleIdentifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/iron-validatable-behavior/iron-validatable-behavior.js",
+              "module": "./node_modules/@polymer/iron-validatable-behavior/iron-validatable-behavior.js",
+              "moduleName": "./node_modules/@polymer/iron-validatable-behavior/iron-validatable-behavior.js",
+              "type": "harmony import specifier",
+              "userRequest": "@polymer/iron-meta/iron-meta.js",
+              "loc": "68:38-46"
+            }
+          ],
+          "providedExports": [
+            "IronMeta"
+          ],
+          "optimizationBailout": [],
+          "depth": 6,
+          "source": "/**\n@license\nCopyright (c) 2015 The Polymer Project Authors. All rights reserved.\nThis code may only be used under the BSD style license found at\nhttp://polymer.github.io/LICENSE.txt The complete set of authors may be found at\nhttp://polymer.github.io/AUTHORS.txt The complete set of contributors may be\nfound at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by Google as\npart of the polymer project is also subject to an additional IP rights grant\nfound at http://polymer.github.io/PATENTS.txt\n*/\nimport '@polymer/polymer/polymer-legacy.js';\n\nimport {Polymer} from '@polymer/polymer/lib/legacy/polymer-fn.js';\n\nexport class IronMeta {\n  /**\n   * @param {{\n   *   type: (string|null|undefined),\n   *   key: (string|null|undefined),\n   *   value: *,\n   * }=} options\n   */\n  constructor(options) {\n    IronMeta[' '](options);\n\n    /** @type {string} */\n    this.type = (options && options.type) || 'default';\n    /** @type {string|null|undefined} */\n    this.key = options && options.key;\n    if (options && 'value' in options) {\n      /** @type {*} */\n      this.value = options.value;\n    }\n  }\n\n  /** @return {*} */\n  get value() {\n    var type = this.type;\n    var key = this.key;\n\n    if (type && key) {\n      return IronMeta.types[type] && IronMeta.types[type][key];\n    }\n  }\n\n  /** @param {*} value */\n  set value(value) {\n    var type = this.type;\n    var key = this.key;\n\n    if (type && key) {\n      type = IronMeta.types[type] = IronMeta.types[type] || {};\n      if (value == null) {\n        delete type[key];\n      } else {\n        type[key] = value;\n      }\n    }\n  }\n\n  /** @return {!Array<*>} */\n  get list() {\n    var type = this.type;\n\n    if (type) {\n      var items = IronMeta.types[this.type];\n      if (!items) {\n        return [];\n      }\n\n      return Object.keys(items).map(function(key) {\n        return metaDatas[this.type][key];\n      }, this);\n    }\n  }\n\n  /**\n   * @param {string} key\n   * @return {*}\n   */\n  byKey(key) {\n    this.key = key;\n    return this.value;\n  }\n};\n\n// This function is used to convince Closure not to remove constructor calls\n// for instances that are not held anywhere. For example, when\n// `new IronMeta({...})` is used only for the side effect of adding a value.\nIronMeta[' '] = function() {};\n\nIronMeta.types = {};\n\nvar metaDatas = IronMeta.types;\n\n/**\n`iron-meta` is a generic element you can use for sharing information across the\nDOM tree. It uses [monostate pattern](http://c2.com/cgi/wiki?MonostatePattern)\nsuch that any instance of iron-meta has access to the shared information. You\ncan use `iron-meta` to share whatever you want (or create an extension [like\nx-meta] for enhancements).\n\nThe `iron-meta` instances containing your actual data can be loaded in an\nimport, or constructed in any way you see fit. The only requirement is that you\ncreate them before you try to access them.\n\nExamples:\n\nIf I create an instance like this:\n\n    <iron-meta key=\"info\" value=\"foo/bar\"></iron-meta>\n\nNote that value=\"foo/bar\" is the metadata I've defined. I could define more\nattributes or use child nodes to define additional metadata.\n\nNow I can access that element (and it's metadata) from any iron-meta instance\nvia the byKey method, e.g.\n\n    meta.byKey('info');\n\nPure imperative form would be like:\n\n    document.createElement('iron-meta').byKey('info');\n\nOr, in a Polymer element, you can include a meta in your template:\n\n    <iron-meta id=\"meta\"></iron-meta>\n    ...\n    this.$.meta.byKey('info');\n\n@group Iron Elements\n@demo demo/index.html\n@element iron-meta\n*/\nPolymer({\n\n  is: 'iron-meta',\n\n  properties: {\n\n    /**\n     * The type of meta-data.  All meta-data of the same type is stored\n     * together.\n     * @type {string}\n     */\n    type: {\n      type: String,\n      value: 'default',\n    },\n\n    /**\n     * The key used to store `value` under the `type` namespace.\n     * @type {?string}\n     */\n    key: {\n      type: String,\n    },\n\n    /**\n     * The meta-data to store or retrieve.\n     * @type {*}\n     */\n    value: {\n      type: String,\n      notify: true,\n    },\n\n    /**\n     * If true, `value` is set to the iron-meta instance itself.\n     */\n    self: {type: Boolean, observer: '_selfChanged'},\n\n    __meta: {type: Boolean, computed: '__computeMeta(type, key, value)'}\n  },\n\n  hostAttributes: {hidden: true},\n\n  __computeMeta: function(type, key, value) {\n    var meta = new IronMeta({type: type, key: key});\n\n    if (value !== undefined && value !== meta.value) {\n      meta.value = value;\n    } else if (this.value !== meta.value) {\n      this.value = meta.value;\n    }\n\n    return meta;\n  },\n\n  get list() {\n    return this.__meta && this.__meta.list;\n  },\n\n  _selfChanged: function(self) {\n    if (self) {\n      this.value = this;\n    }\n  },\n\n  /**\n   * Retrieves meta data value by key.\n   *\n   * @method byKey\n   * @param {string} key The key of the meta-data to be returned.\n   * @return {*}\n   */\n  byKey: function(key) {\n    return new IronMeta({type: this.type, key: key}).value;\n  }\n});\n"
+        }],
+      "filteredModules": 0,
+      "origins": [
+        {
+          "module": "",
+          "moduleIdentifier": "",
+          "moduleName": "",
+          "loc": "likeable",
+          "request": "./index.js",
+          "reasons": []
+        }
+      ]
+    }
+  ],
+  "modules": [
+    {
+      "id": "./frontend/LikeableElement.js",
+      "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/frontend/LikeableElement.js",
+      "name": "./frontend/LikeableElement.js",
+      "index": 1,
+      "index2": 67,
+      "size": 850,
+      "cacheable": true,
+      "built": true,
+      "optional": false,
+      "prefetched": false,
+      "chunks": [
+        "likeable"
+      ],
+      "issuer": "/Volumes/Framework/updates/skeleton-starter-flow/index.js",
+      "issuerId": "./index.js",
+      "issuerName": "./index.js",
+      "issuerPath": [
+        {
+          "id": "./index.js",
+          "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/index.js",
+          "name": "./index.js",
+          "profile": {
+            "factory": 22,
+            "building": 20
+          }
+        }
+      ],
+      "profile": {
+        "factory": 218,
+        "building": 12
+      },
+      "failed": false,
+      "errors": 0,
+      "warnings": 0,
+      "assets": [],
+      "reasons": [
+        {
+          "moduleId": "./index.js",
+          "moduleIdentifier": "/Volumes/Framework/updates/skeleton-starter-flow/index.js",
+          "module": "./index.js",
+          "moduleName": "./index.js",
+          "type": "harmony side effect evaluation",
+          "userRequest": "./frontend/LikeableElement.js",
+          "loc": "1:0-60"
+        }
+      ],
+      "providedExports": [],
+      "optimizationBailout": [],
+      "depth": 1,
+      "source": "// Import an element\nimport '@polymer/paper-checkbox/paper-checkbox.js';\n\n// Import the PolymerElement base class and html helper\nimport {PolymerElement, html} from '@polymer/polymer';\n\n// Define an element class\nclass LikeableElement extends PolymerElement {\n\n  // Define public API properties\n  static get properties() { return { liked: Boolean }}\n\n  // Define the element's template\n  static get template() {\n    return html`\n      <style>\n        :host{ \n          margin: 5px; \n        }\n      \n        .response { margin-top: 10px; } \n      </style>\n   <div>Tag name doesn't match the JS module name</div>   <paper-checkbox checked=\"{{liked}}\">I like web components!</paper-checkbox>\n\n      <div id=\"test\" hidden$=\"[[!liked]]\" class=\"response\">Web components like you, too.</div>\n    `;\n  }\n}\n\n// Register the element with the browser\ncustomElements.define('likeable-element', LikeableElement);\n\n"
+    },
+    {
+      "id": "./index.js",
+      "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/index.js",
+      "name": "./index.js",
+      "index": 0,
+      "index2": 84,
+      "size": 170,
+      "cacheable": true,
+      "built": true,
+      "optional": false,
+      "prefetched": false,
+      "chunks": [
+        "likeable"
+      ],
+      "issuer": null,
+      "issuerId": null,
+      "issuerName": null,
+      "issuerPath": null,
+      "profile": {
+        "factory": 22,
+        "building": 20
+      },
+      "failed": false,
+      "errors": 0,
+      "warnings": 0,
+      "assets": [],
+      "reasons": [
+        {
+          "moduleId": null,
+          "moduleIdentifier": null,
+          "module": null,
+          "moduleName": null,
+          "type": "single entry",
+          "userRequest": "./index.js",
+          "loc": "likeable"
+        }
+      ],
+      "providedExports": [],
+      "optimizationBailout": [],
+      "depth": 0,
+      "source": "import LikeableElement from './frontend/LikeableElement.js';\nimport VaadinButton from '@vaadin/vaadin-button';\n\nvar name = function() {\n  import(\"@vaadin/vaadin-grid\");\n}"
+    },
+    {
+      "id": "./node_modules/@polymer/iron-a11y-keys-behavior/iron-a11y-keys-behavior.js",
+      "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/iron-a11y-keys-behavior/iron-a11y-keys-behavior.js",
+      "name": "./node_modules/@polymer/iron-a11y-keys-behavior/iron-a11y-keys-behavior.js",
+      "index": 66,
+      "index2": 60,
+      "size": 14110,
+      "cacheable": true,
+      "built": true,
+      "optional": false,
+      "prefetched": false,
+      "chunks": [
+        "likeable"
+      ],
+      "issuer": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/iron-behaviors/iron-button-state.js",
+      "issuerId": "./node_modules/@polymer/iron-behaviors/iron-button-state.js",
+      "issuerName": "./node_modules/@polymer/iron-behaviors/iron-button-state.js",
+      "issuerPath": [
+        {
+          "id": "./index.js",
+          "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/index.js",
+          "name": "./index.js",
+          "profile": {
+            "factory": 22,
+            "building": 20
+          }
+        },
+        {
+          "id": "./frontend/LikeableElement.js",
+          "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/frontend/LikeableElement.js",
+          "name": "./frontend/LikeableElement.js",
+          "profile": {
+            "factory": 218,
+            "building": 12
+          }
+        },
+        {
+          "id": "./node_modules/@polymer/paper-checkbox/paper-checkbox.js",
+          "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-checkbox/paper-checkbox.js",
+          "name": "./node_modules/@polymer/paper-checkbox/paper-checkbox.js",
+          "profile": {
+            "factory": 216,
+            "building": 36,
+            "dependencies": 0
+          }
+        },
+        {
+          "id": "./node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+          "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+          "name": "./node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+          "profile": {
+            "factory": 12,
+            "building": 41,
+            "dependencies": 26
+          }
+        },
+        {
+          "id": "./node_modules/@polymer/iron-behaviors/iron-button-state.js",
+          "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/iron-behaviors/iron-button-state.js",
+          "name": "./node_modules/@polymer/iron-behaviors/iron-button-state.js",
+          "profile": {
+            "factory": 97,
+            "building": 118,
+            "dependencies": 4
+          }
+        }
+      ],
+      "profile": {
+        "factory": 87,
+        "building": 27,
+        "dependencies": 18
+      },
+      "failed": false,
+      "errors": 0,
+      "warnings": 0,
+      "assets": [],
+      "reasons": [
+        {
+          "moduleId": "./node_modules/@polymer/iron-behaviors/iron-button-state.js",
+          "moduleIdentifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/iron-behaviors/iron-button-state.js",
+          "module": "./node_modules/@polymer/iron-behaviors/iron-button-state.js",
+          "moduleName": "./node_modules/@polymer/iron-behaviors/iron-button-state.js",
+          "type": "harmony side effect evaluation",
+          "userRequest": "@polymer/iron-a11y-keys-behavior/iron-a11y-keys-behavior.js",
+          "loc": "14:0-97"
+        },
+        {
+          "moduleId": "./node_modules/@polymer/iron-behaviors/iron-button-state.js",
+          "moduleIdentifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/iron-behaviors/iron-button-state.js",
+          "module": "./node_modules/@polymer/iron-behaviors/iron-button-state.js",
+          "moduleName": "./node_modules/@polymer/iron-behaviors/iron-button-state.js",
+          "type": "harmony import specifier",
+          "userRequest": "@polymer/iron-a11y-keys-behavior/iron-a11y-keys-behavior.js",
+          "loc": "212:32-52"
+        },
+        {
+          "moduleId": "./node_modules/@polymer/paper-ripple/paper-ripple.js",
+          "moduleIdentifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-ripple/paper-ripple.js",
+          "module": "./node_modules/@polymer/paper-ripple/paper-ripple.js",
+          "moduleName": "./node_modules/@polymer/paper-ripple/paper-ripple.js",
+          "type": "harmony side effect evaluation",
+          "userRequest": "@polymer/iron-a11y-keys-behavior/iron-a11y-keys-behavior.js",
+          "loc": "13:0-97"
+        },
+        {
+          "moduleId": "./node_modules/@polymer/paper-ripple/paper-ripple.js",
+          "moduleIdentifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-ripple/paper-ripple.js",
+          "module": "./node_modules/@polymer/paper-ripple/paper-ripple.js",
+          "moduleName": "./node_modules/@polymer/paper-ripple/paper-ripple.js",
+          "type": "harmony import specifier",
+          "userRequest": "@polymer/iron-a11y-keys-behavior/iron-a11y-keys-behavior.js",
+          "loc": "429:14-34"
+        }
+      ],
+      "providedExports": [
+        "IronA11yKeysBehavior"
+      ],
+      "optimizationBailout": [],
+      "depth": 5,
+      "source": "/**\n@license\nCopyright (c) 2015 The Polymer Project Authors. All rights reserved.\nThis code may only be used under the BSD style license found at\nhttp://polymer.github.io/LICENSE.txt The complete set of authors may be found at\nhttp://polymer.github.io/AUTHORS.txt The complete set of contributors may be\nfound at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by Google as\npart of the polymer project is also subject to an additional IP rights grant\nfound at http://polymer.github.io/PATENTS.txt\n*/\nimport '@polymer/polymer/polymer-legacy.js';\n\n/**\n * Chrome uses an older version of DOM Level 3 Keyboard Events\n *\n * Most keys are labeled as text, but some are Unicode codepoints.\n * Values taken from:\n * http://www.w3.org/TR/2007/WD-DOM-Level-3-Events-20071221/keyset.html#KeySet-Set\n */\nvar KEY_IDENTIFIER = {\n  'U+0008': 'backspace',\n  'U+0009': 'tab',\n  'U+001B': 'esc',\n  'U+0020': 'space',\n  'U+007F': 'del'\n};\n\n/**\n * Special table for KeyboardEvent.keyCode.\n * KeyboardEvent.keyIdentifier is better, and KeyBoardEvent.key is even better\n * than that.\n *\n * Values from:\n * https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent.keyCode#Value_of_keyCode\n */\nvar KEY_CODE = {\n  8: 'backspace',\n  9: 'tab',\n  13: 'enter',\n  27: 'esc',\n  33: 'pageup',\n  34: 'pagedown',\n  35: 'end',\n  36: 'home',\n  32: 'space',\n  37: 'left',\n  38: 'up',\n  39: 'right',\n  40: 'down',\n  46: 'del',\n  106: '*'\n};\n\n/**\n * MODIFIER_KEYS maps the short name for modifier keys used in a key\n * combo string to the property name that references those same keys\n * in a KeyboardEvent instance.\n */\nvar MODIFIER_KEYS = {\n  'shift': 'shiftKey',\n  'ctrl': 'ctrlKey',\n  'alt': 'altKey',\n  'meta': 'metaKey'\n};\n\n/**\n * KeyboardEvent.key is mostly represented by printable character made by\n * the keyboard, with unprintable keys labeled nicely.\n *\n * However, on OS X, Alt+char can make a Unicode character that follows an\n * Apple-specific mapping. In this case, we fall back to .keyCode.\n */\nvar KEY_CHAR = /[a-z0-9*]/;\n\n/**\n * Matches a keyIdentifier string.\n */\nvar IDENT_CHAR = /U\\+/;\n\n/**\n * Matches arrow keys in Gecko 27.0+\n */\nvar ARROW_KEY = /^arrow/;\n\n/**\n * Matches space keys everywhere (notably including IE10's exceptional name\n * `spacebar`).\n */\nvar SPACE_KEY = /^space(bar)?/;\n\n/**\n * Matches ESC key.\n *\n * Value from: http://w3c.github.io/uievents-key/#key-Escape\n */\nvar ESC_KEY = /^escape$/;\n\n/**\n * Transforms the key.\n * @param {string} key The KeyBoardEvent.key\n * @param {Boolean} [noSpecialChars] Limits the transformation to\n * alpha-numeric characters.\n */\nfunction transformKey(key, noSpecialChars) {\n  var validKey = '';\n  if (key) {\n    var lKey = key.toLowerCase();\n    if (lKey === ' ' || SPACE_KEY.test(lKey)) {\n      validKey = 'space';\n    } else if (ESC_KEY.test(lKey)) {\n      validKey = 'esc';\n    } else if (lKey.length == 1) {\n      if (!noSpecialChars || KEY_CHAR.test(lKey)) {\n        validKey = lKey;\n      }\n    } else if (ARROW_KEY.test(lKey)) {\n      validKey = lKey.replace('arrow', '');\n    } else if (lKey == 'multiply') {\n      // numpad '*' can map to Multiply on IE/Windows\n      validKey = '*';\n    } else {\n      validKey = lKey;\n    }\n  }\n  return validKey;\n}\n\nfunction transformKeyIdentifier(keyIdent) {\n  var validKey = '';\n  if (keyIdent) {\n    if (keyIdent in KEY_IDENTIFIER) {\n      validKey = KEY_IDENTIFIER[keyIdent];\n    } else if (IDENT_CHAR.test(keyIdent)) {\n      keyIdent = parseInt(keyIdent.replace('U+', '0x'), 16);\n      validKey = String.fromCharCode(keyIdent).toLowerCase();\n    } else {\n      validKey = keyIdent.toLowerCase();\n    }\n  }\n  return validKey;\n}\n\nfunction transformKeyCode(keyCode) {\n  var validKey = '';\n  if (Number(keyCode)) {\n    if (keyCode >= 65 && keyCode <= 90) {\n      // ascii a-z\n      // lowercase is 32 offset from uppercase\n      validKey = String.fromCharCode(32 + keyCode);\n    } else if (keyCode >= 112 && keyCode <= 123) {\n      // function keys f1-f12\n      validKey = 'f' + (keyCode - 112 + 1);\n    } else if (keyCode >= 48 && keyCode <= 57) {\n      // top 0-9 keys\n      validKey = String(keyCode - 48);\n    } else if (keyCode >= 96 && keyCode <= 105) {\n      // num pad 0-9\n      validKey = String(keyCode - 96);\n    } else {\n      validKey = KEY_CODE[keyCode];\n    }\n  }\n  return validKey;\n}\n\n/**\n * Calculates the normalized key for a KeyboardEvent.\n * @param {KeyboardEvent} keyEvent\n * @param {Boolean} [noSpecialChars] Set to true to limit keyEvent.key\n * transformation to alpha-numeric chars. This is useful with key\n * combinations like shift + 2, which on FF for MacOS produces\n * keyEvent.key = @\n * To get 2 returned, set noSpecialChars = true\n * To get @ returned, set noSpecialChars = false\n */\nfunction normalizedKeyForEvent(keyEvent, noSpecialChars) {\n  // Fall back from .key, to .detail.key for artifical keyboard events,\n  // and then to deprecated .keyIdentifier and .keyCode.\n  if (keyEvent.key) {\n    return transformKey(keyEvent.key, noSpecialChars);\n  }\n  if (keyEvent.detail && keyEvent.detail.key) {\n    return transformKey(keyEvent.detail.key, noSpecialChars);\n  }\n  return transformKeyIdentifier(keyEvent.keyIdentifier) ||\n      transformKeyCode(keyEvent.keyCode) || '';\n}\n\nfunction keyComboMatchesEvent(keyCombo, event) {\n  // For combos with modifiers we support only alpha-numeric keys\n  var keyEvent = normalizedKeyForEvent(event, keyCombo.hasModifiers);\n  return keyEvent === keyCombo.key &&\n      (!keyCombo.hasModifiers ||\n       (!!event.shiftKey === !!keyCombo.shiftKey &&\n        !!event.ctrlKey === !!keyCombo.ctrlKey &&\n        !!event.altKey === !!keyCombo.altKey &&\n        !!event.metaKey === !!keyCombo.metaKey));\n}\n\nfunction parseKeyComboString(keyComboString) {\n  if (keyComboString.length === 1) {\n    return {combo: keyComboString, key: keyComboString, event: 'keydown'};\n  }\n  return keyComboString.split('+')\n      .reduce(function(parsedKeyCombo, keyComboPart) {\n        var eventParts = keyComboPart.split(':');\n        var keyName = eventParts[0];\n        var event = eventParts[1];\n\n        if (keyName in MODIFIER_KEYS) {\n          parsedKeyCombo[MODIFIER_KEYS[keyName]] = true;\n          parsedKeyCombo.hasModifiers = true;\n        } else {\n          parsedKeyCombo.key = keyName;\n          parsedKeyCombo.event = event || 'keydown';\n        }\n\n        return parsedKeyCombo;\n      }, {combo: keyComboString.split(':').shift()});\n}\n\nfunction parseEventString(eventString) {\n  return eventString.trim().split(' ').map(function(keyComboString) {\n    return parseKeyComboString(keyComboString);\n  });\n}\n\n/**\n * `Polymer.IronA11yKeysBehavior` provides a normalized interface for processing\n * keyboard commands that pertain to [WAI-ARIA best\n * practices](http://www.w3.org/TR/wai-aria-practices/#kbd_general_binding). The\n * element takes care of browser differences with respect to Keyboard events and\n * uses an expressive syntax to filter key presses.\n *\n * Use the `keyBindings` prototype property to express what combination of keys\n * will trigger the callback. A key binding has the format\n * `\"KEY+MODIFIER:EVENT\": \"callback\"` (`\"KEY\": \"callback\"` or\n * `\"KEY:EVENT\": \"callback\"` are valid as well). Some examples:\n *\n *      keyBindings: {\n *        'space': '_onKeydown', // same as 'space:keydown'\n *        'shift+tab': '_onKeydown',\n *        'enter:keypress': '_onKeypress',\n *        'esc:keyup': '_onKeyup'\n *      }\n *\n * The callback will receive with an event containing the following information\n * in `event.detail`:\n *\n *      _onKeydown: function(event) {\n *        console.log(event.detail.combo); // KEY+MODIFIER, e.g. \"shift+tab\"\n *        console.log(event.detail.key); // KEY only, e.g. \"tab\"\n *        console.log(event.detail.event); // EVENT, e.g. \"keydown\"\n *        console.log(event.detail.keyboardEvent); // the original KeyboardEvent\n *      }\n *\n * Use the `keyEventTarget` attribute to set up event handlers on a specific\n * node.\n *\n * See the [demo source\n * code](https://github.com/PolymerElements/iron-a11y-keys-behavior/blob/master/demo/x-key-aware.html)\n * for an example.\n *\n * @demo demo/index.html\n * @polymerBehavior\n */\nexport const IronA11yKeysBehavior = {\n  properties: {\n    /**\n     * The EventTarget that will be firing relevant KeyboardEvents. Set it to\n     * `null` to disable the listeners.\n     * @type {?EventTarget}\n     */\n    keyEventTarget: {\n      type: Object,\n      value: function() {\n        return this;\n      }\n    },\n\n    /**\n     * If true, this property will cause the implementing element to\n     * automatically stop propagation on any handled KeyboardEvents.\n     */\n    stopKeyboardEventPropagation: {type: Boolean, value: false},\n\n    _boundKeyHandlers: {\n      type: Array,\n      value: function() {\n        return [];\n      }\n    },\n\n    // We use this due to a limitation in IE10 where instances will have\n    // own properties of everything on the \"prototype\".\n    _imperativeKeyBindings: {\n      type: Object,\n      value: function() {\n        return {};\n      }\n    }\n  },\n\n  observers: ['_resetKeyEventListeners(keyEventTarget, _boundKeyHandlers)'],\n\n\n  /**\n   * To be used to express what combination of keys  will trigger the relative\n   * callback. e.g. `keyBindings: { 'esc': '_onEscPressed'}`\n   * @type {!Object}\n   */\n  keyBindings: {},\n\n  registered: function() {\n    this._prepKeyBindings();\n  },\n\n  attached: function() {\n    this._listenKeyEventListeners();\n  },\n\n  detached: function() {\n    this._unlistenKeyEventListeners();\n  },\n\n  /**\n   * Can be used to imperatively add a key binding to the implementing\n   * element. This is the imperative equivalent of declaring a keybinding\n   * in the `keyBindings` prototype property.\n   *\n   * @param {string} eventString\n   * @param {string} handlerName\n   */\n  addOwnKeyBinding: function(eventString, handlerName) {\n    this._imperativeKeyBindings[eventString] = handlerName;\n    this._prepKeyBindings();\n    this._resetKeyEventListeners();\n  },\n\n  /**\n   * When called, will remove all imperatively-added key bindings.\n   */\n  removeOwnKeyBindings: function() {\n    this._imperativeKeyBindings = {};\n    this._prepKeyBindings();\n    this._resetKeyEventListeners();\n  },\n\n  /**\n   * Returns true if a keyboard event matches `eventString`.\n   *\n   * @param {KeyboardEvent} event\n   * @param {string} eventString\n   * @return {boolean}\n   */\n  keyboardEventMatchesKeys: function(event, eventString) {\n    var keyCombos = parseEventString(eventString);\n    for (var i = 0; i < keyCombos.length; ++i) {\n      if (keyComboMatchesEvent(keyCombos[i], event)) {\n        return true;\n      }\n    }\n    return false;\n  },\n\n  _collectKeyBindings: function() {\n    var keyBindings = this.behaviors.map(function(behavior) {\n      return behavior.keyBindings;\n    });\n\n    if (keyBindings.indexOf(this.keyBindings) === -1) {\n      keyBindings.push(this.keyBindings);\n    }\n\n    return keyBindings;\n  },\n\n  _prepKeyBindings: function() {\n    this._keyBindings = {};\n\n    this._collectKeyBindings().forEach(function(keyBindings) {\n      for (var eventString in keyBindings) {\n        this._addKeyBinding(eventString, keyBindings[eventString]);\n      }\n    }, this);\n\n    for (var eventString in this._imperativeKeyBindings) {\n      this._addKeyBinding(\n          eventString, this._imperativeKeyBindings[eventString]);\n    }\n\n    // Give precedence to combos with modifiers to be checked first.\n    for (var eventName in this._keyBindings) {\n      this._keyBindings[eventName].sort(function(kb1, kb2) {\n        var b1 = kb1[0].hasModifiers;\n        var b2 = kb2[0].hasModifiers;\n        return (b1 === b2) ? 0 : b1 ? -1 : 1;\n      })\n    }\n  },\n\n  _addKeyBinding: function(eventString, handlerName) {\n    parseEventString(eventString).forEach(function(keyCombo) {\n      this._keyBindings[keyCombo.event] =\n          this._keyBindings[keyCombo.event] || [];\n\n      this._keyBindings[keyCombo.event].push([keyCombo, handlerName]);\n    }, this);\n  },\n\n  _resetKeyEventListeners: function() {\n    this._unlistenKeyEventListeners();\n\n    if (this.isAttached) {\n      this._listenKeyEventListeners();\n    }\n  },\n\n  _listenKeyEventListeners: function() {\n    if (!this.keyEventTarget) {\n      return;\n    }\n    Object.keys(this._keyBindings).forEach(function(eventName) {\n      var keyBindings = this._keyBindings[eventName];\n      var boundKeyHandler = this._onKeyBindingEvent.bind(this, keyBindings);\n\n      this._boundKeyHandlers.push(\n          [this.keyEventTarget, eventName, boundKeyHandler]);\n\n      this.keyEventTarget.addEventListener(eventName, boundKeyHandler);\n    }, this);\n  },\n\n  _unlistenKeyEventListeners: function() {\n    var keyHandlerTuple;\n    var keyEventTarget;\n    var eventName;\n    var boundKeyHandler;\n\n    while (this._boundKeyHandlers.length) {\n      // My kingdom for block-scope binding and destructuring assignment..\n      keyHandlerTuple = this._boundKeyHandlers.pop();\n      keyEventTarget = keyHandlerTuple[0];\n      eventName = keyHandlerTuple[1];\n      boundKeyHandler = keyHandlerTuple[2];\n\n      keyEventTarget.removeEventListener(eventName, boundKeyHandler);\n    }\n  },\n\n  _onKeyBindingEvent: function(keyBindings, event) {\n    if (this.stopKeyboardEventPropagation) {\n      event.stopPropagation();\n    }\n\n    // if event has been already prevented, don't do anything\n    if (event.defaultPrevented) {\n      return;\n    }\n\n    for (var i = 0; i < keyBindings.length; i++) {\n      var keyCombo = keyBindings[i][0];\n      var handlerName = keyBindings[i][1];\n      if (keyComboMatchesEvent(keyCombo, event)) {\n        this._triggerKeyHandler(keyCombo, handlerName, event);\n        // exit the loop if eventDefault was prevented\n        if (event.defaultPrevented) {\n          return;\n        }\n      }\n    }\n  },\n\n  _triggerKeyHandler: function(keyCombo, handlerName, keyboardEvent) {\n    var detail = Object.create(keyCombo);\n    detail.keyboardEvent = keyboardEvent;\n    var event =\n        new CustomEvent(keyCombo.event, {detail: detail, cancelable: true});\n    this[handlerName].call(this, event);\n    if (event.defaultPrevented) {\n      keyboardEvent.preventDefault();\n    }\n  }\n};\n"
+    },
+    {
+      "id": "./node_modules/@polymer/iron-behaviors/iron-button-state.js",
+      "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/iron-behaviors/iron-button-state.js",
+      "name": "./node_modules/@polymer/iron-behaviors/iron-button-state.js",
+      "index": 64,
+      "index2": 61,
+      "size": 5725,
+      "cacheable": true,
+      "built": true,
+      "optional": false,
+      "prefetched": false,
+      "chunks": [
+        "likeable"
+      ],
+      "issuer": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+      "issuerId": "./node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+      "issuerName": "./node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+      "issuerPath": [
+        {
+          "id": "./index.js",
+          "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/index.js",
+          "name": "./index.js",
+          "profile": {
+            "factory": 22,
+            "building": 20
+          }
+        },
+        {
+          "id": "./frontend/LikeableElement.js",
+          "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/frontend/LikeableElement.js",
+          "name": "./frontend/LikeableElement.js",
+          "profile": {
+            "factory": 218,
+            "building": 12
+          }
+        },
+        {
+          "id": "./node_modules/@polymer/paper-checkbox/paper-checkbox.js",
+          "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-checkbox/paper-checkbox.js",
+          "name": "./node_modules/@polymer/paper-checkbox/paper-checkbox.js",
+          "profile": {
+            "factory": 216,
+            "building": 36,
+            "dependencies": 0
+          }
+        },
+        {
+          "id": "./node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+          "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+          "name": "./node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+          "profile": {
+            "factory": 12,
+            "building": 41,
+            "dependencies": 26
+          }
+        }
+      ],
+      "profile": {
+        "factory": 97,
+        "building": 118,
+        "dependencies": 4
+      },
+      "failed": false,
+      "errors": 0,
+      "warnings": 0,
+      "assets": [],
+      "reasons": [
+        {
+          "moduleId": "./node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+          "moduleIdentifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+          "module": "./node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+          "moduleName": "./node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+          "type": "harmony side effect evaluation",
+          "userRequest": "@polymer/iron-behaviors/iron-button-state.js",
+          "loc": "13:0-77"
+        },
+        {
+          "moduleId": "./node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+          "moduleIdentifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+          "module": "./node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+          "moduleName": "./node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+          "type": "harmony import specifier",
+          "userRequest": "@polymer/iron-behaviors/iron-button-state.js",
+          "loc": "47:2-17"
+        },
+        {
+          "moduleId": "./node_modules/@polymer/paper-behaviors/paper-ripple-behavior.js",
+          "moduleIdentifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-behaviors/paper-ripple-behavior.js",
+          "module": "./node_modules/@polymer/paper-behaviors/paper-ripple-behavior.js",
+          "moduleName": "./node_modules/@polymer/paper-behaviors/paper-ripple-behavior.js",
+          "type": "harmony side effect evaluation",
+          "userRequest": "@polymer/iron-behaviors/iron-button-state.js",
+          "loc": "14:0-81"
+        },
+        {
+          "moduleId": "./node_modules/@polymer/paper-behaviors/paper-ripple-behavior.js",
+          "moduleIdentifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-behaviors/paper-ripple-behavior.js",
+          "module": "./node_modules/@polymer/paper-behaviors/paper-ripple-behavior.js",
+          "moduleName": "./node_modules/@polymer/paper-behaviors/paper-ripple-behavior.js",
+          "type": "harmony import specifier",
+          "userRequest": "@polymer/iron-behaviors/iron-button-state.js",
+          "loc": "57:4-23"
+        }
+      ],
+      "providedExports": [
+        "IronButtonStateImpl",
+        "IronButtonState"
+      ],
+      "optimizationBailout": [],
+      "depth": 4,
+      "source": "/**\n@license\nCopyright (c) 2015 The Polymer Project Authors. All rights reserved.\nThis code may only be used under the BSD style license found at\nhttp://polymer.github.io/LICENSE.txt The complete set of authors may be found at\nhttp://polymer.github.io/AUTHORS.txt The complete set of contributors may be\nfound at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by Google as\npart of the polymer project is also subject to an additional IP rights grant\nfound at http://polymer.github.io/PATENTS.txt\n*/\nimport '@polymer/polymer/polymer-legacy.js';\nimport './iron-control-state.js';\n\nimport {IronA11yKeysBehavior} from '@polymer/iron-a11y-keys-behavior/iron-a11y-keys-behavior.js';\nimport {dom} from '@polymer/polymer/lib/legacy/polymer.dom.js';\n\n/**\n * @demo demo/index.html\n * @polymerBehavior IronButtonState\n */\nexport const IronButtonStateImpl = {\n\n  properties: {\n\n    /**\n     * If true, the user is currently holding down the button.\n     */\n    pressed: {\n      type: Boolean,\n      readOnly: true,\n      value: false,\n      reflectToAttribute: true,\n      observer: '_pressedChanged'\n    },\n\n    /**\n     * If true, the button toggles the active state with each tap or press\n     * of the spacebar.\n     */\n    toggles: {type: Boolean, value: false, reflectToAttribute: true},\n\n    /**\n     * If true, the button is a toggle and is currently in the active state.\n     */\n    active:\n        {type: Boolean, value: false, notify: true, reflectToAttribute: true},\n\n    /**\n     * True if the element is currently being pressed by a \"pointer,\" which\n     * is loosely defined as mouse or touch input (but specifically excluding\n     * keyboard input).\n     */\n    pointerDown: {type: Boolean, readOnly: true, value: false},\n\n    /**\n     * True if the input device that caused the element to receive focus\n     * was a keyboard.\n     */\n    receivedFocusFromKeyboard: {type: Boolean, readOnly: true},\n\n    /**\n     * The aria attribute to be set if the button is a toggle and in the\n     * active state.\n     */\n    ariaActiveAttribute: {\n      type: String,\n      value: 'aria-pressed',\n      observer: '_ariaActiveAttributeChanged'\n    }\n  },\n\n  listeners: {down: '_downHandler', up: '_upHandler', tap: '_tapHandler'},\n\n  observers:\n      ['_focusChanged(focused)', '_activeChanged(active, ariaActiveAttribute)'],\n\n  /**\n   * @type {!Object}\n   */\n  keyBindings: {\n    'enter:keydown': '_asyncClick',\n    'space:keydown': '_spaceKeyDownHandler',\n    'space:keyup': '_spaceKeyUpHandler',\n  },\n\n  _mouseEventRe: /^mouse/,\n\n  _tapHandler: function() {\n    if (this.toggles) {\n      // a tap is needed to toggle the active state\n      this._userActivate(!this.active);\n    } else {\n      this.active = false;\n    }\n  },\n\n  _focusChanged: function(focused) {\n    this._detectKeyboardFocus(focused);\n\n    if (!focused) {\n      this._setPressed(false);\n    }\n  },\n\n  _detectKeyboardFocus: function(focused) {\n    this._setReceivedFocusFromKeyboard(!this.pointerDown && focused);\n  },\n\n  // to emulate native checkbox, (de-)activations from a user interaction fire\n  // 'change' events\n  _userActivate: function(active) {\n    if (this.active !== active) {\n      this.active = active;\n      this.fire('change');\n    }\n  },\n\n  _downHandler: function(event) {\n    this._setPointerDown(true);\n    this._setPressed(true);\n    this._setReceivedFocusFromKeyboard(false);\n  },\n\n  _upHandler: function() {\n    this._setPointerDown(false);\n    this._setPressed(false);\n  },\n\n  /**\n   * @param {!KeyboardEvent} event .\n   */\n  _spaceKeyDownHandler: function(event) {\n    var keyboardEvent = event.detail.keyboardEvent;\n    var target = dom(keyboardEvent).localTarget;\n\n    // Ignore the event if this is coming from a focused light child, since that\n    // element will deal with it.\n    if (this.isLightDescendant(/** @type {Node} */ (target)))\n      return;\n\n    keyboardEvent.preventDefault();\n    keyboardEvent.stopImmediatePropagation();\n    this._setPressed(true);\n  },\n\n  /**\n   * @param {!KeyboardEvent} event .\n   */\n  _spaceKeyUpHandler: function(event) {\n    var keyboardEvent = event.detail.keyboardEvent;\n    var target = dom(keyboardEvent).localTarget;\n\n    // Ignore the event if this is coming from a focused light child, since that\n    // element will deal with it.\n    if (this.isLightDescendant(/** @type {Node} */ (target)))\n      return;\n\n    if (this.pressed) {\n      this._asyncClick();\n    }\n    this._setPressed(false);\n  },\n\n  // trigger click asynchronously, the asynchrony is useful to allow one\n  // event handler to unwind before triggering another event\n  _asyncClick: function() {\n    this.async(function() {\n      this.click();\n    }, 1);\n  },\n\n  // any of these changes are considered a change to button state\n\n  _pressedChanged: function(pressed) {\n    this._changedButtonState();\n  },\n\n  _ariaActiveAttributeChanged: function(value, oldValue) {\n    if (oldValue && oldValue != value && this.hasAttribute(oldValue)) {\n      this.removeAttribute(oldValue);\n    }\n  },\n\n  _activeChanged: function(active, ariaActiveAttribute) {\n    if (this.toggles) {\n      this.setAttribute(this.ariaActiveAttribute, active ? 'true' : 'false');\n    } else {\n      this.removeAttribute(this.ariaActiveAttribute);\n    }\n    this._changedButtonState();\n  },\n\n  _controlStateChanged: function() {\n    if (this.disabled) {\n      this._setPressed(false);\n    } else {\n      this._changedButtonState();\n    }\n  },\n\n  // provide hook for follow-on behaviors to react to button-state\n\n  _changedButtonState: function() {\n    if (this._buttonStateChanged) {\n      this._buttonStateChanged();  // abstract\n    }\n  }\n\n};\n\n/** @polymerBehavior */\nexport const IronButtonState = [IronA11yKeysBehavior, IronButtonStateImpl];\n"
+    },
+    {
+      "id": "./node_modules/@polymer/iron-behaviors/iron-control-state.js",
+      "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/iron-behaviors/iron-control-state.js",
+      "name": "./node_modules/@polymer/iron-behaviors/iron-control-state.js",
+      "index": 65,
+      "index2": 59,
+      "size": 2963,
+      "cacheable": true,
+      "built": true,
+      "optional": false,
+      "prefetched": false,
+      "chunks": [
+        "likeable"
+      ],
+      "issuer": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+      "issuerId": "./node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+      "issuerName": "./node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+      "issuerPath": [
+        {
+          "id": "./index.js",
+          "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/index.js",
+          "name": "./index.js",
+          "profile": {
+            "factory": 22,
+            "building": 20
+          }
+        },
+        {
+          "id": "./frontend/LikeableElement.js",
+          "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/frontend/LikeableElement.js",
+          "name": "./frontend/LikeableElement.js",
+          "profile": {
+            "factory": 218,
+            "building": 12
+          }
+        },
+        {
+          "id": "./node_modules/@polymer/paper-checkbox/paper-checkbox.js",
+          "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-checkbox/paper-checkbox.js",
+          "name": "./node_modules/@polymer/paper-checkbox/paper-checkbox.js",
+          "profile": {
+            "factory": 216,
+            "building": 36,
+            "dependencies": 0
+          }
+        },
+        {
+          "id": "./node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+          "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+          "name": "./node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+          "profile": {
+            "factory": 12,
+            "building": 41,
+            "dependencies": 26
+          }
+        }
+      ],
+      "profile": {
+        "factory": 97,
+        "building": 118,
+        "dependencies": 4
+      },
+      "failed": false,
+      "errors": 0,
+      "warnings": 0,
+      "assets": [],
+      "reasons": [
+        {
+          "moduleId": "./node_modules/@polymer/iron-behaviors/iron-button-state.js",
+          "moduleIdentifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/iron-behaviors/iron-button-state.js",
+          "module": "./node_modules/@polymer/iron-behaviors/iron-button-state.js",
+          "moduleName": "./node_modules/@polymer/iron-behaviors/iron-button-state.js",
+          "type": "harmony side effect evaluation",
+          "userRequest": "./iron-control-state.js",
+          "loc": "12:0-33"
+        },
+        {
+          "moduleId": "./node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+          "moduleIdentifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+          "module": "./node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+          "moduleName": "./node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+          "type": "harmony side effect evaluation",
+          "userRequest": "@polymer/iron-behaviors/iron-control-state.js",
+          "loc": "14:0-79"
+        },
+        {
+          "moduleId": "./node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+          "moduleIdentifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+          "module": "./node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+          "moduleName": "./node_modules/@polymer/paper-behaviors/paper-inky-focus-behavior.js",
+          "type": "harmony import specifier",
+          "userRequest": "@polymer/iron-behaviors/iron-control-state.js",
+          "loc": "48:2-18"
+        }
+      ],
+      "providedExports": [
+        "IronControlState"
+      ],
+      "optimizationBailout": [],
+      "depth": 4,
+      "source": "/**\n@license\nCopyright (c) 2015 The Polymer Project Authors. All rights reserved.\nThis code may only be used under the BSD style license found at\nhttp://polymer.github.io/LICENSE.txt The complete set of authors may be found at\nhttp://polymer.github.io/AUTHORS.txt The complete set of contributors may be\nfound at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by Google as\npart of the polymer project is also subject to an additional IP rights grant\nfound at http://polymer.github.io/PATENTS.txt\n*/\nimport '@polymer/polymer/polymer-legacy.js';\n\nimport {dom} from '@polymer/polymer/lib/legacy/polymer.dom.js';\n\n/**\n * @demo demo/index.html\n * @polymerBehavior\n */\nexport const IronControlState = {\n\n  properties: {\n\n    /**\n     * If true, the element currently has focus.\n     */\n    focused: {\n      type: Boolean,\n      value: false,\n      notify: true,\n      readOnly: true,\n      reflectToAttribute: true\n    },\n\n    /**\n     * If true, the user cannot interact with this element.\n     */\n    disabled: {\n      type: Boolean,\n      value: false,\n      notify: true,\n      observer: '_disabledChanged',\n      reflectToAttribute: true\n    },\n\n    /**\n     * Value of the `tabindex` attribute before `disabled` was activated.\n     * `null` means the attribute was not present.\n     * @type {?string|undefined}\n     */\n    _oldTabIndex: {type: String},\n\n    _boundFocusBlurHandler: {\n      type: Function,\n      value: function() {\n        return this._focusBlurHandler.bind(this);\n      }\n    }\n  },\n\n  observers: ['_changedControlState(focused, disabled)'],\n\n  /**\n   * @return {void}\n   */\n  ready: function() {\n    this.addEventListener('focus', this._boundFocusBlurHandler, true);\n    this.addEventListener('blur', this._boundFocusBlurHandler, true);\n  },\n\n  _focusBlurHandler: function(event) {\n    // Polymer takes care of retargeting events.\n    this._setFocused(event.type === 'focus');\n    return;\n  },\n\n  _disabledChanged: function(disabled, old) {\n    this.setAttribute('aria-disabled', disabled ? 'true' : 'false');\n    this.style.pointerEvents = disabled ? 'none' : '';\n    if (disabled) {\n      // Read the `tabindex` attribute instead of the `tabIndex` property.\n      // The property returns `-1` if there is no `tabindex` attribute.\n      // This distinction is important when restoring the value because\n      // leaving `-1` hides shadow root children from the tab order.\n      this._oldTabIndex = this.getAttribute('tabindex');\n      this._setFocused(false);\n      this.tabIndex = -1;\n      this.blur();\n    } else if (this._oldTabIndex !== undefined) {\n      if (this._oldTabIndex === null) {\n        this.removeAttribute('tabindex');\n      } else {\n        this.setAttribute('tabindex', this._oldTabIndex);\n      }\n    }\n  },\n\n  _changedControlState: function() {\n    // _controlStateChanged is abstract, follow-on behaviors may implement it\n    if (this._controlStateChanged) {\n      this._controlStateChanged();\n    }\n  }\n\n};\n"
+    },
+    {
+      "id": "./node_modules/@polymer/iron-checked-element-behavior/iron-checked-element-behavior.js",
+      "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/iron-checked-element-behavior/iron-checked-element-behavior.js",
+      "name": "./node_modules/@polymer/iron-checked-element-behavior/iron-checked-element-behavior.js",
+      "index": 59,
+      "index2": 58,
+      "size": 3278,
+      "cacheable": true,
+      "built": true,
+      "optional": false,
+      "prefetched": false,
+      "chunks": [
+        "likeable"
+      ],
+      "issuer": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-behaviors/paper-checked-element-behavior.js",
+      "issuerId": "./node_modules/@polymer/paper-behaviors/paper-checked-element-behavior.js",
+      "issuerName": "./node_modules/@polymer/paper-behaviors/paper-checked-element-behavior.js",
+      "issuerPath": [
+        {
+          "id": "./index.js",
+          "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/index.js",
+          "name": "./index.js",
+          "profile": {
+            "factory": 22,
+            "building": 20
+          }
+        },
+        {
+          "id": "./frontend/LikeableElement.js",
+          "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/frontend/LikeableElement.js",
+          "name": "./frontend/LikeableElement.js",
+          "profile": {
+            "factory": 218,
+            "building": 12
+          }
+        },
+        {
+          "id": "./node_modules/@polymer/paper-checkbox/paper-checkbox.js",
+          "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-checkbox/paper-checkbox.js",
+          "name": "./node_modules/@polymer/paper-checkbox/paper-checkbox.js",
+          "profile": {
+            "factory": 216,
+            "building": 36,
+            "dependencies": 0
+          }
+        },
+        {
+          "id": "./node_modules/@polymer/paper-behaviors/paper-checked-element-behavior.js",
+          "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-behaviors/paper-checked-element-behavior.js",
+          "name": "./node_modules/@polymer/paper-behaviors/paper-checked-element-behavior.js",
+          "profile": {
+            "factory": 12,
+            "building": 41,
+            "dependencies": 26
+          }
+        }
+      ],
+      "profile": {
+        "factory": 100,
+        "building": 113,
+        "dependencies": 7
+      },
+      "failed": false,
+      "errors": 0,
+      "warnings": 0,
+      "assets": [],
+      "reasons": [
+        {
+          "moduleId": "./node_modules/@polymer/paper-behaviors/paper-checked-element-behavior.js",
+          "moduleIdentifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-behaviors/paper-checked-element-behavior.js",
+          "module": "./node_modules/@polymer/paper-behaviors/paper-checked-element-behavior.js",
+          "moduleName": "./node_modules/@polymer/paper-behaviors/paper-checked-element-behavior.js",
+          "type": "harmony side effect evaluation",
+          "userRequest": "@polymer/iron-checked-element-behavior/iron-checked-element-behavior.js",
+          "loc": "13:0-147"
+        },
+        {
+          "moduleId": "./node_modules/@polymer/paper-behaviors/paper-checked-element-behavior.js",
+          "moduleIdentifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-behaviors/paper-checked-element-behavior.js",
+          "module": "./node_modules/@polymer/paper-behaviors/paper-checked-element-behavior.js",
+          "moduleName": "./node_modules/@polymer/paper-behaviors/paper-checked-element-behavior.js",
+          "type": "harmony import specifier",
+          "userRequest": "@polymer/iron-checked-element-behavior/iron-checked-element-behavior.js",
+          "loc": "29:4-34"
+        },
+        {
+          "moduleId": "./node_modules/@polymer/paper-behaviors/paper-checked-element-behavior.js",
+          "moduleIdentifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-behaviors/paper-checked-element-behavior.js",
+          "module": "./node_modules/@polymer/paper-behaviors/paper-checked-element-behavior.js",
+          "moduleName": "./node_modules/@polymer/paper-behaviors/paper-checked-element-behavior.js",
+          "type": "harmony import specifier",
+          "userRequest": "@polymer/iron-checked-element-behavior/iron-checked-element-behavior.js",
+          "loc": "56:2-28"
+        }
+      ],
+      "providedExports": [
+        "IronCheckedElementBehaviorImpl",
+        "IronCheckedElementBehavior"
+      ],
+      "optimizationBailout": [],
+      "depth": 4,
+      "source": "/**\n@license\nCopyright (c) 2015 The Polymer Project Authors. All rights reserved.\nThis code may only be used under the BSD style license found at\nhttp://polymer.github.io/LICENSE.txt The complete set of authors may be found at\nhttp://polymer.github.io/AUTHORS.txt The complete set of contributors may be\nfound at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by Google as\npart of the polymer project is also subject to an additional IP rights grant\nfound at http://polymer.github.io/PATENTS.txt\n*/\nimport '@polymer/polymer/polymer-legacy.js';\n\nimport {IronFormElementBehavior} from '@polymer/iron-form-element-behavior/iron-form-element-behavior.js';\nimport {IronValidatableBehavior} from '@polymer/iron-validatable-behavior/iron-validatable-behavior.js';\n\n/**\n * Use `IronCheckedElementBehavior` to implement a custom element that has a\n * `checked` property, which can be used for validation if the element is also\n * `required`. Element instances implementing this behavior will also be\n * registered for use in an `iron-form` element.\n *\n * @demo demo/index.html\n * @polymerBehavior IronCheckedElementBehavior\n */\nexport const IronCheckedElementBehaviorImpl = {\n\n  properties: {\n    /**\n     * Fired when the checked state changes.\n     *\n     * @event iron-change\n     */\n\n    /**\n     * Gets or sets the state, `true` is checked and `false` is unchecked.\n     */\n    checked: {\n      type: Boolean,\n      value: false,\n      reflectToAttribute: true,\n      notify: true,\n      observer: '_checkedChanged'\n    },\n\n    /**\n     * If true, the button toggles the active state with each tap or press\n     * of the spacebar.\n     */\n    toggles: {type: Boolean, value: true, reflectToAttribute: true},\n\n    /* Overriden from IronFormElementBehavior */\n    value: {type: String, value: 'on', observer: '_valueChanged'}\n  },\n\n  observers: ['_requiredChanged(required)'],\n\n  created: function() {\n    // Used by `iron-form` to handle the case that an element with this behavior\n    // doesn't have a role of 'checkbox' or 'radio', but should still only be\n    // included when the form is serialized if `this.checked === true`.\n    this._hasIronCheckedElementBehavior = true;\n  },\n\n  /**\n   * Returns false if the element is required and not checked, and true\n   * otherwise.\n   * @param {*=} _value Ignored.\n   * @return {boolean} true if `required` is false or if `checked` is true.\n   */\n  _getValidity: function(_value) {\n    return this.disabled || !this.required || this.checked;\n  },\n\n  /**\n   * Update the aria-required label when `required` is changed.\n   */\n  _requiredChanged: function() {\n    if (this.required) {\n      this.setAttribute('aria-required', 'true');\n    } else {\n      this.removeAttribute('aria-required');\n    }\n  },\n\n  /**\n   * Fire `iron-changed` when the checked state changes.\n   */\n  _checkedChanged: function() {\n    this.active = this.checked;\n    this.fire('iron-change');\n  },\n\n  /**\n   * Reset value to 'on' if it is set to `undefined`.\n   */\n  _valueChanged: function() {\n    if (this.value === undefined || this.value === null) {\n      this.value = 'on';\n    }\n  }\n};\n\n/** @polymerBehavior */\nexport const IronCheckedElementBehavior = [\n  IronFormElementBehavior,\n  IronValidatableBehavior,\n  IronCheckedElementBehaviorImpl\n];\n"
+    },
+    {
+      "id": "./node_modules/@polymer/iron-form-element-behavior/iron-form-element-behavior.js",
+      "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/iron-form-element-behavior/iron-form-element-behavior.js",
+      "name": "./node_modules/@polymer/iron-form-element-behavior/iron-form-element-behavior.js",
+      "index": 60,
+      "index2": 55,
+      "size": 1619,
+      "cacheable": true,
+      "built": true,
+      "optional": false,
+      "prefetched": false,
+      "chunks": [
+        "likeable"
+      ],
+      "issuer": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/iron-checked-element-behavior/iron-checked-element-behavior.js",
+      "issuerId": "./node_modules/@polymer/iron-checked-element-behavior/iron-checked-element-behavior.js",
+      "issuerName": "./node_modules/@polymer/iron-checked-element-behavior/iron-checked-element-behavior.js",
+      "issuerPath": [
+        {
+          "id": "./index.js",
+          "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/index.js",
+          "name": "./index.js",
+          "profile": {
+            "factory": 22,
+            "building": 20
+          }
+        },
+        {
+          "id": "./frontend/LikeableElement.js",
+          "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/frontend/LikeableElement.js",
+          "name": "./frontend/LikeableElement.js",
+          "profile": {
+            "factory": 218,
+            "building": 12
+          }
+        },
+        {
+          "id": "./node_modules/@polymer/paper-checkbox/paper-checkbox.js",
+          "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-checkbox/paper-checkbox.js",
+          "name": "./node_modules/@polymer/paper-checkbox/paper-checkbox.js",
+          "profile": {
+            "factory": 216,
+            "building": 36,
+            "dependencies": 0
+          }
+        },
+        {
+          "id": "./node_modules/@polymer/paper-behaviors/paper-checked-element-behavior.js",
+          "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-behaviors/paper-checked-element-behavior.js",
+          "name": "./node_modules/@polymer/paper-behaviors/paper-checked-element-behavior.js",
+          "profile": {
+            "factory": 12,
+            "building": 41,
+            "dependencies": 26
+          }
+        },
+        {
+          "id": "./node_modules/@polymer/iron-checked-element-behavior/iron-checked-element-behavior.js",
+          "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/iron-checked-element-behavior/iron-checked-element-behavior.js",
+          "name": "./node_modules/@polymer/iron-checked-element-behavior/iron-checked-element-behavior.js",
+          "profile": {
+            "factory": 100,
+            "building": 113,
+            "dependencies": 7
+          }
+        }
+      ],
+      "profile": {
+        "factory": 90,
+        "building": 12,
+        "dependencies": 33
+      },
+      "failed": false,
+      "errors": 0,
+      "warnings": 0,
+      "assets": [],
+      "reasons": [
+        {
+          "moduleId": "./node_modules/@polymer/iron-checked-element-behavior/iron-checked-element-behavior.js",
+          "moduleIdentifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/iron-checked-element-behavior/iron-checked-element-behavior.js",
+          "module": "./node_modules/@polymer/iron-checked-element-behavior/iron-checked-element-behavior.js",
+          "moduleName": "./node_modules/@polymer/iron-checked-element-behavior/iron-checked-element-behavior.js",
+          "type": "harmony side effect evaluation",
+          "userRequest": "@polymer/iron-form-element-behavior/iron-form-element-behavior.js",
+          "loc": "13:0-106"
+        },
+        {
+          "moduleId": "./node_modules/@polymer/iron-checked-element-behavior/iron-checked-element-behavior.js",
+          "moduleIdentifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/iron-checked-element-behavior/iron-checked-element-behavior.js",
+          "module": "./node_modules/@polymer/iron-checked-element-behavior/iron-checked-element-behavior.js",
+          "moduleName": "./node_modules/@polymer/iron-checked-element-behavior/iron-checked-element-behavior.js",
+          "type": "harmony import specifier",
+          "userRequest": "@polymer/iron-form-element-behavior/iron-form-element-behavior.js",
+          "loc": "105:2-25"
+        }
+      ],
+      "providedExports": [
+        "IronFormElementBehavior"
+      ],
+      "optimizationBailout": [],
+      "depth": 5,
+      "source": "/**\n@license\nCopyright (c) 2015 The Polymer Project Authors. All rights reserved.\nThis code may only be used under the BSD style license found at\nhttp://polymer.github.io/LICENSE.txt The complete set of authors may be found at\nhttp://polymer.github.io/AUTHORS.txt The complete set of contributors may be\nfound at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by Google as\npart of the polymer project is also subject to an additional IP rights grant\nfound at http://polymer.github.io/PATENTS.txt\n*/\nimport '@polymer/polymer/polymer-legacy.js';\n\n/**\n  IronFormElementBehavior adds a `name`, `value` and `required` properties to\n  a custom element. It mostly exists for backcompatibility with Polymer 1.x, and\n  is probably not something you want to use.\n\n  @demo demo/index.html\n  @polymerBehavior\n */\nexport const IronFormElementBehavior = {\n\n  properties: {\n    /**\n     * The name of this element.\n     */\n    name: {type: String},\n\n    /**\n     * The value for this element.\n     * @type {*}\n     */\n    value: {notify: true, type: String},\n\n    /**\n     * Set to true to mark the input as required. If used in a form, a\n     * custom element that uses this behavior should also use\n     * IronValidatableBehavior and define a custom validation method.\n     * Otherwise, a `required` element will always be considered valid.\n     * It's also strongly recommended to provide a visual style for the element\n     * when its value is invalid.\n     */\n    required: {type: Boolean, value: false},\n  },\n\n  // Empty implementations for backcompatibility.\n  attached: function() {},\n  detached: function() {}\n};\n"
+    },
+    {
+      "id": "./node_modules/@polymer/iron-meta/iron-meta.js",
+      "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/iron-meta/iron-meta.js",
+      "name": "./node_modules/@polymer/iron-meta/iron-meta.js",
+      "index": 62,
+      "index2": 56,
+      "size": 4996,
+      "cacheable": true,
+      "built": true,
+      "optional": false,
+      "prefetched": false,
+      "chunks": [
+        "likeable"
+      ],
+      "issuer": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/iron-validatable-behavior/iron-validatable-behavior.js",
+      "issuerId": "./node_modules/@polymer/iron-validatable-behavior/iron-validatable-behavior.js",
+      "issuerName": "./node_modules/@polymer/iron-validatable-behavior/iron-validatable-behavior.js",
+      "issuerPath": [
+        {
+          "id": "./index.js",
+          "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/index.js",
+          "name": "./index.js",
+          "profile": {
+            "factory": 22,
+            "building": 20
+          }
+        },
+        {
+          "id": "./frontend/LikeableElement.js",
+          "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/frontend/LikeableElement.js",
+          "name": "./frontend/LikeableElement.js",
+          "profile": {
+            "factory": 218,
+            "building": 12
+          }
+        },
+        {
+          "id": "./node_modules/@polymer/paper-checkbox/paper-checkbox.js",
+          "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-checkbox/paper-checkbox.js",
+          "name": "./node_modules/@polymer/paper-checkbox/paper-checkbox.js",
+          "profile": {
+            "factory": 216,
+            "building": 36,
+            "dependencies": 0
+          }
+        },
+        {
+          "id": "./node_modules/@polymer/paper-behaviors/paper-checked-element-behavior.js",
+          "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/paper-behaviors/paper-checked-element-behavior.js",
+          "name": "./node_modules/@polymer/paper-behaviors/paper-checked-element-behavior.js",
+          "profile": {
+            "factory": 12,
+            "building": 41,
+            "dependencies": 26
+          }
+        },
+        {
+          "id": "./node_modules/@polymer/iron-checked-element-behavior/iron-checked-element-behavior.js",
+          "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/iron-checked-element-behavior/iron-checked-element-behavior.js",
+          "name": "./node_modules/@polymer/iron-checked-element-behavior/iron-checked-element-behavior.js",
+          "profile": {
+            "factory": 100,
+            "building": 113,
+            "dependencies": 7
+          }
+        },
+        {
+          "id": "./node_modules/@polymer/iron-validatable-behavior/iron-validatable-behavior.js",
+          "identifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/iron-validatable-behavior/iron-validatable-behavior.js",
+          "name": "./node_modules/@polymer/iron-validatable-behavior/iron-validatable-behavior.js",
+          "profile": {
+            "factory": 90,
+            "building": 12,
+            "dependencies": 33
+          }
+        }
+      ],
+      "profile": {
+        "factory": 45,
+        "building": 8,
+        "dependencies": 1
+      },
+      "failed": false,
+      "errors": 0,
+      "warnings": 0,
+      "assets": [],
+      "reasons": [
+        {
+          "moduleId": "./node_modules/@polymer/iron-validatable-behavior/iron-validatable-behavior.js",
+          "moduleIdentifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/iron-validatable-behavior/iron-validatable-behavior.js",
+          "module": "./node_modules/@polymer/iron-validatable-behavior/iron-validatable-behavior.js",
+          "moduleName": "./node_modules/@polymer/iron-validatable-behavior/iron-validatable-behavior.js",
+          "type": "harmony side effect evaluation",
+          "userRequest": "@polymer/iron-meta/iron-meta.js",
+          "loc": "13:0-57"
+        },
+        {
+          "moduleId": "./node_modules/@polymer/iron-validatable-behavior/iron-validatable-behavior.js",
+          "moduleIdentifier": "/Volumes/Framework/updates/skeleton-starter-flow/node_modules/@polymer/iron-validatable-behavior/iron-validatable-behavior.js",
+          "module": "./node_modules/@polymer/iron-validatable-behavior/iron-validatable-behavior.js",
+          "moduleName": "./node_modules/@polymer/iron-validatable-behavior/iron-validatable-behavior.js",
+          "type": "harmony import specifier",
+          "userRequest": "@polymer/iron-meta/iron-meta.js",
+          "loc": "68:38-46"
+        }
+      ],
+      "providedExports": [
+        "IronMeta"
+      ],
+      "optimizationBailout": [],
+      "depth": 6,
+      "source": "/**\n@license\nCopyright (c) 2015 The Polymer Project Authors. All rights reserved.\nThis code may only be used under the BSD style license found at\nhttp://polymer.github.io/LICENSE.txt The complete set of authors may be found at\nhttp://polymer.github.io/AUTHORS.txt The complete set of contributors may be\nfound at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by Google as\npart of the polymer project is also subject to an additional IP rights grant\nfound at http://polymer.github.io/PATENTS.txt\n*/\nimport '@polymer/polymer/polymer-legacy.js';\n\nimport {Polymer} from '@polymer/polymer/lib/legacy/polymer-fn.js';\n\nexport class IronMeta {\n  /**\n   * @param {{\n   *   type: (string|null|undefined),\n   *   key: (string|null|undefined),\n   *   value: *,\n   * }=} options\n   */\n  constructor(options) {\n    IronMeta[' '](options);\n\n    /** @type {string} */\n    this.type = (options && options.type) || 'default';\n    /** @type {string|null|undefined} */\n    this.key = options && options.key;\n    if (options && 'value' in options) {\n      /** @type {*} */\n      this.value = options.value;\n    }\n  }\n\n  /** @return {*} */\n  get value() {\n    var type = this.type;\n    var key = this.key;\n\n    if (type && key) {\n      return IronMeta.types[type] && IronMeta.types[type][key];\n    }\n  }\n\n  /** @param {*} value */\n  set value(value) {\n    var type = this.type;\n    var key = this.key;\n\n    if (type && key) {\n      type = IronMeta.types[type] = IronMeta.types[type] || {};\n      if (value == null) {\n        delete type[key];\n      } else {\n        type[key] = value;\n      }\n    }\n  }\n\n  /** @return {!Array<*>} */\n  get list() {\n    var type = this.type;\n\n    if (type) {\n      var items = IronMeta.types[this.type];\n      if (!items) {\n        return [];\n      }\n\n      return Object.keys(items).map(function(key) {\n        return metaDatas[this.type][key];\n      }, this);\n    }\n  }\n\n  /**\n   * @param {string} key\n   * @return {*}\n   */\n  byKey(key) {\n    this.key = key;\n    return this.value;\n  }\n};\n\n// This function is used to convince Closure not to remove constructor calls\n// for instances that are not held anywhere. For example, when\n// `new IronMeta({...})` is used only for the side effect of adding a value.\nIronMeta[' '] = function() {};\n\nIronMeta.types = {};\n\nvar metaDatas = IronMeta.types;\n\n/**\n`iron-meta` is a generic element you can use for sharing information across the\nDOM tree. It uses [monostate pattern](http://c2.com/cgi/wiki?MonostatePattern)\nsuch that any instance of iron-meta has access to the shared information. You\ncan use `iron-meta` to share whatever you want (or create an extension [like\nx-meta] for enhancements).\n\nThe `iron-meta` instances containing your actual data can be loaded in an\nimport, or constructed in any way you see fit. The only requirement is that you\ncreate them before you try to access them.\n\nExamples:\n\nIf I create an instance like this:\n\n    <iron-meta key=\"info\" value=\"foo/bar\"></iron-meta>\n\nNote that value=\"foo/bar\" is the metadata I've defined. I could define more\nattributes or use child nodes to define additional metadata.\n\nNow I can access that element (and it's metadata) from any iron-meta instance\nvia the byKey method, e.g.\n\n    meta.byKey('info');\n\nPure imperative form would be like:\n\n    document.createElement('iron-meta').byKey('info');\n\nOr, in a Polymer element, you can include a meta in your template:\n\n    <iron-meta id=\"meta\"></iron-meta>\n    ...\n    this.$.meta.byKey('info');\n\n@group Iron Elements\n@demo demo/index.html\n@element iron-meta\n*/\nPolymer({\n\n  is: 'iron-meta',\n\n  properties: {\n\n    /**\n     * The type of meta-data.  All meta-data of the same type is stored\n     * together.\n     * @type {string}\n     */\n    type: {\n      type: String,\n      value: 'default',\n    },\n\n    /**\n     * The key used to store `value` under the `type` namespace.\n     * @type {?string}\n     */\n    key: {\n      type: String,\n    },\n\n    /**\n     * The meta-data to store or retrieve.\n     * @type {*}\n     */\n    value: {\n      type: String,\n      notify: true,\n    },\n\n    /**\n     * If true, `value` is set to the iron-meta instance itself.\n     */\n    self: {type: Boolean, observer: '_selfChanged'},\n\n    __meta: {type: Boolean, computed: '__computeMeta(type, key, value)'}\n  },\n\n  hostAttributes: {hidden: true},\n\n  __computeMeta: function(type, key, value) {\n    var meta = new IronMeta({type: type, key: key});\n\n    if (value !== undefined && value !== meta.value) {\n      meta.value = value;\n    } else if (this.value !== meta.value) {\n      this.value = meta.value;\n    }\n\n    return meta;\n  },\n\n  get list() {\n    return this.__meta && this.__meta.list;\n  },\n\n  _selfChanged: function(self) {\n    if (self) {\n      this.value = this;\n    }\n  },\n\n  /**\n   * Retrieves meta data value by key.\n   *\n   * @method byKey\n   * @param {string} key The key of the meta-data to be returned.\n   * @return {*}\n   */\n  byKey: function(key) {\n    return new IronMeta({type: this.type, key: key}).value;\n  }\n});\n"
+    }],
+  "filteredModules": 0,
+  "children": [
+    {
+      "errors": [],
+      "warnings": [],
+      "publicPath": "",
+      "outputPath": "/Volumes/Framework/updates/skeleton-starter-flow/src/main/webapp/frontend/dist",
+      "assetsByChunkName": {},
+      "assets": [
+        {
+          "name": "index.html",
+          "size": 546554,
+          "chunks": [
+            0
+          ],
+          "chunkNames": [],
+          "emitted": false
+        }
+      ],
+      "filteredAssets": 0,
+      "entrypoints": {
+        "undefined": {
+          "chunks": [
+            0
+          ],
+          "assets": [
+            "index.html"
+          ],
+          "children": {},
+          "childAssets": {}
+        }
+      },
+      "namedChunkGroups": {
+        "undefined": {
+          "chunks": [
+            0
+          ],
+          "assets": [
+            "index.html"
+          ],
+          "children": {},
+          "childAssets": {}
+        }
+      },
+      "filteredModules": 0,
+      "children": [],
+      "name": "html-webpack-plugin for \"index.html\""
+    }
+  ]
+}

@@ -19,9 +19,11 @@ import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.testcategory.IgnoreNPM;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 /**
@@ -31,7 +33,8 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
  * {@link DependenciesLoadingPageApiView} and
  * {@link DependenciesLoadingPageApiIT}, designed to test exactly the same
  * dependency loading functionality (hence reusing all methods and constants),
- * but using {@link com.vaadin.flow.component.page.Page} api to add dependencies.
+ * but using {@link com.vaadin.flow.component.page.Page} api to add
+ * dependencies.
  *
  * @author Vaadin Ltd
  * @since 1.0.
@@ -40,6 +43,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
  * @see DependenciesLoadingPageApiView
  * @see DependenciesLoadingPageApiIT
  */
+@Category(IgnoreNPM.class)
 public class DependenciesLoadingAnnotationsIT extends ChromeBrowserTest {
     private static final String EAGER_PREFIX = "eager.";
     private static final String INLINE_PREFIX = "inline.";
@@ -107,8 +111,8 @@ public class DependenciesLoadingAnnotationsIT extends ChromeBrowserTest {
                 "One of the inlined css should be our dependency containing `inline.css` string inside",
                 inlinedCss.isPresent(), is(true));
 
-        WebElement inlineCssTestDiv = findElement(By.id(
-                DependenciesLoadingBaseView.INLINE_CSS_TEST_DIV_ID));
+        WebElement inlineCssTestDiv = findElement(
+                By.id(DependenciesLoadingBaseView.INLINE_CSS_TEST_DIV_ID));
         Assert.assertEquals(
                 "Incorrect color for the div that should be styled with inline.css",
                 "rgba(255, 255, 0, 1)", inlineCssTestDiv.getCssValue("color"));
@@ -133,7 +137,8 @@ public class DependenciesLoadingAnnotationsIT extends ChromeBrowserTest {
                         either(containsString("eager"))
                                 .or(containsString("lazy"))
                                 // inline elements do not have the url
-                                .or(isEmptyString()));
+                                .or(isEmptyString())
+                                .or(containsString("dndConnector.js")));
             } else {
                 flowDependencyMaxIndex = i;
                 assertThat(
@@ -146,10 +151,9 @@ public class DependenciesLoadingAnnotationsIT extends ChromeBrowserTest {
                 }
             }
 
-            assertThat(
-                    String.format(
-                            "All javascript dependencies should be loaded without 'async' attribute. Dependency with url %s has this attribute",
-                            jsImport.getAttribute("src")),
+            assertThat(String.format(
+                    "All javascript dependencies should be loaded without 'async' attribute. Dependency with url %s has this attribute",
+                    jsImport.getAttribute("src")),
                     jsImport.getAttribute("async"), is(nullValue()));
         }
 

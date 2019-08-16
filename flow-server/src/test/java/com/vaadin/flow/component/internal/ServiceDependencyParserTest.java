@@ -30,6 +30,7 @@ import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.util.SharedUtil;
 
 import net.jcip.annotations.NotThreadSafe;
+import org.mockito.Mockito;
 
 /**
  * End-to-end tests with the same cases as the deprecated
@@ -48,6 +49,7 @@ public class ServiceDependencyParserTest {
         mocks = new MockServletServiceSessionSetup();
         servlet = mocks.getServlet();
         service = mocks.getService();
+        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
     }
 
     @After

@@ -365,6 +365,27 @@ public class StateNode implements Serializable {
     }
 
     /**
+     * Removes the node from its parent and unlinks the node (and children) from
+     * the state tree.
+     */
+    public void removeFromTree() {
+        visitNodeTree(StateNode::reset);
+        setParent(null);
+    }
+
+    /**
+     * Resets the node to the initial state where it is not owned by a state
+     * tree.
+     */
+    private void reset() {
+        owner = NullOwner.get();
+        id = -1;
+        wasAttached = false;
+        hasBeenAttached = false;
+        hasBeenDetached = false;
+    }
+
+    /**
      * Gets the feature of the given type, creating one if necessary. This
      * method throws {@link IllegalStateException} if this node isn't configured
      * to use the desired feature. Use {@link #hasFeature(Class)} to check
@@ -655,7 +676,10 @@ public class StateNode implements Serializable {
 
         if (owner instanceof StateTree) {
             throw new IllegalStateException(
-                    "Can't move a node from one state tree to another");
+                    "Can't move a node from one state tree to another. "
+                            + "If this is intentional, first remove the "
+                            + "node from its current state tree by calling "
+                            + "removeFromTree");
         }
         owner = tree;
     }

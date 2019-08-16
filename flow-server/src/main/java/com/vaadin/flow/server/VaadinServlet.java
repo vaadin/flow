@@ -20,7 +20,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -51,6 +50,7 @@ import com.vaadin.flow.shared.JsonConstants;
 public class VaadinServlet extends HttpServlet {
     private VaadinServletService servletService;
     private StaticFileHandler staticFileHandler;
+    private DevModeHandler devmodeHandler;
     private WebJarServer webJarServer;
 
     /**
@@ -76,23 +76,26 @@ public class VaadinServlet extends HttpServlet {
 
         DeploymentConfiguration deploymentConfiguration = servletService
                 .getDeploymentConfiguration();
-        staticFileHandler = createStaticFileHandler(servletService);
 
+        staticFileHandler = createStaticFileHandler(servletService);
         if (deploymentConfiguration.areWebJarsEnabled()) {
             webJarServer = new WebJarServer(deploymentConfiguration);
         }
+        devmodeHandler = DevModeHandler.getDevModeHandler();
+
         // Sets current service even though there are no request and response
         servletService.setCurrentInstances(null, null);
 
         servletInitialized();
         CurrentInstance.clearAll();
+
     }
 
     /**
      * Creates a new instance of {@link StaticFileHandler}, that is responsible
      * to find and serve static resources. By default it returns a
      * {@link StaticFileServer} instance.
-     * 
+     *
      * @param servletService
      *            the servlet service created at {@link #createServletService()}
      * @return the file server to be used by this servlet, not <code>null</code>
@@ -221,6 +224,7 @@ public class VaadinServlet extends HttpServlet {
     @Override
     protected void service(HttpServletRequest request,
             HttpServletResponse response) throws ServletException, IOException {
+
         // Handle context root request without trailing slash, see #9921
         if (handleContextOrServletRootWithoutSlash(request, response)) {
             return;
@@ -247,7 +251,12 @@ public class VaadinServlet extends HttpServlet {
     }
 
     /**
-     * Handles a request by serving a static file or a file from a WebJar.
+     * Handles a request by serving a static file from Webpack when in
+     * npm-dev-mode, or from a WebJar when in bower-dev-mode or from the
+     * file-system when in production.
+     *
+     * It's not done via {@link VaadinService} handlers because static requests
+     * do not need a established session.
      *
      * @param request
      *            the HTTP servlet request object that contains the request the
@@ -262,12 +271,15 @@ public class VaadinServlet extends HttpServlet {
      * @exception IOException
      *                if an input or output error occurs while the servlet is
      *                handling the HTTP request
-     *
-     * @exception ServletException
-     *                if the HTTP request cannot be handled
      */
     protected boolean serveStaticOrWebJarRequest(HttpServletRequest request,
-            HttpServletResponse response) throws ServletException, IOException {
+            HttpServletResponse response) throws IOException {
+
+        if (devmodeHandler != null && devmodeHandler.isDevModeRequest(request)
+                && devmodeHandler.serveDevModeRequest(request, response)) {
+            return true;
+        }
+
         if (staticFileHandler.isStaticResourceRequest(request)) {
             staticFileHandler.serveStaticResource(request, response);
             return true;

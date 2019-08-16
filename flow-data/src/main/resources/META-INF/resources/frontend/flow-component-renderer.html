@@ -1,9 +1,9 @@
 <link rel="import" href="bower_components/polymer/polymer.html">
 
-<dom-module id="flow-component-renderer"> 
+<dom-module id="flow-component-renderer">
   <template>
-    <slot></slot> 
-  </template> 
+    <slot></slot>
+  </template>
   <script>
   class FlowComponentRenderer extends Polymer.Element {
     static get is() { return 'flow-component-renderer'; }
@@ -18,18 +18,72 @@
         '_attachRenderedComponentIfAble(appid, nodeid)'
       ]
     }
-    
+
+    connectedCallback() {
+      super.connectedCallback();
+      this._runChrome72ShadowDomBugWorkaround();
+    }
+
+  /* workaround for issue vaadin/flow#5025 */
+    _runChrome72ShadowDomBugWorkaround() {
+      const userAgent = navigator.userAgent;
+      if (userAgent && userAgent.match('Chrome\/')) {
+        // example: ... Chrome/72.0.3626.96 ...
+        const majorVersionString = userAgent.split('Chrome\/')[1].split('.')[0];
+        if (majorVersionString && parseInt(majorVersionString) > 71) {
+          const debouncedNotifyResize = this._getDebouncedNotifyResizeFunction();
+
+          // if there is no notifyResize function, then just skip
+
+          if (debouncedNotifyResize) {
+            this.style.visibility = 'hidden';
+            // need to use animation frame instead of timeout or focusing won't work
+            requestAnimationFrame(() => {
+              this.style.visibility = '';
+              debouncedNotifyResize();
+            });
+          }
+        }
+      }
+    }
+
+    _getDebouncedNotifyResizeFunction() {
+      // 1. dig out the web component that might have the notifyResize function
+      let component = this.parentElement;
+      while (true) {
+        if (!component) {
+          return;
+        }
+        if (component.notifyResize) {
+          break;
+        } else {
+          component = component.parentElement;
+        }
+      }
+      // 2. assign a debounced proxy to notifyResize, if not yet there
+      if (!component._debouncedNotifyResize) {
+        component._debouncedNotifyResize = function () {
+          component.__debouncedNotifyResize =
+              Polymer.Debouncer.debounce(
+                  component.__debouncedNotifyResize, // initially undefined
+                  Polymer.Async.animationFrame,
+                  component.notifyResize);
+        }
+      }
+      return component._debouncedNotifyResize;
+    }
+
     ready(){
         super.ready();
         this.addEventListener("click", function(event){
-            if (this.firstChild && 
-                    typeof this.firstChild.click === "function" && 
+            if (this.firstChild &&
+                    typeof this.firstChild.click === "function" &&
                         event.target === this ){
                 this.firstChild.click();
             }
         });
     }
-    
+
     _asyncAttachRenderedComponentIfAble() {
       this._debouncer = Polymer.Debouncer.debounce(
         this._debouncer,
@@ -49,13 +103,17 @@
           this._asyncAttachRenderedComponentIfAble();
         } else if (this.firstChild !== renderedComponent){
           this.replaceChild(renderedComponent, this.firstChild);
+          this._defineFocusTarget();
           this.onComponentRendered();
+
         } else {
+          this._defineFocusTarget();
           this.onComponentRendered();
         }
       } else {
         if (renderedComponent) {
           this.appendChild(renderedComponent);
+          this._defineFocusTarget();
           this.onComponentRendered();
         } else {
           this._asyncAttachRenderedComponentIfAble();
@@ -72,7 +130,7 @@
       }
       return null;
     }
-    
+
     _clear() {
       while (this.firstChild) {
         this.removeChild(this.firstChild);
@@ -82,8 +140,43 @@
     onComponentRendered(){
       // subclasses can override this method to execute custom logic on resize
     }
-    
+
+    /* Setting the `focus-target` attribute to the first focusable descendant
+    starting from the firstChild necessary for the focus to be delegated
+    within the flow-component-renderer when used inside a vaadin-grid cell  */
+    _defineFocusTarget(){
+      var focusable = this._getFirstFocusableDescendant(this.firstChild);
+      if(focusable !== null) {
+        focusable.setAttribute('focus-target', 'true');
+      }
+    }
+
+    _getFirstFocusableDescendant(node){
+      if(this._isFocusable(node)) {
+        return node;
+      }
+      if ( !node.children ){
+          return null;
+      }
+      for (var i = 0; i < node.children.length; i++) {
+        var focusable = this._getFirstFocusableDescendant(node.children[i]);
+        if(focusable !== null) {
+          return focusable;
+        }
+      }
+      return null;
+    }
+
+    _isFocusable(node){
+      if (node.hasAttribute && typeof node.hasAttribute === 'function' && 
+              (node.hasAttribute("disabled") || node.hasAttribute("hidden"))) {
+        return false;
+      }
+
+      return node.tabIndex === 0;
+    }
+
   }
   window.customElements.define(FlowComponentRenderer.is, FlowComponentRenderer);
-  </script> 
+  </script>
 </dom-module>

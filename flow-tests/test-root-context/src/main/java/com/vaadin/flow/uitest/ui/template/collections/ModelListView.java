@@ -23,6 +23,7 @@ import java.util.List;
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.templatemodel.TemplateModel;
@@ -32,6 +33,7 @@ import com.vaadin.flow.uitest.ui.template.collections.ModelListView.MyModel;
 @Route(value = "com.vaadin.flow.uitest.ui.template.collections.ModelListView", layout = ViewTestLayout.class)
 @Tag("model-list")
 @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/collections/ModelList.html")
+@JsModule("ModelList.js")
 public class ModelListView extends PolymerTemplate<MyModel> {
 
     public interface MyModel extends TemplateModel {

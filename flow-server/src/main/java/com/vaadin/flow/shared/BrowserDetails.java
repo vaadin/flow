@@ -18,8 +18,8 @@ package com.vaadin.flow.shared;
 import java.io.Serializable;
 
 /**
- * Class that parses the user agent string from the browser and provides
- * information about the browser.
+ * Parses the user agent string from the browser and provides information about
+ * the browser.
  *
  * @author Vaadin Ltd
  * @since 1.0.
@@ -33,7 +33,7 @@ public class BrowserDetails implements Serializable {
     private static final String BROWSER_MINOR = "Browser minor";
 
     /**
-     * An enum for detected operating systems.
+     * Detected operating systems.
      */
     public enum OperatingSystem {
         UNKNOWN, WINDOWS, MACOSX, LINUX, IOS, ANDROID, CHROMEOS

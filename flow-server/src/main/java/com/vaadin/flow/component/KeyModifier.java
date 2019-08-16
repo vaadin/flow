@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 /**
- * Enumeration of modifier keys.
+ * Modifier keys.
  */
 public enum KeyModifier implements Key {
 
@@ -37,6 +37,11 @@ public enum KeyModifier implements Key {
      * KeyModifier for "{@code Alt}" key.
      */
     ALT(Key.ALT),
+
+    /**
+     * KeyModifier for "{@code Alt Graph}" key.
+     */
+    ALT_GRAPH(Key.ALT_GRAPH),
 
     /**
      * KeyModifier for "{@code Meta}" key.

@@ -18,7 +18,7 @@ package com.vaadin.flow.server;
 import java.io.Serializable;
 
 /**
- * Interface for listening to errors in the application.
+ * Application errors handler.
  */
 public interface ErrorHandler extends Serializable {
 

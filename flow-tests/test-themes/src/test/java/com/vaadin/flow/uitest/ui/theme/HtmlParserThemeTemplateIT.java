@@ -18,7 +18,6 @@ package com.vaadin.flow.uitest.ui.theme;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
@@ -29,8 +28,7 @@ public class HtmlParserThemeTemplateIT extends ChromeBrowserTest {
         getDriver().get(getRootURL()
                 + "/view/com.vaadin.flow.uitest.ui.theme.HtmlParserThemeTemplateView");
 
-        Assert.assertTrue(
-                findElement(By.id("theme-component")).isDisplayed());
+        Assert.assertTrue(findElement(By.id("theme-component")).isDisplayed());
     }
 
 }

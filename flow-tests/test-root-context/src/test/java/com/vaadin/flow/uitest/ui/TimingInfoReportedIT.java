@@ -22,17 +22,15 @@ import org.openqa.selenium.By;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 /**
- * @author Vaadin Ltd
- * @since 1.0
- *
+ * This test only works in DevMode since it needs client logging enabled.
  */
 public class TimingInfoReportedIT extends ChromeBrowserTest {
-
     @Test
     public void ensureTimingsAvailable() {
         // The very first request can contain 0 as
         // CumulativeRequestDuration and -1 as CumulativeRequestDuration
         open();
+
         // Check timings starting from the second request
         open();
 

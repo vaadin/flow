@@ -21,6 +21,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.Future;
 
 import org.slf4j.Logger;
@@ -32,6 +33,7 @@ import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
+import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.StateNode;
@@ -109,6 +111,14 @@ public class UI extends Component
     private final UIInternals internals = new UIInternals(this);
 
     private final Page page = new Page(this);
+
+    /*
+     * Despite section 6 of RFC 4122, this particular use of UUID *is* adequate
+     * for security capabilities. Type 4 UUIDs contain 122 bits of random data,
+     * and UUID.randomUUID() is defined to use a cryptographically secure random
+     * generator.
+     */
+    private final String csrfToken = UUID.randomUUID().toString();
 
     /**
      * Creates a new empty UI.
@@ -681,9 +691,22 @@ public class UI extends Component
     }
 
     /**
-     * * Gets the locale for this UI.
+     * Gets the locale for this UI. The default locale is based on the session's
+     * locale, which is in turn determined in different ways depending on
+     * whether a {@link I18NProvider} is available.
+     * <p>
+     * If a i18n provider is available, the locale is determined by selecting
+     * the locale from {@link I18NProvider#getProvidedLocales()} that best
+     * matches the user agent preferences (i.e. the <code>Accept-Language</code>
+     * header). If an exact match is found, then that locale is used. Otherwise,
+     * the matching logic looks for the first provided locale that uses the same
+     * language regardless of the country. If no other match is found, then the
+     * first item from {@link I18NProvider#getProvidedLocales()} is used.
+     * <p>
+     * If no i18n provider is available, then the {@link Locale#getDefault()
+     * default JVM locale} is used as the default locale.
      *
-     * @return the locale in use
+     * @return the locale in use, not <code>null</code>
      */
     @Override
     public Locale getLocale() {
@@ -692,6 +715,10 @@ public class UI extends Component
 
     /**
      * Sets the locale for this UI.
+     * <p>
+     * Note that {@link VaadinSession#setLocale(Locale)} will set the locale for
+     * all UI instances in that session, and might thus override any custom
+     * locale previous set for a specific UI.
      *
      * @param locale
      *            the locale to use, not null
@@ -760,7 +787,7 @@ public class UI extends Component
      * @return the associated ThemeDefinition, or empty if none is defined and
      *         the Lumo class is not in the classpath, or if the NoTheme
      *         annotation is being used.
-     * @see ThemeUtil#findThemeForNavigationTarget(Class, String)
+     * @see ThemeUtil#findThemeForNavigationTarget(UI, Class, String)
      */
     public Optional<ThemeDefinition> getThemeFor(Class<?> navigationTarget,
             String path) {
@@ -996,6 +1023,103 @@ public class UI extends Component
      * @return unmodifiable list of registered listeners for navigation handler
      */
     public <E> List<E> getNavigationListeners(Class<E> navigationHandler) {
-        return internals.getNavigationListeners(navigationHandler);
+        return internals.getListeners(navigationHandler);
     }
+
+    /**
+     * Registers a global shortcut tied to the {@code UI} which executes the
+     * given {@link Command} when invoked.
+     * <p>
+     * Returns {@link ShortcutRegistration} which can be used to fluently
+     * configure the shortcut. The shortcut will be present until
+     * {@link ShortcutRegistration#remove()} is called.
+     *
+     * @param command
+     *            code to execute when the shortcut is invoked. Cannot be null
+     * @param key
+     *            primary {@link Key} used to trigger the shortcut. Cannot be
+     *            null
+     * @param keyModifiers
+     *            {@link KeyModifier KeyModifiers} which also need to be pressed
+     *            for the shortcut to trigger
+     * @return {@link ShortcutRegistration} for configuring the shortcut and
+     *         removing
+     * @see #addShortcutListener(ShortcutEventListener, Key, KeyModifier...) for
+     *      registering a listener which receives a {@link ShortcutEvent}
+     * @see Shortcuts for a more generic way to add a shortcut
+     */
+    public ShortcutRegistration addShortcutListener(Command command, Key key,
+            KeyModifier... keyModifiers) {
+        if (command == null) {
+            throw new IllegalArgumentException(
+                    String.format(Shortcuts.NULL, "command"));
+        }
+        if (key == null) {
+            throw new IllegalArgumentException(
+                    String.format(Shortcuts.NULL, "key"));
+        }
+        return new ShortcutRegistration(this, () -> this,
+                event -> command.execute(), key).withModifiers(keyModifiers);
+    }
+
+    /**
+     * Registers a global shortcut tied to the {@code UI} which executes the
+     * given {@link ComponentEventListener} when invoked.
+     * <p>
+     * Returns {@link ShortcutRegistration} which can be used to fluently
+     * configure the shortcut. The shortcut will be present until
+     * {@link ShortcutRegistration#remove()} is called.
+     *
+     * @param listener
+     *            listener to execute when the shortcut is invoked. Receives a
+     *            {@link ShortcutEvent}. Cannot be null
+     * @param key
+     *            primary {@link Key} used to trigger the shortcut
+     * @param keyModifiers
+     *            {@link KeyModifier KeyModifiers} which also need to be pressed
+     *            for the shortcut to trigger
+     * @return {@link ShortcutRegistration} for configuring the shortcut and
+     *         removing
+     * @see Shortcuts for a more generic way to add a shortcut
+     */
+    public ShortcutRegistration addShortcutListener(
+            ShortcutEventListener listener, Key key,
+            KeyModifier... keyModifiers) {
+        if (listener == null) {
+            throw new IllegalArgumentException(
+                    String.format(Shortcuts.NULL, "listener"));
+        }
+        if (key == null) {
+            throw new IllegalArgumentException(
+                    String.format(Shortcuts.NULL, "key"));
+        }
+        return new ShortcutRegistration(this, () -> this, listener, key)
+                .withModifiers(keyModifiers);
+    }
+
+    /**
+     * Gets the drag source of an active HTML5 drag event.
+     * <p>
+     * <em>NOTE: the generic drag and drop feature for Flow is available in
+     * another artifact, {@code flow-dnd} for now.</em>
+     *
+     * @return Extension of the drag source component if the drag event is
+     *         active and originated from this UI, {@literal null} otherwise.
+     * @since 2.0
+     */
+    public Component getActiveDragSourceComponent() {
+        return getInternals().getActiveDragSourceComponent();
+    }
+
+    /**
+     * Gets the CSRF token (aka double submit cookie) that is used to protect
+     * against Cross Site Request Forgery attacks.
+     *
+     * @return the csrf token string
+     * @since 2.0
+     */
+    public String getCsrfToken() {
+        return csrfToken;
+    }
+
 }

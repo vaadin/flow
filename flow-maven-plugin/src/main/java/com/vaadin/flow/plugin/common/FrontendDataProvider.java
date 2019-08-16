@@ -31,14 +31,16 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.google.common.collect.ImmutableMap;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.ImmutableMap;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
-import com.vaadin.flow.plugin.production.ProductionModeCopyStep;
+import com.vaadin.flow.migration.ClassPathIntrospector;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 /**
@@ -49,7 +51,8 @@ import com.vaadin.flow.shared.ApplicationConstants;
  * @since 1.0.
  */
 public class FrontendDataProvider {
-    private static final Logger LOGGER = LoggerFactory.getLogger(FrontendDataProvider.class);
+    private static final Logger LOGGER = LoggerFactory
+            .getLogger(FrontendDataProvider.class);
 
     private final boolean shouldBundle;
     private final boolean shouldMinify;
@@ -75,6 +78,9 @@ public class FrontendDataProvider {
      * @param fragmentConfigurationFile
      *            path to external configuration file with fragments, may be
      *            {@code null}
+     * @param webComponentOutputDirectoryName
+     *            folder name inside {@code es6SourceDirectory} where web
+     *            component module files will be generated, not {@code null}
      * @param userDefinedFragments
      *            another list of fragments, if user preferred to specify them
      *            without external configuration file, not {@code null}
@@ -83,6 +89,7 @@ public class FrontendDataProvider {
             boolean shouldHash, File es6SourceDirectory,
             AnnotationValuesExtractor annotationValuesExtractor,
             File fragmentConfigurationFile,
+            String webComponentOutputDirectoryName,
             Map<String, Set<String>> userDefinedFragments) {
         this.shouldBundle = shouldBundle;
         this.shouldMinify = shouldMinify;
@@ -94,6 +101,9 @@ public class FrontendDataProvider {
         shellFileImports = resolveShellFileImports(es6SourceDirectory,
                 annotationValuesExtractor, fragments.values().stream()
                         .flatMap(Set::stream).collect(Collectors.toSet()));
+        shellFileImports.addAll(generateWebComponentModules(
+                new File(es6SourceDirectory, webComponentOutputDirectoryName),
+                annotationValuesExtractor));
     }
 
     /**
@@ -118,12 +128,12 @@ public class FrontendDataProvider {
         return shouldMinify;
     }
 
-
     /**
-     * Gets the information whether should the plugin rename the output files by adding
-     * a hash fragment.
+     * Gets the information whether should the plugin rename the output files by
+     * adding a hash fragment.
      *
-     * @return {@code true} if renaming of fragments to include a hash part should be performed
+     * @return {@code true} if renaming of fragments to include a hash part
+     *         should be performed
      */
     public boolean shouldHash() {
         return shouldHash;
@@ -184,6 +194,19 @@ public class FrontendDataProvider {
                 introspector);
     }
 
+    /**
+     * Gets web component module content generator.
+     *
+     * @param introspector
+     *            the introspector whose classpath will be used for returned
+     *            generator
+     * @return the web component module content generator
+     */
+    protected WebComponentModulesGenerator getWebComponentGenerator(
+            ClassPathIntrospector introspector) {
+        return new WebComponentModulesGenerator(introspector);
+    }
+
     private Map<String, Set<File>> resolveFragmentFiles(File es6SourceDirectory,
             File fragmentConfigurationFile,
             Map<String, Set<String>> userFragments) {
@@ -225,7 +248,7 @@ public class FrontendDataProvider {
                             + "* if the file is present in one of the regular jar dependencies, it should be located in `%s` directory in the jar",
                     fragmentImportPath, fragmentFile,
                     ApplicationConstants.FRONTEND_PROTOCOL_PREFIX,
-                    ProductionModeCopyStep.NON_WEB_JAR_RESOURCE_PATH));
+                    Constants.RESOURCES_FRONTEND_DEFAULT));
         }
         return fragmentFile;
     }
@@ -328,5 +351,19 @@ public class FrontendDataProvider {
         }
         return String.format("<link rel='import' href='%s'>",
                 importWithReplacedBackslashes);
+    }
+
+    private Collection<File> generateWebComponentModules(File outputDir,
+            AnnotationValuesExtractor annotationValuesExtractor) {
+        try {
+            FileUtils.forceMkdir(outputDir);
+        } catch (IOException e) {
+            throw new IllegalStateException("Unable to create output " +
+                    "directory for generated web components!", e);
+        }
+
+        WebComponentModulesGenerator generator = getWebComponentGenerator(
+                annotationValuesExtractor);
+        return generator.generateWebComponentModules(outputDir);
     }
 }

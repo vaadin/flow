@@ -19,6 +19,7 @@ import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.Route;
@@ -26,11 +27,11 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.ElementInitOrderView", layout = ViewTestLayout.class)
 @HtmlImport("frontend://com/vaadin/flow/uitest/ui/ElementInitOrder.html")
+@JsModule("ElementInitOrder.js")
 public class ElementInitOrderView extends AbstractDivView {
     public ElementInitOrderView() {
-        NativeButton reattach = new NativeButton("Reattach components",
+        NativeButton reattach = createButton("Reattach components", "reattach",
                 event -> reattachElements());
-        reattach.setId("reattach");
 
         add(reattach, new Html("<br />"));
 

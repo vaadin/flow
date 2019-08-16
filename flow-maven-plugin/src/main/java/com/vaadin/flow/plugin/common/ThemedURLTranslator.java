@@ -34,6 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.migration.ClassPathIntrospector;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 
@@ -49,7 +50,7 @@ public class ThemedURLTranslator extends ClassPathIntrospector {
 
     private final Class<? extends AbstractTheme> themeClass;
 
-    private final Function<String, File> fileFactory;
+    private final transient Function<String, File> fileFactory;
 
     private static final String TRANSLATE_URL_METHOD = "translateUrl";
 

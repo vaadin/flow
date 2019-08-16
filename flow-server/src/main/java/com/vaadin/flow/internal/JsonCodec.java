@@ -16,10 +16,12 @@
 package com.vaadin.flow.internal;
 
 import java.io.Serializable;
+import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Node;
+import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -27,7 +29,7 @@ import elemental.json.JsonType;
 import elemental.json.JsonValue;
 
 /**
- * Methods for encoding objects to and from JSON.
+ * Utility for encoding objects to and from JSON.
  * <p>
  * Supported types are
  * <ul>
@@ -55,6 +57,12 @@ public class JsonCodec {
      */
     public static final int ARRAY_TYPE = 1;
 
+    /**
+     * Type id for a complex type array identifying a
+     * {@link ReturnChannelRegistration} reference.
+     */
+    public static final int RETURN_CHANNEL_TYPE = 2;
+
     private JsonCodec() {
         // Don't create instances
     }
@@ -76,6 +84,8 @@ public class JsonCodec {
             return encodeNode(((Component) value).getElement());
         } else if (value instanceof Node<?>) {
             return encodeNode((Node<?>) value);
+        } else if (value instanceof ReturnChannelRegistration) {
+            return encodeReturnChannel((ReturnChannelRegistration) value);
         } else {
             JsonValue encoded = encodeWithoutTypeInfo(value);
             if (encoded.getType() == JsonType.ARRAY) {
@@ -84,6 +94,13 @@ public class JsonCodec {
             }
             return encoded;
         }
+    }
+
+    private static JsonValue encodeReturnChannel(
+            ReturnChannelRegistration value) {
+        return wrapComplexValue(RETURN_CHANNEL_TYPE,
+                Json.create(value.getStateNodeId()),
+                Json.create(value.getChannelId()));
     }
 
     private static JsonValue encodeNode(Node<?> node) {
@@ -95,8 +112,9 @@ public class JsonCodec {
         }
     }
 
-    private static JsonArray wrapComplexValue(int typeId, JsonValue value) {
-        return JsonUtils.createArray(Json.create(typeId), value);
+    private static JsonArray wrapComplexValue(int typeId, JsonValue... values) {
+        return Stream.concat(Stream.of(Json.create(typeId)), Stream.of(values))
+                .collect(JsonUtils.asArray());
     }
 
     /**
@@ -220,7 +238,8 @@ public class JsonCodec {
         } else if (convertedType == Double.class) {
             return (T) convertedType.cast(Double.valueOf(json.asNumber()));
         } else if (convertedType == Integer.class) {
-            return (T) convertedType.cast(Integer.valueOf((int) json.asNumber()));
+            return (T) convertedType
+                    .cast(Integer.valueOf((int) json.asNumber()));
         } else if (JsonValue.class.isAssignableFrom(type)) {
             return type.cast(json);
         } else {

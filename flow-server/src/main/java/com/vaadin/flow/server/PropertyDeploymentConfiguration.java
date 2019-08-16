@@ -22,10 +22,18 @@ import java.util.function.Function;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.shared.communication.PushMode;
 
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_BOWER_MODE;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_REQUEST_TIMING;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_SYNC_ID_CHECK;
+import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
+
 /**
  * The property handling implementation of {@link DeploymentConfiguration} based
- * on a base
- * class for resolving system properties and a set of init parameters.
+ * on a base class for resolving system properties and a set of init parameters.
  */
 public class PropertyDeploymentConfiguration
         extends AbstractDeploymentConfiguration {
@@ -37,11 +45,11 @@ public class PropertyDeploymentConfiguration
      * Create a new property deployment configuration instance.
      *
      * @param systemPropertyBaseClass
-     *         the class that should be used as a basis when reading system
-     *         properties
+     *            the class that should be used as a basis when reading system
+     *            properties
      * @param initParameters
-     *         the init parameters that should make up the foundation for
-     *         this configuration
+     *            the init parameters that should make up the foundation for
+     *            this configuration
      */
     public PropertyDeploymentConfiguration(Class<?> systemPropertyBaseClass,
             Properties initParameters) {
@@ -71,7 +79,7 @@ public class PropertyDeploymentConfiguration
      * Gets an system property value.
      *
      * @param parameterName
-     *         the Name or the parameter.
+     *            the Name or the parameter.
      * @return String value or null if not found
      */
     protected String getSystemProperty(String parameterName) {
@@ -107,7 +115,7 @@ public class PropertyDeploymentConfiguration
         }
 
         // version prefixed with just "vaadin."
-        val = System.getProperty("vaadin." + parameterName);
+        val = System.getProperty(VAADIN_PREFIX + parameterName);
 
         return val;
     }
@@ -116,7 +124,7 @@ public class PropertyDeploymentConfiguration
      * Gets an application property value.
      *
      * @param parameterName
-     *         the Name or the parameter.
+     *            the Name or the parameter.
      * @return String value or null if not found
      */
     public String getApplicationProperty(String parameterName) {
@@ -135,26 +143,39 @@ public class PropertyDeploymentConfiguration
 
     @Override
     public boolean isProductionMode() {
-        return getBooleanProperty(Constants.SERVLET_PARAMETER_PRODUCTION_MODE,
-                false);
+        return getBooleanProperty(SERVLET_PARAMETER_PRODUCTION_MODE, false);
+    }
+
+    @Override
+    public boolean isBowerMode() {
+        return getBooleanProperty(SERVLET_PARAMETER_BOWER_MODE, true);
+    }
+
+    @Override
+    public boolean isCompatibilityMode() {
+        String bower = getStringProperty(SERVLET_PARAMETER_BOWER_MODE, null);
+        if (bower == null) {
+            return getBooleanProperty(
+                    Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE, true);
+        }
+        return isBowerMode();
     }
 
     @Override
     public boolean isRequestTiming() {
-        return getBooleanProperty(Constants.SERVLET_PARAMETER_REQUEST_TIMING,
+        return getBooleanProperty(SERVLET_PARAMETER_REQUEST_TIMING,
                 !isProductionMode());
     }
 
     @Override
     public boolean isXsrfProtectionEnabled() {
-        return !getBooleanProperty(
-                Constants.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION, false);
+        return !getBooleanProperty(SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION,
+                false);
     }
 
     @Override
     public boolean isSyncIdCheckEnabled() {
-        return getBooleanProperty(Constants.SERVLET_PARAMETER_SYNC_ID_CHECK,
-                true);
+        return getBooleanProperty(SERVLET_PARAMETER_SYNC_ID_CHECK, true);
     }
 
     @Override
@@ -163,15 +184,19 @@ public class PropertyDeploymentConfiguration
     }
 
     @Override
+    public int getWebComponentDisconnect() {
+        return DefaultDeploymentConfiguration.DEFAULT_WEB_COMPONENT_DISCONNECT;
+    }
+
+    @Override
     public boolean isSendUrlsAsParameters() {
-        return getBooleanProperty(
-                Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS, true);
+        return getBooleanProperty(SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
+                true);
     }
 
     @Override
     public boolean isCloseIdleSessions() {
-        return getBooleanProperty(
-                Constants.SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS, false);
+        return getBooleanProperty(SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS, false);
     }
 
     @Override

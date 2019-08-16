@@ -161,7 +161,7 @@ public class JsonConstants implements Serializable {
 
     /**
      * Key used for data related to
-     * {@link Page#executeJavaScript(String, Serializable...)} in UIDL messages.
+     * {@link Page#executeJs(String, Serializable...)} in UIDL messages.
      */
     public static final String UIDL_KEY_EXECUTE = "execute";
 
@@ -269,11 +269,6 @@ public class JsonConstants implements Serializable {
     public static final String META_SESSION_EXPIRED = "sessionExpired";
 
     /**
-     * Key used for storing child template nodes.
-     */
-    public static final String CHILD_TEMPLATE_KEY = "children";
-
-    /**
      * Key holding the debounce phase for an event data map from the client.
      */
     // "for" is a reserved keyword, which means that this cannot be a valid JS
@@ -303,4 +298,20 @@ public class JsonConstants implements Serializable {
      * start of a valid JS expression.
      */
     public static final String SYNCHRONIZE_PROPERTY_TOKEN = "}";
+
+    /**
+     * RPC type value used for return channel messages.
+     */
+    public static final String RPC_TYPE_CHANNEL = "channel";
+
+    /**
+     * Key for the channel id in return channel messages.
+     */
+    public static final String RPC_CHANNEL = "channel";
+
+    /**
+     * Key for the arguments array in return channel messages.
+     */
+    public static final String RPC_CHANNEL_ARGUMENTS = "args";
+
 }

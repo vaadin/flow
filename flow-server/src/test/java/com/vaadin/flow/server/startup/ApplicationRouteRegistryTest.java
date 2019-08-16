@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -16,7 +17,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.server.RouteRegistry;
 
@@ -182,18 +182,40 @@ public class ApplicationRouteRegistryTest extends RouteRegistryTestBase {
 
     @Test
     public void lockingConfiguration_newConfigurationIsGottenOnlyAfterUnlock() {
+        CountDownLatch waitReaderThread = new CountDownLatch(1);
+        CountDownLatch waitUpdaterThread = new CountDownLatch(2);
+
+        Thread readerThread = new Thread() {
+            @Override
+            public void run() {
+                awaitCountDown(waitUpdaterThread);
+
+                Assert.assertTrue("Registry should still remain empty",
+                        getTestedRegistry().getRegisteredRoutes().isEmpty());
+
+                awaitCountDown(waitUpdaterThread);
+
+                Assert.assertTrue("Registry should still remain empty",
+                        getTestedRegistry().getRegisteredRoutes().isEmpty());
+
+                waitReaderThread.countDown();
+            }
+        };
+
+        readerThread.start();
+
         getTestedRegistry().update(() -> {
             getTestedRegistry().setRoute("", MyRoute.class,
                     Collections.emptyList());
 
-            Assert.assertTrue("Registry should still remain empty",
-                    getTestedRegistry().getRegisteredRoutes().isEmpty());
+            waitUpdaterThread.countDown();
 
             getTestedRegistry().setRoute("path", Secondary.class,
                     Collections.emptyList());
 
-            Assert.assertTrue("Registry should still remain empty",
-                    getTestedRegistry().getRegisteredRoutes().isEmpty());
+            waitUpdaterThread.countDown();
+            awaitCountDown(waitReaderThread);
+
         });
 
         Assert.assertEquals(
@@ -293,7 +315,7 @@ public class ApplicationRouteRegistryTest extends RouteRegistryTestBase {
         Assert.assertEquals("MyRoute should have been both removed and added",
                 MyRoute.class, removed.get(0).getNavigationTarget());
         Assert.assertEquals("Removed version should not have a parent layout",
-                UI.class, removed.get(0).getParentLayout());
+                Collections.emptyList(), removed.get(0).getParentLayouts());
     }
 
     @Test
@@ -339,6 +361,14 @@ public class ApplicationRouteRegistryTest extends RouteRegistryTestBase {
     @Override
     protected RouteRegistry getTestedRegistry() {
         return registry;
+    }
+
+    private void awaitCountDown(CountDownLatch countDownLatch) {
+        try {
+            countDownLatch.await();
+        } catch (InterruptedException e) {
+            Assert.fail();
+        }
     }
 
 }

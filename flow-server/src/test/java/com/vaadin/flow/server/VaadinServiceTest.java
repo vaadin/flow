@@ -37,7 +37,12 @@ import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.router.RouteData;
+import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.startup.BundleDependencyFilter;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -53,6 +58,11 @@ import net.jcip.annotations.NotThreadSafe;
  */
 @NotThreadSafe
 public class VaadinServiceTest {
+
+    @Tag("div")
+    public static class TestView extends Component {
+
+    }
 
     private class TestSessionDestroyListener implements SessionDestroyListener {
 
@@ -229,6 +239,38 @@ public class VaadinServiceTest {
     }
 
     @Test
+    public void testServiceInitListener_accessApplicationRouteRegistry_registryAvailable() {
+
+        VaadinServiceInitListener initListener = event -> {
+            Assert.assertNotNull("service init should have set thread local",
+                    VaadinService.getCurrent());
+
+            Router router = event.getSource().getRouter();
+            Assert.assertNotEquals("Router should be initialized", router);
+
+            Assert.assertNotEquals("registry should be initialized",
+                    router.getRegistry());
+
+            RouteConfiguration.forApplicationScope().setRoute("test",
+                    TestView.class);
+        };
+        MockInstantiator instantiator = new MockInstantiator(initListener);
+
+        MockVaadinServletService service = new MockVaadinServletService();
+
+        service.init(instantiator);
+
+        // the following will allow the route configuration call to work
+        VaadinService.setCurrent(service);
+        List<RouteData> availableRoutes = RouteConfiguration
+                .forApplicationScope().getAvailableRoutes();
+        VaadinService.setCurrent(null);
+
+        Assert.assertEquals(1, availableRoutes.size());
+        Assert.assertEquals(availableRoutes.get(0).getUrl(), "test");
+    }
+
+    @Test
     public void dependencyFilterOrder_bundeFiltersAfterApplicationFilters() {
         DependencyFilter applicationFilter = (dependencies,
                 filterContext) -> dependencies;
@@ -238,6 +280,10 @@ public class VaadinServiceTest {
             public boolean useCompiledFrontendResources() {
                 return true;
             }
+            @Override
+            public boolean isCompatibilityMode() {
+                return true;
+            };
         };
 
         // Service that pretends to have a proper bundle

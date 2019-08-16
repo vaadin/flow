@@ -33,9 +33,9 @@ import com.vaadin.flow.router.RouterLayout;
 /**
  * Utility class with methods for route handling.
  */
-public final class RouteUtil {
+public class RouteUtil {
 
-    private RouteUtil() {
+    protected RouteUtil() {
     }
 
     /**
@@ -152,7 +152,7 @@ public final class RouteUtil {
         return list;
     }
 
-    private static Optional<RouteAlias> getMatchingRouteAlias(
+    static Optional<RouteAlias> getMatchingRouteAlias(
             Class<?> component, String path, List<RouteAlias> routeAliases) {
         return routeAliases.stream().filter(
                 alias -> path.equals(getRouteAliasPath(component, alias))
@@ -160,7 +160,7 @@ public final class RouteUtil {
                 .findFirst();
     }
 
-    private static List<Class<? extends RouterLayout>> collectRouteParentLayouts(
+    static List<Class<? extends RouterLayout>> collectRouteParentLayouts(
             Class<? extends RouterLayout> layout) {
         List<Class<? extends RouterLayout>> layouts = new ArrayList<>();
         layouts.add(layout);

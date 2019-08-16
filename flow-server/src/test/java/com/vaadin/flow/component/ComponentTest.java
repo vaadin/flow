@@ -28,6 +28,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -54,7 +55,6 @@ import com.vaadin.tests.util.MockUI;
 import com.vaadin.tests.util.TestUtil;
 
 import elemental.json.Json;
-import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class ComponentTest {
@@ -292,6 +292,8 @@ public class ComponentTest {
                 return session;
             }
         };
+        ui.getInternals().setSession(session);
+
         UI.setCurrent(ui);
     }
 
@@ -721,7 +723,8 @@ public class ComponentTest {
         ui.addAttachListener(e -> {
             initialAttach.set(e.isInitialAttach());
         });
-        ui.getInternals().setSession(new VaadinSession(new MockVaadinServletService()));
+        ui.getInternals()
+                .setSession(new VaadinSession(new MockVaadinServletService()));
         Assert.assertTrue(initialAttach.get());
         // UI is never detached and reattached
     }
@@ -1054,9 +1057,11 @@ public class ComponentTest {
 
     @Test
     public void usesComponent() {
-        UsesComponentWithDependencies s = new UsesComponentWithDependencies();
-        UI ui = new MockUI();
-        ui.getInternals().addComponentDependencies(s.getClass());
+        UI ui = UI.getCurrent();
+        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
+
+        ui.getInternals()
+                .addComponentDependencies(UsesComponentWithDependencies.class);
 
         Map<String, Dependency> pendingDependencies = getDependenciesMap(
                 ui.getInternals().getDependencyList().getPendingSendToClient());
@@ -1074,9 +1079,12 @@ public class ComponentTest {
 
     @Test
     public void usesChain() {
-        UIInternals internals = new MockUI().getInternals();
+        UIInternals internals = UI.getCurrent().getInternals();
+        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
+
         internals.addComponentDependencies(
                 UsesUsesComponentWithDependencies.class);
+
         Map<String, Dependency> pendingDependencies = getDependenciesMap(
                 internals.getDependencyList().getPendingSendToClient());
         Assert.assertEquals(5, pendingDependencies.size());
@@ -1097,6 +1105,7 @@ public class ComponentTest {
     public void circularDependencies() {
         UIInternals internals = new MockUI().getInternals();
         DependencyList dependencyList = internals.getDependencyList();
+        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
 
         internals.addComponentDependencies(CircularDependencies1.class);
         Map<String, Dependency> pendingDependencies = getDependenciesMap(
@@ -1119,6 +1128,17 @@ public class ComponentTest {
         assertDependency(Dependency.Type.JAVASCRIPT, "dep1.js",
                 pendingDependencies);
 
+    }
+
+    @Test
+    public void inNpmModeNoJsDependenciesAreAdded() {
+        mocks.getDeploymentConfiguration().setCompatibilityMode(false);
+        UIInternals internals = new MockUI().getInternals();
+        DependencyList dependencyList = internals.getDependencyList();
+
+        internals.addComponentDependencies(CircularDependencies1.class);
+
+        Assert.assertTrue(dependencyList.getPendingSendToClient().isEmpty());
     }
 
     @Test
@@ -1566,5 +1586,17 @@ public class ComponentTest {
         Assert.assertNotNull("Disabled attribute should exist for subSubChild",
                 subSubChild.getElement().getAttribute("disabled"));
 
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void add_componentIsAttachedToAnotherUI_throwsIllegalStateException() {
+        // given
+        TestComponent child = new TestComponent();
+        UI ui1 = new UI();
+        ui1.add(child);
+        UI ui2 = new UI();
+
+        // then
+        ui2.add(child);
     }
 }

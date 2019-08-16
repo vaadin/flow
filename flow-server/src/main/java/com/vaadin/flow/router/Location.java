@@ -181,7 +181,7 @@ public class Location implements Serializable {
 
         String params = queryParameters.getQueryString();
         if (params.isEmpty()) {
-            return basePath;
+            return !basePath.isEmpty() ? basePath : ".";
         }
         return basePath + QUERY_SEPARATOR + params;
     }
@@ -266,11 +266,7 @@ public class Location implements Serializable {
     private static List<String> parsePath(String path) {
         final String basePath;
         int endIndex = path.indexOf(QUERY_SEPARATOR);
-        if (endIndex == 0) {
-            throw new IllegalArgumentException("Location '" + path
-                    + "' is incorrect, it cannot start with " + QUERY_SEPARATOR
-                    + " symbol");
-        } else if (endIndex > 0) {
+        if (endIndex >= 0) {
             basePath = path.substring(0, endIndex);
         } else {
             basePath = path;
@@ -316,11 +312,7 @@ public class Location implements Serializable {
             } else if (uri.getPath().startsWith("/")) {
                 throw new IllegalArgumentException(
                         "Relative path cannot start with /");
-            } else if (uri.getRawPath().contains("..%2F")
-                    || uri.getRawPath().endsWith("%2F..")
-                    || uri.getRawPath().equals("..")) {
-                // the actual part that we do not support is '../' so this
-                // shouldn't catch 'el..ement' nor '..element'
+            } else if (hasIncorrectParentSegments(uri.getRawPath())) {
                 throw new IllegalArgumentException(
                         "Relative path cannot contain .. segments");
             }
@@ -329,5 +321,23 @@ public class Location implements Serializable {
         }
 
         // All is OK if we get here
+    }
+
+    private static boolean hasIncorrectParentSegments(String path) {
+        // the actual part that we do not support is '../' so this
+        // shouldn't catch 'el..ement' nor '..element'
+        if (path.startsWith("..%2F")) {
+            return true;
+        }
+        if (path.contains("%2F..%2F")) {
+            return true;
+        }
+        if (path.endsWith("%2F..")) {
+            return true;
+        }
+        if (path.equals("..")) {
+            return true;
+        }
+        return false;
     }
 }

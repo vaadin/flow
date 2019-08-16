@@ -84,7 +84,7 @@ public class UnsupportedBrowserHandler extends SynchronizedRequestHandler {
             }
         }
         // check for trying to run ie11 in development mode
-        if (browser.isIE() && !session.getConfiguration().isProductionMode()) {
+        if (browser.isIE() && !session.getConfiguration().isProductionMode() && session.getConfiguration().isCompatibilityMode()) {
             // bypass if cookie set
             if (cookie == null || !cookie.contains(FORCE_LOAD_COOKIE)) {
                 writeIE11InDevelopmentModePage(response);

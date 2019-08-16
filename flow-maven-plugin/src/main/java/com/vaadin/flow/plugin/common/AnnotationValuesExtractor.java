@@ -17,11 +17,13 @@
 package com.vaadin.flow.plugin.common;
 
 import java.lang.annotation.Annotation;
-import java.net.URL;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import com.vaadin.flow.migration.ClassPathIntrospector;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 /**
  * Collects annotation values from all classes or jars specified.
@@ -30,16 +32,15 @@ import java.util.stream.Stream;
  * @since 1.0.
  */
 public class AnnotationValuesExtractor extends ClassPathIntrospector {
-
     /**
-     * Prepares the class to extract annotations from the project classes
+     * Prepares the class to extract annotations with the class finder
      * specified.
      *
-     * @param projectClassesLocations
-     *            urls to project class locations (directories, jars etc.)
+     * @param finder
+     *            the specific ClassFinder to use
      */
-    public AnnotationValuesExtractor(URL... projectClassesLocations) {
-        super(projectClassesLocations);
+    public AnnotationValuesExtractor(ClassFinder finder) {
+        super(finder);
     }
 
     /**
@@ -72,12 +73,10 @@ public class AnnotationValuesExtractor extends ClassPathIntrospector {
         Stream<Class<?>> concat = getAnnotatedClasses(
                 annotationInProjectContext);
         return concat
-                .map(type -> type
-                        .getAnnotationsByType(annotationInProjectContext))
+                .map(type -> type.getAnnotationsByType(annotationInProjectContext))
                 .flatMap(Stream::of)
-                .map(annotation -> invokeAnnotationMethod(annotation,
+                .map(annotation -> (String)invokeAnnotationMethod(annotation,
                         valueGetterMethodName))
                 .collect(Collectors.toSet());
     }
-
 }

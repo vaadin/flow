@@ -15,11 +15,10 @@
  */
 package com.vaadin.flow.router;
 
-import static org.junit.Assert.assertEquals;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -28,8 +27,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import com.vaadin.flow.router.Location;
-import com.vaadin.flow.router.QueryParameters;
+import static org.junit.Assert.assertEquals;
 
 public class LocationTest {
     @Test
@@ -53,9 +51,18 @@ public class LocationTest {
         new Location("/foo/bar");
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void parseLocationWithQueryStringOnly() {
-        new Location("?hey=hola&zz=");
+        Location location = new Location("?hey=hola&zz=");
+        assertEquals("", location.getPath());
+        Map<String, List<String>> queryMap = new HashMap<>();
+        queryMap.put("hey", Collections.singletonList("hola"));
+        queryMap.put("zz", Collections.emptyList());
+
+        assertEquals(Collections.singletonList("hola"),
+                location.getQueryParameters().getParameters().get("hey"));
+        assertEquals(Collections.singletonList(""),
+                location.getQueryParameters().getParameters().get("zz"));
     }
 
     @Test
@@ -257,4 +264,8 @@ public class LocationTest {
         new Location("..");
     }
 
+    @Test
+    public void pathShouldNotBeEmpty() {
+        assertEquals(".", new Location("").getPathWithQueryParameters());
+    }
 }

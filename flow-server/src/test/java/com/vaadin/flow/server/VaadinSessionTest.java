@@ -15,6 +15,11 @@
  */
 package com.vaadin.flow.server;
 
+import javax.servlet.ServletConfig;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpSessionBindingEvent;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -34,11 +39,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpSessionBindingEvent;
-
+import net.jcip.annotations.NotThreadSafe;
 import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.Before;
@@ -52,8 +53,7 @@ import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.testcategory.SlowTests;
-
-import net.jcip.annotations.NotThreadSafe;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 @NotThreadSafe
 public class VaadinSessionTest {
@@ -131,6 +131,12 @@ public class VaadinSessionTest {
 
         session = new VaadinSession(mockService);
         mockService.storeSession(session, mockWrappedSession);
+
+        MockDeploymentConfiguration configuration =new MockDeploymentConfiguration();
+        configuration.setCompatibilityMode(true);
+        session.lock();
+        session.setConfiguration(configuration);
+        session.unlock();
 
         ui = new TestUI();
         vaadinRequest = new VaadinServletRequest(

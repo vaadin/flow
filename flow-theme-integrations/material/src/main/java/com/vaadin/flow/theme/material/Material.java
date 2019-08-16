@@ -22,13 +22,18 @@ import java.util.Map;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.theme.AbstractTheme;
 
 /**
  * Material component theme class implementation.
  */
+@NpmPackage(value = "@vaadin/vaadin-material-styles", version = "1.2.3")
 @HtmlImport("frontend://bower_components/vaadin-material-styles/color.html")
 @HtmlImport("frontend://bower_components/vaadin-material-styles/typography.html")
+@JsModule("@vaadin/vaadin-material-styles/color.js")
+@JsModule("@vaadin/vaadin-material-styles/typography.js")
 public class Material implements AbstractTheme {
     public static final String LIGHT = "light";
     public static final String DARK = "dark";
@@ -51,7 +56,13 @@ public class Material implements AbstractTheme {
     }
 
     @Override
+    @Deprecated
     public Map<String, String> getBodyAttributes(String variant) {
+        return getHtmlAttributes(variant);
+    }
+
+    @Override
+    public Map<String, String> getHtmlAttributes(String variant) {
         switch (variant) {
         case LIGHT:
             return Collections.singletonMap("theme", LIGHT);

@@ -15,16 +15,19 @@
  */
 package com.vaadin.flow.server.startup;
 
+import java.util.Set;
+
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
-import java.util.Set;
 
+import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.server.AmbiguousRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 
 /**
@@ -50,8 +53,11 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
 
             ApplicationRouteRegistry routeRegistry = ApplicationRouteRegistry
                     .getInstance(servletContext);
-            RouteConfiguration.forRegistry(routeRegistry)
-                    .setRoutes(routes);
+
+            RouteConfiguration routeConfiguration = RouteConfiguration
+                    .forRegistry(routeRegistry);
+            routeConfiguration.update(
+                    () -> setAnnotatedRoutes(routeConfiguration, routes));
             routeRegistry.setPwaConfigurationClass(validatePwaClass(
                     routes.stream().map(clazz -> (Class<?>) clazz)));
         } catch (InvalidRouteConfigurationException irce) {
@@ -59,6 +65,37 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
                     "Exception while registering Routes on servlet startup",
                     irce);
         }
+    }
+
+    private void setAnnotatedRoutes(RouteConfiguration routeConfiguration,
+            Set<Class<? extends Component>> routes) {
+        routeConfiguration.getHandledRegistry().clean();
+        for (Class<? extends Component> navigationTarget : routes) {
+            try {
+                routeConfiguration.setAnnotatedRoute(navigationTarget);
+            } catch (AmbiguousRouteConfigurationException exception) {
+                if (!handleAmbiguousRoute(routeConfiguration,
+                        exception.getConfiguredNavigationTarget(),
+                        navigationTarget)) {
+                    throw exception;
+                }
+            }
+        }
+    }
+
+    private boolean handleAmbiguousRoute(RouteConfiguration routeConfiguration,
+            Class<? extends Component> configuredNavigationTarget,
+            Class<? extends Component> navigationTarget) {
+        if (GenericTypeReflector.isSuperType(navigationTarget,
+                configuredNavigationTarget)) {
+            return true;
+        } else if (GenericTypeReflector.isSuperType(configuredNavigationTarget,
+                navigationTarget)) {
+            routeConfiguration.removeRoute(configuredNavigationTarget);
+            routeConfiguration.setAnnotatedRoute(navigationTarget);
+            return true;
+        }
+        return false;
     }
 
 }

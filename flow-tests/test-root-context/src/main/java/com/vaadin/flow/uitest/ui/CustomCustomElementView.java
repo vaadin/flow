@@ -16,6 +16,7 @@
 package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.Route;
@@ -23,6 +24,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.CustomCustomElementView", layout = ViewTestLayout.class)
 @JavaScript("frontend://com/vaadin/flow/uitest/ui/CustomCustomElement.js")
+@JsModule("com/vaadin/flow/uitest/ui/CustomCustomElement.js")
 public class CustomCustomElementView extends AbstractDivView {
 
     public CustomCustomElementView() {

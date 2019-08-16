@@ -16,12 +16,12 @@
 package com.vaadin.flow.uitest.ui.webcomponent;
 
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.NativeButton;
-import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.flow.uitest.ui.AbstractDivView;
 
 @Route(value = "com.vaadin.flow.uitest.ui.webcomponent.PaperSliderView", layout = ViewTestLayout.class)
-public class PaperSliderView extends Div {
+public class PaperSliderView extends AbstractDivView {
     static final String VALUE_TEXT_ID = "valueText";
     static final String CHANGE_VALUE_ID = "changeValue";
     static final int INITIAL_VALUE = 75;
@@ -39,10 +39,8 @@ public class PaperSliderView extends Div {
             valueText.setText(text);
         });
         paperSlider.setValue(INITIAL_VALUE);
-        NativeButton changeValueFromServer = new NativeButton(
-                "Set value to " + UPDATED_VALUE,
-                e -> paperSlider.setValue(UPDATED_VALUE));
-        changeValueFromServer.setId(CHANGE_VALUE_ID);
-        add(paperSlider, valueText, changeValueFromServer);
+        add(paperSlider, valueText,
+                createButton("Set value to " + UPDATED_VALUE, CHANGE_VALUE_ID,
+                        e -> paperSlider.setValue(UPDATED_VALUE)));
     }
 }

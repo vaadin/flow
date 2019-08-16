@@ -31,9 +31,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
+import org.apache.commons.io.FileUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Before;
@@ -44,12 +44,19 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.component.webcomponent.WebComponent;
+import com.vaadin.flow.migration.ClassPathIntrospector;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -75,16 +82,20 @@ public class FrontendDataProviderTest {
     private final ThemedURLTranslator translator = Mockito
             .mock(ThemedURLTranslator.class);
 
+    private final WebComponentModulesGenerator generator = Mockito
+            .mock(WebComponentModulesGenerator.class);
+
     public class TestFrontendDataProvider extends FrontendDataProvider {
 
         public TestFrontendDataProvider(boolean shouldBundle,
                 boolean shouldMinify, File es6SourceDirectory,
                 AnnotationValuesExtractor annotationValuesExtractor,
                 File fragmentConfigurationFile,
+                String webComponentOutputDirectoryName,
                 Map<String, Set<String>> userDefinedFragments) {
             super(shouldBundle, shouldMinify, false, es6SourceDirectory,
                     annotationValuesExtractor, fragmentConfigurationFile,
-                    userDefinedFragments);
+                    webComponentOutputDirectoryName, userDefinedFragments);
         }
 
         @Override
@@ -93,6 +104,24 @@ public class FrontendDataProviderTest {
             return translator;
         }
 
+        @Override
+        protected WebComponentModulesGenerator getWebComponentGenerator(
+                ClassPathIntrospector introspector) {
+            return generator;
+        }
+
+    }
+
+    public static class TestExporter extends WebComponentExporter<Component> {
+
+        public TestExporter() {
+            super("test-component");
+        }
+
+        @Override
+        public void configureInstance(WebComponent<Component> webComponent,
+                Component component) {
+        }
     }
 
     @Before
@@ -104,7 +133,10 @@ public class FrontendDataProviderTest {
         htmlFile = createFile(sourceDirectory, "test.html");
 
         Mockito.doAnswer(invocation -> invocation.getArgumentAt(0, Set.class))
-                .when(translator).applyTheme(Matchers.any());
+                .when(translator).applyTheme(any());
+
+        Mockito.when(generator.generateWebComponentModules(any(File.class)))
+                .thenReturn(Collections.emptySet());
     }
 
     private File createFile(File directory, String fileName)
@@ -127,7 +159,7 @@ public class FrontendDataProviderTest {
                         .getAbsolutePath());
 
         new TestFrontendDataProvider(true, true, sourceDirectory,
-                mock(AnnotationValuesExtractor.class), null,
+                mock(AnnotationValuesExtractor.class), null, null,
                 Collections.singletonMap("fragmentName",
                         Collections.singleton(nonExistentFragmentFile)));
     }
@@ -148,7 +180,8 @@ public class FrontendDataProviderTest {
                 new File(sourceDirectory, nonExistentImport).getAbsolutePath());
 
         new TestFrontendDataProvider(true, true, sourceDirectory,
-                annotationValuesExtractorMock, null, Collections.emptyMap());
+                annotationValuesExtractorMock, null, null,
+                Collections.emptyMap());
 
         verify(annotationValuesExtractorMock, Mockito.times(2))
                 .extractAnnotationValues(anyMap());
@@ -171,7 +204,8 @@ public class FrontendDataProviderTest {
 
         FrontendDataProvider frontendDataProvider = new TestFrontendDataProvider(
                 shouldBundle, shouldMinify, sourceDirectory,
-                annotationValuesExtractorMock, null, Collections.emptyMap());
+                annotationValuesExtractorMock, null, "bar",
+                Collections.emptyMap());
 
         boolean actualShouldBundle = frontendDataProvider.shouldBundle();
         boolean actualShouldMinify = frontendDataProvider.shouldMinify();
@@ -216,7 +250,7 @@ public class FrontendDataProviderTest {
                         "src/component2.html")));
 
         FrontendDataProvider provider = new TestFrontendDataProvider(true, true,
-                sourceDirectory, annotationValuesExtractorMock, null,
+                sourceDirectory, annotationValuesExtractorMock, null, "bar",
                 Collections.emptyMap());
 
         provider.createShellFile(targetDirectory);
@@ -234,6 +268,40 @@ public class FrontendDataProviderTest {
     }
 
     @Test
+    public void createShellFile_fileContainsGeneratedWebModuleAndRegularHtmlImport()
+            throws IOException {
+        File webModule = new File(sourceDirectory, "bar/web-module-gen.html");
+
+        Mockito.when(generator.generateWebComponentModules(any(File.class)))
+                .thenReturn(Collections.singleton(webModule));
+
+        AnnotationValuesExtractor annotationValuesExtractorMock = mock(
+                AnnotationValuesExtractor.class);
+
+        when(annotationValuesExtractorMock.extractAnnotationValues(anyMap()))
+                .thenReturn(
+                        new HashMap<>(Collections.singletonMap(HtmlImport.class,
+                                new HashSet<>(Arrays.asList("src/foo.html")))));
+
+        File src = new File(sourceDirectory, "src");
+        src.mkdir();
+        createFile(src, "foo.html");
+
+        FrontendDataProvider provider = new TestFrontendDataProvider(true, true,
+                sourceDirectory, annotationValuesExtractorMock, null, "bar",
+                Collections.emptyMap());
+
+        String file = provider.createShellFile(targetDirectory);
+        String bundle = FileUtils.readFileToString(new File(file),
+                StandardCharsets.UTF_8);
+
+        Assert.assertThat(bundle,
+                CoreMatchers.containsString("es6Source/src/foo.html"));
+        Assert.assertThat(bundle, CoreMatchers
+                .containsString("es6Source/bar/web-module-gen.html"));
+    }
+
+    @Test
     public void fragmentsAreNotCreatedOrCheckedIfBundlingIsDisabled() {
         AnnotationValuesExtractor annotationValuesExtractorMock = mock(
                 AnnotationValuesExtractor.class);
@@ -242,7 +310,7 @@ public class FrontendDataProviderTest {
 
         FrontendDataProvider frontendDataProvider = new TestFrontendDataProvider(
                 false, true, sourceDirectory, annotationValuesExtractorMock,
-                null, Collections.singletonMap("whatever",
+                null, "bar", Collections.singletonMap("whatever",
                         Collections.singleton("doesNotMatter")));
         Set<String> fragmentFiles = frontendDataProvider
                 .createFragmentFiles(targetDirectory);
@@ -276,7 +344,8 @@ public class FrontendDataProviderTest {
 
         FrontendDataProvider frontendDataProvider = new TestFrontendDataProvider(
                 true, true, sourceDirectory, annotationValuesExtractorMock,
-                null, Collections.singletonMap(fragmentName, fragmentImports));
+                null, "bar",
+                Collections.singletonMap(fragmentName, fragmentImports));
 
         Set<String> fragmentFilePaths = frontendDataProvider
                 .createFragmentFiles(targetDirectory);
@@ -318,7 +387,8 @@ public class FrontendDataProviderTest {
 
         FrontendDataProvider frontendDataProvider = new TestFrontendDataProvider(
                 true, true, sourceDirectory, annotationValuesExtractorMock,
-                configurationFile, Collections.singletonMap(firstFragment,
+                configurationFile, "bar",
+                Collections.singletonMap(firstFragment,
                         Collections.singleton(firstFragmentImport)));
 
         Set<String> fragmentFilePaths = frontendDataProvider
@@ -362,7 +432,7 @@ public class FrontendDataProviderTest {
 
         FrontendDataProvider dataProvider = new TestFrontendDataProvider(false,
                 false, sourceDirectory, annotationValuesExtractorMock, null,
-                Collections.emptyMap());
+                "foo", Collections.emptyMap());
 
         String shellFile = dataProvider.createShellFile(targetDirectory);
         List<String> shellFileContents = Files.lines(Paths.get(shellFile))

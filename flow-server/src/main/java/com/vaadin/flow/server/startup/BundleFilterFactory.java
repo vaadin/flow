@@ -44,7 +44,6 @@ import elemental.json.JsonObject;
  * Factory for bundle filters.
  *
  * @author Vaadin Ltd
- * @since
  */
 public class BundleFilterFactory implements Serializable {
     static final String MAIN_BUNDLE_NAME_PREFIX = "vaadin-flow-bundle";
@@ -61,8 +60,8 @@ public class BundleFilterFactory implements Serializable {
      *         filter should be used
      */
     public Stream<BundleDependencyFilter> createFilters(VaadinService service) {
-        if (!service.getDeploymentConfiguration()
-                .useCompiledFrontendResources()) {
+        if (!service.getDeploymentConfiguration().isCompatibilityMode()
+                || !service.getDeploymentConfiguration().useCompiledFrontendResources()) {
             return Stream.empty();
         }
 

@@ -20,17 +20,18 @@ import java.util.List;
 
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
-import com.vaadin.flow.uitest.ui.AbstractDivView;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.templatemodel.TemplateModel;
+import com.vaadin.flow.uitest.ui.AbstractDivView;
 
 @Route("com.vaadin.flow.uitest.ui.template.BasicTypeInListView")
 public class BasicTypeInListView extends AbstractDivView {
 
     @Tag("basic-type-list")
     @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/BasicTypeList.html")
+    @JsModule("BasicTypeList.js")
     public static class BasicTypeList extends PolymerTemplate<ItemsModel> {
 
         BasicTypeList() {
@@ -53,13 +54,9 @@ public class BasicTypeInListView extends AbstractDivView {
         BasicTypeList list = new BasicTypeList();
         list.setId("template");
         add(list);
-        NativeButton add = new NativeButton("Add an item",
-                event -> list.getModel().getItems().add("newItem"));
-        add.setId("add");
-        add(add);
-        NativeButton remove = new NativeButton("Remove the first item",
-                event -> list.getModel().getItems().remove(0));
-        remove.setId("remove");
-        add(remove);
+        add(createButton("Add an item", "add",
+                event -> list.getModel().getItems().add("newItem")));
+        add(createButton("Remove the first item", "remove",
+                event -> list.getModel().getItems().remove(0)));
     }
 }

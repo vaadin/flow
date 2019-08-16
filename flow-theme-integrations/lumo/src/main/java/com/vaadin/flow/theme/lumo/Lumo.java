@@ -23,17 +23,26 @@ import java.util.Map;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.theme.AbstractTheme;
 
 /**
  * Lumo component theme class implementation.
  */
+@NpmPackage(value = "@vaadin/vaadin-lumo-styles", version = "1.5.0")
 @HtmlImport("frontend://bower_components/vaadin-lumo-styles/color.html")
 @HtmlImport("frontend://bower_components/vaadin-lumo-styles/typography.html")
 @HtmlImport("frontend://bower_components/vaadin-lumo-styles/sizing.html")
 @HtmlImport("frontend://bower_components/vaadin-lumo-styles/spacing.html")
 @HtmlImport("frontend://bower_components/vaadin-lumo-styles/style.html")
 @HtmlImport("frontend://bower_components/vaadin-lumo-styles/icons.html")
+@JsModule("@vaadin/vaadin-lumo-styles/color.js")
+@JsModule("@vaadin/vaadin-lumo-styles/typography.js")
+@JsModule("@vaadin/vaadin-lumo-styles/sizing.js")
+@JsModule("@vaadin/vaadin-lumo-styles/spacing.js")
+@JsModule("@vaadin/vaadin-lumo-styles/style.js")
+@JsModule("@vaadin/vaadin-lumo-styles/icons.js")
 public class Lumo implements AbstractTheme {
 
     public static final String LIGHT = "light";
@@ -57,7 +66,13 @@ public class Lumo implements AbstractTheme {
     }
 
     @Override
+    @Deprecated
     public Map<String, String> getBodyAttributes(String variant) {
+        return getHtmlAttributes(variant);
+    }
+
+    @Override
+    public Map<String, String> getHtmlAttributes(String variant) {
         if (variant.isEmpty()) {
             return Collections.emptyMap();
         }

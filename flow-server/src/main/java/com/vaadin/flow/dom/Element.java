@@ -31,13 +31,14 @@ import org.jsoup.nodes.Document;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
-import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
+import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.component.page.Page;
+import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.dom.impl.BasicTextElementStateProvider;
 import com.vaadin.flow.dom.impl.CustomAttribute;
 import com.vaadin.flow.dom.impl.ThemeListImpl;
-import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JavaScriptSemantics;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateNode;
@@ -53,7 +54,7 @@ import elemental.json.Json;
 import elemental.json.JsonValue;
 
 /**
- * A class representing an element in the DOM.
+ * Represents an element in the DOM.
  * <p>
  * Contains methods for updating and querying various parts of the element, such
  * as attributes.
@@ -75,7 +76,7 @@ public class Element extends Node<Element> {
         illegalPropertyReplacements.put("classList", "getClassList()");
         illegalPropertyReplacements.put("className", "getClassList()");
         illegalPropertyReplacements.put("outerHTML",
-                "getParent().setProperty('innertHTML',value)");
+                "getParent().setProperty('innerHTML',value)");
     }
 
     /**
@@ -579,6 +580,21 @@ public class Element extends Node<Element> {
     }
 
     /**
+     * Removes this element from its parent and state tree.
+     *
+     * @return this element
+     */
+    public Element removeFromTree() {
+        Node<?> parent = getParentNode();
+        if (parent != null
+                && parent.getChildren().anyMatch(Predicate.isEqual(this))) {
+            parent.removeChild(this);
+        }
+        getNode().removeFromTree();
+        return this;
+    }
+
+    /**
      * Gets the parent element.
      * <p>
      * The method may return {@code null} if the parent is not an element but a
@@ -745,7 +761,6 @@ public class Element extends Node<Element> {
      * @return a handle that can be used for configuring or removing the
      *         listener
      *
-     * @since
      */
     public DomListenerRegistration addPropertyChangeListener(
             String propertyName, String domEventName,
@@ -1545,9 +1560,8 @@ public class Element extends Node<Element> {
      * Calls the given function on the element with the given arguments.
      * <p>
      * The function will be called after all pending DOM updates have completed,
-     * at the same time that
-     * {@link Page#executeJavaScript(String, Serializable...)} calls are
-     * invoked.
+     * at the same time that {@link Page#executeJs(String, Serializable...)}
+     * calls are invoked.
      * <p>
      * If the element is not attached, the function call will be deferred until
      * the element is attached.
@@ -1561,25 +1575,57 @@ public class Element extends Node<Element> {
      *            the arguments to pass to the function. Must be of a type
      *            supported by the communication mechanism, as defined by
      *            {@link JsonCodec}
+     *
+     * @deprecated Use {@link #callJsFunction(String,Serializable...)} instead
+     *             since it also allows getting return value back.
      */
+    @Deprecated
     public void callFunction(String functionName, Serializable... arguments) {
+        // Ignore return value
+        callJsFunction(functionName, arguments);
+    }
+
+    /**
+     * Calls the given function on the element with the given arguments.
+     * <p>
+     * It is possible to get access to the return value of the execution by
+     * registering a handler with the returned pending result. If no handler is
+     * registered, the return value will be ignored.
+     * <p>
+     * The function will be called after all pending DOM updates have completed,
+     * at the same time that {@link Page#executeJs(String, Serializable...)}
+     * calls are invoked.
+     * <p>
+     * If the element is not attached, the function call will be deferred until
+     * the element is attached.
+     *
+     * @see JsonCodec JsonCodec for supported argument types
+     *
+     * @param functionName
+     *            the name of the function to call, may contain dots to indicate
+     *            a function on a property.
+     * @param arguments
+     *            the arguments to pass to the function. Must be of a type
+     *            supported by the communication mechanism, as defined by
+     *            {@link JsonCodec}
+     * @return a pending result that can be used to get a return value from the
+     *         execution
+     */
+    public PendingJavaScriptResult callJsFunction(String functionName,
+            Serializable... arguments) {
         assert functionName != null;
         assert !functionName
                 .startsWith(".") : "Function name should not start with a dot";
 
-        runBeforeAttachedResponse(ui -> {
-            // $0.method($1,$2,$3)
-            String paramPlaceholderString = IntStream
-                    .range(1, arguments.length + 1).mapToObj(i -> "$" + i)
-                    .collect(Collectors.joining(","));
-            Serializable[] jsParameters = Stream
-                    .concat(Stream.of(this), Stream.of(arguments))
-                    .toArray(Serializable[]::new);
+        // "$1,$2,$3,..."
+        String paramPlaceholderString = IntStream.range(1, arguments.length + 1)
+                .mapToObj(i -> "$" + i).collect(Collectors.joining(","));
+        // Inject the element as $0
+        Stream<Serializable> jsParameters = Stream.concat(Stream.of(this),
+                Stream.of(arguments));
 
-            ui.getPage().executeJavaScript(
-                    "$0." + functionName + "(" + paramPlaceholderString + ")",
-                    jsParameters);
-        });
+        return scheduleJavaScriptInvocation("return $0." + functionName + "("
+                + paramPlaceholderString + ")", jsParameters);
     }
 
     // When updating JavaDocs here, keep in sync with Page.executeJavaScript
@@ -1594,6 +1640,7 @@ public class Element extends Node<Element> {
      * <li>{@link Integer}
      * <li>{@link Double}
      * <li>{@link Boolean}
+     * <li>{@link JsonValue}
      * <li>{@link Element} (will be sent as <code>null</code> if the server-side
      * element instance is not attached when the invocation is sent to the
      * client)
@@ -1608,34 +1655,84 @@ public class Element extends Node<Element> {
      *            the JavaScript expression to invoke
      * @param parameters
      *            parameters to pass to the expression
+     * @deprecated Use {@link #executeJs(String,Serializable...)} instead since
+     *             it also allows getting return value back.
      */
+    @Deprecated
     public void executeJavaScript(String expression,
+            Serializable... parameters) {
+        // Ignore return value
+        executeJs(expression, parameters);
+    }
+
+    // When updating JavaDocs here, keep in sync with Page.executeJavaScript
+    /**
+     * Asynchronously runs the given JavaScript expression in the browser in the
+     * context of this element. It is possible to get access to the return value
+     * of the execution by registering a handler with the returned pending
+     * result. If no handler is registered, the return value will be ignored.
+     * <p>
+     * This element will be available to the expression as <code>this</code>.
+     * The given parameters will be available as variables named
+     * <code>$0</code>, <code>$1</code>, and so on. Supported parameter types
+     * are:
+     * <ul>
+     * <li>{@link String}
+     * <li>{@link Integer}
+     * <li>{@link Double}
+     * <li>{@link Boolean}
+     * <li>{@link JsonValue}
+     * <li>{@link Element} (will be sent as <code>null</code> if the server-side
+     * element instance is not attached when the invocation is sent to the
+     * client)
+     * </ul>
+     * Note that the parameter variables can only be used in contexts where a
+     * JavaScript variable can be used. You should for instance do
+     * <code>'prefix' + $0</code> instead of <code>'prefix$0'</code> and
+     * <code>value[$0]</code> instead of <code>value.$0</code> since JavaScript
+     * variables aren't evaluated inside strings or property names.
+     *
+     * @param expression
+     *            the JavaScript expression to invoke
+     * @param parameters
+     *            parameters to pass to the expression
+     * @return a pending result that can be used to get a value returned from
+     *         the expression
+     */
+    public PendingJavaScriptResult executeJs(String expression,
             Serializable... parameters) {
 
         // Add "this" as the last parameter
-        Serializable[] wrappedParameters = Stream
-                .concat(Stream.of(parameters), Stream.of(this))
-                .toArray(Serializable[]::new);
+        Stream<Serializable> wrappedParameters = Stream
+                .concat(Stream.of(parameters), Stream.of(this));
 
         // Wrap in a function that is applied with last parameter as "this"
-        String wrappedExpression = "(function() { " + expression + "}).apply($"
-                + parameters.length + ")";
+        String wrappedExpression = "return (function() { " + expression
+                + "}).apply($" + parameters.length + ")";
 
-        runBeforeAttachedResponse(ui -> ui.getPage()
-                .executeJavaScript(wrappedExpression, wrappedParameters));
+        return scheduleJavaScriptInvocation(wrappedExpression,
+                wrappedParameters);
     }
 
-    /**
-     * Runs the given action right before the next response during which this
-     * element is attached.
-     *
-     * @param action
-     *            the action to run
-     */
-    private void runBeforeAttachedResponse(SerializableConsumer<UI> action) {
-        getNode().runWhenAttached(
-                ui -> ui.getInternals().getStateTree().beforeClientResponse(
-                        getNode(), context -> action.accept(context.getUI())));
+    private PendingJavaScriptResult scheduleJavaScriptInvocation(
+            String expression, Stream<Serializable> parameters) {
+        StateNode node = getNode();
+
+        JavaScriptInvocation invocation = new JavaScriptInvocation(expression,
+                parameters.toArray(Serializable[]::new));
+
+        PendingJavaScriptInvocation pending = new PendingJavaScriptInvocation(
+                node, invocation);
+
+        node.runWhenAttached(ui -> ui.getInternals().getStateTree()
+                .beforeClientResponse(node, context -> {
+                    if (!pending.isCanceled()) {
+                        context.getUI().getInternals()
+                                .addJavaScriptInvocation(pending);
+                    }
+                }));
+
+        return pending;
     }
 
     /**
@@ -1718,8 +1815,9 @@ public class Element extends Node<Element> {
                     .getFeatureIfInitialized(VirtualChildrenList.class)
                     .ifPresent(list -> {
                         final Consumer<Component> stateChangeInformer = virtual -> {
-                            virtual.onEnabledStateChanged(enabled
-                                    ? virtual.getElement().isEnabled() : false);
+                            virtual.onEnabledStateChanged(
+                                    enabled ? virtual.getElement().isEnabled()
+                                            : false);
 
                             informChildrenOfStateChange(enabled, virtual);
                         };

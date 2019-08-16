@@ -17,6 +17,7 @@ package com.vaadin.client.flow.util;
 
 import com.google.gwt.core.client.GWT;
 import com.vaadin.client.WidgetUtil;
+import com.vaadin.client.communication.ServerConnector;
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.StateTree;
 import com.vaadin.client.flow.collection.JsArray;
@@ -67,6 +68,7 @@ public class ClientJsonCodec {
                 return tree.getNode(nodeId);
             }
             case JsonCodec.ARRAY_TYPE:
+            case JsonCodec.RETURN_CHANNEL_TYPE:
                 return null;
             default:
                 throw new IllegalArgumentException(
@@ -99,6 +101,10 @@ public class ClientJsonCodec {
             }
             case JsonCodec.ARRAY_TYPE:
                 return jsonArrayAsJsArray(array.getArray(1));
+            case JsonCodec.RETURN_CHANNEL_TYPE:
+                return createReturnChannelCallback((int) array.getNumber(1),
+                        (int) array.getNumber(2),
+                        tree.getRegistry().getServerConnector());
             default:
                 throw new IllegalArgumentException(
                         "Unsupported complex type in " + array.toJson());
@@ -107,6 +113,15 @@ public class ClientJsonCodec {
             return decodeWithoutTypeInfo(json);
         }
     }
+
+    private static native NativeFunction createReturnChannelCallback(int nodeId,
+            int channelId, ServerConnector serverConnector)
+    /*-{
+        return $entry(function() {
+          var args = Array.prototype.slice.call(arguments);
+          serverConnector.@ServerConnector::sendReturnChannelMessage(*)(nodeId, channelId, args);
+        });
+    }-*/;
 
     /**
      * Decodes a value encoded on the server using

@@ -44,8 +44,6 @@ public class DefaultReconnectDialog implements ReconnectDialog {
      * Creates a new instance.
      */
     public DefaultReconnectDialog() {
-        // super(false, true);
-
         root = Browser.getDocument().createElement("div");
         root.setClassName("v-reconnect-dialog");
         Element spinner = Browser.getDocument().createElement("div");
@@ -94,7 +92,6 @@ public class DefaultReconnectDialog implements ReconnectDialog {
 
     @Override
     public void show() {
-        // FIXME Do something else
         if (root.getParentElement() == null) {
             Browser.getDocument().getBody().appendChild(root);
         }

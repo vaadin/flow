@@ -15,12 +15,17 @@
  */
 
 /**
- * Customized version of SingleScriptTemplate.js, which uses a different
- * compulteScriptBase function. This is done to avoid a document.write
- * call, which would not work when the script is run as deferred.
+ * Customized version of SingleScriptTemplate.js, which:
+ * 1. Uses a different computeScriptBase function.
+ *    This is done to avoid a document.write call, which would not work
+ *    when the script is run as deferred.
  * 
- * The only difference to original SingleScriptTemplate is removal of function
- * computeScriptBase, and replacing it with a placeholder (search COMPUTE_SCRIPT_BASE).
+ *    The only difference to original SingleScriptTemplate is removal of function
+ *    computeScriptBase, and replacing it with a placeholder (search COMPUTE_SCRIPT_BASE).
+ *
+ * 2. Adds the `var` statement to `__gwt_isKnownPropertyValue` and `__gwt_getMetaProperty`
+ *    declarations, so as the generated script can be used in JS strict mode.
+ *    Useful when loaded by using ES6 `import` feature.
  */
 function __MODULE_FUNC__() {
   // ---------------- INTERNAL GLOBALS ----------------
@@ -148,14 +153,14 @@ function __MODULE_FUNC__() {
    * @param propName the name of the property being checked
    * @param propValue the property value being tested
    */
-  __gwt_isKnownPropertyValue = function(propName, propValue) {
+  var __gwt_isKnownPropertyValue = function(propName, propValue) {
     return propValue in values[propName];
   }
 
   /**
    * Returns a meta property value, if any.  Used by DefaultPropertyProvider.
    */
-  __gwt_getMetaProperty = function(name) {
+  var __gwt_getMetaProperty = function(name) {
     var value = metaProps[name];
     return (value == null) ? null : value;
   }

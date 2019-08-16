@@ -44,6 +44,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
@@ -331,6 +332,22 @@ public class RouterTest extends RoutingTestBase {
         @Override
         public void setParameter(BeforeEvent event,
                 @com.vaadin.flow.router.OptionalParameter String parameter) {
+            events.add(event);
+            param = parameter;
+        }
+    }
+
+    @Route("optional")
+    @Tag(Tag.DIV)
+    public static class WithoutOptionalParameter extends Component
+            implements HasUrlParameter<String> {
+
+        private static List<BeforeEvent> events = new ArrayList<>();
+
+        private static String param;
+
+        @Override
+        public void setParameter(BeforeEvent event, String parameter) {
             events.add(event);
             param = parameter;
         }
@@ -670,6 +687,30 @@ public class RouterTest extends RoutingTestBase {
             events.add(event);
         }
 
+    }
+
+    @Route(value = "childWithParameter", layout = RouteParent.class)
+    @Tag(Tag.DIV)
+    public static class RouteChildWithParameter extends Component implements
+            BeforeLeaveObserver, BeforeEnterObserver, HasUrlParameter<String> {
+
+        static List<EventObject> events = new ArrayList<>();
+        static List<String> parameters = new ArrayList<>();
+
+        @Override
+        public void setParameter(BeforeEvent event, String parameter) {
+            parameters.add(parameter);
+        }
+
+        @Override
+        public void beforeEnter(BeforeEnterEvent event) {
+            events.add(event);
+        }
+
+        @Override
+        public void beforeLeave(BeforeLeaveEvent event) {
+            events.add(event);
+        }
     }
 
     @Route(value = "single", layout = RouteParent.class, absolute = true)
@@ -1154,6 +1195,27 @@ public class RouterTest extends RoutingTestBase {
     public static class View extends Component {
     }
 
+    @Route(value = "1", layout = NoRemoveLayout.class)
+    @Tag(Tag.DIV)
+    public static class NoRemoveContent1 extends Component {
+
+    }
+
+    @Route(value = "2", layout = NoRemoveLayout.class)
+    @Tag(Tag.DIV)
+    public static class NoRemoveContent2 extends Component {
+
+    }
+
+    @Tag(Tag.DIV)
+    public static class NoRemoveLayout extends Component
+            implements RouterLayout {
+        @Override
+        public void removeRouterLayoutContent(HasElement oldContent) {
+            // Do nothing
+        }
+    }
+
     @Override
     @Before
     public void init() throws NoSuchFieldException, SecurityException,
@@ -1195,6 +1257,19 @@ public class RouterTest extends RoutingTestBase {
         router.navigate(ui, new Location("foo/bar"),
                 NavigationTrigger.PROGRAMMATIC);
         Assert.assertEquals(FooBarNavigationTarget.class, getUIComponent());
+    }
+
+    @Test
+    public void resolveNavigation_pathContainsDots_dotSegmentIsNotParentReference_noException() {
+        router.resolveNavigationTarget("/.../dsfsdfsdf",
+                Collections.emptyMap());
+        // doesn't throw
+    }
+
+    @Test
+    public void resolveNavigation_pathContainsDots_pathIsRelative_noException() {
+        router.resolveNavigationTarget("/../dsfsdfsdf", Collections.emptyMap());
+        // doesn't throw
     }
 
     @Test
@@ -2216,8 +2291,9 @@ public class RouterTest extends RoutingTestBase {
         ui.navigate("loop");
 
         long historyInvocations = ui.getInternals()
-                .dumpPendingJavaScriptInvocations().stream().filter(js -> js
-                        .getExpression().startsWith("history.pushState"))
+                .dumpPendingJavaScriptInvocations().stream()
+                .filter(js -> js.getInvocation().getExpression()
+                        .startsWith("history.pushState"))
                 .count();
         assertEquals(1, historyInvocations);
 
@@ -2372,6 +2448,10 @@ public class RouterTest extends RoutingTestBase {
     @Test // 3384
     public void theme_is_gotten_from_the_super_class()
             throws InvalidRouteConfigurationException, Exception {
+
+        // Feature enabled only for bower mode
+        Mockito.when(configuration.isCompatibilityMode()).thenReturn(true);
+
         setNavigationTargets(ExtendingView.class);
 
         router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
@@ -2381,6 +2461,22 @@ public class RouterTest extends RoutingTestBase {
         Object themeObject = theme.get(ui.getInternals());
 
         Assert.assertEquals(MyTheme.class, themeObject.getClass());
+    }
+    
+    
+    @Test
+    public void theme_is_not_gotten_from_the_super_class_when_in_npm_mode()
+            throws InvalidRouteConfigurationException, Exception {
+
+        setNavigationTargets(ExtendingView.class);
+
+        router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
+
+        Field theme = UIInternals.class.getDeclaredField("theme");
+        theme.setAccessible(true);
+        Object themeObject = theme.get(ui.getInternals());
+
+        Assert.assertNull(themeObject);
     }
 
     @Test
@@ -3021,11 +3117,108 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertEquals(ui.getElement(), specialChild.getParent());
     }
 
+    @Test
+    public void noRemoveLayout_oldContentRetained() {
+        setNavigationTargets(NoRemoveContent1.class, NoRemoveContent2.class);
+
+        ui.navigate(NoRemoveContent1.class);
+        NoRemoveLayout layout = (NoRemoveLayout) ui.getChildren().findFirst()
+                .get();
+
+        Assert.assertEquals(Arrays.asList(NoRemoveContent1.class),
+                layout.getChildren().map(Component::getClass)
+                        .collect(Collectors.toList()));
+
+        ui.navigate(NoRemoveContent2.class);
+
+        Assert.assertEquals(
+                Arrays.asList(NoRemoveContent1.class, NoRemoveContent2.class),
+                layout.getChildren().map(Component::getClass)
+                        .collect(Collectors.toList()));
+    }
+
+    @Test // 5388
+    public void layout_chain_is_included_in_before_events() {
+        setNavigationTargets(LoneRoute.class, RouteChildWithParameter.class);
+
+        RouteChildWithParameter.events.clear();
+        ui.navigate(RouteChildWithParameter.class, "foobar");
+
+        BeforeEnterEvent beforeEnterEvent = (BeforeEnterEvent) RouteChildWithParameter.events.get(0);
+        Assert.assertEquals(
+                "There is not exactly one layout in the layout chain", 1,
+                beforeEnterEvent.getLayouts().size());
+        Assert.assertTrue("RouteParent was not included in the layout chain",
+                beforeEnterEvent.getLayouts().contains(RouteParent.class));
+
+        RouteChildWithParameter.events.clear();
+        ui.navigate(LoneRoute.class);
+
+        BeforeLeaveEvent beforeLeaveEvent = (BeforeLeaveEvent) RouteChildWithParameter.events.get(0);
+        Assert.assertEquals(
+                "There is not exactly one layout in the layout chain", 1,
+                beforeLeaveEvent.getLayouts().size());
+        Assert.assertTrue("RouteParent was not included in the layout chain",
+                beforeLeaveEvent.getLayouts().contains(RouteParent.class));
+    }
+
+    @Test
+    public void optional_parameter_non_existing_route()
+    throws InvalidRouteConfigurationException {
+        OptionalParameter.events.clear();
+        Mockito.when(configuration.isProductionMode()).thenReturn(false);
+        setNavigationTargets(OptionalParameter.class);
+
+        String locationString = "optional/doesnotExist/parameter";
+        router.navigate(
+            ui, new Location(locationString), NavigationTrigger.PROGRAMMATIC);
+
+        String exceptionText1 =
+             String.format("Could not navigate to '%s'", locationString);
+
+        String exceptionText2 =
+            String.format("Reason: Couldn't find route for '%s'", locationString);
+
+        String exceptionText3 =
+            "<li><a href=\"optional\">optional (supports optional parameter)</a></li>";
+
+        assertExceptionComponent(
+            RouteNotFoundError.class, exceptionText1, exceptionText2, exceptionText3);
+    }
+
+    @Test
+    public void without_optional_parameter()
+    throws InvalidRouteConfigurationException {
+        OptionalParameter.events.clear();
+        Mockito.when(configuration.isProductionMode()).thenReturn(false);
+        setNavigationTargets(WithoutOptionalParameter.class);
+
+        String locationString = "optional";
+        router.navigate(
+            ui, new Location(locationString), NavigationTrigger.PROGRAMMATIC);
+
+        String exceptionText1 =
+             String.format("Could not navigate to '%s'", locationString);
+
+        String exceptionText2 =
+            String.format("Reason: Couldn't find route for '%s'", locationString);
+
+        String exceptionText3 = "<li>optional (requires parameter)</li>";
+
+        assertExceptionComponent(
+            RouteNotFoundError.class, exceptionText1, exceptionText2, exceptionText3);
+    }
+
     private void setNavigationTargets(
             Class<? extends Component>... navigationTargets)
             throws InvalidRouteConfigurationException {
-        RouteConfiguration.forRegistry(router.getRegistry())
-                .setRoutes(new HashSet<>(Arrays.asList(navigationTargets)));
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(router.getRegistry());
+        routeConfiguration.update(() -> {
+            routeConfiguration.getHandledRegistry().clean();
+            Arrays.asList(navigationTargets)
+                    .forEach(routeConfiguration::setAnnotatedRoute);
+        });
     }
 
     private void setErrorNavigationTargets(

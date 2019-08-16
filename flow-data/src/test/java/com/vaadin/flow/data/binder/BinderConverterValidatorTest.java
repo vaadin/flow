@@ -30,13 +30,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.vaadin.flow.data.binder.testcomponents.TestLabel;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.vaadin.flow.component.HasValidation;
 import com.vaadin.flow.component.HasValue;
-import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.data.binder.Binder.Binding;
 import com.vaadin.flow.data.binder.Binder.BindingBuilder;
 import com.vaadin.flow.data.binder.testcomponents.TestTextField;
@@ -657,7 +657,7 @@ public class BinderConverterValidatorTest
         assertNotNull(lastNameField.getErrorMessage());
 
         // add status label to show bean level error
-        Label statusLabel = new Label();
+        TestLabel statusLabel = new TestLabel();
         binder.setStatusLabel(statusLabel);
         nameField.setValue("error");
 

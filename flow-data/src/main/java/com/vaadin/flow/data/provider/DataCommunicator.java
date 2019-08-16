@@ -393,7 +393,7 @@ public class DataCommunicator<T> implements Serializable {
         dataProviderUpdateRegistration = getDataProvider()
                 .addDataProviderListener(event -> {
                     if (event instanceof DataRefreshEvent) {
-                        refresh(((DataRefreshEvent<T>) event).getItem());
+                        handleDataRefreshEvent((DataRefreshEvent<T>) event);
                     } else {
                         reset();
                     }
@@ -401,6 +401,10 @@ public class DataCommunicator<T> implements Serializable {
 
         // Ensure the initialize check is done
         requestFlush();
+    }
+
+    protected void handleDataRefreshEvent(DataRefreshEvent<T> event) {
+        refresh (event.getItem());
     }
 
     private void handleDetach() {

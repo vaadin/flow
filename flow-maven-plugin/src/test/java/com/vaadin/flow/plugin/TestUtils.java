@@ -16,6 +16,8 @@
 
 package com.vaadin.flow.plugin;
 
+import static org.junit.Assert.assertNotNull;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -24,8 +26,6 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertNotNull;
-
 /**
  * Shared code to use in the unit tests.
  *
@@ -33,12 +33,16 @@ import static org.junit.Assert.assertNotNull;
  * @since 1.0.
  */
 public final class TestUtils {
+
+    public static final String SERVER_JAR = "annotation-extractor-test/flow-server-1.5-SNAPSHOT.jar";
+
+    public static final String DATA_JAR = "annotation-extractor-test/flow-data-1.5-SNAPSHOT.jar";
+
     private TestUtils() {
     }
 
     /**
-     * An easy way to get a test jar.
-     * Fails if the file was not found.
+     * An easy way to get a test jar. Fails if the file was not found.
      *
      * @return test jar file
      */
@@ -47,9 +51,11 @@ public final class TestUtils {
     }
 
     /**
-     * Gets a test jar file by its resource name using {@link TestUtils#getTestResource(String)}.
+     * Gets a test jar file by its resource name using
+     * {@link TestUtils#getTestResource(String)}.
      *
-     * @param jarName the resource name of a jar file
+     * @param jarName
+     *            the resource name of a jar file
      * @return corresponding test jar file
      */
     public static File getTestJar(String jarName) {
@@ -57,37 +63,49 @@ public final class TestUtils {
     }
 
     /**
-     * Gets a test resouce by its name using using {@link ClassLoader#getResource(String)}.
-     * Fails if the file was not found ({@code null}).
+     * Gets a test resouce by its name using using
+     * {@link ClassLoader#getResource(String)}. Fails if the file was not found
+     * ({@code null}).
      *
-     * @param resourceName the resource name
+     * @param resourceName
+     *            the resource name
      * @return corresponding resource url
      */
     public static URL getTestResource(String resourceName) {
-        URL resourceUrl = TestUtils.class.getClassLoader().getResource(resourceName);
-        assertNotNull(String.format("Expect the test resource to be present in test resource folder with name = '%s'", resourceName), resourceUrl);
+        URL resourceUrl = TestUtils.class.getClassLoader()
+                .getResource(resourceName);
+        assertNotNull(String.format(
+                "Expect the test resource to be present in test resource folder with name = '%s'",
+                resourceName), resourceUrl);
         return resourceUrl;
     }
 
     /**
-     * Lists all file (not directories) paths in directory specified.
-     * Fails if directory specified does not exist or is not a directory.
+     * Lists all file (not directories) paths in directory specified. Fails if
+     * directory specified does not exist or is not a directory.
      *
-     * @param directory directory to list files in
+     * @param directory
+     *            directory to list files in
      * @return list of paths, relative to the directory specified
      */
     public static List<String> listFilesRecursively(File directory) {
-        assert directory != null && directory.isDirectory() : "This method expects valid directory as input, but got: " + directory;
+        assert directory != null && directory
+                .isDirectory() : "This method expects valid directory as input, but got: "
+                        + directory;
 
         try {
             return Files.walk(directory.toPath())
                     .filter(file -> Files.isRegularFile(file))
                     .map(Path::toString)
                     .map(path -> path.replace(directory.getAbsolutePath(), ""))
-                    .map(path -> path.startsWith(File.separator) ? path.substring(1) : path)
+                    .map(path -> path.startsWith(File.separator)
+                            ? path.substring(1)
+                            : path)
                     .collect(Collectors.toList());
         } catch (IOException e) {
-            throw new AssertionError(String.format("Unexpected: could not list files in directory '%s'", directory), e);
+            throw new AssertionError(String.format(
+                    "Unexpected: could not list files in directory '%s'",
+                    directory), e);
         }
     }
 }

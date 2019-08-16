@@ -21,6 +21,7 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.EventListener;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -42,6 +43,8 @@ import javax.servlet.descriptor.JspConfigDescriptor;
  * @since 1.0
  */
 public class MockServletContext implements ServletContext {
+
+    HashMap<String, Object> sessionAttributes = new HashMap<>();
 
     /*
      * (non-Javadoc)
@@ -243,7 +246,7 @@ public class MockServletContext implements ServletContext {
      */
     @Override
     public Object getAttribute(String name) {
-        return null;
+        return sessionAttributes.get(name);
     }
 
     /*
@@ -265,6 +268,7 @@ public class MockServletContext implements ServletContext {
      */
     @Override
     public void setAttribute(String name, Object object) {
+        sessionAttributes.put(name, object);
     }
 
     /*
@@ -274,6 +278,7 @@ public class MockServletContext implements ServletContext {
      */
     @Override
     public void removeAttribute(String name) {
+        sessionAttributes.remove(name);
     }
 
     /*
@@ -555,7 +560,7 @@ public class MockServletContext implements ServletContext {
      */
     @Override
     public ClassLoader getClassLoader() {
-        return null;
+        return this.getClass().getClassLoader();
     }
 
     /*

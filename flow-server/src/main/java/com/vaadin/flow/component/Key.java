@@ -20,12 +20,33 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 /**
  * An interface to represent keyboard keys.
  * <p>
+ * While the {@code Key} values defined here consist of multiple values in order
+ * to account for variability in browsers, the {@code Key} values that come from
+ * the client only consist of the single value known to the client's Browser.
+ * <p>
+ * Some of the {@code Key} values map only to {@code event.key} values while
+ * other {@code Key} values contain values for both {@code event.key} and
+ * {@code event.code}, and some only contain a {@code event.code} value. In
+ * cases where a {@code Key} containing only {@code event.code} value is a
+ * subset of a {@code Key} based on {@code event.key} value, the {@code event.code}
+ * is included in the latter {@code Key} only.
+ * <p>
+ * For example, {@code Key ALT} consists of values {@code [Alt, AltLeft]} and
+ * {@code ALT_LEFT} is a key itself. See the documentation of the {@code Key}
+ * instance for more information about its relation to {@code event.key} and
+ * {@code event.code} values.
+ * <p>
  * See
  * https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key/Key_Values
+ * for event.key values and https://w3c.github.io/uievents-code/ for
+ * event.code values.
+ *
+ * @author Vaadin Ltd.
  */
 @FunctionalInterface
 public interface Key extends Serializable {
@@ -35,50 +56,78 @@ public interface Key extends Serializable {
      * specific key value. This can happen due to hardware or software
      * constraints, or because of constraints around the platform on which the
      * user agent is running.
+     * <p>
+     * In the case of <code>event.code</code> values, this value code should be
+     * used when no other value given in this specification is appropriate.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key UNIDENTIFIED = Key.of("Unidentified");
 
     /**
      * The <code>Alt</code> (Alternative) key.
+     * <p>
+     * The second value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @see #ALT_LEFT
      */
-    Key ALT = Key.of("Alt");
+    Key ALT = Key.of("Alt", "AltLeft");
 
     /**
      * The <code>AltGr</code> or <code>AltGraph</code> (Alternate Graphics) key.
      * Enables the ISO Level 3 shift modifier (where <code>Shift</code> is the
      * level 2 modifier).
+     * <p>
+     * The second value matches DOM's KeyboardEvent's <code>event.code</code>.
+     *
+     * @see #ALT_RIGHT
      */
-    Key ALT_GRAPH = Key.of("AltGraph");
+    Key ALT_GRAPH = Key.of("AltGraph", "AltRight");
 
     /**
-     * The <code>Caps Lock</code> key. Toggles the capital character lock on and
-     * off for subsequent input.
+     * The <code>CapsLock</code> or <code>⇪</code> key. Toggles the capital
+     * character lock on and off for subsequent input.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key CAPS_LOCK = Key.of("CapsLock");
 
     /**
      * The <code>Control</code>, <code>Ctrl</code>, or <code>Ctl</code> key.
      * Allows typing control characters.
+     * <p>
+     * The second and third values match DOM's KeyboardEvent's
+     * <code>event.code</code>.
+     *
+     * @see #CONTROL_LEFT
+     * @see #CONTROL_RIGHT
      */
-    Key CONTROL = Key.of("Control");
+    Key CONTROL = Key.of("Control", "ControlLeft", "ControlRight");
 
     /**
      * The <code>Fn</code> (Function modifier) key. Used to allow generating
      * function key (<code>F1</code>-<code>F15</code>, for instance) characters
      * on keyboards without a dedicated function key area. Often handled in
      * hardware so that events aren't generated for this key.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key FN = Key.of("Fn");
 
     /**
      * The <code>FnLock</code> or <code>F-Lock</code> (Function Lock) key.
      * Toggles the function key mode described by "Fn" on and off. Often handled
-     * in hardware so that events aren't generated for this key.
+     * in hardware so that events aren't generated for this key. Found on the
+     * Microsoft Natural Keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key FN_LOCK = Key.of("FnLock");
 
     /**
      * The <code>Hyper</code> key.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key HYPER = Key.of("Hyper");
 
@@ -92,12 +141,19 @@ public interface Key extends Serializable {
     /**
      * The <code>NumLock</code> (Number Lock) key. Toggles the numeric keypad
      * between number entry some other mode (often directional arrows).
+     * <p>
+     * On the Mac, the " NumLock " code should be used for the numpad
+     * <code>Clear</code> key.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key NUM_LOCK = Key.of("NumLock");
 
     /**
-     * The <code>Scroll Lock</code> key. Toggles beteen scrolling and cursor
+     * The <code>Scroll Lock</code> key. Toggles between scrolling and cursor
      * movement modes.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key SCROLL_LOCK = Key.of("ScrollLock");
 
@@ -105,11 +161,19 @@ public interface Key extends Serializable {
      * The <code>Shift</code> key. Modifies keystrokes to allow typing upper (or
      * other) case letters, and to support typing punctuation and other special
      * characters.
+     * <p>
+     * The second and third values match DOM's KeyboardEvent's
+     * <code>event.code</code>.
+     *
+     * @see #SHIFT_LEFT
+     * @see #SHIFT_RIGHT
      */
-    Key SHIFT = Key.of("Shift");
+    Key SHIFT = Key.of("Shift", "ShiftLeft", "ShiftRight");
 
     /**
      * The <code>Super</code> key.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key SUPER = Key.of("Super");
 
@@ -125,66 +189,95 @@ public interface Key extends Serializable {
     Key SYMBOL_LOCK = Key.of("SymbolLock");
 
     /**
-     * The <code>Enter</code> or <code>↵</code> key (sometimes labeled
-     * <code>Return</code>).
+     * The <code>Enter</code> or <code>↵</code> key. Labelled <code>Return</code>
+     * on Apple keyboards.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key ENTER = Key.of("Enter");
 
     /**
-     * The Horizontal Tab key, <code>Tab</code>.
+     * <code>Tab</code> or <code>⇥</code>
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key TAB = Key.of("Tab");
 
     /**
      * The space key, <code>Space Bar</code>.
+     * <p>
+     * The second value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
-    Key SPACE = Key.of(" ");
+    Key SPACE = Key.of(" ", "Space");
 
     /**
-     * The down arrow key.
+     * The down arrow key (<code>↓</code>).
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key ARROW_DOWN = Key.of("ArrowDown");
 
     /**
-     * The left arrow key.
+     * The left arrow key (<code>←</code>).
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key ARROW_LEFT = Key.of("ArrowLeft");
 
     /**
-     * The right arrow key.
+     * The right arrow key (<code>→</code>).
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key ARROW_RIGHT = Key.of("ArrowRight");
 
     /**
-     * The up arrow key.
+     * The up arrow key (<code>↑</code>).
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key ARROW_UP = Key.of("ArrowUp");
 
     /**
      * The <code>End</code> key. Moves to the end of content.
+     * <p>
+     * In case of a <code>event.code</code> in the case of <code>event.key</code>
+     * the name may be <code>Page Down</code> , <code>End</code> or
+     * <code>↘</code>.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key END = Key.of("End");
 
     /**
-     * The <code>Home</code> key. Moves to the start of content.
+     * The <code>Home</code> or <code>↖</code> key. Moves to the start of
+     * content.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key HOME = Key.of("Home");
 
     /**
      * The <code>Page Down</code> (or <code>PgDn</code>) key. Scrolls down or
      * displays the next page of content.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key PAGE_DOWN = Key.of("PageDown");
 
     /**
      * The <code>Page Up</code> (or <code>PgUp</code>) key. Scrolls up or
      * displays the previous page of content.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key PAGE_UP = Key.of("PageUp");
 
     /**
-     * The <code>Backspace</code> key. This key is labeled <code>Delete</code>
-     * on Mac keyboards.
+     * <code>Backspace</code> or <code>⌫</code>. Labelled <code>Delete</code> on
+     * Apple keyboards.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key BACKSPACE = Key.of("Backspace");
 
@@ -195,6 +288,8 @@ public interface Key extends Serializable {
 
     /**
      * The <code>Copy</code> key (on certain extended keyboards).
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key COPY = Key.of("Copy");
 
@@ -205,11 +300,18 @@ public interface Key extends Serializable {
 
     /**
      * The <code>Cut</code> key (on certain extended keyboards).
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key CUT = Key.of("Cut");
 
     /**
-     * The Delete key, <code>Del</code>.
+     * The Delete key, <code>Del</code>, and <code>⌦</code> .
+     * The forward delete key. Note that on Apple keyboards, the key labelled
+     * <code>Delete</code> on the main part of the keyboard should be encoded
+     * as " Backspace " .
+     * <p>
+     * This first value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key DELETE = Key.of("Delete", "Del");
 
@@ -226,12 +328,16 @@ public interface Key extends Serializable {
 
     /**
      * The Insert key, <code>Ins</code>. Toggles&nbsp; between inserting and
-     * overwriting text.
+     * overwriting text. Not present on Apple keyboards.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key INSERT = Key.of("Insert");
 
     /**
      * Paste from the clipboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key PASTE = Key.of("Paste");
 
@@ -242,6 +348,8 @@ public interface Key extends Serializable {
 
     /**
      * Undo the last action.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key UNDO = Key.of("Undo");
 
@@ -253,7 +361,10 @@ public interface Key extends Serializable {
     Key ACCEPT = Key.of("Accept");
 
     /**
-     * The <code>Again</code> key. Redoes or repeats a previous action.
+     * The <code>Again</code> key. Redoes or repeats a previous action. Found on
+     * Sun’s USB keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key AGAIN = Key.of("Again");
 
@@ -271,14 +382,18 @@ public interface Key extends Serializable {
      * Shows the context menu. Typically found between the <code>Windows</code>
      * (or <code>OS</code>) key and the <code>Control</code> key on the right
      * side of the keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key CONTEXT_MENU = Key.of("ContextMenu");
 
     /**
-     * The <code>Esc</code> (Escape) key. Typically used as an exit, cancel, or
-     * "escape this operation" button. Historically, the Escape character was
-     * used to signal the start of a special control sequence of characters
-     * called an "escape sequence."
+     * The <code>Esc</code> (Escape) or <code>⎋</code> key. Typically used as
+     * an exit, cancel, or "escape this operation" button. Historically, the
+     * Escape character was used to signal the start of a special control
+     * sequence of characters called an "escape sequence."
+     * <p>
+     * The first value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key ESCAPE = Key.of("Escape", "Esc");
 
@@ -290,6 +405,8 @@ public interface Key extends Serializable {
     /**
      * The <code>Find</code> key. Opens an interface (typically a dialog box)
      * for performing a find/search operation.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key FIND = Key.of("Find");
 
@@ -300,7 +417,9 @@ public interface Key extends Serializable {
 
     /**
      * The <code>Help</code> key. Opens or toggles the display of help
-     * information.
+     * information. Not present on standard PC keyboards.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key HELP = Key.of("Help");
 
@@ -309,7 +428,8 @@ public interface Key extends Serializable {
      * applicable. Note: This shouldn't be confused with the
      * <code>"MediaPause"</code> key value, which is used for media controllers,
      * rather than to control applications and processes.
-     *
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key PAUSE = Key.of("Pause");
 
@@ -318,17 +438,20 @@ public interface Key extends Serializable {
      * applicable. Note: This shouldn't be confused with the
      * <code>"MediaPlay"</code> key value, which is used for media controllers,
      * rather than to control applications and processes.
-     *
      */
     Key PLAY = Key.of("Play");
 
     /**
      * The <code>Props</code> (Properties) key.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key PROPS = Key.of("Props");
 
     /**
      * The <code>Select</code> key.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key SELECT = Key.of("Select");
 
@@ -354,8 +477,10 @@ public interface Key extends Serializable {
     Key BRIGHTNESS_UP = Key.of("BrightnessUp");
 
     /**
-     * The <code>Eject</code> key. Ejects removable media (or toggles an optical
-     * storage device tray open and closed).
+     * The <code>Eject</code> or <code>⏏</code> key. Ejects removable media (or
+     * toggles an optical storage device tray open and closed).
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key EJECT = Key.of("Eject");
 
@@ -368,6 +493,8 @@ public interface Key extends Serializable {
      * The <code>Power</code> button or key, to toggle power on and off.
      * <p>
      * Note: Not all systems pass this key through to the user agent.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key POWER = Key.of("Power");
 
@@ -381,6 +508,8 @@ public interface Key extends Serializable {
      * The <code>PrintScreen</code> or <code>PrtScr</code> key. Sometimes
      * <code>SnapShot</code>. Captures the screen and prints it or saves it to
      * disk.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key PRINT_SCREEN = Key.of("PrintScreen");
 
@@ -401,6 +530,8 @@ public interface Key extends Serializable {
     /**
      * The <code>WakeUp</code> key; used to wake the computer from the
      * hibernation or standby modes.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key WAKE_UP = Key.of("WakeUp");
 
@@ -430,6 +561,10 @@ public interface Key extends Serializable {
     /**
      * The <code>Convert</code> key, which instructs the IME to convert the
      * current input method sequence into the resulting character.
+     * <p>
+     * Japanese: <code>変換</code> ( henkan )
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key CONVERT = Key.of("Convert");
 
@@ -490,6 +625,10 @@ public interface Key extends Serializable {
      * The <code>NonConvert</code> ("Don't convert") key. This accepts the
      * current input method sequence without running conversion when using an
      * IME.
+     * <p>
+     * Japanese: <code>無変換</code> ( muhenkan )
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key NON_CONVERT = Key.of("NonConvert");
 
@@ -542,7 +681,10 @@ public interface Key extends Serializable {
     Key HANKAKU = Key.of("Hankaku");
 
     /**
-     * The <code>Hiragana</code> key; selects Kana characters mode.
+     * The <code>Hiragana</code> key. Use for dedicated <code>ひらがな</code> key
+     * found on some Japanese word processing keyboards.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key HIRAGANA = Key.of("Hiragana");
 
@@ -553,6 +695,10 @@ public interface Key extends Serializable {
 
     /**
      * The <code>Kana Mode</code> (Kana Lock) key.
+     * <p>
+     * Japanese: <code>カタカナ/ひらがな/ローマ字</code> ( katakana/hiragana/romaji )
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key KANA_MODE = Key.of("KanaMode");
 
@@ -563,7 +709,10 @@ public interface Key extends Serializable {
     Key KANJI_MODE = Key.of("KanjiMode");
 
     /**
-     * The <code>Katakana</code> key.
+     * The <code>Katakana</code> key. Use for dedicated <code>カタカナ</code> key
+     * found on some Japanese word processing keyboards.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key KATAKANA = Key.of("Katakana");
 
@@ -584,61 +733,85 @@ public interface Key extends Serializable {
 
     /**
      * The first general-purpose function key, <code>F1</code>.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key F1 = Key.of("F1");
 
     /**
      * The <code>F2</code> key.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key F2 = Key.of("F2");
 
     /**
      * The <code>F3</code> key.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key F3 = Key.of("F3");
 
     /**
      * The <code>F4</code> key.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key F4 = Key.of("F4");
 
     /**
      * The <code>F5</code> key.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key F5 = Key.of("F5");
 
     /**
      * The <code>F6</code> key.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key F6 = Key.of("F6");
 
     /**
      * The <code>F7</code> key.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key F7 = Key.of("F7");
 
     /**
      * The <code>F8</code> key.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key F8 = Key.of("F8");
 
     /**
      * The <code>F9</code> key.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key F9 = Key.of("F9");
 
     /**
      * The <code>F10</code> key.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key F10 = Key.of("F10");
 
     /**
      * The <code>F11</code> key.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key F11 = Key.of("F11");
 
     /**
      * The <code>F12</code> key.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key F12 = Key.of("F12");
 
@@ -795,6 +968,8 @@ public interface Key extends Serializable {
 
     /**
      * Toggles between playing and pausing the current media.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key MEDIA_PLAY_PAUSE = Key.of("MediaPlayPause");
 
@@ -812,16 +987,22 @@ public interface Key extends Serializable {
      * Stops the current media activity (such as playing, recording, pausing,
      * forwarding, or rewinding). Has no effect if the media is currently
      * stopped already.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key MEDIA_STOP = Key.of("MediaStop");
 
     /**
      * Seeks to the next media or program track.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key MEDIA_TRACK_NEXT = Key.of("MediaTrackNext");
 
     /**
      * Seeks to the previous media or program track.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key MEDIA_TRACK_PREVIOUS = Key.of("MediaTrackPrevious");
 
@@ -889,16 +1070,22 @@ public interface Key extends Serializable {
 
     /**
      * Decreases the audio volume.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key AUDIO_VOLUME_DOWN = Key.of("AudioVolumeDown");
 
     /**
      * Mutes the audio.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key AUDIO_VOLUME_MUTE = Key.of("AudioVolumeMute");
 
     /**
      * Increases the audio volume.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key AUDIO_VOLUME_UP = Key.of("AudioVolumeUp");
 
@@ -1494,6 +1681,8 @@ public interface Key extends Serializable {
 
     /**
      * Opens an existing document or message.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key OPEN = Key.of("Open");
 
@@ -1545,6 +1734,8 @@ public interface Key extends Serializable {
 
     /**
      * The <code>Mail</code> key.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key LAUNCH_MAIL = Key.of("LaunchMail");
 
@@ -1679,38 +1870,54 @@ public interface Key extends Serializable {
 
     /**
      * Navigates to the previous content or page in the current Web view's
-     * history.
+     * history. Some laptops place this key to the left of the <code>↑</code>
+     * key.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key BROWSER_BACK = Key.of("BrowserBack");
 
     /**
      * Opens the user's list of bookmarks/favorites.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key BROWSER_FAVORITES = Key.of("BrowserFavorites");
 
     /**
      * Navigates to the next content or page in the current Web view's history.
+     * Some laptops place this key to the right of the <code>↑</code> key.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key BROWSER_FORWARD = Key.of("BrowserForward");
 
     /**
      * Navigates to the user's preferred home page.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key BROWSER_HOME = Key.of("BrowserHome");
 
     /**
      * Refreshes the current page or content.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key BROWSER_REFRESH = Key.of("BrowserRefresh");
 
     /**
      * Activates the user's preferred search engine or the search interface
      * within their browser.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key BROWSER_SEARCH = Key.of("BrowserSearch");
 
     /**
      * Stops loading the currently displayed Web view or content.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
      */
     Key BROWSER_STOP = Key.of("BrowserStop");
 
@@ -1755,6 +1962,738 @@ public interface Key extends Serializable {
      * this is a comma, but elsewhere it is frequently a period).
      */
     Key SEPARATOR = Key.of("Separator");
+
+    /**
+     * <code>`~</code> on a US keyboard. This is the <code>半角/全角/漢字</code> (
+     * hankaku/zenkaku/kanji ) key on Japanese keyboards
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key BACKQUOTE = Key.of("Backquote");
+
+    /**
+     * Used for both the US <code>\|</code> (on the 101-key layout) and also for
+     * the keylocated between the <code>"</code> and <code>Enter</code> keys on
+     * row C of the 102-, 104- and 106-key layouts. Labelled <code>#~</code> on a
+     * UK (102) keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key BACKSLASH = Key.of("Backslash");
+
+    /**
+     * <code>[{</code> on a US keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key BRACKET_LEFT = Key.of("BracketLeft");
+
+    /**
+     * <code>]}</code> on a US keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key BRACKET_RIGHT = Key.of("BracketRight");
+
+    /**
+     * <code>,&lt;</code> on a US keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key COMMA = Key.of("Comma");
+
+    /**
+     * <code>0)</code> on a US keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key DIGIT_0 = Key.of("Digit0");
+
+    /**
+     * <code>1!</code> on a US keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key DIGIT_1 = Key.of("Digit1");
+
+    /**
+     * <code>2@</code> on a US keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key DIGIT_2 = Key.of("Digit2");
+
+    /**
+     * <code>3#</code> on a US keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key DIGIT_3 = Key.of("Digit3");
+
+    /**
+     * <code>4$</code> on a US keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key DIGIT_4 = Key.of("Digit4");
+
+    /**
+     * <code>5%</code> on a US keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key DIGIT_5 = Key.of("Digit5");
+
+    /**
+     * <code>6^</code> on a US keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key DIGIT_6 = Key.of("Digit6");
+
+    /**
+     * <code>7&amp;</code> on a US keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key DIGIT_7 = Key.of("Digit7");
+
+    /**
+     * <code>8*</code> on a US keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key DIGIT_8 = Key.of("Digit8");
+
+    /**
+     * <code>9(</code> on a US keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key DIGIT_9 = Key.of("Digit9");
+
+    /**
+     * <code>=+</code> on a US keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key EQUAL = Key.of("Equal");
+
+    /**
+     * Located between the left <code>Shift</code> and <code>Z</code>
+     * keys.Labelled <code>\|</code> on a UK keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key INTL_BACKSLASH = Key.of("IntlBackslash");
+
+    /**
+     * Located between the <code>/</code> and right <code>Shift</code>
+     * keys.Labelled <code>\ろ</code> ( ro ) on a Japanese keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key INTL_RO = Key.of("IntlRo");
+
+    /**
+     * Located between the <code>=</code> and <code>Backspace</code>
+     * keys.Labelled <code>¥</code> ( yen ) on a Japanese keyboard.
+     * <code>\/</code> on a Russian keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key INTL_YEN = Key.of("IntlYen");
+
+    /**
+     * <code>a</code> on a US keyboard.Labelled <code>q</code> on an AZERTY
+     * (e.g., French) keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key KEY_A = Key.of("KeyA");
+
+    /**
+     * <code>b</code> on a US keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key KEY_B = Key.of("KeyB");
+
+    /**
+     * <code>c</code> on a US keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key KEY_C = Key.of("KeyC");
+
+    /**
+     * <code>d</code> on a US keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key KEY_D = Key.of("KeyD");
+
+    /**
+     * <code>e</code> on a US keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key KEY_E = Key.of("KeyE");
+
+    /**
+     * <code>f</code> on a US keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key KEY_F = Key.of("KeyF");
+
+    /**
+     * <code>g</code> on a US keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key KEY_G = Key.of("KeyG");
+
+    /**
+     * <code>h</code> on a US keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key KEY_H = Key.of("KeyH");
+
+    /**
+     * <code>i</code> on a US keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key KEY_I = Key.of("KeyI");
+
+    /**
+     * <code>j</code> on a US keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key KEY_J = Key.of("KeyJ");
+
+    /**
+     * <code>k</code> on a US keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key KEY_K = Key.of("KeyK");
+
+    /**
+     * <code>l</code> on a US keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key KEY_L = Key.of("KeyL");
+
+    /**
+     * <code>m</code> on a US keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key KEY_M = Key.of("KeyM");
+
+    /**
+     * <code>n</code> on a US keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key KEY_N = Key.of("KeyN");
+
+    /**
+     * <code>o</code> on a US keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key KEY_O = Key.of("KeyO");
+
+    /**
+     * <code>p</code> on a US keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key KEY_P = Key.of("KeyP");
+
+    /**
+     * <code>q</code> on a US keyboard.Labelled <code>a</code> on an AZERTY
+     * (e.g., French) keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key KEY_Q = Key.of("KeyQ");
+
+    /**
+     * <code>r</code> on a US keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key KEY_R = Key.of("KeyR");
+
+    /**
+     * <code>s</code> on a US keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key KEY_S = Key.of("KeyS");
+
+    /**
+     * <code>t</code> on a US keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key KEY_T = Key.of("KeyT");
+
+    /**
+     * <code>u</code> on a US keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key KEY_U = Key.of("KeyU");
+
+    /**
+     * <code>v</code> on a US keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key KEY_V = Key.of("KeyV");
+
+    /**
+     * <code>w</code> on a US keyboard.Labelled <code>z</code> on an AZERTY
+     * (e.g., French) keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key KEY_W = Key.of("KeyW");
+
+    /**
+     * <code>x</code> on a US keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key KEY_X = Key.of("KeyX");
+
+    /**
+     * <code>y</code> on a US keyboard.Labelled <code>z</code> on a QWERTZ (e.g.,
+     * German) keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key KEY_Y = Key.of("KeyY");
+
+    /**
+     * <code>z</code> on a US keyboard.Labelled <code>w</code> on an AZERTY
+     * (e.g., French) keyboard, and <code>y</code> on a QWERTZ (e.g., German)
+     * keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key KEY_Z = Key.of("KeyZ");
+
+    /**
+     * <code>-_</code> on a US keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key MINUS = Key.of("Minus");
+
+    /**
+     * <code>.&gt;</code> on a US keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key PERIOD = Key.of("Period");
+
+    /**
+     * <code>'"</code> on a US keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key QUOTE = Key.of("Quote");
+
+    /**
+     * <code>;:</code> on a US keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key SEMICOLON = Key.of("Semicolon");
+
+    /**
+     * <code>/?</code> on a US keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key SLASH = Key.of("Slash");
+
+    /**
+     * <code>Alt</code> , <code>Option</code> or <code>⌥</code> .
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key ALT_LEFT = Key.of("AltLeft");
+
+    /**
+     * <code>Alt</code> , <code>Option</code> or <code>⌥</code> .This is labelled
+     * <code>AltGr</code> key on many keyboard layouts.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key ALT_RIGHT = Key.of("AltRight");
+
+    /**
+     * <code>Control</code> or <code>⌃</code>
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key CONTROL_LEFT = Key.of("ControlLeft");
+
+    /**
+     * <code>Control</code> or <code>⌃</code>
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key CONTROL_RIGHT = Key.of("ControlRight");
+
+    /**
+     * The Windows, <code>⌘</code> , <code>Command</code> or other OS symbol key.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key META_LEFT = Key.of("MetaLeft");
+
+    /**
+     * The Windows, <code>⌘</code> , <code>Command</code> or other OS symbol key.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key META_RIGHT = Key.of("MetaRight");
+
+    /**
+     * <code>Shift</code> or <code>⇧</code>
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key SHIFT_LEFT = Key.of("ShiftLeft");
+
+    /**
+     * <code>Shift</code> or <code>⇧</code>
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key SHIFT_RIGHT = Key.of("ShiftRight");
+
+    /**
+     * Korean: HangulMode <code>한/영</code> ( han/yeong ) Japanese (Mac keyboard):
+     * <code>かな</code> ( kana )
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key LANG_1 = Key.of("Lang1");
+
+    /**
+     * Korean: Hanja <code>한자</code> ( hanja ) Japanese (Mac keyboard):
+     * <code>英数</code> ( eisu )
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key LANG_2 = Key.of("Lang2");
+
+    /**
+     * Japanese (word-processing keyboard): Katakana
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key LANG_3 = Key.of("Lang3");
+
+    /**
+     * Japanese (word-processing keyboard): Hiragana
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key LANG_4 = Key.of("Lang4");
+
+    /**
+     * Japanese (word-processing keyboard): Zenkaku/Hankaku
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key LANG_5 = Key.of("Lang5");
+
+    /**
+     * <code>0 Ins</code> on a keyboard <code>0</code> on a phone or remote
+     * control
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key NUMPAD_0 = Key.of("Numpad0");
+
+    /**
+     * <code>1 End</code> on a keyboard <code>1</code> or <code>1 QZ</code> on a
+     * phone orremote control
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key NUMPAD_1 = Key.of("Numpad1");
+
+    /**
+     * <code>2 ↓</code> on a keyboard <code>2 ABC</code> on a phone or remote
+     * control
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key NUMPAD_2 = Key.of("Numpad2");
+
+    /**
+     * <code>3 PgDn</code> on a keyboard <code>3 DEF</code> on a phone or remote
+     * control
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key NUMPAD_3 = Key.of("Numpad3");
+
+    /**
+     * <code>4 ←</code> on a keyboard <code>4 GHI</code> on a phone or remote
+     * control
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key NUMPAD_4 = Key.of("Numpad4");
+
+    /**
+     * <code>5</code> on a keyboard <code>5 JKL</code> on a phone or remote
+     * control
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key NUMPAD_5 = Key.of("Numpad5");
+
+    /**
+     * <code>6 →</code> on a keyboard <code>6 MNO</code> on a phone or remote
+     * control
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key NUMPAD_6 = Key.of("Numpad6");
+
+    /**
+     * <code>7 Home</code> on a keyboard <code>7 PQRS</code> or <code>7
+     * PRS</code> on a phoneor remote control
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key NUMPAD_7 = Key.of("Numpad7");
+
+    /**
+     * <code>8 ↑</code> on a keyboard <code>8 TUV</code> on a phone or remote
+     * control
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key NUMPAD_8 = Key.of("Numpad8");
+
+    /**
+     * <code>9 PgUp</code> on a keyboard <code>9 WXYZ</code> or <code>9
+     * WXY</code> on a phoneor remote control
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key NUMPAD_9 = Key.of("Numpad9");
+
+    /**
+     * <code>+</code>
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key NUMPAD_ADD = Key.of("NumpadAdd");
+
+    /**
+     * Found on the Microsoft Natural Keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key NUMPAD_BACKSPACE = Key.of("NumpadBackspace");
+
+    /**
+     * <code>C</code> or <code>AC</code> (All Clear). Also for use with numpads
+     * that have a <code>Clear</code> key that is separate from the
+     * <code>NumLock</code> key. On the Mac, the numpad  <code>Clear</code> key
+     * should always be encoded as " NumLock " .
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key NUMPAD_CLEAR = Key.of("NumpadClear");
+
+    /**
+     * <code>CE</code> (Clear Entry)
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key NUMPAD_CLEAR_ENTRY = Key.of("NumpadClearEntry");
+
+    /**
+     * <code>,</code> (thousands separator). For locales where the thousands
+     * separatoris a "." (e.g., Brazil), this key may generate a <code>.</code> .
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key NUMPAD_COMMA = Key.of("NumpadComma");
+
+    /**
+     * <code>. Del</code> . For locales where the decimal separator is ","
+     * (e.g.,Brazil), this key may generate a <code>,</code> .
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key NUMPAD_DECIMAL = Key.of("NumpadDecimal");
+
+    /**
+     * <code>/</code>
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key NUMPAD_DIVIDE = Key.of("NumpadDivide");
+
+    /**
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key NUMPAD_ENTER = Key.of("NumpadEnter");
+
+    /**
+     * <code>=</code>
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key NUMPAD_EQUAL = Key.of("NumpadEqual");
+
+    /**
+     * <code>#</code> on a phone or remote control device. This key is typically
+     * foundbelow the <code>9</code> key and to the right of the <code>0</code>
+     * key.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key NUMPAD_HASH = Key.of("NumpadHash");
+
+    /**
+     * <code>M+</code> Add current entry to the value stored in memory.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key NUMPAD_MEMORY_ADD = Key.of("NumpadMemoryAdd");
+
+    /**
+     * <code>MC</code> Clear the value stored in memory.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key NUMPAD_MEMORY_CLEAR = Key.of("NumpadMemoryClear");
+
+    /**
+     * <code>MR</code> Replace the current entry with the value stored in memory.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key NUMPAD_MEMORY_RECALL = Key.of("NumpadMemoryRecall");
+
+    /**
+     * <code>MS</code> Replace the value stored in memory with the current entry.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key NUMPAD_MEMORY_STORE = Key.of("NumpadMemoryStore");
+
+    /**
+     * <code>M-</code> Subtract current entry from the value stored in memory.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key NUMPAD_MEMORY_SUBTRACT = Key.of("NumpadMemorySubtract");
+
+    /**
+     * <code>*</code> on a keyboard. For use with numpads that provide
+     * mathematicaloperations ( <code>+</code> , <code>-</code> , <code>*</code>
+     * and <code>/</code> ). Use " NumpadStar " for the <code>*</code> key on
+     * phones and remote controls.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key NUMPAD_MULTIPLY = Key.of("NumpadMultiply");
+
+    /**
+     * <code>(</code> Found on the Microsoft Natural Keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key NUMPAD_PAREN_LEFT = Key.of("NumpadParenLeft");
+
+    /**
+     * <code>)</code> Found on the Microsoft Natural Keyboard.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key NUMPAD_PAREN_RIGHT = Key.of("NumpadParenRight");
+
+    /**
+     * <code>*</code> on a phone or remote control device.This key is typically
+     * found below the <code>7</code> key and to the left of the <code>0</code>
+     * key. Use " NumpadMultiply " for the <code>*</code> key on numeric keypads.
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key NUMPAD_STAR = Key.of("NumpadStar");
+
+    /**
+     * <code>-</code>
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key NUMPAD_SUBTRACT = Key.of("NumpadSubtract");
+
+    /**
+     * Sometimes labelled <code>My Computer</code> on the keyboard
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key LAUNCH_APP_1 = Key.of("LaunchApp1");
+
+    /**
+     * Sometimes labelled <code>Calculator</code> on the keyboard
+     * <p>
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key LAUNCH_APP_2 = Key.of("LaunchApp2");
+
+    /**
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key MEDIA_SELECT = Key.of("MediaSelect");
+
+    /**
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key SLEEP = Key.of("Sleep");
+
+    /**
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key TURBO = Key.of("Turbo");
+
+    /**
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key ABORT = Key.of("Abort");
+
+    /**
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key RESUME = Key.of("Resume");
+
+    /**
+     * This value matches DOM's KeyboardEvent's <code>event.code</code>.
+     */
+    Key SUSPEND = Key.of("Suspend");
 
     /**
      * Returns a {@link Key} instance for a printable representation of the key.
@@ -1805,6 +2744,19 @@ public interface Key extends Serializable {
      */
     default boolean matches(String key) {
         return getKeys().contains(key);
+    }
+
+    /**
+     * Returns whether the specified key is a modifier or not.
+     *
+     * @see KeyModifier
+     *
+     * @param key   a {@link Key} instance.
+     * @return  true if the key argument is a modifier, otherwise false.
+     */
+    static boolean isModifier(Key key) {
+        return Stream.of(KeyModifier.values())
+                .anyMatch(k -> k.matches(key.getKeys().get(0)));
     }
 
 }

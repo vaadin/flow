@@ -16,15 +16,13 @@
 package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.component.dependency.JavaScript;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
-import com.vaadin.flow.component.html.NativeButton;
-import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.JsApiGetByIdView", layout = ViewTestLayout.class)
 @JavaScript("frontend://js-get-by-id.js")
-public class JsApiGetByIdView extends Div {
+public class JsApiGetByIdView extends AbstractDivView {
 
     public JsApiGetByIdView() {
         Label label = new Label("Original label");
@@ -36,13 +34,11 @@ public class JsApiGetByIdView extends Div {
         add(target);
 
         getElement().getNode()
-                .runWhenAttached(ui -> ui.getPage().executeJavaScript(
+                .runWhenAttached(ui -> ui.getPage().executeJs(
                         "window.jsApiConnector.jsFunction($0, this.$appId, $1)",
                         target, label.getElement().getNode().getId()));
 
-        NativeButton button = new NativeButton("Update target",
-                event -> target.getElement().callFunction("operation"));
-        button.setId("update");
-        add(button);
+        add(createButton("Update target", "update",
+                event -> target.getElement().callJsFunction("operation")));
     }
 }

@@ -1,18 +1,21 @@
 package com.vaadin.flow.server;
 
-import java.io.IOException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-
+import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
+import com.vaadin.flow.theme.AbstractTheme;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
-import com.vaadin.flow.theme.AbstractTheme;
+import java.io.IOException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
+/**
+ * Test class for testing es5 and es6 resolution by browser capability.
+ * This is valid only for bower mode where we need to decide ourselves.
+ */
 public class VaadinServletServiceTest {
 
     private final class TestTheme implements AbstractTheme {
@@ -66,6 +69,7 @@ public class VaadinServletServiceTest {
 
     @Test
     public void resolveResource_production() {
+        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
         mocks.setProductionMode(true);
 
         Assert.assertEquals("",
@@ -84,6 +88,30 @@ public class VaadinServletServiceTest {
         Assert.assertEquals("foo",
                 service.resolveResource("foo", mocks.getBrowser()));
         Assert.assertEquals("/frontend-es5/foo",
+                service.resolveResource("frontend://foo", mocks.getBrowser()));
+        Assert.assertEquals("/foo",
+                service.resolveResource("context://foo", mocks.getBrowser()));
+    }
+    @Test
+    public void resolveResourceNPM_production() {
+        mocks.setProductionMode(true);
+
+        Assert.assertEquals("",
+                service.resolveResource("", mocks.getBrowser()));
+        Assert.assertEquals("foo",
+                service.resolveResource("foo", mocks.getBrowser()));
+        Assert.assertEquals("/frontend/foo",
+                service.resolveResource("frontend://foo", mocks.getBrowser()));
+        Assert.assertEquals("/foo",
+                service.resolveResource("context://foo", mocks.getBrowser()));
+
+        mocks.setBrowserEs6(false);
+
+        Assert.assertEquals("",
+                service.resolveResource("", mocks.getBrowser()));
+        Assert.assertEquals("foo",
+                service.resolveResource("foo", mocks.getBrowser()));
+        Assert.assertEquals("/frontend/foo",
                 service.resolveResource("frontend://foo", mocks.getBrowser()));
         Assert.assertEquals("/foo",
                 service.resolveResource("context://foo", mocks.getBrowser()));
@@ -133,8 +161,11 @@ public class VaadinServletServiceTest {
                 browser, null);
     }
 
+    // Theme resource is not handled from servlet in NPM
     @Test
     public void getResourceNoTheme_production() throws IOException {
+        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
+
         mocks.getServlet().addServletContextResource("/frontend-es6/foo.txt");
         mocks.getServlet().addServletContextResource("/frontend-es5/foo.txt");
 
@@ -211,8 +242,11 @@ public class VaadinServletServiceTest {
                 browser, theme);
     }
 
+    // NPM theme is not handled in servlet service.
     @Test
     public void getResourceTheme_production() throws IOException {
+        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
+
         mocks.setProductionMode(true);
         WebBrowser browser = mocks.getBrowser();
         TestTheme theme = new TestTheme();
@@ -254,5 +288,6 @@ public class VaadinServletServiceTest {
                             null)); // No theme -> raw version
         }
     }
+
 
 }

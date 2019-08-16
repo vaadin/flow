@@ -16,6 +16,7 @@
 package com.vaadin.flow.router;
 
 import java.io.Serializable;
+import java.util.List;
 
 import com.vaadin.flow.component.UI;
 
@@ -33,7 +34,7 @@ public class BeforeLeaveEvent extends BeforeEvent {
      * The action to resume a postponed {@link BeforeEnterEvent}.
      *
      * @author Vaadin Ltd
- * @since 1.0.
+     * @since 1.0.
      */
     public class ContinueNavigationAction implements Serializable {
 
@@ -86,12 +87,30 @@ public class BeforeLeaveEvent extends BeforeEvent {
      * Construct event from a NavigationEvent.
      *
      * @param event
-     *            NavigationEvent that is on going
+     *            NavigationEvent that is on-going
      * @param navigationTarget
      *            Navigation target
+     * @deprecated Use {@link #BeforeLeaveEvent(NavigationEvent, Class, List)}
+     *             instead.
      */
+    @Deprecated
     public BeforeLeaveEvent(NavigationEvent event, Class<?> navigationTarget) {
         super(event, navigationTarget);
+    }
+
+    /**
+     * Construct event from a NavigationEvent.
+     *
+     * @param event
+     *            NavigationEvent that is on-going
+     * @param navigationTarget
+     *            Navigation target
+     * @param layouts
+     *            Navigation layout chain
+     */
+    public BeforeLeaveEvent(NavigationEvent event, Class<?> navigationTarget,
+            List<Class<? extends RouterLayout>> layouts) {
+        super(event, navigationTarget, layouts);
     }
 
     /**
@@ -108,10 +127,37 @@ public class BeforeLeaveEvent extends BeforeEvent {
      *            navigation target class
      * @param ui
      *            the UI related to the navigation
+     * @deprecated Use
+     *             {@link #BeforeLeaveEvent(Router, NavigationTrigger, Location, Class, UI, List)}
+     *             instead.
      */
+    @Deprecated
     public BeforeLeaveEvent(Router router, NavigationTrigger trigger,
             Location location, Class<?> navigationTarget, UI ui) {
         super(router, trigger, location, navigationTarget, ui);
+    }
+
+    /**
+     * Constructs a new BeforeNavigation Event.
+     *
+     * @param router
+     *            the router that triggered the change, not {@code null}
+     * @param trigger
+     *            the type of user action that triggered this location change,
+     *            not <code>null</code>
+     * @param location
+     *            the new location, not {@code null}
+     * @param navigationTarget
+     *            navigation target class
+     * @param ui
+     *            the UI related to the navigation
+     * @param layouts
+     *            the layout chain for the navigation target
+     */
+    public BeforeLeaveEvent(Router router, NavigationTrigger trigger,
+            Location location, Class<?> navigationTarget, UI ui,
+            List<Class<? extends RouterLayout>> layouts) {
+        super(router, trigger, location, navigationTarget, ui, layouts);
     }
 
     /**

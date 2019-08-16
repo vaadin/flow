@@ -17,18 +17,20 @@ package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
-import com.vaadin.flow.uitest.ui.AbstractDivView;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.uitest.ui.AbstractDivView;
 
 @Route("com.vaadin.flow.uitest.ui.template.UpgradeElementView")
 public class UpgradeElementView extends AbstractDivView {
 
     @Tag("upgrade-element")
     @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/UpgradeElement.html")
+    @JsModule("UpgradeElement.js")
     public static class UpgradeElement extends PolymerTemplate<Message> {
 
         @EventHandler
@@ -43,10 +45,10 @@ public class UpgradeElementView extends AbstractDivView {
         UpgradeElement template = new UpgradeElement();
         template.setId("template");
 
-        NativeButton button = new NativeButton("Upgrade element",
-                event -> getPage().executeJavaScript(
-                        "customElements.define(MyTemplate.is, MyTemplate);"));
-        button.setId("upgrade");
+        NativeButton button = createButton("Upgrade element", "upgrade",
+                event -> getPage()
+                        .executeJs("if ( !window.upgradeElementDefined ) "
+                                + "{customElements.define(window.MyTemplate.is, window.MyTemplate);}"));
         add(template, button);
     }
 }

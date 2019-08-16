@@ -22,10 +22,10 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Objects;
 
+import com.vaadin.flow.data.binder.testcomponents.TestLabel;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -37,12 +37,12 @@ public class ReadOnlyHasValueTest {
     private static final String SAY_SOMETHING = "Say something";
     private static final String SAY_SOMETHING_ELSE = "Say something else";
     private static final String NO_VALUE = "-no-value-";
-    private Label label;
+    private TestLabel label;
     private ReadOnlyHasValue<String> hasValue;
 
     @Before
     public void setup() {
-        label = new Label();
+        label = new TestLabel();
         hasValue = new ReadOnlyHasValue<>(label::setText);
     }
 
@@ -74,7 +74,7 @@ public class ReadOnlyHasValueTest {
     @Test
     public void testBind() {
         Binder<Bean> beanBinder = new Binder<>(Bean.class);
-        Label label = new Label();
+        TestLabel label = new TestLabel();
         ReadOnlyHasValue<Long> intHasValue = new ReadOnlyHasValue<>(
                 i -> label.setText(Objects.toString(i, "")));
 
@@ -104,7 +104,7 @@ public class ReadOnlyHasValueTest {
     @Test
     public void testEmptyValue() {
         Binder<Bean> beanBinder = new Binder<>(Bean.class);
-        Label label = new Label();
+        TestLabel label = new TestLabel();
         ReadOnlyHasValue<String> strHasValue = new ReadOnlyHasValue<>(
                 label::setText, NO_VALUE);
 

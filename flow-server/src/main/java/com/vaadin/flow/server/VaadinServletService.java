@@ -16,16 +16,16 @@
 
 package com.vaadin.flow.server;
 
+import javax.servlet.GenericServlet;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-
-import javax.servlet.GenericServlet;
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +36,8 @@ import com.vaadin.flow.server.communication.PushRequestHandler;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.theme.AbstractTheme;
+
+import static com.vaadin.flow.server.Constants.META_INF;
 
 /**
  * A service implementation connected to a {@link VaadinServlet}.
@@ -68,8 +70,8 @@ public class VaadinServletService extends VaadinService {
 
     /**
      * Creates a servlet service. This method is for use by dependency injection
-     * frameworks etc. {@link #getServlet()} should be overridden (or otherwise
-     * intercepted) so it does not return <code>null</code>.
+     * frameworks etc. {@link #getServlet()} and {@link #getContext()} should be overridden (or otherwise
+     * intercepted) to not return <code>null</code>.
      */
     protected VaadinServletService() {
         servlet = null;
@@ -160,8 +162,7 @@ public class VaadinServletService extends VaadinService {
         appId = appId.replaceAll("[^a-zA-Z0-9]", "");
         // Add hashCode to the end, so that it is still (sort of)
         // predictable, but indicates that it should not be used in CSS
-        // and
-        // such:
+        // and such:
         int hashCode = appId.hashCode();
         if (hashCode < 0) {
             hashCode = -hashCode;
@@ -193,10 +194,14 @@ public class VaadinServletService extends VaadinService {
 
         String frontendRootUrl;
         DeploymentConfiguration config = getDeploymentConfiguration();
-        if (browser.isEs6Supported()) {
-            frontendRootUrl = config.getEs6FrontendPrefix();
+        if(config.isCompatibilityMode()) {
+            if (browser.isEs6Supported()) {
+                frontendRootUrl = config.getEs6FrontendPrefix();
+            } else {
+                frontendRootUrl = config.getEs5FrontendPrefix();
+            }
         } else {
-            frontendRootUrl = config.getEs5FrontendPrefix();
+            frontendRootUrl =  config.getNpmFrontendPrefix();
         }
 
         return contextResolver.resolveVaadinUri(url, frontendRootUrl);
@@ -209,7 +214,6 @@ public class VaadinServletService extends VaadinService {
         } catch (MalformedURLException e) {
             getLogger().warn("Error finding resource for '{}'", path, e);
         }
-
         return null;
     }
 
@@ -303,7 +307,7 @@ public class VaadinServletService extends VaadinService {
      * @return a URL for the resource or <code>null</code> if no resource was
      *         found
      */
-    private URL getResourceInServletContextOrWebJar(String path) {
+    public URL getResourceInServletContextOrWebJar(String path) {
         ServletContext servletContext = getServlet().getServletContext();
         try {
             URL url = servletContext.getResource(path);
@@ -357,4 +361,14 @@ public class VaadinServletService extends VaadinService {
                 .flatMap(server -> server.getWebJarResourcePath(path));
     }
 
+    @Override
+    public String getContextRootRelativePath(VaadinRequest request) {
+        assert request instanceof VaadinServletRequest;
+        return ServletHelper.getContextRootRelativePath((VaadinServletRequest) request) + "/";
+    }
+
+    @Override
+    protected VaadinContext constructVaadinContext() {
+        return new VaadinServletContext(getServlet().getServletContext());
+    }
 }

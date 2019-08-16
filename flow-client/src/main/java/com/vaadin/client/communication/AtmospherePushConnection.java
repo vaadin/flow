@@ -69,7 +69,7 @@ public class AtmospherePushConnection implements PushConnection {
     }
 
     /**
-     * A class for splitting a message into multiple fragments of maximum length
+     * Represents a message splitted into multiple fragments of maximum length
      * {@link #FRAGMENT_LENGTH}.
      */
     protected static class FragmentedMessage {
@@ -187,10 +187,10 @@ public class AtmospherePushConnection implements PushConnection {
             }
 
         });
-        if (getPushConfiguration().getPushUrl() != null) {
-            url = getPushConfiguration().getPushUrl();
-        } else {
+        if (getPushConfiguration().getPushUrl() == null) {
             url = registry.getApplicationConfiguration().getServiceUrl();
+        } else {
+            url = getPushConfiguration().getPushUrl();
         }
         runWhenAtmosphereLoaded(
                 () -> Scheduler.get().scheduleDeferred(this::connect));
@@ -539,8 +539,7 @@ public class AtmospherePushConnection implements PushConnection {
     }
 
     /**
-     * Class which provides information from the Atmosphere configuration
-     * object.
+     * Provides information from the Atmosphere configuration object.
      */
     public static class AtmosphereConfiguration extends AbstractJSO {
 
@@ -591,7 +590,7 @@ public class AtmospherePushConnection implements PushConnection {
     }
 
     /**
-     * Class providing data from an Atmosphere response JavaScript object.
+     * Provides data from an Atmosphere response JavaScript object.
      */
     public static class AtmosphereResponse extends AbstractJSO {
 
@@ -661,7 +660,7 @@ public class AtmospherePushConnection implements PushConnection {
             reconnectInterval: 5000,
             timeout: -1,
             maxReconnectOnClose: 10000000,
-            trackMessageLength: false,
+            trackMessageLength: true,
             enableProtocol: true,
             handleOnlineOffline: false,
             messageDelimiter: String.fromCharCode(@com.vaadin.flow.shared.communication.PushConstants::MESSAGE_DELIMITER)
@@ -672,7 +671,7 @@ public class AtmospherePushConnection implements PushConnection {
             JavaScriptObject config)
     /*-{
         var self = this;
-    
+
         config.url = uri;
         config.onOpen = $entry(function(response) {
             self.@com.vaadin.client.communication.AtmospherePushConnection::onOpen(*)(response);
@@ -698,7 +697,7 @@ public class AtmospherePushConnection implements PushConnection {
         config.onClientTimeout = $entry(function(request) {
             self.@com.vaadin.client.communication.AtmospherePushConnection::onClientTimeout(*)(request);
         });
-    
+
         return $wnd.vaadinPush.atmosphere.subscribe(config);
     }-*/;
 

@@ -16,14 +16,13 @@
 package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.ui.Transport;
 
 /**
- * Class for reproducing the bug https://github.com/vaadin/flow/issues/4353
+ * Test for reproducing the bug https://github.com/vaadin/flow/issues/4353
  */
 @Route("com.vaadin.flow.uitest.ui.LongPollingPushView")
 @Push(transport = Transport.LONG_POLLING)
@@ -37,9 +36,7 @@ public class LongPollingPushView extends AbstractDivView {
         add(parent);
         parent.setVisible(false);
 
-        NativeButton visibility = new NativeButton("Toggle visibility",
-                e -> parent.setVisible(!parent.isVisible()));
-        visibility.setId("visibility");
-        add(visibility);
+        add(createButton("Toggle visibility", "visibility",
+                e -> parent.setVisible(!parent.isVisible())));
     }
 }

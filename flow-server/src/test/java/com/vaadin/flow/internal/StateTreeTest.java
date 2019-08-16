@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import org.apache.commons.lang3.SerializationUtils;
@@ -93,7 +94,7 @@ public class StateTreeTest {
     }
 
     @Test
-    public void testRootNodeState() {
+    public void rootNodeState() {
         StateNode rootNode = tree.getRootNode();
 
         Assert.assertNull("Root node should have no parent",
@@ -109,8 +110,21 @@ public class StateTreeTest {
     }
 
     @Test(expected = IllegalStateException.class)
-    public void testRootNode_setParent_throws() {
+    public void rootNode_setStateNodeAsParent_throws() {
         tree.getRootNode().setParent(new StateNode());
+    }
+
+    @Test
+    public void rootNode_setNullAsParent_nodeIsDetached() {
+        AtomicInteger detachCount = new AtomicInteger();
+        Assert.assertTrue(tree.hasNode(tree.getRootNode()));
+        tree.getRootNode()
+                .addDetachListener(() -> detachCount.incrementAndGet());
+        tree.getRootNode().setParent(null);
+        Assert.assertEquals(1, detachCount.get());
+        Assert.assertFalse(tree.getRootNode().isAttached());
+
+        Assert.assertFalse(tree.hasNode(tree.getRootNode()));
     }
 
     @Test

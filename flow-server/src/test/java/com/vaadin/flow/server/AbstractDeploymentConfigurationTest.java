@@ -24,9 +24,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.server.AbstractDeploymentConfiguration;
-import com.vaadin.flow.server.DefaultDeploymentConfiguration;
-import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.communication.PushMode;
 
 /**
@@ -77,6 +74,11 @@ public class AbstractDeploymentConfigurationTest {
         }
 
         @Override
+        public boolean isBowerMode() {
+            return false;
+        }
+
+        @Override
         public boolean isRequestTiming() {
             return !isProductionMode();
         }
@@ -93,6 +95,11 @@ public class AbstractDeploymentConfigurationTest {
 
         @Override
         public int getHeartbeatInterval() {
+            return 0;
+        }
+
+        @Override
+        public int getWebComponentDisconnect() {
             return 0;
         }
 

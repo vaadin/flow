@@ -34,11 +34,17 @@ import com.vaadin.flow.shared.communication.PushMode;
  */
 public class DefaultDeploymentConfiguration
         extends PropertyDeploymentConfiguration {
-    private static final String SEPARATOR = "\n===========================================================";
+    private static final String SEPARATOR = "\n====================================================================";
 
     public static final String NOT_PRODUCTION_MODE_INFO = SEPARATOR
             + "\nVaadin is running in DEBUG MODE.\nAdd productionMode=true to web.xml "
             + "to disable debug features." + SEPARATOR;
+
+    public static final String WARNING_COMPATIBILITY_MODE = SEPARATOR
+            + "\nRunning in Vaadin 13 (Flow 1) compatibility mode.\n\n"
+            + "This mode uses webjars/Bower for client side dependency management and HTML imports for dependency loading.\n\n"
+            + "The default mode in Vaadin 14+ (Flow 2+) is based on npm for dependency management and JavaScript modules for dependency inclusion.\n\n"
+            + "See http://vaadin.com/docs for more information." + SEPARATOR;
 
     public static final String WARNING_XSRF_PROTECTION_DISABLED = SEPARATOR
             + "\nWARNING: Cross-site request forgery protection is disabled!"
@@ -54,10 +60,23 @@ public class DefaultDeploymentConfiguration
             + "and \"automatic\". The default of \"disabled\" will be used."
             + SEPARATOR;
 
+    public static final String ERROR_COMPATIBILITY_MODE_UNSET =
+            "Unable to determine mode of operation. To use npm mode, ensure "
+            + "'flow-build-info.json' exists on the classpath. With Maven, "
+            + "this is handled by the 'prepare-frontend' goal. To use "
+            + "compatibility mode, add the 'flow-server-compatibility-mode' "
+            + "dependency. If using Vaadin with Spring Boot, instead set the "
+            + "property 'vaadin.compatibilityMode' to 'true' in "
+            + "'application.properties'.";
     /**
      * Default value for {@link #getHeartbeatInterval()} = {@value} .
      */
     public static final int DEFAULT_HEARTBEAT_INTERVAL = 300;
+
+    /**
+     * Default value for {@link #getWebComponentDisconnect()} = {@value}.
+     */
+    public static final int DEFAULT_WEB_COMPONENT_DISCONNECT = 300;
 
     /**
      * Default value for {@link #isCloseIdleSessions()} = {@value} .
@@ -73,14 +92,17 @@ public class DefaultDeploymentConfiguration
     public static final boolean DEFAULT_SEND_URLS_AS_PARAMETERS = true;
 
     private boolean productionMode;
+    private boolean compatibilityMode;
     private boolean xsrfProtectionEnabled;
     private int heartbeatInterval;
+    private int webComponentDisconnect;
     private boolean closeIdleSessions;
     private PushMode pushMode;
     private String pushURL;
     private boolean syncIdCheck;
     private boolean sendUrlsAsParameters;
     private boolean requestTiming;
+
     private static AtomicBoolean loggWarning = new AtomicBoolean(true);
 
     /**
@@ -100,9 +122,11 @@ public class DefaultDeploymentConfiguration
         boolean log = loggWarning.getAndSet(false);
 
         checkProductionMode(log);
+        checkCompatibilityMode(log);
         checkRequestTiming();
         checkXsrfProtection(log);
         checkHeartbeatInterval();
+        checkWebComponentDisconnectTimeout();
         checkCloseIdleSessions();
         checkPushMode();
         checkPushURL();
@@ -118,6 +142,16 @@ public class DefaultDeploymentConfiguration
     @Override
     public boolean isProductionMode() {
         return productionMode;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * The default is false.
+     */
+    @Override
+    public boolean isBowerMode() {
+        return compatibilityMode;
     }
 
     /**
@@ -149,6 +183,11 @@ public class DefaultDeploymentConfiguration
     @Override
     public int getHeartbeatInterval() {
         return heartbeatInterval;
+    }
+
+    @Override
+    public int getWebComponentDisconnect() {
+        return webComponentDisconnect;
     }
 
     /**
@@ -201,7 +240,6 @@ public class DefaultDeploymentConfiguration
         return pushURL;
     }
 
-
     /**
      * Log a warning if Vaadin is not running in production mode.
      */
@@ -210,6 +248,29 @@ public class DefaultDeploymentConfiguration
                 Constants.SERVLET_PARAMETER_PRODUCTION_MODE, false);
         if (!productionMode && loggWarning) {
             getLogger().warn(NOT_PRODUCTION_MODE_INFO);
+        }
+    }
+
+    /**
+     * Log a warning if Vaadin is running in compatibility mode. Throw
+     * {@link IllegalStateException} if the mode could not be determined from
+     * parameters.
+     */
+    private void checkCompatibilityMode(boolean loggWarning) {
+        if (getStringProperty(Constants.SERVLET_PARAMETER_BOWER_MODE, null)
+                != null) {
+            compatibilityMode = getBooleanProperty(
+                    Constants.SERVLET_PARAMETER_BOWER_MODE, false);
+        } else if (getStringProperty(
+                Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE, null) != null) {
+            compatibilityMode = getBooleanProperty(
+                    Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE, false);
+        } else {
+            // neither parameter given -> throw exception
+            throw new IllegalStateException(ERROR_COMPATIBILITY_MODE_UNSET);
+        }
+        if (compatibilityMode && loggWarning) {
+            getLogger().warn(WARNING_COMPATIBILITY_MODE);
         }
     }
 
@@ -240,6 +301,18 @@ public class DefaultDeploymentConfiguration
         } catch (NumberFormatException e) {
             getLogger().warn(WARNING_HEARTBEAT_INTERVAL_NOT_NUMERIC);
             heartbeatInterval = DEFAULT_HEARTBEAT_INTERVAL;
+        }
+    }
+
+    private void checkWebComponentDisconnectTimeout() {
+        try {
+            webComponentDisconnect = getApplicationOrSystemProperty(
+                    Constants.SERVLET_PARAMETER_WEB_COMPONENT_DISCONNECT,
+                    DEFAULT_WEB_COMPONENT_DISCONNECT, Integer::parseInt);
+
+        } catch (NumberFormatException e) {
+            getLogger().warn(WARNING_HEARTBEAT_INTERVAL_NOT_NUMERIC);
+            webComponentDisconnect = DEFAULT_WEB_COMPONENT_DISCONNECT;
         }
     }
 

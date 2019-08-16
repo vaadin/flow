@@ -17,16 +17,16 @@ package com.vaadin.flow.component.internal;
 
 import java.util.Collection;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServlet;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
-
-import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 @Deprecated
@@ -41,6 +41,7 @@ public class HtmlDependencyParserTest {
         mocks = new MockServletServiceSessionSetup();
         servlet = mocks.getServlet();
         service = mocks.getService();
+        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
     }
 
     @After

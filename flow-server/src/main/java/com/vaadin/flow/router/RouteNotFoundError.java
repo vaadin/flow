@@ -15,15 +15,17 @@
  */
 package com.vaadin.flow.router;
 
+import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.io.IOUtils;
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
+import org.jsoup.safety.Whitelist;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
@@ -47,6 +49,8 @@ public class RouteNotFoundError extends Component
         if (parameter.hasCustomMessage()) {
             additionalInfo = "Reason: " + parameter.getCustomMessage();
         }
+        path = Jsoup.clean(path, Whitelist.none());
+        additionalInfo = Jsoup.clean(additionalInfo, Whitelist.none());
 
         boolean productionMode = event.getUI().getSession().getConfiguration()
                 .isProductionMode();
@@ -101,13 +105,21 @@ public class RouteNotFoundError extends Component
         }
 
         if (route.getParameters().isEmpty()) {
-            Element link = new Element(Tag.A).attr("href", route.getUrl())
-                    .text(text);
-            return new Element(Tag.LI).appendChild(link);
+            return elementAsLink(route.getUrl(), text);
         } else {
-            return new Element(Tag.LI).text(text + " (requires parameter)");
+            Class<? extends Component> target = route.getNavigationTarget();
+            if (ParameterDeserializer.isAnnotatedParameter(target, OptionalParameter.class)) {
+                text = text + " (supports optional parameter)";
+                return elementAsLink(route.getUrl(), text);
+            } else {
+                return new Element(Tag.LI).text(text + " (requires parameter)");
+            }
         }
+    }
 
+    private Element elementAsLink(String url, String text) {
+        Element link = new Element(Tag.A).attr("href", url).text(text);
+        return new Element(Tag.LI).appendChild(link);
     }
 
     private static class LazyInit {

@@ -19,11 +19,12 @@ import java.util.Objects;
 import java.util.Optional;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.data.provider.AbstractComponentDataGenerator;
 import com.vaadin.flow.data.provider.DataGenerator;
 import com.vaadin.flow.data.provider.DataKeyMapper;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.function.ValueProvider;
 
 import elemental.json.JsonObject;
@@ -157,7 +158,9 @@ public abstract class BasicRenderer<SOURCE, TARGET>
 
     @Override
     public Component createComponent(SOURCE item) {
-        return new Span(getFormattedValue(valueProvider.apply(item)));
+        Element span = ElementFactory
+                .createSpan(getFormattedValue(valueProvider.apply(item)));
+        return ComponentUtil.componentFromElement(span, Component.class, true);
     }
 
     /**

@@ -17,14 +17,17 @@ package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.templatemodel.TemplateModel;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.flow.uitest.ui.AbstractDivView;
 
 @Tag("multiple-props-mutation")
 @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/MultiplePropsMutation.html")
+@JsModule("MultiplePropsMutation.js")
 @Route(value = "com.vaadin.flow.uitest.ui.template.MutationSeveralSyncedPropsView", layout = ViewTestLayout.class)
 public class MutationSeveralSyncedPropsView
         extends PolymerTemplate<TemplateModel> {
@@ -38,12 +41,12 @@ public class MutationSeveralSyncedPropsView
 
         setId("template");
 
-        NativeButton button = new NativeButton(
-                "Update two synchronized properties simultaneously", event -> {
+        NativeButton button = AbstractDivView.createButton(
+                "Update two synchronized properties simultaneously", "update",
+                event -> {
                     getElement().setProperty("name", "bar");
                     getElement().setProperty("message", "baz");
                 });
-        button.setId("update");
         getElement().appendChild(button.getElement());
     }
 }

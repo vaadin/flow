@@ -15,28 +15,26 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import java.util.Arrays;
-
-import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
+public class DebounceSynchronizePropertyIT
+        extends AbstractDebounceSynchronizeIT {
+    private WebElement input;
 
-public class DebounceSynchronizePropertyIT extends ChromeBrowserTest {
+    @Before
+    public void setUp() {
+        open();
+        input = findElement(By.id("input"));
+    }
+
     @Test
     public void eager() {
-        open();
-        WebElement input = findElement(By.id("input"));
-
         toggleMode("eager");
-
-        input.sendKeys("a");
-        assertMessages("a");
-
-        input.sendKeys("b");
-        assertMessages("a", "ab");
+        assertEager(input);
 
         toggleMode("eager");
         assertMessages("a", "ab");
@@ -44,9 +42,6 @@ public class DebounceSynchronizePropertyIT extends ChromeBrowserTest {
 
     @Test
     public void filtered() {
-        open();
-        WebElement input = findElement(By.id("input"));
-
         toggleMode("filtered");
 
         input.sendKeys("a");
@@ -64,58 +59,15 @@ public class DebounceSynchronizePropertyIT extends ChromeBrowserTest {
 
     @Test
     public void debounce() throws InterruptedException {
-        open();
-        WebElement input = findElement(By.id("input"));
-
         toggleMode("debounce");
-
-        // Should not sync while typing within 1000ms from last time
-        for (String keys : Arrays.asList("a", "b", "c")) {
-            input.sendKeys(keys);
-            Thread.sleep(500);
-            assertMessages();
-        }
-
-        // Should sync after some additional inactivity
-        Thread.sleep(700);
-        assertMessages("abc");
+        assertDebounce(input);
     }
 
     @Test
-    public void lazy() throws InterruptedException {
-        open();
-        WebElement input = findElement(By.id("input"));
-
-        toggleMode("lazy");
-
-        input.sendKeys("a");
-        assertMessages("a");
-
-        Thread.sleep(700);
-        input.sendKeys("b");
-
-        // T + 700, only first update registered
-        assertMessages("a");
-
-        Thread.sleep(800);
-
-        // T + 1500, second update registered
-        assertMessages("a", "ab");
-        input.sendKeys("c");
-        assertMessages("a", "ab");
-
-        Thread.sleep(700);
-
-        // T + 2200, third update registered
-        assertMessages("a", "ab", "abc");
-    }
-
-    private void assertMessages(String... expectedMessages) {
-        Assert.assertArrayEquals(expectedMessages,
-                findElements(By.cssSelector("#messages p")).stream()
-                        .map(WebElement::getText)
-                        .map(text -> text.replaceFirst("Value: ", ""))
-                        .toArray(String[]::new));
+    @Ignore
+    public void throttle() throws InterruptedException {
+        toggleMode("throttle");
+        assertThrottle(input);
     }
 
     private void toggleMode(String name) {

@@ -18,15 +18,17 @@ package com.vaadin.flow.uitest.ui.template;
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
 @Tag("js-injected-grand-child")
 @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/JsInjectedGrandChild.html")
+@JsModule("JsInjectedGrandChild.js")
 public class JsInjectedGrandChild extends PolymerTemplate<TemplateModel> {
 
     public JsInjectedGrandChild() {
-        getElement().callFunction("greet");
+        getElement().callJsFunction("greet");
         getElement().setProperty("bar", "foo");
     }
 

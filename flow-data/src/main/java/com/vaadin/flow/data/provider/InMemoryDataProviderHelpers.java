@@ -27,8 +27,7 @@ import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.function.ValueProvider;
 
 /**
- * A class containing a number of static helper methods for implementing
- * {@link InMemoryDataProvider}s.
+ * Helper methods for implementing {@link InMemoryDataProvider}s.
  * <p>
  * This class is intended primarily for internal use.
  *
@@ -179,7 +178,7 @@ public class InMemoryDataProviderHelpers {
      *            the data provider object type
      * @param <V>
      *            the provided value type
-     *            
+     * 
      * @return the created predicate
      */
     public static <T, V> SerializablePredicate<T> createValueProviderFilter(

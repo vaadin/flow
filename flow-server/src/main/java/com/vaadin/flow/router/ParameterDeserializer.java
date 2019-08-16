@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.router;
 
+import com.googlecode.gentyref.GenericTypeReflector;
+import com.vaadin.flow.internal.ReflectTools;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -24,10 +27,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import com.googlecode.gentyref.GenericTypeReflector;
-
-import com.vaadin.flow.internal.ReflectTools;
+import java.util.stream.Stream;
 
 /**
  * Parameter deserialization utility.
@@ -187,26 +187,26 @@ public final class ParameterDeserializer {
         if (!HasUrlParameter.class.isAssignableFrom(navigationTarget)) {
             return false;
         }
-        try {
-            String methodName = "setParameter";
-            assert methodName.equals(ReflectTools
-                    .getFunctionalMethod(HasUrlParameter.class).getName());
+        String methodName = "setParameter";
+        assert methodName.equals(ReflectTools
+                .getFunctionalMethod(HasUrlParameter.class).getName());
 
-            // Raw method has no parameter annotations if compiled by Eclipse
-            Type parameterType = GenericTypeReflector.getTypeParameter(
-                    navigationTarget,
-                    HasUrlParameter.class.getTypeParameters()[0]);
-            Class<?> parameterClass = GenericTypeReflector.erase(parameterType);
+        // Raw method has no parameter annotations if compiled by Eclipse
+        Type parameterType = GenericTypeReflector.getTypeParameter(
+                navigationTarget,
+                HasUrlParameter.class.getTypeParameters()[0]);
+        Class<?> parameterClass = GenericTypeReflector.erase(parameterType);
 
-            Method setParameter = navigationTarget.getMethod(methodName,
-                    BeforeEvent.class, parameterClass);
-            return setParameter.getParameters()[1]
-                    .isAnnotationPresent(parameterAnnotation);
-        } catch (NoSuchMethodException e) {
-            String msg = String.format(
-                    "Failed to find HasUrlParameter::setParameter method when checking for @%s",
-                    parameterAnnotation.getSimpleName());
-            throw new IllegalStateException(msg, e);
-        }
+
+        return Stream.of(navigationTarget.getMethods())
+                .filter(method -> methodName.equals(method.getName()))
+                .filter(method -> hasValidParameterTypes(method, parameterClass))
+                .anyMatch(method -> method.getParameters()[1].isAnnotationPresent(parameterAnnotation));
+    }
+
+    private static boolean hasValidParameterTypes(Method method, Class<?> parameterClass) {
+        return method.getParameterCount() == 2
+                && method.getParameterTypes()[0] == BeforeEvent.class
+                && method.getParameterTypes()[1].isAssignableFrom(parameterClass);
     }
 }

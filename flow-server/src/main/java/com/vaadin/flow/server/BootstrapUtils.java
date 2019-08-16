@@ -70,7 +70,7 @@ class BootstrapUtils {
     static class ThemeSettings {
         private List<JsonObject> headContents;
         private JsonObject headInjectedContent;
-        private Map<String, String> bodyAttributes;
+        private Map<String, String> htmlAttributes;
 
         public List<JsonObject> getHeadContents() {
             return headContents;
@@ -88,12 +88,12 @@ class BootstrapUtils {
             this.headInjectedContent = headInjectedContent;
         }
 
-        public Map<String, String> getBodyAttributes() {
-            return bodyAttributes;
+        public Map<String, String> getHtmlAttributes() {
+            return htmlAttributes;
         }
 
-        public void setBodyAttributes(Map<String, String> bodyAttributes) {
-            this.bodyAttributes = bodyAttributes;
+        public void setHtmlAttributes(Map<String, String> htmlAttributes) {
+            this.htmlAttributes = htmlAttributes;
         }
     }
 
@@ -336,8 +336,8 @@ class BootstrapUtils {
 
         settings.setHeadInjectedContent(createHeaderInlineScript(theme));
 
-        settings.setBodyAttributes(
-                theme.getBodyAttributes(themeDefinition.getVariant()));
+        settings.setHtmlAttributes(
+                theme.getHtmlAttributes(themeDefinition.getVariant()));
 
         return settings;
     }
@@ -358,7 +358,8 @@ class BootstrapUtils {
                 + "}\n");
         builder.insert(0, "<script id='_theme-header-injection'>\n");
         builder.append(
-                "document.head.removeChild(document.getElementById('_theme-header-injection'));\n");
+                "var script = document.getElementById('_theme-header-injection');"
+                        + "if ( script ) { document.head.removeChild(script);}\n");
         builder.append("</script>");
         return createInlineDependencyObject(builder.toString());
     }

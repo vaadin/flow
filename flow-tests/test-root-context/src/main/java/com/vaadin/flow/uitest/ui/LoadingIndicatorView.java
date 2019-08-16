@@ -47,11 +47,8 @@ public class LoadingIndicatorView extends AbstractDivView {
 
         int[] delays = new int[]{100, 200, 500, 1000, 2000, 5000, 10000};
         for (int delay : delays) {
-            NativeButton button = new NativeButton(
-                    "Trigger event which takes " + delay + "ms",
-                    e -> delay(delay));
-            button.setId("wait" + delay);
-            add(button);
+            add(createButton("Trigger event which takes " + delay + "ms",
+                    "wait" + delay, e -> delay(delay)));
         }
     }
 

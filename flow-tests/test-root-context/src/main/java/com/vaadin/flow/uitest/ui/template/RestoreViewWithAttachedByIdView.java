@@ -18,15 +18,16 @@ package com.vaadin.flow.uitest.ui.template;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
-import com.vaadin.flow.uitest.servlet.ViewTestLayout;
-import com.vaadin.flow.uitest.ui.AbstractDivView;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.templatemodel.TemplateModel;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.flow.uitest.ui.AbstractDivView;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.RestoreViewWithAttachedByIdView", layout = ViewTestLayout.class)
 public class RestoreViewWithAttachedByIdView extends AbstractDivView {
@@ -38,6 +39,7 @@ public class RestoreViewWithAttachedByIdView extends AbstractDivView {
 
     @Tag("template-with-injected-id")
     @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/TemplateWithInjectedId.html")
+    @JsModule("TemplateWithInjectedId.js")
     public static class TemplateWithInjectedId
             extends PolymerTemplate<TemplateModel> {
 

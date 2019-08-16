@@ -34,7 +34,7 @@ public class TemplateComponentTest {
 
     UI ui;
 
-    private final static String template_file = "<dom-module id='registration-form'>"
+    private static final String template_file = "<dom-module id='registration-form'>"
             + " <template>" + "  <div id='name'>{{name}}</div>" + " </template>"
             + " <script>" + "  class RegistrationForm extends Polymer.Element {"
             + "   static get is() {return 'registration-form'}" + "  }"
@@ -50,6 +50,7 @@ public class TemplateComponentTest {
     @Before
     public void init() throws Exception {
         mocks = new MockServletServiceSessionSetup();
+        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
 
         mocks.getServlet().addServletContextResource("/registration-form.html",
                 template_file);

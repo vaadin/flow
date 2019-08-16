@@ -16,6 +16,8 @@
 package com.vaadin.flow.component.page;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
@@ -23,7 +25,13 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.tests.util.MockUI;
+
+import elemental.json.Json;
+import elemental.json.JsonValue;
 
 public class PageTest {
 
@@ -47,14 +55,14 @@ public class PageTest {
         private Serializable firstParam;
 
         @Override
-        public ExecutionCanceler executeJavaScript(String expression,
+        public PendingJavaScriptResult executeJs(String expression,
                 Serializable... parameters) {
             this.expression = expression;
             firstParam = parameters[0];
             count++;
-            return () -> true;
+            return null;
         }
-    };
+    }
 
     private TestPage page = new TestPage();
 
@@ -144,5 +152,63 @@ public class PageTest {
                         CoreMatchers.containsString("resize")));
 
         Assert.assertTrue(page.firstParam instanceof Component);
+    }
+
+    @Test
+    public void retrieveExtendedClientDetails_twice_jsOnceAndCallbackTwice() {
+        // given
+        final UI mockUI = new MockUI();
+        final Page page = new Page(mockUI) {
+            @Override
+            public PendingJavaScriptResult executeJs(String expression,
+                                                     Serializable... params) {
+                super.executeJs(expression,params);
+
+                return new PendingJavaScriptResult() {
+
+                    @Override
+                    public boolean cancelExecution() {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean isSentToBrowser() {
+                        return false;
+                    }
+
+                    @Override
+                    public void then(SerializableConsumer<JsonValue> resultHandler,
+                                     SerializableConsumer<String> errorHandler) {
+                        final HashMap<String,String> params = new HashMap<>();
+                        params.put("v-sw","2560");
+                        params.put("v-sh","1450");
+                        params.put("v-tzo","-270");
+                        params.put("v-rtzo","-210");
+                        params.put("v-dstd","60");
+                        params.put("v-dston","true");
+                        params.put("v-tzid","Asia/Tehran");
+                        params.put("v-curdate","1555000000000");
+                        params.put("v-td","false");
+                        params.put("v-wn","ROOT-1234567-0.1234567");
+                        resultHandler.accept(JsonUtils.createObject(
+                                params, Json::create));
+                    }
+                };
+            }
+        };
+        final AtomicInteger callbackInvocations = new AtomicInteger();
+        final Page.ExtendedClientDetailsReceiver receiver = details -> {
+            callbackInvocations.incrementAndGet();
+        };
+
+        // when
+        page.retrieveExtendedClientDetails(receiver);
+        page.retrieveExtendedClientDetails(receiver);
+
+        // then
+        final int jsInvocations =
+                mockUI.getInternals().dumpPendingJavaScriptInvocations().size();
+        Assert.assertEquals(1, jsInvocations);
+        Assert.assertEquals(2, callbackInvocations.get());
     }
 }

@@ -15,22 +15,25 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
-import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
 import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.TemplateHasInjectedSubTemplateView", layout = ViewTestLayout.class)
 @Tag("parent-inject-child")
 @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/ParentTemplateInjectChild.html")
+@JsModule("ParentTemplateInjectChild.js")
 public class TemplateHasInjectedSubTemplateView
         extends PolymerTemplate<Message> {
 
     @Tag("injected-child")
     @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/InjectedChild.html")
+    @JsModule("./InjectedChild.js")
     public static class InjectedChild extends PolymerTemplate<Message> {
         @Override
         protected Message getModel() {

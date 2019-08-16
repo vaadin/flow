@@ -31,10 +31,11 @@ import com.vaadin.generator.metadata.ComponentObjectType.ComponentObjectTypeInne
 import elemental.json.JsonObject;
 
 /**
- * Class responsible for generating nested POJOs that represent complex data
- * structures. Those POJOs are meant to be static nested classes of the main
- * component class. The nested POJOs can be used in method calls, property
- * getters/setters and inside events.
+ * Nested POJOs Generator.
+ * <p>
+ * Nested POJOs represent complex data structures. Those POJOs are meant to be
+ * static nested classes of the main component class. The nested POJOs can be
+ * used in method calls, property getters/setters and inside events.
  */
 public class NestedClassGenerator {
 
@@ -45,7 +46,7 @@ public class NestedClassGenerator {
     /**
      * Sets the {@link ComponentObjectType} this generator will use to create
      * the getters and setters for the properties.
-     * 
+     *
      * @param type
      *            The ComponentObjectType instance containing the object
      *            definition.
@@ -61,7 +62,7 @@ public class NestedClassGenerator {
      * generated class. The name hint is can contain invalid characters,
      * multiple words and reserved words - all of those are properly formatted
      * before setting the final name for the class.
-     * 
+     *
      * @param nameHint
      *            The hint which is the base for the final name of the class.
      * @return this instance for method chaining.
@@ -74,7 +75,7 @@ public class NestedClassGenerator {
     /**
      * Sets whether the generated POJO should contain fluent setters or not.
      * Fluent setters allow method chaining. The default is <code>true</code>.
-     * 
+     *
      * @param fluentSetters
      *            <code>true</code> to enable fluent setters, <code>false</code>
      *            otherwise.
@@ -87,7 +88,7 @@ public class NestedClassGenerator {
 
     /**
      * Builds the Java class by using the defined settings.
-     * 
+     *
      * @return the final Java class source, ready to be embedded in the main
      *         class of the component.
      */

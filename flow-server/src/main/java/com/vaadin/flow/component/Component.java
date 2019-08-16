@@ -22,6 +22,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
 
+import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.dom.Element;
@@ -383,8 +384,8 @@ public abstract class Component
      * page.
      *
      * @param id
-     *            the id to set, or <code>null</code> to remove any previously
-     *            set id
+     *            the id to set, or <code>""</code> to remove any previously set
+     *            id
      */
     public void setId(String id) {
         set(idDescriptor, id);
@@ -395,7 +396,7 @@ public abstract class Component
      *
      * @see #setId(String)
      *
-     * @return the id, or <code>""</code> if no id has been set
+     * @return the id, or and empty optional if no id has been set
      */
     public Optional<String> getId() {
         return get(idDescriptor);

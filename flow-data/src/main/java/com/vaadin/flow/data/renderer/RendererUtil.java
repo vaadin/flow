@@ -32,8 +32,9 @@ import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.server.Command;
 
 /**
- * Class used internally by components that support {@link TemplateRenderer}. It
- * contains helper methods to register events triggered by rendered templates.
+ * Contains helper methods to register events triggered by rendered templates.
+ * <p>
+ * Used internally by components that support {@link TemplateRenderer}.
  *
  * @author Vaadin Ltd
  * @since 1.0.
@@ -91,7 +92,7 @@ public class RendererUtil {
                     .getInternals().getStateTree()
                     .beforeClientResponse(templateDataHost.getNode(),
                             context -> context.getUI().getPage()
-                                    .executeJavaScript("$0.__dataHost = $1;",
+                                    .executeJs("$0.__dataHost = $1;",
                                             contentTemplate,
                                             templateDataHost)));
         }
@@ -123,7 +124,7 @@ public class RendererUtil {
 
         // vaadin.sendEventMessage is an exported function at the client
         // side
-        ui.getPage().executeJavaScript(String.format(
+        ui.getPage().executeJs(String.format(
                 "$0.%s = function(e) {Vaadin.Flow.sendEventMessage(%d, '%s', {key: e.model ? e.model.__data.item.key : e.target.__dataHost.__data.item.key})}",
                 handlerName, eventOrigin.getNode().getId(), handlerName),
                 eventOrigin);

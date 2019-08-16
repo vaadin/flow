@@ -15,16 +15,14 @@
  */
 package com.vaadin.client;
 
+import com.google.gwt.event.shared.EventHandler;
 import com.google.web.bindery.event.shared.Event;
 import com.google.web.bindery.event.shared.EventBus;
 import com.google.web.bindery.event.shared.HandlerRegistration;
-
-import com.google.gwt.event.shared.EventHandler;
-
 import com.vaadin.client.gwt.com.google.web.bindery.event.shared.SimpleEventBus;
 
 /**
- * Class managing the lifecycle of a UI.
+ * Manages the lifecycle of a UI.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -32,7 +30,7 @@ import com.vaadin.client.gwt.com.google.web.bindery.event.shared.SimpleEventBus;
 public class UILifecycle {
 
     /**
-     * Enum describing the state of a UI.
+     * Describes the state of a UI.
      *
      */
     public enum UIState {
@@ -77,7 +75,7 @@ public class UILifecycle {
 
     /**
      * Check if the state is {@link UIState#RUNNING}.
-     * 
+     *
      * @return {@code true} if the status is {@link UIState#RUNNING},
      *         {@code false} otherwise
      */
@@ -87,7 +85,7 @@ public class UILifecycle {
 
     /**
      * Check if the state is {@link UIState#TERMINATED}.
-     * 
+     *
      * @return {@code true} if the status is {@link UIState#TERMINATED},
      *         {@code false} otherwise
      */

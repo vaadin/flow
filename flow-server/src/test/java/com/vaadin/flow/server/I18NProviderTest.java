@@ -15,15 +15,16 @@
  */
 package com.vaadin.flow.server;
 
-import java.util.Locale;
-import java.util.Properties;
-import java.util.concurrent.locks.ReentrantLock;
-
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import java.util.Locale;
+import java.util.Properties;
+import java.util.concurrent.locks.ReentrantLock;
+
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
@@ -33,15 +34,24 @@ import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.shared.ApplicationConstants;
 
-import net.jcip.annotations.NotThreadSafe;
-
 @NotThreadSafe
 public class I18NProviderTest {
+
+    private static Properties DEFAULT_PARAMS = new Properties();
+
+    {
+        DEFAULT_PARAMS.setProperty(
+                Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                Boolean.FALSE.toString());
+    }
 
     @Test
     public void no_property_defined_should_leave_with_default_locale()
             throws ServletException, ServiceException {
-        initServletAndService(new Properties());
+        final Properties initParams = new Properties();
+        initParams.setProperty(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                Boolean.FALSE.toString());
+        initServletAndService(initParams);
 
         Assert.assertEquals("Locale was not the expected default locale",
                 Locale.getDefault(), VaadinSession.getCurrent().getLocale());
@@ -53,6 +63,8 @@ public class I18NProviderTest {
         Properties initParams = new Properties();
         initParams.setProperty(Constants.I18N_PROVIDER,
                 TestProvider.class.getName());
+        initParams.setProperty(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                Boolean.FALSE.toString());
 
         initServletAndService(initParams);
 
@@ -67,6 +79,8 @@ public class I18NProviderTest {
         Properties initParams = new Properties();
         initParams.setProperty(Constants.I18N_PROVIDER,
                 TestProvider.class.getName());
+        initParams.setProperty(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                Boolean.FALSE.toString());
 
         initServletAndService(initParams);
 
@@ -143,5 +157,4 @@ public class I18NProviderTest {
 
         return servlet;
     }
-
 }

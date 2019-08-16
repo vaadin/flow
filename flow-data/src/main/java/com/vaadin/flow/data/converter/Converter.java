@@ -19,13 +19,13 @@ package com.vaadin.flow.data.converter;
 import java.io.Serializable;
 import java.util.function.Function;
 
+import com.vaadin.flow.data.binder.Binder.BindingBuilder;
 import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;
-import com.vaadin.flow.data.binder.Binder.BindingBuilder;
 import com.vaadin.flow.function.SerializableFunction;
 
 /**
- * Interface that implements conversion between a model and a presentation type.
+ * Defines conversion between a model and a presentation type.
  * <p>
  * Converters must not have any side effects (never update UI from inside a
  * converter).
@@ -50,8 +50,7 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
      *            The value context for the conversion.
      * @return The converted value compatible with the source type
      */
-    Result<MODEL> convertToModel(PRESENTATION value,
-                                 ValueContext context);
+    Result<MODEL> convertToModel(PRESENTATION value, ValueContext context);
 
     /**
      * Converts the given value from presentation type to model type.
@@ -64,8 +63,7 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
      *            The value context for the conversion.
      * @return The converted value compatible with the source type
      */
-    PRESENTATION convertToPresentation(MODEL value,
-                                       ValueContext context);
+    PRESENTATION convertToPresentation(MODEL value, ValueContext context);
 
     /**
      * Returns a converter that returns its input as-is in both directions.
@@ -99,8 +97,7 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
      * @see Result
      * @see Function
      */
-    static <P, M> Converter<P, M> from(
-            SerializableFunction<P, M> toModel,
+    static <P, M> Converter<P, M> from(SerializableFunction<P, M> toModel,
             SerializableFunction<M, P> toPresentation,
             SerializableFunction<Exception, String> onError) {
 
@@ -158,8 +155,7 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
      *            the converter to chain, not null
      * @return a chained converter
      */
-    default <T> Converter<PRESENTATION, T> chain(
-            Converter<MODEL, T> other) {
+    default <T> Converter<PRESENTATION, T> chain(Converter<MODEL, T> other) {
         return new Converter<PRESENTATION, T>() {
             @Override
             public Result<T> convertToModel(PRESENTATION value,

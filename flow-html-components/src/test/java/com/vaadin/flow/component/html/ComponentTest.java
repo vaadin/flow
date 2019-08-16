@@ -48,12 +48,16 @@ public abstract class ComponentTest {
     public void setup() throws IntrospectionException, InstantiationException,
             IllegalAccessException, ClassNotFoundException {
         component = createComponent();
-        WHITE_LIST.add("visible");
+        whitelistProperty("visible");
         addProperties();
         BeanInfo componentInfo = Introspector.getBeanInfo(component.getClass());
         Stream.of(componentInfo.getPropertyDescriptors()).filter(
                 descriptor -> !WHITE_LIST.contains(descriptor.getName()))
                 .forEach(this::assertProperty);
+    }
+
+    protected void whitelistProperty(String property) {
+        WHITE_LIST.add(property);
     }
 
     protected void addProperties() {

@@ -19,19 +19,40 @@ package com.vaadin.flow.server;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+
+import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
+import java.io.UncheckedIOException;
 import java.lang.reflect.Method;
+import java.net.URL;
 import java.util.Enumeration;
 import java.util.Optional;
 import java.util.Properties;
 
+import org.apache.commons.io.FileUtils;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.server.frontend.FrontendUtils;
+
+import elemental.json.JsonObject;
+import elemental.json.impl.JsonUtil;
+
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_REUSE_DEV_SERVER;
+import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
+import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
+import static com.vaadin.flow.server.frontend.FrontendUtils.PROJECT_BASEDIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
 /**
- * A class that creates {@link DeploymentConfiguration} filled with all
- * parameters specified by the framework users.
+ * Creates {@link DeploymentConfiguration} filled with all parameters specified
+ * by the framework users.
  */
 public final class DeploymentConfigurationFactory implements Serializable {
 
@@ -60,8 +81,8 @@ public final class DeploymentConfigurationFactory implements Serializable {
     }
 
     /**
-     * Creates a {@link DeploymentConfiguration} instance that has
-     * all parameters, specified for the current app without doing checks so
+     * Creates a {@link DeploymentConfiguration} instance that has all
+     * parameters, specified for the current app without doing checks so
      * property states and only returns default.
      *
      * @param systemPropertyBaseClass
@@ -82,7 +103,9 @@ public final class DeploymentConfigurationFactory implements Serializable {
     }
 
     /**
-     * Generate Property containing parameters for with all parameters contained in current application.
+     * Generate Property containing parameters for with all parameters contained
+     * in current application.
+     *
      * @param systemPropertyBaseClass
      *            the class to look for properties defined with annotations
      * @param servletConfig
@@ -115,7 +138,88 @@ public final class DeploymentConfigurationFactory implements Serializable {
             initParameters.setProperty(name,
                     servletConfig.getInitParameter(name));
         }
+
+        readBuildInfo(initParameters);
         return initParameters;
+    }
+
+    private static void readBuildInfo(Properties initParameters) { // NOSONAR
+        try {
+            String json = null;
+            // token file location passed via init parameter property
+            String tokenLocation = initParameters.getProperty(PARAM_TOKEN_FILE);
+            if (tokenLocation != null) {
+                File tokenFile = new File(tokenLocation);
+                if (tokenFile != null && tokenFile.canRead()) {
+                    json = FileUtils.readFileToString(tokenFile, "UTF-8");
+                }
+            }
+
+            // token file is in the class-path of the application
+            if (json == null) {
+                URL resource = DeploymentConfigurationFactory.class
+                        .getClassLoader()
+                        .getResource(VAADIN_SERVLET_RESOURCES + TOKEN_FILE);
+                if (resource != null) {
+                    json = FrontendUtils.streamToString(resource.openStream());
+                }
+            }
+
+            // Read the json and set the appropriate system properties if not
+            // already set.
+            if (json != null) {
+                JsonObject buildInfo = JsonUtil.parse(json);
+                if (buildInfo.hasKey(SERVLET_PARAMETER_PRODUCTION_MODE)) {
+                    initParameters.setProperty(
+                            SERVLET_PARAMETER_PRODUCTION_MODE,
+                            String.valueOf(buildInfo.getBoolean(
+                                    SERVLET_PARAMETER_PRODUCTION_MODE)));
+                    // Need to be sure that we remove the system property,
+                    // because
+                    // it has priority in the configuration getter
+                    System.clearProperty(
+                            VAADIN_PREFIX + SERVLET_PARAMETER_PRODUCTION_MODE);
+                }
+                if (buildInfo.hasKey(SERVLET_PARAMETER_COMPATIBILITY_MODE)) {
+                    initParameters.setProperty(
+                            SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                            String.valueOf(buildInfo.getBoolean(
+                                    SERVLET_PARAMETER_COMPATIBILITY_MODE)));
+                    // Need to be sure that we remove the system property,
+                    // because it has priority in the configuration getter
+                    System.clearProperty(VAADIN_PREFIX
+                            + SERVLET_PARAMETER_COMPATIBILITY_MODE);
+                }
+
+                if (buildInfo.hasKey("npmFolder")) {
+                    initParameters.setProperty(PROJECT_BASEDIR,
+                            buildInfo.getString("npmFolder"));
+                }
+
+                if (buildInfo.hasKey("frontendFolder")) {
+                    initParameters.setProperty(FrontendUtils.PARAM_FRONTEND_DIR,
+                            buildInfo.getString("frontendFolder"));
+                }
+
+                // These should be internal only so if there is a System
+                // property override then the user probably knows what
+                // they are doing.
+                if(buildInfo.hasKey(SERVLET_PARAMETER_ENABLE_DEV_SERVER)) {
+                    initParameters.setProperty(
+                            SERVLET_PARAMETER_ENABLE_DEV_SERVER,
+                            String.valueOf(buildInfo.getBoolean(
+                                    SERVLET_PARAMETER_ENABLE_DEV_SERVER)));
+                }
+                if(buildInfo.hasKey(SERVLET_PARAMETER_REUSE_DEV_SERVER)) {
+                    initParameters.setProperty(
+                            SERVLET_PARAMETER_REUSE_DEV_SERVER,
+                            String.valueOf(buildInfo.getBoolean(
+                                    SERVLET_PARAMETER_REUSE_DEV_SERVER)));
+                }
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     private static void readUiFromEnclosingClass(
@@ -148,8 +252,7 @@ public final class DeploymentConfigurationFactory implements Serializable {
             VaadinServletConfiguration.InitParameterName name = method
                     .getAnnotation(
                             VaadinServletConfiguration.InitParameterName.class);
-            assert name
-                    != null : "All methods declared in VaadinServletConfiguration should have a @InitParameterName annotation";
+            assert name != null : "All methods declared in VaadinServletConfiguration should have a @InitParameterName annotation";
 
             try {
                 Object value = method.invoke(configuration);
@@ -166,7 +269,8 @@ public final class DeploymentConfigurationFactory implements Serializable {
                 // This should never happen
                 throw new ServletException(
                         "Could not read @VaadinServletConfiguration value "
-                                + method.getName(), e);
+                                + method.getName(),
+                        e);
             }
         }
 

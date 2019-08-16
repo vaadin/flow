@@ -2,10 +2,10 @@ package com.vaadin.flow.component;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -21,6 +21,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.page.History;
 import com.vaadin.flow.component.page.History.HistoryStateChangeEvent;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.ElementDetachEvent;
 import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.dom.NodeVisitor;
 import com.vaadin.flow.dom.impl.AbstractTextElementStateProvider;
@@ -173,10 +174,15 @@ public class UITest {
 
             ui.getInternals().setSession(session);
 
-            RouteConfiguration.forRegistry(ui.getRouter().getRegistry())
-                    .setRoutes(new HashSet<>(
-                            Arrays.asList(RootNavigationTarget.class,
-                                    FooBarNavigationTarget.class)));
+            RouteConfiguration routeConfiguration = RouteConfiguration
+                    .forRegistry(ui.getRouter().getRegistry());
+
+            routeConfiguration.update(() -> {
+                routeConfiguration.getHandledRegistry().clean();
+                Arrays.asList(RootNavigationTarget.class,
+                        FooBarNavigationTarget.class)
+                        .forEach(routeConfiguration::setAnnotatedRoute);
+            });
 
             ui.doInit(request, 0);
             ui.getRouter().initializeUI(ui, request);
@@ -194,7 +200,8 @@ public class UITest {
     @Test
     public void scrollAttribute() {
         UI ui = new UI();
-        Assert.assertNull("'scroll' attribute shouldn't be set for the "
+        Assert.assertNull(
+                "'scroll' attribute shouldn't be set for the "
                         + "UI element which represents 'body' tag",
                 ui.getElement().getAttribute("scroll"));
     }
@@ -259,8 +266,8 @@ public class UITest {
 
         History history = ui.getPage().getHistory();
 
-        history.getHistoryStateChangeHandler().onHistoryStateChange(
-                new HistoryStateChangeEvent(history, null,
+        history.getHistoryStateChangeHandler()
+                .onHistoryStateChange(new HistoryStateChangeEvent(history, null,
                         new Location("foo/bar"), NavigationTrigger.HISTORY));
 
         assertEquals("foo/bar",
@@ -358,6 +365,29 @@ public class UITest {
 
         assertEquals(1, events.size());
         assertEquals(childComponent, events.get(0).getSource());
+    }
+
+    @Test
+    public void unserSession_datachEventIsFiredForElements() {
+        UI ui = createTestUI();
+
+        List<ElementDetachEvent> events = new ArrayList<>();
+
+        ui.getElement().addDetachListener(events::add);
+        initUI(ui, "", null);
+
+        Component childComponent = new AttachableComponent();
+        ui.add(childComponent);
+        childComponent.getElement().addDetachListener(events::add);
+
+        ui.getSession().access(() -> ui.getInternals().setSession(null));
+
+        // Unlock to run pending access tasks
+        ui.getSession().unlock();
+
+        assertEquals(2, events.size());
+        assertEquals(childComponent.getElement(), events.get(0).getSource());
+        assertEquals(ui.getElement(), events.get(1).getSource());
     }
 
     @Test
@@ -704,9 +734,8 @@ public class UITest {
     public void accessLaterRunnable_detachedUiNoHandler_throws() {
         UI ui = createTestUI();
 
-        SerializableRunnable wrapped = ui
-                .accessLater(() -> Assert.fail("Action should never run"),
-                        null);
+        SerializableRunnable wrapped = ui.accessLater(
+                () -> Assert.fail("Action should never run"), null);
         wrapped.run();
     }
 
@@ -716,9 +745,9 @@ public class UITest {
 
         UI ui = createTestUI();
 
-        SerializableRunnable wrapped = ui
-                .accessLater(() -> Assert.fail("Action should never run"),
-                        runCount::incrementAndGet);
+        SerializableRunnable wrapped = ui.accessLater(
+                () -> Assert.fail("Action should never run"),
+                runCount::incrementAndGet);
 
         assertEquals("Handler should not yet have run", 0, runCount.get());
 
@@ -762,9 +791,8 @@ public class UITest {
     public void accessLaterConsumer_detachedUiNoHandler_throws() {
         UI ui = createTestUI();
 
-        SerializableConsumer<Object> wrapped = ui
-                .accessLater(value -> Assert.fail("Action should never run"),
-                        null);
+        SerializableConsumer<Object> wrapped = ui.accessLater(
+                value -> Assert.fail("Action should never run"), null);
         wrapped.accept(null);
     }
 
@@ -774,9 +802,9 @@ public class UITest {
 
         UI ui = createTestUI();
 
-        SerializableConsumer<Object> wrapped = ui
-                .accessLater(value -> Assert.fail("Action should never run"),
-                        runCount::incrementAndGet);
+        SerializableConsumer<Object> wrapped = ui.accessLater(
+                value -> Assert.fail("Action should never run"),
+                runCount::incrementAndGet);
 
         assertEquals("Handler should not yet have run", 0, runCount.get());
 
@@ -785,4 +813,23 @@ public class UITest {
         assertEquals("Handler should have run once", 1, runCount.get());
     }
 
+    @Test
+    public void csrfToken_differentUIs_shouldBeUnique() {
+        String token1 = new UI().getCsrfToken();
+        String token2 = new UI().getCsrfToken();
+
+        Assert.assertNotEquals("Each UI should have a unique CSRF token",
+                token1, token2);
+    }
+
+    @Test
+    public void csrfToken_sameUI_shouldBeSame() {
+        UI ui = new UI();
+        String token1 = ui.getCsrfToken();
+        String token2 = ui.getCsrfToken();
+
+        Assert.assertEquals(
+                "getCsrfToken() should always return the same value for the same UI",
+                token1, token2);
+    }
 }

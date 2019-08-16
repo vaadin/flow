@@ -55,6 +55,16 @@ public class ApplicationConstants implements Serializable {
     public static final String UIDL_PUSH_ID = "Vaadin-Push-ID";
 
     /**
+     * The URL which should be used to connect server-side VaadinService.
+     */
+    public static final String SERVICE_URL = "serviceUrl";
+
+    /**
+     * Whether the application is run in as a exported Web Component.
+     */
+    public static final String APP_WC_MODE = "webComponentMode";
+
+    /**
      * Configuration parameter giving the (in some cases relative) URL to the
      * web application context root.
      */
@@ -82,14 +92,12 @@ public class ApplicationConstants implements Serializable {
     public static final String PUSH_ID_PARAMETER = "v-pushId";
 
     /**
-     * The name of the parameter used to transmit RPC invocations
-     *
+     * The name of the parameter used to transmit RPC invocations.
      */
     public static final String RPC_INVOCATIONS = "rpc";
 
     /**
-     * The name of the parameter used to transmit the CSRF token
-     *
+     * The name of the parameter used to transmit the CSRF token.
      */
     public static final String CSRF_TOKEN = "csrfToken";
 
@@ -123,6 +131,12 @@ public class ApplicationConstants implements Serializable {
      * Content type to use for text/html responses (should always be UTF-8).
      */
     public static final String CONTENT_TYPE_TEXT_HTML_UTF_8 = "text/html; charset=utf-8";
+
+    /**
+     * Content type to use for text/javascript responses (should always be
+     * UTF-8).
+     */
+    public static final String CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8 = "text/javascript; charset=utf-8";
 
     /**
      * Name of the parameter used to transmit UI ids back and forth.

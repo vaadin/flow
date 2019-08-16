@@ -15,7 +15,9 @@
  */
 package com.vaadin.flow.server.communication;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.Part;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,6 +25,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Serializable;
+import java.util.Iterator;
 
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
@@ -86,7 +89,7 @@ public class StreamReceiverHandler implements Serializable {
 
     /**
      * Handle reception of incoming stream from the client.
-     * 
+     *
      * @param session
      *            The session for the request
      * @param request
@@ -143,8 +146,7 @@ public class StreamReceiverHandler implements Serializable {
     }
 
     /**
-     * Method used to stream content from a multipart request to given
-     * StreamVariable.
+     * Streams content from a multipart request to given StreamVariable.
      * <p>
      * This method takes care of locking the session as needed and does not
      * assume the caller has locked the session. This allows the session to be
@@ -168,6 +170,49 @@ public class StreamReceiverHandler implements Serializable {
             VaadinRequest request, VaadinResponse response,
             StreamReceiver streamReceiver, StateNode owner) throws IOException {
 
+        if (hasParts(request)) {
+            handleMultipartFileUploadFromParts(session, request, streamReceiver,
+                    owner);
+        } else {
+            handleMultipartFileUploadFromInputStream(session, request,
+                    streamReceiver, owner);
+        }
+        sendUploadResponse(response);
+    }
+
+    private boolean hasParts(VaadinRequest request) throws IOException {
+        try {
+            return !((HttpServletRequest) request).getParts().isEmpty();
+        } catch (ServletException | IllegalStateException e) {
+            getLogger().trace(
+                    "Pretending the request did not contain any parts because of exception",
+                    e);
+            return false;
+        }
+    }
+
+    private void handleMultipartFileUploadFromParts(VaadinSession session,
+            VaadinRequest request, StreamReceiver streamReceiver,
+            StateNode owner) throws IOException {
+        // If we try to parse the request now, we will get an exception
+        // since it has already been parsed and turned into Parts.
+        try {
+            Iterator<Part> iter = ((HttpServletRequest) request).getParts()
+                    .iterator();
+            while (iter.hasNext()) {
+                Part part = iter.next();
+                handleStream(session, streamReceiver, owner, part);
+            }
+        } catch (ServletException e) {
+            // This should only happen if the request is not a multipart
+            // request and this we have already checked in hasParts().
+            getLogger().warn("File upload failed.", e);
+        }
+    }
+
+    private void handleMultipartFileUploadFromInputStream(VaadinSession session,
+            VaadinRequest request, StreamReceiver streamReceiver,
+            StateNode owner) throws IOException {
         // Create a new file upload handler
         ServletFileUpload upload = new ServletFileUpload();
 
@@ -184,7 +229,19 @@ public class StreamReceiverHandler implements Serializable {
         } catch (FileUploadException e) {
             getLogger().warn("File upload failed.", e);
         }
-        sendUploadResponse(response);
+    }
+
+    private void handleStream(VaadinSession session,
+            StreamReceiver streamReceiver, StateNode owner, Part part)
+            throws IOException {
+        String name = part.getSubmittedFileName();
+        InputStream stream = part.getInputStream();
+        try {
+            handleFileUploadValidationAndData(session, stream, streamReceiver,
+                    name, part.getContentType(), part.getSize(), owner);
+        } catch (UploadException e) {
+            session.getErrorHandler().error(new ErrorEvent(e));
+        }
     }
 
     private void handleStream(VaadinSession session,
@@ -285,7 +342,7 @@ public class StreamReceiverHandler implements Serializable {
      * To adjust this value override the method, and register your own handler
      * in VaadinService.createRequestHandlers(). The default is 500ms, and
      * setting it to 0 effectively restores the old behavior.
-     * 
+     *
      * @return the minimum interval to be used for streaming progress events
      */
     protected int getProgressEventInterval() {

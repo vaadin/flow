@@ -108,6 +108,24 @@ public interface DataProvider<T, F> extends Serializable {
     void refreshItem(T item);
 
     /**
+     * Refreshes the given item and all of the children of the item as well.
+     *
+     * @see #refreshItem(Object)
+     *
+     * By default it just does a standard refreshItem, in a hierarchical DataProvider
+     * it is supposed to refresh all of the children as well in case 'refreshChildren'
+     * is true.
+     *
+     * @param item
+     *            the item to refresh
+     * @param refreshChildren
+     *            whether or not to refresh child items
+     */
+    default void refreshItem(T item, boolean refreshChildren) {
+        refreshItem(item);
+    }
+
+    /**
      * Refreshes all data based on currently available data in the underlying
      * provider.
      */
