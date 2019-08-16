@@ -2,8 +2,6 @@ package com.vaadin.flow.notification;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.dependency.JavaScript;
 import nl.martijndwars.webpush.Notification;
 import nl.martijndwars.webpush.PushService;
 import nl.martijndwars.webpush.Subscription;
