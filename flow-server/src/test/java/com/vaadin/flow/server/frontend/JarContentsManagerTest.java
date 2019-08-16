@@ -157,6 +157,23 @@ public class JarContentsManagerTest {
                 jarContentsManager.containsPath(testJar, existingPath));
     }
 
+    /*
+    Test for issue:
+        flow fails to serve static resources from latest webjars #6241
+        https://github.com/vaadin/flow/issues/6241
+    */
+    @Test
+    public void containsPath_missingDirectoryStructure_scansForMatch() {
+        String existingPathLocal = "META-INF/resources/webjars/";
+        File testJarLocal = TestUtils.getTestJar("test-jar-issue-6241.jar");
+
+        assertTrue(
+                String.format("Test jar '%s' should contain path '%s'", testJar,
+                        existingPathLocal),
+                jarContentsManager.containsPath(testJarLocal, existingPathLocal));
+    }
+
+
     @Test
     public void findFiles_directoryInsteadOfJar() {
         expectedException.expect(IllegalArgumentException.class);
