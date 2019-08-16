@@ -219,6 +219,25 @@ public class ProductionModeCopyStepTest {
                 2, resultingFiles.stream().filter(path -> path.endsWith(File.separator + "bower.json")).count());
     }
 
+    /*
+    Test for issue:
+        flow fails to serve static resources from latest webjars #6241
+        https://github.com/vaadin/flow/issues/6241
+     */
+    @Test
+    public void webJarsWithMissingDirectoryListings_work() {
+        File outputDirectory = testDirectory.getRoot();
+        assertTrue("No files should be in output directory before the beginning", TestUtils.listFilesRecursively(outputDirectory).isEmpty());
+
+        new ProductionModeCopyStep(Collections.singleton(
+                getWebJarData("6241", "test-jar-issue")))
+                .copyWebApplicationFiles(outputDirectory, null, null);
+
+        List<String> resultingFiles =
+                TestUtils.listFilesRecursively(outputDirectory);
+        assertFalse("Files should be copied from the test WebJar", resultingFiles.isEmpty());
+    }
+
     @Test
     public void copyWebApplicationFiles_fileInsteadOfOutputDirectory() throws IOException {
         File fileNotDirectory = testDirectory.newFile("test");

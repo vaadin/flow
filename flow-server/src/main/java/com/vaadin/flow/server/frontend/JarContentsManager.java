@@ -57,7 +57,16 @@ public class JarContentsManager {
         Objects.requireNonNull(filePath);
 
         try (JarFile jarFile = new JarFile(jar, false)) {
-            return jarFile.getJarEntry(filePath) != null;
+            boolean containsEntry = jarFile.getJarEntry(filePath) != null;
+            // in case #6241, the directory structure is omitted from the
+            // jar's metadata, and the entry point cannot be found. Thus we
+            // scan files just in case
+            if (!containsEntry) {
+                containsEntry =
+                        jarFile.stream().anyMatch(entry -> entry.getName().startsWith(filePath));
+            }
+
+            return containsEntry;
         } catch (IOException e) {
             throw new UncheckedIOException(String.format("Failed to retrieve file '%s' from jar '%s'", filePath, jar), e);
         }
