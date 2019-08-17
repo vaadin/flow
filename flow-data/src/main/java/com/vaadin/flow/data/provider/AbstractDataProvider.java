@@ -45,7 +45,13 @@ public abstract class AbstractDataProvider<T, F> implements DataProvider<T, F> {
     @Override
     public Registration addDataProviderListener(
             DataProviderListener<T> listener) {
-        return addListener(DataChangeEvent.class, listener::onDataChange);
+        SerializableConsumer<DataChangeEvent> consumer = new SerializableConsumer<DataChangeEvent>() {
+            @Override
+            public void accept(DataChangeEvent dataChangeEvent) {
+                listener.onDataChange(dataChangeEvent);
+            }
+        };
+        return addListener(DataChangeEvent.class, consumer);
     }
 
     @Override
