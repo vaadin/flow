@@ -88,6 +88,8 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
         public static final String NO_NAVIGATION =
                 "Classic flow navigation is not supported for clien-side projects";
 
+        private Element wrapperElement;
+
         /**
          * Connect a client with the server side UI.
          *
@@ -104,14 +106,20 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
             // Get the flow view that the user wants to navigate to.
             final Element viewElement = getViewForRoute(flowRoute).getElement();
 
-            // Create flow reference for the client outlet element
-            final Element wrapperElement = new Element(clientElementTag);
-            wrapperElement.appendChild(viewElement);
+            if (wrapperElement == null) {
+                // Create flow reference for the client outlet element
+                wrapperElement = new Element(clientElementTag);
 
-            // Connect server with client
-            getElement().getStateProvider().appendVirtualChild(
-                    getElement().getNode(), wrapperElement,
-                    NodeProperties.INJECT_BY_ID, clientElementId);
+                // Connect server with client
+                getElement().getStateProvider().appendVirtualChild(
+                        getElement().getNode(), wrapperElement,
+                        NodeProperties.INJECT_BY_ID, clientElementId);
+            }
+
+            // Remove previous view
+            wrapperElement.removeAllChildren();
+            // attach this view
+            wrapperElement.appendChild(viewElement);
 
             // Inform the client, that everything went fine.
             wrapperElement.executeJs("$0.serverConnected()");

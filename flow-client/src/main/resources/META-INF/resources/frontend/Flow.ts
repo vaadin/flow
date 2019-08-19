@@ -68,24 +68,32 @@ export class Flow {
 
     private async getFlowElement(routePath : string): Promise<HTMLElement> {
         return new Promise(resolve => {
-            // we create any tag using the route as reference
-            const tag = 'flow-' + routePath.replace(/[^\w]+/g, "-").toLowerCase();
+            if (!this.response) {
+                return;
+            }
+            const id = this.response.appConfig.appId;
+
+            // we use a custom tag for the flow app container
+            const tag = `flow-container-${id.toLowerCase()}`;
 
             // flow use body for keep references
             const flowRoot = document.body as any;
-            flowRoot.$ = flowRoot.$ || {counter: 0};
+            flowRoot.$ = flowRoot.$ || {};
 
-            // Create the wrapper element with an unique id
-            const id  = `${tag}-${flowRoot.$.counter ++}`;
-            const element = flowRoot.$[id] = document.createElement(tag);
-            element.id = id;
-            window.console.log("Created new element for a flow view: " + id);
+            // Only the first navigation creates the container element
+            let element = flowRoot.$[id]
+            if (!element) {
+                element = flowRoot.$[id] = document.createElement(tag);
+                // Flow UI needs the id of the element to connect to
+                element.id = id;
+                window.console.log("Created new element for the flow UI with " + tag);
+            }
 
-            // The callback run from server side once the view is ready
+            // The callback to run from server side once the view is ready
             (element as any).serverConnected = () => resolve(element);
 
             // Call server side to navigate to the given route
-            flowRoot.$server.connectClient(tag, id, routePath);
+            flowRoot.$server.connectClient(tag, element.id, routePath);
         });
     }
 
@@ -124,3 +132,4 @@ export class Flow {
         });
     }
 }
+
