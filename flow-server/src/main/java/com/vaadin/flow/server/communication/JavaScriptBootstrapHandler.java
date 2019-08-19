@@ -130,6 +130,9 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
         }
 
         private HasElement getViewForRoute(String route) {
+            if (route.startsWith("/")) {
+                route = route.replaceFirst("/+", "");
+            }
             Location location = new Location(route);
             Optional<NavigationState> navigationState = this.getRouter()
                     .resolveNavigationTarget(location);
