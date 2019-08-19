@@ -29,7 +29,6 @@ import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.sun.net.httpserver.HttpServer;
@@ -222,26 +221,32 @@ public class DevModeHandlerTest {
 
     @Test
     public void should_HandleJavaScriptRequests() {
-        HttpServletRequest request = prepareRequest("/foo.js");
+        HttpServletRequest request = prepareRequest("/VAADIN/foo.js");
         assertTrue(DevModeHandler.start(configuration, npmFolder).isDevModeRequest(request));
     }
 
     @Test
+    public void shouldNot_HandleNonVaadinRequests() {
+        HttpServletRequest request = prepareRequest("/foo.js");
+        assertFalse(DevModeHandler.start(configuration, npmFolder).isDevModeRequest(request));
+    }
+
+    @Test
     public void shouldNot_HandleOtherRequests() {
-        HttpServletRequest request = prepareRequest("/foo.bar");
+        HttpServletRequest request = prepareRequest("/VAADIN//foo.bar");
         assertFalse(DevModeHandler.start(configuration, npmFolder).isDevModeRequest(request));
     }
 
     @Test(expected = ConnectException.class)
     public void should_ThrowAnException_When_WebpackNotListening()
             throws IOException {
-        HttpServletRequest request = prepareRequest("/foo.js");
+        HttpServletRequest request = prepareRequest("/VAADIN//foo.js");
         DevModeHandler.start(0, configuration, npmFolder).serveDevModeRequest(request, null);
     }
 
     @Test
     public void should_ReturnTrue_When_WebpackResponseOK() throws Exception {
-        HttpServletRequest request = prepareRequest("/foo.js");
+        HttpServletRequest request = prepareRequest("/VAADIN//foo.js");
         HttpServletResponse response = prepareResponse();
         int port = prepareHttpServer(0, HTTP_OK, "bar");
 
@@ -253,7 +258,7 @@ public class DevModeHandlerTest {
     @Test
     public void should_ReturnFalse_When_WebpackResponseNotFound()
             throws Exception {
-        HttpServletRequest request = prepareRequest("/foo.js");
+        HttpServletRequest request = prepareRequest("/VAADIN//foo.js");
         HttpServletResponse response = prepareResponse();
         int port = prepareHttpServer(0, HTTP_NOT_FOUND, "");
 
@@ -277,7 +282,7 @@ public class DevModeHandlerTest {
     public void servlet_should_ThrowAnException_When_WebpackNotListening()
             throws Exception {
         VaadinServlet servlet = prepareServlet(0);
-        HttpServletRequest request = prepareRequest("/foo.js");
+        HttpServletRequest request = prepareRequest("/VAADIN//foo.js");
         HttpServletResponse response = prepareResponse();
         servlet.service(request, response);
         Thread.sleep(150); // NOSONAR
@@ -286,7 +291,7 @@ public class DevModeHandlerTest {
     @Test
     public void servlet_should_GetValidResponse_When_WebpackListening()
             throws Exception {
-        HttpServletRequest request = prepareRequest("/foo.js");
+        HttpServletRequest request = prepareRequest("/VAADIN/foo.js");
         HttpServletResponse response = prepareResponse();
         int port = prepareHttpServer(0, HTTP_OK, "");
 
