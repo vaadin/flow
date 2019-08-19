@@ -144,6 +144,20 @@ public class ClientIndexHandlerIT extends ChromeBrowserTest {
     }
 
     @Test
+    public void should_removeFirstSlash_whenRouteStartsWithSlash() {
+        openTestUrl("/");
+        waitForElementPresent(By.id("button3"));
+
+        findElement(By.id("routeValue")).sendKeys("/");
+        findElement(By.id("button3")).click();
+        waitForElementPresent(By.id("result"));
+
+        String content = findElement(By.id("result")).getText();
+        Assert.assertTrue("It should ignore the first slash in route path",
+                content.contains("Empty view"));
+    }
+
+    @Test
     public void should_getViewByRoute_WhenNavigate() {
         openTestUrl("/");
         waitForElementPresent(By.id("button3"));
@@ -189,5 +203,4 @@ public class ClientIndexHandlerIT extends ChromeBrowserTest {
         Assert.assertTrue("Flow.navigate should return not found view",
                 content.contains("Could not navigate"));
     }
-
 }
