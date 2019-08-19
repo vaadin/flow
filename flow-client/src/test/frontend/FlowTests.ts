@@ -9,6 +9,7 @@ import "../../main/resources/META-INF/resources/frontend/FlowBootstrap";
 import "../../main/resources/META-INF/resources/frontend/FlowClient";
 // Mock XMLHttpRequest so as we don't need flow-server running for tests.
 import mock from 'xhr-mock';
+const flowRoot = (window.document.body as any);
 
 suite("Flow", () => {
 
@@ -18,6 +19,8 @@ suite("Flow", () => {
 
   afterEach(() => {
     mock.teardown();
+    delete flowRoot.$;
+    delete flowRoot.$server;
   });
 
   test("should accept a configuration object", () => {
@@ -30,7 +33,7 @@ suite("Flow", () => {
     const $wnd = window as any;
     assert.isUndefined($wnd.Vaadin);
 
-    mockInitResponse();
+    mockInitResponse('FooBar-12345');
     return new Flow()
       .start()
       .then(response => {
@@ -41,7 +44,7 @@ suite("Flow", () => {
         assert.isDefined($wnd.Vaadin.Flow.registerWidgetset);
         // Check that flowClient was initialized
         assert.isDefined($wnd.Vaadin.Flow.resolveUri);
-        assert.isFalse($wnd.Vaadin.Flow.clients.foobar.isActive());
+        assert.isFalse($wnd.Vaadin.Flow.clients.FooBar.isActive());
       });
   });
 
@@ -65,10 +68,9 @@ suite("Flow", () => {
   });
 
   test("should connect client and server on navigation", () => {
-    stubServerRemoteFunction('flow-foo-bar-baz');
-    mockInitResponse();
+    stubServerRemoteFunction('foobar-1111111');
+    mockInitResponse('foobar-1111111');
 
-    const flowRoot = (window.document.body as any);
     return new Flow()
       .navigate({path: "Foo/Bar.baz"})
       .then(() => {
@@ -76,8 +78,8 @@ suite("Flow", () => {
         assert.isDefined((window as any).Vaadin.Flow.resolveUri);
 
         // Assert that element was created amd put in flowRoot so as server can find it
-        assert.equal(1, flowRoot.$.counter);
-        assert.isDefined(flowRoot.$['flow-foo-bar-baz-0']);
+        assert.isDefined(flowRoot.$);
+        assert.isDefined(flowRoot.$['foobar-1111111']);
       });
   });
 
@@ -95,8 +97,8 @@ suite("Flow", () => {
       }
     }
 
-    stubServerRemoteFunction('flow-another-route');
-    mockInitResponse();
+    stubServerRemoteFunction('ROOT-12345');
+    mockInitResponse('ROOT-12345');
 
     const flow = new Flow();
     const router = new TestRouter ({
@@ -110,23 +112,37 @@ suite("Flow", () => {
         assert.isDefined(elem);
       });
   });
+
+  test("should reuse container element in flow navigation", () => {
+    stubServerRemoteFunction('ROOT-12345');
+    mockInitResponse('ROOT-12345');
+
+    const flow = new Flow();
+    return flow
+      .navigate({path: "Foo"})
+      .then(e1 => {
+        return flow
+        .navigate({path: "Bar"})
+        .then(e2 => {
+          assert.equal(1, Object.keys(flowRoot.$).length);
+          assert.equal(e1, e2);
+          assert.equal(e1.id, e2.id);
+        });
+      });
+  });
 });
 
-function stubServerRemoteFunction(tag: string) {
-  const flowRoot = (window.document.body as any);
-  // Reset counter for id generator
-  delete flowRoot.$;
+function stubServerRemoteFunction(id: string) {
   // Stub remote function exported in JavaScriptBootstrapUI.
   flowRoot.$server = {
     connectClient: () => {
       // Resolve the promise
-      flowRoot.$[`${tag}-0`].serverConnected();
+      flowRoot.$[id].serverConnected();
     }
   };
 }
 
-
-function mockInitResponse() {
+function mockInitResponse(appId: string) {
   // Configure a valid server initialization response
   mock.get('VAADIN/?v-r=init', (req, res) => {
     assert.equal('GET', req.method());
@@ -143,7 +159,7 @@ function mockInitResponse() {
           "serviceUrl" : "//localhost:8080/flow/",
           "webComponentMode" : false,
           "productionMode": false,
-          "appId": "foobar-1111111",
+          "appId": "${appId}",
           "uidl": {
             "syncId": 0,
             "clientId": 0,
