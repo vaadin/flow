@@ -136,12 +136,58 @@ public class ClientIndexHandlerIT extends ChromeBrowserTest {
         openTestUrl("/");
         waitForElementPresent(By.id("button3"));
 
-
         findElement(By.id("button3")).click();
-        waitForElementPresent(By.id("div3"));
+        waitForElementPresent(By.id("result"));
 
-        String content = findElement(By.id("div3")).getText();
-        Assert.assertTrue(content.length() > 0);
+        String content = findElement(By.id("result")).getText();
+        Assert.assertTrue(content.contains("Empty view"));
+    }
+
+    @Test
+    public void should_getViewByRoute_WhenNavigate() {
+        openTestUrl("/");
+        waitForElementPresent(By.id("button3"));
+
+        findElement(By.id("routeValue")).sendKeys("serverview");
+        findElement(By.id("button3")).click();
+        waitForElementPresent(By.id("result"));
+
+        String content = findElement(By.id("result")).getText();
+        Assert.assertTrue("Flow.navigate should return view by route from "
+                + "server views", content.contains("Server view"));
+
+        Assert.assertTrue("Flow.navigate should include router layout",
+                content.contains("Main layout"));
+    }
+
+    @Test
+    public void should_getViewByRoute_WhenRouteHasParameter() {
+        openTestUrl("/");
+        waitForElementPresent(By.id("button3"));
+
+        findElement(By.id("routeValue")).sendKeys("paramview/123");
+        findElement(By.id("button3")).click();
+        waitForElementPresent(By.id("result"));
+
+        String content = findElement(By.id("result")).getText();
+        Assert.assertTrue("Flow.navigate should return view with parameter",
+                content.contains("Route with parameter"));
+        Assert.assertTrue("Flow.navigate should include router layout",
+                content.contains("Main layout"));
+    }
+
+    @Test
+    public void should_returnNotFoundView_WhenRouteNotFound() {
+        openTestUrl("/");
+        waitForElementPresent(By.id("button3"));
+
+        findElement(By.id("routeValue")).sendKeys("not-existing-view");
+        findElement(By.id("button3")).click();
+        waitForElementPresent(By.id("result"));
+
+        String content = findElement(By.id("result")).getText();
+        Assert.assertTrue("Flow.navigate should return not found view",
+                content.contains("Could not navigate"));
     }
 
 }

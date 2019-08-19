@@ -17,11 +17,10 @@ package com.vaadin.flow.ccdmtest;
 
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouterLayout;
 
-@Route("")
-public class EmptyUI extends Div {
-    public EmptyUI() {
-        add(new Text("Empty view"));
+public class MainLayout extends Div implements RouterLayout {
+    public MainLayout() {
+        add(new Text("Main layout"));
     }
 }

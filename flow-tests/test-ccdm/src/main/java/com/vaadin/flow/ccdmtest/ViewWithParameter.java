@@ -17,11 +17,19 @@ package com.vaadin.flow.ccdmtest;
 
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.router.BeforeEvent;
+import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
 
-@Route("")
-public class EmptyUI extends Div {
-    public EmptyUI() {
-        add(new Text("Empty view"));
+@Route(value = "paramview", layout = MainLayout.class)
+public class ViewWithParameter extends Div implements HasUrlParameter<String> {
+
+    public ViewWithParameter() {
+        add(new Text("Route with parameter"));
+    }
+
+    @Override
+    public void setParameter(BeforeEvent event, String parameter) {
+
     }
 }
