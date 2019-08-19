@@ -23,11 +23,15 @@ document.getElementById("button2").addEventListener('click', async e => {
     document.body.appendChild(div);
 });
 
-document.getElementById("button3").addEventListener('click', async e => {
-    const view = await flow.navigate({path: 'my/foo view'});
-    const div = document.createElement('div');
-    div.id = 'div3';
-    div.appendChild(view);
-    document.body.appendChild(div);
+document.getElementById('button3').addEventListener('click', async e => {
+    const route = document.getElementById('routeValue').value;
+    const view = await flow.navigate({path: route});
+    const div = document.getElementById('div3');
+    div.innerHTML = '';
+
+    const result = document.createElement('result');
+    result.id = 'result';
+    result.appendChild(view);
+    div.appendChild(result);
 });
 

@@ -19,9 +19,9 @@ import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.router.Route;
 
-@Route("")
-public class EmptyUI extends Div {
-    public EmptyUI() {
-        add(new Text("Empty view"));
+@Route(value = "serverview", layout = MainLayout.class)
+public class ServerSideView extends Div {
+    public ServerSideView() {
+        add(new Text("Server view"));
     }
 }
