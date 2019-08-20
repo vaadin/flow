@@ -45,7 +45,8 @@ import com.vaadin.flow.theme.ThemeDefinition;
  * Custom UI for {@link JavaScriptBootstrapHandler}. This class is intended for
  * internal use in clientSideMode.
  */
-public final class JavaScriptBootstrapUI extends UI {
+public
+class JavaScriptBootstrapUI extends UI {
     private static final String NO_NAVIGATION = "Classic flow navigation is not supported for clien-side projects";
 
     private Element wrapperElement;

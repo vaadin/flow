@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
 import com.vaadin.flow.dom.NodeVisitor.ElementType;
 import com.vaadin.flow.dom.TestNodeVisitor;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
@@ -33,7 +34,7 @@ import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletResponse;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler.JavaScriptBootstrapUI;
+
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
