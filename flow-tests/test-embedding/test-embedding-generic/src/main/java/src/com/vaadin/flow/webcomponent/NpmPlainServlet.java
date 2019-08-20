@@ -20,6 +20,7 @@ import javax.servlet.annotation.WebServlet;
 import java.io.PrintWriter;
 import java.util.function.Consumer;
 
+import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.webcomponent.servlets.AbstractPlainServlet;
 
 @WebServlet(urlPatterns = { "/items/*"}, asyncSupported = true)

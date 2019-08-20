@@ -13,16 +13,6 @@
   ~ License for the specific language governing permissions and limitations under
   ~ the License.
   -->
-<link rel="import" href="/frontend/bower_components/polymer/polymer-element.html">
 
-<dom-module id="themed-component">
-    <template>
-        <div id="themed">Themed component</div>
-    </template>
-    <script>
-        class ThemedComponent extends Polymer.Element {
-            static get is() { return 'themed-component' }
-        }
-        customElements.define(ThemedComponent.is, ThemedComponent);
-    </script>
-</dom-module>
+<link rel="import" href="./themed-component-style.html">
+<link rel="import" href="../src/themed-component.html">

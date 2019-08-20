@@ -21,7 +21,7 @@ import org.junit.Test;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
-public class UpdateServerSideWebComponentIT extends ChromeBrowserTest {
+public class PushAnnotationIT extends ChromeBrowserTest {
 
     @Override
     protected String getTestPath() {

@@ -13,5 +13,5 @@
 * License for the specific language governing permissions and limitations under
 * the License.
 */
-import "../src/themed-component.js";
 import "./themed-component-style.js";
+import "../src/themed-component.js";

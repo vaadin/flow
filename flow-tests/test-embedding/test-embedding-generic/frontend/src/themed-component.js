@@ -13,17 +13,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-import {PolymerElement, html} from '@polymer/polymer/polymer-element.js';
 
-class ThemedComponent extends PolymerElement {
+import {PolymerElement, html} from '@polymer/polymer/polymer-element.js';
+import {ThemableMixin} from '@vaadin/vaadin-themable-mixin/vaadin-themable-mixin.js';
+
+class ThemedComponent extends ThemableMixin(PolymerElement) {
   static get template() {
     return html`
-        <style>
-            div {
-                color: var( --after-content-var, rgba(0 0, 0, 1))
-            }
-        </style>
-        <div>Just a div </div>
+        <div part="content">Just a div</div>
     `;
   }
 

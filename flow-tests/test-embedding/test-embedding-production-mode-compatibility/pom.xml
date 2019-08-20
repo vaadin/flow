@@ -45,6 +45,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.webjars.bowergithub.vaadin</groupId>
+            <artifactId>vaadin-themable-mixin</artifactId>
+            <version>1.4.4</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-server-production-mode</artifactId>
             <version>${project.version}</version>

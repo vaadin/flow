@@ -13,21 +13,20 @@
   ~ License for the specific language governing permissions and limitations under
   ~ the License.
   -->
+
 <link rel="import" href="/frontend/bower_components/polymer/polymer-element.html">
+<link rel="import"
+      href="/frontend/bower_components/vaadin-themable-mixin/vaadin-themable-mixin.html">
 
 <dom-module id="themed-component">
     <template>
-        <style>
-            div {
-                color: var( --after-content-var, rgba(0 0, 0, 1))
-            }
-        </style>
-        <div>Just a div</div>
+        <div part="content">Just a div</div>
     </template>
     <script>
-        class ThemedComponent extends Polymer.Element {
+        class ThemedComponent extends Vaadin.ThemableMixin(Polymer.Element) {
             static get is() { return 'themed-component' }
         }
         customElements.define(ThemedComponent.is, ThemedComponent);
     </script>
 </dom-module>
+

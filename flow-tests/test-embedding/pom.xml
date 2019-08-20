@@ -46,7 +46,6 @@
         <!-- compatibility -->
         <module>test-embedding-generic-compatibility</module>
         <module>test-embedding-theme-variant-compatibility</module>
-        <!-- this is commented out as it gets stuck locally (windows machine) -->
-        <!-- <module>test-embedding-production-mode-compatibility</module> -->
+        <module>test-embedding-production-mode-compatibility</module>
     </modules>
 </project>

@@ -23,7 +23,7 @@ import org.openqa.selenium.WebElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
-public abstract class AbstractWebComponentIT extends ChromeBrowserTest {
+public class WebComponentIT extends ChromeBrowserTest {
 
     @Override
     protected String getTestPath() {
@@ -75,8 +75,8 @@ public abstract class AbstractWebComponentIT extends ChromeBrowserTest {
                         + "contain elements",
                 themedComponent.$("div").exists());
         TestBenchElement contentElement = themedComponent.$("div").first();
-        assertThatThemedComponentWasChosen(contentElement);
-    }
 
-    protected abstract void assertThatThemedComponentWasChosen(TestBenchElement themedElement);
+        Assert.assertEquals("rgba(255, 0, 0, 1)",
+                contentElement.getCssValue("color"));
+    }
 }
