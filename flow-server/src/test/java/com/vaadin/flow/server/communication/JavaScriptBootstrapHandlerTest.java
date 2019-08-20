@@ -18,6 +18,7 @@ package com.vaadin.flow.server.communication;
 import java.util.regex.Pattern;
 
 import net.jcip.annotations.NotThreadSafe;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -25,6 +26,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
 import com.vaadin.flow.dom.NodeVisitor.ElementType;
 import com.vaadin.flow.dom.TestNodeVisitor;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
@@ -32,8 +34,7 @@ import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletResponse;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler.JavaScriptBootstrapUI;
-import com.vaadin.flow.shared.ApplicationConstants;
+
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -124,7 +125,9 @@ public class JavaScriptBootstrapHandlerTest {
         Assert.assertTrue(hasNodeTag(visitor, "^<body>.*", ElementType.REGULAR));
         Assert.assertTrue(hasNodeTag(visitor, "^<a-tag>.*", ElementType.VIRTUAL_ATTACHED));
         Assert.assertTrue(hasNodeTag(visitor, "^<div>.*", ElementType.REGULAR));
-        Assert.assertTrue(hasNodeTag(visitor, "^<div>.*Navigation not implemented yet.*", ElementType.REGULAR));
+        Assert.assertTrue(
+                hasNodeTag(visitor, "^<div>.*Could not navigate to 'a-route'.*",
+                        ElementType.REGULAR));
 
     }
 

@@ -23,18 +23,11 @@ import java.net.URISyntaxException;
 import java.util.Optional;
 import java.util.function.Function;
 
-import com.vaadin.flow.component.ClientCallable;
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.UsageStatistics;
-import com.vaadin.flow.internal.nodefeature.NodeProperties;
-import com.vaadin.flow.router.HasUrlParameter;
-import com.vaadin.flow.router.QueryParameters;
-import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.ServletHelper;
@@ -78,86 +71,6 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
         @Override
         protected Optional<ThemeDefinition> getTheme() {
             return Optional.empty();
-        }
-    }
-
-    /**
-     * Custom UI for {@link JavaScriptBootstrapHandler}.
-     */
-    public static class JavaScriptBootstrapUI extends UI {
-        public static final String NO_NAVIGATION =
-                "Classic flow navigation is not supported for clien-side projects";
-
-        private Element wrapperElement;
-
-        /**
-         * Connect a client with the server side UI.
-         *
-         * @param clientElementTag
-         *            client side element tag
-         * @param clientElementId
-         *            client side element id
-         * @param flowRoute
-         *            flow route that should be attached to the client element
-         */
-        @ClientCallable
-        public void connectClient(String clientElementTag, String clientElementId, String flowRoute) {
-
-            // Get the flow view that the user wants to navigate to.
-            final Element viewElement = getViewForRoute(flowRoute).getElement();
-
-            if (wrapperElement == null) {
-                // Create flow reference for the client outlet element
-                wrapperElement = new Element(clientElementTag);
-
-                // Connect server with client
-                getElement().getStateProvider().appendVirtualChild(
-                        getElement().getNode(), wrapperElement,
-                        NodeProperties.INJECT_BY_ID, clientElementId);
-            }
-
-            // Remove previous view
-            wrapperElement.removeAllChildren();
-            // attach this view
-            wrapperElement.appendChild(viewElement);
-
-            // Inform the client, that everything went fine.
-            wrapperElement.executeJs("$0.serverConnected()");
-        }
-
-        private Component getViewForRoute(String route) {
-            // Create a temporary view until navigation is implemented
-            HtmlContainer view = new HtmlContainer("div");
-            view.setText(String.format(
-                    "Navigation not implemented yet. cannot show '%s'", route));
-            return view;
-        }
-
-        @Override
-        public Router getRouter() {
-            return null;
-        }
-        @Override
-        public Optional<ThemeDefinition> getThemeFor(Class<?> navigationTarget,
-                String path) {
-            return Optional.empty();
-        }
-        @Override
-        public void navigate(String location) {
-            throw new UnsupportedOperationException(NO_NAVIGATION);
-        }
-        @Override
-        public void navigate(Class<? extends Component> navigationTarget) {
-            throw new UnsupportedOperationException(NO_NAVIGATION);
-        }
-        @Override
-        public <T, C extends Component & HasUrlParameter<T>> void navigate(
-                Class<? extends C> navigationTarget, T parameter) {
-            throw new UnsupportedOperationException(NO_NAVIGATION);
-        }
-        @Override
-        public void navigate(String location, QueryParameters queryParameters) {
-            throw new UnsupportedOperationException(NO_NAVIGATION);
         }
     }
 
@@ -221,6 +134,12 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
         config.put("requestURL", requestURL);
 
         return context;
+    }
+
+    @Override
+    protected void initializeUIWithRouter(VaadinRequest request, UI ui) {
+        // We don't need to initialize UI with Router in CCDM.
+        // Showing view is handled by client-side.
     }
 
     @Override

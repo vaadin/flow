@@ -1365,11 +1365,15 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         // After init and adding UI to session fire init listeners.
         session.getService().fireUIInitListeners(ui);
 
+        initializeUIWithRouter(request, ui);
+
+        return context;
+    }
+
+    protected void initializeUIWithRouter(VaadinRequest request, UI ui) {
         if (ui.getRouter() != null) {
             ui.getRouter().initializeUI(ui, request);
         }
-
-        return context;
     }
 
     /**
