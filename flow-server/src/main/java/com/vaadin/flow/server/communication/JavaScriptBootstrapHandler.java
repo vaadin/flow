@@ -20,33 +20,14 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
-import com.vaadin.flow.component.ClientCallable;
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.UsageStatistics;
-import com.vaadin.flow.internal.nodefeature.NodeProperties;
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.ErrorParameter;
-import com.vaadin.flow.router.HasErrorParameter;
-import com.vaadin.flow.router.HasUrlParameter;
-import com.vaadin.flow.router.Location;
-import com.vaadin.flow.router.NavigationState;
-import com.vaadin.flow.router.NavigationTrigger;
-import com.vaadin.flow.router.NotFoundException;
-import com.vaadin.flow.router.QueryParameters;
-import com.vaadin.flow.router.RouteNotFoundError;
-import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.ServletHelper;
@@ -90,154 +71,6 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
         @Override
         protected Optional<ThemeDefinition> getTheme() {
             return Optional.empty();
-        }
-    }
-
-    /**
-     * Custom UI for {@link JavaScriptBootstrapHandler}.
-     */
-    public static class JavaScriptBootstrapUI extends UI {
-        public static final String NO_NAVIGATION =
-                "Classic flow navigation is not supported for clien-side projects";
-
-        private Element wrapperElement;
-
-        /**
-         * Connect a client with the server side UI.
-         *
-         * @param clientElementTag
-         *            client side element tag
-         * @param clientElementId
-         *            client side element id
-         * @param flowRoute
-         *            flow route that should be attached to the client element
-         */
-        @ClientCallable
-        public void connectClient(String clientElementTag, String clientElementId, String flowRoute) {
-
-            // Get the flow view that the user wants to navigate to.
-            final Element viewElement = getViewForRoute(flowRoute).getElement();
-
-            if (wrapperElement == null) {
-                // Create flow reference for the client outlet element
-                wrapperElement = new Element(clientElementTag);
-
-                // Connect server with client
-                getElement().getStateProvider().appendVirtualChild(
-                        getElement().getNode(), wrapperElement,
-                        NodeProperties.INJECT_BY_ID, clientElementId);
-            }
-
-            // Remove previous view
-            wrapperElement.removeAllChildren();
-            // attach this view
-            wrapperElement.appendChild(viewElement);
-
-            // Inform the client, that everything went fine.
-            wrapperElement.executeJs("$0.serverConnected()");
-        }
-
-        private HasElement getViewForRoute(String route) {
-            if (route.startsWith("/")) {
-                route = route.replaceFirst("/+", "");
-            }
-            Location location = new Location(route);
-            Optional<NavigationState> navigationState = this.getRouter()
-                    .resolveNavigationTarget(location);
-            if (navigationState.isPresent()) {
-                NavigationState currentState = navigationState.get();
-                Class<? extends Component> routeTargetType = currentState
-                        .getNavigationTarget();
-                List<RouterLayout> layouts = getRouterLayouts(currentState,
-                        routeTargetType);
-                return getInternals().constructComponentWithLayouts(
-                        getInstanceOf(routeTargetType), layouts);
-            }
-
-            return getFlowErrorComponent(location);
-        }
-
-        private List<RouterLayout> getRouterLayouts(
-                NavigationState navigationState,
-                Class<? extends Component> routeTargetType) {
-            List<Class<? extends RouterLayout>> routeLayouts = this.getRouter()
-                    .getRegistry()
-                    .getRouteLayouts(navigationState.getResolvedPath(),
-                            routeTargetType);
-            List<RouterLayout> layouts = new ArrayList<>();
-            for (Class<? extends RouterLayout> routeLayout : routeLayouts) {
-                layouts.add(getInstanceOf(routeLayout));
-            }
-            return layouts;
-        }
-
-        private HasElement getFlowErrorComponent(Location location) {
-            HasElement errorComponent = createErrorComponentInstance();
-            if (errorComponent instanceof HasErrorParameter) {
-                // Create a dummy event to set error message
-                BeforeEnterEvent beforeEnterEvent = new BeforeEnterEvent(
-                        this.getRouter(), NavigationTrigger.PROGRAMMATIC,
-                        location, errorComponent.getClass(), this,
-                        Collections.emptyList());
-                String message = String.format("Route not found: '%s'",
-                        location.getPath());
-                ((HasErrorParameter) errorComponent).setErrorParameter(
-                        beforeEnterEvent,
-                        new ErrorParameter<>(Exception.class,
-                                new NotFoundException(message)));
-            }
-            return errorComponent;
-        }
-
-        private HasElement createErrorComponentInstance() {
-            Optional<NavigationState> errorNavigationState = this.getRouter()
-                    .resolveRouteNotFoundNavigationTarget();
-            if (!errorNavigationState.isPresent()) {
-                // Default built-in RouteNotFoundError component
-                return new RouteNotFoundError();
-            } else {
-                Class<? extends Component> errorNavigationTarget = errorNavigationState
-                        .get().getNavigationTarget();
-                return getInstanceOf(errorNavigationTarget);
-            }
-        }
-
-        private <T extends HasElement> T getInstanceOf(
-                Class<T> routeTargetType) {
-            Optional<HasElement> currentInstance = this.getInternals()
-                    .getActiveRouterTargetsChain().stream()
-                    .filter(component -> component.getClass()
-                            .equals(routeTargetType))
-                    .findAny();
-            return (T) currentInstance.orElseGet(
-                    () -> Instantiator.get(this).getOrCreate(routeTargetType));
-        }
-
-        @Override
-        public Optional<ThemeDefinition> getThemeFor(Class<?> navigationTarget,
-                String path) {
-            return Optional.empty();
-        }
-
-        @Override
-        public void navigate(String location) {
-            throw new UnsupportedOperationException(NO_NAVIGATION);
-        }
-
-        @Override
-        public void navigate(Class<? extends Component> navigationTarget) {
-            throw new UnsupportedOperationException(NO_NAVIGATION);
-        }
-
-        @Override
-        public <T, C extends Component & HasUrlParameter<T>> void navigate(
-                Class<? extends C> navigationTarget, T parameter) {
-            throw new UnsupportedOperationException(NO_NAVIGATION);
-        }
-
-        @Override
-        public void navigate(String location, QueryParameters queryParameters) {
-            throw new UnsupportedOperationException(NO_NAVIGATION);
         }
     }
 
