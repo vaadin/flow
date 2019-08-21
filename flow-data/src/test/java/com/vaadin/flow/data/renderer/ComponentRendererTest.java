@@ -24,8 +24,9 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.internal.UIInternals;
+import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.data.binder.testcomponents.TestLabel;
 import com.vaadin.flow.data.provider.ComponentDataGenerator;
 import com.vaadin.flow.data.provider.KeyMapper;
@@ -38,16 +39,17 @@ public class ComponentRendererTest {
 
     private static class TestUIInternals extends UIInternals {
 
-        private List<PendingJavaScriptInvocation> invocations = new ArrayList<>();
+        private List<JavaScriptInvocation> invocations = new ArrayList<>();
 
         public TestUIInternals(UI ui) {
             super(ui);
         }
 
         @Override
-        public void addJavaScriptInvocation(
-                PendingJavaScriptInvocation invocation) {
+        public Page.ExecutionCanceler addJavaScriptInvocation(
+                JavaScriptInvocation invocation) {
             invocations.add(invocation);
+            return () -> invocations.remove(invocation);
         }
 
     }
@@ -187,11 +189,11 @@ public class ComponentRendererTest {
     public void updateFunction_invokedOnUpdate() {
         AtomicInteger createInvocations = new AtomicInteger();
         AtomicInteger updateInvocations = new AtomicInteger();
-        ComponentRenderer<Div, String> renderer = new ComponentRenderer<>(
+        ComponentRenderer<TestLabel, String> renderer = new ComponentRenderer<>(
                 item -> {
                     createInvocations.incrementAndGet();
                     Assert.assertEquals("New item", item);
-                    return new Div();
+                    return new TestLabel();
                 }, (component, item) -> {
             updateInvocations.incrementAndGet();
             Assert.assertEquals("Updated item", item);
