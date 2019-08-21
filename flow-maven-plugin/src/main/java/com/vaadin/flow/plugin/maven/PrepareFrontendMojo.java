@@ -39,7 +39,6 @@ import com.vaadin.flow.server.frontend.NodeTasks;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
-
 import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFinder;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
@@ -118,6 +117,12 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
     @Component
     private BuildContext buildContext; // m2eclipse integration
 
+    /**
+     * A directory with project's frontend source files.
+     */
+    @Parameter(defaultValue = "${project.basedir}/frontend")
+    private File frontendDirectory;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         super.execute();
@@ -132,13 +137,18 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
             return;
         }
 
-        FrontendUtils.getNodeExecutable(npmFolder.getAbsolutePath());
-        FrontendUtils.getNpmExecutable(npmFolder.getAbsolutePath());
-        FrontendUtils.validateNodeAndNpmVersion(npmFolder.getAbsolutePath());
+        try {
+            FrontendUtils.getNodeExecutable(npmFolder.getAbsolutePath());
+            FrontendUtils.getNpmExecutable(npmFolder.getAbsolutePath());
+            FrontendUtils
+                    .validateNodeAndNpmVersion(npmFolder.getAbsolutePath());
+        } catch (IllegalStateException exception) {
+            throw new MojoExecutionException(exception.getMessage(), exception);
+        }
 
         try {
             new NodeTasks.Builder(getClassFinder(project), npmFolder,
-                    generatedFolder)
+                    generatedFolder, frontendDirectory)
                             .withWebpack(webpackOutputDirectory,
                                     webpackTemplate, webpackGeneratedTemplate)
                             .createMissingPackageJson(true)
@@ -161,6 +171,7 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         buildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, productionMode);
         buildInfo.put("npmFolder", npmFolder.getAbsolutePath());
         buildInfo.put("generatedFolder", generatedFolder.getAbsolutePath());
+        buildInfo.put("frontendFolder", frontendDirectory.getAbsolutePath());
         try {
             FileUtils.forceMkdir(token.getParentFile());
             FileUtils.write(token, JsonUtil.stringify(buildInfo, 2) + "\n",
@@ -179,10 +190,13 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         Log log = getLog();
         if (log.isDebugEnabled()) {
             log.debug(String.format(
-                    "%n>>> Running prepare-package in %s project%nSystem.properties:%n"
-                            + " productionMode: %s%n bowerMode: %s%n compatibilityMode: %s%n webpackPort: %s%n project.basedir: %s%n"
-                            + "Goal parameters:%n productionMode: %s%n compatibilityMode: %s%n compatibility: %b%n npmFolder: %s%n"
-                            + "Token file: %s%n" + "Token content: %s%n",
+                    "%n>>> Running prepare-frontend in %s project%nSystem"
+                            + ".properties:%n productionMode: %s%n bowerMode:" +
+                            " %s%n compatibilityMode: %s%n webpackPort: %s%n " +
+                            "project.basedir: %s%nGoal parameters:%n " +
+                            "productionMode: %s%n compatibilityMode: %s%n " +
+                            "compatibility: %b%n npmFolder: %s%nToken file: " +
+                            "%s%n" + "Token content: %s%n",
                     project.getName(),
                     System.getProperty("vaadin.productionMode"),
                     System.getProperty("vaadin.bowerMode"),

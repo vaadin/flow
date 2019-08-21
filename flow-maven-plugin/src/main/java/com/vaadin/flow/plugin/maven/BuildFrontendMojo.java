@@ -147,7 +147,12 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
         }
 
         if (generateBundle) {
-            runWebpack();
+            try {
+                runWebpack();
+            } catch (IllegalStateException exception) {
+                throw new MojoExecutionException(exception.getMessage(),
+                        exception);
+            }
         }
 
         long ms = (System.nanoTime() - start) / 1000000;
@@ -253,7 +258,8 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
         File tokenFile = getTokenFile();
         if (!tokenFile.exists()) {
             getLog().warn(
-                    "'build-frontend' goal was called without previously calling 'prepare-package'");
+                    "'build-frontend' goal was called without previously " +
+                            "calling 'prepare-frontend'");
             return true;
         }
         try {

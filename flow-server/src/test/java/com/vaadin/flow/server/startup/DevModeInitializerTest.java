@@ -2,13 +2,16 @@ package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRegistration;
-
 import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EventListener;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -30,6 +33,7 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.DevModeInitializer.VisitedClasses;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_REUSE_DEV_SERVER;
@@ -37,6 +41,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DI
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubNode;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubWebpackServer;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -137,6 +142,32 @@ public class DevModeInitializerTest {
         appPackageFile.delete();
 
         DevModeHandlerTest.removeDevModeHandlerInstance();
+    }
+
+    @Test
+    public void loadingJars_allFilesExist() throws IOException {
+        // Create jar urls for test
+        URL jar = new URL("jar:" + this.getClass().getResource("/").toString()
+                .replace("target/test-classes/", "")
+                + "src/test/resources/with%20space/jar-with-frontend-resources.jar!/META-INF/resources/frontend");
+        List<URL> urls = new ArrayList<>();
+        urls.add(jar);
+
+        // Create mock loader with the single jar to be found
+        ClassLoader classLoader = Mockito.mock(ClassLoader.class);
+        Mockito.when(classLoader.getResources(RESOURCES_FRONTEND_DEFAULT))
+                .thenReturn(Collections.enumeration(urls));
+
+        // load jars from classloader
+        List<File> jarFilesFromClassloader = new ArrayList<>(
+                devModeInitializer.getJarFilesFromClassloader(classLoader));
+
+        // Assert that jar was found and accepted
+        assertEquals("One jar should have been found and added as a File", 1,
+                jarFilesFromClassloader.size());
+        // Assert that the file can be found from the filesystem by the given path.
+        assertTrue("File in path 'with space' doesn't load from given path",
+                jarFilesFromClassloader.get(0).exists());
     }
 
     @Test

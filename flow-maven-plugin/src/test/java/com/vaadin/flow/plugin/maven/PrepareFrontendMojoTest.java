@@ -84,6 +84,8 @@ public class PrepareFrontendMojoTest {
                 projectBase);
         ReflectionUtils.setVariableValueInObject(mojo, "webpackOutputDirectory",
                 webpackOutputDirectory);
+        ReflectionUtils.setVariableValueInObject(mojo, "frontendDirectory",
+                new File(projectBase, "frontend"));
 
         Assert.assertTrue(flowPackagePath.mkdirs());
         setProject(mojo, projectBase);

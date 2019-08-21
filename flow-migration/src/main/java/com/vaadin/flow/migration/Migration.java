@@ -114,7 +114,7 @@ public class Migration {
             targetDirectory = new File(configuration.getBaseDirectory(),
                     "frontend");
         } else {
-            targetDirectory = configuration.getBaseDirectory();
+            targetDirectory = configuration.getTargetDirectory();
         }
 
         if (configuration.getClassFinder() == null) {
@@ -236,7 +236,7 @@ public class Migration {
         }
 
         try {
-            cleanUp(getTempMigrationFolder());
+            FileUtils.forceDelete(getTempMigrationFolder());
         } catch (IOException exception) {
             getLogger().debug(
                     "Couldn't remove " + getTempMigrationFolder().getPath(),
@@ -265,33 +265,24 @@ public class Migration {
      * Prepare migration by cleaning everything, except if only node_modules
      * exists in the target directory.
      */
-    private void prepareMigrationDirectory() {
+    protected void prepareMigrationDirectory() {
         if (getTempMigrationFolder().exists()) {
-            String[] list = getTempMigrationFolder().list();
-            if (list.length == 1 && list[0].equals("node_modules")) {
-                return;
-            } else if (list.length == 2 &&
-                    Stream.of(list).filter(file -> file.startsWith("node"))
-                            .count() == 2) {
-                return;
-            }
             try {
-                cleanUp(getTempMigrationFolder());
+                FileUtils.forceDelete(getTempMigrationFolder());
             } catch (IOException exception) {
                 String message = String
-                        .format("Unable to clean up directory '%s'",
+                        .format("Unable to delete directory '%s'",
                                 getTempMigrationFolder());
                 throw new UncheckedIOException(message, exception);
             }
-        } else {
-            try {
-                FileUtils.forceMkdir(getTempMigrationFolder());
-            } catch (IOException exception) {
-                String message = String
-                        .format("Failed in creating migration folder '%s'",
-                                getTempMigrationFolder());
-                throw new UncheckedIOException(message, exception);
-            }
+        }
+        try {
+            FileUtils.forceMkdir(getTempMigrationFolder());
+        } catch (IOException exception) {
+            String message = String
+                    .format("Failed in creating migration folder '%s'",
+                            getTempMigrationFolder());
+            throw new UncheckedIOException(message, exception);
         }
     }
 
@@ -444,10 +435,6 @@ public class Migration {
 
     private Logger getLogger() {
         return LoggerFactory.getLogger(Migration.class);
-    }
-
-    private void cleanUp(File dir) throws IOException {
-        FileUtils.forceDelete(dir);
     }
 
     private File[] getResources() {

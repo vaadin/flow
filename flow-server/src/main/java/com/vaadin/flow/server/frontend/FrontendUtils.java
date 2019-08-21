@@ -373,6 +373,30 @@ public class FrontendUtils {
         return content != null ? streamToString(content) : null;
     }
 
+    /**
+     * Get the latest has for the stats file in development mode. This is
+     * requested from the webpack-dev-server.
+     * <p>
+     * In production mode and disabled dev server mode an empty string is
+     * returned.
+     *
+     * @param service
+     *         the Vaadin service.
+     * @return hash string for the stats.json file, empty string if none found
+     * @throws IOException
+     *         if an I/O error occurs while creating the input stream.
+     */
+    public static String getStatsHash(VaadinService service) throws IOException {
+        DeploymentConfiguration config = service.getDeploymentConfiguration();
+        if (!config.isProductionMode() && config.enableDevServer()) {
+            DevModeHandler handler = DevModeHandler.getDevModeHandler();
+            return streamToString(
+                    handler.prepareConnection("/stats.hash", "GET").getInputStream()).replaceAll("\"", "");
+        }
+
+        return "";
+    }
+
     private static InputStream getStatsFromWebpack() throws IOException {
         DevModeHandler handler = DevModeHandler.getDevModeHandler();
         return handler.prepareConnection("/stats.json", "GET").getInputStream();

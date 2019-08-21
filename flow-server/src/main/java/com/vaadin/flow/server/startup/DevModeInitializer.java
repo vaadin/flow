@@ -23,12 +23,13 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
 import javax.servlet.annotation.WebListener;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.net.URL;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -60,6 +61,10 @@ import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
 
 /**
@@ -192,11 +197,14 @@ public class DevModeInitializer implements ServletContainerInitializer,
 
         String baseDir = config.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
                 System.getProperty("user.dir", "."));
-
-        Set<File> jarFiles = getJarFilesFromClassloader();
+        String generatedDir = System
+                .getProperty(PARAM_GENERATED_DIR, DEFAULT_GENERATED_DIR);
+        String frontendFolder = config.getStringProperty(PARAM_FRONTEND_DIR,
+                System.getProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR));
 
         Builder builder = new NodeTasks.Builder(new DefaultClassFinder(classes),
-                new File(baseDir));
+                new File(baseDir), new File(generatedDir),
+                new File(frontendFolder));
 
         log().info("Starting dev-mode updaters in {} folder.",
                 builder.npmFolder);
@@ -230,6 +238,7 @@ public class DevModeInitializer implements ServletContainerInitializer,
         }
 
         Set<String> visitedClassNames = new HashSet<>();
+        Set<File> jarFiles = getJarFilesFromClassloader(DevModeInitializer.class.getClassLoader());
         try {
             builder.enablePackagesUpdate(true).copyResources(jarFiles)
                     .copyLocalResources(new File(baseDir,
@@ -247,7 +256,13 @@ public class DevModeInitializer implements ServletContainerInitializer,
         VaadinContext vaadinContext = new VaadinServletContext(context);
         vaadinContext.setAttribute(new VisitedClasses(visitedClassNames));
 
-        DevModeHandler.start(config, builder.npmFolder);
+        try {
+            DevModeHandler.start(config, builder.npmFolder);
+        } catch (IllegalStateException exception) {
+            // wrap an ISE which can be caused by inability to find tools like
+            // node, npm into a servlet exception
+            throw new ServletException(exception);
+        }
     }
 
     private static Logger log() {
@@ -271,14 +286,16 @@ public class DevModeInitializer implements ServletContainerInitializer,
      * This method returns all jar files having a specific folder. We don't use
      * URLClassLoader because will fail in Java 9+
      */
-    private static Set<File> getJarFilesFromClassloader() {
+    protected static Set<File> getJarFilesFromClassloader(
+            ClassLoader classLoader) {
         Set<File> jarFiles = new HashSet<>();
         try {
-            Enumeration<URL> en = DevModeInitializer.class.getClassLoader()
+            Enumeration<URL> en = classLoader
                     .getResources(RESOURCES_FRONTEND_DEFAULT);
             while (en.hasMoreElements()) {
                 URL url = en.nextElement();
-                Matcher matcher = JAR_FILE_REGEX.matcher(url.getPath());
+                Matcher matcher = JAR_FILE_REGEX.matcher(URLDecoder
+                        .decode(url.getPath(), StandardCharsets.UTF_8.name()));
                 if (matcher.find()) {
                     jarFiles.add(new File(matcher.group(1)));
                 }

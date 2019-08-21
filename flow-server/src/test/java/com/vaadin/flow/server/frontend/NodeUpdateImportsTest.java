@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
+import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -40,6 +41,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
+import org.slf4j.Logger;
 import org.slf4j.impl.SimpleLogger;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
@@ -66,6 +70,10 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
     private File loggerFile;
     private TaskUpdateImports updater;
 
+    private boolean useMockLog;
+
+    private Logger logger = Mockito.mock(Logger.class);
+
     @Before
     public void setup() throws Exception {
         File tmpRoot = temporaryFolder.getRoot();
@@ -86,7 +94,16 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         importsFile = new File(generatedPath, IMPORTS_NAME);
 
         updater = new TaskUpdateImports(getClassFinder(), null, tmpRoot,
-                generatedPath, frontendDirectory);
+                generatedPath, frontendDirectory) {
+            @Override
+            Logger log() {
+                if (useMockLog) {
+                    return logger;
+                } else {
+                    return super.log();
+                }
+            }
+        };
 
         Assert.assertTrue(nodeModulesPath.mkdirs());
         createExpectedImports(frontendDirectory, nodeModulesPath);
@@ -113,6 +130,35 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         deleteExpectedImports(frontendDirectory, nodeModulesPath);
         exception.expect(IllegalStateException.class);
         updater.execute();
+    }
+
+    @Test
+    public void getModuleLines_npmPackagesDontExist_logExplanation() {
+        useMockLog = true;
+        Mockito.when(logger.isInfoEnabled()).thenReturn(true);
+        boolean atLeastOneRemoved = false;
+        for (String imprt : getExpectedImports()) {
+            if (imprt.startsWith("@vaadin") && imprt.endsWith(".js")) {
+                Assert.assertTrue(resolveImportFile(nodeModulesPath,
+                        nodeModulesPath, imprt).delete());
+                atLeastOneRemoved = true;
+            }
+        }
+        Assert.assertTrue(atLeastOneRemoved);
+        updater.execute();
+
+        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+        Mockito.verify(logger).info(captor.capture());
+
+        Assert.assertThat(captor.getValue(), CoreMatchers.allOf(
+                CoreMatchers.containsString(
+                        "@vaadin/vaadin-lumo-styles/spacing.js"),
+                CoreMatchers.containsString(
+                        "If the build fails, check that npm packages are installed."),
+                CoreMatchers.containsString(
+                        "To fix the build remove `node_modules` directory to reset modules."),
+                CoreMatchers.containsString(
+                        "In addition you may run `npm install` to fix `node_modules` tree structure.")));
     }
 
     @Test
@@ -276,7 +322,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     private void assertContains(String content, boolean contains,
-            String... checks) {
+                                String... checks) {
         for (String importString : checks) {
             boolean result = content.contains(importString);
             String message = "\n  " + (contains ? "NOT " : "") + "FOUND '"
