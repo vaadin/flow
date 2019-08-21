@@ -30,6 +30,7 @@ import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.shared.util.SharedUtil;
 
+import elemental.json.JsonArray;
 import elemental.json.JsonValue;
 
 /**
@@ -217,9 +218,9 @@ public class WebComponentGenerator {
         StringBuilder sync = new StringBuilder();
         for (PropertyData<?> property : properties) {
             sync.append(codeAttributeChange
-                    .replace(TOKEN_ATTRIBUTE_NAME, property.getAttributeName())
+                    .replace(TOKEN_ATTRIBUTE_NAME, getAttributeName(property))
                     .replace(TOKEN_PROPERTY_NAME, property.getName())
-                    .replace(TOKEN_JS_TYPE, property.getJSType()));
+                    .replace(TOKEN_JS_TYPE, getJSTypeName(property)));
         }
         return sync.toString();
     }
@@ -268,7 +269,39 @@ public class WebComponentGenerator {
         return codePropertyMethods
                 .replace(TOKEN_PROPERTY_NAME, property.getName())
                 .replace(TOKEN_CHANGE_EVENT_NAME,
-                        property.getAttributeName() + "-changed");
+                        getAttributeName(property) + "-changed");
+    }
+
+    /**
+     * Gets {@link com.vaadin.flow.server.webcomponent.PropertyData} name used
+     * when setting its value through an attribute.
+     *
+     * @return the attribute name used for setting the value
+     */
+    private static String getAttributeName(PropertyData<?> propertyData) {
+        return SharedUtil.camelCaseToDashSeparated(propertyData.getName());
+    }
+
+    /**
+     * Gets JavaScript type name for {@link com.vaadin.flow.server.webcomponent.PropertyData}
+     * for usage in generated JavaScript code.
+     *
+     * @return the type for JS
+     */
+    private static String getJSTypeName(PropertyData<?> propertyData) {
+        if (propertyData.getType() == Boolean.class) {
+            return "Boolean";
+        } else if (propertyData.getType() == Double.class || propertyData.getType() == Integer.class) {
+            return "Number";
+        } else if (propertyData.getType() == String.class) {
+            return "String";
+        } else if (JsonArray.class.isAssignableFrom(propertyData.getType())) {
+            return "Array";
+        } else if (JsonValue.class.isAssignableFrom(propertyData.getType())) {
+            return "Object";
+        } else {
+            throw new IllegalStateException("Unsupported type: " + propertyData.getType());
+        }
     }
 
 }
