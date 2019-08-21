@@ -27,6 +27,7 @@ import com.vaadin.flow.server.WrappedSession;
 import com.vaadin.flow.shared.communication.PushMode;
 
 import static com.vaadin.flow.server.Constants.POLYFILLS_DEFAULT_VALUE;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_APPLICATION_PROPERTIES;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_CLIENT_SIDE_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_POLYFILLS;
 
@@ -78,6 +79,17 @@ public interface DeploymentConfiguration extends Serializable {
         return getBooleanProperty(SERVLET_PARAMETER_CLIENT_SIDE_MODE,
                 false);
     }
+
+    /**
+     * Returns whether Vaadin is running in clientSideMode.
+     *
+     * @return true if in clientSideMode, false otherwise.
+     */
+    default String getApplicationPropertiesPath() {
+        return getStringProperty(SERVLET_PARAMETER_APPLICATION_PROPERTIES,
+                "src/main/resources/application.properties");
+    }
+
 
     /**
      * Returns whether the server provides timing info to the client.

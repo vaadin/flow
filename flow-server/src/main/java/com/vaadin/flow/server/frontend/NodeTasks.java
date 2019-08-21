@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 
+import com.vaadin.flow.ccdm.TaskGenerateTokenSigningKey;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.FallibleCommand;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -89,6 +90,11 @@ public class NodeTasks implements FallibleCommand {
          * Is in client-side bootstrapping mode.
          */
         private boolean clientSideMode;
+
+        /**
+         * Application properties file
+         */
+        private File applicationPropertiesFile;
 
         /**
          * Create a builder instance given an specific npm folder.
@@ -310,6 +316,18 @@ public class NodeTasks implements FallibleCommand {
             this.clientSideMode = clientSideMode;
             return this;
         }
+
+        /**
+         * Generate Token Signing Key for vaadin-connect project.
+         * 
+         * @param applicationPropertiesFile
+         *            the application properties file.
+         * @return the builder, for chaining
+         */
+        public Builder generateTokenSigningKey(File applicationPropertiesFile) {
+            this.applicationPropertiesFile = applicationPropertiesFile;
+            return this;
+        }
     }
 
     private final Collection<FallibleCommand> commands = new ArrayList<>();
@@ -377,6 +395,20 @@ public class NodeTasks implements FallibleCommand {
                 builder.visitedClasses
                         .addAll(frontendDependencies.getClasses());
             }
+        }
+        if (builder.applicationPropertiesFile != null
+                && shouldGenerateTokenSigningKey()) {
+            commands.add(new TaskGenerateTokenSigningKey(
+                    builder.applicationPropertiesFile));
+        }
+    }
+
+    private static boolean shouldGenerateTokenSigningKey() {
+        try {
+            return Class
+                    .forName("com.vaadin.connect.VaadinConnectController") != null;
+        } catch (ClassNotFoundException e) {
+            return false;
         }
     }
 

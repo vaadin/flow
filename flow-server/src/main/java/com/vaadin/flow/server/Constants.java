@@ -52,6 +52,10 @@ public final class Constants implements Serializable {
      * Enable it if your project is using client-side bootstrapping (CCDM).
      */
     public static final String SERVLET_PARAMETER_CLIENT_SIDE_MODE = "clientSideMode";
+    /**
+     * Path to the application.properties (CCDM)
+     */
+    public static final String SERVLET_PARAMETER_APPLICATION_PROPERTIES = "applicationProperties";
     public static final String SERVLET_PARAMETER_ENABLE_DEV_SERVER = "enableDevServer";
     public static final String SERVLET_PARAMETER_REUSE_DEV_SERVER = "reuseDevServer";
 
@@ -70,7 +74,7 @@ public final class Constants implements Serializable {
     public static final String SERVLET_PARAMETER_JSBUNDLE = "module.bundle";
     public static final String SERVLET_PARAMETER_POLYFILLS = "module.polyfills";
     public static final String POLYFILLS_DEFAULT_VALUE = "build/webcomponentsjs/webcomponents-loader.js";
-
+    public static final String DEFAULT_APPLICATION_PROPERTIES_PATH = "./src/main/resources/application.properties";
     /**
      * Configuration name for the parameter that determines whether Brotli
      * compression should be used for static resources in cases when a

@@ -45,7 +45,6 @@ import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_CLIENT_SIDE_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
@@ -117,6 +116,12 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
     @Parameter(defaultValue = "${project.build.directory}/" + FRONTEND)
     private File generatedFolder;
 
+    /**
+     * The application properties file in Spring boot application.
+     */
+    @Parameter(defaultValue = "${project.basedir}/src/main/resources/application.properties")
+    private File applicationProperties;
+
     @Component
     private BuildContext buildContext; // m2eclipse integration
 
@@ -158,6 +163,7 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
                             .createMissingPackageJson(true)
                             .enableImportsUpdate(false)
                             .enablePackagesUpdate(false).runNpmInstall(false)
+                            .generateTokenSigningKey(applicationProperties)
                             .build().execute();
         } catch (ExecutionFailedException exception) {
             throw new MojoFailureException(
@@ -177,6 +183,8 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         buildInfo.put("npmFolder", npmFolder.getAbsolutePath());
         buildInfo.put("generatedFolder", generatedFolder.getAbsolutePath());
         buildInfo.put("frontendFolder", frontendDirectory.getAbsolutePath());
+        buildInfo.put("applicationProperties",
+                applicationProperties.getAbsolutePath());
         try {
             FileUtils.forceMkdir(token.getParentFile());
             FileUtils.write(token, JsonUtil.stringify(buildInfo, 2) + "\n",

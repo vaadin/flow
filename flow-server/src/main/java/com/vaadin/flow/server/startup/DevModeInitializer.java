@@ -23,6 +23,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
 import javax.servlet.annotation.WebListener;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -59,8 +60,10 @@ import com.vaadin.flow.server.frontend.NodeTasks.Builder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
 
+import static com.vaadin.flow.server.Constants.DEFAULT_APPLICATION_PROPERTIES_PATH;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_APPLICATION_PROPERTIES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
@@ -205,6 +208,10 @@ public class DevModeInitializer implements ServletContainerInitializer,
                 .getProperty(PARAM_GENERATED_DIR, DEFAULT_GENERATED_DIR);
         String frontendFolder = config.getStringProperty(PARAM_FRONTEND_DIR,
                 System.getProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR));
+        String applicationPropertiesPath = config.getStringProperty(
+                SERVLET_PARAMETER_APPLICATION_PROPERTIES,
+                System.getProperty(SERVLET_PARAMETER_APPLICATION_PROPERTIES,
+                        DEFAULT_APPLICATION_PROPERTIES_PATH));
 
         Builder builder = new NodeTasks.Builder(new DefaultClassFinder(classes),
                 new File(baseDir), new File(generatedDir),
@@ -253,6 +260,7 @@ public class DevModeInitializer implements ServletContainerInitializer,
                             Constants.LOCAL_FRONTEND_RESOURCES_PATH))
                     .enableImportsUpdate(true).runNpmInstall(true)
                     .withEmbeddableWebComponents(true)
+                    .generateTokenSigningKey(new File(applicationPropertiesPath))
                     .collectVisitedClasses(visitedClassNames).build().execute();
         } catch (ExecutionFailedException exception) {
             log().debug(

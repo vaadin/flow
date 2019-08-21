@@ -100,6 +100,7 @@ public class DefaultDeploymentConfiguration
     private boolean productionMode;
     private boolean compatibilityMode;
     private boolean clientSideMode;
+    private String applicationPropertiesPath;
     private boolean xsrfProtectionEnabled;
     private int heartbeatInterval;
     private int webComponentDisconnect;
@@ -131,6 +132,7 @@ public class DefaultDeploymentConfiguration
         checkProductionMode(log);
         checkCompatibilityMode(log);
         checkClientSideMode(log);
+        checkApplicationPropertiesPath();
         checkRequestTiming();
         checkXsrfProtection(log);
         checkHeartbeatInterval();
@@ -169,6 +171,11 @@ public class DefaultDeploymentConfiguration
     @Override
     public boolean isClientSideMode() {
         return clientSideMode;
+    }
+
+    @Override
+    public String getApplicationPropertiesPath() {
+        return applicationPropertiesPath;
     }
 
     /**
@@ -300,6 +307,12 @@ public class DefaultDeploymentConfiguration
         if (clientSideMode && loggWarning) {
             getLogger().info(CLIENT_SIDE_BOOTSTRAP_MODE);
         }
+    }
+
+    private void checkApplicationPropertiesPath() {
+        applicationPropertiesPath = getStringProperty(
+                Constants.SERVLET_PARAMETER_APPLICATION_PROPERTIES,
+                Constants.DEFAULT_APPLICATION_PROPERTIES_PATH);
     }
 
     /**
