@@ -176,11 +176,6 @@ public class VaadinServletService extends VaadinService {
     }
 
     @Override
-    protected RouteRegistry getRouteRegistry() {
-        return ApplicationRouteRegistry.getInstance(getServlet().getServletContext());
-    }
-
-    @Override
     protected PwaRegistry getPwaRegistry() {
         return Optional.ofNullable(getServlet())
                 .map(GenericServlet::getServletContext)

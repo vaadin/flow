@@ -29,6 +29,7 @@ import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.server.AmbiguousRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
+import com.vaadin.flow.server.VaadinServletContext;
 
 /**
  * Servlet initializer for collecting all available {@link Route}s on startup.
@@ -40,10 +41,11 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
     @Override
     public void onStartup(Set<Class<?>> classSet, ServletContext servletContext)
             throws ServletException {
+        VaadinServletContext context = new VaadinServletContext(servletContext);
         try {
             if (classSet == null) {
                 ApplicationRouteRegistry routeRegistry = ApplicationRouteRegistry
-                        .getInstance(servletContext);
+                        .getInstance(context);
                 routeRegistry.clean();
                 return;
             }
@@ -52,7 +54,7 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
                     classSet.stream());
 
             ApplicationRouteRegistry routeRegistry = ApplicationRouteRegistry
-                    .getInstance(servletContext);
+                    .getInstance(context);
 
             RouteConfiguration routeConfiguration = RouteConfiguration
                     .forRegistry(routeRegistry);

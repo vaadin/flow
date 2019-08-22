@@ -15,12 +15,12 @@
  */
 package com.vaadin.flow.server.startup;
 
+import javax.servlet.ServletContext;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import javax.servlet.ServletContext;
-
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,9 +31,8 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.server.RouteRegistry;
+import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.osgi.OSGiAccess;
-
-import net.jcip.annotations.NotThreadSafe;
 
 /**
  * Tests for {@link ApplicationRouteRegistry} instance which is initialized via
@@ -58,11 +57,12 @@ public class OSGiInitApplicationRouteRegistryTest
         OSGiAccess.getInstance().getOsgiServletContext()
                 .setAttribute(RouteRegistry.class.getName(), null);
 
-        registry = ApplicationRouteRegistry
-                .getInstance(Mockito.mock(ServletContext.class));
+        registry = ApplicationRouteRegistry.getInstance(
+                new VaadinServletContext(Mockito.mock(ServletContext.class)));
 
-        osgiCollectorRegistry = ApplicationRouteRegistry
-                .getInstance(OSGiAccess.getInstance().getOsgiServletContext());
+        osgiCollectorRegistry = ApplicationRouteRegistry.getInstance(
+                new VaadinServletContext(
+                        OSGiAccess.getInstance().getOsgiServletContext()));
     }
 
     @Test
@@ -283,7 +283,8 @@ public class OSGiInitApplicationRouteRegistryTest
                 Collections.singletonList(MainLayout.class));
 
         ApplicationRouteRegistry anotherRegistry = ApplicationRouteRegistry
-                .getInstance(Mockito.mock(ServletContext.class));
+                .getInstance(new VaadinServletContext(
+                        Mockito.mock(ServletContext.class)));
 
         List<RouteData> routes = anotherRegistry.getRegisteredRoutes();
         Assert.assertEquals(2, routes.size());

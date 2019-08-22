@@ -16,42 +16,6 @@
 
 package com.vaadin.flow.server;
 
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.internal.DependencyTreeCache;
-import com.vaadin.flow.component.internal.HtmlImportParser;
-import com.vaadin.flow.di.DefaultInstantiator;
-import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.i18n.I18NProvider;
-import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.internal.LocaleUtil;
-import com.vaadin.flow.internal.ReflectionCache;
-import com.vaadin.flow.internal.UsageStatistics;
-import com.vaadin.flow.router.Router;
-import com.vaadin.flow.server.ServletHelper.RequestType;
-import com.vaadin.flow.server.communication.AtmospherePushConnection;
-import com.vaadin.flow.server.communication.HeartbeatHandler;
-import com.vaadin.flow.server.communication.PwaHandler;
-import com.vaadin.flow.server.communication.SessionRequestHandler;
-import com.vaadin.flow.server.communication.StreamRequestHandler;
-import com.vaadin.flow.server.communication.UidlRequestHandler;
-import com.vaadin.flow.server.communication.WebComponentBootstrapHandler;
-import com.vaadin.flow.server.communication.WebComponentProvider;
-import com.vaadin.flow.server.startup.BundleFilterFactory;
-import com.vaadin.flow.server.startup.FakeBrowser;
-import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
-import com.vaadin.flow.shared.ApplicationConstants;
-import com.vaadin.flow.shared.JsonConstants;
-import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.shared.communication.PushMode;
-import com.vaadin.flow.theme.AbstractTheme;
-import elemental.json.Json;
-import elemental.json.JsonException;
-import elemental.json.JsonObject;
-import elemental.json.impl.JsonUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
@@ -84,6 +48,44 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.DependencyTreeCache;
+import com.vaadin.flow.component.internal.HtmlImportParser;
+import com.vaadin.flow.di.DefaultInstantiator;
+import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.i18n.I18NProvider;
+import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.LocaleUtil;
+import com.vaadin.flow.internal.ReflectionCache;
+import com.vaadin.flow.internal.UsageStatistics;
+import com.vaadin.flow.router.Router;
+import com.vaadin.flow.server.ServletHelper.RequestType;
+import com.vaadin.flow.server.communication.AtmospherePushConnection;
+import com.vaadin.flow.server.communication.HeartbeatHandler;
+import com.vaadin.flow.server.communication.PwaHandler;
+import com.vaadin.flow.server.communication.SessionRequestHandler;
+import com.vaadin.flow.server.communication.StreamRequestHandler;
+import com.vaadin.flow.server.communication.UidlRequestHandler;
+import com.vaadin.flow.server.communication.WebComponentBootstrapHandler;
+import com.vaadin.flow.server.communication.WebComponentProvider;
+import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
+import com.vaadin.flow.server.startup.BundleFilterFactory;
+import com.vaadin.flow.server.startup.FakeBrowser;
+import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
+import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.flow.shared.JsonConstants;
+import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.shared.communication.PushMode;
+import com.vaadin.flow.theme.AbstractTheme;
+
+import elemental.json.Json;
+import elemental.json.JsonException;
+import elemental.json.JsonObject;
+import elemental.json.impl.JsonUtil;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -332,7 +334,9 @@ public abstract class VaadinService implements Serializable {
      *
      * @return the route registry to use, not <code>null</code>
      */
-    protected abstract RouteRegistry getRouteRegistry();
+    protected RouteRegistry getRouteRegistry() {
+        return ApplicationRouteRegistry.getInstance(getContext());
+    }
 
     protected abstract PwaRegistry getPwaRegistry();
 
@@ -379,9 +383,9 @@ public abstract class VaadinService implements Serializable {
     }
 
     private boolean hasWebComponentConfigurations() {
-            WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
-                    .getInstance(this.getContext());
-            return registry.hasConfigurations();
+        WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
+                .getInstance(getContext());
+        return registry.hasConfigurations();
     }
 
     /**
