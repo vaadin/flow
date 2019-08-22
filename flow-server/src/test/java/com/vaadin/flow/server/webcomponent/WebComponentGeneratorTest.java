@@ -16,9 +16,6 @@
 
 package com.vaadin.flow.server.webcomponent;
 
-import static org.hamcrest.core.StringContains.containsString;
-import static org.hamcrest.core.StringStartsWith.startsWith;
-
 import java.util.Map;
 
 import org.junit.Assert;
@@ -27,6 +24,9 @@ import org.junit.Test;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponent;
+
+import static org.hamcrest.core.StringContains.containsString;
+import static org.hamcrest.core.StringStartsWith.startsWith;
 
 public class WebComponentGeneratorTest {
 
@@ -47,7 +47,7 @@ public class WebComponentGeneratorTest {
         Map<String, String> replacementsMap = WebComponentGenerator
                 .getReplacementsMap("my-component",
                         new WebComponentExporter.WebComponentConfigurationFactory()
-                        .create(exporter).getPropertyDataSet(),
+                                .create(exporter).getPropertyDataSet(),
                         "/foo", generateUi);
 
         Assert.assertTrue("Missing dashed tag name",
@@ -82,17 +82,21 @@ public class WebComponentGeneratorTest {
 
         String attributeChange = replacementsMap.get("AttributeChange");
         Assert.assertThat(attributeChange,
-                containsString("if (attribute === 'message') {\n"
-                        + "  this['message'] = this._deserializeValue(value, String);"));
+                containsString(String.format("if (attribute === 'message') {%n"
+                        + "  this['message'] = this._deserializeValue(value, "
+                        + "String);")));
+        Assert.assertThat(attributeChange, containsString(
+                String.format("if (attribute === 'integer-value') {%n"
+                        + "  this['integer-value'] = this._deserializeValue"
+                        + "(value, Number);")));
+        Assert.assertThat(attributeChange, containsString(
+                String.format("if (attribute === 'camel-case-value') {%n"
+                        + "  this['camelCaseValue'] = this._deserializeValue"
+                        + "(value, Number);")));
         Assert.assertThat(attributeChange,
-                containsString("if (attribute === 'integer-value') {\n"
-                        + "  this['integer-value'] = this._deserializeValue(value, Number);"));
-        Assert.assertThat(attributeChange,
-                containsString("if (attribute === 'camel-case-value') {\n"
-                        + "  this['camelCaseValue'] = this._deserializeValue(value, Number);"));
-        Assert.assertThat(attributeChange,
-                containsString("if (attribute === 'response') {\n"
-                        + "  this['response'] = this._deserializeValue(value, String);"));
+                containsString(String.format("if (attribute === 'response') {%n"
+                        + "  this['response'] = this._deserializeValue(value,"
+                        + " String);")));
 
         String propertyMethods = replacementsMap.get("PropertyMethods");
         Assert.assertThat(propertyMethods,
@@ -133,10 +137,8 @@ public class WebComponentGeneratorTest {
                 .generateModule(MyComponentExporter.class, "", true);
         // make sure that the test works on windows machines:
         module = module.replace("\r", "");
-        Assert.assertThat(module,
-                startsWith("\n" +
-                        "<script>\n"
-                        + "  class Tag extends HTMLElement {\n"));
+        Assert.assertThat(module, startsWith(
+                "\n" + "<script>\n" + "  class Tag extends HTMLElement {\n"));
         // this part is from the
         // com.vaadin.flow.webcomponent-script-template
         // .js to verify successful import
@@ -152,12 +154,11 @@ public class WebComponentGeneratorTest {
         module = module.replace("\r", "");
         Assert.assertThat(module,
                 startsWith("class Tag extends HTMLElement {"));
-        Assert.assertThat(module,
-                containsString("style.innerHTML = `\n" //
-                        + "      :host {\n" //
-                        + "        display: inline-block;\n" //
-                        + "      }\n" //
-                        + "    `;\n"));
+        Assert.assertThat(module, containsString("style.innerHTML = `\n" //
+                + "      :host {\n" //
+                + "        display: inline-block;\n" //
+                + "      }\n" //
+                + "    `;\n"));
 
         Assert.assertThat(module,
                 containsString("customElements.define('tag', Tag);\n"));
@@ -184,13 +185,13 @@ public class WebComponentGeneratorTest {
     }
 
     public static class MyComponentExporter
-    extends WebComponentExporter<MyComponent> {
+            extends WebComponentExporter<MyComponent> {
 
         public MyComponentExporter() {
             super("tag");
             addProperty("response", "hello").onChange(MyComponent::setMessage);
             addProperty("integer-value", 0)
-            .onChange(MyComponent::setIntegerValue);
+                    .onChange(MyComponent::setIntegerValue);
             addProperty("message", "").onChange(MyComponent::setMessage);
             addProperty("camelCaseValue", 0);
         }
