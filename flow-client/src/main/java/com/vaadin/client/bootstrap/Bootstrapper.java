@@ -167,7 +167,8 @@ public class Bootstrapper implements EntryPoint {
         conf.setProductionMode(!jsoConfiguration.getConfigBoolean("debug"));
         conf.setRequestTiming(
                 jsoConfiguration.getConfigBoolean("requestTiming"));
-
+        conf.setExportedWebComponents(
+                jsoConfiguration.getConfigStringArray("webcomponents"));
     }
 
     private static void doStartApplication(final String applicationId) {
