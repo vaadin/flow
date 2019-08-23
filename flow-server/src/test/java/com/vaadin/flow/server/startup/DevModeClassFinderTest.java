@@ -28,6 +28,7 @@ import org.junit.Test;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.startup.DevModeInitializer.DevModeClassFinder;
 import com.vaadin.flow.theme.Theme;
@@ -41,8 +42,9 @@ public class DevModeClassFinderTest {
         classes.contains(NpmPackage.class);
         classes.contains(NpmPackage.Container.class);
         classes.contains(WebComponentExporter.class);
+        classes.contains(UIInitListener.class);
 
-        Assert.assertEquals(4, classes.size());
+        Assert.assertEquals(5, classes.size());
     }
 
     @Test

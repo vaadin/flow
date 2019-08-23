@@ -84,7 +84,7 @@ public class DevModeInitializer implements ServletContainerInitializer,
 
     static class DevModeClassFinder extends DefaultClassFinder {
 
-        private static final Set<String> APPLICABLE_CLASS_NAME = Collections
+        private static final Set<String> APPLICABLE_CLASS_NAMES = Collections
                 .unmodifiableSet(calculateApplicableClassNames());
 
         public DevModeClassFinder(Set<Class<?>> classes) {
@@ -105,17 +105,13 @@ public class DevModeInitializer implements ServletContainerInitializer,
         }
 
         private void ensureImplementation(Class<?> clazz) {
-            if (!getApplicableClassNames().contains(clazz.getName())) {
+            if (!APPLICABLE_CLASS_NAMES.contains(clazz.getName())) {
                 throw new IllegalArgumentException("Unexpected class name "
                         + clazz + ". Implementation error: the class finder "
                         + "instance is not aware of this class. "
-                        + "Fix @HandlesTypes annotation value for"
+                        + "Fix @HandlesTypes annotation value for "
                         + DevModeInitializer.class.getName());
             }
-        }
-
-        private Set<String> getApplicableClassNames() {
-            return APPLICABLE_CLASS_NAME;
         }
 
         private static Set<String> calculateApplicableClassNames() {
