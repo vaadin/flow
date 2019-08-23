@@ -15,8 +15,12 @@
  */
 package com.vaadin.flow.router;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.lang.annotation.Annotation;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -26,8 +30,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
-import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.LoggerFactory;
 
@@ -112,7 +114,31 @@ public class Router implements Serializable {
         final QueryParameters queryParameters = QueryParameters
                 .full(parameterMap);
 
-        return new Location(path, queryParameters);
+        try {
+            return new Location(path, queryParameters);
+        } catch (IllegalArgumentException iae) {
+            LoggerFactory.getLogger(Router.class.getName())
+                    .warn("Exception when parsing location path {}", path, iae);
+        }
+
+        int index = path.indexOf('?');
+        String encodedPath = path;
+        if (index >= 0) {
+            encodedPath = path.substring(0, index);
+        }
+        try {
+            if (path.startsWith("/")) {
+                encodedPath = URLEncoder.encode(path.substring(1),
+                        StandardCharsets.UTF_8.name());
+            } else {
+                encodedPath = URLEncoder.encode(path,
+                        StandardCharsets.UTF_8.name());
+            }
+        } catch (UnsupportedEncodingException e) {
+            LoggerFactory.getLogger(Router.class.getName())
+                    .warn("Exception when encoding path {}", path, e);
+        }
+        return new Location(encodedPath);
     }
 
     /**
