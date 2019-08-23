@@ -1,5 +1,6 @@
 package com.vaadin.flow.server.startup;
 
+import javax.servlet.ServletContext;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -10,8 +11,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import javax.servlet.ServletContext;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,6 +18,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.server.RouteRegistry;
+import com.vaadin.flow.server.VaadinServletContext;
 
 /**
  * Tests for {@link ApplicationRouteRegistry} instance inside OSGi container.
@@ -29,8 +29,8 @@ public class ApplicationRouteRegistryTest extends RouteRegistryTestBase {
 
     @Before
     public void init() {
-        registry = ApplicationRouteRegistry
-                .getInstance(Mockito.mock(ServletContext.class));
+        registry = ApplicationRouteRegistry.getInstance(
+                new VaadinServletContext(Mockito.mock(ServletContext.class)));
     }
 
     @Test

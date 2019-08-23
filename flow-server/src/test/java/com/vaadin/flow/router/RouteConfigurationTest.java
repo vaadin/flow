@@ -1,5 +1,6 @@
 package com.vaadin.flow.router;
 
+import javax.servlet.ServletContext;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -7,8 +8,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 
-import javax.servlet.ServletContext;
-
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,11 +23,10 @@ import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.SessionRouteRegistry;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
-
-import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class RouteConfigurationTest {
@@ -36,17 +35,21 @@ public class RouteConfigurationTest {
     private MockService vaadinService;
     private VaadinSession session;
     private ServletContext servletContext;
+    private VaadinServletContext vaadinContext;
 
     @Before
     public void init() {
         servletContext = Mockito.mock(ServletContext.class);
-        registry = ApplicationRouteRegistry.getInstance(servletContext);
+        vaadinContext = new VaadinServletContext(servletContext);
+        registry = ApplicationRouteRegistry
+                .getInstance(vaadinContext);
 
         Mockito.when(servletContext.getAttribute(RouteRegistry.class.getName()))
                 .thenReturn(registry);
 
         vaadinService = Mockito.mock(MockService.class);
         Mockito.when(vaadinService.getRouteRegistry()).thenReturn(registry);
+        Mockito.when(vaadinService.getContext()).thenReturn(vaadinContext);
 
         VaadinService.setCurrent(vaadinService);
 

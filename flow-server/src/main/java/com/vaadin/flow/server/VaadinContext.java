@@ -53,6 +53,15 @@ public interface VaadinContext extends Serializable {
     }
 
     /**
+     * Returns value of the specified attribute.
+     *
+     * @param name
+     *         name of the attribute.
+     * @return Value of the specified attribute.
+     */
+    Object getAttribute(String name);
+
+    /**
      * Sets the attribute value, overriding previously existing one. Values are
      * based on exact type, meaning only one attribute of given type is possible
      * at any given time.
@@ -62,6 +71,17 @@ public interface VaadinContext extends Serializable {
      * @see #removeAttribute(Class) for removing attributes.
      */
     <T> void setAttribute(T value);
+
+    /**
+     * Sets the attribute value, overriding previously existing one.
+     *
+     * @param name
+     *         attribute name to store value under
+     * @param value
+     *         value of the attribute. May not be {@code null}.
+     * @see #removeAttribute(Class) for removing attributes.
+     */
+    <T> void setAttribute(String name, T value);
 
     /**
      * Removes an attribute identified by the given type. If the attribute does
