@@ -35,6 +35,9 @@ import com.vaadin.flow.theme.Theme;
 
 public class DevModeClassFinderTest {
 
+    private DevModeClassFinder classFinder = new DevModeClassFinder(
+            Collections.emptySet());
+
     @Test
     public void applicableClasses_knownClasses() {
         Collection<Class<?>> classes = getApplicableClasses();
@@ -49,8 +52,6 @@ public class DevModeClassFinderTest {
 
     @Test
     public void callGetSubTypesOfByClass_expectedType_doesNotThrow() {
-        DevModeClassFinder classFinder = new DevModeClassFinder(
-                Collections.emptySet());
         for (Class<?> clazz : getApplicableClasses()) {
             classFinder.getSubTypesOf(clazz);
         }
@@ -59,8 +60,6 @@ public class DevModeClassFinderTest {
     @Test
     public void callGetSubTypesOfByName_expectedType_doesNotThrow()
             throws ClassNotFoundException {
-        DevModeClassFinder classFinder = new DevModeClassFinder(
-                Collections.emptySet());
         for (Class<?> clazz : getApplicableClasses()) {
             classFinder.getSubTypesOf(clazz.getName());
         }
@@ -69,8 +68,6 @@ public class DevModeClassFinderTest {
     @Test
     public void callGetgetAnnotatedClassesByName_expectedType_doesNotThrow()
             throws ClassNotFoundException {
-        DevModeClassFinder classFinder = new DevModeClassFinder(
-                Collections.emptySet());
         for (Class<?> clazz : getApplicableClasses()) {
             classFinder.getAnnotatedClasses(clazz.getName());
         }
@@ -79,8 +76,6 @@ public class DevModeClassFinderTest {
     @Test
     public void callGetgetAnnotatedClassesByClass_expectedType_doesNotThrow()
             throws ClassNotFoundException {
-        DevModeClassFinder classFinder = new DevModeClassFinder(
-                Collections.emptySet());
         for (Class<?> clazz : getApplicableClasses()) {
             if (clazz.isAnnotation()) {
                 classFinder.getAnnotatedClasses((Class) clazz);
@@ -90,16 +85,12 @@ public class DevModeClassFinderTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void callGetgetAnnotatedClassesByClass_unexpectedType_throw() {
-        DevModeClassFinder classFinder = new DevModeClassFinder(
-                Collections.emptySet());
         classFinder.getAnnotatedClasses(Test.class);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void callGetgetAnnotatedClassesByName_unexpectedType_throw()
             throws ClassNotFoundException {
-        DevModeClassFinder classFinder = new DevModeClassFinder(
-                Collections.emptySet());
         classFinder.getAnnotatedClasses(Theme.class.getName());
     }
 
@@ -113,8 +104,6 @@ public class DevModeClassFinderTest {
     @Test(expected = IllegalArgumentException.class)
     public void callGetSubTypesOfByName_unexpectedType_throw()
             throws ClassNotFoundException {
-        DevModeClassFinder classFinder = new DevModeClassFinder(
-                Collections.emptySet());
         classFinder.getSubTypesOf(VaadinServiceInitListener.class.getName());
     }
 
