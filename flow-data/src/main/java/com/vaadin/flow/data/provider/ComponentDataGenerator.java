@@ -62,7 +62,11 @@ public class ComponentDataGenerator<T>
 
     @Override
     public void generateData(T item, JsonObject jsonObject) {
-        // if no nodeIdProperty set do nothing.
+        /*
+         * If no nodeIdPropertyName set do nothing. It is supposed to be set up
+         * by setupTemplateWhenAttached which is triggered through
+         * setupTemplate.
+         */
         if (nodeIdPropertyName == null) {
             return;
         }
