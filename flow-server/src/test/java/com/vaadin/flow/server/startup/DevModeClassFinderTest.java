@@ -41,11 +41,11 @@ public class DevModeClassFinderTest {
     @Test
     public void applicableClasses_knownClasses() {
         Collection<Class<?>> classes = getApplicableClasses();
-        classes.contains(Route.class);
-        classes.contains(NpmPackage.class);
-        classes.contains(NpmPackage.Container.class);
-        classes.contains(WebComponentExporter.class);
-        classes.contains(UIInitListener.class);
+        Assert.assertTrue(classes.contains(Route.class));
+        Assert.assertTrue(classes.contains(NpmPackage.class));
+        Assert.assertTrue(classes.contains(NpmPackage.Container.class));
+        Assert.assertTrue(classes.contains(WebComponentExporter.class));
+        Assert.assertTrue(classes.contains(UIInitListener.class));
 
         Assert.assertEquals(5, classes.size());
     }
