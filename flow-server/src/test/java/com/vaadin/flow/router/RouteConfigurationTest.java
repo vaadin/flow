@@ -35,18 +35,21 @@ public class RouteConfigurationTest {
     private MockService vaadinService;
     private VaadinSession session;
     private ServletContext servletContext;
+    private VaadinServletContext vaadinContext;
 
     @Before
     public void init() {
         servletContext = Mockito.mock(ServletContext.class);
+        vaadinContext = new VaadinServletContext(servletContext);
         registry = ApplicationRouteRegistry
-                .getInstance(new VaadinServletContext(servletContext));
+                .getInstance(vaadinContext);
 
         Mockito.when(servletContext.getAttribute(RouteRegistry.class.getName()))
                 .thenReturn(registry);
 
         vaadinService = Mockito.mock(MockService.class);
         Mockito.when(vaadinService.getRouteRegistry()).thenReturn(registry);
+        Mockito.when(vaadinService.getContext()).thenReturn(vaadinContext);
 
         VaadinService.setCurrent(vaadinService);
 

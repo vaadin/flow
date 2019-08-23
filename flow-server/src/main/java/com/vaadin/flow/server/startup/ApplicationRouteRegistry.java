@@ -207,11 +207,11 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
 
         Object attribute;
         synchronized (context) {
-            attribute = context.getAttribute(RouteRegistry.class);
+            attribute = context.getAttribute(RouteRegistry.class.getName());
 
             if (attribute == null) {
                 attribute = createRegistry(context);
-                context.setAttribute(attribute);
+                context.setAttribute(RouteRegistry.class.getName(), attribute);
             }
         }
 
@@ -359,7 +359,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
 
     private static ApplicationRouteRegistry createRegistry(
             VaadinContext context) {
-        if (context != null && context == OSGiAccess.getInstance()
+        if (context != null && ((VaadinServletContext)context).getContext() == OSGiAccess.getInstance()
                 .getOsgiServletContext()) {
             return new OSGiDataCollector();
         } else if (OSGiAccess.getInstance().getOsgiServletContext() == null) {
