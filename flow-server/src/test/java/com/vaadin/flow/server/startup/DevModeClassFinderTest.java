@@ -28,6 +28,7 @@ import org.junit.Test;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.SessionInitListener;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.startup.DevModeInitializer.DevModeClassFinder;
@@ -46,8 +47,9 @@ public class DevModeClassFinderTest {
         Assert.assertTrue(classes.contains(NpmPackage.Container.class));
         Assert.assertTrue(classes.contains(WebComponentExporter.class));
         Assert.assertTrue(classes.contains(UIInitListener.class));
+        Assert.assertTrue(classes.contains(VaadinServiceInitListener.class));
 
-        Assert.assertEquals(5, classes.size());
+        Assert.assertEquals(6, classes.size());
     }
 
     @Test
@@ -104,7 +106,7 @@ public class DevModeClassFinderTest {
     @Test(expected = IllegalArgumentException.class)
     public void callGetSubTypesOfByName_unexpectedType_throw()
             throws ClassNotFoundException {
-        classFinder.getSubTypesOf(VaadinServiceInitListener.class.getName());
+        classFinder.getSubTypesOf(SessionInitListener.class.getName());
     }
 
     private Collection<Class<?>> getApplicableClasses() {
