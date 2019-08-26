@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import com.vaadin.flow.server.Constants;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -119,9 +120,11 @@ public class FrontendToolsLocator implements Serializable {
             return Optional.empty();
         }
 
+        String timeout = System.getProperty(Constants.NPM_COMMAND_TIMEOUT);
+        int processTimeout = timeout == null ? 3 : Integer.parseInt(timeout);
         boolean commandExited = false;
         try {
-            commandExited = process.waitFor(3, TimeUnit.SECONDS);
+            commandExited = process.waitFor(processTimeout, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             log().error(
                     "Unexpected interruption happened during '{}' command execution",
