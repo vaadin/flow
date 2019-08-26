@@ -151,6 +151,11 @@ public final class Constants implements Serializable {
     public static final String SERVLET_PARAMETER_STATISTICS_JSON = "statistics.file.path";
 
     /**
+     * Configuration name for timeout used for NPM detection
+     */
+    public static final String NPM_COMMAND_TIMEOUT = "npmCommandTimeout";
+    
+    /**
      * Default path for the WebPack profile statistics json file. It can be
      * modified by setting the system property "statistics.file.path".
      */
