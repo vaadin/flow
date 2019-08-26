@@ -38,7 +38,14 @@ public class ExternalJSModuleIT extends ChromeBrowserTest {
         Assert.assertTrue(
                 "External JS annotated with @JsModule annotation should be added as a script tag with module type to the page!",
                 scriptTags.stream().anyMatch(
-                        scriptTag -> ExternalJSModuleView.SOME_RANDOM_EXTERNAL_JS_MODULE_URL
+                        scriptTag -> ComponentWithExternalJsModule.SOME_RANDOM_EXTERNAL_JS_URL
+                                .equals(scriptTag.getAttribute("src"))
+                                && "module".equals(
+                                        scriptTag.getAttribute("type"))));
+        Assert.assertTrue(
+                "External JS without protocol annotated with @JsModule annotation should be added as a script tag with module type to the page!",
+                scriptTags.stream().anyMatch(
+                        scriptTag -> ComponentWithExternalJsModule.SOME_RANDOM_EXTERNAL_JS_URL_WITHOUT_PROTOCOL
                                 .equals(scriptTag.getAttribute("src"))
                                 && "module".equals(
                                         scriptTag.getAttribute("type"))));
@@ -53,7 +60,14 @@ public class ExternalJSModuleIT extends ChromeBrowserTest {
         Assert.assertTrue(
                 "When a component is added to the page, external JS annotated with @JsModule annotation in the component should be added as a script tag with module type to the page!",
                 scriptTags.stream().anyMatch(
-                        scriptTag -> ComponentWithExternalJsModule.SOME_RANDOM_EXTERNAL_JS_MODULE_URL
+                        scriptTag -> ComponentWithExternalJsModule.SOME_RANDOM_EXTERNAL_JS_URL
+                                .equals(scriptTag.getAttribute("src"))
+                                && "module".equals(
+                                        scriptTag.getAttribute("type"))));
+        Assert.assertTrue(
+                "When a component is added to the page, external JS without protocol annotated with @JsModule annotation in the component should be added as a script tag with module type to the page!",
+                scriptTags.stream().anyMatch(
+                        scriptTag -> ComponentWithExternalJsModule.SOME_RANDOM_EXTERNAL_JS_URL_WITHOUT_PROTOCOL
                                 .equals(scriptTag.getAttribute("src"))
                                 && "module".equals(
                                         scriptTag.getAttribute("type"))));

@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.CssData;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
@@ -119,8 +120,7 @@ public class TaskUpdateImports extends NodeUpdater {
         modules.addAll(getGeneratedModules(generatedFolder,
                 Collections.singleton(generatedFlowImports.getName())));
 
-        // filter out external URLs (including "://")
-        modules.removeIf(module -> module.contains("://"));
+        modules.removeIf(module -> UrlUtil.isExternal(module));
 
         try {
             updateMainJsFile(getMainJsContent(modules));

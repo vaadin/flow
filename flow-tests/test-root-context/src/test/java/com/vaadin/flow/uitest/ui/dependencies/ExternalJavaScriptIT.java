@@ -38,7 +38,14 @@ public class ExternalJavaScriptIT extends ChromeBrowserTest {
         Assert.assertTrue(
                 "External JS annotated with @JavaScript annotation should be added as a script tag with text/javascript type to the page!",
                 scriptTags.stream().anyMatch(
-                        scriptTag -> ExternalJavaScriptView.SOME_RANDOM_EXTERNAL_JS_URL
+                        scriptTag -> ComponentWithExternalJavaScript.SOME_RANDOM_EXTERNAL_JS_URL
+                                .equals(scriptTag.getAttribute("src"))
+                                && "text/javascript".equals(
+                                        scriptTag.getAttribute("type"))));
+        Assert.assertTrue(
+                "External JS without protocol annotated with @JavaScript annotation should be added as a script tag with text/javascript type to the page!",
+                scriptTags.stream().anyMatch(
+                        scriptTag -> ComponentWithExternalJavaScript.SOME_RANDOM_EXTERNAL_JS_URL_WITHOUT_PROTOCOL
                                 .equals(scriptTag.getAttribute("src"))
                                 && "text/javascript".equals(
                                         scriptTag.getAttribute("type"))));
@@ -56,6 +63,13 @@ public class ExternalJavaScriptIT extends ChromeBrowserTest {
                         scriptTag -> ComponentWithExternalJavaScript.SOME_RANDOM_EXTERNAL_JS_URL
                                 .equals(scriptTag.getAttribute("src"))
                                 && "text/javascript".equals(
-                                scriptTag.getAttribute("type"))));
+                                        scriptTag.getAttribute("type"))));
+        Assert.assertTrue(
+                "When a component is added to the page, external JS without protocol annotated with @JavaScript annotation in the component should be added as a script tag with text/javascript type to the page!",
+                scriptTags.stream().anyMatch(
+                        scriptTag -> ComponentWithExternalJavaScript.SOME_RANDOM_EXTERNAL_JS_URL_WITHOUT_PROTOCOL
+                                .equals(scriptTag.getAttribute("src"))
+                                && "text/javascript".equals(
+                                        scriptTag.getAttribute("type"))));
     }
 }
