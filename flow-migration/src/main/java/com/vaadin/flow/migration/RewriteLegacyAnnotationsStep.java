@@ -270,18 +270,10 @@ public class RewriteLegacyAnnotationsStep extends ClassPathIntrospector {
             result = result.replaceAll(
                     String.format("\"%s\"", Pattern.quote(path)),
                     String.format("\"%s\"", rewritePath(path,
-                            externalComponent -> getLogger().warn(
-                                    "External bower component {} is imported in the {} file, "
-                                            + "a converted '@JsModule' "
-                                            + "annotation requires also a `@NpmPackage` annotation with "
-                                            + "a module name and a version. The migrated project won't "
-                                            + "be built without this information.",
-                                    externalComponent, javaFile.getPath()),
-                            nonVaadinComponentPath -> getLogger().error(
-                                    "In {} file, added a JS module import '@JsModule(\"{}\")' "
-                                            + "that you need to manually map to the correct package vendor from npm",
-                                    javaFile.getPath(),
-                                    nonVaadinComponentPath))));
+                            externalComponent -> handleBowerComponentImport(
+                                    javaFile, externalComponent),
+                            nonVaadinComponentPath -> handleNonVaadinComponent(
+                                    javaFile, nonVaadinComponentPath))));
         }
         return result;
     }
@@ -295,6 +287,25 @@ public class RewriteLegacyAnnotationsStep extends ClassPathIntrospector {
         Pattern pattern = compiledReplacePatterns.computeIfAbsent(patternKey,
                 key -> Pattern.compile(regexp));
         return pattern.matcher(content).replaceAll(replacement);
+    }
+
+    private void handleBowerComponentImport(File javaFile,
+            String bowerComponentPath) {
+        getLogger().warn(
+                "External bower component {} is imported in the {} file, "
+                        + "a converted '@JsModule' "
+                        + "annotation requires also a `@NpmPackage` annotation with "
+                        + "a module name and a version. The migrated project won't "
+                        + "be built without this information.",
+                bowerComponentPath, javaFile.getPath());
+    }
+
+    private void handleNonVaadinComponent(File javaFile,
+            String nonVaadinComponentPath) {
+        getLogger().error(
+                "In {} file, added a JS module import '@JsModule(\"{}\")' "
+                        + "that you need to manually map to the correct package vendor from npm",
+                javaFile.getPath(), nonVaadinComponentPath);
     }
 
     private String rewritePath(String path,
