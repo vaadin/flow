@@ -43,6 +43,7 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.UIInitListener;
+import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
@@ -275,6 +276,11 @@ public class FrontendDependencies implements Serializable {
 
         for (Class<?> initListener : finder.getSubTypesOf(
                 finder.loadClass(UIInitListener.class.getName()))) {
+            collectEndpoints(initListener);
+        }
+
+        for (Class<?> initListener : finder.getSubTypesOf(
+                finder.loadClass(VaadinServiceInitListener.class.getName()))) {
             collectEndpoints(initListener);
         }
     }

@@ -26,6 +26,8 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.UIInitListener;
+import com.vaadin.flow.server.VaadinServiceInitListener;
+import com.vaadin.flow.server.frontend.scanner.samples.MyServiceListener;
 import com.vaadin.flow.server.frontend.scanner.samples.MyUIInitListener;
 import com.vaadin.flow.server.frontend.scanner.samples.RouteComponent;
 
@@ -40,6 +42,10 @@ public class FrontendDependenciesTest {
 
         Mockito.when(classFinder.loadClass(UIInitListener.class.getName()))
                 .thenReturn((Class) UIInitListener.class);
+
+        Mockito.when(classFinder
+                .loadClass(VaadinServiceInitListener.class.getName()))
+                .thenReturn((Class) VaadinServiceInitListener.class);
 
         Mockito.doAnswer(invocation -> {
             return FrontendDependenciesTest.class.getClassLoader()
@@ -69,6 +75,22 @@ public class FrontendDependenciesTest {
             throws ClassNotFoundException {
         Mockito.when(classFinder.getSubTypesOf(UIInitListener.class))
                 .thenReturn(Collections.singleton(MyUIInitListener.class));
+        FrontendDependencies dependencies = new FrontendDependencies(
+                classFinder, false);
+        List<String> modules = dependencies.getModules();
+        Assert.assertEquals(1, modules.size());
+        Assert.assertEquals("baz.js", modules.get(0));
+
+        Set<String> scripts = dependencies.getScripts();
+        Assert.assertEquals(1, scripts.size());
+        Assert.assertEquals("foobar.js", scripts.iterator().next());
+    }
+
+    @Test
+    public void componentInsideUiInitListenerInsideServiceInitListener_endpointsAreCollected()
+            throws ClassNotFoundException {
+        Mockito.when(classFinder.getSubTypesOf(VaadinServiceInitListener.class))
+                .thenReturn(Collections.singleton(MyServiceListener.class));
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false);
         List<String> modules = dependencies.getModules();
