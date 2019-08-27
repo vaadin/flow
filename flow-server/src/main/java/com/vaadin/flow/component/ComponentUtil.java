@@ -234,9 +234,9 @@ public class ComponentUtil {
                 && component.getElement().isEnabled() != component.getElement()
                         .getNode().isEnabledSelf()) {
 
-            Optional<Component> parent = component.getParent();
-            if (parent.isPresent()
-                    && isAttachedToParent(component, parent.get())) {
+            Element parent = component.getElement().getParent();
+            if (parent != null
+                    && isAttachedToParent(component.getElement(), parent)) {
                 component.onEnabledStateChanged(
                         component.getElement().isEnabled());
             }
@@ -265,12 +265,12 @@ public class ComponentUtil {
         if (component instanceof HasEnabled
                 && component.getElement().isEnabled() != component.getElement()
                         .getNode().isEnabledSelf()) {
-            Optional<Component> parent = component.getParent();
-            if (parent.isPresent()) {
-                Component parentComponent = parent.get();
-                boolean state = isAttachedToParent(component, parentComponent)
-                        ? checkParentChainState(parentComponent)
-                        : component.getElement().getNode().isEnabledSelf();
+            Element parent = component.getElement().getParent();
+            if (parent != null) {
+                boolean state = isAttachedToParent(component.getElement(),
+                        parent) ? checkParentChainState(parent)
+                                : component.getElement().getNode()
+                                        .isEnabledSelf();
                 component.onEnabledStateChanged(state);
             } else {
                 component.onEnabledStateChanged(
@@ -279,35 +279,31 @@ public class ComponentUtil {
         }
     }
 
-    private static boolean isAttachedToParent(Component component,
-            Component parentComponent) {
-        return parentComponent.getChildren()
-                .anyMatch(child -> child.equals(component))
-                || isVirtualChild(component, parentComponent);
+    private static boolean isAttachedToParent(Element element, Element parent) {
+        return parent.getChildren().anyMatch(child -> child.equals(element))
+                || isVirtualChild(element, parent);
     }
 
-    private static boolean isVirtualChild(Component component,
-            Component parentComponent) {
-        Iterator<StateNode> iterator = parentComponent.getElement().getNode()
+    private static boolean isVirtualChild(Element element, Element parent) {
+        Iterator<StateNode> iterator = parent.getNode()
                 .getFeature(VirtualChildrenList.class).iterator();
         while (iterator.hasNext()) {
-            if (iterator.next().equals(component.getElement().getNode())) {
+            if (iterator.next().equals(element.getNode())) {
                 return true;
             }
         }
         return false;
     }
 
-    private static boolean checkParentChainState(Component component) {
-        if (!component.getElement().getNode().isEnabledSelf()) {
+    private static boolean checkParentChainState(Element element) {
+        if (!element.getNode().isEnabledSelf()) {
             return false;
         }
 
-        Optional<Component> parent = component.getParent();
-        if (parent.isPresent()) {
-            Component parentComponent = parent.get();
-            if (isAttachedToParent(component, parentComponent)) {
-                return checkParentChainState(parentComponent);
+        Element parent = element.getParent();
+        if (parent != null) {
+            if (isAttachedToParent(element, parent)) {
+                return checkParentChainState(parent);
             }
         }
 
