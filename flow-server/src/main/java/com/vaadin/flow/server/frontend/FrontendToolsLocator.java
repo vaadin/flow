@@ -119,17 +119,17 @@ public class FrontendToolsLocator implements Serializable {
             return Optional.empty();
         }
 
-        boolean commandExited = false;
+        int exitCode = 0;
         long timeStamp = System.currentTimeMillis();
         try {
-            commandExited = process.waitFor();
+            exitCode = process.waitFor();
         } catch (InterruptedException e) {
             log().error(
                     "Unexpected interruption happened during '{}' command execution",
                     commandString, e);
             return Optional.empty();
         } finally {
-            if (!commandExited) {
+            if (exitCode != 0) {
                 process.destroyForcibly();
             }
         }
@@ -141,7 +141,7 @@ public class FrontendToolsLocator implements Serializable {
             }
         }
 
-        if (!commandExited) {
+        if (exitCode != 0) {
             log().error(
                     "Could not get a response from '{}' command",
                     commandString);
