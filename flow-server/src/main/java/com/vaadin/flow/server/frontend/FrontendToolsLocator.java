@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import com.vaadin.flow.server.Constants;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -120,11 +119,10 @@ public class FrontendToolsLocator implements Serializable {
             return Optional.empty();
         }
 
-        String timeout = System.getProperty(Constants.NPM_COMMAND_TIMEOUT);
-        int processTimeout = timeout == null ? 3 : Integer.parseInt(timeout);
         boolean commandExited = false;
+        long timeStamp = System.currentTimeMillis();
         try {
-            commandExited = process.waitFor(processTimeout, TimeUnit.SECONDS);
+            commandExited = process.waitFor();
         } catch (InterruptedException e) {
             log().error(
                     "Unexpected interruption happened during '{}' command execution",
@@ -136,9 +134,16 @@ public class FrontendToolsLocator implements Serializable {
             }
         }
 
+        long executionTime = System.currentTimeMillis() - timeStamp;
+        if (executionTime > 3000) {
+            if (log().isDebugEnabled()) {
+                log().debug("Command '{}' execution took over 3 seconds",commandString);
+            }
+        }
+
         if (!commandExited) {
             log().error(
-                    "Could not get a response from '{}' command in 3 seconds",
+                    "Could not get a response from '{}' command",
                     commandString);
             return Optional.empty();
         }
