@@ -56,6 +56,7 @@ import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -77,7 +78,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
  * server.
  */
 @HandlesTypes({ Route.class, NpmPackage.class, NpmPackage.Container.class,
-        WebComponentExporter.class, UIInitListener.class })
+        WebComponentExporter.class, UIInitListener.class,
+        VaadinServiceInitListener.class })
 @WebListener
 public class DevModeInitializer implements ServletContainerInitializer,
         Serializable, ServletContextListener {
