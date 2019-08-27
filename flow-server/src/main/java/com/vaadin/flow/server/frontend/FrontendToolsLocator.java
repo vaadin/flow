@@ -119,7 +119,7 @@ public class FrontendToolsLocator implements Serializable {
             return Optional.empty();
         }
 
-        int exitCode = 0;
+        int exitCode = -1;
         long timeStamp = System.currentTimeMillis();
         try {
             exitCode = process.waitFor();
@@ -129,8 +129,14 @@ public class FrontendToolsLocator implements Serializable {
                     commandString, e);
             return Optional.empty();
         } finally {
-            if (exitCode != 0) {
+            if (exitCode == -1) {
                 process.destroyForcibly();
+            }
+            if (exitCode > 0) {
+                log().error(
+                        "Command '{}' failed with exit code '{}'", commandString,
+                        exitCode);
+                return Optional.empty();
             }
         }
 
@@ -139,13 +145,6 @@ public class FrontendToolsLocator implements Serializable {
             if (log().isDebugEnabled()) {
                 log().debug("Command '{}' execution took over 3 seconds",commandString);
             }
-        }
-
-        if (exitCode != 0) {
-            log().error(
-                    "Could not get a response from '{}' command",
-                    commandString);
-            return Optional.empty();
         }
 
         List<String> stdout;
