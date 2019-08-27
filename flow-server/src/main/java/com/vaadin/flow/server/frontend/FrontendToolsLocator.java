@@ -132,19 +132,18 @@ public class FrontendToolsLocator implements Serializable {
             if (exitCode == -1) {
                 process.destroyForcibly();
             }
-            if (exitCode > 0) {
-                log().error(
-                        "Command '{}' failed with exit code '{}'", commandString,
-                        exitCode);
-                return Optional.empty();
-            }
         }
 
         long executionTime = System.currentTimeMillis() - timeStamp;
-        if (executionTime > 3000) {
-            if (log().isDebugEnabled()) {
-                log().debug("Command '{}' execution took over 3 seconds",commandString);
-            }
+        if (log().isDebugEnabled() && executionTime > 3000) {
+            log().debug("Command '{}' execution took over 3 seconds",
+                    commandString);
+        }
+
+        if (exitCode > 0) {
+            log().error("Command '{}' failed with exit code '{}'",
+                    commandString, exitCode);
+            return Optional.empty();
         }
 
         List<String> stdout;
