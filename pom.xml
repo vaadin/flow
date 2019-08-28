@@ -21,6 +21,8 @@
         <module>flow-push</module>
         <module>flow-data</module>
         <module>flow-osgi</module>
+        <module>flow-client</module>
+        <module>flow-html-components</module>
         <module>flow-html-components-testbench</module>
         <module>flow-theme-integrations</module>
         <module>flow-dnd</module>
@@ -29,6 +31,8 @@
         <module>flow-server-production-mode</module>
         <module>flow-server-compatibility-mode</module>
         <module>flow-components-parent</module>
+        <module>flow-migration</module>
+        <module>flow-maven-plugin</module>
         <module>flow-test-generic</module>
         <module>flow-bom</module>
         <module>build-tools</module>
