@@ -30,6 +30,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -381,17 +382,19 @@ public class FrontendUtils {
      * returned.
      *
      * @param service
-     *         the Vaadin service.
+     *            the Vaadin service.
      * @return hash string for the stats.json file, empty string if none found
      * @throws IOException
-     *         if an I/O error occurs while creating the input stream.
+     *             if an I/O error occurs while creating the input stream.
      */
-    public static String getStatsHash(VaadinService service) throws IOException {
+    public static String getStatsHash(VaadinService service)
+            throws IOException {
         DeploymentConfiguration config = service.getDeploymentConfiguration();
         if (!config.isProductionMode() && config.enableDevServer()) {
             DevModeHandler handler = DevModeHandler.getDevModeHandler();
-            return streamToString(
-                    handler.prepareConnection("/stats.hash", "GET").getInputStream()).replaceAll("\"", "");
+            return streamToString(handler
+                    .prepareConnection("/stats.hash", "GET").getInputStream())
+                            .replaceAll("\"", "");
         }
 
         return "";
@@ -454,6 +457,12 @@ public class FrontendUtils {
             getLogger().warn("Error checking if npm is new enough", e);
         }
 
+    }
+
+    public static boolean isWebpackConfigFile(File file) throws IOException {
+        return file.exists()
+                && FileUtils.readFileToString(file, StandardCharsets.UTF_8)
+                        .contains("./webpack.generated.js");
     }
 
     static void validateToolVersion(String tool, String[] toolVersion,
