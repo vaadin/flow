@@ -93,16 +93,22 @@ public class NpmTemplateParser implements TemplateParser {
 
         Pair<Dependency, String> chosenDep = null;
 
+        getLogger().warn("Trying to find a template for tag {}", tag);
+
         for (Dependency dependency : dependencies) {
+            getLogger().warn("Dependency {}", dependency);
             if (dependency.getType() != Dependency.Type.JS_MODULE) {
                 continue;
             }
 
             String url = dependency.getUrl();
+            getLogger().warn("Dependency URL {}", dependency.getUrl());
             String source = getSourcesFromTemplate(tag, url);
+            getLogger().warn("Source from template is :", source);
             if (source == null) {
                 try {
                     source = getSourcesFromStats(service, url);
+                    getLogger().warn("Source from stats is :", source);
                 } catch (IOException e) {
                     throw new UncheckedIOException(e);
                 }
@@ -166,10 +172,13 @@ public class NpmTemplateParser implements TemplateParser {
 
     private String getSourcesFromStats(VaadinService service, String url)
             throws IOException {
+        getLogger().warn("Get source for URL {} from stats", url);
         try {
             lock.lock();
             if (isStatsFileReadNeeded(service)) {
+                getLogger().warn("Reading stats file");
                 String content = FrontendUtils.getStatsContent(service);
+                getLogger().warn("Stats content is {}", content);
                 if (content != null) {
                     resetCache(content);
                 }
@@ -178,6 +187,8 @@ public class NpmTemplateParser implements TemplateParser {
             lock.unlock();
         }
         if (!cache.containsKey(url) && jsonStats != null) {
+            getLogger().warn("Cache doesn't contain URL, put json stats {}",
+                    jsonStats.toJson());
             cache.put(url,
                     BundleParser.getSourceFromStatistics(url, jsonStats));
         }
@@ -192,9 +203,9 @@ public class NpmTemplateParser implements TemplateParser {
      * we do not have a bundle.
      *
      * @param service
-     *         the Vaadin service.
+     *            the Vaadin service.
      * @return {@code true} if we need to re-load and parse stats.json, else
-     * {@code false}
+     *         {@code false}
      */
     protected boolean isStatsFileReadNeeded(VaadinService service)
             throws IOException {
@@ -213,7 +224,7 @@ public class NpmTemplateParser implements TemplateParser {
      * bundle file.
      *
      * @param config
-     *         deployment configuration
+     *            deployment configuration
      * @return true if production mode or disabled dev server
      */
     private boolean usesBundleFile(DeploymentConfiguration config) {

@@ -364,11 +364,16 @@ public class FrontendUtils {
         DeploymentConfiguration config = service.getDeploymentConfiguration();
         InputStream content = null;
 
+        getLogger().warn(
+                "Frontend Util : is production mode {}, enable dev server {}",
+                config.isProductionMode(), config.enableDevServer());
+
         if (!config.isProductionMode() && config.enableDevServer()) {
             content = getStatsFromWebpack();
         }
 
         if (content == null) {
+            getLogger().warn("Get stats from class path");
             content = getStatsFromClassPath(service);
         }
         return content != null ? streamToString(content) : null;
