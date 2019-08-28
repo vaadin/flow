@@ -29,13 +29,13 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.function.Consumer;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
@@ -238,7 +238,7 @@ public final class DeploymentConfigurationFactory implements Serializable {
 
             boolean hasWebPackConfig = hasWebpackConfig(initParameters);
             boolean hasTokenFile = json != null;
-            Consumer<CompatibilityModeStatus> strategy = value -> devModeEnable(
+            SerializableConsumer<CompatibilityModeStatus> strategy = value -> verifyMode(
                     value, initParameters, hasTokenFile, hasWebPackConfig);
             initParameters.put(DEV_MODE_ENABLE_STRATEGY, strategy);
         } catch (IOException e) {
@@ -247,7 +247,7 @@ public final class DeploymentConfigurationFactory implements Serializable {
 
     }
 
-    private static void devModeEnable(CompatibilityModeStatus value,
+    private static void verifyMode(CompatibilityModeStatus value,
             Properties initParameters, boolean hasTokenFile,
             boolean hasWebpackConfig) {
         // Don't handle the case when compatibility mode is enabled.
