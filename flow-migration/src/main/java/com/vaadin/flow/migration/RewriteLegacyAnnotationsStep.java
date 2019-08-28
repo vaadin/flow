@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -53,6 +54,9 @@ public class RewriteLegacyAnnotationsStep extends ClassPathIntrospector {
     private static final String CSS_EXTENSION = ".css";
     private final URL compiledClassesURL;
     private final Collection<File> sourceRoots;
+
+    private static final String BOWER_COMPONENT_PREFIX = AbstractCopyResourcesStep.BOWER_COMPONENTS
+            + "/";
 
     private static final String CLASS_DECLARATION_PATTERN = "(\\s|public|final|abstract|private|static|protected)*\\s+class\\s+%s(|<|>|\\?|\\w|\\s|,|\\&)*\\s+((extends\\s+(\\w|<|>|\\?|,)+)|(implements\\s+(|<|>|\\?|\\w|\\s|,)+( ,(\\w|<|>|\\?|\\s|,))*))?\\s*\\{";
 
@@ -235,7 +239,7 @@ public class RewriteLegacyAnnotationsStep extends ClassPathIntrospector {
         for (Entry<Class<? extends Annotation>, Collection<String>> entry : annotations
                 .entrySet()) {
 
-            beforeClassDeclaration = rewrite(beforeClassDeclaration,
+            beforeClassDeclaration = rewrite(javaFile, beforeClassDeclaration,
                     entry.getKey(), entry.getValue());
         }
 
@@ -250,7 +254,7 @@ public class RewriteLegacyAnnotationsStep extends ClassPathIntrospector {
         }
     }
 
-    private String rewrite(String content,
+    private String rewrite(File javaFile, String content,
             Class<? extends Annotation> annotation, Collection<String> paths) {
         String result = content;
         // replace FQN first
@@ -265,7 +269,11 @@ public class RewriteLegacyAnnotationsStep extends ClassPathIntrospector {
         for (String path : paths) {
             result = result.replaceAll(
                     String.format("\"%s\"", Pattern.quote(path)),
-                    String.format("\"%s\"", rewritePath(path)));
+                    String.format("\"%s\"", rewritePath(path,
+                            externalComponent -> handleBowerComponentImport(
+                                    javaFile, externalComponent),
+                            nonVaadinComponentPath -> handleNonVaadinComponent(
+                                    javaFile, nonVaadinComponentPath))));
         }
         return result;
     }
@@ -281,7 +289,28 @@ public class RewriteLegacyAnnotationsStep extends ClassPathIntrospector {
         return pattern.matcher(content).replaceAll(replacement);
     }
 
-    private String rewritePath(String path) {
+    private void handleBowerComponentImport(File javaFile,
+            String bowerComponentPath) {
+        getLogger().warn(
+                "External bower component {} is imported in the {} file, "
+                        + "a converted '@JsModule' "
+                        + "annotation requires also a `@NpmPackage` annotation with "
+                        + "a module name and a version. The migrated project won't "
+                        + "be built without this information.",
+                bowerComponentPath, javaFile.getPath());
+    }
+
+    private void handleNonVaadinComponent(File javaFile,
+            String nonVaadinComponentPath) {
+        getLogger().error(
+                "In {} file, added a JS module import '@JsModule(\"{}\")' "
+                        + "that you need to manually map to the correct package vendor from npm",
+                javaFile.getPath(), nonVaadinComponentPath);
+    }
+
+    private String rewritePath(String path,
+            Consumer<String> externalComponentHandler,
+            Consumer<String> nonVaadinComponentHandler) {
         String result = path;
         result = rewriteExtension(result, HTML_EXTENSION);
         result = rewriteExtension(result, CSS_EXTENSION);
@@ -293,14 +322,17 @@ public class RewriteLegacyAnnotationsStep extends ClassPathIntrospector {
         result = removePrefix(result,
                 ApplicationConstants.CONTEXT_PROTOCOL_PREFIX);
 
-        if (result.startsWith(AbstractCopyResourcesStep.BOWER_COMPONENTS)) {
+        if (result.startsWith(BOWER_COMPONENT_PREFIX)) {
             result = result.substring(
                     AbstractCopyResourcesStep.BOWER_COMPONENTS.length());
+            externalComponentHandler.accept(result);
             if (result.startsWith("/vaadin")) {
                 result = "@vaadin" + result;
             } else {
+                result = "NPM_VENDOR" + result;
                 getLogger().warn("Don't know how to resolve Html import '{}'",
                         path);
+                nonVaadinComponentHandler.accept(result);
             }
         } else if (result.startsWith("/")) {
             result = "." + result;

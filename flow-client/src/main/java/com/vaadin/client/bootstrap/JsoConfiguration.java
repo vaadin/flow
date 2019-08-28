@@ -19,7 +19,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.vaadin.client.ValueMap;
 
 /**
- * Helper class for reading configuration options from the bootstrap javascript
+ * Helper class for reading configuration options from the bootstrap javascript.
  *
  */
 public final class JsoConfiguration extends JavaScriptObject {
@@ -58,6 +58,19 @@ public final class JsoConfiguration extends JavaScriptObject {
      *         defined
      */
     public native ValueMap getConfigValueMap(String name)
+    /*-{
+        return this.getConfig(name);
+    }-*/;
+
+    /**
+     * Reads a configuration parameter as a String array.
+     *
+     * @param name
+     *            name of the configuration parameter
+     * @return value of the configuration parameter, or <code>null</code>if not
+     *         defined
+     */
+    public native String[] getConfigStringArray(String name)
     /*-{
         return this.getConfig(name);
     }-*/;

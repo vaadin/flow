@@ -10,7 +10,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 public class TwoAppsIT extends ChromeBrowserTest {
     @Override
     protected String getTestPath() {
-        return "/";
+        return "/both.html";
     }
 
     @Test
@@ -34,6 +34,16 @@ public class TwoAppsIT extends ChromeBrowserTest {
         Assert.assertEquals("Hello Hello from com.vaadin.flow.multiwar." + warId
                 + ".MainView", helloText.getText());
 
+    }
+
+    @Test
+    public void bothWebComponentsEmbedded() {
+        open();
+        WebElement hello1 = findElement(By.id("hello1"));
+        WebElement hello2 = findElement(By.id("hello2"));
+
+        Assert.assertEquals("Hello from com.vaadin.flow.multiwar.war1.HelloComponent", hello1.getText());
+        Assert.assertEquals("Hello from com.vaadin.flow.multiwar.war2.HelloComponent", hello2.getText());
     }
 
 }
