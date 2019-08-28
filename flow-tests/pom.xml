@@ -233,12 +233,13 @@
 
                 <!-- web component embedding -->
                 <module>test-embedding</module>
+                
+                <module>test-mixed</module>
 
                 <!-- tests running in both modes -->
                 <module>test-misc</module>
                 <module>test-misc/pom-bower.xml</module>
 
-                <module>test-mixed</module>
                 <module>test-mixed/pom-npm-production.xml</module>
                 <module>test-mixed/pom-bower-devmode.xml</module>
                 <module>test-mixed/pom-bower-production.xml</module>
