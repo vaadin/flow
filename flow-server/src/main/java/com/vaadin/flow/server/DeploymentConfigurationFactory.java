@@ -58,7 +58,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
  */
 public final class DeploymentConfigurationFactory implements Serializable {
 
-    public static final Object DEV_MODE_ENABLE_STRATEGY = new Object();
+    public static final Object DEV_MODE_ENABLE_STRATEGY = new Serializable() {
+    };
 
     public static final String ERROR_COMPATIBILITY_MODE_UNSET = "Unable to determine mode of operation. To use npm mode, ensure "
             + "'flow-build-info.json' exists on the classpath. With Maven, "
@@ -237,8 +238,8 @@ public final class DeploymentConfigurationFactory implements Serializable {
 
             boolean hasWebPackConfig = hasWebpackConfig(initParameters);
             boolean hasTokenFile = json != null;
-            Consumer<CompatibilityModeStatus> strategy = value -> devModeEnable(value,
-                    initParameters, hasTokenFile, hasWebPackConfig);
+            Consumer<CompatibilityModeStatus> strategy = value -> devModeEnable(
+                    value, initParameters, hasTokenFile, hasWebPackConfig);
             initParameters.put(DEV_MODE_ENABLE_STRATEGY, strategy);
         } catch (IOException e) {
             throw new UncheckedIOException(e);

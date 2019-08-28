@@ -364,6 +364,9 @@ public class FrontendUtils {
         DeploymentConfiguration config = service.getDeploymentConfiguration();
         InputStream content = null;
 
+        getLogger().warn(
+                "Getting stats content, production mode is: {}, enable dev server is: {}",
+                config.isProductionMode(), config.enableDevServer());
         if (!config.isProductionMode() && config.enableDevServer()) {
             content = getStatsFromWebpack();
         }
