@@ -216,6 +216,8 @@
                 <module>test-resources</module>
                 <module>test-common</module>
                 <module>test-pwa</module>
+                
+                <module>test-mixed</module>
 
                 <module>test-dev-mode</module>
                 <module>test-root-ui-context</module>
@@ -234,8 +236,6 @@
                 <!-- web component embedding -->
                 <module>test-embedding</module>
                 
-                <module>test-mixed</module>
-
                 <!-- tests running in both modes -->
                 <module>test-misc</module>
                 <module>test-misc/pom-bower.xml</module>

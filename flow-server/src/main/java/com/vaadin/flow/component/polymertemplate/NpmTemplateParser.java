@@ -107,10 +107,6 @@ public class NpmTemplateParser implements TemplateParser {
                     throw new UncheckedIOException(e);
                 }
             }
-            if (url.endsWith("my-component.js")) {
-                getLogger().warn("The content for tag {}, url {} is {}", tag,
-                        url, source);
-            }
             if (source == null) {
                 continue;
             }
