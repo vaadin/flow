@@ -310,9 +310,7 @@ public class JarContentsManager {
                 File tempFile = File.createTempFile(fullPath, null);
                 FileUtils.copyInputStreamToFile(
                         jarFile.getInputStream(jarEntry), tempFile);
-                long newChecksum = FileUtils.checksumCRC32(tempFile);
-                long oldChecksum = FileUtils.checksumCRC32(target);
-                if (newChecksum != oldChecksum) {
+                if (FileUtils.contentEquals(tempFile, target)) {
                     FileUtils.forceDelete(target);
                     FileUtils.moveFile(tempFile, target);
                 }
