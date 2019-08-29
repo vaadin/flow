@@ -310,7 +310,7 @@ public class JarContentsManager {
                 File tempFile = File.createTempFile(fullPath, null);
                 FileUtils.copyInputStreamToFile(
                         jarFile.getInputStream(jarEntry), tempFile);
-                if (FileUtils.contentEquals(tempFile, target)) {
+                if (!FileUtils.contentEquals(tempFile, target)) {
                     FileUtils.forceDelete(target);
                     FileUtils.moveFile(tempFile, target);
                 }
