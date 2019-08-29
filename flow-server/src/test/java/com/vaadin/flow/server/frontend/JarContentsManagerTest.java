@@ -19,13 +19,17 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 
+import org.apache.commons.io.FileUtils;
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -57,9 +61,8 @@ public class JarContentsManagerTest {
     @Test
     public void getFileContents_directoryInsteadOfJar() {
         expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage(
-                String.format("Expect '%s' to be an existing file",
-                        testDirectory.getRoot()));
+        expectedException.expectMessage(String.format(
+                "Expect '%s' to be an existing file", testDirectory.getRoot()));
 
         jarContentsManager.getFileContents(testDirectory.getRoot(), "test");
     }
@@ -89,8 +92,8 @@ public class JarContentsManagerTest {
 
     @Test
     public void getFileContents_nonExistingFile() {
-        byte[] fileContents = jarContentsManager
-                .getFileContents(testJar, "blah");
+        byte[] fileContents = jarContentsManager.getFileContents(testJar,
+                "blah");
 
         assertNull("Expect to have non-empty file from jar", fileContents);
     }
@@ -108,9 +111,8 @@ public class JarContentsManagerTest {
     @Test
     public void containsPath_directoryInsteadOfJar() {
         expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage(
-                String.format("Expect '%s' to be an existing file",
-                        testDirectory.getRoot()));
+        expectedException.expectMessage(String.format(
+                "Expect '%s' to be an existing file", testDirectory.getRoot()));
 
         jarContentsManager.containsPath(testDirectory.getRoot(), "test");
     }
@@ -142,8 +144,9 @@ public class JarContentsManagerTest {
     public void containsPath_nonExistingPath() {
         String nonExistingPath = "should not exist";
 
-        assertFalse(String.format("Test jar '%s' should not contain path '%s'",
-                testJar, nonExistingPath),
+        assertFalse(
+                String.format("Test jar '%s' should not contain path '%s'",
+                        testJar, nonExistingPath),
                 jarContentsManager.containsPath(testJar, nonExistingPath));
     }
 
@@ -158,10 +161,9 @@ public class JarContentsManagerTest {
     }
 
     /*
-    Test for issue:
-        flow fails to serve static resources from latest webjars #6241
-        https://github.com/vaadin/flow/issues/6241
-    */
+     * Test for issue: flow fails to serve static resources from latest webjars
+     * #6241 https://github.com/vaadin/flow/issues/6241
+     */
     @Test
     public void containsPath_missingDirectoryStructure_scansForMatch() {
         String existingPathLocal = "META-INF/resources/webjars/";
@@ -170,16 +172,15 @@ public class JarContentsManagerTest {
         assertTrue(
                 String.format("Test jar '%s' should contain path '%s'", testJar,
                         existingPathLocal),
-                jarContentsManager.containsPath(testJarLocal, existingPathLocal));
+                jarContentsManager.containsPath(testJarLocal,
+                        existingPathLocal));
     }
-
 
     @Test
     public void findFiles_directoryInsteadOfJar() {
         expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage(
-                String.format("Expect '%s' to be an existing file",
-                        testDirectory.getRoot()));
+        expectedException.expectMessage(String.format(
+                "Expect '%s' to be an existing file", testDirectory.getRoot()));
 
         jarContentsManager.findFiles(testDirectory.getRoot(), "test", "test");
     }
@@ -208,8 +209,8 @@ public class JarContentsManagerTest {
 
     @Test
     public void findFiles_nonExistingFile() {
-        List<String> result = jarContentsManager
-                .findFiles(testJar, "blah", "nope");
+        List<String> result = jarContentsManager.findFiles(testJar, "blah",
+                "nope");
 
         assertTrue("Expect to have empty results for non-existing file",
                 result.isEmpty());
@@ -225,11 +226,13 @@ public class JarContentsManagerTest {
 
         assertEquals(
                 String.format("Expect '%s' WebJar to contain two '%s' files",
-                        resourceName, searchName), 2, bowerJsons.size());
+                        resourceName, searchName),
+                2, bowerJsons.size());
         assertTrue(String.format(
                 "Expect all found paths to end with the file name searched for: '%s'",
-                searchName), bowerJsons.stream()
-                .allMatch(path -> path.endsWith('/' + searchName)));
+                searchName),
+                bowerJsons.stream()
+                        .allMatch(path -> path.endsWith('/' + searchName)));
     }
 
     @Test
@@ -238,9 +241,8 @@ public class JarContentsManagerTest {
         String testPath = "META-INF/resources/webjars/highcharts/5.0.14/";
         String searchName = "bower.json";
 
-        List<String> bowerJson = jarContentsManager
-                .findFiles(TestUtils.getTestJar(resourceName), testPath,
-                        searchName);
+        List<String> bowerJson = jarContentsManager.findFiles(
+                TestUtils.getTestJar(resourceName), testPath, searchName);
 
         assertEquals(String.format(
                 "Expect '%s' WebJar to contain one '%s' file in directory '%s'",
@@ -283,32 +285,29 @@ public class JarContentsManagerTest {
     @Test
     public void copyFilesFromJar_directoryInsteadOfJar() {
         expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage(
-                String.format("Expect '%s' to be an existing file",
-                        testDirectory.getRoot()));
+        expectedException.expectMessage(String.format(
+                "Expect '%s' to be an existing file", testDirectory.getRoot()));
 
-        jarContentsManager
-                .copyFilesFromJarTrimmingBasePath(testDirectory.getRoot(), null,
-                        testDirectory.getRoot());
+        jarContentsManager.copyFilesFromJarTrimmingBasePath(
+                testDirectory.getRoot(), null, testDirectory.getRoot());
     }
 
     @Test
     public void copyFilesFromJar_nullOutputDirectory() {
         expectedException.expect(NullPointerException.class);
 
-        jarContentsManager
-                .copyFilesFromJarTrimmingBasePath(testJar, null, null);
+        jarContentsManager.copyFilesFromJarTrimmingBasePath(testJar, null,
+                null);
     }
 
     @Test
     public void copyFilesFromJar_fileInsteadOfDirectory() {
         expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage(
-                String.format("Expect '%s' to be an existing directory",
-                        testJar));
+        expectedException.expectMessage(String
+                .format("Expect '%s' to be an existing directory", testJar));
 
-        jarContentsManager
-                .copyFilesFromJarTrimmingBasePath(testJar, null, testJar);
+        jarContentsManager.copyFilesFromJarTrimmingBasePath(testJar, null,
+                testJar);
     }
 
     @Test
@@ -434,9 +433,8 @@ public class JarContentsManagerTest {
         File testJar = TestUtils.getTestJar("paper-button-2.0.0.jar");
         List<String> originalFiles = listFilesInJar(testJar, jarDirectory);
 
-        jarContentsManager
-                .copyFilesFromJarTrimmingBasePath(testJar, jarDirectory,
-                        outputDirectory);
+        jarContentsManager.copyFilesFromJarTrimmingBasePath(testJar,
+                jarDirectory, outputDirectory);
 
         Set<String> copiedFiles = new HashSet<>(
                 TestUtils.listFilesRecursively(outputDirectory));
@@ -448,8 +446,77 @@ public class JarContentsManagerTest {
 
         copiedFiles.forEach(copiedFile -> assertTrue(String.format(
                 "Failed to find copied file '%s' in files '%s' from jar '%s'",
-                copiedFile, originalFiles, testJar), originalFiles.stream()
-                .anyMatch(file -> file.endsWith(copiedFile))));
+                copiedFile, originalFiles, testJar),
+                originalFiles.stream()
+                        .anyMatch(file -> file.endsWith(copiedFile))));
+    }
+
+    @Test
+    public void copyFilesFromJar_doNotUpdateFileIfContentIsTheSame() {
+        File outputDirectory = testDirectory.getRoot();
+        String jarDirectory = "META-INF/resources/webjars/paper-button";
+        File testJar = TestUtils.getTestJar("paper-button-2.0.0.jar");
+        File jsonFile = copyFilesFromJar(outputDirectory, jarDirectory,
+                testJar);
+
+        long timestamp = System.currentTimeMillis();
+        Assert.assertTrue(FileUtils.isFileOlder(jsonFile, timestamp));
+
+        jarContentsManager.copyFilesFromJarTrimmingBasePath(testJar,
+                jarDirectory, outputDirectory);
+
+        // The file is still older
+        Assert.assertTrue(FileUtils.isFileOlder(jsonFile, timestamp));
+    }
+
+    @Test
+    public void copyFilesFromJar_updateFileIfContentIsNotTheSame()
+            throws IOException {
+        File outputDirectory = testDirectory.getRoot();
+        String jarDirectory = "META-INF/resources/webjars/paper-button";
+        File testJar = TestUtils.getTestJar("paper-button-2.0.0.jar");
+        File jsonFile = copyFilesFromJar(outputDirectory, jarDirectory,
+                testJar);
+
+        String originalContent = FileUtils
+                .readLines(jsonFile, StandardCharsets.UTF_8).stream()
+                .collect(Collectors.joining(""));
+
+        String content = "{}";
+        FileUtils.write(jsonFile, content, StandardCharsets.UTF_8);
+
+        jarContentsManager.copyFilesFromJarTrimmingBasePath(testJar,
+                jarDirectory, outputDirectory);
+
+        Assert.assertNotEquals(content,
+                FileUtils.readLines(jsonFile, StandardCharsets.UTF_8).stream()
+                        .collect(Collectors.joining("")));
+        Assert.assertEquals(originalContent,
+                FileUtils.readLines(jsonFile, StandardCharsets.UTF_8).stream()
+                        .collect(Collectors.joining("")));
+    }
+
+    private File copyFilesFromJar(File outputDirectory, String jarDirectory,
+            File testJar) {
+        List<String> originalFiles = listFilesInJar(testJar, jarDirectory);
+
+        Optional<String> json = originalFiles.stream()
+                .filter(fileName -> fileName.endsWith(".json")).findFirst();
+
+        // self check
+        assert json.isPresent();
+
+        String jsonPath = json.get();
+        jsonPath = jsonPath.substring(jarDirectory.length() + 1);
+
+        jarContentsManager.copyFilesFromJarTrimmingBasePath(testJar,
+                jarDirectory, outputDirectory);
+
+        File jsonFile = new File(outputDirectory, jsonPath);
+
+        // self check
+        assert jsonFile.exists();
+        return jsonFile;
     }
 
     private List<String> listFilesInJar(File jar, String jarDirectory) {
