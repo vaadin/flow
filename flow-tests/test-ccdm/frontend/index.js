@@ -25,9 +25,11 @@ document.getElementById("button2").addEventListener('click', async e => {
 
 document.getElementById('button3').addEventListener('click', async e => {
     const route = document.getElementById('routeValue').value;
-    const view = await flow.navigate({path: route});
+    const view = await flow.route({pathname: route});
     const div = document.getElementById('div3');
     div.innerHTML = '';
+
+    await view.onBeforeEnter({pathname: route}, {prevent: () => {}});
 
     const result = document.createElement('result');
     result.id = 'result';
