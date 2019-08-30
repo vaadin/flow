@@ -66,7 +66,6 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
@@ -194,8 +193,12 @@ public class DevModeInitializer implements ServletContainerInitializer,
     private static final Pattern JAR_FILE_REGEX = Pattern
             .compile(".*file:(.+\\.jar).*");
 
-    private static final Pattern DIR_REGEX = Pattern
-            .compile("^(?:file:)?(.+)" + RESOURCES_FRONTEND_DEFAULT + "$");
+    private static final Pattern DIR_REGEX_FRONTEND_DEFAULT = Pattern.compile(
+            "^(?:file:)?(.+)" + Constants.RESOURCES_FRONTEND_DEFAULT + "$");
+
+    private static final Pattern DIR_REGEX_COMPATIBILITY_FRONTEND_DEFAULT = Pattern
+            .compile("^(?:file:)?(.+)"
+                    + Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT + "$");
 
     @Override
     public void onStartup(Set<Class<?>> classes, ServletContext context)
@@ -338,29 +341,47 @@ public class DevModeInitializer implements ServletContainerInitializer,
      * META-INF/resources/frontend folder. We don't use URLClassLoader because
      * will fail in Java 9+
      */
-    static Set<File> getFrontendLocationsFromClassloader(ClassLoader classLoader) {
+    static Set<File> getFrontendLocationsFromClassloader(
+            ClassLoader classLoader) {
+        Set<File> jarFiles = new HashSet<>();
+        jarFiles.addAll(getJarFilesFromClassloader(classLoader,
+                Constants.RESOURCES_FRONTEND_DEFAULT));
+        jarFiles.addAll(getJarFilesFromClassloader(classLoader,
+                Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT));
+        return jarFiles;
+    }
+
+    private static Set<File> getJarFilesFromClassloader(ClassLoader classLoader,
+            String resourcesFolder) {
         Set<File> jarFiles = new HashSet<>();
         try {
-            Enumeration<URL> en = classLoader
-                    .getResources(RESOURCES_FRONTEND_DEFAULT);
-
+            Enumeration<URL> en = classLoader.getResources(resourcesFolder);
+            if (en == null) {
+                return jarFiles;
+            }
             while (en.hasMoreElements()) {
                 URL url = en.nextElement();
-                String path = URLDecoder
-                        .decode(url.getPath(), StandardCharsets.UTF_8.name());
+                String path = URLDecoder.decode(url.getPath(),
+                        StandardCharsets.UTF_8.name());
                 Matcher jarMatcher = JAR_FILE_REGEX.matcher(path);
-                Matcher dirMatcher = DIR_REGEX.matcher(path);
+                Matcher dirMatcher = DIR_REGEX_FRONTEND_DEFAULT.matcher(path);
+                Matcher dirCompatibilityMatcher = DIR_REGEX_COMPATIBILITY_FRONTEND_DEFAULT
+                        .matcher(path);
                 if (jarMatcher.find()) {
                     jarFiles.add(new File(jarMatcher.group(1)));
                 } else if (dirMatcher.find()) {
                     jarFiles.add(new File(dirMatcher.group(1)));
+                } else if (dirCompatibilityMatcher.find()) {
+                    jarFiles.add(new File(dirCompatibilityMatcher.group(1)));
                 } else {
                     log().warn(
                             "Resource {} not visited because does not meet supported formats.",
                             url.getPath());
                 }
             }
-        } catch (IOException e) {
+        } catch (
+
+        IOException e) {
             throw new UncheckedIOException(e);
         }
         return jarFiles;

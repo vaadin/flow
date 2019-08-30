@@ -37,6 +37,7 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
+import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
@@ -167,8 +168,7 @@ public abstract class NodeUpdater implements FallibleCommand {
             // flow components
             // have the './' prefix
             String resource = resolved.replaceFirst("^./+", "");
-            if (finder.getResource(
-                    RESOURCES_FRONTEND_DEFAULT + "/" + resource) != null) {
+            if (hasMetaInfResource(resource)) {
                 if (!resolved.startsWith("./")) {
                     log().warn(
                             "Use the './' prefix for files in JAR files: '{}', please update your component.",
@@ -178,6 +178,13 @@ public abstract class NodeUpdater implements FallibleCommand {
             }
         }
         return resolved;
+    }
+
+    private boolean hasMetaInfResource(String resource) {
+        return finder.getResource(
+                RESOURCES_FRONTEND_DEFAULT + "/" + resource) != null
+                || finder.getResource(COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT
+                        + "/" + resource) != null;
     }
 
     JsonObject getMainPackageJson() throws IOException {
