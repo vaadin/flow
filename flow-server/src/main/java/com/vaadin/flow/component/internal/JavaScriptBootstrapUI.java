@@ -86,7 +86,7 @@ class JavaScriptBootstrapUI extends UI {
         wrapperElement.executeJs("$0.serverConnected()");
     }
 
-    private HasElement getViewForRoute(String route) {
+    HasElement getViewForRoute(String route) {
         if (route.startsWith("/")) {
             route = route.replaceFirst("/+", "");
         }

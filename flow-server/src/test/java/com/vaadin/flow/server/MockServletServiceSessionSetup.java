@@ -254,7 +254,7 @@ public class MockServletServiceSessionSetup {
     private TestVaadinServlet servlet;
     private TestVaadinServletService service;
     private MockDeploymentConfiguration deploymentConfiguration = new MockDeploymentConfiguration();
-
+    
     public MockServletServiceSessionSetup() throws Exception {
         this(true);
     }
