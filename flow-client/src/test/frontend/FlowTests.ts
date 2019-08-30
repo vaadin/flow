@@ -135,8 +135,9 @@ suite("Flow", () => {
     stubServerRemoteFunction('foobar-12345');
     mockInitResponse('foobar-12345');
 
-    return new Flow()
-      .route({pathname: 'Foo/Bar.baz'})
+    const route = new Flow().route;
+
+    return route.action({pathname: 'Foo/Bar.baz'})
       .then(async(elem) => {
 
         // Check that flowInit() was called
@@ -157,9 +158,40 @@ suite("Flow", () => {
         assert.equal(1, elem.children.length);
       });
   });
+
+  test("should be possible to cancel navigation when using router API", () => {
+    stubServerRemoteFunction('foobar-12345', true);
+    mockInitResponse('foobar-12345');
+
+    const route = new Flow().route;
+
+    return route.action({pathname: 'Foo/Bar.baz'})
+      .then(async(elem) => {
+
+        // Check that flowInit() was called
+        assert.isDefined((window as any).Vaadin.Flow.resolveUri);
+        // Assert that flowRoot namespace was created
+        assert.isDefined(flowRoot.$);
+        // Assert that container was created and put in the flowRoot
+        assert.isDefined(flowRoot.$['foobar-12345']);
+
+        // Assert server side has not put anything in the container
+        assert.equal(0, elem.children.length);
+
+        // When using router API, it should expose the onBeforeEnter handler
+        assert.isDefined(elem.onBeforeEnter);
+
+        // @ts-ignore
+        const promise = elem.onBeforeEnter({pathname: 'Foo/Bar.baz'}, {prevent: () => {
+          return {cancel: true};
+        }});
+
+        promise.then(obj => assert.isTrue(obj.cancel));
+      });
+  });
 });
 
-function stubServerRemoteFunction(id: string) {
+function stubServerRemoteFunction(id: string, cancel: boolean = false) {
   // Stub remote function exported in JavaScriptBootstrapUI.
   flowRoot.$server = {
     connectClient: (localName: string, elemId: string, route: string) => {
@@ -176,7 +208,7 @@ function stubServerRemoteFunction(id: string) {
       flowRoot.$[elemId].appendChild(document.createElement('div'));
 
       // Resolve the promise
-      flowRoot.$[elemId].serverConnected();
+      flowRoot.$[elemId].serverConnected(cancel);
     }
   };
 }
