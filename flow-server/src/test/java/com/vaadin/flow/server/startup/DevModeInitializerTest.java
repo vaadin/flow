@@ -2,6 +2,7 @@ package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRegistration;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -27,13 +28,13 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.DevModeHandlerTest;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.DevModeInitializer.VisitedClasses;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_REUSE_DEV_SERVER;
@@ -86,7 +87,7 @@ public class DevModeInitializerTest {
     public final TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     @Before
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public void setup() throws Exception {
         String baseDir = temporaryFolder.getRoot().getPath();
 
@@ -94,7 +95,8 @@ public class DevModeInitializerTest {
         createStubWebpackServer("Compiled", 0, baseDir);
 
         servletContext = Mockito.mock(ServletContext.class);
-        ServletRegistration registration = Mockito.mock(ServletRegistration.class);
+        ServletRegistration registration = Mockito
+                .mock(ServletRegistration.class);
 
         initParams = new HashMap<>();
         initParams.put(FrontendUtils.PROJECT_BASEDIR, baseDir);
@@ -145,29 +147,16 @@ public class DevModeInitializerTest {
     }
 
     @Test
-    public void loadingJars_allFilesExist() throws IOException {
-        // Create jar urls for test
-        URL jar = new URL("jar:" + this.getClass().getResource("/").toString()
-                .replace("target/test-classes/", "")
-                + "src/test/resources/with%20space/jar-with-frontend-resources.jar!/META-INF/resources/frontend");
-        List<URL> urls = new ArrayList<>();
-        urls.add(jar);
+    public void loadingJars_useModernResourcesFolder_allFilesExist()
+            throws IOException {
+        loadingJars_allFilesExist(Constants.RESOURCES_FRONTEND_DEFAULT);
+    }
 
-        // Create mock loader with the single jar to be found
-        ClassLoader classLoader = Mockito.mock(ClassLoader.class);
-        Mockito.when(classLoader.getResources(RESOURCES_FRONTEND_DEFAULT))
-                .thenReturn(Collections.enumeration(urls));
-
-        // load jars from classloader
-        List<File> jarFilesFromClassloader = new ArrayList<>(
-                devModeInitializer.getJarFilesFromClassloader(classLoader));
-
-        // Assert that jar was found and accepted
-        assertEquals("One jar should have been found and added as a File", 1,
-                jarFilesFromClassloader.size());
-        // Assert that the file can be found from the filesystem by the given path.
-        assertTrue("File in path 'with space' doesn't load from given path",
-                jarFilesFromClassloader.get(0).exists());
+    @Test
+    public void loadingJars_useObsoleteResourcesFolder_allFilesExist()
+            throws IOException {
+        loadingJars_allFilesExist(
+                Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT);
     }
 
     @Test
@@ -177,8 +166,7 @@ public class DevModeInitializerTest {
     }
 
     @Test
-    public void should_Run_Updaters_when_NoNodeConfFiles()
-            throws Exception {
+    public void should_Run_Updaters_when_NoNodeConfFiles() throws Exception {
         webpackFile.delete();
         mainPackageFile.delete();
         appPackageFile.delete();
@@ -194,8 +182,7 @@ public class DevModeInitializerTest {
     }
 
     @Test
-    public void should_Run_Updaters_when_NoAppPackageFile()
-            throws Exception {
+    public void should_Run_Updaters_when_NoAppPackageFile() throws Exception {
         appPackageFile.delete();
         devModeInitializer.onStartup(classes, servletContext);
         assertNotNull(DevModeHandler.getDevModeHandler());
@@ -227,14 +214,17 @@ public class DevModeInitializerTest {
 
     @Test
     public void should_Not_AddContextListener() throws Exception {
-        ArgumentCaptor<? extends EventListener> arg = ArgumentCaptor.forClass(EventListener.class);
+        ArgumentCaptor<? extends EventListener> arg = ArgumentCaptor
+                .forClass(EventListener.class);
 
         devModeInitializer.onStartup(classes, servletContext);
-        Mockito.verify(servletContext, Mockito.never()).addListener(arg.capture());
+        Mockito.verify(servletContext, Mockito.never())
+                .addListener(arg.capture());
     }
 
     @Test
-    public void listener_should_stopDevModeHandler_onDestroy() throws Exception {
+    public void listener_should_stopDevModeHandler_onDestroy()
+            throws Exception {
         initParams.put(SERVLET_PARAMETER_REUSE_DEV_SERVER, "false");
 
         devModeInitializer.onStartup(classes, servletContext);
@@ -269,6 +259,34 @@ public class DevModeInitializerTest {
         assertFalse(
                 "Dependencies are  not ok for an unvisited class without dependencies if super class is not ok",
                 visited.allDependenciesVisited(WithDepsSubclass.class));
+    }
+
+    private void loadingJars_allFilesExist(String resourcesFolder)
+            throws IOException {
+        // Create jar urls for test
+        URL jar = new URL("jar:"
+                + this.getClass().getResource("/").toString()
+                        .replace("target/test-classes/", "")
+                + "src/test/resources/with%20space/jar-with-frontend-resources.jar!/META-INF/resources/frontend");
+        List<URL> urls = new ArrayList<>();
+        urls.add(jar);
+
+        // Create mock loader with the single jar to be found
+        ClassLoader classLoader = Mockito.mock(ClassLoader.class);
+        Mockito.when(classLoader.getResources(resourcesFolder))
+                .thenReturn(Collections.enumeration(urls));
+
+        // load jars from classloader
+        List<File> jarFilesFromClassloader = new ArrayList<>(
+                devModeInitializer.getJarFilesFromClassloader(classLoader));
+
+        // Assert that jar was found and accepted
+        assertEquals("One jar should have been found and added as a File", 1,
+                jarFilesFromClassloader.size());
+        // Assert that the file can be found from the filesystem by the given
+        // path.
+        assertTrue("File in path 'with space' doesn't load from given path",
+                jarFilesFromClassloader.get(0).exists());
     }
 
 }

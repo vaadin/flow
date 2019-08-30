@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.FallibleCommand;
 
+import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
@@ -74,11 +75,13 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
             jarContentsManager.copyIncludedFilesFromJarTrimmingBasePath(jarFile,
                     RESOURCES_FRONTEND_DEFAULT, targetDirectory,
                     WILDCARD_INCLUSIONS);
+            jarContentsManager.copyIncludedFilesFromJarTrimmingBasePath(jarFile,
+                    COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT, targetDirectory,
+                    WILDCARD_INCLUSIONS);
         }
         long ms = (System.nanoTime() - start) / 1000000;
         log().info("Visited {} jar files. Took {} ms.", jarFiles.size(), ms);
     }
-
 
     private void createTargetFolder() {
         try {

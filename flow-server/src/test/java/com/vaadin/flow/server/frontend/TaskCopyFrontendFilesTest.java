@@ -37,16 +37,29 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     @Test
-    public void should_collectJsAndCssFilesFromJars() throws IOException {
+    public void should_collectJsAndCssFilesFromJars_obsoleteResourceFolder()
+            throws IOException {
+        should_collectJsAndCssFilesFromJars("jar-with-frontend-resources.jar");
+    }
+
+    @Test
+    public void should_collectJsAndCssFilesFromJars_modernResourceFolder()
+            throws IOException {
+        should_collectJsAndCssFilesFromJars("jar-with-modern-frontend.jar");
+    }
+
+    private void should_collectJsAndCssFilesFromJars(String jarFile)
+            throws IOException {
         // creating non-existing folder to make sure the execute() creates
         // the folder if missing
         File npmFolder = new File(temporaryFolder.newFolder(), "child/");
-        File targetFolder = new File(npmFolder, NODE_MODULES + FLOW_NPM_PACKAGE_NAME);
+        File targetFolder = new File(npmFolder,
+                NODE_MODULES + FLOW_NPM_PACKAGE_NAME);
 
         // contains:
         // - ExampleConnector.js
         // - inline.css
-        File jar = TestUtils.getTestJar("jar-with-frontend-resources.jar");
+        File jar = TestUtils.getTestJar(jarFile);
 
         TaskCopyFrontendFiles task = new TaskCopyFrontendFiles(npmFolder,
                 jars(jar));
