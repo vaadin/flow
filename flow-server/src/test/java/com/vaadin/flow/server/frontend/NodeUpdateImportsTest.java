@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.server.Constants;
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
@@ -43,6 +44,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+import org.mockito.internal.util.collections.Sets;
 import org.slf4j.Logger;
 import org.slf4j.impl.SimpleLogger;
 
@@ -52,8 +54,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAM
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
@@ -159,6 +160,74 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                         "To fix the build remove `node_modules` directory to reset modules."),
                 CoreMatchers.containsString(
                         "In addition you may run `npm install` to fix `node_modules` tree structure.")));
+    }
+
+    @Test
+    public void getModuleLines_oneFrontendDependencyDoesntExist_throwExceptionAndlogExplanation() {
+        useMockLog = true;
+        Mockito.when(logger.isInfoEnabled()).thenReturn(true);
+        boolean atLeastOneRemoved = false;
+        for (String imprt : getExpectedImports()) {
+            if (imprt.equals("./foo.js")) {
+                Assert.assertTrue(resolveImportFile(frontendDirectory,
+                        frontendDirectory, imprt).delete());
+                atLeastOneRemoved = true;
+            }
+        }
+        Assert.assertTrue(atLeastOneRemoved);
+
+        IllegalStateException illegalStateException = null;
+        try {
+            updater.execute();
+        } catch (IllegalStateException e) {
+            illegalStateException = e;
+        }
+        assertNotNull(illegalStateException);
+
+        assertThat(illegalStateException.getCause().getMessage(),
+                CoreMatchers.containsString(getFormattedFrontendErrorMessage(Sets.newSet("./foo.js"))));
+    }
+
+    @Test
+    public void getModuleLines_multipleFrontendDependencyDoesntExist_throwExceptionAndlogExplanation() {
+        useMockLog = true;
+        Mockito.when(logger.isInfoEnabled()).thenReturn(true);
+        boolean atLeastOneRemoved = false;
+        for (String imprt : getExpectedImports()) {
+            if (imprt.equals("./foo.js") || imprt.equals("./local-template.js")) {
+                Assert.assertTrue(resolveImportFile(frontendDirectory,
+                        frontendDirectory, imprt).delete());
+                atLeastOneRemoved = true;
+            }
+        }
+        Assert.assertTrue(atLeastOneRemoved);
+
+        IllegalStateException illegalStateException = null;
+        try {
+            updater.execute();
+        } catch (IllegalStateException e) {
+            illegalStateException = e;
+        }
+        assertNotNull(illegalStateException);
+
+        assertThat(illegalStateException.getCause().getMessage(),
+                CoreMatchers.containsString(getFormattedFrontendErrorMessage(Sets.newSet("./local-template.js", "./foo.js"))));
+    }
+
+    private String getFormattedFrontendErrorMessage(Set<String> resourcesNotFound) {
+        String prefix =  "Failed to find the following files: ";
+
+        String suffix = String.format(
+                "%n  Locations searched were:"
+                        + "%n      - `%s` in this project"
+                        + "%n      - `%s` in included JARs"
+                        + "%n%n  Please, double check that those files exist. If you use a custom directory "
+                        + "for your resource files instead of default "
+                        + "`frontend` folder then make sure you it's correctly configured "
+                        + "(e.g. set '%s' property)", frontendDirectory.getPath(), Constants.RESOURCES_FRONTEND_DEFAULT, FrontendUtils.PARAM_FRONTEND_DIR);
+
+        return String.format("%n%n  %s%n      - %s%n  %s%n%n", prefix,
+                String.join("\n      - ", resourcesNotFound), suffix);
     }
 
     @Test
