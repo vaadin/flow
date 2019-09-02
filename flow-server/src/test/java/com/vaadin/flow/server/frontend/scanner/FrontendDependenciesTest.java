@@ -16,6 +16,8 @@
 package com.vaadin.flow.server.frontend.scanner;
 
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -27,6 +29,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinServiceInitListener;
+import com.vaadin.flow.server.frontend.scanner.samples.JsOrderComponent;
 import com.vaadin.flow.server.frontend.scanner.samples.MyServiceListener;
 import com.vaadin.flow.server.frontend.scanner.samples.MyUIInitListener;
 import com.vaadin.flow.server.frontend.scanner.samples.RouteComponent;
@@ -100,6 +103,21 @@ public class FrontendDependenciesTest {
         Set<String> scripts = dependencies.getScripts();
         Assert.assertEquals(1, scripts.size());
         Assert.assertEquals("foobar.js", scripts.iterator().next());
+    }
+
+    @Test
+    public void jsScriptOrderIsPreserved() throws ClassNotFoundException {
+        Mockito.when(classFinder.getAnnotatedClasses(Route.class))
+                .thenReturn(Collections.singleton(JsOrderComponent.class));
+        FrontendDependencies dependencies = new FrontendDependencies(
+                classFinder, false);
+
+        Set<String> scripts = dependencies.getScripts();
+        Assert.assertEquals(LinkedHashSet.class, scripts.getClass());
+        Iterator<String> iterator = scripts.iterator();
+        Assert.assertEquals("a.js", iterator.next());
+        Assert.assertEquals("b.js", iterator.next());
+        Assert.assertEquals("c.js", iterator.next());
     }
 
 }

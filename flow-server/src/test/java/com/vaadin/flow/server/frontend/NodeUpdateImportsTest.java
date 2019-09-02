@@ -311,6 +311,14 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 "styles/styles.js");
     }
 
+    @Test
+    public void jsModulesOrderIsPreservedAnsAfterJsModules() throws Exception {
+        updater.execute();
+
+        assertImportOrder("jsmodule/g.js", "javascript/a.js", "javascript/b.js",
+                "javascript/c.js");
+    }
+
     private void assertContainsImports(boolean contains, String... imports)
             throws IOException {
         String content = FileUtils.readFileToString(importsFile,
@@ -322,7 +330,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     private void assertContains(String content, boolean contains,
-                                String... checks) {
+            String... checks) {
         for (String importString : checks) {
             boolean result = content.contains(importString);
             String message = "\n  " + (contains ? "NOT " : "") + "FOUND '"
