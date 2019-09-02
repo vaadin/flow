@@ -249,7 +249,7 @@ public class DeploymentConfigurationFactoryTest {
             throws Exception {
         exception.expect(IllegalStateException.class);
         exception.expectMessage(
-                "The compatibility mode is explicitely set to 'false'");
+                "The compatibility mode is explicitly set to 'false'");
         DeploymentConfigurationFactory.createDeploymentConfiguration(
                 VaadinServlet.class,
                 createServletConfigMock(Collections.singletonMap(
@@ -279,7 +279,7 @@ public class DeploymentConfigurationFactoryTest {
             throws Exception {
         exception.expect(IllegalStateException.class);
         exception.expectMessage(
-                "The compatibility mode is explicitely set to 'false'");
+                "The compatibility mode is explicitly set to 'false'");
 
         Map<String, String> map = new HashMap<>();
         map.put(FrontendUtils.PROJECT_BASEDIR,
