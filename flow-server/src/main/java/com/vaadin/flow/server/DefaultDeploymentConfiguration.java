@@ -267,7 +267,7 @@ public class DefaultDeploymentConfiguration
                 .get(DeploymentConfigurationFactory.DEV_MODE_ENABLE_STRATEGY);
         if (consumer != null) {
             if (explicitlySet && !compatibilityMode) {
-                consumer.accept(CompatibilityModeStatus.EXPLICITELY_SET_FALSE);
+                consumer.accept(CompatibilityModeStatus.EXPLICITLY_SET_FALSE);
             } else if (!explicitlySet) {
                 consumer.accept(CompatibilityModeStatus.UNDEFINED);
             }

@@ -465,7 +465,7 @@ public class FrontendUtils {
      *
      * @param file
      *            a file to check
-     * @return {@code true} if the file exists and includes a generated
+     * @return {@code true} iff the file exists and includes a generated
      *         configuration
      * @throws IOException
      *             if an I/O error occurs while reading the file

@@ -69,7 +69,7 @@ public final class DeploymentConfigurationFactory implements Serializable {
             + "property 'vaadin.compatibilityMode' to 'true' in "
             + "'application.properties'.";
 
-    public static final String ERROR_DEV_MODE_NO_FILES = "The compatibility mode is explicitely set to 'false', "
+    public static final String ERROR_DEV_MODE_NO_FILES = "The compatibility mode is explicitly set to 'false', "
             + "but there are neither 'flow-build-info.json' nor 'webpack.config.js' file available in "
             + "the project/working directory. Ensure 'webpack.config.js' is present or trigger creation of "
             + "'flow-build-info.json' via running 'prepare-frontend' Maven goal.";
@@ -239,7 +239,7 @@ public final class DeploymentConfigurationFactory implements Serializable {
             boolean hasWebPackConfig = hasWebpackConfig(initParameters);
             boolean hasTokenFile = json != null;
             SerializableConsumer<CompatibilityModeStatus> strategy = value -> verifyMode(
-                    value, initParameters, hasTokenFile, hasWebPackConfig);
+                    value, hasTokenFile, hasWebPackConfig);
             initParameters.put(DEV_MODE_ENABLE_STRATEGY, strategy);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -248,8 +248,7 @@ public final class DeploymentConfigurationFactory implements Serializable {
     }
 
     private static void verifyMode(CompatibilityModeStatus value,
-            Properties initParameters, boolean hasTokenFile,
-            boolean hasWebpackConfig) {
+            boolean hasTokenFile, boolean hasWebpackConfig) {
         // Don't handle the case when compatibility mode is enabled.
 
         // If no compatibility mode setting is defined

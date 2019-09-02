@@ -23,6 +23,6 @@ package com.vaadin.flow.server;
  */
 enum CompatibilityModeStatus {
 
-    EXPLICITELY_SET_FALSE, // explicitly set to false
+    EXPLICITLY_SET_FALSE, // explicitly set to false
     UNDEFINED; // no explicit value
 }
