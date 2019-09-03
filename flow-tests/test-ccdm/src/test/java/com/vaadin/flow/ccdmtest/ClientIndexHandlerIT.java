@@ -148,7 +148,7 @@ public class ClientIndexHandlerIT extends ChromeBrowserTest {
         openTestUrl("/");
         waitForElementPresent(By.id("button3"));
 
-        findElement(By.id("routeValue")).sendKeys("/");
+        findElement(By.id("pathname")).sendKeys("/");
         findElement(By.id("button3")).click();
         waitForElementPresent(By.id("result"));
 
@@ -162,7 +162,7 @@ public class ClientIndexHandlerIT extends ChromeBrowserTest {
         openTestUrl("/");
         waitForElementPresent(By.id("button3"));
 
-        findElement(By.id("routeValue")).sendKeys("serverview");
+        findElement(By.id("pathname")).sendKeys("serverview");
         findElement(By.id("button3")).click();
         waitForElementPresent(By.id("result"));
 
@@ -179,7 +179,7 @@ public class ClientIndexHandlerIT extends ChromeBrowserTest {
         openTestUrl("/");
         waitForElementPresent(By.id("button3"));
 
-        findElement(By.id("routeValue")).sendKeys("paramview/123");
+        findElement(By.id("pathname")).sendKeys("paramview/123");
         findElement(By.id("button3")).click();
         waitForElementPresent(By.id("result"));
 
@@ -195,7 +195,7 @@ public class ClientIndexHandlerIT extends ChromeBrowserTest {
         openTestUrl("/");
         waitForElementPresent(By.id("button3"));
 
-        findElement(By.id("routeValue")).sendKeys("not-existing-view");
+        findElement(By.id("pathname")).sendKeys("not-existing-view");
         findElement(By.id("button3")).click();
         waitForElementPresent(By.id("result"));
 

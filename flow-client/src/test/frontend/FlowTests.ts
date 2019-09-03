@@ -72,9 +72,9 @@ suite("Flow", () => {
     mockInitResponse('foobar-1111111');
 
     return new Flow()
-      .navigate({path: "Foo/Bar.baz"})
+      .navigate({pathname: "Foo/Bar.baz"})
       .then(() => {
-        // Check that start() was called
+        // Check that flowInit() was called
         assert.isDefined((window as any).Vaadin.Flow.resolveUri);
 
         // Assert that element was created amd put in flowRoot so as server can find it
@@ -107,7 +107,7 @@ suite("Flow", () => {
     });
 
     return router
-      .navigate({path: 'another-route'})
+      .navigate({pathname: 'another-route'})
       .then(elem => {
         assert.isDefined(elem);
       });
@@ -119,10 +119,10 @@ suite("Flow", () => {
 
     const flow = new Flow();
     return flow
-      .navigate({path: "Foo"})
+      .navigate({pathname: "Foo"})
       .then(e1 => {
         return flow
-        .navigate({path: "Bar"})
+        .navigate({pathname: "Bar"})
         .then(e2 => {
           assert.equal(1, Object.keys(flowRoot.$).length);
           assert.equal(e1, e2);
@@ -130,14 +130,85 @@ suite("Flow", () => {
         });
       });
   });
+
+  test("navigation should be delayed to onBeforeEnter when using router API", () => {
+    stubServerRemoteFunction('foobar-12345');
+    mockInitResponse('foobar-12345');
+
+    const route = new Flow().route;
+
+    return route.action({pathname: 'Foo/Bar.baz'})
+      .then(async(elem) => {
+
+        // Check that flowInit() was called
+        assert.isDefined((window as any).Vaadin.Flow.resolveUri);
+        // Assert that flowRoot namespace was created
+        assert.isDefined(flowRoot.$);
+        // Assert that container was created and put in the flowRoot
+        assert.isDefined(flowRoot.$['foobar-12345']);
+
+        // Assert server side has not put anything in the container
+        assert.equal(0, elem.children.length);
+
+        // When using router API, it should expose the onBeforeEnter handler
+        assert.isDefined(elem.onBeforeEnter);
+        elem.onBeforeEnter && elem.onBeforeEnter({pathname: 'Foo/Bar.baz'}, {prevent: () => {}})
+
+        // Assert server side has put content in the container
+        assert.equal(1, elem.children.length);
+      });
+  });
+
+  test("should be possible to cancel navigation when using router API", () => {
+    stubServerRemoteFunction('foobar-12345', true);
+    mockInitResponse('foobar-12345');
+
+    const route = new Flow().route;
+
+    return route.action({pathname: 'Foo/Bar.baz'})
+      .then(async(elem) => {
+
+        // Check that flowInit() was called
+        assert.isDefined((window as any).Vaadin.Flow.resolveUri);
+        // Assert that flowRoot namespace was created
+        assert.isDefined(flowRoot.$);
+        // Assert that container was created and put in the flowRoot
+        assert.isDefined(flowRoot.$['foobar-12345']);
+
+        // Assert server side has not put anything in the container
+        assert.equal(0, elem.children.length);
+
+        // When using router API, it should expose the onBeforeEnter handler
+        assert.isDefined(elem.onBeforeEnter);
+
+        // @ts-ignore
+        const promise = elem.onBeforeEnter({pathname: 'Foo/Bar.baz'}, {prevent: () => {
+          return {cancel: true};
+        }});
+
+        promise.then(obj => assert.isTrue(obj.cancel));
+      });
+  });
 });
 
-function stubServerRemoteFunction(id: string) {
+function stubServerRemoteFunction(id: string, cancel: boolean = false) {
   // Stub remote function exported in JavaScriptBootstrapUI.
   flowRoot.$server = {
-    connectClient: () => {
+    connectClient: (localName: string, elemId: string, route: string) => {
+      assert.isDefined(localName);
+      assert.isDefined(elemId);
+      assert.isDefined(route);
+
+      assert.equal(elemId, id);
+      assert.equal(localName, `flow-container-${elemId.toLowerCase()}`);
+
+      assert.isDefined(flowRoot.$[elemId]);
+      assert.isDefined(flowRoot.$[elemId].serverConnected);
+
+      flowRoot.$[elemId].appendChild(document.createElement('div'));
+
       // Resolve the promise
-      flowRoot.$[id].serverConnected();
+      flowRoot.$[elemId].serverConnected(cancel);
     }
   };
 }
