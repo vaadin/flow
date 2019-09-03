@@ -37,15 +37,27 @@
     <modules>
         <!-- shared assets -->
         <module>embedding-test-assets</module>
-
-        <!-- npm -->
-        <module>test-embedding-generic</module>
-        <module>test-embedding-theme-variant</module>
-        <module>test-embedding-production-mode</module>
-
-        <!-- compatibility -->
-        <module>test-embedding-generic-compatibility</module>
-        <module>test-embedding-theme-variant-compatibility</module>
-        <module>test-embedding-production-mode-compatibility</module>
     </modules>
+
+    <profiles>
+        <profile>
+            <id>run-tests</id>
+            <activation>
+                <property>
+                    <name>!skipTests</name>
+                </property>
+            </activation>
+            <modules>
+                <!-- npm -->
+                <module>test-embedding-generic</module>
+                <module>test-embedding-theme-variant</module>
+                <module>test-embedding-production-mode</module>
+
+                <!-- compatibility -->
+                <module>test-embedding-generic-compatibility</module>
+                <module>test-embedding-theme-variant-compatibility</module>
+                <module>test-embedding-production-mode-compatibility</module>
+            </modules>
+        </profile>
+    </profiles>
 </project>
