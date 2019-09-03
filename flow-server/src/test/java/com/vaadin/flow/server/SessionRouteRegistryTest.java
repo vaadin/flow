@@ -1,5 +1,11 @@
-package com.vaadin.flow.router;
+package com.vaadin.flow.server;
 
+import javax.servlet.ServletContext;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -11,24 +17,33 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import javax.servlet.ServletContext;
-
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.server.MockVaadinSession;
-import com.vaadin.flow.server.RouteRegistry;
-import com.vaadin.flow.server.SessionRouteRegistry;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServletService;
-import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEvent;
+import com.vaadin.flow.router.ErrorParameter;
+import com.vaadin.flow.router.HasErrorParameter;
+import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.NotFoundException;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteAlias;
+import com.vaadin.flow.router.RouteBaseData;
+import com.vaadin.flow.router.RouteData;
+import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.RoutesChangedEvent;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.Registration;
 
@@ -54,6 +69,11 @@ public class SessionRouteRegistryTest {
                 return vaadinService;
             }
         };
+    }
+
+    @After
+    public void tearDown() {
+        CurrentInstance.clearAll();
     }
 
     /**
@@ -933,6 +953,51 @@ public class SessionRouteRegistryTest {
 
     }
 
+    @Test
+    public void serialize_deserialize_parentRegistryIsANewOne()
+            throws Throwable {
+        session = new MockVaadinSession(vaadinService);
+
+        TestSessionRouteRegistry registry = new TestSessionRouteRegistry(
+                session);
+
+        TestSessionRouteRegistry deserialized = serializeAndDeserialize(
+                registry);
+
+        VaadinService service = new TestService();
+        RouteRegistry newAppRegistry = service.getRouteRegistry();
+
+        Mockito.when(newAppRegistry.getNavigationTarget("foo",
+                Collections.emptyList()))
+                .thenReturn(Optional.of(HtmlContainer.class));
+
+        WrappedSession wrappedSession = Mockito.mock(WrappedSession.class);
+        deserialized.session.refreshTransients(wrappedSession, service);
+
+        // The original registry doesn't contain "foo" navigation target
+        Assert.assertEquals(Optional.empty(),
+                registry.getNavigationTarget("foo", Collections.emptyList()));
+        // The deserialized one (after refreshing transients) contains "foo"
+        // navigation target
+        Assert.assertEquals(Optional.of(HtmlContainer.class), deserialized
+                .getNavigationTarget("foo", Collections.emptyList()));
+
+    }
+
+    private <T> T serializeAndDeserialize(T instance) throws Throwable {
+        ByteArrayOutputStream bs = new ByteArrayOutputStream();
+        ObjectOutputStream out = new ObjectOutputStream(bs);
+        out.writeObject(instance);
+        byte[] data = bs.toByteArray();
+        ObjectInputStream in = new ObjectInputStream(
+                new ByteArrayInputStream(data));
+
+        @SuppressWarnings("unchecked")
+        T readObject = (T) in.readObject();
+
+        return readObject;
+    }
+
     private void awaitCountDown(CountDownLatch countDownLatch) {
         try {
             countDownLatch.await();
@@ -992,6 +1057,39 @@ public class SessionRouteRegistryTest {
         @Override
         public RouteRegistry getRouteRegistry() {
             return super.getRouteRegistry();
+        }
+    }
+
+    private static class TestSessionRouteRegistry extends SessionRouteRegistry {
+
+        private final VaadinSession session;
+
+        TestSessionRouteRegistry(VaadinSession session) {
+            super(session);
+            this.session = session;
+        }
+
+    }
+
+    private static class TestService extends VaadinServletService {
+
+        private ReentrantLock lock = Mockito.mock(ReentrantLock.class);
+
+        private RouteRegistry appRegistry = Mockito
+                .mock(ApplicationRouteRegistry.class);
+
+        {
+            Mockito.when(lock.isHeldByCurrentThread()).thenReturn(true);
+        }
+
+        @Override
+        protected Lock getSessionLock(WrappedSession wrappedSession) {
+            return lock;
+        }
+
+        @Override
+        protected RouteRegistry getRouteRegistry() {
+            return appRegistry;
         }
     }
 }
