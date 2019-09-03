@@ -198,7 +198,7 @@ public class FrontendDependencies implements Serializable {
      * @return the set of JS files
      */
     public Set<String> getScripts() {
-        Set<String> all = new HashSet<>();
+        Set<String> all = new LinkedHashSet<>();
         for (EndPointData data : endPoints.values()) {
             all.addAll(data.getScripts());
         }
@@ -211,7 +211,7 @@ public class FrontendDependencies implements Serializable {
      * @return the set of CSS files
      */
     public Set<CssData> getCss() {
-        Set<CssData> all = new HashSet<>();
+        Set<CssData> all = new LinkedHashSet<>();
         for (EndPointData data : endPoints.values()) {
             all.addAll(data.getCss());
         }
