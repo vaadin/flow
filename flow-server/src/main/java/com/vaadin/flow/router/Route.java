@@ -80,7 +80,7 @@ public @interface Route {
     Class<? extends RouterLayout> layout() default UI.class;
 
     /**
-     * Have the route chain break on defined class and not take into notice any
+     * Have the rout chain break on defined class and not take into notice any
      * more parent layout route prefixes.
      *
      * @return route up to here should be absolute
