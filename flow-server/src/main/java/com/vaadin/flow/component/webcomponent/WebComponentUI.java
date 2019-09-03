@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.webcomponent;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -25,6 +26,7 @@ import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -50,6 +52,8 @@ import elemental.json.JsonObject;
  */
 public class WebComponentUI extends UI {
 
+    private static HashMap<String, Element> dirtyCache = new HashMap<>();
+
     public static final String NO_NAVIGATION = "Navigation is not available for WebComponents";
 
     @Override
@@ -57,7 +61,6 @@ public class WebComponentUI extends UI {
         super.doInit(request, uiId);
 
         assignTheme();
-
         VaadinSession session = getSession();
         DeploymentConfiguration deploymentConfiguration = session.getService()
                 .getDeploymentConfiguration();
@@ -74,8 +77,8 @@ public class WebComponentUI extends UI {
              * components will be contained within index.js
              */
             getConfigurationRegistry().getConfigurations()
-            .forEach(config -> getPage()
-                    .addHtmlImport(getWebComponentHtmlPath(config)));
+                    .forEach(config -> getPage()
+                            .addHtmlImport(getWebComponentHtmlPath(config)));
         }
 
         getEventBus().addListener(WebComponentConnectEvent.class,
@@ -158,7 +161,7 @@ public class WebComponentUI extends UI {
      *            values of the web component
      */
     private void connectWebComponent(WebComponentConnectEvent event) {
-        Optional<WebComponentConfiguration<? extends Component>> webComponentConfiguration = getConfigurationRegistry()
+        final Optional<WebComponentConfiguration<? extends Component>> webComponentConfiguration = getConfigurationRegistry()
                 .getConfiguration(event.getTag());
 
         if (!webComponentConfiguration.isPresent()) {
@@ -168,17 +171,46 @@ public class WebComponentUI extends UI {
             return;
         }
 
-        Element rootElement = new Element(event.getTag());
-        WebComponentBinding binding = webComponentConfiguration.get()
-                .createWebComponentBinding(Instantiator.get(this), rootElement,
-                        event.getAttributeJson());
-        WebComponentWrapper wrapper = new WebComponentWrapper(rootElement,
-                binding);
+        if (getInternals().getExtendedClientDetails() != null) {
+            attachOrCreateWebComponentWrapper(webComponentConfiguration.get(),
+                    event);
+        } else {
+            getPage().retrieveExtendedClientDetails(extendedClientDetails -> {
+                attachOrCreateWebComponentWrapper(webComponentConfiguration.get(),
+                        event);
+            });
+        }
+    }
 
+    private void  attachOrCreateWebComponentWrapper(WebComponentConfiguration<? extends Component> configuration, WebComponentConnectEvent event) {
+        final String hash =
+                getDirtyCacheHash(getInternals().getExtendedClientDetails(), event);
+        Element old = dirtyCache.get(hash);
+        if (old != null) {
+            attachComponentToUI(old.removeFromTree(), event.webComponentElementId);
+        } else {
+            Element rootElement = new Element(event.getTag());
+            WebComponentBinding binding = configuration
+                    .createWebComponentBinding(Instantiator.get(this), rootElement,
+                            event.getAttributeJson());
+            WebComponentWrapper wrapper = new WebComponentWrapper(rootElement, binding);
+
+            LoggerFactory.getLogger(WebComponentUI.class).info("connected id: " + event.getWebComponentElementId());
+            dirtyCache.put(hash, wrapper.getElement());
+            attachComponentToUI(wrapper.getElement(), event.webComponentElementId);
+        }
+    }
+
+    private void attachComponentToUI(Element child, String elementId) {
         getElement().getStateProvider().appendVirtualChild(
-                getElement().getNode(), wrapper.getElement(),
-                NodeProperties.INJECT_BY_ID, event.getWebComponentElementId());
-        wrapper.getElement().executeJs("$0.serverConnected()");
+                getElement().getNode(), child,
+                NodeProperties.INJECT_BY_ID, elementId);
+        child.executeJs("$0.serverConnected()");
+    }
+
+    private String getDirtyCacheHash(ExtendedClientDetails details,
+                                     WebComponentConnectEvent event) {
+        return details.getWindowName() + "::" + event.getWebComponentElementId();
     }
 
     @Override
