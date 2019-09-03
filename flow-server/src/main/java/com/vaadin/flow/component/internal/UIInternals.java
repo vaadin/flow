@@ -657,8 +657,20 @@ public class UIInternals implements Serializable {
         this.viewLocation = viewLocation;
         HasElement root = constructComponentWithLayouts(target, layouts);
 
+        assignNewRoot(oldRoot, root);
+    }
+
+    /**
+     * Assign new root to the current ui view.
+     * 
+     * @param oldRoot
+     *            old root
+     * @param newRoot
+     *            new root
+     */
+    protected void assignNewRoot(HasElement oldRoot, HasElement newRoot) {
         Element uiElement = ui.getElement();
-        Element rootElement = root.getElement();
+        Element rootElement = newRoot.getElement();
 
         if (!uiElement.equals(rootElement.getParent())) {
             if (oldRoot != null) {

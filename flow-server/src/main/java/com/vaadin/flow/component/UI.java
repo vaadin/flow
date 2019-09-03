@@ -108,7 +108,7 @@ public class UI extends Component
 
     private Locale locale = Locale.getDefault();
 
-    private final UIInternals internals = new UIInternals(this);
+    private final UIInternals internals;
 
     private final Page page = new Page(this);
 
@@ -125,9 +125,14 @@ public class UI extends Component
      */
     public UI() {
         super(null);
+        internals = createInternals();
         getNode().getFeature(ElementData.class).setTag("body");
         Component.setElement(this, Element.get(getNode()));
         pushConfiguration = new PushConfigurationImpl(this);
+    }
+
+    protected UIInternals createInternals() {
+        return new UIInternals(this);
     }
 
     /**
