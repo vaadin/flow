@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -26,18 +27,17 @@ import java.util.stream.Collectors;
 import com.vaadin.flow.router.Route;
 
 /**
- * A simple container with the information related to an application
- * end-point, i.e. those classes annotated with the {@link Route}
- * annotation.
+ * A simple container with the information related to an application end-point,
+ * i.e. those classes annotated with the {@link Route} annotation.
  */
 public final class EndPointData implements Serializable {
     final String name;
     String route = "";
     String layout;
     ThemeData theme = new ThemeData();
-    final HashSet<String> modules = new HashSet<>();
-    final HashSet<String> themeModules = new HashSet<>();
-    final HashSet<String> scripts = new HashSet<>();
+    final LinkedHashSet<String> modules = new LinkedHashSet<>();
+    final LinkedHashSet<String> themeModules = new LinkedHashSet<>();
+    final LinkedHashSet<String> scripts = new LinkedHashSet<>();
     final transient List<CssData> css = new ArrayList<>();
 
     private final HashSet<String> classes = new HashSet<>();
@@ -51,19 +51,19 @@ public final class EndPointData implements Serializable {
     public String toString() {
         return String.format(
                 "%n view: %s%n route: %s%n%s%n layout: %s%n modules: %s%n scripts: %s%n css: %s%n",
-                name, route, theme, layout, col2Str(modules),
-                col2Str(scripts), col2Str(css));
+                name, route, theme, layout, col2Str(modules), col2Str(scripts),
+                col2Str(css));
     }
 
-    Set<String> getModules() {
+    LinkedHashSet<String> getModules() {
         return modules;
     }
 
-    Set<String> getThemeModules() {
+    LinkedHashSet<String> getThemeModules() {
         return themeModules;
     }
 
-    Set<String> getScripts() {
+    LinkedHashSet<String> getScripts() {
         return scripts;
     }
 
