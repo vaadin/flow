@@ -18,6 +18,7 @@ package com.vaadin.flow.server;
 
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,15 +60,6 @@ public class DefaultDeploymentConfiguration
             + "in web.xml. The permitted values are \"disabled\", \"manual\",\n"
             + "and \"automatic\". The default of \"disabled\" will be used."
             + SEPARATOR;
-
-    public static final String ERROR_COMPATIBILITY_MODE_UNSET =
-            "Unable to determine mode of operation. To use npm mode, ensure "
-            + "'flow-build-info.json' exists on the classpath. With Maven, "
-            + "this is handled by the 'prepare-frontend' goal. To use "
-            + "compatibility mode, add the 'flow-server-compatibility-mode' "
-            + "dependency. If using Vaadin with Spring Boot, instead set the "
-            + "property 'vaadin.compatibilityMode' to 'true' in "
-            + "'application.properties'.";
     /**
      * Default value for {@link #getHeartbeatInterval()} = {@value} .
      */
@@ -257,18 +249,30 @@ public class DefaultDeploymentConfiguration
      * parameters.
      */
     private void checkCompatibilityMode(boolean loggWarning) {
-        if (getStringProperty(Constants.SERVLET_PARAMETER_BOWER_MODE, null)
-                != null) {
+        boolean explicitlySet = false;
+        if (getStringProperty(Constants.SERVLET_PARAMETER_BOWER_MODE,
+                null) != null) {
             compatibilityMode = getBooleanProperty(
                     Constants.SERVLET_PARAMETER_BOWER_MODE, false);
+            explicitlySet = true;
         } else if (getStringProperty(
                 Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE, null) != null) {
             compatibilityMode = getBooleanProperty(
                     Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE, false);
-        } else {
-            // neither parameter given -> throw exception
-            throw new IllegalStateException(ERROR_COMPATIBILITY_MODE_UNSET);
+            explicitlySet = true;
         }
+
+        @SuppressWarnings("unchecked")
+        Consumer<CompatibilityModeStatus> consumer = (Consumer<CompatibilityModeStatus>) getInitParameters()
+                .get(DeploymentConfigurationFactory.DEV_MODE_ENABLE_STRATEGY);
+        if (consumer != null) {
+            if (explicitlySet && !compatibilityMode) {
+                consumer.accept(CompatibilityModeStatus.EXPLICITLY_SET_FALSE);
+            } else if (!explicitlySet) {
+                consumer.accept(CompatibilityModeStatus.UNDEFINED);
+            }
+        }
+
         if (compatibilityMode && loggWarning) {
             getLogger().warn(WARNING_COMPATIBILITY_MODE);
         }

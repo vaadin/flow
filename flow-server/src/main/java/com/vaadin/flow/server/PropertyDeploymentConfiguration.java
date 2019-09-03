@@ -148,7 +148,7 @@ public class PropertyDeploymentConfiguration
 
     @Override
     public boolean isBowerMode() {
-        return getBooleanProperty(SERVLET_PARAMETER_BOWER_MODE, true);
+        return getBooleanProperty(SERVLET_PARAMETER_BOWER_MODE, false);
     }
 
     @Override
@@ -156,7 +156,7 @@ public class PropertyDeploymentConfiguration
         String bower = getStringProperty(SERVLET_PARAMETER_BOWER_MODE, null);
         if (bower == null) {
             return getBooleanProperty(
-                    Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE, true);
+                    Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE, false);
         }
         return isBowerMode();
     }
