@@ -259,16 +259,18 @@ public abstract class NodeUpdater implements FallibleCommand {
         writePackageFile(packageJson, new File(npmFolder, PACKAGE_JSON));
     }
 
-    void writeAppPackageFile(JsonObject packageJson) throws IOException {
-        writePackageFile(packageJson, new File(generatedFolder, PACKAGE_JSON));
+    String writeAppPackageFile(JsonObject packageJson) throws IOException {
+        return writePackageFile(packageJson,
+                new File(generatedFolder, PACKAGE_JSON));
     }
 
-    void writePackageFile(JsonObject json, File packageFile)
+    String writePackageFile(JsonObject json, File packageFile)
             throws IOException {
         log().info("Updated npm {}.", packageFile.getAbsolutePath());
         FileUtils.forceMkdirParent(packageFile);
-        FileUtils.writeStringToFile(packageFile, stringify(json, 2) + "\n",
-                UTF_8.name());
+        String content = stringify(json, 2) + "\n";
+        FileUtils.writeStringToFile(packageFile, content, UTF_8.name());
+        return content;
     }
 
     Logger log() {
