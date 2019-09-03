@@ -89,7 +89,10 @@ module.exports = {
       },
       {
         test: /\.ts$/,
-        loader: 'awesome-typescript-loader'
+        use: [
+          BabelMultiTargetPlugin.loader(),
+          'awesome-typescript-loader'
+        ]
       },
       {
         test: /\.css$/i,
