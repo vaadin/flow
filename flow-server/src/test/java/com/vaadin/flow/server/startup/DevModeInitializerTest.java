@@ -1,8 +1,5 @@
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletRegistration;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -76,7 +73,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
         // load jars from classloader
         List<File> jarFilesFromClassloader = new ArrayList<>(
-                DevModeInitializer.getFrontendLocationsFromClassloader(classLoader));
+                DevModeInitializer.getJarFilesFromClassloader(classLoader));
 
         // Assert that jar was found and accepted
         assertEquals("One jar should have been found and added as a File", 1,
