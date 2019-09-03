@@ -39,9 +39,9 @@ public class DefaultDeploymentConfigurationTest {
     {
         DEFAULT_PARAMS.setProperty(
                 Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                Boolean.TRUE.toString());
+                Boolean.FALSE.toString());
     }
-
+    
     @Test
     public void testGetSystemPropertyForDefaultPackage()
             throws ClassNotFoundException {
@@ -212,4 +212,9 @@ public class DefaultDeploymentConfigurationTest {
         Assert.assertFalse(config.useCompiledFrontendResources());
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void throwsIfCompatibilityModeNotExplicitlySet() {
+        Properties initParameters = new Properties();
+        createDeploymentConfig(initParameters);
+    }
 }

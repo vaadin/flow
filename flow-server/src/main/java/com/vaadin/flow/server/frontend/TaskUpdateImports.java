@@ -31,7 +31,6 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import com.vaadin.flow.server.Constants;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.LoggerFactory;
 
@@ -266,17 +265,16 @@ public class TaskUpdateImports extends NodeUpdater {
         }
 
         if (!resourceNotFound.isEmpty()) {
-            String prefix =  "Failed to find the following files: ";
+            String prefix = String.format(
+                    "Failed to resolve the following files either:"
+                            + "%n   · in the `%s` sources folder"
+                            + "%n   · or as a `META-INF/resources/frontend` resource in some JAR.",
+                    frontendDirectory.getPath());
             String suffix = String.format(
-                    "%n  Locations searched were:"
-                            + "%n      - `%s` in this project"
-                            + "%n      - `%s` in included JARs"
-                            + "%n%n  Please, double check that those files exist. If you use a custom directory "
+                    "Please, double check that those files exist. If you use a custom directory "
                             + "for your resource files instead of default "
                             + "`frontend` folder then make sure you it's correctly configured "
                             + "(e.g. set '%s' property)",
-                    frontendDirectory.getPath(),
-                    Constants.RESOURCES_FRONTEND_DEFAULT,
                     FrontendUtils.PARAM_FRONTEND_DIR);
             throw new IllegalStateException(
                     notFoundMessage(resourceNotFound, prefix, suffix));
@@ -315,7 +313,7 @@ public class TaskUpdateImports extends NodeUpdater {
         } catch (IOException exception) {
             LoggerFactory.getLogger(TaskUpdateImports.class)
                     .warn("Could not read file {}. Skipping "
-                            + "applying theme for its imports", file.getPath(),
+                            + "applyig theme for its imports", file.getPath(),
                             exception);
         }
     }

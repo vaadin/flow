@@ -31,11 +31,9 @@ import java.util.Optional;
 import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
-import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
@@ -57,22 +55,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
  * by the framework users.
  */
 public final class DeploymentConfigurationFactory implements Serializable {
-
-    public static final Object DEV_MODE_ENABLE_STRATEGY = new Serializable() {
-    };
-
-    public static final String ERROR_COMPATIBILITY_MODE_UNSET = "Unable to determine mode of operation. To use npm mode, ensure "
-            + "'flow-build-info.json' exists on the classpath. With Maven, "
-            + "this is handled by the 'prepare-frontend' goal. To use "
-            + "compatibility mode, add the 'flow-server-compatibility-mode' "
-            + "dependency. If using Vaadin with Spring Boot, instead set the "
-            + "property 'vaadin.compatibilityMode' to 'true' in "
-            + "'application.properties'.";
-
-    public static final String ERROR_DEV_MODE_NO_FILES = "The compatibility mode is explicitly set to 'false', "
-            + "but there are neither 'flow-build-info.json' nor 'webpack.config.js' file available in "
-            + "the project/working directory. Ensure 'webpack.config.js' is present or trigger creation of "
-            + "'flow-build-info.json' via running 'prepare-frontend' Maven goal.";
 
     private DeploymentConfigurationFactory() {
     }
@@ -222,74 +204,22 @@ public final class DeploymentConfigurationFactory implements Serializable {
                 // These should be internal only so if there is a System
                 // property override then the user probably knows what
                 // they are doing.
-                if (buildInfo.hasKey(SERVLET_PARAMETER_ENABLE_DEV_SERVER)) {
+                if(buildInfo.hasKey(SERVLET_PARAMETER_ENABLE_DEV_SERVER)) {
                     initParameters.setProperty(
                             SERVLET_PARAMETER_ENABLE_DEV_SERVER,
                             String.valueOf(buildInfo.getBoolean(
                                     SERVLET_PARAMETER_ENABLE_DEV_SERVER)));
                 }
-                if (buildInfo.hasKey(SERVLET_PARAMETER_REUSE_DEV_SERVER)) {
+                if(buildInfo.hasKey(SERVLET_PARAMETER_REUSE_DEV_SERVER)) {
                     initParameters.setProperty(
                             SERVLET_PARAMETER_REUSE_DEV_SERVER,
                             String.valueOf(buildInfo.getBoolean(
                                     SERVLET_PARAMETER_REUSE_DEV_SERVER)));
                 }
             }
-
-            boolean hasWebPackConfig = hasWebpackConfig(initParameters);
-            boolean hasTokenFile = json != null;
-            SerializableConsumer<CompatibilityModeStatus> strategy = value -> verifyMode(
-                    value, hasTokenFile, hasWebPackConfig);
-            initParameters.put(DEV_MODE_ENABLE_STRATEGY, strategy);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
-
-    }
-
-    private static void verifyMode(CompatibilityModeStatus value,
-            boolean hasTokenFile, boolean hasWebpackConfig) {
-        // Don't handle the case when compatibility mode is enabled.
-
-        // If no compatibility mode setting is defined
-        // and the project/working directory doesn't contain an appropriate
-        // webpack.config.js, then show the error message.
-        if (value == CompatibilityModeStatus.UNDEFINED) {
-            if (!hasWebpackConfig) {
-                throw new IllegalStateException(ERROR_COMPATIBILITY_MODE_UNSET);
-            }
-        } else if (!hasTokenFile && !hasWebpackConfig) {
-            // If compatibility mode is explicitly set to false, no
-            // flow-build-info.json file exists, and no appropriate
-            // webpack.config.js is found in the current working directory, then
-            // show an error message that suggest either triggering creation of
-            // flow-bulid-info.json or ensuring webpack.config.js is present in
-            // the working directory.
-            throw new IllegalStateException(ERROR_DEV_MODE_NO_FILES);
-        }
-
-        // If flow-bulid-info.json doesn't exist, but an appropriate
-        // webpack.config.js is found in the working directory, then launch a
-        // dev server with configuration based on the project/working directory
-        // location
-        if (!hasTokenFile && hasWebpackConfig) {
-            // the current working directory will be used automatically by the
-            // dev server unless it's specified explicitly
-            LoggerFactory.getLogger(DeploymentConfigurationFactory.class).warn(
-                    "Found 'webpack.config.js' in the project/working directory. "
-                            + "Will use it for webpack dev server.");
-        }
-    }
-
-    private static boolean hasWebpackConfig(Properties initParameters)
-            throws IOException {
-        String baseDir = initParameters
-                .getProperty(FrontendUtils.PROJECT_BASEDIR);
-        File projectBaseDir = baseDir == null ? new File(".")
-                : new File(baseDir);
-        File webPackConfig = new File(projectBaseDir,
-                FrontendUtils.WEBPACK_CONFIG);
-        return FrontendUtils.isWebpackConfigFile(webPackConfig);
     }
 
     private static void readUiFromEnclosingClass(

@@ -59,20 +59,6 @@ public final class TestUtils {
     }
 
     /**
-     * Gets a test folder by its resource name using
-     * {@link TestUtils#getTestResource(String)}.
-     *
-     * @param name
-     *            the resource name of the folder
-     * @return corresponding folder
-     */
-    public static File getTestFolder(String name) {
-        File folder = new File(getTestResource(name).getFile());
-        assert(folder.isDirectory());
-        return folder;
-    }
-
-    /**
      * Gets a test resouce by its name using using
      * {@link ClassLoader#getResource(String)}. Fails if the file was not found
      * ({@code null}).

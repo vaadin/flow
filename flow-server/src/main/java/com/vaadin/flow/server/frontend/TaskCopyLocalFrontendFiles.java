@@ -54,37 +54,31 @@ public class TaskCopyLocalFrontendFiles implements FallibleCommand {
 
     @Override
     public void execute() {
-        createTargetFolder(targetDirectory);
+        createTargetFolder();
 
         if (frontendResourcesDirectory != null
                 && frontendResourcesDirectory.isDirectory()) {
             log().info("Copying project local frontend resources.");
-            copyLocalResources(frontendResourcesDirectory, targetDirectory);
+            try {
+                FileUtils.copyDirectory(frontendResourcesDirectory,
+                        targetDirectory);
+            } catch (IOException e) {
+                throw new UncheckedIOException(String.format(
+                        "Failed to copy project frontend resources from '%s' to '%s'",
+                        frontendResourcesDirectory, targetDirectory), e);
+            }
             log().info("Copying frontend directory completed.");
         } else {
             log().debug("Found no local frontend resources for the project");
         }
     }
 
-    static void copyLocalResources(File source, File target) {
-        if (!source.isDirectory() || !target.isDirectory()) {
-            return;
-        }
+    private void createTargetFolder() {
         try {
-            FileUtils.copyDirectory(source, target);
+            FileUtils.forceMkdir(Objects.requireNonNull(targetDirectory));
         } catch (IOException e) {
             throw new UncheckedIOException(String.format(
-                    "Failed to copy project frontend resources from '%s' to '%s'",
-                    source, target), e);
-        }
-    }
-
-    static void createTargetFolder(File target) {
-        try {
-            FileUtils.forceMkdir(Objects.requireNonNull(target));
-        } catch (IOException e) {
-            throw new UncheckedIOException(String.format(
-                    "Failed to create directory '%s'", target), e);
+                    "Failed to create directory '%s'", targetDirectory), e);
         }
     }
 

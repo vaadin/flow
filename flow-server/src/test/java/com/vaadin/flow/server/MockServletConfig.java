@@ -15,11 +15,11 @@
  */
 package com.vaadin.flow.server;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-
 import java.util.Enumeration;
 import java.util.Properties;
+
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 
 /**
  *
@@ -33,7 +33,7 @@ public class MockServletConfig implements ServletConfig {
     {
         DEFAULT_PROPERTIES.setProperty(
                 Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                Boolean.TRUE.toString());
+                Boolean.FALSE.toString());
     }
 
     private final Properties initParameters;

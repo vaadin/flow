@@ -95,7 +95,8 @@ public class TaskUpdateWebpack implements FallibleCommand {
         // If we have an old config file we remove it and create the new one
         // using the webpack.generated.js
         if (configFile.exists()) {
-            if (!FrontendUtils.isWebpackConfigFile(configFile)) {
+            if (!FileUtils.readFileToString(configFile, "UTF-8")
+                    .contains("./webpack.generated.js")) {
                 log().warn(
                         "Flow generated webpack configuration was not mentioned "
                                 + "in the configuration file: {}."
@@ -103,7 +104,9 @@ public class TaskUpdateWebpack implements FallibleCommand {
                                 + "in the merge or remove the file to generate a new one.",
                         configFile);
             }
-        } else {
+        }
+
+        if (!configFile.exists()) {
             URL resource = this.getClass().getClassLoader()
                     .getResource(webpackTemplate);
             FileUtils.copyURLToFile(resource, configFile);

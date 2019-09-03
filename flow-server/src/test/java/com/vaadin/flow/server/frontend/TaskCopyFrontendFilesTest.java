@@ -47,26 +47,20 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
         // - ExampleConnector.js
         // - inline.css
         File jar = TestUtils.getTestJar("jar-with-frontend-resources.jar");
-        // Contains:
-        // - resourceInFolder.js
-        File dir = TestUtils.getTestFolder("dir-with-frontend-resources/");
 
         TaskCopyFrontendFiles task = new TaskCopyFrontendFiles(npmFolder,
-                jars(jar, dir));
+                jars(jar));
 
         task.execute();
 
         List<String> files = TestUtils.listFilesRecursively(targetFolder);
-        Assert.assertEquals(3, files.size());
+        Assert.assertEquals(2, files.size());
 
-        Assert.assertTrue("Js resource should have been copied from jar file",
+        Assert.assertTrue("Js resource should have been copied",
                 files.contains("ExampleConnector.js"));
 
-        Assert.assertTrue("Css resource should have been copied from jar file",
+        Assert.assertTrue("Css resource should have been copied",
                 files.contains("inline.css"));
-
-        Assert.assertTrue("Js resource should have been copied from resource folder",
-                files.contains("resourceInFolder.js"));
     }
 
     private static Set<File> jars(File... files) {

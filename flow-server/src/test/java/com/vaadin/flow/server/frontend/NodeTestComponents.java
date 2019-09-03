@@ -87,9 +87,9 @@ public class NodeTestComponents {
     @CssImport(value = "./foo.css")
     @CssImport(value = "./foo.css", include = "bar")
     @CssImport(value = "./foo.css", id = "baz")
-    @CssImport(value = "./foo.css", id = "baz", include = "bar")
+    @CssImport(value = "./foo.css", id = "baz", include="bar")
     @CssImport(value = "./foo.css", themeFor = "foo-bar")
-    @CssImport(value = "./foo.css", themeFor = "foo-bar", include = "bar")
+    @CssImport(value = "./foo.css", themeFor = "foo-bar", include="bar")
     public static class FlatImport extends Component {
     }
 
@@ -115,7 +115,6 @@ public class NodeTestComponents {
         FrontendP3Template frontendP3Template;
         FlatImport flatImport;
         TranslatedImports translatedImports;
-        JavaScriptOrder order;
     }
 
     /**
@@ -186,13 +185,5 @@ public class NodeTestComponents {
 
     @NpmPackage(value = "@vaadin/vaadin-shrinkwrap", version = "1.2.3")
     public static class VaadinShrinkWrap extends Component {
-    }
-
-    @JavaScript("javascript/a.js")
-    @JavaScript("javascript/b.js")
-    @JavaScript("javascript/c.js")
-    @JsModule("jsmodule/g.js")
-    public static class JavaScriptOrder extends Component {
-
     }
 }
