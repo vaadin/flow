@@ -74,7 +74,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
         // load jars from classloader
         List<File> jarFilesFromClassloader = new ArrayList<>(
-                DevModeInitializer.getFrontendLocationsFromClassloader(classLoader));
+                DevModeInitializer.getJarFilesFromClassloader(classLoader));
 
         // Assert that jar was found and accepted
         assertEquals("One jar should have been found and added as a File", 1,

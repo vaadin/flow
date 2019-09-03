@@ -288,7 +288,7 @@ public class DevModeInitializer implements ServletContainerInitializer,
         }
 
         Set<String> visitedClassNames = new HashSet<>();
-        Set<File> frontendLocations = getFrontendLocationsFromClassloader(
+        Set<File> frontendLocations = getJarFilesFromClassloader(
                 DevModeInitializer.class.getClassLoader());
         try {
             builder.enablePackagesUpdate(true).copyResources(frontendLocations)
@@ -338,7 +338,8 @@ public class DevModeInitializer implements ServletContainerInitializer,
      * META-INF/resources/frontend folder. We don't use URLClassLoader because
      * will fail in Java 9+
      */
-    static Set<File> getFrontendLocationsFromClassloader(ClassLoader classLoader) {
+    protected static Set<File> getJarFilesFromClassloader(
+            ClassLoader classLoader) {
         Set<File> jarFiles = new HashSet<>();
         try {
             Enumeration<URL> en = classLoader
