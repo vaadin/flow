@@ -15,8 +15,9 @@
  */
 package com.vaadin.flow.server.frontend.scanner;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -114,10 +115,9 @@ public class FrontendDependenciesTest {
 
         Set<String> scripts = dependencies.getScripts();
         Assert.assertEquals(LinkedHashSet.class, scripts.getClass());
-        Iterator<String> iterator = scripts.iterator();
-        Assert.assertEquals("a.js", iterator.next());
-        Assert.assertEquals("b.js", iterator.next());
-        Assert.assertEquals("c.js", iterator.next());
+
+        Assert.assertEquals(new ArrayList<>(dependencies.getScripts()),
+                Arrays.asList("a.js", "b.js", "c.js"));
     }
 
 }
