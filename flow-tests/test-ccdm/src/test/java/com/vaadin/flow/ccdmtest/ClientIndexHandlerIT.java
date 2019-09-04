@@ -175,17 +175,33 @@ public class ClientIndexHandlerIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void should_getViewByRoute_WhenRouteHasParameter() {
+    public void should_executeSetParameter_WhenRouteHasParameter() {
         openTestUrl("/");
         waitForElementPresent(By.id("button3"));
-
-        findElement(By.id("pathname")).sendKeys("paramview/123");
+        String inputParam = "123";
+        findElement(By.id("pathname")).sendKeys("paramview/" + inputParam);
         findElement(By.id("button3")).click();
         waitForElementPresent(By.id("result"));
 
         String content = findElement(By.id("result")).getText();
         Assert.assertTrue("Flow.navigate should return view with parameter",
-                content.contains("Route with parameter"));
+                content.contains("Parameter: " + inputParam));
+        Assert.assertTrue("Flow.navigate should include router layout",
+                content.contains("Main layout"));
+    }
+
+    @Test
+    public void should_executeOnBeforeEnter_WhenViewIsBeforeEnterObserver() {
+        openTestUrl("/");
+        waitForElementPresent(By.id("button3"));
+        findElement(By.id("pathname")).sendKeys("view-with-before-enter");
+        findElement(By.id("button3")).click();
+        waitForElementPresent(By.id("result"));
+
+        String content = findElement(By.id("result")).getText();
+        Assert.assertTrue("FlowJs should execute onBeforeEnter and navigate " +
+                        "to ServerSideView",
+                content.contains("Server view"));
         Assert.assertTrue("Flow.navigate should include router layout",
                 content.contains("Main layout"));
     }
