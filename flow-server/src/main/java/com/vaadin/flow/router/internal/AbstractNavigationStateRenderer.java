@@ -509,7 +509,7 @@ public abstract class AbstractNavigationStateRenderer
                 // Transfer all remaining UI child elements (typically dialogs
                 // and notifications) to the new UI
                 maybePrevUI.ifPresent(prevUi ->
-                        moveElementsToNewUI(prevUi, ui));
+                        ui.getInternals().moveFromOtherUI(prevUi));
             } else {
                 // Instantiate new chain for the route
                 chain = createChain(event);
@@ -575,16 +575,6 @@ public abstract class AbstractNavigationStateRenderer
                 || routeLayoutTypes.stream().anyMatch(layoutType ->
                 layoutType.isAnnotationPresent(PreserveOnRefresh.class)
         );
-    }
-
-    private void moveElementsToNewUI(UI prevUi, UI newUi) {
-        final List<Element> uiChildren = prevUi.getElement()
-                .getChildren()
-                .collect(Collectors.toList());
-        uiChildren.forEach(element -> {
-            element.removeFromTree();
-            newUi.getElement().appendChild(element);
-        });
     }
 
     // maps window.name to (location, chain)

@@ -15,7 +15,9 @@
  */
 package com.vaadin.flow.component.internal;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
@@ -167,6 +169,17 @@ public class JavaScriptBootstrapUI extends UI {
             wrapperElement.removeAllChildren();
             // attach this view
             wrapperElement.appendChild(newRoot.getElement());
+        }
+
+        @Override
+        public void moveFromOtherUI(UI otherUI) {
+            final List<Element> uiChildren = otherUI.getElement().getChildren()
+                    .collect(Collectors.toList());
+            wrapperElement.removeAllChildren();
+            uiChildren.forEach(element -> {
+                element.removeFromTree();
+                wrapperElement.appendChild(element);
+            });
         }
     }
 }

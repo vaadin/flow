@@ -681,6 +681,16 @@ public class UIInternals implements Serializable {
         }
     }
 
+    public void moveFromOtherUI(UI otherUI) {
+        final List<Element> uiChildren = otherUI.getElement()
+                .getChildren()
+                .collect(Collectors.toList());
+        uiChildren.forEach(element -> {
+            element.removeFromTree();
+            ui.getElement().appendChild(element);
+        });
+    }
+
     /**
      * Construct a new root component based on the given target component and
      * its layouts.
