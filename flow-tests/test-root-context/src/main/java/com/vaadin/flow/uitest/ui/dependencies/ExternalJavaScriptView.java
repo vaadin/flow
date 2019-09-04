@@ -27,13 +27,13 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 @Route(value = "com.vaadin.flow.uitest.ui.dependencies.ExternalJavaScriptView", layout = ViewTestLayout.class)
 public class ExternalJavaScriptView extends Div {
 
-	public ExternalJavaScriptView() {
-		NativeButton button = new NativeButton("Add component", event -> {
-			ComponentWithExternalJavaScript component = new ComponentWithExternalJavaScript();
-			component.setId("componentWithExternalJavaScript");
-			add(component);
-		});
-		button.setId("addComponentButton");
-		add(button);
-	}
+    public ExternalJavaScriptView() {
+        NativeButton button = new NativeButton("Add component", event -> {
+            ComponentWithExternalJavaScript component = new ComponentWithExternalJavaScript();
+            component.setId("componentWithExternalJavaScript");
+            add(component);
+        });
+        button.setId("addComponentButton");
+        add(button);
+    }
 }
