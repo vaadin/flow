@@ -1,6 +1,7 @@
 package com.vaadin.flow.spring;
 
 import javax.servlet.ServletContext;
+
 import java.util.Collections;
 
 import org.junit.Assert;
@@ -54,12 +55,12 @@ public class SpringStubServletConfigTest {
                 .createDeploymentConfiguration(context, registration,
                         SpringServlet.class, applicationContext);
 
-        Assert.assertFalse(
-                "ProductionMode should be 'false' by default.",
+        Assert.assertFalse("ProductionMode should be 'false' by default.",
                 deploymentConfiguration.isProductionMode());
 
-        when(environment.getProperty("vaadin."+ Constants.SERVLET_PARAMETER_PRODUCTION_MODE))
-                .thenReturn("true");
+        when(environment.getProperty(
+                "vaadin." + Constants.SERVLET_PARAMETER_PRODUCTION_MODE))
+                        .thenReturn("true");
 
         deploymentConfiguration = VaadinServletContextInitializer.SpringStubServletConfig
                 .createDeploymentConfiguration(context, registration,
@@ -76,18 +77,18 @@ public class SpringStubServletConfigTest {
                 .createDeploymentConfiguration(context, registration,
                         SpringServlet.class, applicationContext);
 
-        Assert.assertTrue(
-                "Compatibility mode should be 'true' by default.",
+        Assert.assertFalse("Compatibility mode should be 'false' by default.",
                 deploymentConfiguration.isCompatibilityMode());
 
-        when(environment.getProperty("vaadin."+ Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE))
-                .thenReturn("false");
+        when(environment.getProperty(
+                "vaadin." + Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE))
+                        .thenReturn(Boolean.TRUE.toString());
 
         deploymentConfiguration = VaadinServletContextInitializer.SpringStubServletConfig
                 .createDeploymentConfiguration(context, registration,
                         SpringServlet.class, applicationContext);
 
-        Assert.assertFalse(
+        Assert.assertTrue(
                 "CompatibilityMode should have been 'true' as it was in the environment.",
                 deploymentConfiguration.isCompatibilityMode());
     }
