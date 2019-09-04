@@ -199,7 +199,7 @@ public class ClientIndexHandlerIT extends ChromeBrowserTest {
         waitForElementPresent(By.id("result"));
 
         String content = findElement(By.id("result")).getText();
-        Assert.assertTrue("FlowJs should execute onBeforeEnter and navigate " +
+        Assert.assertTrue("Flow.navigate should execute onBeforeEnter and navigate " +
                         "to ServerSideView",
                 content.contains("Server view"));
         Assert.assertTrue("Flow.navigate should include router layout",

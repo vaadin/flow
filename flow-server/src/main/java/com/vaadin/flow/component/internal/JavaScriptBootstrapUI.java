@@ -94,26 +94,35 @@ public class JavaScriptBootstrapUI extends UI {
                 .resolveNavigationTarget(location);
 
         if (navigationState.isPresent()) {
-            NavigationEvent navigationEvent = new NavigationEvent(getRouter(),
-                    location, this, NavigationTrigger.CLIENT_SIDE);
-            NavigationStateRenderer clientNavigationStateRenderer = new NavigationStateRenderer(
-                    navigationState.get());
-            clientNavigationStateRenderer.handle(navigationEvent);
+            handleNavigation(location, navigationState.get());
         } else {
-            NavigationState errorNavigationState = this.getRouter()
-                    .resolveRouteNotFoundNavigationTarget()
-                    .orElse(getDefaultNavigationError());
-            ErrorStateRenderer errorStateRenderer = new ErrorStateRenderer(
-                    errorNavigationState);
-            NotFoundException notFoundException = new NotFoundException(
-                    "Couldn't find route for '" + location.getPath() + "'");
-            ErrorParameter<NotFoundException> errorParameter = new ErrorParameter<>(
-                    NotFoundException.class, notFoundException);
-            ErrorNavigationEvent errorNavigationEvent = new ErrorNavigationEvent(
-                    this.getRouter(), location, this,
-                    NavigationTrigger.CLIENT_SIDE, errorParameter);
-            errorStateRenderer.handle(errorNavigationEvent);
+            handleErrorNavigation(location);
         }
+    }
+
+    private void handleNavigation(Location location,
+            NavigationState navigationState) {
+        NavigationEvent navigationEvent = new NavigationEvent(getRouter(),
+                location, this, NavigationTrigger.CLIENT_SIDE);
+        NavigationStateRenderer clientNavigationStateRenderer = new NavigationStateRenderer(
+                navigationState);
+        clientNavigationStateRenderer.handle(navigationEvent);
+    }
+
+    private void handleErrorNavigation(Location location) {
+        NavigationState errorNavigationState = this.getRouter()
+                .resolveRouteNotFoundNavigationTarget()
+                .orElse(getDefaultNavigationError());
+        ErrorStateRenderer errorStateRenderer = new ErrorStateRenderer(
+                errorNavigationState);
+        NotFoundException notFoundException = new NotFoundException(
+                "Couldn't find route for '" + location.getPath() + "'");
+        ErrorParameter<NotFoundException> errorParameter = new ErrorParameter<>(
+                NotFoundException.class, notFoundException);
+        ErrorNavigationEvent errorNavigationEvent = new ErrorNavigationEvent(
+                this.getRouter(), location, this, NavigationTrigger.CLIENT_SIDE,
+                errorParameter);
+        errorStateRenderer.handle(errorNavigationEvent);
     }
 
     private NavigationState getDefaultNavigationError() {
