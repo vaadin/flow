@@ -18,6 +18,7 @@ package com.vaadin.flow.webcomponent;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
@@ -63,13 +64,13 @@ public class PreserveOnRefreshIT extends ChromeBrowserTest {
     }
 
     private String getValue(String id) {
-        WebElement count = findElement(By.id(id));
-        return count.findElement(By.id(INPUT_ID)).getText();
+        WebElement element = findElement(By.id(id));
+        return element.findElement(By.id(INPUT_ID)).getAttribute("value");
     }
 
     private void writeInInput(String id, String text) {
-        WebElement count = findElement(By.id(id));
-        count.findElement(By.id(INPUT_ID)).sendKeys(text);
+        WebElement element = findElement(By.id(id));
+        element.findElement(By.id(INPUT_ID)).sendKeys(text, Keys.ENTER);
     }
 
     private void refreshPage() {
