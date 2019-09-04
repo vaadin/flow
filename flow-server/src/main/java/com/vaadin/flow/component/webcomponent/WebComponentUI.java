@@ -15,9 +15,11 @@
  */
 package com.vaadin.flow.component.webcomponent;
 
-import java.util.HashMap;
+import java.lang.annotation.Annotation;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.LoggerFactory;
 
@@ -30,8 +32,10 @@ import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.VaadinRequest;
@@ -51,9 +55,6 @@ import elemental.json.JsonObject;
  * @author Vaadin Ltd.
  */
 public class WebComponentUI extends UI {
-
-    private static HashMap<String, Element> dirtyCache = new HashMap<>();
-
     public static final String NO_NAVIGATION = "Navigation is not available for WebComponents";
 
     @Override
@@ -119,6 +120,8 @@ public class WebComponentUI extends UI {
                 @EventData("id") String webComponentElementId,
                 @EventData("attributeValues") JsonObject attributeValues) {
             super(source, true);
+            // TODO: this thing should provide valuable identification
+            // information, like window name. or something similar
             this.tag = tag;
             this.webComponentElementId = webComponentElementId;
             this.attributeValues = attributeValues;
@@ -171,46 +174,74 @@ public class WebComponentUI extends UI {
             return;
         }
 
-        if (getInternals().getExtendedClientDetails() != null) {
+        final boolean shouldBePreserved = isConfigurationAnnotated(
+                webComponentConfiguration.get(), PreserveOnRefresh.class);
+
+        if (!shouldBePreserved
+                || getInternals().getExtendedClientDetails() != null) {
             attachOrCreateWebComponentWrapper(webComponentConfiguration.get(),
-                    event);
+                    event, shouldBePreserved);
         } else {
             getPage().retrieveExtendedClientDetails(extendedClientDetails -> {
-                attachOrCreateWebComponentWrapper(webComponentConfiguration.get(),
-                        event);
+                attachOrCreateWebComponentWrapper(
+                        webComponentConfiguration.get(), event, true);
             });
         }
     }
 
-    private void  attachOrCreateWebComponentWrapper(WebComponentConfiguration<? extends Component> configuration, WebComponentConnectEvent event) {
-        final String hash =
-                getDirtyCacheHash(getInternals().getExtendedClientDetails(), event);
-        Element old = dirtyCache.get(hash);
-        if (old != null) {
-            attachComponentToUI(old.removeFromTree(), event.webComponentElementId);
-        } else {
+    private void attachOrCreateWebComponentWrapper(
+            WebComponentConfiguration<? extends Component> configuration,
+            WebComponentConnectEvent event, boolean shouldBePreserved) {
+        Element elementToAttach = null;
+        final String hash = getComponentHash(
+                getInternals().getExtendedClientDetails(), event);
+
+        if (shouldBePreserved) {
+            Optional<Element> old = getRegistry().get(hash);
+            if (old.isPresent()) {
+                elementToAttach = old.get().removeFromTree();
+            }
+        }
+        // did not have an element in the cache, create a new one
+        if (elementToAttach == null){
             Element rootElement = new Element(event.getTag());
             WebComponentBinding binding = configuration
-                    .createWebComponentBinding(Instantiator.get(this), rootElement,
-                            event.getAttributeJson());
-            WebComponentWrapper wrapper = new WebComponentWrapper(rootElement, binding);
+                    .createWebComponentBinding(Instantiator.get(this),
+                            rootElement, event.getAttributeJson());
+            WebComponentWrapper wrapper = new WebComponentWrapper(rootElement,
+                    binding);
 
-            LoggerFactory.getLogger(WebComponentUI.class).info("connected id: " + event.getWebComponentElementId());
-            dirtyCache.put(hash, wrapper.getElement());
-            attachComponentToUI(wrapper.getElement(), event.webComponentElementId);
+            elementToAttach = wrapper.getElement();
         }
+
+        if (shouldBePreserved) {
+            getRegistry().put(hash, elementToAttach);
+        }
+        attachComponentToUI(elementToAttach, event.webComponentElementId);
     }
 
     private void attachComponentToUI(Element child, String elementId) {
         getElement().getStateProvider().appendVirtualChild(
-                getElement().getNode(), child,
-                NodeProperties.INJECT_BY_ID, elementId);
+                getElement().getNode(), child, NodeProperties.INJECT_BY_ID,
+                elementId);
         child.executeJs("$0.serverConnected()");
     }
 
-    private String getDirtyCacheHash(ExtendedClientDetails details,
-                                     WebComponentConnectEvent event) {
-        return details.getWindowName() + "::" + event.getWebComponentElementId();
+    private boolean isConfigurationAnnotated(
+            WebComponentConfiguration<? extends Component> configuration,
+            Class<? extends Annotation> annotationClass) {
+        return AnnotationReader.getAnnotationFor(
+                configuration.getExporterClass(), annotationClass).isPresent();
+    }
+
+    private String getComponentHash(ExtendedClientDetails details,
+            WebComponentConnectEvent event) {
+        return (details != null ? details.getWindowName() : "") + "::"
+                + event.getWebComponentElementId();
+    }
+
+    private SessionEmbeddedComponentRegistry getRegistry() {
+        return SessionEmbeddedComponentRegistry.getSessionRegistry(VaadinSession.getCurrent());
     }
 
     @Override
@@ -294,5 +325,48 @@ public class WebComponentUI extends UI {
     private WebComponentConfigurationRegistry getConfigurationRegistry() {
         return WebComponentConfigurationRegistry
                 .getInstance(getSession().getService().getContext());
+    }
+
+    private static class SessionEmbeddedComponentRegistry {
+        private final VaadinSession session;
+        private ConcurrentHashMap<String, Element> cache = new ConcurrentHashMap<>();
+
+        SessionEmbeddedComponentRegistry(VaadinSession session) {
+            this.session = session;
+        }
+
+        public static SessionEmbeddedComponentRegistry getSessionRegistry(
+                VaadinSession session) {
+            Objects.requireNonNull(session,
+                    "Null session is not supported for session route registry");
+            SessionEmbeddedComponentRegistry registry = session
+                    .getAttribute(SessionEmbeddedComponentRegistry.class);
+            if (registry == null) {
+                registry = new SessionEmbeddedComponentRegistry(session);
+                session.setAttribute(SessionEmbeddedComponentRegistry.class,
+                        registry);
+            }
+            if (!registry.session.equals(session)) {
+                throw new IllegalStateException(String.format(
+                        "Session has an attribute for %s registered for "
+                                + "another session!",
+                        SessionEmbeddedComponentRegistry.class
+                                .getSimpleName()));
+            }
+            return registry;
+        }
+
+        public void put(String identifier, Element element) {
+            Objects.requireNonNull(identifier);
+            Objects.requireNonNull(element);
+            if (!cache.containsKey(identifier)) {
+                cache.put(identifier, element);
+            }
+        }
+
+        public Optional<Element> get(String identifier) {
+            Objects.requireNonNull(identifier);
+            return Optional.ofNullable(cache.get(identifier));
+        }
     }
 }
