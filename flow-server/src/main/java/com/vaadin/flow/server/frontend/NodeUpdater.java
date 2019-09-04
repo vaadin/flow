@@ -167,7 +167,7 @@ public abstract class NodeUpdater implements FallibleCommand {
             // We only should check here those paths starting with './' when all
             // flow components
             // have the './' prefix
-            String resource = resolved.replaceFirst("^./+", "");
+            String resource = resolved.replaceFirst("^\\./+", "");
             if (hasMetaInfResource(resource)) {
                 if (!resolved.startsWith("./")) {
                     log().warn(
