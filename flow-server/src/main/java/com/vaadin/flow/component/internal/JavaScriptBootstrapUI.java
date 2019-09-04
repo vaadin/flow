@@ -23,12 +23,15 @@ import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
+import com.vaadin.flow.router.ErrorNavigationEvent;
+import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationState;
 import com.vaadin.flow.router.NavigationStateBuilder;
 import com.vaadin.flow.router.NavigationTrigger;
+import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.router.internal.ErrorStateRenderer;
@@ -41,7 +44,8 @@ import com.vaadin.flow.theme.ThemeDefinition;
  * internal use in clientSideMode.
  */
 public class JavaScriptBootstrapUI extends UI {
-    private static final String NO_NAVIGATION = "Classic flow navigation is not supported for clien-side projects";
+    private static final String NO_NAVIGATION = "Classic flow navigation is " +
+            "not supported for client-side projects";
 
     private Element wrapperElement;
 
@@ -86,9 +90,10 @@ public class JavaScriptBootstrapUI extends UI {
         Location location = new Location(route);
         Optional<NavigationState> navigationState = this.getRouter()
                 .resolveNavigationTarget(location);
-        NavigationEvent navigationEvent = new NavigationEvent(getRouter(),
-                location, this, NavigationTrigger.CLIENT_SIDE);
+
         if (navigationState.isPresent()) {
+            NavigationEvent navigationEvent = new NavigationEvent(getRouter(),
+                    location, this, NavigationTrigger.CLIENT_SIDE);
             NavigationStateRenderer clientNavigationStateRenderer = new NavigationStateRenderer(
                     navigationState.get());
             clientNavigationStateRenderer.handle(navigationEvent);
@@ -98,7 +103,14 @@ public class JavaScriptBootstrapUI extends UI {
                     .orElse(getDefaultNavigationError());
             ErrorStateRenderer errorStateRenderer = new ErrorStateRenderer(
                     errorNavigationState);
-            errorStateRenderer.handle(navigationEvent);
+            NotFoundException notFoundException = new NotFoundException(
+                    "Couldn't find route for '" + location.getPath() + "'");
+            ErrorParameter<NotFoundException> errorParameter = new ErrorParameter<>(
+                    NotFoundException.class, notFoundException);
+            ErrorNavigationEvent errorNavigationEvent = new ErrorNavigationEvent(
+                    this.getRouter(), location, this,
+                    NavigationTrigger.CLIENT_SIDE, errorParameter);
+            errorStateRenderer.handle(errorNavigationEvent);
         }
     }
 
@@ -145,7 +157,7 @@ public class JavaScriptBootstrapUI extends UI {
          * @param ui
          *            the UI to use
          */
-        public JavaScriptUIInternals(UI ui) {
+        JavaScriptUIInternals(UI ui) {
             super(ui);
         }
 
