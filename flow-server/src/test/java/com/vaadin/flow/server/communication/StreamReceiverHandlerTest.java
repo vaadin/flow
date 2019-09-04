@@ -4,7 +4,9 @@ import javax.servlet.ReadListener;
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,6 +29,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.server.ErrorHandler;
 import com.vaadin.flow.server.MockServletConfig;
 import com.vaadin.flow.server.StreamReceiver;
 import com.vaadin.flow.server.StreamResourceRegistry;
@@ -37,6 +40,7 @@ import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.shared.ApplicationConstants;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -106,6 +110,9 @@ public class StreamReceiverHandlerTest {
         when(streamVariable.getOutputStream())
                 .thenAnswer(invocationOnMock -> outputStream);
         when(response.getOutputStream()).thenReturn(responseOutput);
+
+        Mockito.when(session.getErrorHandler())
+                .thenReturn(Mockito.mock(ErrorHandler.class));
     }
 
     private void mockReceiverAndRegistry() {
@@ -228,11 +235,84 @@ public class StreamReceiverHandlerTest {
         when(session.getUIById(uiId)).thenReturn(ui);
     }
 
+    @Test
+    public void doHandleXhrFilePost_outputStreamGetterThrows_responseStatusIs500()
+            throws IOException {
+        Mockito.doThrow(RuntimeException.class).when(streamVariable)
+                .getOutputStream();
+
+        handler.doHandleXhrFilePost(session, request, response, streamReceiver,
+                stateNode, 1);
+
+        Mockito.verify(response)
+                .setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+    }
+
+    @Test
+    public void doHandleXhrFilePost_outputStreamThrowsOnWrite_responseStatusIs500()
+            throws IOException {
+
+        Mockito.doThrow(RuntimeException.class).when(outputStream)
+                .write(Mockito.any(), Mockito.anyInt(), Mockito.anyInt());
+
+        handler.doHandleXhrFilePost(session, request, response, streamReceiver,
+                stateNode, 1);
+
+        Mockito.verify(response)
+                .setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+    }
+
+    @Test
+    public void doHandleXhrFilePost_happyPath_setContentTypeNoExplicitSetStatus()
+            throws IOException {
+        handler.doHandleXhrFilePost(session, request, response, streamReceiver,
+                stateNode, 1);
+
+        Mockito.verify(response).setContentType(
+                ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8);
+        Mockito.verify(response, Mockito.times(0)).setStatus(Mockito.anyInt());
+    }
+
+    @Test
+    public void doHandleMultipartFileUpload_noPart_uploadFailed_responseStatusIs500()
+            throws IOException {
+
+        handler.doHandleMultipartFileUpload(session, request, response,
+                streamReceiver, stateNode);
+
+        Mockito.verify(response)
+                .setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+    }
+
+    @Test
+    public void doHandleMultipartFileUpload_hasParts_uploadFailed_responseStatusIs500()
+            throws IOException {
+        contentType = "multipart/form-data; boundary=----WebKitFormBoundary7NsWHeCJVZNwi6ll";
+        inputStream = createInputStream(
+                "------WebKitFormBoundary7NsWHeCJVZNwi6ll\n"
+                        + "Content-Disposition: form-data; name=\"file\"; filename=\"EBookJP.txt\"\n"
+                        + "Content-Type: text/plain\n" + "\n" + "\n"
+                        + "------WebKitFormBoundary7NsWHeCJVZNwi6ll--");
+        Mockito.doThrow(RuntimeException.class).when(outputStream)
+                .write(Mockito.any(), Mockito.anyInt(), Mockito.anyInt());
+        contentLength = "99";
+
+        parts = new ArrayList<>();
+        parts.add(createPart(createInputStream("foobar"), "text/plain",
+                "EBookJP.txt", 6));
+
+        handler.doHandleMultipartFileUpload(session, request, response,
+                streamReceiver, stateNode);
+
+        Mockito.verify(response)
+                .setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+    }
+
     /**
      * Tests whether we get infinite loop if InputStream is already read
      * (#10096)
      */
-    @Test(expected = IOException.class)
+    @Test
     public void exceptionIsThrownOnUnexpectedEnd() throws IOException {
         contentType = "multipart/form-data; boundary=----WebKitFormBoundary7NsWHeCJVZNwi6ll";
         inputStream = createInputStream(
@@ -242,8 +322,11 @@ public class StreamReceiverHandlerTest {
                         + "------WebKitFormBoundary7NsWHeCJVZNwi6ll--");
         contentLength = "99";
 
-        handler.doHandleMultipartFileUpload(null, request, response, null,
+        handler.doHandleMultipartFileUpload(session, request, response, null,
                 null);
+
+        Mockito.verify(response)
+                .setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
     }
 
     @Test
@@ -306,5 +389,9 @@ public class StreamReceiverHandlerTest {
                 endEventArgumentCaptor.getValue().getFileName());
         Assert.assertEquals(contentType,
                 endEventArgumentCaptor.getValue().getMimeType());
+
+        Mockito.verify(response).setContentType(
+                ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8);
+        Mockito.verify(response, Mockito.times(0)).setStatus(Mockito.anyInt());
     }
 }
