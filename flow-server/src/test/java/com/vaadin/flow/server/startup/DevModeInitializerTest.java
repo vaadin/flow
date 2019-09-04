@@ -71,6 +71,20 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     }
 
     @Test
+    public void loadingFsResources_useModernResourcesFolder_allFilesExist()
+            throws IOException {
+        loadingFsResources_allFilesExist("/dir-with-modern-frontend/",
+                Constants.RESOURCES_FRONTEND_DEFAULT);
+    }
+
+    @Test
+    public void loadingFsResources_useObsoleteResourcesFolder_allFilesExist()
+            throws IOException {
+        loadingFsResources_allFilesExist("/dir-with-frontend-resources/",
+                Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT);
+    }
+
+    @Test
     public void should_Run_Updaters() throws Exception {
         runOnStartup();
         assertNotNull(DevModeHandler.getDevModeHandler());
@@ -199,6 +213,29 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         // path.
         assertTrue("File in path 'with space' doesn't load from given path",
                 jarFilesFromClassloader.get(0).exists());
+    }
+
+    private void loadingFsResources_allFilesExist(String resourcesRoot,
+            String resourcesFolder) throws IOException {
+        List<URL> urls = Collections.singletonList(
+                getClass().getResource(resourcesRoot + resourcesFolder));
+
+        // Create mock loader with the single jar to be found
+        ClassLoader classLoader = Mockito.mock(ClassLoader.class);
+        Mockito.when(classLoader.getResources(resourcesFolder))
+                .thenReturn(Collections.enumeration(urls));
+
+        // load jars from classloader
+        List<File> locations = new ArrayList<>(DevModeInitializer
+                .getFrontendLocationsFromClassloader(classLoader));
+
+        // Assert that resource was found and accepted
+        assertEquals("One resource should have been found and added as a File",
+                1, locations.size());
+        // Assert that the file can be found from the filesystem by the given
+        // path.
+        assertTrue("Resource doesn't load from given path",
+                locations.get(0).exists());
     }
 
 }

@@ -344,15 +344,15 @@ public class DevModeInitializer implements ServletContainerInitializer,
     static Set<File> getFrontendLocationsFromClassloader(
             ClassLoader classLoader) {
         Set<File> jarFiles = new HashSet<>();
-        jarFiles.addAll(getJarFilesFromClassloader(classLoader,
+        jarFiles.addAll(getFrontendLocationsFromClassloader(classLoader,
                 Constants.RESOURCES_FRONTEND_DEFAULT));
-        jarFiles.addAll(getJarFilesFromClassloader(classLoader,
+        jarFiles.addAll(getFrontendLocationsFromClassloader(classLoader,
                 Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT));
         return jarFiles;
     }
 
-    private static Set<File> getJarFilesFromClassloader(ClassLoader classLoader,
-            String resourcesFolder) {
+    private static Set<File> getFrontendLocationsFromClassloader(
+            ClassLoader classLoader, String resourcesFolder) {
         Set<File> jarFiles = new HashSet<>();
         try {
             Enumeration<URL> en = classLoader.getResources(resourcesFolder);
