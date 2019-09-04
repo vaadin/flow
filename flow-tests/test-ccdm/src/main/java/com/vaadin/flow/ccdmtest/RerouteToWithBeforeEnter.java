@@ -20,8 +20,8 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
 
-@Route(value = "view-with-before-enter", layout = MainLayout.class)
-public class ViewWithBeforeEnter extends Div implements BeforeEnterObserver {
+@Route(value = "reroute-with-before-enter", layout = MainLayout.class)
+public class RerouteToWithBeforeEnter extends Div implements BeforeEnterObserver {
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
         event.rerouteTo(ServerSideView.class);

@@ -191,16 +191,34 @@ public class ClientIndexHandlerIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void should_executeOnBeforeEnter_WhenViewIsBeforeEnterObserver() {
+    public void should_rerouteToOtherView_WhenViewRerouteInOnBeforeEnter() {
         openTestUrl("/");
         waitForElementPresent(By.id("button3"));
-        findElement(By.id("pathname")).sendKeys("view-with-before-enter");
+        findElement(By.id("pathname")).sendKeys("reroute-with-before-enter");
         findElement(By.id("button3")).click();
         waitForElementPresent(By.id("result"));
 
         String content = findElement(By.id("result")).getText();
-        Assert.assertTrue("Flow.navigate should execute onBeforeEnter and navigate " +
-                        "to ServerSideView",
+        Assert.assertTrue(
+                "Flow.navigate should execute onBeforeEnter and reroute to "
+                        + "ServerSideView",
+                content.contains("Server view"));
+        Assert.assertTrue("Flow.navigate should include router layout",
+                content.contains("Main layout"));
+    }
+
+    @Test
+    public void should_forwardToOtherView_WhenViewForwardInOnBeforeEnter() {
+        openTestUrl("/");
+        waitForElementPresent(By.id("button3"));
+        findElement(By.id("pathname")).sendKeys("forward-with-before-enter");
+        findElement(By.id("button3")).click();
+        waitForElementPresent(By.id("result"));
+
+        String content = findElement(By.id("result")).getText();
+        Assert.assertTrue(
+                "Flow.navigate should execute onBeforeEnter and forward to "
+                        + "ServerSideView",
                 content.contains("Server view"));
         Assert.assertTrue("Flow.navigate should include router layout",
                 content.contains("Main layout"));
