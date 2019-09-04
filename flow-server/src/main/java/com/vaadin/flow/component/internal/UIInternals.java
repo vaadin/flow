@@ -681,6 +681,12 @@ public class UIInternals implements Serializable {
         }
     }
 
+    /**
+     * Move all the children of the other UI to this current UI.
+     * 
+     * @param otherUI
+     *            the other UI to transfer content from.
+     */
     public void moveFromOtherUI(UI otherUI) {
         final List<Element> uiChildren = otherUI.getElement()
                 .getChildren()

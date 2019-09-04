@@ -131,6 +131,12 @@ public class UI extends Component
         pushConfiguration = new PushConfigurationImpl(this);
     }
 
+    /**
+     * Create UIInternals object which handles internal logic for the current
+     * UI.
+     *
+     * @return an instance of UIInternals.
+     */
     protected UIInternals createInternals() {
         return new UIInternals(this);
     }
