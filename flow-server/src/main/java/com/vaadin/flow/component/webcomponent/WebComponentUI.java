@@ -191,8 +191,8 @@ public class WebComponentUI extends UI {
             WebComponentConfiguration<? extends Component> configuration,
             WebComponentConnectEvent event, boolean shouldBePreserved) {
         Element elementToAttach = null;
-        final String hash = getComponentHash(
-                event, getInternals().getExtendedClientDetails());
+        final String hash = getComponentHash(event,
+                getInternals().getExtendedClientDetails());
 
         if (shouldBePreserved) {
             Optional<Element> old = getRegistry().get(hash);
@@ -201,7 +201,7 @@ public class WebComponentUI extends UI {
             }
         }
         // did not have an element in the cache, create a new one
-        if (elementToAttach == null){
+        if (elementToAttach == null) {
             Element rootElement = new Element(event.getTag());
             WebComponentBinding binding = configuration
                     .createWebComponentBinding(Instantiator.get(this),
@@ -232,16 +232,19 @@ public class WebComponentUI extends UI {
                 configuration.getExporterClass(), annotationClass).isPresent();
     }
 
-    private String getComponentHash(WebComponentConnectEvent event, ExtendedClientDetails details) {
+    private String getComponentHash(WebComponentConnectEvent event,
+            ExtendedClientDetails details) {
         Objects.requireNonNull(event);
-        String id = event.attributeValues.hasKey("id") ?
-                event.attributeValues.getString("id") : "";
+        String id = event.attributeValues.hasKey("id")
+                ? event.attributeValues.getString("id")
+                : "";
         return (details != null ? details.getWindowName() : "") + ":" + id + ":"
                 + event.getWebComponentElementId();
     }
 
     private SessionEmbeddedComponentRegistry getRegistry() {
-        return SessionEmbeddedComponentRegistry.getSessionRegistry(VaadinSession.getCurrent());
+        return SessionEmbeddedComponentRegistry
+                .getSessionRegistry(VaadinSession.getCurrent());
     }
 
     @Override
@@ -335,7 +338,7 @@ public class WebComponentUI extends UI {
             this.session = session;
         }
 
-        public static SessionEmbeddedComponentRegistry getSessionRegistry(
+        static SessionEmbeddedComponentRegistry getSessionRegistry(
                 VaadinSession session) {
             Objects.requireNonNull(session,
                     "Null session is not supported for session route registry");
@@ -356,15 +359,36 @@ public class WebComponentUI extends UI {
             return registry;
         }
 
-        public void put(String identifier, Element element) {
+        /**
+         * Placed {@code element} uniquely identified by the supplied {@code
+         * identifier} into the registry. If an element with the {@code
+         * identifier} exists in the registry, the old value will be kept and
+         * new one will be ignored.
+         * <p>
+         * This is an atomic operation.
+         * 
+         * @param identifier
+         *            Unique identifier for the {@code element}
+         * @param element
+         *            {@link com.vaadin.flow.dom.Element} to store
+         */
+        void put(String identifier, Element element) {
             Objects.requireNonNull(identifier);
             Objects.requireNonNull(element);
-            if (!cache.containsKey(identifier)) {
-                cache.put(identifier, element);
-            }
+            // atomic placement
+            cache.computeIfAbsent(identifier, id -> element);
         }
 
-        public Optional<Element> get(String identifier) {
+        /**
+         * Retrieves the {@link com.vaadin.flow.dom.Element} stored in the
+         * registry, identified by {@code identifier}.
+         * 
+         * @param identifier
+         *            Unique identifier for the {@link Element}
+         * @return an {@link Element}, or {@code null} if nothing is stored for
+         *         the given {@code identifier}
+         */
+        Optional<Element> get(String identifier) {
             Objects.requireNonNull(identifier);
             return Optional.ofNullable(cache.get(identifier));
         }
