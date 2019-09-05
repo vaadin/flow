@@ -248,7 +248,7 @@ public class FrontendDataProvider {
                             + "* if the file is present in one of the regular jar dependencies, it should be located in `%s` directory in the jar",
                     fragmentImportPath, fragmentFile,
                     ApplicationConstants.FRONTEND_PROTOCOL_PREFIX,
-                    Constants.RESOURCES_FRONTEND_DEFAULT));
+                    Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT));
         }
         return fragmentFile;
     }
