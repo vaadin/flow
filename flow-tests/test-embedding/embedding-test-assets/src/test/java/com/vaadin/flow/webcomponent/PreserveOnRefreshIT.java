@@ -16,6 +16,7 @@
 package com.vaadin.flow.webcomponent;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
@@ -26,6 +27,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 public class PreserveOnRefreshIT extends ChromeBrowserTest {
     private static final String MODIFIED = "modified";
     private static final String UNMODIFIED = "unmodified";
+    private static final String NO_PRESERVE = "nopreserve";
     private static final String INPUT_ID = "value";
 
     @Override
@@ -33,15 +35,14 @@ public class PreserveOnRefreshIT extends ChromeBrowserTest {
         return Constants.PAGE_CONTEXT + "/preserveOnRefresh.html";
     }
 
-    @Test
-    public void twoComponents_onlyModifiedComponent_should_keepValueAfterRefresh() {
+    @Before
+    public void init() {
         open();
-
         waitForElementVisible(By.id(MODIFIED));
+    }
 
-        WebElement modifiedComponent = findElement(By.id(MODIFIED));
-        WebElement unmodifiedComponent = findElement(By.id(UNMODIFIED));
-
+    @Test
+    public void twoPreservedComponents_modifiedValue_shouldNot_propagateToOtherComponentAfterRefresh() {
         Assert.assertEquals(MODIFIED + "-input should be empty", "",
                 getValue(MODIFIED));
         Assert.assertEquals(UNMODIFIED + "-input should be empty", "",
@@ -61,6 +62,59 @@ public class PreserveOnRefreshIT extends ChromeBrowserTest {
                 EXPECTED, getValue(MODIFIED));
         Assert.assertEquals(UNMODIFIED + "-input should be empty after refresh",
                 "", getValue(UNMODIFIED));
+    }
+
+    @Test
+    public void preservedAndUnpreservedComponents_onlyPreservedComponent_should_keepNewValueAfterRefresh() {
+        Assert.assertEquals(MODIFIED + "-input should be empty", "",
+                getValue(MODIFIED));
+        Assert.assertEquals(NO_PRESERVE + "-input should be empty", "",
+                getValue(NO_PRESERVE));
+
+        final String EXPECTED = "expected text";
+        writeInInput(MODIFIED, EXPECTED);
+        writeInInput(NO_PRESERVE, EXPECTED);
+
+        Assert.assertEquals(MODIFIED + "-input should have text", EXPECTED,
+                getValue(MODIFIED));
+        Assert.assertEquals(NO_PRESERVE + "-input should have text", EXPECTED,
+                getValue(NO_PRESERVE));
+
+        refreshPage();
+
+        Assert.assertEquals(MODIFIED + "-input should have text after refresh",
+                EXPECTED, getValue(MODIFIED));
+        Assert.assertEquals(
+                NO_PRESERVE + "-input should be empty after refresh", "",
+                getValue(NO_PRESERVE));
+    }
+
+    @Test
+    public void whenValueIsChangedOnPreservingComponent_should_preserveTheNewValueAfterRefresh() {
+        Assert.assertEquals(MODIFIED + "-input should be empty", "",
+                getValue(MODIFIED));
+
+        // first value change and refresh
+        final String EXPECTED_1 = "expected text";
+        writeInInput(MODIFIED, EXPECTED_1);
+
+        Assert.assertEquals(MODIFIED + "-input should have text", EXPECTED_1,
+                getValue(MODIFIED));
+
+        refreshPage();
+        Assert.assertEquals(MODIFIED + "-input should display first changed "
+                + "text after refresh", EXPECTED_1, getValue(MODIFIED));
+
+        // second value change and refresh
+        final String EXPECTED_2 = EXPECTED_1 + " with additions";
+        writeInInput(MODIFIED, " with additions");
+
+        Assert.assertEquals(MODIFIED + "-input should have text", EXPECTED_2,
+                getValue(MODIFIED));
+
+        refreshPage();
+        Assert.assertEquals(MODIFIED + "-input should display second changed "
+                + "text after refresh", EXPECTED_2, getValue(MODIFIED));
     }
 
     private String getValue(String id) {
