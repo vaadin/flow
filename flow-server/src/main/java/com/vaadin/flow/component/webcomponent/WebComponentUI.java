@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.webcomponent;
 
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.Map;
 import java.util.Objects;
@@ -330,7 +331,7 @@ public class WebComponentUI extends UI {
                 .getInstance(getSession().getService().getContext());
     }
 
-    private static class SessionEmbeddedComponentRegistry {
+    private static class SessionEmbeddedComponentRegistry implements Serializable {
         private final VaadinSession session;
         private ConcurrentHashMap<String, Element> cache = new ConcurrentHashMap<>();
 
