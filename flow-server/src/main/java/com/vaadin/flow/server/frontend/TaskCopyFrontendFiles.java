@@ -25,10 +25,10 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.FallibleCommand;
 
+import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
-
 
 /**
  * Copies JavaScript and CSS files from JAR files into a given folder.
@@ -55,8 +55,8 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
                 "Parameter 'jarFilesToScan' must not be null");
         this.targetDirectory = new File(npmFolder,
                 NODE_MODULES + FLOW_NPM_PACKAGE_NAME);
-        resourceLocations = resourcesToScan.stream()
-                .filter(File::exists).collect(Collectors.toSet());
+        resourceLocations = resourcesToScan.stream().filter(File::exists)
+                .collect(Collectors.toSet());
     }
 
     @Override
@@ -70,14 +70,22 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
                 TaskCopyLocalFrontendFiles.copyLocalResources(
                         new File(location, RESOURCES_FRONTEND_DEFAULT),
                         targetDirectory);
+                TaskCopyLocalFrontendFiles.copyLocalResources(
+                        new File(location,
+                                COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT),
+                        targetDirectory);
             } else {
-                jarContentsManager.copyIncludedFilesFromJarTrimmingBasePath(location,
-                        RESOURCES_FRONTEND_DEFAULT, targetDirectory,
+                jarContentsManager.copyIncludedFilesFromJarTrimmingBasePath(
+                        location, RESOURCES_FRONTEND_DEFAULT, targetDirectory,
                         WILDCARD_INCLUSIONS);
+                jarContentsManager.copyIncludedFilesFromJarTrimmingBasePath(
+                        location, COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT,
+                        targetDirectory, WILDCARD_INCLUSIONS);
             }
         }
         long ms = (System.nanoTime() - start) / 1000000;
-        log().info("Visited {} resources. Took {} ms.", resourceLocations.size(), ms);
+        log().info("Visited {} resources. Took {} ms.",
+                resourceLocations.size(), ms);
     }
 
     private static Logger log() {

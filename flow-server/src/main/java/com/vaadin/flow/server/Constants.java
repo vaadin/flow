@@ -163,9 +163,15 @@ public final class Constants implements Serializable {
     public static final String PACKAGE_JSON = "package.json";
 
     /**
+     * Location for the frontend resources in jar files for compatibility mode
+     * (also obsolete but supported for NPM mode).
+     */
+    public static final String COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT = "META-INF/resources/frontend";
+
+    /**
      * Location for the frontend resources in jar files.
      */
-    public static final String RESOURCES_FRONTEND_DEFAULT = "META-INF/resources/frontend";
+    public static final String RESOURCES_FRONTEND_DEFAULT = "META-INF/frontend";
 
     /**
      * Configuration name for the time waiting for webpack output success or
