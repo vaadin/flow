@@ -307,7 +307,7 @@ public class DeploymentConfigurationFactoryTest {
     }
 
     @Test
-    public void shouldThrow_tokenFileContainsNonExitingNpmFolderInDevMode()
+    public void shouldThrow_tokenFileContainsNonExistingNpmFolderInDevMode()
             throws Exception {
         exception.expect(IllegalStateException.class);
         exception.expectMessage(String.format("Running project in development mode with no access to folder '%s'. "
@@ -318,12 +318,12 @@ public class DeploymentConfigurationFactoryTest {
                         "\"generatedFolder\": \"generated\",",
                         "\"frontendFolder\": \"frontend\"", "}"));
 
-        DeploymentConfiguration config = createConfig(Collections
+        createConfig(Collections
                 .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
     }
 
     @Test
-    public void shouldThrow_tokenFileContainsNonExitingFontendFolderInDevMode()
+    public void shouldThrow_tokenFileContainsNonExistingFrontendFolderNoNpmFolder()
             throws Exception {
         exception.expect(IllegalStateException.class);
         exception.expectMessage(String.format("Running project in development mode with no access to folder '%s'. "
@@ -333,7 +333,57 @@ public class DeploymentConfigurationFactoryTest {
                         "\"productionMode\": false,",
                         "\"frontendFolder\": \"frontend\"", "}"));
 
-        DeploymentConfiguration config = createConfig(Collections
+        createConfig(Collections
+                .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
+    }
+
+
+    @Test
+    public void shouldThrow_tokenFileContainsNonExistingFrontendFolderOutsideNpmSubFolder()
+            throws Exception {
+        exception.expect(IllegalStateException.class);
+        exception.expectMessage(String.format("Running project in development mode with no access to folder '%s'. "
+                + "Build project in production mode see https://vaadin.com/docs/v14/flow/production/tutorial-production-mode-basic.html", "frontend"));
+        temporaryFolder.newFolder("npm");
+        String tempFolder = temporaryFolder.getRoot().getAbsolutePath().replace("\\", "/");
+        FileUtils.writeLines(tokenFile,
+                Arrays.asList("{", "\"compatibilityMode\": false,",
+                        "\"productionMode\": false,",
+                        "\"npmFolder\": \""+ tempFolder +"/npm\",",
+                        "\"frontendFolder\": \"frontend\"", "}"));
+
+        createConfig(Collections
+                .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
+    }
+
+    @Test
+    public void shouldNotThrow_tokenFileFrontendFolderInDevMode()
+            throws Exception {
+        temporaryFolder.newFolder("npm");
+        String tempFolder = temporaryFolder.getRoot().getAbsolutePath().replace("\\", "/");
+        FileUtils.writeLines(tokenFile,
+                Arrays.asList("{", "\"compatibilityMode\": false,",
+                        "\"productionMode\": false,",
+                        "\"npmFolder\": \""+ tempFolder +"/npm\",",
+                        "\"frontendFolder\": \""+tempFolder+"/npm/frontend\"", "}"));
+
+        createConfig(Collections
+                .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
+    }
+
+    @Test
+    public void shouldNotThrow_tokenFileFoldersExist()
+            throws Exception {
+        temporaryFolder.newFolder("npm");
+        temporaryFolder.newFolder("frontend");
+        String tempFolder = temporaryFolder.getRoot().getAbsolutePath().replace("\\", "/");
+        FileUtils.writeLines(tokenFile,
+                Arrays.asList("{", "\"compatibilityMode\": false,",
+                        "\"productionMode\": false,",
+                        "\"npmFolder\": \""+ tempFolder +"/npm\",",
+                        "\"frontendFolder\": \""+tempFolder+"/frontend\"", "}"));
+
+        createConfig(Collections
                 .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
     }
 

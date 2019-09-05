@@ -216,7 +216,10 @@ public final class DeploymentConfigurationFactory implements Serializable {
                 if (buildInfo.hasKey("frontendFolder")) {
                     initParameters.setProperty(FrontendUtils.PARAM_FRONTEND_DIR,
                             buildInfo.getString("frontendFolder"));
-                    verifyFolderExists(initParameters, buildInfo.getString("frontendFolder"));
+                    // Only verify frontend folder if it's not a subfolder of the npm folder.
+                    if(!buildInfo.hasKey("npmFolder") || !buildInfo.getString("frontendFolder").startsWith(buildInfo.getString("npmFolder"))) {
+                        verifyFolderExists(initParameters, buildInfo.getString("frontendFolder"));
+                    }
                 }
 
                 // These should be internal only so if there is a System
