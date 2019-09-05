@@ -176,47 +176,58 @@ public class WebComponentUI extends UI {
         final boolean shouldBePreserved = isConfigurationAnnotated(
                 webComponentConfiguration.get(), PreserveOnRefresh.class);
 
-        if (!shouldBePreserved
-                || getInternals().getExtendedClientDetails() != null) {
-            attachOrCreateWebComponentWrapper(webComponentConfiguration.get(),
-                    event, shouldBePreserved);
+        if (!shouldBePreserved) {
+            attachCreatedWebComponent(webComponentConfiguration.get(), event);
+        } else if (getInternals().getExtendedClientDetails() != null) {
+            attachCachedOrCreatedWebComponent(webComponentConfiguration.get(),
+                    event, getComponentHash(event,
+                            getInternals().getExtendedClientDetails()));
         } else {
             getPage().retrieveExtendedClientDetails(extendedClientDetails -> {
-                attachOrCreateWebComponentWrapper(
-                        webComponentConfiguration.get(), event, true);
+                attachCachedOrCreatedWebComponent(webComponentConfiguration.get(),
+                        event, getComponentHash(event, extendedClientDetails));
             });
         }
     }
 
-    private void attachOrCreateWebComponentWrapper(
+    private void attachCreatedWebComponent(
             WebComponentConfiguration<? extends Component> configuration,
-            WebComponentConnectEvent event, boolean shouldBePreserved) {
-        Element elementToAttach = null;
-        final String hash = getComponentHash(event,
-                getInternals().getExtendedClientDetails());
+            WebComponentConnectEvent event) {
+        Element elementToAttach = createWebComponentWrapper(configuration,
+                event);
+        attachComponentToUI(elementToAttach, event.webComponentElementId);
+    }
 
-        if (shouldBePreserved) {
-            Optional<Element> old = getRegistry().get(hash);
-            if (old.isPresent()) {
-                elementToAttach = old.get().removeFromTree();
-            }
+    private void attachCachedOrCreatedWebComponent(
+            WebComponentConfiguration<? extends Component> configuration,
+            WebComponentConnectEvent event, final String hash) {
+        Element elementToAttach = null;
+
+        Optional<Element> old = getRegistry().get(hash);
+        if (old.isPresent()) {
+            elementToAttach = old.get().removeFromTree();
         }
+
         // did not have an element in the cache, create a new one
         if (elementToAttach == null) {
-            Element rootElement = new Element(event.getTag());
-            WebComponentBinding binding = configuration
-                    .createWebComponentBinding(Instantiator.get(this),
-                            rootElement, event.getAttributeJson());
-            WebComponentWrapper wrapper = new WebComponentWrapper(rootElement,
-                    binding);
-
-            elementToAttach = wrapper.getElement();
+            elementToAttach = createWebComponentWrapper(configuration, event);
         }
 
-        if (shouldBePreserved) {
-            getRegistry().put(hash, elementToAttach);
-        }
         attachComponentToUI(elementToAttach, event.webComponentElementId);
+        getRegistry().put(hash, elementToAttach);
+    }
+
+    private Element createWebComponentWrapper(
+            WebComponentConfiguration<? extends Component> configuration,
+            WebComponentConnectEvent event) {
+
+        Element rootElement = new Element(event.getTag());
+        WebComponentBinding binding = configuration.createWebComponentBinding(
+                Instantiator.get(this), rootElement, event.getAttributeJson());
+        WebComponentWrapper wrapper = new WebComponentWrapper(rootElement,
+                binding);
+
+        return wrapper.getElement();
     }
 
     private void attachComponentToUI(Element child, String elementId) {
@@ -236,10 +247,11 @@ public class WebComponentUI extends UI {
     private String getComponentHash(WebComponentConnectEvent event,
             ExtendedClientDetails details) {
         Objects.requireNonNull(event);
-        String id = event.attributeValues.hasKey("id")
+        Objects.requireNonNull(details);
+        final String id = event.attributeValues.hasKey("id")
                 ? event.attributeValues.getString("id")
                 : "";
-        return (details != null ? details.getWindowName() : "") + ":" + id + ":"
+        return details.getWindowName() + ":" + id + ":"
                 + event.getWebComponentElementId();
     }
 
@@ -331,7 +343,8 @@ public class WebComponentUI extends UI {
                 .getInstance(getSession().getService().getContext());
     }
 
-    private static class SessionEmbeddedComponentRegistry implements Serializable {
+    private static class SessionEmbeddedComponentRegistry
+            implements Serializable {
         private final VaadinSession session;
         private ConcurrentHashMap<String, Element> cache = new ConcurrentHashMap<>();
 
