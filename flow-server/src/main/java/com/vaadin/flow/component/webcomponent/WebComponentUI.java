@@ -120,8 +120,6 @@ public class WebComponentUI extends UI {
                 @EventData("id") String webComponentElementId,
                 @EventData("attributeValues") JsonObject attributeValues) {
             super(source, true);
-            // TODO: this thing should provide valuable identification
-            // information, like window name. or something similar
             this.tag = tag;
             this.webComponentElementId = webComponentElementId;
             this.attributeValues = attributeValues;
@@ -194,7 +192,7 @@ public class WebComponentUI extends UI {
             WebComponentConnectEvent event, boolean shouldBePreserved) {
         Element elementToAttach = null;
         final String hash = getComponentHash(
-                getInternals().getExtendedClientDetails(), event);
+                event, getInternals().getExtendedClientDetails());
 
         if (shouldBePreserved) {
             Optional<Element> old = getRegistry().get(hash);
@@ -234,9 +232,11 @@ public class WebComponentUI extends UI {
                 configuration.getExporterClass(), annotationClass).isPresent();
     }
 
-    private String getComponentHash(ExtendedClientDetails details,
-            WebComponentConnectEvent event) {
-        return (details != null ? details.getWindowName() : "") + "::"
+    private String getComponentHash(WebComponentConnectEvent event, ExtendedClientDetails details) {
+        Objects.requireNonNull(event);
+        String id = event.attributeValues.hasKey("id") ?
+                event.attributeValues.getString("id") : "";
+        return (details != null ? details.getWindowName() : "") + ":" + id + ":"
                 + event.getWebComponentElementId();
     }
 
