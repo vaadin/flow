@@ -237,7 +237,7 @@ public class StreamReceiverHandler implements Serializable {
         // Create a new file upload handler
         ServletFileUpload upload = new ServletFileUpload();
 
-        boolean success = false;
+        boolean success = true;
         long contentLength = getContentLength(request);
         // Parse the request
         FileItemIterator iter;
