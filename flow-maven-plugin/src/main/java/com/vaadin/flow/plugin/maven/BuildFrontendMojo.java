@@ -47,7 +47,6 @@ import com.vaadin.flow.theme.Theme;
 
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
-
 import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFinder;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
@@ -135,7 +134,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
             return;
         }
 
-        addDevModeToken();
+        updateBuildFile();
 
         long start = System.nanoTime();
 
@@ -231,9 +230,10 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
 
     /**
      * Add the devMode token to build token file so we don't try to start the
-     * dev server.
+     * dev server. Remove the abstract folder paths as they should not be used
+     * for prebuilt bundles.
      */
-    private void addDevModeToken() {
+    private void updateBuildFile() {
         File tokenFile = getTokenFile();
         if (!tokenFile.exists()) {
             getLog().warn(
@@ -244,6 +244,10 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
             String json = FileUtils.readFileToString(tokenFile,
                     StandardCharsets.UTF_8.name());
             JsonObject buildInfo = JsonUtil.parse(json);
+
+            buildInfo.remove("npmFolder");
+            buildInfo.remove("generatedFolder");
+            buildInfo.remove("frontendFolder");
 
             buildInfo.put(SERVLET_PARAMETER_ENABLE_DEV_SERVER, false);
             FileUtils.write(tokenFile, JsonUtil.stringify(buildInfo, 2) + "\n",

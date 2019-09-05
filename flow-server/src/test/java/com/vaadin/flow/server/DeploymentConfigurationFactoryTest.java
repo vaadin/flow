@@ -2,7 +2,6 @@ package com.vaadin.flow.server;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -305,6 +304,37 @@ public class DeploymentConfigurationFactoryTest {
                 .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
         assertFalse(config.isCompatibilityMode());
         assertTrue(config.isProductionMode());
+    }
+
+    @Test
+    public void shouldThrow_tokenFileContainsNonExitingNpmFolderInDevMode()
+            throws Exception {
+        exception.expect(IllegalStateException.class);
+        exception.expectMessage(String.format("Running project in development mode with no access to folder '%s'. "
+                + "Build project in production mode see https://vaadin.com/docs/v14/flow/production/tutorial-production-mode-basic.html", "npm"));
+        FileUtils.writeLines(tokenFile,
+                Arrays.asList("{", "\"compatibilityMode\": false,",
+                        "\"productionMode\": false,", "\"npmFolder\": \"npm\",",
+                        "\"generatedFolder\": \"generated\",",
+                        "\"frontendFolder\": \"frontend\"", "}"));
+
+        DeploymentConfiguration config = createConfig(Collections
+                .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
+    }
+
+    @Test
+    public void shouldThrow_tokenFileContainsNonExitingFontendFolderInDevMode()
+            throws Exception {
+        exception.expect(IllegalStateException.class);
+        exception.expectMessage(String.format("Running project in development mode with no access to folder '%s'. "
+                + "Build project in production mode see https://vaadin.com/docs/v14/flow/production/tutorial-production-mode-basic.html", "frontend"));
+        FileUtils.writeLines(tokenFile,
+                Arrays.asList("{", "\"compatibilityMode\": false,",
+                        "\"productionMode\": false,",
+                        "\"frontendFolder\": \"frontend\"", "}"));
+
+        DeploymentConfiguration config = createConfig(Collections
+                .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
     }
 
     private DeploymentConfiguration createConfig(Map<String, String> map)

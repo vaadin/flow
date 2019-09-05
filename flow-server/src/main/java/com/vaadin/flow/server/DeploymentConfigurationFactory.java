@@ -19,7 +19,6 @@ package com.vaadin.flow.server;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -41,7 +40,6 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
-
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
@@ -212,11 +210,13 @@ public final class DeploymentConfigurationFactory implements Serializable {
                 if (buildInfo.hasKey("npmFolder")) {
                     initParameters.setProperty(PROJECT_BASEDIR,
                             buildInfo.getString("npmFolder"));
+                    verifyFolderExists(initParameters, buildInfo.getString("npmFolder"));
                 }
 
                 if (buildInfo.hasKey("frontendFolder")) {
                     initParameters.setProperty(FrontendUtils.PARAM_FRONTEND_DIR,
                             buildInfo.getString("frontendFolder"));
+                    verifyFolderExists(initParameters, buildInfo.getString("frontendFolder"));
                 }
 
                 // These should be internal only so if there is a System
@@ -245,6 +245,17 @@ public final class DeploymentConfigurationFactory implements Serializable {
             throw new UncheckedIOException(e);
         }
 
+    }
+
+    private static void verifyFolderExists(Properties initParameters,
+            String folder) {
+        Boolean productionMode = Boolean.parseBoolean(initParameters
+                .getProperty(SERVLET_PARAMETER_PRODUCTION_MODE, "false"));
+        if(!productionMode && !new File(folder).exists()) {
+            String message = String.format("Running project in development mode with no access to folder '%s'. "
+                    + "Build project in production mode see https://vaadin.com/docs/v14/flow/production/tutorial-production-mode-basic.html", folder);
+            throw new IllegalStateException(message);
+        }
     }
 
     private static void verifyMode(CompatibilityModeStatus value,
