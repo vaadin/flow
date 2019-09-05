@@ -27,7 +27,9 @@ import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.internal.DefaultUIInternalsHandler;
 import com.vaadin.flow.component.internal.UIInternals;
+import com.vaadin.flow.component.internal.UIInternalsHandler;
 import com.vaadin.flow.component.page.LoadingIndicatorConfiguration;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.dom.Element;
@@ -124,21 +126,22 @@ public class UI extends Component
      * Creates a new empty UI.
      */
     public UI() {
-        super(null);
-        internals = createInternals();
-        getNode().getFeature(ElementData.class).setTag("body");
-        Component.setElement(this, Element.get(getNode()));
-        pushConfiguration = new PushConfigurationImpl(this);
+        this(new DefaultUIInternalsHandler());
     }
 
     /**
-     * Create UIInternals object which handles internal logic for the current
-     * UI.
-     *
-     * @return an instance of UIInternals.
+     * Create a new empty UI with a custom {@link UIInternalsHandler}
+     * implementation.
+     * 
+     * @param internalsHandler
+     *            an implementation of UIInternalsHandler.
      */
-    protected UIInternals createInternals() {
-        return new UIInternals(this);
+    protected UI(UIInternalsHandler internalsHandler) {
+        super(null);
+        internals = new UIInternals(this, internalsHandler);
+        getNode().getFeature(ElementData.class).setTag("body");
+        Component.setElement(this, Element.get(getNode()));
+        pushConfiguration = new PushConfigurationImpl(this);
     }
 
     /**

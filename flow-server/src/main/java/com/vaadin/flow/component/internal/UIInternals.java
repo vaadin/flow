@@ -43,7 +43,6 @@ import com.vaadin.flow.component.internal.ComponentMetaData.HtmlImportDependency
 import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ConstantPool;
@@ -163,6 +162,8 @@ public class UIInternals implements Serializable {
      */
     private final UI ui;
 
+    private final UIInternalsHandler internalsHandler;
+
     private String title;
 
     private PendingJavaScriptInvocation pendingTitleUpdateCanceler;
@@ -207,6 +208,19 @@ public class UIInternals implements Serializable {
      *            the UI to use
      */
     public UIInternals(UI ui) {
+        this(ui, new DefaultUIInternalsHandler());
+    }
+
+    /**
+     * Creates a new instance for the given UI.
+     *
+     * @param ui
+     *            the UI to use
+     * @param internalsHandler
+     *            an implementation of {@link UIInternalsHandler}
+     */
+    public UIInternals(UI ui, UIInternalsHandler internalsHandler) {
+        this.internalsHandler = internalsHandler;
         this.ui = ui;
         stateTree = new StateTree(this, getRootNodeFeatures());
     }
@@ -657,28 +671,7 @@ public class UIInternals implements Serializable {
         this.viewLocation = viewLocation;
         HasElement root = constructComponentWithLayouts(target, layouts);
 
-        assignNewRoot(oldRoot, root);
-    }
-
-    /**
-     * Assign new root to the current ui view.
-     * 
-     * @param oldRoot
-     *            old root
-     * @param newRoot
-     *            new root
-     */
-    protected void assignNewRoot(HasElement oldRoot, HasElement newRoot) {
-        Element uiElement = ui.getElement();
-        Element rootElement = newRoot.getElement();
-
-        if (!uiElement.equals(rootElement.getParent())) {
-            if (oldRoot != null) {
-                oldRoot.getElement().removeFromParent();
-            }
-            rootElement.removeFromParent();
-            uiElement.appendChild(rootElement);
-        }
+        internalsHandler.updateRoot(ui, oldRoot, root);
     }
 
     /**
@@ -687,14 +680,8 @@ public class UIInternals implements Serializable {
      * @param otherUI
      *            the other UI to transfer content from.
      */
-    public void moveFromOtherUI(UI otherUI) {
-        final List<Element> uiChildren = otherUI.getElement()
-                .getChildren()
-                .collect(Collectors.toList());
-        uiChildren.forEach(element -> {
-            element.removeFromTree();
-            ui.getElement().appendChild(element);
-        });
+    public void moveElementsFrom(UI otherUI) {
+        internalsHandler.moveToNewUI(otherUI, ui);
     }
 
     /**

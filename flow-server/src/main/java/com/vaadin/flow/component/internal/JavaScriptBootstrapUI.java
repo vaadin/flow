@@ -52,6 +52,12 @@ public class JavaScriptBootstrapUI extends UI {
     private Element wrapperElement;
 
     /**
+     * Create UI for clientSideMode.
+     */
+    public JavaScriptBootstrapUI() {
+        super(new JavaScriptUIInternalsHandler());
+    }
+    /**
      * Connect a client with the server side UI.
      *
      * @param clientElementTag
@@ -80,9 +86,14 @@ public class JavaScriptBootstrapUI extends UI {
         wrapperElement.executeJs("$0.serverConnected()");
     }
 
-    @Override
-    protected UIInternals createInternals() {
-        return new JavaScriptUIInternals(this);
+    /**
+     * Get the wrapper element which is a container for server views in
+     * client-side.
+     * 
+     * @return the wrapper element.
+     */
+    public Element getWrapperElement() {
+        return wrapperElement;
     }
 
     private void renderViewForRoute(String route) {
@@ -158,37 +169,41 @@ public class JavaScriptBootstrapUI extends UI {
     }
 
     /**
-     * Custom UIInternals implementation for clientSideMode.
+     * An UIInternalsHandler implementation for clientSideMode.
      */
-    private class JavaScriptUIInternals extends UIInternals {
-
-        /**
-         * Creates a new instance for the given UI.
-         *
-         * @param ui
-         *            the UI to use
-         */
-        JavaScriptUIInternals(UI ui) {
-            super(ui);
-        }
+    private static class JavaScriptUIInternalsHandler
+            implements UIInternalsHandler {
 
         @Override
-        protected void assignNewRoot(HasElement oldRoot, HasElement newRoot) {
+        public void updateRoot(UI ui, HasElement oldRoot, HasElement newRoot) {
+            JavaScriptBootstrapUI jsUI = castToJavaScriptUI(ui);
             // Remove previous view
-            wrapperElement.removeAllChildren();
+            jsUI.getWrapperElement().removeAllChildren();
             // attach this view
-            wrapperElement.appendChild(newRoot.getElement());
+            jsUI.getWrapperElement().appendChild(newRoot.getElement());
         }
 
         @Override
-        public void moveFromOtherUI(UI otherUI) {
-            final List<Element> uiChildren = otherUI.getElement().getChildren()
+        public void moveToNewUI(UI oldUI, UI newUI) {
+            JavaScriptBootstrapUI jsUI = castToJavaScriptUI(newUI);
+            final List<Element> uiChildren = oldUI.getElement().getChildren()
                     .collect(Collectors.toList());
-            wrapperElement.removeAllChildren();
+            jsUI.getWrapperElement().removeAllChildren();
             uiChildren.forEach(element -> {
                 element.removeFromTree();
-                wrapperElement.appendChild(element);
+                jsUI.getWrapperElement().appendChild(element);
             });
+        }
+
+        private JavaScriptBootstrapUI castToJavaScriptUI(UI ui) {
+            if (!(ui instanceof JavaScriptBootstrapUI)
+                    || ((JavaScriptBootstrapUI) ui)
+                            .getWrapperElement() == null) {
+                throw new IllegalStateException("Can't update JavaScript UI "
+                        + "because the current UI is not a JavaScript "
+                        + "UI or wrapper element is null");
+            }
+            return (JavaScriptBootstrapUI) ui;
         }
     }
 }
