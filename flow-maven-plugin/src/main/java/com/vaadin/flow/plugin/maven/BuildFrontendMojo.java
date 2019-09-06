@@ -48,6 +48,9 @@ import com.vaadin.flow.theme.Theme;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
 import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFinder;
+import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
+import static com.vaadin.flow.server.Constants.GENERATED_TOKEN;
+import static com.vaadin.flow.server.Constants.NPM_TOKEN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
@@ -245,9 +248,9 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                     StandardCharsets.UTF_8.name());
             JsonObject buildInfo = JsonUtil.parse(json);
 
-            buildInfo.remove("npmFolder");
-            buildInfo.remove("generatedFolder");
-            buildInfo.remove("frontendFolder");
+            buildInfo.remove(NPM_TOKEN);
+            buildInfo.remove(GENERATED_TOKEN);
+            buildInfo.remove(FRONTEND_TOKEN);
 
             buildInfo.put(SERVLET_PARAMETER_ENABLE_DEV_SERVER, false);
             FileUtils.write(tokenFile, JsonUtil.stringify(buildInfo, 2) + "\n",

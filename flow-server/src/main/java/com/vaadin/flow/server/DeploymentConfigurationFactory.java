@@ -40,6 +40,8 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
+import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
+import static com.vaadin.flow.server.Constants.NPM_TOKEN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
@@ -71,6 +73,10 @@ public final class DeploymentConfigurationFactory implements Serializable {
             + "but there are neither 'flow-build-info.json' nor 'webpack.config.js' file available in "
             + "the project/working directory. Ensure 'webpack.config.js' is present or trigger creation of "
             + "'flow-build-info.json' via running 'prepare-frontend' Maven goal.";
+
+    public static final String DEV_FOLDER_MISSING_MESSAGE =
+            "Running project in development mode with no access to folder '%s'.%n"
+                    + "Build project in production mode instead, see https://vaadin.com/docs/v14/flow/production/tutorial-production-mode-basic.html";
 
     private DeploymentConfigurationFactory() {
     }
@@ -159,9 +165,9 @@ public final class DeploymentConfigurationFactory implements Serializable {
         return initParameters;
     }
 
-    private static void readBuildInfo(Properties initParameters) { // NOSONAR
+    private static void readBuildInfo(Properties initParameters) {
+        String json = null;
         try {
-            String json = null;
             // token file location passed via init parameter property
             String tokenLocation = initParameters.getProperty(PARAM_TOKEN_FILE);
             if (tokenLocation != null) {
@@ -180,65 +186,69 @@ public final class DeploymentConfigurationFactory implements Serializable {
                     json = FrontendUtils.streamToString(resource.openStream());
                 }
             }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
 
-            // Read the json and set the appropriate system properties if not
-            // already set.
-            if (json != null) {
-                JsonObject buildInfo = JsonUtil.parse(json);
-                if (buildInfo.hasKey(SERVLET_PARAMETER_PRODUCTION_MODE)) {
-                    initParameters.setProperty(
-                            SERVLET_PARAMETER_PRODUCTION_MODE,
-                            String.valueOf(buildInfo.getBoolean(
-                                    SERVLET_PARAMETER_PRODUCTION_MODE)));
-                    // Need to be sure that we remove the system property,
-                    // because
-                    // it has priority in the configuration getter
-                    System.clearProperty(
-                            VAADIN_PREFIX + SERVLET_PARAMETER_PRODUCTION_MODE);
-                }
-                if (buildInfo.hasKey(SERVLET_PARAMETER_COMPATIBILITY_MODE)) {
-                    initParameters.setProperty(
-                            SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                            String.valueOf(buildInfo.getBoolean(
-                                    SERVLET_PARAMETER_COMPATIBILITY_MODE)));
-                    // Need to be sure that we remove the system property,
-                    // because it has priority in the configuration getter
-                    System.clearProperty(VAADIN_PREFIX
-                            + SERVLET_PARAMETER_COMPATIBILITY_MODE);
-                }
+        // Read the json and set the appropriate system properties if not
+        // already set.
+        if (json != null) {
+            JsonObject buildInfo = JsonUtil.parse(json);
+            if (buildInfo.hasKey(SERVLET_PARAMETER_PRODUCTION_MODE)) {
+                initParameters.setProperty(SERVLET_PARAMETER_PRODUCTION_MODE,
+                        String.valueOf(buildInfo.getBoolean(
+                                SERVLET_PARAMETER_PRODUCTION_MODE)));
+                // Need to be sure that we remove the system property,
+                // because
+                // it has priority in the configuration getter
+                System.clearProperty(
+                        VAADIN_PREFIX + SERVLET_PARAMETER_PRODUCTION_MODE);
+            }
+            if (buildInfo.hasKey(SERVLET_PARAMETER_COMPATIBILITY_MODE)) {
+                initParameters.setProperty(SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                        String.valueOf(buildInfo.getBoolean(
+                                SERVLET_PARAMETER_COMPATIBILITY_MODE)));
+                // Need to be sure that we remove the system property,
+                // because it has priority in the configuration getter
+                System.clearProperty(
+                        VAADIN_PREFIX + SERVLET_PARAMETER_COMPATIBILITY_MODE);
+            }
 
-                if (buildInfo.hasKey("npmFolder")) {
-                    initParameters.setProperty(PROJECT_BASEDIR,
-                            buildInfo.getString("npmFolder"));
-                    verifyFolderExists(initParameters, buildInfo.getString("npmFolder"));
-                }
+            if (buildInfo.hasKey(NPM_TOKEN)) {
+                initParameters.setProperty(PROJECT_BASEDIR,
+                        buildInfo.getString(NPM_TOKEN));
+                verifyFolderExists(initParameters,
+                        buildInfo.getString(NPM_TOKEN));
+            }
 
-                if (buildInfo.hasKey("frontendFolder")) {
-                    initParameters.setProperty(FrontendUtils.PARAM_FRONTEND_DIR,
-                            buildInfo.getString("frontendFolder"));
-                    // Only verify frontend folder if it's not a subfolder of the npm folder.
-                    if(!buildInfo.hasKey("npmFolder") || !buildInfo.getString("frontendFolder").startsWith(buildInfo.getString("npmFolder"))) {
-                        verifyFolderExists(initParameters, buildInfo.getString("frontendFolder"));
-                    }
-                }
-
-                // These should be internal only so if there is a System
-                // property override then the user probably knows what
-                // they are doing.
-                if (buildInfo.hasKey(SERVLET_PARAMETER_ENABLE_DEV_SERVER)) {
-                    initParameters.setProperty(
-                            SERVLET_PARAMETER_ENABLE_DEV_SERVER,
-                            String.valueOf(buildInfo.getBoolean(
-                                    SERVLET_PARAMETER_ENABLE_DEV_SERVER)));
-                }
-                if (buildInfo.hasKey(SERVLET_PARAMETER_REUSE_DEV_SERVER)) {
-                    initParameters.setProperty(
-                            SERVLET_PARAMETER_REUSE_DEV_SERVER,
-                            String.valueOf(buildInfo.getBoolean(
-                                    SERVLET_PARAMETER_REUSE_DEV_SERVER)));
+            if (buildInfo.hasKey(FRONTEND_TOKEN)) {
+                initParameters.setProperty(FrontendUtils.PARAM_FRONTEND_DIR,
+                        buildInfo.getString(FRONTEND_TOKEN));
+                // Only verify frontend folder if it's not a subfolder of the npm folder.
+                if (!buildInfo.hasKey(NPM_TOKEN) || !buildInfo
+                        .getString(FRONTEND_TOKEN)
+                        .startsWith(buildInfo.getString(NPM_TOKEN))) {
+                    verifyFolderExists(initParameters,
+                            buildInfo.getString(FRONTEND_TOKEN));
                 }
             }
 
+            // These should be internal only so if there is a System
+            // property override then the user probably knows what
+            // they are doing.
+            if (buildInfo.hasKey(SERVLET_PARAMETER_ENABLE_DEV_SERVER)) {
+                initParameters.setProperty(SERVLET_PARAMETER_ENABLE_DEV_SERVER,
+                        String.valueOf(buildInfo.getBoolean(
+                                SERVLET_PARAMETER_ENABLE_DEV_SERVER)));
+            }
+            if (buildInfo.hasKey(SERVLET_PARAMETER_REUSE_DEV_SERVER)) {
+                initParameters.setProperty(SERVLET_PARAMETER_REUSE_DEV_SERVER,
+                        String.valueOf(buildInfo.getBoolean(
+                                SERVLET_PARAMETER_REUSE_DEV_SERVER)));
+            }
+        }
+
+        try {
             boolean hasWebPackConfig = hasWebpackConfig(initParameters);
             boolean hasTokenFile = json != null;
             SerializableConsumer<CompatibilityModeStatus> strategy = value -> verifyMode(
@@ -250,13 +260,24 @@ public final class DeploymentConfigurationFactory implements Serializable {
 
     }
 
+    /**
+     * Verify that given folder actually exists on the system if we are not in
+     * production mode.
+     * <p>
+     * If folder doesn't exist throw IllegalStateException saying that this
+     * should probably be a production mode build.
+     *
+     * @param initParameters
+     *         deployment init parameters
+     * @param folder
+     *         folder to check exists
+     */
     private static void verifyFolderExists(Properties initParameters,
             String folder) {
         Boolean productionMode = Boolean.parseBoolean(initParameters
                 .getProperty(SERVLET_PARAMETER_PRODUCTION_MODE, "false"));
         if(!productionMode && !new File(folder).exists()) {
-            String message = String.format("Running project in development mode with no access to folder '%s'. "
-                    + "Build project in production mode see https://vaadin.com/docs/v14/flow/production/tutorial-production-mode-basic.html", folder);
+            String message = String.format(DEV_FOLDER_MISSING_MESSAGE, folder);
             throw new IllegalStateException(message);
         }
     }

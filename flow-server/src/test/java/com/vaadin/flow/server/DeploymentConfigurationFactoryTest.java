@@ -27,6 +27,7 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.DeploymentConfigurationFactory.DEV_FOLDER_MISSING_MESSAGE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 import static java.util.Collections.emptyMap;
@@ -310,8 +311,7 @@ public class DeploymentConfigurationFactoryTest {
     public void shouldThrow_tokenFileContainsNonExistingNpmFolderInDevMode()
             throws Exception {
         exception.expect(IllegalStateException.class);
-        exception.expectMessage(String.format("Running project in development mode with no access to folder '%s'. "
-                + "Build project in production mode see https://vaadin.com/docs/v14/flow/production/tutorial-production-mode-basic.html", "npm"));
+        exception.expectMessage(String.format(DEV_FOLDER_MISSING_MESSAGE, "npm"));
         FileUtils.writeLines(tokenFile,
                 Arrays.asList("{", "\"compatibilityMode\": false,",
                         "\"productionMode\": false,", "\"npmFolder\": \"npm\",",
@@ -326,8 +326,7 @@ public class DeploymentConfigurationFactoryTest {
     public void shouldThrow_tokenFileContainsNonExistingFrontendFolderNoNpmFolder()
             throws Exception {
         exception.expect(IllegalStateException.class);
-        exception.expectMessage(String.format("Running project in development mode with no access to folder '%s'. "
-                + "Build project in production mode see https://vaadin.com/docs/v14/flow/production/tutorial-production-mode-basic.html", "frontend"));
+        exception.expectMessage(String.format(DEV_FOLDER_MISSING_MESSAGE, "frontend"));
         FileUtils.writeLines(tokenFile,
                 Arrays.asList("{", "\"compatibilityMode\": false,",
                         "\"productionMode\": false,",
@@ -342,8 +341,7 @@ public class DeploymentConfigurationFactoryTest {
     public void shouldThrow_tokenFileContainsNonExistingFrontendFolderOutsideNpmSubFolder()
             throws Exception {
         exception.expect(IllegalStateException.class);
-        exception.expectMessage(String.format("Running project in development mode with no access to folder '%s'. "
-                + "Build project in production mode see https://vaadin.com/docs/v14/flow/production/tutorial-production-mode-basic.html", "frontend"));
+        exception.expectMessage(String.format(DEV_FOLDER_MISSING_MESSAGE, "frontend"));
         temporaryFolder.newFolder("npm");
         String tempFolder = temporaryFolder.getRoot().getAbsolutePath().replace("\\", "/");
         FileUtils.writeLines(tokenFile,
