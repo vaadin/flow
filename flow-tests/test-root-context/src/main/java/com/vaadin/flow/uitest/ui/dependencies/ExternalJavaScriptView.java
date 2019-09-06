@@ -22,10 +22,10 @@ import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
-@JavaScript(ExternalJavaScriptView.SOME_RANDOM_EXTERNAL_JS_URL)
+@JavaScript(ComponentWithExternalJavaScript.SOME_RANDOM_EXTERNAL_JS_URL)
+@JavaScript(ComponentWithExternalJavaScript.SOME_RANDOM_EXTERNAL_JS_URL_WITHOUT_PROTOCOL)
 @Route(value = "com.vaadin.flow.uitest.ui.dependencies.ExternalJavaScriptView", layout = ViewTestLayout.class)
 public class ExternalJavaScriptView extends Div {
-    public static final String SOME_RANDOM_EXTERNAL_JS_URL = "https://some-external-website.fi/some-js-file.js";
 
     public ExternalJavaScriptView() {
         NativeButton button = new NativeButton("Add component", event -> {
