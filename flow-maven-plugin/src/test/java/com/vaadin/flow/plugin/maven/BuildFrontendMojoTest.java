@@ -245,6 +245,7 @@ public class BuildFrontendMojoTest {
         mojo.execute();
 
         assertContainsImports(false, "https://foo.com/bar.js");
+        assertContainsImports(false, "//foo.com/bar.js");
     }
 
     @Test

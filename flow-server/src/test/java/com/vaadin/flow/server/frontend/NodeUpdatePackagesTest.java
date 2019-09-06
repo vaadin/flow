@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Collections;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -35,6 +36,7 @@ import elemental.json.JsonValue;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static elemental.json.impl.JsonUtil.stringify;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
@@ -242,6 +244,54 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
         assertCleanUp();
     }
 
+    @Test
+    public void generateAppPackageJsonFromScratch_updaterIsModified()
+            throws IOException {
+        packageCreator.execute();
+        packageUpdater.execute();
+
+        JsonObject mainJson = getPackageJson(mainPackageJson);
+        Assert.assertTrue(mainJson.hasKey(TaskUpdatePackages.APP_PACKAGE_HASH));
+
+        Assert.assertTrue(packageUpdater.modified);
+    }
+
+    @Test
+    public void regenerateAppPackageJson_sameContent_updaterIsNotModified()
+            throws IOException {
+        packageCreator.execute();
+        packageUpdater.execute();
+
+        // delete generated file
+        appPackageJson.delete();
+
+        // regenerate it (with the same content)
+        packageCreator.execute();
+        packageUpdater.execute();
+
+        // the modified flag should be false (because the hash written in the
+        // main package json matches the content of the generated file) and "npm
+        // install" won't be executed
+        // as a result of this flag value
+        Assert.assertFalse(packageUpdater.modified);
+    }
+
+    @Test
+    public void generateAppPackageJson_changedContent_updaterIsModified()
+            throws IOException {
+        packageCreator.execute();
+        packageUpdater.execute();
+
+        // delete generated file
+        appPackageJson.delete();
+
+        // generate it one more time, the content will be different since
+        // packageCreator has not added its content
+        packageUpdater.execute();
+
+        Assert.assertTrue(packageUpdater.modified);
+    }
+
     private void makeNodeModulesAndPackageLock() throws IOException {
         // Make two node_modules folders and package lock
         mainNodeModules.mkdirs();
@@ -318,6 +368,16 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
         deps.put(SHRINKWRAP, shrinkWrap);
         shrinkWrap.put("version", version);
         return object;
+    }
+
+    JsonObject getPackageJson(File packageFile) throws IOException {
+        JsonObject packageJson = null;
+        if (packageFile.exists()) {
+            String fileContent = FileUtils.readFileToString(packageFile,
+                    UTF_8.name());
+            packageJson = Json.parse(fileContent);
+        }
+        return packageJson;
     }
 
 }
