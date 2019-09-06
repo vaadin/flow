@@ -218,11 +218,17 @@ public abstract class NodeUpdater implements FallibleCommand {
                 "@webcomponents/webcomponentsjs", "^2.2.10") || added;
         // dependency for the custom package.json placed in the generated
         // folder.
-        String customPkg = "./" + npmFolder.getAbsoluteFile().toPath()
-                .relativize(generatedFolder.toPath()).toString();
-        added = addDependency(packageJson, DEPENDENCIES, DEP_NAME_FLOW_DEPS,
-                customPkg.replaceAll("\\\\", "/")) || added;
-
+        try {
+            String customPkg = "./" + npmFolder.getAbsoluteFile().toPath()
+                    .relativize(generatedFolder.getAbsoluteFile().toPath()).toString();
+            added = addDependency(packageJson, DEPENDENCIES, DEP_NAME_FLOW_DEPS,
+                    customPkg.replaceAll("\\\\", "/")) || added;
+        } catch (IllegalArgumentException iae) {
+            log().error("Exception in relativization of '%s' to '%s'",
+                    npmFolder.getAbsoluteFile().toPath(),
+                    generatedFolder.getAbsoluteFile().toPath());
+            throw iae;
+        }
         added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack",
                 "4.30.0") || added;
         added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack-cli",
