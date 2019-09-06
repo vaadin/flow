@@ -262,8 +262,6 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
         packageCreator.execute();
         packageUpdater.execute();
 
-        System.out.println("xx " + getPackageJson(appPackageJson));
-
         // delete generated file
         appPackageJson.delete();
 
@@ -283,8 +281,6 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
             throws IOException {
         packageCreator.execute();
         packageUpdater.execute();
-
-        System.out.println("xx " + getPackageJson(appPackageJson));
 
         // delete generated file
         appPackageJson.delete();

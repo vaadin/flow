@@ -255,8 +255,8 @@ public abstract class NodeUpdater implements FallibleCommand {
         return false;
     }
 
-    void writeMainPackageFile(JsonObject packageJson) throws IOException {
-        writePackageFile(packageJson, new File(npmFolder, PACKAGE_JSON));
+    String writeMainPackageFile(JsonObject packageJson) throws IOException {
+        return writePackageFile(packageJson, new File(npmFolder, PACKAGE_JSON));
     }
 
     String writeAppPackageFile(JsonObject packageJson) throws IOException {
