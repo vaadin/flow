@@ -40,3 +40,7 @@ document.getElementById('button3').addEventListener('click', async e => {
     outlet.appendChild(result);
 });
 
+document.getElementById("loadRouter").addEventListener('click', async e => {
+    await import('./client-router.js');
+});
+

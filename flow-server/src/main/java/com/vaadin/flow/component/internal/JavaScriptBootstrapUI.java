@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.internal;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -24,7 +25,9 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
+import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.router.ErrorNavigationEvent;
 import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
@@ -74,7 +77,6 @@ public class JavaScriptBootstrapUI extends UI {
         if (wrapperElement == null) {
             // Create flow reference for the client outlet element
             wrapperElement = new Element(clientElementTag);
-
             // Connect server with client
             getElement().getStateProvider().appendVirtualChild(
                     getElement().getNode(), wrapperElement,
@@ -95,6 +97,15 @@ public class JavaScriptBootstrapUI extends UI {
      */
     public Element getWrapperElement() {
         return wrapperElement;
+    }
+
+    private void cleanUpVirtualChildren(UI ui) {
+        Iterator<StateNode> virtualChildrenIterator = ui.getElement().getNode()
+                .getFeature(VirtualChildrenList.class).iterator();
+        while (virtualChildrenIterator.hasNext()) {
+            virtualChildrenIterator.next();
+            virtualChildrenIterator.remove();
+        }
     }
 
     private void renderViewForRoute(String route) {

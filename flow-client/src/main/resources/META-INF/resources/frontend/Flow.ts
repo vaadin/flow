@@ -14,6 +14,9 @@ interface AppInitResponse {
 
 interface HTMLRouterContainer extends HTMLElement {
   onBeforeEnter ?: (ctx: NavigationParameters, cmd: NavigationCommands) => Promise<any>;
+}
+
+interface FlowVirtualChild extends HTMLElement {
   serverConnected ?: (cancel: boolean) => void;
 }
 
@@ -45,8 +48,23 @@ export class Flow {
   // flow uses body for keeping references
   flowRoot : FlowRoot = document.body as any;
 
+  /**
+   * Flow virtual child is the element connected with `wrapperElement` in JavaScriptBootstrapUI.
+   *
+   * NOTE: this element must stay the same throughout navigations so that the server side will be
+   * able to reuse elements/layouts without constantly detaching from the old wrapper and attaching to the new wrapper.
+   */
   // @ts-ignore
-  container : HTMLRouterContainer;
+  flowVirtualChild : FlowVirtualChild;
+
+  /**
+   * Flow router container is the element which should be returned in `action` when integrating with `vaadin-router`.
+   * The container has `onBeforeEnter` method which will ask flow server for the server views and pack them into `flowVirtualChild`.
+   *
+   * NOTE: This container should be different for each call from `vaadin-router`
+   * so that the `vaadin-router` thinks this is a new element and replaces the old content with this.
+   */
+  private flowRouterContainer? : HTMLRouterContainer;
 
   constructor(config?: FlowConfig) {
     this.flowRoot.$ = this.flowRoot.$ || {};
@@ -71,7 +89,6 @@ export class Flow {
     // Return a function which is bound to the flow instance
     return async (params: NavigationParameters) => {
       await this.flowInit();
-      delete this.container.onBeforeEnter;
       return this.flowNavigate(params);
     }
   }
@@ -97,14 +114,21 @@ export class Flow {
     // the syntax `flow.route` in vaadin-router.
     // @ts-ignore
     return async (params: NavigationParameters) => {
-      await this.flowInit();
-      this.container.onBeforeEnter = (ctx, cmd) => this.onBeforeEnter(ctx, cmd);
-      return this.container;
+      const response = await this.flowInit();
+      const id = response.appConfig.appId;
+      this.flowRouterContainer = document.createElement(`flow-router-container-${id}`);
+      this.flowRouterContainer.id = id;
+      this.flowRouterContainer.onBeforeEnter = (ctx, cmd) => this.onBeforeEnter(ctx, cmd);
+      return this.flowRouterContainer;
     }
   }
 
-  private onBeforeEnter(ctx: NavigationParameters, cmd: NavigationCommands) {
-    return this.flowNavigate(ctx, cmd);
+  private async onBeforeEnter(ctx: NavigationParameters, cmd: NavigationCommands) {
+    const result = await this.flowNavigate(ctx, cmd)
+    if (this.flowRouterContainer) {
+      this.flowRouterContainer.appendChild(result);
+    }
+    return result;
   }
 
   // Send the remote call to `JavaScriptBootstrapUI` to render the flow
@@ -112,11 +136,11 @@ export class Flow {
   private async flowNavigate(ctx: NavigationParameters, cmd?: NavigationCommands): Promise<HTMLElement> {
     return new Promise(resolve => {
       // The callback to run from server side once the view is ready
-      this.container.serverConnected = cancel =>
-        resolve(cmd && cancel ? cmd.prevent() : this.container);
+      this.flowVirtualChild.serverConnected = cancel =>
+        resolve(cmd && cancel ? cmd.prevent() : this.flowVirtualChild);
 
       // Call server side to navigate to the given route
-      this.flowRoot.$server.connectClient(this.container.localName, this.container.id, ctx.pathname);
+      this.flowRoot.$server.connectClient(this.flowVirtualChild.localName, this.flowVirtualChild.id, ctx.pathname);
     });
   }
 
@@ -139,14 +163,13 @@ export class Flow {
       if (this.config.imports) {
         await this.config.imports();
       }
+      const appId: string = this.response.appConfig.appId;
+      const tag: string = `flow-virtual-child-${appId.toLowerCase()}`;
+      const id: string = tag;
 
-      const id = this.response.appConfig.appId;
       // we use a custom tag for the flow app container
-      const tag = `flow-container-${id.toLowerCase()}`;
-
-      this.container = this.flowRoot.$[id] = document.createElement(tag);
-      this.container.id = id;
-      window.console.log("Created container for the flow UI with " + tag);
+      this.flowVirtualChild = this.flowRoot.$[id] = document.createElement(tag);
+      this.flowVirtualChild.id = id;
     }
     return this.response;
   }
