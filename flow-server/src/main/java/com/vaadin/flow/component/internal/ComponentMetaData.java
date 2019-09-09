@@ -58,7 +58,9 @@ import com.vaadin.flow.shared.util.SharedUtil;
  */
 public class ComponentMetaData {
 
-    private static final String HTML_IMPORT_WITHOUT_JS_MODULE_WARNING = "%n%s has only @HtmlImport annotation(s) which is ignored in Vaadin 14+. "
+    private static final String HTML_IMPORT_WITHOUT_JS_MODULE_WARNING = System
+            .lineSeparator()
+            + "{} has only @HtmlImport annotation(s) which is ignored in Vaadin 14+. "
             + "This annotation is only useful in compatibility mode. "
             + "In order to use a Polymer template inside a component in Vaadin 14+, @JsModule annotation should be used. "
             + "And to use a css file, {@link CssImport} should be used. "
@@ -212,9 +214,8 @@ public class ComponentMetaData {
                         && AnnotationReader
                                 .getCssImportAnnotations(componentClass)
                                 .isEmpty()) {
-                    getLogger().warn(
-                            String.format(HTML_IMPORT_WITHOUT_JS_MODULE_WARNING,
-                                    componentClass.getName()));
+                    getLogger().warn(HTML_IMPORT_WITHOUT_JS_MODULE_WARNING,
+                            componentClass.getName());
                 }
             }
         }
