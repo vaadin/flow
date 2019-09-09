@@ -34,6 +34,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Future;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionBindingEvent;
@@ -133,7 +135,16 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     public VaadinSession(VaadinService service) {
         this.service = service;
-        resourceRegistry = new StreamResourceRegistry(this);
+        resourceRegistry = createStreamResourceRegistry();
+    }
+
+    /**
+     * Creates the StreamResourceRegistry for this session.
+     *
+     * @return A StreamResourceRegistry instance
+     */
+    protected StreamResourceRegistry createStreamResourceRegistry() {
+        return new StreamResourceRegistry(this);
     }
 
     /**
