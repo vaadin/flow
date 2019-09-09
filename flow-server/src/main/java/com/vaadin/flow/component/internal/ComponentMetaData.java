@@ -31,6 +31,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Synchronize;
 import com.vaadin.flow.component.dependency.HtmlImport;
@@ -54,6 +57,13 @@ import com.vaadin.flow.shared.util.SharedUtil;
  * @since 1.0
  */
 public class ComponentMetaData {
+
+    private static final String HTML_IMPORT_WITHOUT_JS_MODULE_WARNING = "%n%s has only @HtmlImport annotation(s) which is ignored in Vaadin 14+. "
+            + "This annotation is only useful in compatibility mode. "
+            + "In order to use a Polymer template inside a component in Vaadin 14+, @JsModule annotation should be used. "
+            + "And to use a css file, {@link CssImport} should be used. "
+            + "If you want to be able to use your component in both compatibility mode and normal mode of Vaadin 14+ you need to have @HtmlImport along with @JsModule and/or @CssImport annotations."
+            + "Go to Vaadin 14 Migration Guide (https://vaadin.com/docs/v14/flow/v14-migration/v14-migration-guide.html#3-convert-polymer-2-to-polymer-3) to see how to migrate templates from Polymer 2 to Polymer 3.";
 
     /**
      * Dependencies defined for a {@link Component} class.
@@ -81,7 +91,6 @@ public class ComponentMetaData {
         List<StyleSheet> getStyleSheets() {
             return Collections.unmodifiableList(styleSheets);
         }
-
     }
 
     public static class HtmlImportDependency {
@@ -151,9 +160,13 @@ public class ComponentMetaData {
         synchronizedProperties = findSynchronizedProperties(componentClass);
     }
 
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(ComponentMetaData.class.getName());
+    }
+
     /**
      * Finds all dependencies (JsModule, HTML, JavaScript, StyleSheet) for the
-     * class. Includes dependencies for all classes referred by an {@link Uses}
+     * class. Includes dependencies for all classes referred by a {@link Uses}
      * annotation.
      *
      * @return an information object containing all the dependencies
@@ -192,8 +205,17 @@ public class ComponentMetaData {
             if (!jsModules.isEmpty()) {
                 dependencyInfo.jsModules.addAll(jsModules);
             } else {
-                dependencyInfo.jsModules.addAll(
-                        getHtmlImportAsJsModuleAnnotations(componentClass));
+                // Show a warning when @HtmlImport is present and there is no
+                // @JsModule or @CssImport.
+                if (!getHtmlImportDependencies(service, componentClass)
+                        .isEmpty()
+                        && AnnotationReader
+                                .getCssImportAnnotations(componentClass)
+                                .isEmpty()) {
+                    getLogger().warn(
+                            String.format(HTML_IMPORT_WITHOUT_JS_MODULE_WARNING,
+                                    componentClass.getName()));
+                }
             }
         }
 
