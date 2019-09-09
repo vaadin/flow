@@ -225,6 +225,25 @@ public class ClientIndexHandlerIT extends ChromeBrowserTest {
     }
 
     @Test
+    public void should_executeNavigationEventsInCorrectOrder_When_navigateToServerView() {
+        openTestUrl("/");
+        waitForElementPresent(By.id("button3"));
+        findElement(By.id("pathname")).sendKeys("view-with-all-events");
+        findElement(By.id("button3")).click();
+        waitForElementPresent(By.id("result"));
+
+        String content = findElement(By.id("result")).getText();
+        Assert.assertTrue("Should execute setParameter",
+                content.contains("ViewWithAllEvents: 1 setParameter"));
+        Assert.assertTrue("Should execute onBeforeEnter",
+                content.contains("ViewWithAllEvents: 2 beforeEnter"));
+        Assert.assertTrue("Should execute onAttach",
+                content.contains("ViewWithAllEvents: 3 onAttach"));
+        Assert.assertTrue("Should execute afterNavigation",
+                content.contains("ViewWithAllEvents: 4 afterNavigation"));
+    }
+
+    @Test
     public void should_returnNotFoundView_WhenRouteNotFound() {
         openTestUrl("/");
         waitForElementPresent(By.id("button3"));
