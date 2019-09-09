@@ -123,6 +123,7 @@ public class FrontendDependenciesTest {
                 Arrays.asList("a.js", "b.js", "c.js"));
     }
 
+    // flow #6408
     @Test
     public void annotationsInRouterLayoutWontBeFlaggedAsBelongingToTheme() {
         Mockito.when(classFinder.getAnnotatedClasses(Route.class))
