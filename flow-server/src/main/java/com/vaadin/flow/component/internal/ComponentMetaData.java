@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.component.internal;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,7 +23,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -349,50 +347,4 @@ public class ComponentMetaData {
                     propertyName, eventNames, annotation.allowUpdates()));
         }
     }
-
-    private static Collection<JsModule> getHtmlImportAsJsModuleAnnotations(
-            Class<? extends Component> componentClass) {
-        return AnnotationReader.getHtmlImportAnnotations(componentClass)
-                .stream()
-                .map(ComponentMetaData::getHtmlImportAsJsModuleAnnotation)
-                .filter(Objects::nonNull).collect(Collectors.toList());
-    }
-
-    private static JsModule getHtmlImportAsJsModuleAnnotation(
-            HtmlImport htmlImport) {
-
-        String value = SharedUtil.prefixIfRelative(htmlImport.value(),
-                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
-
-        String module = value
-                .replaceFirst("^.*bower_components/(vaadin-.*)\\.html",
-                        "@vaadin/$1.js")
-                .replaceFirst("^.*bower_components/((iron|paper)-.*)\\.html",
-                        "@polymer/$1.js");
-
-        return jsModule(module, htmlImport.loadMode());
-    }
-
-    private static JsModule jsModule(final String value,
-            final LoadMode loadMode) {
-
-        return new JsModule() {
-
-            @Override
-            public String value() {
-                return value;
-            }
-
-            @Override
-            public LoadMode loadMode() {
-                return loadMode;
-            }
-
-            @Override
-            public Class<? extends Annotation> annotationType() {
-                return JsModule.class;
-            }
-        };
-    }
-
 }
