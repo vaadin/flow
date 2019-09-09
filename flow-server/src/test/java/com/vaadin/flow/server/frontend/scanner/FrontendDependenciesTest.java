@@ -34,6 +34,9 @@ import com.vaadin.flow.server.frontend.scanner.samples.JsOrderComponent;
 import com.vaadin.flow.server.frontend.scanner.samples.MyServiceListener;
 import com.vaadin.flow.server.frontend.scanner.samples.MyUIInitListener;
 import com.vaadin.flow.server.frontend.scanner.samples.RouteComponent;
+import com.vaadin.flow.server.frontend.scanner.samples.RouteComponentWithLayout;
+
+import static org.hamcrest.CoreMatchers.is;
 
 public class FrontendDependenciesTest {
 
@@ -118,6 +121,19 @@ public class FrontendDependenciesTest {
 
         Assert.assertEquals(new ArrayList<>(dependencies.getScripts()),
                 Arrays.asList("a.js", "b.js", "c.js"));
+    }
+
+    @Test
+    public void annotationsInRouterLayoutWontBeFlaggedAsBelongingToTheme() {
+        Mockito.when(classFinder.getAnnotatedClasses(Route.class))
+                .thenReturn(Collections.singleton(RouteComponentWithLayout.class));
+        FrontendDependencies dependencies = new FrontendDependencies(
+                classFinder, false);
+
+        List<String> expectedOrder = Arrays.asList("theme-foo.js", "foo.js");
+        Assert.assertThat("Theme's annotations should come first",
+                    dependencies.getModules(), is(expectedOrder)
+                );
     }
 
 }
