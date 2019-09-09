@@ -137,7 +137,21 @@ public class TaskUpdateImports extends NodeUpdater {
 
         lines.addAll(getThemeLines());
         lines.addAll(getCssLines());
-        lines.addAll(getModuleLines(modules));
+
+        ArrayList<String> externals = new ArrayList<>();
+        ArrayList<String> internals = new ArrayList<>();
+
+        final String importPrefix = getLocalImportPrefix();
+        for (String module : getModuleLines(modules)) {
+            if (module.startsWith(importPrefix)) {
+                internals.add(module);
+            } else {
+                externals.add(module);
+            }
+        }
+
+        lines.addAll(externals);
+        lines.addAll(internals);
 
         return lines;
     }
@@ -475,5 +489,11 @@ public class TaskUpdateImports extends NodeUpdater {
 
     private static String generatedResourcePathIntoRelativePath(String path) {
         return path.replace(GENERATED_PREFIX, "./");
+    }
+
+    private static String getLocalImportPrefix() {
+        return String.format(
+                IMPORT_TEMPLATE.substring(0, IMPORT_TEMPLATE.length() - 2),
+                WEBPACK_PREFIX_ALIAS);
     }
 }
