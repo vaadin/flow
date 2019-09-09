@@ -115,8 +115,8 @@ export class Flow {
     // @ts-ignore
     return async (params: NavigationParameters) => {
       const response = await this.flowInit();
-      const id = response.appConfig.appId;
-      this.flowRouterContainer = document.createElement(`flow-router-container-${id}`);
+      const id = `flow-router-container-${response.appConfig.appId.toLowerCase()}`;
+      this.flowRouterContainer = document.createElement(id);
       this.flowRouterContainer.id = id;
       this.flowRouterContainer.onBeforeEnter = (ctx, cmd) => this.onBeforeEnter(ctx, cmd);
       return this.flowRouterContainer;
@@ -125,7 +125,7 @@ export class Flow {
 
   private async onBeforeEnter(ctx: NavigationParameters, cmd: NavigationCommands) {
     const result = await this.flowNavigate(ctx, cmd)
-    if (this.flowRouterContainer) {
+    if (this.flowRouterContainer && result instanceof HTMLElement) {
       this.flowRouterContainer.appendChild(result);
     }
     return result;
@@ -163,9 +163,9 @@ export class Flow {
       if (this.config.imports) {
         await this.config.imports();
       }
-      const appId: string = this.response.appConfig.appId;
-      const tag: string = `flow-virtual-child-${appId.toLowerCase()}`;
-      const id: string = tag;
+
+      const id: string = this.response.appConfig.appId;
+      const tag: string = `flow-virtual-child-${id.toLowerCase()}`;
 
       // we use a custom tag for the flow app container
       this.flowVirtualChild = this.flowRoot.$[id] = document.createElement(tag);

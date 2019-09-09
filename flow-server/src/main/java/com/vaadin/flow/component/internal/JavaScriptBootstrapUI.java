@@ -99,15 +99,6 @@ public class JavaScriptBootstrapUI extends UI {
         return wrapperElement;
     }
 
-    private void cleanUpVirtualChildren(UI ui) {
-        Iterator<StateNode> virtualChildrenIterator = ui.getElement().getNode()
-                .getFeature(VirtualChildrenList.class).iterator();
-        while (virtualChildrenIterator.hasNext()) {
-            virtualChildrenIterator.next();
-            virtualChildrenIterator.remove();
-        }
-    }
-
     private void renderViewForRoute(String route) {
         if (route.startsWith("/")) {
             route = route.replaceFirst("/+", "");

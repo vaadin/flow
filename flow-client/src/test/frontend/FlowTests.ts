@@ -152,10 +152,13 @@ suite("Flow", () => {
 
         // When using router API, it should expose the onBeforeEnter handler
         assert.isDefined(elem.onBeforeEnter);
-        elem.onBeforeEnter && elem.onBeforeEnter({pathname: 'Foo/Bar.baz'}, {prevent: () => {}})
+        elem.onBeforeEnter && await elem.onBeforeEnter({pathname: 'Foo/Bar.baz'}, {prevent: () => {}})
 
-        // Assert server side has put content in the container
+        // Assert Flow has put flowVirtualChild in the container
         assert.equal(1, elem.children.length);
+
+        // Assert Flow server has put content in the flowVirtualChild
+        assert.equal(1, elem.children[0].children.length);
       });
   });
 
@@ -187,6 +190,8 @@ suite("Flow", () => {
         }});
 
         promise.then(obj => assert.isTrue(obj.cancel));
+        // should not put the result into flowRouterContainer if the result is not a HTMLElement
+        assert.equal(0, elem.children.length);
       });
   });
 });
@@ -200,7 +205,7 @@ function stubServerRemoteFunction(id: string, cancel: boolean = false) {
       assert.isDefined(route);
 
       assert.equal(elemId, id);
-      assert.equal(localName, `flow-container-${elemId.toLowerCase()}`);
+      assert.equal(localName, `flow-virtual-child-${elemId.toLowerCase()}`);
 
       assert.isDefined(flowRoot.$[elemId]);
       assert.isDefined(flowRoot.$[elemId].serverConnected);
