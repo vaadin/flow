@@ -21,25 +21,23 @@ import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.router.RouterLink;
 
 public class MainLayout extends Div implements RouterLayout {
     public MainLayout() {
         add(new Text("Main layout"));
-        add(new RouterLink("Server view", ServerSideView.class));
-        add(new RouterLink("all events", ViewWithAllEvents.class));
+        setId("mainLayout");
     }
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
-        addLog("MainLayout: attach");
+        addLog("MainLayout: onAttach");
     }
 
     @Override
     protected void onDetach(DetachEvent detachEvent) {
         super.onDetach(detachEvent);
-        addLog("MainLayout: detach");
+        addLog("MainLayout: onDetach");
     }
 
     private void addLog(String log) {

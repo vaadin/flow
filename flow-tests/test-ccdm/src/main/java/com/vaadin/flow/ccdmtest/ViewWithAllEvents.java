@@ -35,6 +35,7 @@ public class ViewWithAllEvents extends Div implements BeforeEnterObserver,
     public ViewWithAllEvents() {
         logger = new Div();
         add(logger);
+        setId("viewWithAllEvents");
     }
 
     @Override
@@ -43,10 +44,6 @@ public class ViewWithAllEvents extends Div implements BeforeEnterObserver,
         addLog("1 setParameter");
     }
 
-    @Override
-    public void afterNavigation(AfterNavigationEvent event) {
-        addLog("4 afterNavigation");
-    }
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
@@ -56,6 +53,11 @@ public class ViewWithAllEvents extends Div implements BeforeEnterObserver,
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         addLog("3 onAttach");
+    }
+
+    @Override
+    public void afterNavigation(AfterNavigationEvent event) {
+        addLog("4 afterNavigation");
     }
 
     private void addLog(String log) {

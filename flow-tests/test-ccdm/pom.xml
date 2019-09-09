@@ -53,6 +53,7 @@
                 <configuration>
                     <compatibilityMode>false</compatibilityMode>
                     <productionMode>false</productionMode>
+                    <clientSideMode>true</clientSideMode>
                 </configuration>
             </plugin>
         </plugins>

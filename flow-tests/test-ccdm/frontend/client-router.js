@@ -9,19 +9,21 @@ const createNavigationLink = (text, link) => {
   const aLink = document.createElement('a');
   aLink.href = link;
   aLink.textContent = text;
-  aLink.setAttribute('router-link', true);
   return aLink;
 }
 //------- Configure Router
-const routes = [{ path: 'client-view',
-                  action: () => {
-                    const div = document.createElement('div');
-                    div.textContent = 'My clientside text content';
-                    return div;
-                  }
-                },
-                  flow.route
-               ];
+const routes = [
+  {
+    path: 'client-view',
+    action: () => {
+      const div = document.createElement('div');
+      div.textContent = 'Client view';
+      div.id = 'clientSideView';
+      return div;
+    }
+  },
+  flow.route
+];
 
 const routerContainer = document.createElement('div');
 const navigationContainer = document.createElement('div');
@@ -36,7 +38,7 @@ const outlet = document.createElement('div');
 outlet.id = 'outlet';
 routerContainer.appendChild(outlet);
 document.body.appendChild(routerContainer);
-const router = new Router(document.querySelector('#outlet'));
+const router = new Router(outlet);
 
 router.setRoutes(routes);
 

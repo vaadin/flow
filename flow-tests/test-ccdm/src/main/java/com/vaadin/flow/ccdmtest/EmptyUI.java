@@ -23,5 +23,6 @@ import com.vaadin.flow.router.Route;
 public class EmptyUI extends Div {
     public EmptyUI() {
         add(new Text("Empty view"));
+        setId("emptyView");
     }
 }

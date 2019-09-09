@@ -260,6 +260,47 @@ public class ClientIndexHandlerIT extends ChromeBrowserTest {
     }
 
     @Test
+    public void should_navigateFromServerToServer_When_usingVaadinRouter() {
+        openTestUrl("/");
+        waitForElementPresent(By.id("loadRouter"));
+        findElement(By.id("loadRouter")).click();
+        waitForElementPresent(By.id("navigationContainer"));
+        // Wait for the first router load
+        waitForElementPresent(By.id("emptyView"));
+
+        findElement(By.partialLinkText("Server view")).click();
+        waitForElementPresent(By.id("serverView"));
+        String serverViewContent = findElement(By.id("mainLayout")).getText();
+        Assert.assertTrue("Should load server view",
+                serverViewContent.contains("Server view"));
+        Assert.assertTrue("Should attach MainLayout",
+                serverViewContent.contains("MainLayout: onAttach"));
+
+        findElement(By.partialLinkText("View with all events")).click();
+        waitForElementPresent(By.id("viewWithAllEvents"));
+        String viewWithAllEventsContent = findElement(By.id("mainLayout")).getText();
+        Assert.assertTrue("Should attach MainLayout",
+                viewWithAllEventsContent.contains("MainLayout: onAttach"));
+        Assert.assertTrue("Should execute setParameter",
+                viewWithAllEventsContent.contains("ViewWithAllEvents: 1 setParameter"));
+        Assert.assertTrue("Should execute onBeforeEnter",
+                viewWithAllEventsContent.contains("ViewWithAllEvents: 2 beforeEnter"));
+        Assert.assertTrue("Should execute onAttach",
+                viewWithAllEventsContent.contains("ViewWithAllEvents: 3 onAttach"));
+        Assert.assertTrue("Should execute afterNavigation",
+                viewWithAllEventsContent.contains("ViewWithAllEvents: 4 afterNavigation"));
+
+        Assert.assertFalse("Should not detach MainLayout",
+                viewWithAllEventsContent.contains("MainLayout: onDetach"));
+
+        findElement(By.partialLinkText("Empty view")).click();
+        waitForElementNotPresent(By.id("mainLayout"));
+        String emptyViewContent = findElement(By.id("emptyView")).getText();
+        Assert.assertTrue("Should load empty view",
+                emptyViewContent.contains("Empty view"));
+    }
+
+    @Test
     public void should_returnNotFoundView_WhenRouteNotFound() {
         openTestUrl("/");
         waitForElementPresent(By.id("button3"));
