@@ -81,6 +81,7 @@ import com.vaadin.flow.server.startup.WebComponentConfigurationRegistryInitializ
 import com.vaadin.flow.server.startup.WebComponentExporterAwareValidator;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.spring.VaadinScanPackagesRegistrar.VaadinScanPackages;
+import com.vaadin.flow.theme.Theme;
 
 /**
  * Servlet context initializer for Spring Boot Application.
@@ -99,6 +100,22 @@ public class VaadinServletContextInitializer
 
     private ApplicationContext appContext;
     private ResourceLoader customLoader;
+
+    /**
+     * packages that are white-listed (should be scanned) by default and
+     * can't be overriden by <code>addedWhiteListed</code>.
+     */
+    private static final List<String> DEFAULT_WHITE_LISTED = Stream
+            .of(
+                    Component.class.getPackage().getName(),
+                    Theme.class.getPackage().getName(),
+                    "com.vaadin.shrinkwrap"
+            ).collect(Collectors.toList());
+
+    /**
+     * Packages whitelisted by the user
+     */
+    private List<String> customWhitelist;
 
     private class RouteServletContextListener extends
             AbstractRouteRegistryInitializer implements ServletContextListener {
@@ -283,11 +300,18 @@ public class VaadinServletContextInitializer
                 return;
             }
 
+
+            Set<String> basePackages;
+            if (isWhitelistSet()) {
+                basePackages = new HashSet<>(getWhiteListPackages());
+            } else {
+                basePackages = Collections.singleton("");
+            }
+
             // Handle classes Route.class, NpmPackage.class,
             // WebComponentExporter.class
-            Set<String> allClasses = Collections.singleton("");
             long start = System.currentTimeMillis();
-            Set<Class<?>> classes = findByAnnotation(allClasses, customLoader,
+            Set<Class<?>> classes = findByAnnotation(basePackages, customLoader,
                     Route.class, NpmPackage.class, NpmPackage.Container.class)
                             .collect(Collectors.toSet());
             long annotationScanning = System.currentTimeMillis();
@@ -295,21 +319,21 @@ public class VaadinServletContextInitializer
                     "Search for classes with annotations took {} seconds",
                     (annotationScanning - start) / 1000);
 
-            classes.addAll(findBySuperType(allClasses, customLoader,
+            classes.addAll(findBySuperType(basePackages, customLoader,
                     WebComponentExporter.class).collect(Collectors.toSet()));
             long webComponentsScanning = System.currentTimeMillis();
             getLogger().info(SEARCH_TIME_MESSAGE,
                     WebComponentExporter.class.getSimpleName(),
                     (webComponentsScanning - annotationScanning) / 1000);
 
-            classes.addAll(findBySuperType(allClasses, customLoader,
+            classes.addAll(findBySuperType(basePackages, customLoader,
                     UIInitListener.class).collect(Collectors.toSet()));
             long uiInitScanning = System.currentTimeMillis();
             getLogger().info(SEARCH_TIME_MESSAGE,
                     UIInitListener.class.getSimpleName(),
                     (uiInitScanning - webComponentsScanning) / 1000);
 
-            classes.addAll(findBySuperType(allClasses, customLoader,
+            classes.addAll(findBySuperType(basePackages, customLoader,
                     VaadinServiceInitListener.class)
                             .collect(Collectors.toSet()));
             long serviceInitScanning = System.currentTimeMillis();
@@ -335,6 +359,19 @@ public class VaadinServletContextInitializer
         @Override
         public void contextDestroyed(ServletContextEvent event) {
             // NO-OP
+        }
+
+        private Collection<String> getWhiteListPackages() {
+            HashSet<String> npmPackages = new HashSet<>(getDefaultPackages());
+            npmPackages.addAll(DEFAULT_WHITE_LISTED);
+            if (customWhitelist != null) {
+                npmPackages.addAll(customWhitelist);
+            }
+            return npmPackages;
+        }
+
+        private boolean isWhitelistSet() {
+            return customWhitelist != null && !customWhitelist.isEmpty();
         }
     }
 
@@ -399,22 +436,21 @@ public class VaadinServletContextInitializer
 
         String whitelistProperty = appContext.getEnvironment()
                 .getProperty("vaadin.whitelisted-packages");
-        List<String> whitelist;
         if (whitelistProperty == null) {
-            whitelist = Collections.emptyList();
+            customWhitelist = Collections.emptyList();
+            customLoader = new CustomResourceLoader(appContext, blacklist);
+
         } else {
-            whitelist = Arrays.stream(whitelistProperty.split(","))
-                    .map(String::trim).collect(Collectors.toList());
+            customWhitelist = Arrays.stream(whitelistProperty.split(","))
+                    .map(whitelistedPackage -> whitelistedPackage.replace('/', '.').trim())
+                    .collect(Collectors.toList());
+            customLoader = appContext;
         }
 
-        if (!whitelist.isEmpty() && !blacklist.isEmpty()) {
+        if (!customWhitelist.isEmpty() && !blacklist.isEmpty()) {
             getLogger().warn(
                     "vaadin.blacklisted-packages is ignored because both vaadin.whitelisted-packages and vaadin.blacklisted-packages have been set.");
-            blacklist = Collections.emptyList();
         }
-
-        customLoader = new CustomResourceLoader(appContext, blacklist,
-                whitelist);
     }
 
     @Override
@@ -473,7 +509,7 @@ public class VaadinServletContextInitializer
                 .addIncludeFilter(new AnnotationTypeFilter(annotation)));
 
         return packages.stream().map(scanner::findCandidateComponents)
-                .flatMap(set -> set.stream()).map(this::getBeanClass);
+                .flatMap(Collection::stream).map(this::getBeanClass);
     }
 
     private Stream<Class<?>> findBySuperType(Collection<String> packages,
@@ -553,20 +589,6 @@ public class VaadinServletContextInitializer
      */
     private static class CustomResourceLoader
             extends PathMatchingResourcePatternResolver {
-
-        /**
-         * Whitelisted packages which with <code>DEFAULT_WHITE_LISTED</code> are
-         * the only packages that should be scanned.
-         */
-        private List<String> addedWhiteListed;
-
-        /**
-         * packages that are white-listed (should be scanned) by default and
-         * can't be overriden by <code>addedWhiteListed</code>.
-         */
-        private final static List<String> DEFAULT_WHITE_LISTED = Stream
-                .of("com/vaadin/flow/component").collect(Collectors.toList());
-
         /**
          * Blacklisted packages that shouldn't be scanned for when scanning all
          * packages.
@@ -583,17 +605,18 @@ public class VaadinServletContextInitializer
                 "org/springframework", "org/webjars/bowergithub", "org/yaml")
                 .collect(Collectors.toList());
 
+        private static List<String> defaultWhiteList =
+                DEFAULT_WHITE_LISTED.stream().map(packageName -> packageName.replace('.',
+                        '/')).collect(Collectors.toList());
+
         public CustomResourceLoader(ResourceLoader resourceLoader,
-                List<String> addedBlacklist, List<String> addedWhiteListed) {
+                                    List<String> addedBlacklist) {
             super(resourceLoader);
 
             Objects.requireNonNull(addedBlacklist,
                     "addedBlacklist shouldn't be null!");
-            Objects.requireNonNull(addedWhiteListed,
-                    "addedWhiteListed shouldn't be null!");
 
             blackListed.addAll(addedBlacklist);
-            this.addedWhiteListed = addedWhiteListed;
         }
 
         /**
@@ -633,7 +656,7 @@ public class VaadinServletContextInitializer
                     rootPaths.add(path);
                     resourcesList.add(resource);
                 } else {
-                    int index = path.indexOf(".jar!/");
+                    int index = path.lastIndexOf(".jar!/");
                     if (index >= 0) {
                         String relativePath = path.substring(index + 6);
                         if (shouldPathBeScanned(relativePath)) {
@@ -660,12 +683,8 @@ public class VaadinServletContextInitializer
         }
 
         private boolean shouldPathBeScanned(String path) {
-            if (DEFAULT_WHITE_LISTED.stream().anyMatch(path::startsWith)) {
+            if (defaultWhiteList.stream().anyMatch(path::startsWith)) {
                 return true;
-            }
-
-            if (!addedWhiteListed.isEmpty()) {
-                return addedWhiteListed.stream().anyMatch(path::startsWith);
             }
 
             return !blackListed.stream().anyMatch(path::startsWith);
