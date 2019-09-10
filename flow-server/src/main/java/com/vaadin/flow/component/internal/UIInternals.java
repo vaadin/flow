@@ -162,7 +162,7 @@ public class UIInternals implements Serializable {
      */
     private final UI ui;
 
-    private final UIInternalsHandler internalsHandler;
+    private final UIInternalUpdater internalsHandler;
 
     private String title;
 
@@ -208,7 +208,8 @@ public class UIInternals implements Serializable {
      *            the UI to use
      */
     public UIInternals(UI ui) {
-        this(ui, new DefaultUIInternalsHandler());
+        this(ui, new UIInternalUpdater() {
+        });
     }
 
     /**
@@ -217,9 +218,9 @@ public class UIInternals implements Serializable {
      * @param ui
      *            the UI to use
      * @param internalsHandler
-     *            an implementation of {@link UIInternalsHandler}
+     *            an implementation of {@link UIInternalUpdater}
      */
-    public UIInternals(UI ui, UIInternalsHandler internalsHandler) {
+    public UIInternals(UI ui, UIInternalUpdater internalsHandler) {
         this.internalsHandler = internalsHandler;
         this.ui = ui;
         stateTree = new StateTree(this, getRootNodeFeatures());

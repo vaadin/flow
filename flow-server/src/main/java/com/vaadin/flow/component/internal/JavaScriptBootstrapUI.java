@@ -55,7 +55,7 @@ public class JavaScriptBootstrapUI extends UI {
      * Create UI for clientSideMode.
      */
     public JavaScriptBootstrapUI() {
-        super(new JavaScriptUIInternalsHandler());
+        super(new JavaScriptUIInternalUpdater());
     }
 
     /**
@@ -85,16 +85,6 @@ public class JavaScriptBootstrapUI extends UI {
 
         // Inform the client, that everything went fine.
         wrapperElement.executeJs("$0.serverConnected()");
-    }
-
-    /**
-     * Get the wrapper element which is a container for server views in
-     * client-side.
-     * 
-     * @return the wrapper element.
-     */
-    public Element getWrapperElement() {
-        return wrapperElement;
     }
 
     private void renderViewForRoute(String route) {
@@ -172,14 +162,13 @@ public class JavaScriptBootstrapUI extends UI {
     /**
      * An UIInternalsHandler implementation for clientSideMode.
      */
-    private static class JavaScriptUIInternalsHandler
-            implements UIInternalsHandler {
+    private static class JavaScriptUIInternalUpdater
+            implements UIInternalUpdater {
 
         @Override
         public void updateRoot(UI ui, HasElement oldRoot, HasElement newRoot) {
             JavaScriptBootstrapUI jsUI = castToJavaScriptUI(ui);
-
-            Element wrapperElement = jsUI.getWrapperElement();
+            Element wrapperElement = jsUI.wrapperElement;
             Element rootElement = newRoot.getElement();
 
             if (!wrapperElement.equals(rootElement.getParent())) {
@@ -195,23 +184,17 @@ public class JavaScriptBootstrapUI extends UI {
         public void moveToNewUI(UI oldUI, UI newUI) {
             JavaScriptBootstrapUI jsUI = castToJavaScriptUI(newUI);
             JavaScriptBootstrapUI oldJsUI = castToJavaScriptUI(oldUI);
-            final List<Element> uiChildren = oldJsUI.getWrapperElement().getChildren()
+            final List<Element> uiChildren = oldJsUI.wrapperElement.getChildren()
                     .collect(Collectors.toList());
             uiChildren.forEach(element -> {
                 element.removeFromTree();
-                jsUI.getWrapperElement().appendChild(element);
+                jsUI.wrapperElement.appendChild(element);
             });
         }
 
         private JavaScriptBootstrapUI castToJavaScriptUI(UI ui) {
-            if (!(ui instanceof JavaScriptBootstrapUI)
-                    || ((JavaScriptBootstrapUI) ui)
-                            .getWrapperElement() == null) {
-                throw new IllegalStateException("Can't update JavaScript UI "
-                        + "because the current UI is not a " +
-                        "JavaScriptBootstrapUI or " +
-                        "wrapper element is null");
-            }
+            assert ui instanceof JavaScriptBootstrapUI;
+            assert ((JavaScriptBootstrapUI) ui).wrapperElement != null;
             return (JavaScriptBootstrapUI) ui;
         }
     }
