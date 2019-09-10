@@ -306,7 +306,7 @@ public class FrontendDependencies implements Serializable {
         // entry-point visits
         for (EndPointData endPoint : endPoints.values()) {
             if (endPoint.getLayout() != null) {
-                visitClass(endPoint.getLayout(), endPoint, true);
+                visitClass(endPoint.getLayout(), endPoint, false);
             }
             if (endPoint.getTheme() != null) {
                 visitClass(endPoint.getTheme().getName(), endPoint, true);
