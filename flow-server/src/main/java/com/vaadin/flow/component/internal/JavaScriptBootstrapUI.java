@@ -55,7 +55,7 @@ public class JavaScriptBootstrapUI extends UI {
      * Create UI for clientSideMode.
      */
     public JavaScriptBootstrapUI() {
-        super(new JavaScriptUIInternalsHandler());
+        super(new JavaScriptUIInternalUpdater());
     }
 
     /**
@@ -93,7 +93,7 @@ public class JavaScriptBootstrapUI extends UI {
      * 
      * @return the wrapper element.
      */
-    public Element getWrapperElement() {
+    private Element getWrapperElement() {
         return wrapperElement;
     }
 
@@ -172,13 +172,12 @@ public class JavaScriptBootstrapUI extends UI {
     /**
      * An UIInternalsHandler implementation for clientSideMode.
      */
-    private static class JavaScriptUIInternalsHandler
-            implements UIInternalsHandler {
+    private static class JavaScriptUIInternalUpdater
+            implements UIInternalUpdater {
 
         @Override
         public void updateRoot(UI ui, HasElement oldRoot, HasElement newRoot) {
             JavaScriptBootstrapUI jsUI = castToJavaScriptUI(ui);
-
             Element wrapperElement = jsUI.getWrapperElement();
             Element rootElement = newRoot.getElement();
 
@@ -204,14 +203,8 @@ public class JavaScriptBootstrapUI extends UI {
         }
 
         private JavaScriptBootstrapUI castToJavaScriptUI(UI ui) {
-            if (!(ui instanceof JavaScriptBootstrapUI)
-                    || ((JavaScriptBootstrapUI) ui)
-                            .getWrapperElement() == null) {
-                throw new IllegalStateException("Can't update JavaScript UI "
-                        + "because the current UI is not a " +
-                        "JavaScriptBootstrapUI or " +
-                        "wrapper element is null");
-            }
+            assert ui instanceof JavaScriptBootstrapUI;
+            assert ((JavaScriptBootstrapUI) ui).getWrapperElement() != null;
             return (JavaScriptBootstrapUI) ui;
         }
     }

@@ -16,15 +16,19 @@
 package com.vaadin.flow.component.internal;
 
 import java.io.Serializable;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.dom.Element;
 
 /**
  * The implementation of this interface is responsible for updating the UI with
  * given content.
  */
-public interface UIInternalsHandler extends Serializable {
+public interface UIInternalUpdater extends Serializable {
+
     /**
      * Update root element of the given UI.
      * 
@@ -35,7 +39,18 @@ public interface UIInternalsHandler extends Serializable {
      * @param newRoot
      *            the new root to be added
      */
-    void updateRoot(UI ui, HasElement oldRoot, HasElement newRoot);
+    default void updateRoot(UI ui, HasElement oldRoot, HasElement newRoot) {
+        Element uiElement = ui.getElement();
+        Element rootElement = newRoot.getElement();
+
+        if (!uiElement.equals(rootElement.getParent())) {
+            if (oldRoot != null) {
+                oldRoot.getElement().removeFromParent();
+            }
+            rootElement.removeFromParent();
+            uiElement.appendChild(rootElement);
+        }
+    }
 
     /**
      * Move all the children from the old UI to the new UI.
@@ -45,5 +60,12 @@ public interface UIInternalsHandler extends Serializable {
      * @param newUI
      *            the new UI where children of the old UI will be landed
      */
-    void moveToNewUI(UI oldUI, UI newUI);
+    default void moveToNewUI(UI oldUI, UI newUI) {
+        final List<Element> uiChildren = oldUI.getElement().getChildren()
+                .collect(Collectors.toList());
+        uiChildren.forEach(element -> {
+            element.removeFromTree();
+            newUI.getElement().appendChild(element);
+        });
+    }
 }
