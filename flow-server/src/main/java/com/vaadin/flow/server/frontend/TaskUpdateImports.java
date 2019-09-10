@@ -89,6 +89,9 @@ public class TaskUpdateImports extends NodeUpdater {
     private static final Pattern NEW_LINE_TRIM = Pattern
             .compile("(?m)(^\\s+|\\s?\n)");
 
+    private static final Pattern FRONTEND_IMPORT_LINE = Pattern.compile(
+            String.format(IMPORT_TEMPLATE, WEBPACK_PREFIX_ALIAS + "\\S*"));
+
     /**
      * Create an instance of the updater given all configurable parameters.
      *
@@ -141,9 +144,8 @@ public class TaskUpdateImports extends NodeUpdater {
         ArrayList<String> externals = new ArrayList<>();
         ArrayList<String> internals = new ArrayList<>();
 
-        final String importPrefix = getLocalImportPrefix();
         for (String module : getModuleLines(modules)) {
-            if (module.startsWith(importPrefix)) {
+            if (FRONTEND_IMPORT_LINE.matcher(module).matches()) {
                 internals.add(module);
             } else {
                 externals.add(module);
@@ -489,11 +491,5 @@ public class TaskUpdateImports extends NodeUpdater {
 
     private static String generatedResourcePathIntoRelativePath(String path) {
         return path.replace(GENERATED_PREFIX, "./");
-    }
-
-    private static String getLocalImportPrefix() {
-        return String.format(
-                IMPORT_TEMPLATE.substring(0, IMPORT_TEMPLATE.length() - 2),
-                WEBPACK_PREFIX_ALIAS);
     }
 }
