@@ -29,7 +29,9 @@ import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 
@@ -101,8 +103,18 @@ public class NodeTestComponents {
 
     }
 
+    @JsModule("./common-js-file.js")
     @Theme(value = LumoTest.class, variant = LumoTest.DARK)
     @Route
+    public static class MainLayout implements RouterLayout {
+        @Override
+        public Element getElement() {
+            return null;
+        }
+    }
+
+
+    @Route(value = "", layout = MainLayout.class)
     public static class MainView extends Component {
         ButtonComponent buttonComponent;
         IconComponent iconComponent;

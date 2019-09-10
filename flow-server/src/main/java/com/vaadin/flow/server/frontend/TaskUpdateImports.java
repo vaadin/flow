@@ -89,6 +89,11 @@ public class TaskUpdateImports extends NodeUpdater {
     private static final Pattern NEW_LINE_TRIM = Pattern
             .compile("(?m)(^\\s+|\\s?\n)");
 
+    // Used to recognize and sort FRONTEND/ imports in the final
+    // generated-flow-imports.js
+    private static final Pattern FRONTEND_IMPORT_LINE = Pattern.compile(
+            String.format(IMPORT_TEMPLATE, WEBPACK_PREFIX_ALIAS + "\\S*"));
+
     /**
      * Create an instance of the updater given all configurable parameters.
      *
@@ -137,7 +142,20 @@ public class TaskUpdateImports extends NodeUpdater {
 
         lines.addAll(getThemeLines());
         lines.addAll(getCssLines());
-        lines.addAll(getModuleLines(modules));
+
+        ArrayList<String> externals = new ArrayList<>();
+        ArrayList<String> internals = new ArrayList<>();
+
+        for (String module : getModuleLines(modules)) {
+            if (FRONTEND_IMPORT_LINE.matcher(module).matches()) {
+                internals.add(module);
+            } else {
+                externals.add(module);
+            }
+        }
+
+        lines.addAll(externals);
+        lines.addAll(internals);
 
         return lines;
     }
