@@ -375,6 +375,19 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 "styles/styles.js");
     }
 
+    // flow #6408
+    @Test
+    public void jsModuleOnRouterLayout_shouldBe_addedAfterLumoStyles() throws Exception {
+        updater.execute();
+
+        assertContainsImports(true, "Frontend/common-js-file.js");
+
+        assertImportOrder("@vaadin/vaadin-lumo-styles/color.js",
+                "Frontend/common-js-file.js");
+        assertImportOrder("@vaadin/vaadin-mixed-component/theme/lumo/vaadin-something-else.js",
+                "Frontend/common-js-file.js");
+    }
+
     @Test
     public void jsModulesOrderIsPreservedAnsAfterJsModules() throws Exception {
         updater.execute();
