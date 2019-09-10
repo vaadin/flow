@@ -375,6 +375,34 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
                 "Modification flag should be true when dependency added.",
                 packageUpdater.modified);
     }
+    @Test
+    public void generateAppPackageJson_noDependencies_updaterIsNotModified() {
+        FrontendDependencies frontendDependencies = Mockito.mock(FrontendDependencies.class);
+
+        Map<String, String> packages = new HashMap<>();
+        Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+
+        packageUpdater = new TaskUpdatePackages(null, frontendDependencies, baseDir,
+                generatedDir, false);
+
+        packageCreator.execute();
+        packageUpdater.execute();
+
+        Assert.assertFalse(
+                "Modification flag should be false when there was no dependencies.",
+                packageUpdater.modified);
+
+        // delete generated file
+        appPackageJson.delete();
+
+        // generate it one more time, the content will be different since
+        // packageCreator has not added its content
+        packageUpdater.execute();
+
+        Assert.assertFalse(
+                "Modification flag should be false when there has never been dependencies.",
+                packageUpdater.modified);
+    }
 
     private void makeNodeModulesAndPackageLock() throws IOException {
         // Make two node_modules folders and package lock

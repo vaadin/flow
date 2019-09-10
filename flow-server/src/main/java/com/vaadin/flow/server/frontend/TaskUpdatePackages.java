@@ -105,7 +105,8 @@ public class TaskUpdatePackages extends NodeUpdater {
             boolean isModified = updatePackageJsonDependencies(packageJson,
                     deps);
             if (isModified) {
-                String content = writeAppPackageFile(packageJson);
+                writeAppPackageFile(packageJson);
+                String content = "";
                 // If we have dependencies generate hash on ordered content.
                 if(packageJson.hasKey("dependencies")) {
                     JsonObject dependencies = packageJson.getObject("dependencies");
