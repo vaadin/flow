@@ -161,13 +161,13 @@ public class ShortcutsView extends Div {
 
         // removingShortcutCleansJavascriptEventSettingsItUsed
         AtomicReference<ShortcutRegistration> removalAtomicReference = new AtomicReference<>();
-        final Input removalInput = new Input(ValueChangeMode.ON_CHANGE);
+        final Input removalInput = new Input(ValueChangeMode.EAGER);
         removalInput.setId("removal-input");
         ShortcutRegistration removalRegistration = Shortcuts
                 .addShortcutListener(removalInput, () -> {
                     removalInput.setValue(removalInput.getValue().toUpperCase());
                     removalAtomicReference.get().remove();
-                }, Key.KEY_C);
+                }, Key.KEY_D);
         removalAtomicReference.set(removalRegistration);
         add(removalInput);
     }
