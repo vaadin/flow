@@ -212,7 +212,7 @@ public class ComponentMetaData {
                         && AnnotationReader
                                 .getCssImportAnnotations(componentClass)
                                 .isEmpty()) {
-                    getLogger().warn(HTML_IMPORT_WITHOUT_JS_MODULE_WARNING,
+                    getLogger().error(HTML_IMPORT_WITHOUT_JS_MODULE_WARNING,
                             componentClass.getName());
                 }
             }
