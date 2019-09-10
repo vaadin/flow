@@ -57,6 +57,7 @@ public class JavaScriptBootstrapUI extends UI {
     public JavaScriptBootstrapUI() {
         super(new JavaScriptUIInternalsHandler());
     }
+
     /**
      * Connect a client with the server side UI.
      *
@@ -177,18 +178,25 @@ public class JavaScriptBootstrapUI extends UI {
         @Override
         public void updateRoot(UI ui, HasElement oldRoot, HasElement newRoot) {
             JavaScriptBootstrapUI jsUI = castToJavaScriptUI(ui);
-            // Remove previous view
-            jsUI.getWrapperElement().removeAllChildren();
-            // attach this view
-            jsUI.getWrapperElement().appendChild(newRoot.getElement());
+
+            Element wrapperElement = jsUI.getWrapperElement();
+            Element rootElement = newRoot.getElement();
+
+            if (!wrapperElement.equals(rootElement.getParent())) {
+                if (oldRoot != null) {
+                    oldRoot.getElement().removeFromParent();
+                }
+                rootElement.removeFromParent();
+                wrapperElement.appendChild(rootElement);
+            }
         }
 
         @Override
         public void moveToNewUI(UI oldUI, UI newUI) {
             JavaScriptBootstrapUI jsUI = castToJavaScriptUI(newUI);
-            final List<Element> uiChildren = oldUI.getElement().getChildren()
+            JavaScriptBootstrapUI oldJsUI = castToJavaScriptUI(oldUI);
+            final List<Element> uiChildren = oldJsUI.getWrapperElement().getChildren()
                     .collect(Collectors.toList());
-            jsUI.getWrapperElement().removeAllChildren();
             uiChildren.forEach(element -> {
                 element.removeFromTree();
                 jsUI.getWrapperElement().appendChild(element);
@@ -200,8 +208,9 @@ public class JavaScriptBootstrapUI extends UI {
                     || ((JavaScriptBootstrapUI) ui)
                             .getWrapperElement() == null) {
                 throw new IllegalStateException("Can't update JavaScript UI "
-                        + "because the current UI is not a JavaScript "
-                        + "UI or wrapper element is null");
+                        + "because the current UI is not a " +
+                        "JavaScriptBootstrapUI or " +
+                        "wrapper element is null");
             }
             return (JavaScriptBootstrapUI) ui;
         }
