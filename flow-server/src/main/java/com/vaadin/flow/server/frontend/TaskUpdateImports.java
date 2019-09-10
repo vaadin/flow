@@ -89,6 +89,8 @@ public class TaskUpdateImports extends NodeUpdater {
     private static final Pattern NEW_LINE_TRIM = Pattern
             .compile("(?m)(^\\s+|\\s?\n)");
 
+    // Used to recognize and sort FRONTEND/ imports in the final
+    // generated-flow-imports.js
     private static final Pattern FRONTEND_IMPORT_LINE = Pattern.compile(
             String.format(IMPORT_TEMPLATE, WEBPACK_PREFIX_ALIAS + "\\S*"));
 
