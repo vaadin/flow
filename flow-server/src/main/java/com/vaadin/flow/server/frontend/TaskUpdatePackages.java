@@ -30,6 +30,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.server.Constants;
@@ -103,7 +105,17 @@ public class TaskUpdatePackages extends NodeUpdater {
             boolean isModified = updatePackageJsonDependencies(packageJson,
                     deps);
             if (isModified) {
-                String content = writeAppPackageFile(packageJson);
+                writeAppPackageFile(packageJson);
+                String content = "";
+                // If we have dependencies generate hash on ordered content.
+                if(packageJson.hasKey("dependencies")) {
+                    JsonObject dependencies = packageJson.getObject("dependencies");
+                    content = Stream.of(dependencies.keys())
+                            .map(key -> String.format("\"%s\": \"%s\"", key,
+                                    dependencies.get(key).asString()))
+                            .sorted(String::compareToIgnoreCase)
+                            .collect(Collectors.joining(",\n  "));
+                }
                 modified = updateAppPackageHash(getHash(content));
             }
         } catch (IOException e) {
