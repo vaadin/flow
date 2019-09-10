@@ -185,7 +185,7 @@ public class ClientIndexHandlerIT extends ChromeBrowserTest {
 
         String content = findElement(By.id("result")).getText();
         Assert.assertEquals("Should execute set parameter method",
-                "Main layout\nParameter: " + inputParam, content);
+                "Main layout\nParameter: " + inputParam + "\nMainLayout: onAttach", content);
     }
 
     @Test
@@ -199,7 +199,7 @@ public class ClientIndexHandlerIT extends ChromeBrowserTest {
         String content = findElement(By.id("result")).getText();
         Assert.assertEquals(
                 "Should execute onBeforeEnter and reroute to ServerSideView",
-                "Main layout\nServer view", content);
+                "Main layout\nServer view\nMainLayout: onAttach", content);
     }
 
     @Test
@@ -213,7 +213,7 @@ public class ClientIndexHandlerIT extends ChromeBrowserTest {
         String content = findElement(By.id("result")).getText();
         Assert.assertEquals(
                 "Should execute onBeforeEnter and forward to ServerSideView",
-                "Main layout\nServer view", content);
+                "Main layout\nServer view\nMainLayout: onAttach", content);
     }
 
     @Test
@@ -229,7 +229,7 @@ public class ClientIndexHandlerIT extends ChromeBrowserTest {
         String expectedContent = "Main layout\nViewWithAllEvents: 1 "
                 + "setParameter\nViewWithAllEvents: 2 "
                 + "beforeEnter\nViewWithAllEvents: 3 "
-                + "onAttach\nViewWithAllEvents: 4 afterNavigation";
+                + "onAttach\nViewWithAllEvents: 4 afterNavigation\nMainLayout: onAttach";
         Assert.assertEquals("Should execute all lifecycle callbacks",
                 expectedContent, content);
     }
@@ -271,24 +271,26 @@ public class ClientIndexHandlerIT extends ChromeBrowserTest {
         findElement(By.partialLinkText("Server view")).click();
         waitForElementPresent(By.id("serverView"));
         String serverViewContent = findElement(By.id("mainLayout")).getText();
-        Assert.assertTrue("Should load server view",
-                serverViewContent.contains("Server view"));
-        Assert.assertTrue("Should attach MainLayout",
-                serverViewContent.contains("MainLayout: onAttach"));
+        Assert.assertEquals(
+                "Should load server view and execute main layout onAttach",
+                "Main layout\nServer view\nMainLayout: onAttach", serverViewContent);
 
         findElement(By.partialLinkText("View with all events")).click();
         waitForElementPresent(By.id("viewWithAllEvents"));
-        String viewWithAllEventsContent = findElement(By.id("mainLayout")).getText();
-        Assert.assertTrue("Should attach MainLayout",
-                viewWithAllEventsContent.contains("MainLayout: onAttach"));
-        Assert.assertTrue("Should execute setParameter",
-                viewWithAllEventsContent.contains("ViewWithAllEvents: 1 setParameter"));
-        Assert.assertTrue("Should execute onBeforeEnter",
-                viewWithAllEventsContent.contains("ViewWithAllEvents: 2 beforeEnter"));
-        Assert.assertTrue("Should execute onAttach",
-                viewWithAllEventsContent.contains("ViewWithAllEvents: 3 onAttach"));
-        Assert.assertTrue("Should execute afterNavigation",
-                viewWithAllEventsContent.contains("ViewWithAllEvents: 4 afterNavigation"));
+        String viewWithAllEventsContent =
+                findElement(By.id("mainLayout")).getText();
+
+        // because MainLayout stays the same, so that `MainLayout: onAttach`
+        // appears before the view
+        String expectedContent = "Main layout\nMainLayout: " +
+                "onAttach\nViewWithAllEvents: 1 "
+                + "setParameter\nViewWithAllEvents: 2 "
+                + "beforeEnter\nViewWithAllEvents: 3 "
+                + "onAttach\nViewWithAllEvents: 4 afterNavigation";
+
+        Assert.assertEquals("Should load ViewWithAllEvents without detaching " +
+                        "MainLayout",
+                expectedContent, viewWithAllEventsContent);
 
         Assert.assertFalse("Should not detach MainLayout",
                 viewWithAllEventsContent.contains("MainLayout: onDetach"));
@@ -296,8 +298,8 @@ public class ClientIndexHandlerIT extends ChromeBrowserTest {
         findElement(By.partialLinkText("Empty view")).click();
         waitForElementNotPresent(By.id("mainLayout"));
         String emptyViewContent = findElement(By.id("emptyView")).getText();
-        Assert.assertTrue("Should load empty view",
-                emptyViewContent.contains("Empty view"));
+        Assert.assertEquals("Should load empty view", "Empty view",
+                emptyViewContent);
     }
 
     @Test
