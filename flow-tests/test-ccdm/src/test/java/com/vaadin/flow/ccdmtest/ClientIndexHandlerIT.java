@@ -184,10 +184,8 @@ public class ClientIndexHandlerIT extends ChromeBrowserTest {
         waitForElementPresent(By.id("result"));
 
         String content = findElement(By.id("result")).getText();
-        Assert.assertTrue("Flow.navigate should return view with parameter",
-                content.contains("Parameter: " + inputParam));
-        Assert.assertTrue("Flow.navigate should include router layout",
-                content.contains("Main layout"));
+        Assert.assertEquals("Should execute set parameter method",
+                "Main layout\nParameter: " + inputParam, content);
     }
 
     @Test
@@ -199,12 +197,9 @@ public class ClientIndexHandlerIT extends ChromeBrowserTest {
         waitForElementPresent(By.id("result"));
 
         String content = findElement(By.id("result")).getText();
-        Assert.assertTrue(
-                "Flow.navigate should execute onBeforeEnter and reroute to "
-                        + "ServerSideView",
-                content.contains("Server view"));
-        Assert.assertTrue("Flow.navigate should include router layout",
-                content.contains("Main layout"));
+        Assert.assertEquals(
+                "Should execute onBeforeEnter and reroute to ServerSideView",
+                "Main layout\nServer view", content);
     }
 
     @Test
@@ -216,12 +211,9 @@ public class ClientIndexHandlerIT extends ChromeBrowserTest {
         waitForElementPresent(By.id("result"));
 
         String content = findElement(By.id("result")).getText();
-        Assert.assertTrue(
-                "Flow.navigate should execute onBeforeEnter and forward to "
-                        + "ServerSideView",
-                content.contains("Server view"));
-        Assert.assertTrue("Flow.navigate should include router layout",
-                content.contains("Main layout"));
+        Assert.assertEquals(
+                "Should execute onBeforeEnter and forward to ServerSideView",
+                "Main layout\nServer view", content);
     }
 
     @Test
@@ -233,14 +225,38 @@ public class ClientIndexHandlerIT extends ChromeBrowserTest {
         waitForElementPresent(By.id("result"));
 
         String content = findElement(By.id("result")).getText();
-        Assert.assertTrue("Should execute setParameter",
-                content.contains("ViewWithAllEvents: 1 setParameter"));
-        Assert.assertTrue("Should execute onBeforeEnter",
-                content.contains("ViewWithAllEvents: 2 beforeEnter"));
-        Assert.assertTrue("Should execute onAttach",
-                content.contains("ViewWithAllEvents: 3 onAttach"));
-        Assert.assertTrue("Should execute afterNavigation",
-                content.contains("ViewWithAllEvents: 4 afterNavigation"));
+
+        String expectedContent = "Main layout\nViewWithAllEvents: 1 "
+                + "setParameter\nViewWithAllEvents: 2 "
+                + "beforeEnter\nViewWithAllEvents: 3 "
+                + "onAttach\nViewWithAllEvents: 4 afterNavigation";
+        Assert.assertEquals("Should execute all lifecycle callbacks",
+                expectedContent, content);
+    }
+
+    @Test
+    public void should_preserveView_When_reloadPreservedOnRefreshView() {
+        openTestUrl("/");
+        waitForElementPresent(By.id("button3"));
+        findElement(By.id("pathname")).sendKeys("preserve");
+        findElement(By.id("button3")).click();
+        waitForElementPresent(By.id("result"));
+
+        String shouldBePreservedText = "should be preserved";
+        findElement(By.id("inputPreserved")).sendKeys(shouldBePreservedText);
+        // trigger on change event in the text field to sync to server
+        findElement(By.id("inputPreserved")).sendKeys(("\t"));
+        // refresh and reload flow to create a new UI
+        getDriver().navigate().refresh();
+        waitForElementPresent(By.id("button3"));
+        findElement(By.id("pathname")).sendKeys("preserve");
+        findElement(By.id("button3")).click();
+        waitForElementPresent(By.id("result"));
+
+        String inputPreservedContent = findElement(By.id("inputPreserved"))
+                .getAttribute("value");
+        Assert.assertEquals("Text in the input field should be preserved",
+                shouldBePreservedText, inputPreservedContent);
     }
 
     @Test
