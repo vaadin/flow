@@ -182,6 +182,8 @@ public class StreamReceiverHandler implements Serializable {
     private boolean hasParts(VaadinRequest request) throws IOException {
         try {
             return !getParts(request).isEmpty();
+        } catch (IOException ioe) {
+            throw ioe;
         } catch (Exception e) {
             getLogger().trace(
                     "Pretending the request did not contain any parts because of exception",
