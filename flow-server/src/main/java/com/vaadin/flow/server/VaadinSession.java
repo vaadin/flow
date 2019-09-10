@@ -133,7 +133,16 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     public VaadinSession(VaadinService service) {
         this.service = service;
-        resourceRegistry = new StreamResourceRegistry(this);
+        resourceRegistry = createStreamResourceRegistry();
+    }
+
+    /**
+     * Creates the StreamResourceRegistry for this session.
+     *
+     * @return A StreamResourceRegistry instance
+     */
+    protected StreamResourceRegistry createStreamResourceRegistry() {
+        return new StreamResourceRegistry(this);
     }
 
     /**

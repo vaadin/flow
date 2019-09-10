@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.server.communication;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.Part;
 import java.io.BufferedWriter;
@@ -25,6 +24,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Iterator;
 
 import org.apache.commons.fileupload.FileItemIterator;
@@ -130,8 +130,7 @@ public class StreamReceiverHandler implements Serializable {
         }
 
         try {
-            if (ServletFileUpload
-                    .isMultipartContent((HttpServletRequest) request)) {
+            if (isMultipartUpload(request)) {
                 doHandleMultipartFileUpload(session, request, response,
                         streamReceiver, source);
             } else {
@@ -182,8 +181,10 @@ public class StreamReceiverHandler implements Serializable {
 
     private boolean hasParts(VaadinRequest request) throws IOException {
         try {
-            return !((HttpServletRequest) request).getParts().isEmpty();
-        } catch (ServletException | IllegalStateException e) {
+            return !getParts(request).isEmpty();
+        } catch (IOException ioe) {
+            throw ioe;
+        } catch (Exception e) {
             getLogger().trace(
                     "Pretending the request did not contain any parts because of exception",
                     e);
@@ -197,13 +198,12 @@ public class StreamReceiverHandler implements Serializable {
         // If we try to parse the request now, we will get an exception
         // since it has already been parsed and turned into Parts.
         try {
-            Iterator<Part> iter = ((HttpServletRequest) request).getParts()
-                    .iterator();
+            Iterator<Part> iter = getParts(request).iterator();
             while (iter.hasNext()) {
                 Part part = iter.next();
                 handleStream(session, streamReceiver, owner, part);
             }
-        } catch (ServletException e) {
+        } catch (Exception e) {
             // This should only happen if the request is not a multipart
             // request and this we have already checked in hasParts().
             getLogger().warn("File upload failed.", e);
@@ -213,14 +213,11 @@ public class StreamReceiverHandler implements Serializable {
     private void handleMultipartFileUploadFromInputStream(VaadinSession session,
             VaadinRequest request, StreamReceiver streamReceiver,
             StateNode owner) throws IOException {
-        // Create a new file upload handler
-        ServletFileUpload upload = new ServletFileUpload();
-
-        long contentLength = getContentLength(request);
+        long contentLength = request.getContentLength();
         // Parse the request
         FileItemIterator iter;
         try {
-            iter = upload.getItemIterator((HttpServletRequest) request);
+            iter = getItemIterator(request);
             while (iter.hasNext()) {
                 FileItemStream item = iter.next();
                 handleStream(session, streamReceiver, owner, contentLength,
@@ -515,12 +512,28 @@ public class StreamReceiverHandler implements Serializable {
      * specification. To support larger file uploads manually evaluate the
      * Content-Length header which can contain long values.
      */
-    private long getContentLength(VaadinRequest request) {
+    protected long getContentLength(VaadinRequest request) {
         try {
             return Long.parseLong(request.getHeader("Content-Length"));
         } catch (NumberFormatException e) {
             return -1l;
         }
+    }
+
+    protected boolean isMultipartUpload(VaadinRequest request) {
+        return request instanceof HttpServletRequest && ServletFileUpload
+                .isMultipartContent((HttpServletRequest) request);
+    }
+
+    protected Collection<Part> getParts(VaadinRequest request)
+            throws Exception {
+        return ((HttpServletRequest) request).getParts();
+    }
+
+    protected FileItemIterator getItemIterator(VaadinRequest request)
+            throws FileUploadException, IOException {
+        ServletFileUpload upload = new ServletFileUpload();
+        return upload.getItemIterator((HttpServletRequest) request);
     }
 
     private static Logger getLogger() {
