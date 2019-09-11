@@ -372,7 +372,6 @@ public class ElementListenerMap extends NodeMap {
     }
 
     private void updateEventSettings(String eventType) {
-        if (listeners != null && listeners.containsKey(eventType)) {
             Map<String, ExpressionSettings> eventSettings = collectEventExpressions(
                     eventType);
             JsonObject eventSettingsJson = JsonUtils.createObject(eventSettings,
@@ -382,7 +381,6 @@ public class ElementListenerMap extends NodeMap {
                     eventSettingsJson);
 
             put(eventType, constantPoolKey);
-        }
     }
 
     private void removeListener(String eventType,
