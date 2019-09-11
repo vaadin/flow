@@ -15,14 +15,18 @@
  */
 package com.vaadin.flow.internal.nodefeature;
 
+import java.io.Serializable;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEvent;
@@ -34,6 +38,10 @@ import com.vaadin.flow.shared.Registration;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 
 public class ElementListenersTest
         extends AbstractNodeFeatureTest<ElementListenerMap> {
@@ -41,7 +49,12 @@ public class ElementListenersTest
         // no op
     };
 
-    private ElementListenerMap ns = createFeature();
+    private ElementListenerMap ns;
+
+    @Before
+    public void init() {
+        ns = spy(createFeature());
+    }
 
     @Test
     public void addedListenerGetsEvent() {
@@ -109,6 +122,46 @@ public class ElementListenersTest
         Assert.assertTrue(expressions.contains("data2"));
         // due to fix to #5090, data3 won't be present after removal
         Assert.assertFalse(expressions.contains("data3"));
+    }
+    
+    @Test
+    public void settingsAreOnlyUpdated_should_ListenersSharingTheTypeOfRemovedListenerExist() {
+        Registration handle1 = ns.add("eventType", noOp).addEventData("data1");
+        Registration handle2 = ns.add("eventType", noOp).addEventData("data2");
+        Registration handle3 = ns.add("eventTypeOther", noOp)
+                .addEventData("data3");
+        Mockito.reset(ns);
+
+        Set<String> expressions = getExpressions("eventType");
+        expressions.addAll(getExpressions("eventTypeOther"));
+
+        Assert.assertTrue(expressions.contains("data1"));
+        Assert.assertTrue(expressions.contains("data2"));
+        Assert.assertTrue(expressions.contains("data3"));
+
+        handle1.remove();
+
+        Mockito.verify(ns, times(1)).put(eq("eventType"),
+                any(Serializable.class));
+
+        expressions = getExpressions("eventType");
+        expressions.addAll(getExpressions("eventTypeOther"));
+
+        Assert.assertFalse(expressions.contains("data1"));
+        Assert.assertTrue(expressions.contains("data2"));
+        Assert.assertTrue(expressions.contains("data3"));
+
+        handle2.remove();
+        // updating settings does not take place a second time
+        Mockito.verify(ns, times(1)).put(eq("eventType"),
+                any(Serializable.class));
+
+        expressions = getExpressions("eventType");
+        expressions.addAll(getExpressions("eventTypeOther"));
+
+        Assert.assertFalse(expressions.contains("data1"));
+        Assert.assertFalse(expressions.contains("data2"));
+        Assert.assertTrue(expressions.contains("data3"));
     }
 
     @Test
@@ -178,6 +231,8 @@ public class ElementListenersTest
 
     @Test
     public void serializable() {
+        // do not use spied ns for this tests
+        ns = createFeature();
         ns.add("click", noOp).addEventData("eventdata");
 
         ElementListenerMap roundtrip = SerializationUtils.roundtrip(ns);
@@ -258,7 +313,7 @@ public class ElementListenersTest
     // Helper for accessing package private API from other tests
     public static Set<String> getExpressions(
             ElementListenerMap elementListenerMap, String eventName) {
-        return elementListenerMap.getExpressions(eventName);
+        return new HashSet<>(elementListenerMap.getExpressions(eventName));
     }
 
     private Set<String> getExpressions(String name) {
