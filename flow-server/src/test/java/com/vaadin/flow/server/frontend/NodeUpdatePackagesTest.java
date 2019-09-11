@@ -212,17 +212,64 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
         assertVersionAndCleanUp();
     }
-
     @Test
-    public void versionsMatch_noCleanUp() throws IOException {
+    public void versionsDoNotMatch_inMainJson_cleanUp() throws IOException {
+        FrontendDependencies frontendDependencies = Mockito.mock(FrontendDependencies.class);
+
+        Map<String, String> packages = new HashMap<>();
+        packages.put("@polymer/iron-list", "3.0.2");
+        packages.put("@vaadin/vaadin-confirm-dialog", "1.1.4");
+        packages.put("@vaadin/vaadin-checkbox", "2.2.10");
+        packages.put("@polymer/iron-icon", "3.0.1");
+        packages.put("@vaadin/vaadin-time-picker", "2.0.2");
+        packages.put(SHRINKWRAP, "1.2.3");
+
+        Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+
+        packageUpdater = new TaskUpdatePackages(null, frontendDependencies, baseDir,
+                generatedDir, false);
+
         // Generate package json in a proper format first
         packageCreator.execute();
-        packageUpdater.execute();
 
         makeNodeModulesAndPackageLock();
 
-        // run it again with existing generated package.json and matched
-        // version
+        JsonObject packageJson = getPackageJson(mainPackageJson);
+        packageJson.put(SHRINKWRAP, "1.1.1");
+        Files.write(packageLock.toPath(),
+                Collections.singletonList(stringify(
+                        packageJson)));
+
+        packageUpdater.execute();
+
+        assertVersionAndCleanUp();
+    }
+
+    @Test
+    public void versionsMatch_noCleanUp() throws IOException {
+        FrontendDependencies frontendDependencies = Mockito.mock(FrontendDependencies.class);
+
+        Map<String, String> packages = new HashMap<>();
+        packages.put("@polymer/iron-list", "3.0.2");
+        packages.put("@vaadin/vaadin-confirm-dialog", "1.1.4");
+        packages.put("@vaadin/vaadin-checkbox", "2.2.10");
+        packages.put("@polymer/iron-icon", "3.0.1");
+        packages.put("@vaadin/vaadin-time-picker", "2.0.2");
+        packages.put(SHRINKWRAP, "1.1.1");
+
+        Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+
+        packageUpdater = new TaskUpdatePackages(null, frontendDependencies, baseDir,
+                generatedDir, false);
+
+        // Generate package json in a proper format first
+        packageCreator.execute();
+
+        makeNodeModulesAndPackageLock();
+
+        Files.write(packageLock.toPath(),
+                Collections.singletonList(stringify(makePackageLock("1.1.1"))));
+
         packageUpdater.execute();
 
         // nothing is removed
