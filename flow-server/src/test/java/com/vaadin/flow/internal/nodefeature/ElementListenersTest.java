@@ -186,7 +186,7 @@ public class ElementListenersTest
     }
 
     @Test
-    public void synchronizePropery_hasSynchronizedProperty() {
+    public void synchronizeProperty_hasSynchronizedProperty() {
         DomListenerRegistration registration = ns.add("foo", noOp);
 
         Assert.assertNull(ns.getPropertySynchronizationMode("name"));
@@ -202,7 +202,7 @@ public class ElementListenersTest
     }
 
     @Test
-    public void synchronizePropery_alwaysMode() {
+    public void synchronizeProperty_alwaysMode() {
         DomListenerRegistration registration = ns.add("foo", noOp)
                 .setDisabledUpdateMode(DisabledUpdateMode.ALWAYS);
 
@@ -213,7 +213,7 @@ public class ElementListenersTest
     }
 
     @Test
-    public void synchronizePropery_bothModes() {
+    public void synchronizeProperty_bothModes() {
         DomListenerRegistration registration1 = ns.add("foo", noOp)
                 .setDisabledUpdateMode(DisabledUpdateMode.ALWAYS);
 
@@ -227,7 +227,7 @@ public class ElementListenersTest
     }
 
     @Test
-    public void synchronizePropery_hasExpressionToken() {
+    public void synchronizeProperty_hasExpressionToken() {
         DomListenerRegistration registration = ns.add("foo", noOp);
 
         Assert.assertEquals(Collections.emptySet(), getExpressions("foo"));
@@ -241,14 +241,14 @@ public class ElementListenersTest
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void synchronizePropery_nullArgument_illegalArgumentException() {
+    public void synchronizeProperty_nullArgument_illegalArgumentException() {
         DomListenerRegistration registration = ns.add("foo", noOp);
 
         registration.synchronizeProperty(null);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void synchronizePropery_emptyArgument_illegalArgumentException() {
+    public void synchronizeProperty_emptyArgument_illegalArgumentException() {
         DomListenerRegistration registration = ns.add("foo", noOp);
 
         registration.synchronizeProperty("");
