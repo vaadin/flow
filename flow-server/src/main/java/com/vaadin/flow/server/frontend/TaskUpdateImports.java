@@ -31,12 +31,13 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import com.vaadin.flow.server.Constants;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.internal.UrlUtil;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.CssData;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
@@ -88,6 +89,11 @@ public class TaskUpdateImports extends NodeUpdater {
     private static final Pattern NEW_LINE_TRIM = Pattern
             .compile("(?m)(^\\s+|\\s?\n)");
 
+    // Used to recognize and sort FRONTEND/ imports in the final
+    // generated-flow-imports.js
+    private static final Pattern FRONTEND_IMPORT_LINE = Pattern.compile(
+            String.format(IMPORT_TEMPLATE, WEBPACK_PREFIX_ALIAS + "\\S*"));
+
     /**
      * Create an instance of the updater given all configurable parameters.
      *
@@ -119,8 +125,7 @@ public class TaskUpdateImports extends NodeUpdater {
         modules.addAll(getGeneratedModules(generatedFolder,
                 Collections.singleton(generatedFlowImports.getName())));
 
-        // filter out external URLs (including "://")
-        modules.removeIf(module -> module.contains("://"));
+        modules.removeIf(UrlUtil::isExternal);
 
         try {
             updateMainJsFile(getMainJsContent(modules));
@@ -137,7 +142,20 @@ public class TaskUpdateImports extends NodeUpdater {
 
         lines.addAll(getThemeLines());
         lines.addAll(getCssLines());
-        lines.addAll(getModuleLines(modules));
+
+        ArrayList<String> externals = new ArrayList<>();
+        ArrayList<String> internals = new ArrayList<>();
+
+        for (String module : getModuleLines(modules)) {
+            if (FRONTEND_IMPORT_LINE.matcher(module).matches()) {
+                internals.add(module);
+            } else {
+                externals.add(module);
+            }
+        }
+
+        lines.addAll(externals);
+        lines.addAll(internals);
 
         return lines;
     }

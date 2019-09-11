@@ -2,7 +2,6 @@ package com.vaadin.flow.server;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -28,6 +27,7 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.DeploymentConfigurationFactory.DEV_FOLDER_MISSING_MESSAGE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 import static java.util.Collections.emptyMap;
@@ -305,6 +305,84 @@ public class DeploymentConfigurationFactoryTest {
                 .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
         assertFalse(config.isCompatibilityMode());
         assertTrue(config.isProductionMode());
+    }
+
+    @Test
+    public void shouldThrow_tokenFileContainsNonExistingNpmFolderInDevMode()
+            throws Exception {
+        exception.expect(IllegalStateException.class);
+        exception.expectMessage(String.format(DEV_FOLDER_MISSING_MESSAGE, "npm"));
+        FileUtils.writeLines(tokenFile,
+                Arrays.asList("{", "\"compatibilityMode\": false,",
+                        "\"productionMode\": false,", "\"npmFolder\": \"npm\",",
+                        "\"generatedFolder\": \"generated\",",
+                        "\"frontendFolder\": \"frontend\"", "}"));
+
+        createConfig(Collections
+                .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
+    }
+
+    @Test
+    public void shouldThrow_tokenFileContainsNonExistingFrontendFolderNoNpmFolder()
+            throws Exception {
+        exception.expect(IllegalStateException.class);
+        exception.expectMessage(String.format(DEV_FOLDER_MISSING_MESSAGE, "frontend"));
+        FileUtils.writeLines(tokenFile,
+                Arrays.asList("{", "\"compatibilityMode\": false,",
+                        "\"productionMode\": false,",
+                        "\"frontendFolder\": \"frontend\"", "}"));
+
+        createConfig(Collections
+                .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
+    }
+
+
+    @Test
+    public void shouldThrow_tokenFileContainsNonExistingFrontendFolderOutsideNpmSubFolder()
+            throws Exception {
+        exception.expect(IllegalStateException.class);
+        exception.expectMessage(String.format(DEV_FOLDER_MISSING_MESSAGE, "frontend"));
+        temporaryFolder.newFolder("npm");
+        String tempFolder = temporaryFolder.getRoot().getAbsolutePath().replace("\\", "/");
+        FileUtils.writeLines(tokenFile,
+                Arrays.asList("{", "\"compatibilityMode\": false,",
+                        "\"productionMode\": false,",
+                        "\"npmFolder\": \""+ tempFolder +"/npm\",",
+                        "\"frontendFolder\": \"frontend\"", "}"));
+
+        createConfig(Collections
+                .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
+    }
+
+    @Test
+    public void shouldNotThrow_tokenFileFrontendFolderInDevMode()
+            throws Exception {
+        temporaryFolder.newFolder("npm");
+        String tempFolder = temporaryFolder.getRoot().getAbsolutePath().replace("\\", "/");
+        FileUtils.writeLines(tokenFile,
+                Arrays.asList("{", "\"compatibilityMode\": false,",
+                        "\"productionMode\": false,",
+                        "\"npmFolder\": \""+ tempFolder +"/npm\",",
+                        "\"frontendFolder\": \""+tempFolder+"/npm/frontend\"", "}"));
+
+        createConfig(Collections
+                .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
+    }
+
+    @Test
+    public void shouldNotThrow_tokenFileFoldersExist()
+            throws Exception {
+        temporaryFolder.newFolder("npm");
+        temporaryFolder.newFolder("frontend");
+        String tempFolder = temporaryFolder.getRoot().getAbsolutePath().replace("\\", "/");
+        FileUtils.writeLines(tokenFile,
+                Arrays.asList("{", "\"compatibilityMode\": false,",
+                        "\"productionMode\": false,",
+                        "\"npmFolder\": \""+ tempFolder +"/npm\",",
+                        "\"frontendFolder\": \""+tempFolder+"/frontend\"", "}"));
+
+        createConfig(Collections
+                .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
     }
 
     private DeploymentConfiguration createConfig(Map<String, String> map)

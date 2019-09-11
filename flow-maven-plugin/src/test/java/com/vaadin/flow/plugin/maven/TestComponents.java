@@ -41,6 +41,7 @@ public class TestComponents {
     @JsModule("@vaadin/vaadin-date-picker/src/vaadin-month-calendar.js")
     @JavaScript("frontend://ExampleConnector.js")
     @JavaScript("https://foo.com/bar.js")
+    @JavaScript("//foo.com/bar.js")
     public static class VaadinBowerComponent extends Component {
     }
 
