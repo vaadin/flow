@@ -50,7 +50,7 @@ import elemental.json.JsonValue;
 public class TaskUpdatePackages extends NodeUpdater {
 
     static final String APP_PACKAGE_HASH = "vaadinAppPackageHash";
-    private static final String VALUE = "value";
+    private static final String VERSION = "version";
     private static final String SHRINK_WRAP = "@vaadin/vaadin-shrinkwrap";
     private boolean forceCleanUp;
 
@@ -207,8 +207,7 @@ public class TaskUpdatePackages extends NodeUpdater {
             return shrinkWrapVersion;
         }
 
-        File atVaadin = new File(nodeModulesFolder, "@vaadin");
-        File flowDeps = new File(atVaadin, "flow-deps");
+        File flowDeps = new File(nodeModulesFolder, DEP_NAME_FLOW_DEPS);
         shrinkWrapVersion = getShrinkWrapVersion(
                 getPackageJson(new File(flowDeps, Constants.PACKAGE_JSON)));
         if (shrinkWrapVersion != null) {
@@ -237,8 +236,8 @@ public class TaskUpdatePackages extends NodeUpdater {
         }
 
         JsonObject shrinkWrap = dependencies.getObject(SHRINK_WRAP);
-        if (shrinkWrap.hasKey(VALUE)) {
-            return shrinkWrap.get(VALUE).asString();
+        if (shrinkWrap.hasKey(VERSION)) {
+            return shrinkWrap.get(VERSION).asString();
         }
         return null;
     }

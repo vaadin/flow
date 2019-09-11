@@ -64,7 +64,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     private static final String DEP_LICENSE_DEFAULT = "UNLICENSED";
     private static final String DEP_NAME_KEY = "name";
     private static final String DEP_NAME_DEFAULT = "no-name";
-    private static final String DEP_NAME_FLOW_DEPS = "@vaadin/flow-deps";
+    protected static final String DEP_NAME_FLOW_DEPS = "@vaadin/flow-deps";
     private static final String DEP_VERSION_KEY = "version";
     private static final String DEP_VERSION_DEFAULT = "1.0.0";
 
