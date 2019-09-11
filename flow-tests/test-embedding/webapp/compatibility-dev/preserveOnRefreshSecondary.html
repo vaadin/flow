@@ -17,25 +17,18 @@
 <!doctype html>
 
 <head>
-  <script type='text/javascript'
-          src='/vaadin/web-component/preserve-on-refresh.html'></script>
-  <script type='text/javascript'
-          src='/vaadin/web-component/no-preserve-on-refresh.html'></script>
+  <script type="text/javascript" src="/frontend/bower_components/webcomponentsjs/webcomponents-loader.js"></script>
+  <link rel="import" href='/vaadin/web-component/preserve-on-refresh.html'>
 </head>
 
 <body>
   <p>
-    "preserve-on-refresh" components have @PreserveOnRefresh annotations.<br>
-    "no-preserve-on-refresh" does not have @PreserveOnRefresh annotation.
-    <br><br>
+    This page is used in openingToAnotherPageWithSameComponents_should_preserveComponentWithoutChangedIdAttribute() test case.
   </p>
-  <!--
-    component order matters! It has to reflect that of
-    preserveOnRefreshSecondary.html when it comes to preserve-on-refresh
-    elements
-  -->
+  <!-- should be preserved -->
   <preserve-on-refresh id="modified"></preserve-on-refresh>
-  <preserve-on-refresh id="unmodified"></preserve-on-refresh>
-  <no-preserve-on-refresh id="nopreserve"></no-preserve-on-refresh>
+  <!-- should not be preserved -->
+  <preserve-on-refresh id="new-id"></preserve-on-refresh>
+  <!-- should be preserved -->
   <preserve-on-refresh></preserve-on-refresh>
 </body>

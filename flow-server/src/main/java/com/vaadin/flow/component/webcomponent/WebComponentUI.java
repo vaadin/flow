@@ -95,6 +95,7 @@ public class WebComponentUI extends UI {
     public static class WebComponentConnectEvent extends ComponentEvent<UI> {
 
         private String tag;
+        private String userAssignedId;
         private String webComponentElementId;
         private JsonObject attributeValues;
 
@@ -119,9 +120,11 @@ public class WebComponentUI extends UI {
         public WebComponentConnectEvent(UI source, boolean fromClient,
                 @EventData("tag") String tag,
                 @EventData("id") String webComponentElementId,
+                @EventData("userAssignedId") String userAssignedId,
                 @EventData("attributeValues") JsonObject attributeValues) {
             super(source, true);
             this.tag = tag;
+            this.userAssignedId = userAssignedId;
             this.webComponentElementId = webComponentElementId;
             this.attributeValues = attributeValues;
         }
@@ -142,6 +145,15 @@ public class WebComponentUI extends UI {
          */
         public String getWebComponentElementId() {
             return webComponentElementId;
+        }
+
+        /**
+         * Gets the user-assigned id of the web component.
+         *
+         * @return user-assigned id
+         */
+        public String getWebComponentUserAssignedId() {
+            return userAssignedId;
         }
 
         /**
@@ -248,11 +260,16 @@ public class WebComponentUI extends UI {
             ExtendedClientDetails details) {
         Objects.requireNonNull(event);
         Objects.requireNonNull(details);
-        final String id = event.attributeValues.hasKey("id")
-                ? event.attributeValues.getString("id")
-                : "";
-        return details.getWindowName() + ":" + id + ":"
-                + event.getWebComponentElementId();
+        String id = event.getWebComponentUserAssignedId();
+        if (id == null || id.isEmpty()) {
+            // if no user-assigned id is available, fallback to generated id
+            // generated id is unable to uniquely identify components between
+            // locations, so relying on it can cause state leak
+            id = event.getWebComponentElementId();
+        }
+        String hash = details.getWindowName() + ":" + event.getTag() + ":" + id;
+        LoggerFactory.getLogger(WebComponentUI.class).info("hash: " + hash);
+        return hash;
     }
 
     private SessionEmbeddedComponentRegistry getRegistry() {

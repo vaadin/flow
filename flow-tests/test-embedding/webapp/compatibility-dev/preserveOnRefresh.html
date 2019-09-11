@@ -28,8 +28,13 @@
     "no-preserve-on-refresh" does not have @PreserveOnRefresh annotation.
     <br><br>
   </p>
-
+  <!--
+    component order matters! It has to reflect that of
+    preserveOnRefreshSecondary.html when it comes to preserve-on-refresh
+    elements
+  -->
   <preserve-on-refresh id="modified"></preserve-on-refresh>
   <preserve-on-refresh id="unmodified"></preserve-on-refresh>
   <no-preserve-on-refresh id="nopreserve"></no-preserve-on-refresh>
+  <preserve-on-refresh></preserve-on-refresh>
 </body>
