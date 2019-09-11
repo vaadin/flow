@@ -267,9 +267,8 @@ public class WebComponentUI extends UI {
             // locations, so relying on it can cause state leak
             id = event.getWebComponentElementId();
         }
-        String hash = details.getWindowName() + ":" + event.getTag() + ":" + id;
-        LoggerFactory.getLogger(WebComponentUI.class).info("hash: " + hash);
-        return hash;
+        return String.format("%s:%s:%s", details.getWindowName(),
+                event.getTag(), id);
     }
 
     private SessionEmbeddedComponentRegistry getRegistry() {
