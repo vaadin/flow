@@ -116,7 +116,7 @@ public class JavaScriptBootstrapHandlerTest {
         VaadinRequest request = mocks.createRequest(mocks, "/foo/?v-r=init&foo");
         jsInitHandler.handleRequest(session, request, response);
 
-        JavaScriptBootstrapUI ui = Mockito.spy((JavaScriptBootstrapUI) UI.getCurrent());
+        JavaScriptBootstrapUI ui = (JavaScriptBootstrapUI) UI.getCurrent();
         ui.connectClient("a-tag", "an-id", "a-route");
 
         TestNodeVisitor visitor = new TestNodeVisitor(true);

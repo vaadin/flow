@@ -16,15 +16,14 @@
 package com.vaadin.flow.ccdmtest;
 
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.router.BeforeEvent;
-import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
 
-@Route(value = "paramview", layout = MainLayout.class)
-public class ViewWithParameter extends Div implements HasUrlParameter<String> {
-
+@Route(value = "reroute-with-before-enter", layout = MainLayout.class)
+public class RerouteToWithBeforeEnter extends Div implements BeforeEnterObserver {
     @Override
-    public void setParameter(BeforeEvent event, String parameter) {
-        setText("Parameter: " + parameter);
+    public void beforeEnter(BeforeEnterEvent event) {
+        event.rerouteTo(ServerSideView.class);
     }
 }

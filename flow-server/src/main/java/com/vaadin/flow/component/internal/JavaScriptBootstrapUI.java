@@ -15,29 +15,29 @@
  */
 package com.vaadin.flow.component.internal;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
-import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.ErrorNavigationEvent;
 import com.vaadin.flow.router.ErrorParameter;
-import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationState;
+import com.vaadin.flow.router.NavigationStateBuilder;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.RouteNotFoundError;
-import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.internal.ErrorStateRenderer;
+import com.vaadin.flow.router.internal.NavigationStateRenderer;
 import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
 import com.vaadin.flow.theme.ThemeDefinition;
 
@@ -45,11 +45,18 @@ import com.vaadin.flow.theme.ThemeDefinition;
  * Custom UI for {@link JavaScriptBootstrapHandler}. This class is intended for
  * internal use in clientSideMode.
  */
-public
-class JavaScriptBootstrapUI extends UI {
-    private static final String NO_NAVIGATION = "Classic flow navigation is not supported for clien-side projects";
+public class JavaScriptBootstrapUI extends UI {
+    private static final String NO_NAVIGATION = "Classic flow navigation is " +
+            "not supported for client-side projects";
 
     private Element wrapperElement;
+
+    /**
+     * Create UI for clientSideMode.
+     */
+    public JavaScriptBootstrapUI() {
+        super(new JavaScriptUIInternalUpdater());
+    }
 
     /**
      * Connect a client with the server side UI.
@@ -64,9 +71,6 @@ class JavaScriptBootstrapUI extends UI {
     @ClientCallable
     public void connectClient(String clientElementTag, String clientElementId, String flowRoute) {
 
-        // Get the flow view that the user wants to navigate to.
-        final Element viewElement = getViewForRoute(flowRoute).getElement();
-
         if (wrapperElement == null) {
             // Create flow reference for the client outlet element
             wrapperElement = new Element(clientElementTag);
@@ -76,87 +80,56 @@ class JavaScriptBootstrapUI extends UI {
                     getElement().getNode(), wrapperElement,
                     NodeProperties.INJECT_BY_ID, clientElementId);
         }
-
-        // Remove previous view
-        wrapperElement.removeAllChildren();
-        // attach this view
-        wrapperElement.appendChild(viewElement);
+        // Render the flow view that the user wants to navigate to.
+        renderViewForRoute(flowRoute);
 
         // Inform the client, that everything went fine.
         wrapperElement.executeJs("$0.serverConnected()");
     }
 
-    private HasElement getViewForRoute(String route) {
+    private void renderViewForRoute(String route) {
         if (route.startsWith("/")) {
             route = route.replaceFirst("/+", "");
         }
         Location location = new Location(route);
         Optional<NavigationState> navigationState = this.getRouter()
                 .resolveNavigationTarget(location);
+
         if (navigationState.isPresent()) {
-            NavigationState currentState = navigationState.get();
-            Class<? extends Component> routeTargetType = currentState
-                    .getNavigationTarget();
-            List<RouterLayout> layouts = getRouterLayouts(currentState,
-                    routeTargetType);
-            return getInternals().constructComponentWithLayouts(
-                    getInstanceOf(routeTargetType), layouts);
-        }
-
-        return getFlowErrorComponent(location);
-    }
-
-    private List<RouterLayout> getRouterLayouts(NavigationState navigationState,
-            Class<? extends Component> routeTargetType) {
-        List<Class<? extends RouterLayout>> routeLayouts = this.getRouter()
-                .getRegistry().getRouteLayouts(
-                        navigationState.getResolvedPath(), routeTargetType);
-        List<RouterLayout> layouts = new ArrayList<>();
-        for (Class<? extends RouterLayout> routeLayout : routeLayouts) {
-            layouts.add(getInstanceOf(routeLayout));
-        }
-        return layouts;
-    }
-
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    private HasElement getFlowErrorComponent(Location location) {
-        HasElement errorComponent = createErrorComponentInstance();
-        if (errorComponent instanceof HasErrorParameter) {
-            // Create a dummy event to set error message
-            BeforeEnterEvent beforeEnterEvent = new BeforeEnterEvent(
-                    this.getRouter(), NavigationTrigger.PROGRAMMATIC, location,
-                    errorComponent.getClass(), this, Collections.emptyList());
-            String message = String.format("Route not found: '%s'",
-                    location.getPath());
-            ((HasErrorParameter) errorComponent).setErrorParameter(
-                    beforeEnterEvent, new ErrorParameter<>(Exception.class,
-                            new NotFoundException(message)));
-        }
-        return errorComponent;
-    }
-
-    private HasElement createErrorComponentInstance() {
-        Optional<NavigationState> errorNavigationState = this.getRouter()
-                .resolveRouteNotFoundNavigationTarget();
-        if (!errorNavigationState.isPresent()) {
-            // Default built-in RouteNotFoundError component
-            return new RouteNotFoundError();
+            handleNavigation(location, navigationState.get());
         } else {
-            Class<? extends Component> errorNavigationTarget = errorNavigationState
-                    .get().getNavigationTarget();
-            return getInstanceOf(errorNavigationTarget);
+            handleErrorNavigation(location);
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private <T extends HasElement> T getInstanceOf(Class<T> routeTargetType) {
-        Optional<HasElement> currentInstance = this.getInternals()
-                .getActiveRouterTargetsChain().stream()
-                .filter(component -> component.getClass()
-                        .equals(routeTargetType))
-                .findAny();
-        return (T) currentInstance.orElseGet(
-                () -> Instantiator.get(this).getOrCreate(routeTargetType));
+    private void handleNavigation(Location location,
+            NavigationState navigationState) {
+        NavigationEvent navigationEvent = new NavigationEvent(getRouter(),
+                location, this, NavigationTrigger.CLIENT_SIDE);
+        NavigationStateRenderer clientNavigationStateRenderer = new NavigationStateRenderer(
+                navigationState);
+        clientNavigationStateRenderer.handle(navigationEvent);
+    }
+
+    private void handleErrorNavigation(Location location) {
+        NavigationState errorNavigationState = this.getRouter()
+                .resolveRouteNotFoundNavigationTarget()
+                .orElse(getDefaultNavigationError());
+        ErrorStateRenderer errorStateRenderer = new ErrorStateRenderer(
+                errorNavigationState);
+        NotFoundException notFoundException = new NotFoundException(
+                "Couldn't find route for '" + location.getPath() + "'");
+        ErrorParameter<NotFoundException> errorParameter = new ErrorParameter<>(
+                NotFoundException.class, notFoundException);
+        ErrorNavigationEvent errorNavigationEvent = new ErrorNavigationEvent(
+                this.getRouter(), location, this, NavigationTrigger.CLIENT_SIDE,
+                errorParameter);
+        errorStateRenderer.handle(errorNavigationEvent);
+    }
+
+    private NavigationState getDefaultNavigationError() {
+        return new NavigationStateBuilder(this.getRouter())
+                .withTarget(RouteNotFoundError.class).build();
     }
 
     @Override
@@ -184,5 +157,45 @@ class JavaScriptBootstrapUI extends UI {
     @Override
     public void navigate(String location, QueryParameters queryParameters) {
         throw new UnsupportedOperationException(NO_NAVIGATION);
+    }
+
+    /**
+     * An UIInternalsHandler implementation for clientSideMode.
+     */
+    private static class JavaScriptUIInternalUpdater
+            implements UIInternalUpdater {
+
+        @Override
+        public void updateRoot(UI ui, HasElement oldRoot, HasElement newRoot) {
+            JavaScriptBootstrapUI jsUI = castToJavaScriptUI(ui);
+            Element wrapperElement = jsUI.wrapperElement;
+            Element rootElement = newRoot.getElement();
+
+            if (!wrapperElement.equals(rootElement.getParent())) {
+                if (oldRoot != null) {
+                    oldRoot.getElement().removeFromParent();
+                }
+                rootElement.removeFromParent();
+                wrapperElement.appendChild(rootElement);
+            }
+        }
+
+        @Override
+        public void moveToNewUI(UI oldUI, UI newUI) {
+            JavaScriptBootstrapUI jsUI = castToJavaScriptUI(newUI);
+            JavaScriptBootstrapUI oldJsUI = castToJavaScriptUI(oldUI);
+            final List<Element> uiChildren = oldJsUI.wrapperElement.getChildren()
+                    .collect(Collectors.toList());
+            uiChildren.forEach(element -> {
+                element.removeFromTree();
+                jsUI.wrapperElement.appendChild(element);
+            });
+        }
+
+        private JavaScriptBootstrapUI castToJavaScriptUI(UI ui) {
+            assert ui instanceof JavaScriptBootstrapUI;
+            assert ((JavaScriptBootstrapUI) ui).wrapperElement != null;
+            return (JavaScriptBootstrapUI) ui;
+        }
     }
 }
