@@ -107,7 +107,8 @@ public class ElementListenersTest
         expressions = getExpressions("eventType");
         Assert.assertTrue(expressions.contains("data1"));
         Assert.assertTrue(expressions.contains("data2"));
-        // data3 might still be there, but we don't care
+        // due to fix to #5090, data3 won't be present after removal
+        Assert.assertFalse(expressions.contains("data3"));
     }
 
     @Test
