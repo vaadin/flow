@@ -137,7 +137,10 @@ public class ElementListenerMap extends NodeMap {
             // same type registered, we want to remove settings set by this
             // particular listener from the overall set
             // fixes #5090
-            listenerMap.updateEventSettings(type);
+            if (listenerMap.listeners != null
+                    && listenerMap.listeners.containsKey(type)) {
+                listenerMap.updateEventSettings(type);
+            }
         }
 
         @Override
