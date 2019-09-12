@@ -127,4 +127,9 @@ public final class Shortcuts {
         return new ShortcutRegistration(lifecycleOwner, UI::getCurrent,
                 listener, key).withModifiers(keyModifiers);
     }
+
+    public static ShortcutRegistration testAddShorcut() {
+        // api diff should be +0.1.0
+        return null;
+    }
 }
