@@ -23,12 +23,13 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
 import javax.servlet.annotation.WebListener;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -36,6 +37,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -128,7 +130,7 @@ public class DevModeInitializer implements ServletContainerInitializer,
      * are actually used.
      */
     public static class VisitedClasses implements Serializable {
-        private Set<String> visitedClassNames;
+        private final Set<String> visitedClassNames;
 
         /**
          * Creates a new instance based on a set of class names.
@@ -193,12 +195,18 @@ public class DevModeInitializer implements ServletContainerInitializer,
     private static final Pattern JAR_FILE_REGEX = Pattern
             .compile(".*file:(.+\\.jar).*");
 
-    private static final Pattern DIR_REGEX_FRONTEND_DEFAULT = Pattern.compile(
-            "^(?:file:)?(.+)" + Constants.RESOURCES_FRONTEND_DEFAULT + "$");
+    private static final Pattern VFS_FILE_REGEX_WILDFLY11 = Pattern
+            .compile(".*vfs:/(.+\\.jar).*");
 
+    // allow trailing slash
+    private static final Pattern DIR_REGEX_FRONTEND_DEFAULT = Pattern.compile(
+            "^(?:file:0)?(.+)" + Constants.RESOURCES_FRONTEND_DEFAULT + "/?$");
+
+    // allow trailing slash
     private static final Pattern DIR_REGEX_COMPATIBILITY_FRONTEND_DEFAULT = Pattern
             .compile("^(?:file:)?(.+)"
-                    + Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT + "$");
+                    + Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT
+                    + "/?$");
 
     @Override
     public void onStartup(Set<Class<?>> classes, ServletContext context)
@@ -302,7 +310,7 @@ public class DevModeInitializer implements ServletContainerInitializer,
                     .collectVisitedClasses(visitedClassNames).build().execute();
         } catch (ExecutionFailedException exception) {
             log().debug(
-                    "Could not initializer dev mode handler. One of the node tasks failed",
+                    "Could not initialize dev mode handler. One of the node tasks failed",
                     exception);
             throw new ServletException(exception);
         }
@@ -361,6 +369,15 @@ public class DevModeInitializer implements ServletContainerInitializer,
             }
             while (en.hasMoreElements()) {
                 URL url = en.nextElement();
+
+                Matcher jarWildfly11Matcher = VFS_FILE_REGEX_WILDFLY11
+                        .matcher(url.toString());
+                if (jarWildfly11Matcher.find()) {
+                    jarFiles.add(
+                            getWildfly11FrontendFolder(resourcesFolder, url));
+                    continue;
+                }
+
                 String path = URLDecoder.decode(url.getPath(),
                         StandardCharsets.UTF_8.name());
                 Matcher jarMatcher = JAR_FILE_REGEX.matcher(path);
@@ -379,11 +396,45 @@ public class DevModeInitializer implements ServletContainerInitializer,
                             url.getPath());
                 }
             }
-        } catch (
-
-        IOException e) {
+        } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+
         return jarFiles;
+    }
+
+    private static File getWildfly11FrontendFolder(String resourcesFolder,
+            URL url) {
+        try {
+            String frontendDir = url.toString();
+            url = new URL(frontendDir); // openStream() does not work here
+
+            // Reflection as we cannot afford a dependency to WildFly11
+            Object virtualFile = url.openConnection().getContent();
+            Class virtualFileClass = virtualFile.getClass();
+
+            Method getChildrenRecursivelyMethod = virtualFileClass
+                    .getMethod("getChildrenRecursively");
+            Method getPhysicalFileMethod = virtualFileClass
+                    .getMethod("getPhysicalFile");
+
+            List virtualFiles = (List) getChildrenRecursivelyMethod
+                    .invoke(virtualFile);
+            for (Object child : virtualFiles) {
+                getPhysicalFileMethod.invoke(child); // side effect: create
+                                                     // real-world files
+            }
+            File rootDir = (File) getPhysicalFileMethod.invoke(virtualFile);
+
+            String rootDirAbsPath = rootDir.getAbsolutePath();
+            rootDirAbsPath = rootDirAbsPath.substring(0,
+                    rootDirAbsPath.length() - resourcesFolder.length() - 1);
+            return new File(rootDirAbsPath);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        } catch (NoSuchMethodException | IllegalAccessException
+                | InvocationTargetException exc) {
+            throw new RuntimeException(exc);
+        }
     }
 }
