@@ -160,6 +160,26 @@ public class ShortcutsIT extends ChromeBrowserTest {
         assertActualEquals("click: ");
     }
 
+    @Test
+    public void removingShortcutCleansJavascriptEventSettingsItUsed() {
+        WebElement removalInput = findElement(By.id("removal-input"));
+
+        Assert.assertEquals("removalInput should be empty", "",
+                removalInput.getAttribute("value"));
+
+        // the removalInput has a shortcut bound on 'd'. When 'd' is typed,
+        // instead of printing the letter, the contents are capitalized instead.
+        // The shortcut is removed at the same time, so another 'd' should be
+        // printed out.
+
+        removalInput.sendKeys("abcd abcd");
+
+        Assert.assertEquals(
+                "removalInput should have text, with some letters"
+                        + " capitalized and only one 'd' letter",
+                "ABC abcd", removalInput.getAttribute("value"));
+    }
+
     private void assertActualEquals(String expected) {
         Assert.assertEquals(expected,
                 findElement(By.id("actual")).getAttribute("value"));
