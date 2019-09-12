@@ -159,7 +159,7 @@ suite("Flow", () => {
       });
   });
 
-  test("should be possible to cancel navigation when using router API", () => {
+  test("should be possible to cancel navigation when using router onBeforeEnter API", () => {
     stubServerRemoteFunction('foobar-12345', true);
     mockInitResponse('foobar-12345');
 
@@ -183,6 +183,27 @@ suite("Flow", () => {
 
         // @ts-ignore
         const promise = elem.onBeforeEnter({pathname: 'Foo/Bar.baz'}, {prevent: () => {
+          return {cancel: true};
+        }});
+
+        promise.then(obj => assert.isTrue(obj.cancel));
+      });
+  });
+
+  test("should be possible to cancel navigation when using router onBeforeLeave API", () => {
+    stubServerRemoteFunction('foobar-12345', true);
+    mockInitResponse('foobar-12345');
+
+    const route = new Flow().route;
+
+    return route.action({pathname: 'Foo/Bar.baz'})
+      .then(async(elem) => {
+
+        // When using router API, it should expose the onBeforeEnter handler
+        assert.isDefined(elem.onBeforeLeave);
+
+        // @ts-ignore
+        const promise = elem.onBeforeLeave({pathname: 'Foo/Bar.baz'}, {prevent: () => {
           return {cancel: true};
         }});
 

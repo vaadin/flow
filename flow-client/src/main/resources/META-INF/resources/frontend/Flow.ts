@@ -14,6 +14,7 @@ interface AppInitResponse {
 
 interface HTMLRouterContainer extends HTMLElement {
   onBeforeEnter ?: (ctx: NavigationParameters, cmd: NavigationCommands) => Promise<any>;
+  onBeforeLeave ?: (ctx: NavigationParameters, cmd: NavigationCommands) => Promise<any>;
   serverConnected ?: (cancel: boolean) => void;
 }
 
@@ -98,12 +99,13 @@ export class Flow {
     // @ts-ignore
     return async (params: NavigationParameters) => {
       await this.flowInit();
-      this.container.onBeforeEnter = (ctx, cmd) => this.onBeforeEnter(ctx, cmd);
+      this.container.onBeforeEnter = (ctx, cmd) => this.onBefore(ctx, cmd);
+      this.container.onBeforeLeave = (ctx, cmd) => this.onBefore(ctx, cmd);
       return this.container;
     }
   }
 
-  private onBeforeEnter(ctx: NavigationParameters, cmd: NavigationCommands) {
+  private onBefore(ctx: NavigationParameters, cmd: NavigationCommands) {
     return this.flowNavigate(ctx, cmd);
   }
 
