@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.server.Constants;
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
@@ -43,6 +44,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+import org.mockito.internal.util.collections.Sets;
 import org.slf4j.Logger;
 import org.slf4j.impl.SimpleLogger;
 
@@ -52,8 +54,9 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAM
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
-import static org.junit.Assert.assertFalse;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
@@ -105,9 +108,9 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
             }
         };
 
-        Assert.assertTrue(nodeModulesPath.mkdirs());
+        assertTrue(nodeModulesPath.mkdirs());
         createExpectedImports(frontendDirectory, nodeModulesPath);
-        Assert.assertTrue(new File(nodeModulesPath,
+        assertTrue(new File(nodeModulesPath,
                 FLOW_NPM_PACKAGE_NAME + "ExampleConnector.js").exists());
     }
 
@@ -139,12 +142,12 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         boolean atLeastOneRemoved = false;
         for (String imprt : getExpectedImports()) {
             if (imprt.startsWith("@vaadin") && imprt.endsWith(".js")) {
-                Assert.assertTrue(resolveImportFile(nodeModulesPath,
+                assertTrue(resolveImportFile(nodeModulesPath,
                         nodeModulesPath, imprt).delete());
                 atLeastOneRemoved = true;
             }
         }
-        Assert.assertTrue(atLeastOneRemoved);
+        assertTrue(atLeastOneRemoved);
         updater.execute();
 
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
@@ -159,6 +162,67 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                         "To fix the build remove `node_modules` directory to reset modules."),
                 CoreMatchers.containsString(
                         "In addition you may run `npm install` to fix `node_modules` tree structure.")));
+    }
+
+    @Test
+    public void getModuleLines_oneFrontendDependencyDoesntExist_throwExceptionAndlogExplanation() {
+        useMockLog = true;
+        Mockito.when(logger.isInfoEnabled()).thenReturn(true);
+
+        String fooFileName = "./foo.js";
+        assertFileRemoved(fooFileName, frontendDirectory);
+
+        try {
+            updater.execute();
+            Assert.fail("Execute should have failed with missing file");
+        } catch (IllegalStateException e) {
+            assertThat(e.getCause().getMessage(),
+                    CoreMatchers.containsString(getFormattedFrontendErrorMessage(Sets.newSet(fooFileName))));
+        }
+
+    }
+
+    @Test
+    public void getModuleLines_multipleFrontendDependencyDoesntExist_throwExceptionAndlogExplanation() {
+        useMockLog = true;
+        Mockito.when(logger.isInfoEnabled()).thenReturn(true);
+
+        String localTemplateFileName = "./local-template.js";
+        String fooFileName = "./foo.js";
+
+        assertFileRemoved(localTemplateFileName, frontendDirectory);
+        assertFileRemoved(fooFileName, frontendDirectory);
+
+        try {
+            updater.execute();
+            Assert.fail("Execute should have failed with missing files");
+        } catch (IllegalStateException e) {
+            assertThat(e.getCause().getMessage(),
+                    CoreMatchers.containsString(getFormattedFrontendErrorMessage(Sets.newSet(localTemplateFileName, fooFileName))));
+        }
+
+    }
+
+    private void assertFileRemoved(String fileName, File directory) {
+        assertTrue(String.format("File `%s` was not removed from, or does not exist in, `%s`",
+                fileName, directory),
+                resolveImportFile(directory, directory, fileName).delete());
+    }
+
+    private String getFormattedFrontendErrorMessage(Set<String> resourcesNotFound) {
+        String prefix =  "Failed to find the following files: ";
+
+        String suffix = String.format(
+                "%n  Locations searched were:"
+                        + "%n      - `%s` in this project"
+                        + "%n      - `%s` in included JARs"
+                        + "%n%n  Please, double check that those files exist. If you use a custom directory "
+                        + "for your resource files instead of default "
+                        + "`frontend` folder then make sure you it's correctly configured "
+                        + "(e.g. set '%s' property)", frontendDirectory.getPath(), Constants.RESOURCES_FRONTEND_DEFAULT, FrontendUtils.PARAM_FRONTEND_DIR);
+
+        return String.format("%n%n  %s%n      - %s%n  %s%n%n", prefix,
+                String.join("\n      - ", resourcesNotFound), suffix);
     }
 
     @Test
@@ -228,7 +292,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
     @Test
     public void should_ThrowException_WhenCssFileNotFound() {
-        Assert.assertTrue(resolveImportFile(frontendDirectory, nodeModulesPath,
+        assertTrue(resolveImportFile(frontendDirectory, nodeModulesPath,
                 "@vaadin/vaadin-mixed-component/bar.css").delete());
         exception.expect(IllegalStateException.class);
         updater.execute();
@@ -311,6 +375,27 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 "styles/styles.js");
     }
 
+    // flow #6408
+    @Test
+    public void jsModuleOnRouterLayout_shouldBe_addedAfterLumoStyles() throws Exception {
+        updater.execute();
+
+        assertContainsImports(true, "Frontend/common-js-file.js");
+
+        assertImportOrder("@vaadin/vaadin-lumo-styles/color.js",
+                "Frontend/common-js-file.js");
+        assertImportOrder("@vaadin/vaadin-mixed-component/theme/lumo/vaadin-something-else.js",
+                "Frontend/common-js-file.js");
+    }
+
+    @Test
+    public void jsModulesOrderIsPreservedAnsAfterJsModules() throws Exception {
+        updater.execute();
+
+        assertImportOrder("jsmodule/g.js", "javascript/a.js", "javascript/b.js",
+                "javascript/c.js");
+    }
+
     private void assertContainsImports(boolean contains, String... imports)
             throws IOException {
         String content = FileUtils.readFileToString(importsFile,
@@ -322,7 +407,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     private void assertContains(String content, boolean contains,
-                                String... checks) {
+            String... checks) {
         for (String importString : checks) {
             boolean result = content.contains(importString);
             String message = "\n  " + (contains ? "NOT " : "") + "FOUND '"

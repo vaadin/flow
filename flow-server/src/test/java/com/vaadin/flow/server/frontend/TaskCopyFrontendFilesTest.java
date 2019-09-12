@@ -37,19 +37,34 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     @Test
-    public void should_collectJsAndCssFilesFromJars() throws IOException {
+    public void should_collectJsAndCssFilesFromJars_obsoleteResourceFolder()
+            throws IOException {
+        should_collectJsAndCssFilesFromJars("jar-with-frontend-resources.jar",
+                "dir-with-frontend-resources/");
+    }
+
+    @Test
+    public void should_collectJsAndCssFilesFromJars_modernResourceFolder()
+            throws IOException {
+        should_collectJsAndCssFilesFromJars("jar-with-modern-frontend.jar",
+                "dir-with-modern-frontend");
+    }
+
+    private void should_collectJsAndCssFilesFromJars(String jarFile,
+            String fsDir) throws IOException {
         // creating non-existing folder to make sure the execute() creates
         // the folder if missing
         File npmFolder = new File(temporaryFolder.newFolder(), "child/");
-        File targetFolder = new File(npmFolder, NODE_MODULES + FLOW_NPM_PACKAGE_NAME);
+        File targetFolder = new File(npmFolder,
+                NODE_MODULES + FLOW_NPM_PACKAGE_NAME);
 
         // contains:
         // - ExampleConnector.js
         // - inline.css
-        File jar = TestUtils.getTestJar("jar-with-frontend-resources.jar");
+        File jar = TestUtils.getTestJar(jarFile);
         // Contains:
         // - resourceInFolder.js
-        File dir = TestUtils.getTestFolder("dir-with-frontend-resources/");
+        File dir = TestUtils.getTestFolder(fsDir);
 
         TaskCopyFrontendFiles task = new TaskCopyFrontendFiles(npmFolder,
                 jars(jar, dir));
@@ -65,7 +80,9 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
         Assert.assertTrue("Css resource should have been copied from jar file",
                 files.contains("inline.css"));
 
-        Assert.assertTrue("Js resource should have been copied from resource folder",
+
+        Assert.assertTrue(
+                "Js resource should have been copied from resource folder",
                 files.contains("resourceInFolder.js"));
     }
 

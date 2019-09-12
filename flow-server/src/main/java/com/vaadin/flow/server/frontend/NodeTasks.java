@@ -205,7 +205,8 @@ public class NodeTasks implements FallibleCommand {
 
         /**
          * Sets whether to enable imports file update. Default is
-         * <code>true</code>.
+         * <code>false</code>. This will also enable creation of missing package
+         * files if set to true.
          *
          * @param enableImportsUpdate
          *            <code>true</code> to enable imports file update, otherwise
@@ -214,6 +215,7 @@ public class NodeTasks implements FallibleCommand {
          */
         public Builder enableImportsUpdate(boolean enableImportsUpdate) {
             this.enableImportsUpdate = enableImportsUpdate;
+            this.createMissingPackageJson = enableImportsUpdate || createMissingPackageJson;
             return this;
         }
 

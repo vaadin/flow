@@ -27,12 +27,16 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.sun.net.httpserver.HttpServer;
 import net.jcip.annotations.NotThreadSafe;
+import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -102,9 +106,11 @@ public class DevModeHandlerTest {
 
     public static void removeDevModeHandlerInstance() throws Exception {
         // Reset unique instance of DevModeHandler
-        Field atomicHandler = DevModeHandler.class.getDeclaredField("atomicHandler");
+        Field atomicHandler = DevModeHandler.class
+                .getDeclaredField("atomicHandler");
         atomicHandler.setAccessible(true);
-        AtomicReference<?> reference = (AtomicReference<?>)atomicHandler.get(null);
+        AtomicReference<?> reference = (AtomicReference<?>) atomicHandler
+                .get(null);
         reference.set(null);
     }
 
@@ -205,8 +211,8 @@ public class DevModeHandlerTest {
     public void shouldNot_CreateInstance_When_WebpackIsNotExecutable() {
         // The set executable doesn't work in Windows and will always return
         // false
-        boolean systemImplementsExecutable = new File(baseDir,
-                WEBPACK_SERVER).setExecutable(false);
+        boolean systemImplementsExecutable = new File(baseDir, WEBPACK_SERVER)
+                .setExecutable(false);
         if (systemImplementsExecutable) {
             assertNull(DevModeHandler.start(configuration, npmFolder));
         }
@@ -214,15 +220,15 @@ public class DevModeHandlerTest {
 
     @Test
     public void shouldNot_CreateInstance_When_WebpackNotConfigured() {
-        new File(baseDir, FrontendUtils.WEBPACK_CONFIG)
-                .delete();
+        new File(baseDir, FrontendUtils.WEBPACK_CONFIG).delete();
         assertNull(DevModeHandler.start(configuration, npmFolder));
     }
 
     @Test
     public void should_HandleJavaScriptRequests() {
         HttpServletRequest request = prepareRequest("/VAADIN/foo.js");
-        assertTrue(DevModeHandler.start(configuration, npmFolder).isDevModeRequest(request));
+        assertTrue(DevModeHandler.start(configuration, npmFolder)
+                .isDevModeRequest(request));
     }
 
     @Test
@@ -234,14 +240,16 @@ public class DevModeHandlerTest {
     @Test
     public void shouldNot_HandleOtherRequests() {
         HttpServletRequest request = prepareRequest("/VAADIN//foo.bar");
-        assertFalse(DevModeHandler.start(configuration, npmFolder).isDevModeRequest(request));
+        assertFalse(DevModeHandler.start(configuration, npmFolder)
+                .isDevModeRequest(request));
     }
 
     @Test(expected = ConnectException.class)
     public void should_ThrowAnException_When_WebpackNotListening()
             throws IOException {
         HttpServletRequest request = prepareRequest("/VAADIN//foo.js");
-        DevModeHandler.start(0, configuration, npmFolder).serveDevModeRequest(request, null);
+        DevModeHandler.start(0, configuration, npmFolder)
+                .serveDevModeRequest(request, null);
     }
 
     @Test
@@ -250,8 +258,8 @@ public class DevModeHandlerTest {
         HttpServletResponse response = prepareResponse();
         int port = prepareHttpServer(0, HTTP_OK, "bar");
 
-        assertTrue(DevModeHandler.start(port, configuration, npmFolder).serveDevModeRequest(request,
-                response));
+        assertTrue(DevModeHandler.start(port, configuration, npmFolder)
+                .serveDevModeRequest(request, response));
         assertEquals(HTTP_OK, responseStatus);
     }
 
@@ -262,8 +270,8 @@ public class DevModeHandlerTest {
         HttpServletResponse response = prepareResponse();
         int port = prepareHttpServer(0, HTTP_NOT_FOUND, "");
 
-        assertFalse(DevModeHandler.start(port, configuration, npmFolder).serveDevModeRequest(request,
-                response));
+        assertFalse(DevModeHandler.start(port, configuration, npmFolder)
+                .serveDevModeRequest(request, response));
         assertEquals(200, responseStatus);
     }
 
@@ -273,8 +281,8 @@ public class DevModeHandlerTest {
         HttpServletResponse response = prepareResponse();
         int port = prepareHttpServer(0, HTTP_UNAUTHORIZED, "");
 
-        assertTrue(DevModeHandler.start(port, configuration, npmFolder).serveDevModeRequest(request,
-                response));
+        assertTrue(DevModeHandler.start(port, configuration, npmFolder)
+                .serveDevModeRequest(request, response));
         assertEquals(HTTP_UNAUTHORIZED, responseStatus);
     }
 
@@ -300,26 +308,26 @@ public class DevModeHandlerTest {
     }
 
     @Test
-    public void should_GetStatsJson_From_Webpack()
-            throws Exception {
+    public void should_GetStatsJson_From_Webpack() throws Exception {
         VaadinService vaadinService = mock(VaadinService.class);
-        Mockito.when(vaadinService.getDeploymentConfiguration()).thenReturn(configuration);
+        Mockito.when(vaadinService.getDeploymentConfiguration())
+                .thenReturn(configuration);
 
         String statsContent = "{}";
         int port = prepareHttpServer(0, HTTP_OK, statsContent);
         DevModeHandler.start(port, configuration, npmFolder);
 
-        assertEquals(statsContent, FrontendUtils.getStatsContent(vaadinService));
+        assertEquals(statsContent,
+                FrontendUtils.getStatsContent(vaadinService));
     }
 
     @Test
-    public void should_reuseWebpackPort_AfterRestart()
-            throws Exception {
+    public void should_reuseWebpackPort_AfterRestart() throws Exception {
         int port = prepareHttpServer(0, HTTP_OK, "foo");
 
         DevModeHandler.start(port, configuration, npmFolder);
         assertNotNull(DevModeHandler.getDevModeHandler());
-        assertEquals(port,  DevModeHandler.getDevModeHandler().getPort());
+        assertEquals(port, DevModeHandler.getDevModeHandler().getPort());
 
         removeDevModeHandlerInstance();
         assertNull(DevModeHandler.getDevModeHandler());
@@ -329,20 +337,31 @@ public class DevModeHandlerTest {
         assertEquals(port, DevModeHandler.getDevModeHandler().getPort());
     }
 
-    private VaadinServlet prepareServlet(int port) throws ServletException {
+    private VaadinServlet prepareServlet(int port)
+            throws ServletException, IOException {
         DevModeHandler.start(port, configuration, npmFolder);
         VaadinServlet servlet = new VaadinServlet();
         ServletConfig cfg = mock(ServletConfig.class);
         ServletContext ctx = mock(ServletContext.class);
-        Mockito.doAnswer(invocation -> ctx.getClass().getClassLoader()).when(ctx).getClassLoader();
+        Mockito.doAnswer(invocation -> ctx.getClass().getClassLoader())
+                .when(ctx).getClassLoader();
         Mockito.doAnswer(invocation -> ctx).when(cfg).getServletContext();
 
-        Mockito.doAnswer(
-                invocation -> Collections.enumeration(Collections.singletonList(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE)))
+        List<String> paramNames = new ArrayList<>();
+        paramNames.add(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE);
+        paramNames.add(FrontendUtils.PARAM_TOKEN_FILE);
+
+        Mockito.doAnswer(invocation -> Collections.enumeration(paramNames))
                 .when(cfg).getInitParameterNames();
-        Mockito.doAnswer(
-                invocation -> Boolean.FALSE.toString())
-                .when(cfg).getInitParameter(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE);
+        Mockito.doAnswer(invocation -> Boolean.FALSE.toString()).when(cfg)
+                .getInitParameter(
+                        Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE);
+
+        File tokenFile = new File(temporaryFolder.getRoot(),
+                "flow-build-info.json");
+        FileUtils.write(tokenFile, "{}", StandardCharsets.UTF_8);
+        Mockito.doAnswer(invocation -> tokenFile.getPath()).when(cfg)
+                .getInitParameter(FrontendUtils.PARAM_TOKEN_FILE);
 
         Mockito.doAnswer(
                 invocation -> Collections.enumeration(Collections.emptyList()))
