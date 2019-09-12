@@ -130,7 +130,17 @@ public class ElementListenerMap extends NodeMap {
             if (unregisterHandlers != null) {
                 unregisterHandlers.forEach(SerializableRunnable::run);
             }
+
             listenerMap.removeListener(type, this);
+
+            // update settings after removal. If we have listeners of the
+            // same type registered, we want to remove settings set by this
+            // particular listener from the overall set
+            // fixes #5090
+            if (listenerMap.listeners != null
+                    && listenerMap.listeners.containsKey(type)) {
+                listenerMap.updateEventSettings(type);
+            }
         }
 
         @Override
@@ -365,15 +375,15 @@ public class ElementListenerMap extends NodeMap {
     }
 
     private void updateEventSettings(String eventType) {
-        Map<String, ExpressionSettings> eventSettings = collectEventExpressions(
-                eventType);
-        JsonObject eventSettingsJson = JsonUtils.createObject(eventSettings,
-                ExpressionSettings::toJson);
+            Map<String, ExpressionSettings> eventSettings = collectEventExpressions(
+                    eventType);
+            JsonObject eventSettingsJson = JsonUtils.createObject(eventSettings,
+                    ExpressionSettings::toJson);
 
-        ConstantPoolKey constantPoolKey = new ConstantPoolKey(
-                eventSettingsJson);
+            ConstantPoolKey constantPoolKey = new ConstantPoolKey(
+                    eventSettingsJson);
 
-        put(eventType, constantPoolKey);
+            put(eventType, constantPoolKey);
     }
 
     private void removeListener(String eventType,
