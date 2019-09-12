@@ -53,7 +53,7 @@ public class ElementListenersTest
 
     @Before
     public void init() {
-        ns = spy(createFeature());
+        ns = createFeature();
     }
 
     @Test
@@ -126,9 +126,13 @@ public class ElementListenersTest
     
     @Test
     public void settingsAreOnlyUpdated_should_ListenersSharingTheTypeOfRemovedListenerExist() {
-        Registration handle1 = ns.add("eventType", noOp).addEventData("data1");
-        Registration handle2 = ns.add("eventType", noOp).addEventData("data2");
-        Registration handle3 = ns.add("eventTypeOther", noOp)
+        ns = spy(createFeature());
+        DomEventListener del1 = event -> {};
+        DomEventListener del2 = event -> {};
+        DomEventListener del3 = event -> {};
+        Registration handle1 = ns.add("eventType", del1).addEventData("data1");
+        Registration handle2 = ns.add("eventType", del2).addEventData("data2");
+        Registration handle3 = ns.add("eventTypeOther", del3)
                 .addEventData("data3");
         Mockito.reset(ns);
 
@@ -162,6 +166,31 @@ public class ElementListenersTest
         Assert.assertFalse(expressions.contains("data1"));
         Assert.assertFalse(expressions.contains("data2"));
         Assert.assertTrue(expressions.contains("data3"));
+    }
+
+    @Test
+    public void addingRemovingAndAddingListenerOfTheSameType() {
+        DomEventListener del1 = event -> {};
+        DomEventListener del2 = event -> {};
+        Registration handle = ns.add("eventType", del1).addEventData("data1");
+
+        Set<String> expressions = getExpressions("eventType");
+        Assert.assertTrue(expressions.contains("data1"));
+
+        handle.remove();
+        expressions = getExpressions("eventType");
+        Assert.assertFalse(expressions.contains("data1"));
+
+        // re-add a listener for "eventType", using different eventData
+        handle = ns.add("eventType", del2).addEventData("data2");
+        expressions = getExpressions("eventType");
+        Assert.assertFalse(expressions.contains("data1"));
+        Assert.assertTrue(expressions.contains("data2"));
+
+        handle.remove();
+        expressions = getExpressions("eventType");
+        Assert.assertFalse(expressions.contains("data1"));
+        Assert.assertFalse(expressions.contains("data2"));
     }
 
     @Test
@@ -231,8 +260,6 @@ public class ElementListenersTest
 
     @Test
     public void serializable() {
-        // do not use spied ns for this tests
-        ns = createFeature();
         ns.add("click", noOp).addEventData("eventdata");
 
         ElementListenerMap roundtrip = SerializationUtils.roundtrip(ns);
