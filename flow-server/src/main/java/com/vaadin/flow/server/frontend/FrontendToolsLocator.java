@@ -24,7 +24,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -119,24 +118,30 @@ public class FrontendToolsLocator implements Serializable {
             return Optional.empty();
         }
 
-        boolean commandExited = false;
+        int exitCode = -1;
+        long timeStamp = System.currentTimeMillis();
         try {
-            commandExited = process.waitFor(3, TimeUnit.SECONDS);
+            exitCode = process.waitFor();
         } catch (InterruptedException e) {
             log().error(
                     "Unexpected interruption happened during '{}' command execution",
                     commandString, e);
             return Optional.empty();
         } finally {
-            if (!commandExited) {
+            if (exitCode == -1) {
                 process.destroyForcibly();
             }
         }
 
-        if (!commandExited) {
-            log().error(
-                    "Could not get a response from '{}' command in 3 seconds",
+        long executionTime = System.currentTimeMillis() - timeStamp;
+        if (log().isDebugEnabled() && executionTime > 3000) {
+            log().debug("Command '{}' execution took over 3 seconds",
                     commandString);
+        }
+
+        if (exitCode > 0) {
+            log().error("Command '{}' failed with exit code '{}'",
+                    commandString, exitCode);
             return Optional.empty();
         }
 

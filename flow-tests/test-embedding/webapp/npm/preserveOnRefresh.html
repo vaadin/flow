@@ -1,0 +1,40 @@
+<!--
+  ~ Copyright 2000-2018 Vaadin Ltd.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License"); you may not
+  ~ use this file except in compliance with the License. You may obtain a copy of
+  ~ the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+  ~ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+  ~ License for the specific language governing permissions and limitations under
+  ~ the License.
+  -->
+
+<!doctype html>
+
+<head>
+  <script type='module' src='/vaadin/web-component/preserve-on-refresh.js'></script>
+  <script type='module'
+          src='/vaadin/web-component/no-preserve-on-refresh.js'></script>
+</head>
+
+<body>
+  <p>
+    "preserve-on-refresh" components have @PreserveOnRefresh annotations.<br>
+    "no-preserve-on-refresh" does not have @PreserveOnRefresh annotation.
+    <br><br>
+  </p>
+  <!--
+    component order matters! It has to reflect that of
+    preserveOnRefreshSecondary.html when it comes to preserve-on-refresh
+    elements
+  -->
+  <preserve-on-refresh id="modified"></preserve-on-refresh>
+  <preserve-on-refresh id="unmodified"></preserve-on-refresh>
+  <no-preserve-on-refresh id="nopreserve"></no-preserve-on-refresh>
+  <preserve-on-refresh></preserve-on-refresh>
+</body>

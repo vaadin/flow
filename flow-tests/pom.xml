@@ -203,6 +203,12 @@
         </pluginManagement>
     </build>
 
+    <!-- these modules should be build, regardless of `skipTests` -->
+    <modules>
+        <module>test-resources</module>
+        <module>test-common</module>
+    </modules>
+
     <profiles>
         <profile>
             <id>run-tests</id>
@@ -213,9 +219,9 @@
             </activation>
 
             <modules>
-                <module>test-resources</module>
-                <module>test-common</module>
                 <module>test-pwa</module>
+
+                <module>test-mixed</module>
 
                 <module>test-dev-mode</module>
                 <module>test-root-ui-context</module>
@@ -238,7 +244,6 @@
                 <module>test-misc</module>
                 <module>test-misc/pom-bower.xml</module>
 
-                <module>test-mixed</module>
                 <module>test-mixed/pom-npm-production.xml</module>
                 <module>test-mixed/pom-bower-devmode.xml</module>
                 <module>test-mixed/pom-bower-production.xml</module>

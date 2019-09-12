@@ -43,6 +43,7 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.UIInitListener;
+import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
@@ -197,7 +198,7 @@ public class FrontendDependencies implements Serializable {
      * @return the set of JS files
      */
     public Set<String> getScripts() {
-        Set<String> all = new HashSet<>();
+        Set<String> all = new LinkedHashSet<>();
         for (EndPointData data : endPoints.values()) {
             all.addAll(data.getScripts());
         }
@@ -210,7 +211,7 @@ public class FrontendDependencies implements Serializable {
      * @return the set of CSS files
      */
     public Set<CssData> getCss() {
-        Set<CssData> all = new HashSet<>();
+        Set<CssData> all = new LinkedHashSet<>();
         for (EndPointData data : endPoints.values()) {
             all.addAll(data.getCss());
         }
@@ -277,6 +278,11 @@ public class FrontendDependencies implements Serializable {
                 finder.loadClass(UIInitListener.class.getName()))) {
             collectEndpoints(initListener);
         }
+
+        for (Class<?> initListener : finder.getSubTypesOf(
+                finder.loadClass(VaadinServiceInitListener.class.getName()))) {
+            collectEndpoints(initListener);
+        }
     }
 
     private void collectEndpoints(Class<?> entry) throws IOException {
@@ -300,7 +306,7 @@ public class FrontendDependencies implements Serializable {
         // entry-point visits
         for (EndPointData endPoint : endPoints.values()) {
             if (endPoint.getLayout() != null) {
-                visitClass(endPoint.getLayout(), endPoint, true);
+                visitClass(endPoint.getLayout(), endPoint, false);
             }
             if (endPoint.getTheme() != null) {
                 visitClass(endPoint.getTheme().getName(), endPoint, true);

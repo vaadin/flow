@@ -21,7 +21,7 @@ import com.vaadin.flow.router.internal.BeforeLeaveHandler;
  * Any attached component implementing this interface will receive an event
  * before leaving the current navigation state.
  * <p>
- * During this vent phase there is the possibility to reroute to another
+ * During this event phase there is the possibility to reroute to another
  * navigation target or to postpone the navigation (to for instance get user
  * input).
  *

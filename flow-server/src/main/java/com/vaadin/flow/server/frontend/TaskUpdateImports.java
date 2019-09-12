@@ -36,6 +36,8 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.internal.UrlUtil;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.CssData;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
@@ -87,6 +89,11 @@ public class TaskUpdateImports extends NodeUpdater {
     private static final Pattern NEW_LINE_TRIM = Pattern
             .compile("(?m)(^\\s+|\\s?\n)");
 
+    // Used to recognize and sort FRONTEND/ imports in the final
+    // generated-flow-imports.js
+    private static final Pattern FRONTEND_IMPORT_LINE = Pattern.compile(
+            String.format(IMPORT_TEMPLATE, WEBPACK_PREFIX_ALIAS + "\\S*"));
+
     /**
      * Create an instance of the updater given all configurable parameters.
      *
@@ -118,8 +125,7 @@ public class TaskUpdateImports extends NodeUpdater {
         modules.addAll(getGeneratedModules(generatedFolder,
                 Collections.singleton(generatedFlowImports.getName())));
 
-        // filter out external URLs (including "://")
-        modules.removeIf(module -> module.contains("://"));
+        modules.removeIf(UrlUtil::isExternal);
 
         try {
             updateMainJsFile(getMainJsContent(modules));
@@ -136,7 +142,20 @@ public class TaskUpdateImports extends NodeUpdater {
 
         lines.addAll(getThemeLines());
         lines.addAll(getCssLines());
-        lines.addAll(getModuleLines(modules));
+
+        ArrayList<String> externals = new ArrayList<>();
+        ArrayList<String> internals = new ArrayList<>();
+
+        for (String module : getModuleLines(modules)) {
+            if (FRONTEND_IMPORT_LINE.matcher(module).matches()) {
+                internals.add(module);
+            } else {
+                externals.add(module);
+            }
+        }
+
+        lines.addAll(externals);
+        lines.addAll(internals);
 
         return lines;
     }
@@ -265,16 +284,17 @@ public class TaskUpdateImports extends NodeUpdater {
         }
 
         if (!resourceNotFound.isEmpty()) {
-            String prefix = String.format(
-                    "Failed to resolve the following files either:"
-                            + "%n   · in the `%s` sources folder"
-                            + "%n   · or as a `META-INF/resources/frontend` resource in some JAR.",
-                    frontendDirectory.getPath());
+            String prefix =  "Failed to find the following files: ";
             String suffix = String.format(
-                    "Please, double check that those files exist. If you use a custom directory "
+                    "%n  Locations searched were:"
+                            + "%n      - `%s` in this project"
+                            + "%n      - `%s` in included JARs"
+                            + "%n%n  Please, double check that those files exist. If you use a custom directory "
                             + "for your resource files instead of default "
                             + "`frontend` folder then make sure you it's correctly configured "
                             + "(e.g. set '%s' property)",
+                    frontendDirectory.getPath(),
+                    Constants.RESOURCES_FRONTEND_DEFAULT,
                     FrontendUtils.PARAM_FRONTEND_DIR);
             throw new IllegalStateException(
                     notFoundMessage(resourceNotFound, prefix, suffix));
@@ -313,7 +333,7 @@ public class TaskUpdateImports extends NodeUpdater {
         } catch (IOException exception) {
             LoggerFactory.getLogger(TaskUpdateImports.class)
                     .warn("Could not read file {}. Skipping "
-                            + "applyig theme for its imports", file.getPath(),
+                            + "applying theme for its imports", file.getPath(),
                             exception);
         }
     }
