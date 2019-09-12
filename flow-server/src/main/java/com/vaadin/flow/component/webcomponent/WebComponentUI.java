@@ -111,7 +111,10 @@ public class WebComponentUI extends UI {
          * @param tag
          *            the tag of the element to connect
          * @param webComponentElementId
-         *            the id of the web component
+         *            the id of the embedded web component
+         * @param userAssignedId
+         *            the id user might have set on the embedding web component
+         *            element
          * @param attributeValues
          *            initial attribute values as a JsonObject. If present,
          *            these will override the default value designated by the
