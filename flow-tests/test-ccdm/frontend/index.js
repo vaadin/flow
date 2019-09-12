@@ -40,3 +40,8 @@ document.getElementById('button3').addEventListener('click', async e => {
     outlet.appendChild(result);
 });
 
+document.getElementById("loadVaadinRouter").addEventListener('click', async(e) => {
+    const clientRouter = await import('./client-router.js');
+    clientRouter.loadRouter(flow);
+});
+

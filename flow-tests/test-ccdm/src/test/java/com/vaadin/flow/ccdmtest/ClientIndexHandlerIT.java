@@ -260,6 +260,52 @@ public class ClientIndexHandlerIT extends ChromeBrowserTest {
     }
 
     @Test
+    public void should_navigateFromClientToServer_When_UsingVaadinRouter() {
+        openTestUrl("/");
+        waitForElementPresent(By.id("loadVaadinRouter"));
+        findElement(By.id("loadVaadinRouter")).click();
+        waitForElementPresent(By.id("outlet"));
+
+        findElement(By.linkText("Client view")).click();
+        waitForElementPresent(By.id("clientView"));
+        String clientSideViewContent = findElement(By.id("clientView"))
+                .getText();
+        Assert.assertEquals(
+                "Should load client side view content with vaadin-router",
+                "Client view", clientSideViewContent);
+
+        findElement(By.linkText("Server view")).click();
+        waitForElementPresent(By.id("mainLayout"));
+        String mainLayoutContent = findElement(By.id("mainLayout")).getText();
+        Assert.assertEquals("Should load server view content with " +
+                "vaadin-router", "Main layout\nServer view", mainLayoutContent);
+
+    }
+
+    @Test
+    public void should_navigateFromServerToClient_When_UsingVaadinRouter() {
+        openTestUrl("/");
+        waitForElementPresent(By.id("loadVaadinRouter"));
+        findElement(By.id("loadVaadinRouter")).click();
+        waitForElementPresent(By.id("outlet"));
+
+
+        findElement(By.linkText("Server view")).click();
+        waitForElementPresent(By.id("mainLayout"));
+        String mainLayoutContent = findElement(By.id("mainLayout")).getText();
+        Assert.assertEquals("Should load server view content with " +
+                "vaadin-router", "Main layout\nServer view", mainLayoutContent);
+
+        findElement(By.linkText("Client view")).click();
+        waitForElementPresent(By.id("clientView"));
+        String clientSideViewContent = findElement(By.id("clientView"))
+                .getText();
+        Assert.assertEquals(
+                "Should load client side view content with vaadin-router",
+                "Client view", clientSideViewContent);
+    }
+
+    @Test
     public void should_returnNotFoundView_WhenRouteNotFound() {
         openTestUrl("/");
         waitForElementPresent(By.id("button3"));
