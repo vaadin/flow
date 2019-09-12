@@ -21,6 +21,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
@@ -28,11 +30,13 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.Mockito;
+
+import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
-
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static elemental.json.impl.JsonUtil.stringify;
@@ -208,17 +212,64 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
         assertVersionAndCleanUp();
     }
-
     @Test
-    public void versionsMatch_noCleanUp() throws IOException {
+    public void versionsDoNotMatch_inMainJson_cleanUp() throws IOException {
+        FrontendDependencies frontendDependencies = Mockito.mock(FrontendDependencies.class);
+
+        Map<String, String> packages = new HashMap<>();
+        packages.put("@polymer/iron-list", "3.0.2");
+        packages.put("@vaadin/vaadin-confirm-dialog", "1.1.4");
+        packages.put("@vaadin/vaadin-checkbox", "2.2.10");
+        packages.put("@polymer/iron-icon", "3.0.1");
+        packages.put("@vaadin/vaadin-time-picker", "2.0.2");
+        packages.put(SHRINKWRAP, "1.2.3");
+
+        Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+
+        packageUpdater = new TaskUpdatePackages(null, frontendDependencies, baseDir,
+                generatedDir, false);
+
         // Generate package json in a proper format first
         packageCreator.execute();
-        packageUpdater.execute();
 
         makeNodeModulesAndPackageLock();
 
-        // run it again with existing generated package.json and matched
-        // version
+        JsonObject packageJson = getPackageJson(mainPackageJson);
+        packageJson.put(SHRINKWRAP, "1.1.1");
+        Files.write(packageLock.toPath(),
+                Collections.singletonList(stringify(
+                        packageJson)));
+
+        packageUpdater.execute();
+
+        assertVersionAndCleanUp();
+    }
+
+    @Test
+    public void versionsMatch_noCleanUp() throws IOException {
+        FrontendDependencies frontendDependencies = Mockito.mock(FrontendDependencies.class);
+
+        Map<String, String> packages = new HashMap<>();
+        packages.put("@polymer/iron-list", "3.0.2");
+        packages.put("@vaadin/vaadin-confirm-dialog", "1.1.4");
+        packages.put("@vaadin/vaadin-checkbox", "2.2.10");
+        packages.put("@polymer/iron-icon", "3.0.1");
+        packages.put("@vaadin/vaadin-time-picker", "2.0.2");
+        packages.put(SHRINKWRAP, "1.1.1");
+
+        Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+
+        packageUpdater = new TaskUpdatePackages(null, frontendDependencies, baseDir,
+                generatedDir, false);
+
+        // Generate package json in a proper format first
+        packageCreator.execute();
+
+        makeNodeModulesAndPackageLock();
+
+        Files.write(packageLock.toPath(),
+                Collections.singletonList(stringify(makePackageLock("1.1.1"))));
+
         packageUpdater.execute();
 
         // nothing is removed
@@ -245,7 +296,7 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void generateAppPackageJsonFromScratch_updaterIsModified()
+    public void generateAppPackageJsonFromScratch_hashCalculated_updaterIsModified()
             throws IOException {
         packageCreator.execute();
         packageUpdater.execute();
@@ -257,8 +308,7 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void regenerateAppPackageJson_sameContent_updaterIsNotModified()
-            throws IOException {
+    public void regenerateAppPackageJson_sameContent_updaterIsNotModified() {
         packageCreator.execute();
         packageUpdater.execute();
 
@@ -277,8 +327,21 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void generateAppPackageJson_changedContent_updaterIsModified()
-            throws IOException {
+    public void generateAppPackageJson_sameDependencies_updaterIsNotModified() {
+        FrontendDependencies frontendDependencies = Mockito.mock(FrontendDependencies.class);
+
+        Map<String, String> packages = new HashMap<>();
+        packages.put("@polymer/iron-list", "3.0.2");
+        packages.put("@vaadin/vaadin-confirm-dialog", "1.1.4");
+        packages.put("@vaadin/vaadin-checkbox", "2.2.10");
+        packages.put("@polymer/iron-icon", "3.0.1");
+        packages.put("@vaadin/vaadin-time-picker", "2.0.2");
+
+        Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+
+        packageUpdater = new TaskUpdatePackages(null, frontendDependencies, baseDir,
+                generatedDir, false);
+
         packageCreator.execute();
         packageUpdater.execute();
 
@@ -289,7 +352,103 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
         // packageCreator has not added its content
         packageUpdater.execute();
 
-        Assert.assertTrue(packageUpdater.modified);
+        Assert.assertFalse(
+                "Modification flag should be false when no dependencies changed.",
+                packageUpdater.modified);
+    }
+
+    @Test
+    public void generateAppPackageJson_removedDependencies_updaterIsModified() {
+        FrontendDependencies frontendDependencies = Mockito.mock(FrontendDependencies.class);
+
+        Map<String, String> packages = new HashMap<>();
+        packages.put("@polymer/iron-list", "3.0.2");
+        packages.put("@vaadin/vaadin-confirm-dialog", "1.1.4");
+        packages.put("@vaadin/vaadin-checkbox", "2.2.10");
+        packages.put("@polymer/iron-icon", "3.0.1");
+        packages.put("@vaadin/vaadin-time-picker", "2.0.2");
+
+        Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+
+        packageUpdater = new TaskUpdatePackages(null, frontendDependencies, baseDir,
+                generatedDir, false);
+
+        packageCreator.execute();
+        packageUpdater.execute();
+
+        // delete generated file
+        appPackageJson.delete();
+
+        packages.remove("@vaadin/vaadin-checkbox");
+
+        // generate it one more time, the content will be different since
+        // packageCreator has not added its content
+        packageUpdater.execute();
+
+        Assert.assertTrue(
+                "Modification flag should be true when dependency removed.",
+                packageUpdater.modified);
+    }
+
+    @Test
+    public void generateAppPackageJson_addedDependencies_updaterIsModified() {
+        FrontendDependencies frontendDependencies = Mockito.mock(FrontendDependencies.class);
+
+        Map<String, String> packages = new HashMap<>();
+        packages.put("@polymer/iron-list", "3.0.2");
+        packages.put("@vaadin/vaadin-confirm-dialog", "1.1.4");
+        packages.put("@vaadin/vaadin-checkbox", "2.2.10");
+        packages.put("@polymer/iron-icon", "3.0.1");
+        packages.put("@vaadin/vaadin-time-picker", "2.0.2");
+
+        Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+
+        packageUpdater = new TaskUpdatePackages(null, frontendDependencies, baseDir,
+                generatedDir, false);
+
+        packageCreator.execute();
+        packageUpdater.execute();
+
+        // delete generated file
+        appPackageJson.delete();
+
+        packages.put("@vaadin/vaadin-list-box", "1.1.1");
+
+        // generate it one more time, the content will be different since
+        // packageCreator has not added its content
+        packageUpdater.execute();
+
+        Assert.assertTrue(
+                "Modification flag should be true when dependency added.",
+                packageUpdater.modified);
+    }
+    @Test
+    public void generateAppPackageJson_noDependencies_updaterIsNotModified() {
+        FrontendDependencies frontendDependencies = Mockito.mock(FrontendDependencies.class);
+
+        Map<String, String> packages = new HashMap<>();
+        Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+
+        packageUpdater = new TaskUpdatePackages(null, frontendDependencies, baseDir,
+                generatedDir, false);
+
+        packageCreator.execute();
+        packageUpdater.execute();
+
+        Assert.assertFalse(
+                "Modification flag should be false when there was no dependencies.",
+                packageUpdater.modified);
+
+        // delete generated file
+        appPackageJson.delete();
+
+        // generate it one more time, the content will be different since
+        // packageCreator has not added its content
+        packageUpdater.execute();
+
+        Assert.assertFalse(
+                "Modification flag should be false when there has never been dependencies.",
+                packageUpdater.modified);
     }
 
     private void makeNodeModulesAndPackageLock() throws IOException {
