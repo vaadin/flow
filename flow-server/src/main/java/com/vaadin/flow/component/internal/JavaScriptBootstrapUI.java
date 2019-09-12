@@ -49,7 +49,7 @@ public class JavaScriptBootstrapUI extends UI {
     private static final String NO_NAVIGATION = "Classic flow navigation is " +
             "not supported for client-side projects";
 
-    private Element wrapperElement;
+    Element wrapperElement;
 
     /**
      * Create UI for clientSideMode.
@@ -81,34 +81,49 @@ public class JavaScriptBootstrapUI extends UI {
                     NodeProperties.INJECT_BY_ID, clientElementId);
         }
         // Render the flow view that the user wants to navigate to.
-        renderViewForRoute(flowRoute);
+        boolean posponed = renderViewForRoute(flowRoute);
 
         // Inform the client, that everything went fine.
-        wrapperElement.executeJs("$0.serverConnected()");
+        wrapperElement.executeJs("this.serverConnected($0)", posponed);
     }
 
-    private void renderViewForRoute(String route) {
-        if (route.startsWith("/")) {
-            route = route.replaceFirst("/+", "");
-        }
+    private boolean renderViewForRoute(String route) {
+        route = route.replaceFirst("^/+", "");
+
         Location location = new Location(route);
         Optional<NavigationState> navigationState = this.getRouter()
                 .resolveNavigationTarget(location);
 
         if (navigationState.isPresent()) {
-            handleNavigation(location, navigationState.get());
+            // There is a valid route in flow.
+            return handleNavigation(location, navigationState.get());
         } else {
+
+            // When route does not exist, try to navigate to current route
+            // in order to check if current view can be left before showing
+            // the error page
+            Location activeLocation = this.getInternals().getActiveViewLocation();
+            navigationState = this.getRouter().resolveNavigationTarget(activeLocation);
+            if (navigationState.isPresent() && handleNavigation(activeLocation, navigationState.get())) {
+                return true;
+            }
+
+            // Route does not exist, and current view does not prevent navigation
+            // thus an error page is shown
             handleErrorNavigation(location);
         }
+        return false;
     }
 
-    private void handleNavigation(Location location,
+    private boolean handleNavigation(Location location,
             NavigationState navigationState) {
         NavigationEvent navigationEvent = new NavigationEvent(getRouter(),
                 location, this, NavigationTrigger.CLIENT_SIDE);
         NavigationStateRenderer clientNavigationStateRenderer = new NavigationStateRenderer(
                 navigationState);
         clientNavigationStateRenderer.handle(navigationEvent);
+
+        return getInternals().getContinueNavigationAction() != null;
     }
 
     private void handleErrorNavigation(Location location) {
