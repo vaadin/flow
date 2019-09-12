@@ -130,6 +130,8 @@ public final class Shortcuts {
 
     public static ShortcutRegistration testAddShorcut() {
         // api diff should be +0.1.0
+        // but it seems to be +1.0.0
+        // i wonder what is up with that :O
         return null;
     }
 }
