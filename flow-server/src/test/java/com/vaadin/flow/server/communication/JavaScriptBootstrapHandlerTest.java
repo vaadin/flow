@@ -18,12 +18,10 @@ package com.vaadin.flow.server.communication;
 import java.util.regex.Pattern;
 
 import net.jcip.annotations.NotThreadSafe;
-
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
@@ -34,7 +32,6 @@ import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletResponse;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinSession;
-
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
