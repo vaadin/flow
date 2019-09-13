@@ -42,6 +42,7 @@ export interface NavigationCommands {
 export class Flow {
   config: FlowConfig;
   response ?: AppInitResponse;
+  actionPending = false;
 
   // flow uses body for keeping references
   flowRoot : FlowRoot = document.body as any;
@@ -98,6 +99,7 @@ export class Flow {
     // the syntax `flow.route` in vaadin-router.
     // @ts-ignore
     return async (params: NavigationParameters) => {
+      this.actionPending = true;
       await this.flowInit();
       this.container.onBeforeEnter = (ctx, cmd) => this.onBefore(ctx, cmd);
       this.container.onBeforeLeave = (ctx, cmd) => this.onBefore(ctx, cmd);
@@ -106,7 +108,9 @@ export class Flow {
   }
 
   private onBefore(ctx: NavigationParameters, cmd: NavigationCommands) {
-    return this.flowNavigate(ctx, cmd);
+    return this.actionPending
+      ? this.flowNavigate(ctx, cmd).then(() => this.actionPending = false)
+      : Promise.resolve();
   }
 
   // Send the remote call to `JavaScriptBootstrapUI` to render the flow

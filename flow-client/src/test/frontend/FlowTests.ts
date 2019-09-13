@@ -152,7 +152,8 @@ suite("Flow", () => {
 
         // When using router API, it should expose the onBeforeEnter handler
         assert.isDefined(elem.onBeforeEnter);
-        elem.onBeforeEnter && elem.onBeforeEnter({pathname: 'Foo/Bar.baz'}, {prevent: () => {}})
+        // @ts-ignore
+        elem.onBeforeEnter({pathname: 'Foo/Bar.baz'}, {})
 
         // Assert server side has put content in the container
         assert.equal(1, elem.children.length);
@@ -160,7 +161,9 @@ suite("Flow", () => {
   });
 
   test("should be possible to cancel navigation when using router onBeforeEnter API", () => {
+    // true means that server will prevent navigation
     stubServerRemoteFunction('foobar-12345', true);
+
     mockInitResponse('foobar-12345');
 
     const route = new Flow().route;
@@ -191,7 +194,9 @@ suite("Flow", () => {
   });
 
   test("should be possible to cancel navigation when using router onBeforeLeave API", () => {
+    // true to prevent navigation from server
     stubServerRemoteFunction('foobar-12345', true);
+
     mockInitResponse('foobar-12345');
 
     const route = new Flow().route;
@@ -208,6 +213,28 @@ suite("Flow", () => {
         }});
 
         promise.then(obj => assert.isTrue(obj.cancel));
+      });
+  });
+
+  test("should not run onBeforeLeave if action already resolved", () => {
+    stubServerRemoteFunction('foobar-12345', false);
+    mockInitResponse('foobar-12345');
+
+    const route = new Flow().route;
+
+    return route.action({pathname: 'Foo/Bar.baz'})
+      .then(async(elem: any) => {
+        elem.onBeforeEnter({pathname: 'Foo/Bar.baz'}, {})
+        .then(() =>{
+          // onBeforeEnter called server to set view content
+          assert.equal(1, elem.children.length);
+          // remove view content
+          elem.innerHTML = '';
+
+          elem.onBeforeLeave({pathname: 'Foo/Bar.baz'}, {});
+          // onBeforeLeave should not call server to put add the view content
+          assert.equal(0, elem.children.length);
+        });
       });
   });
 });
