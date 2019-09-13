@@ -22,5 +22,6 @@ import com.vaadin.flow.router.RouterLayout;
 public class MainLayout extends Div implements RouterLayout {
     public MainLayout() {
         add(new Text("Main layout"));
+        setId("mainLayout");
     }
 }
