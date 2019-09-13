@@ -195,7 +195,7 @@ public class DevModeInitializer implements ServletContainerInitializer,
     private static final Pattern JAR_FILE_REGEX = Pattern
             .compile(".*file:(.+\\.jar).*");
 
-    private static final Pattern VFS_FILE_REGEX_WILDFLY11 = Pattern
+    private static final Pattern VFS_FILE_REGEX = Pattern
             .compile(".*vfs:/(.+\\.jar).*");
 
     // allow trailing slash
@@ -350,31 +350,31 @@ public class DevModeInitializer implements ServletContainerInitializer,
      * will fail in Java 9+
      */
     static Set<File> getFrontendLocationsFromClassloader(
-            ClassLoader classLoader) {
-        Set<File> jarFiles = new HashSet<>();
-        jarFiles.addAll(getFrontendLocationsFromClassloader(classLoader,
+            ClassLoader classLoader) throws ServletException {
+        Set<File> frontendFiles = new HashSet<>();
+        frontendFiles.addAll(getFrontendLocationsFromClassloader(classLoader,
                 Constants.RESOURCES_FRONTEND_DEFAULT));
-        jarFiles.addAll(getFrontendLocationsFromClassloader(classLoader,
+        frontendFiles.addAll(getFrontendLocationsFromClassloader(classLoader,
                 Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT));
-        return jarFiles;
+        return frontendFiles;
     }
 
     private static Set<File> getFrontendLocationsFromClassloader(
-            ClassLoader classLoader, String resourcesFolder) {
-        Set<File> jarFiles = new HashSet<>();
+            ClassLoader classLoader, String resourcesFolder)
+            throws ServletException {
+        Set<File> frontendFiles = new HashSet<>();
         try {
             Enumeration<URL> en = classLoader.getResources(resourcesFolder);
             if (en == null) {
-                return jarFiles;
+                return frontendFiles;
             }
             while (en.hasMoreElements()) {
                 URL url = en.nextElement();
 
-                Matcher jarWildfly11Matcher = VFS_FILE_REGEX_WILDFLY11
-                        .matcher(url.toString());
-                if (jarWildfly11Matcher.find()) {
-                    jarFiles.add(
-                            getWildfly11FrontendFolder(resourcesFolder, url));
+                Matcher jarVfsMatcher = VFS_FILE_REGEX.matcher(url.toString());
+                if (jarVfsMatcher.find()) {
+                    frontendFiles
+                            .add(getVfsFrontendFolder(resourcesFolder, url));
                     continue;
                 }
 
@@ -385,11 +385,12 @@ public class DevModeInitializer implements ServletContainerInitializer,
                 Matcher dirCompatibilityMatcher = DIR_REGEX_COMPATIBILITY_FRONTEND_DEFAULT
                         .matcher(path);
                 if (jarMatcher.find()) {
-                    jarFiles.add(new File(jarMatcher.group(1)));
+                    frontendFiles.add(new File(jarMatcher.group(1)));
                 } else if (dirMatcher.find()) {
-                    jarFiles.add(new File(dirMatcher.group(1)));
+                    frontendFiles.add(new File(dirMatcher.group(1)));
                 } else if (dirCompatibilityMatcher.find()) {
-                    jarFiles.add(new File(dirCompatibilityMatcher.group(1)));
+                    frontendFiles
+                            .add(new File(dirCompatibilityMatcher.group(1)));
                 } else {
                     log().warn(
                             "Resource {} not visited because does not meet supported formats.",
@@ -400,19 +401,19 @@ public class DevModeInitializer implements ServletContainerInitializer,
             throw new UncheckedIOException(e);
         }
 
-        return jarFiles;
+        return frontendFiles;
     }
 
-    private static File getWildfly11FrontendFolder(String resourcesFolder,
-            URL url) {
+    private static File getVfsFrontendFolder(String resourcesFolder, URL url)
+            throws IOException, ServletException {
         try {
             String frontendDir = url.toString();
             url = new URL(frontendDir); // openStream() does not work here
 
-            // Reflection as we cannot afford a dependency to WildFly11
             Object virtualFile = url.openConnection().getContent();
             Class virtualFileClass = virtualFile.getClass();
 
+            // Reflection as we cannot afford a dependency to WildFly or JBoss
             Method getChildrenRecursivelyMethod = virtualFileClass
                     .getMethod("getChildrenRecursively");
             Method getPhysicalFileMethod = virtualFileClass
@@ -421,20 +422,20 @@ public class DevModeInitializer implements ServletContainerInitializer,
             List virtualFiles = (List) getChildrenRecursivelyMethod
                     .invoke(virtualFile);
             for (Object child : virtualFiles) {
-                getPhysicalFileMethod.invoke(child); // side effect: create
-                                                     // real-world files
+                // side effect: create real-world files
+                getPhysicalFileMethod.invoke(child);
             }
             File rootDir = (File) getPhysicalFileMethod.invoke(virtualFile);
 
             String rootDirAbsPath = rootDir.getAbsolutePath();
             rootDirAbsPath = rootDirAbsPath.substring(0,
-                    rootDirAbsPath.length() - resourcesFolder.length() - 1);
+                    rootDirAbsPath.indexOf(resourcesFolder) - 1);
+
             return new File(rootDirAbsPath);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
         } catch (NoSuchMethodException | IllegalAccessException
                 | InvocationTargetException exc) {
-            throw new RuntimeException(exc);
+            throw new ServletException(
+                    "Failed to get physical files from JBoss.", exc);
         }
     }
 }
