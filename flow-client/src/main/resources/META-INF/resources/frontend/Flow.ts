@@ -43,7 +43,6 @@ export interface NavigationCommands {
 export class Flow {
   config: FlowConfig;
   response ?: AppInitResponse;
-  actionPending = false;
 
   // flow uses body for keeping references
   flowRoot : FlowRoot = document.body as any;
@@ -100,30 +99,50 @@ export class Flow {
     // the syntax `flow.route` in vaadin-router.
     // @ts-ignore
     return async (params: NavigationParameters) => {
-      this.actionPending = true;
       await this.flowInit();
-      this.container.onBeforeEnter = (ctx, cmd) => this.onBefore(ctx, cmd);
-      this.container.onBeforeLeave = (ctx, cmd) => this.onBefore(ctx, cmd);
+      // When an action happens, navigation will be resolved `onBeforeEnter` call
+      // thus, `onBeforeLeave` is not needed
+      this.container.onBeforeEnter = (ctx, cmd) => this.onBeforeEnter(ctx, cmd);
+      delete this.container.onBeforeLeave;
+
       return this.container;
     }
   }
 
-  private onBefore(ctx: NavigationParameters, cmd: NavigationCommands) {
-    return this.actionPending
-      ? this.flowNavigate(ctx, cmd).then(() => this.actionPending = false)
-      : Promise.resolve();
+  private onBeforeEnter(ctx: NavigationParameters, cmd: NavigationCommands) {
+    return this.flowNavigate(ctx, cmd)
+      .then(result => {
+        // It's only needed on 'server -> client' navigation
+        this.container.onBeforeLeave = (ctx2, cmd2) => this.flowLeave(ctx2, cmd2);
+        return result;
+      });
+  }
+
+  // Send a remote call to `JavaScriptBootstrapUI` to check
+  // whether navigation has to be cancelled.
+  private async flowLeave(ctx: NavigationParameters, cmd?: NavigationCommands): Promise<any> {
+    return new Promise(resolve => {
+      // The callback to run from server side to cancel navigation
+      this.container.serverConnected = cancel => {
+        resolve(cmd && cancel ? cmd.prevent() : {});
+      }
+
+      // Call server side to check whether we can leave the view
+      this.flowRoot.$server.leaveNavigation(ctx.pathname);
+    });
   }
 
   // Send the remote call to `JavaScriptBootstrapUI` to render the flow
-  // route specified by `routePath`
+  // route specified by the context
   private async flowNavigate(ctx: NavigationParameters, cmd?: NavigationCommands): Promise<HTMLElement> {
     return new Promise(resolve => {
       // The callback to run from server side once the view is ready
-      this.container.serverConnected = cancel =>
+      this.container.serverConnected = cancel => 
         resolve(cmd && cancel ? cmd.prevent() : this.container);
-      const flowRoute: string = ctx.pathname + (ctx.search ? ctx.search : '');
+
       // Call server side to navigate to the given route
-      this.flowRoot.$server.connectClient(this.container.localName, this.container.id, flowRoute);
+      this.flowRoot.$server
+        .connectClient(this.container.localName, this.container.id, ctx.pathname + (ctx.search || ''));
     });
   }
 
@@ -196,6 +215,5 @@ export class Flow {
       httpRequest.send();
     });
   }
-
 }
 
