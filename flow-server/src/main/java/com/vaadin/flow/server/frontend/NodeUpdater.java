@@ -37,6 +37,7 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
+import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
@@ -63,7 +64,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     private static final String DEP_LICENSE_DEFAULT = "UNLICENSED";
     private static final String DEP_NAME_KEY = "name";
     private static final String DEP_NAME_DEFAULT = "no-name";
-    private static final String DEP_NAME_FLOW_DEPS = "@vaadin/flow-deps";
+    protected static final String DEP_NAME_FLOW_DEPS = "@vaadin/flow-deps";
     private static final String DEP_VERSION_KEY = "version";
     private static final String DEP_VERSION_DEFAULT = "1.0.0";
 
@@ -166,9 +167,8 @@ public abstract class NodeUpdater implements FallibleCommand {
             // We only should check here those paths starting with './' when all
             // flow components
             // have the './' prefix
-            String resource = resolved.replaceFirst("^./+", "");
-            if (finder.getResource(
-                    RESOURCES_FRONTEND_DEFAULT + "/" + resource) != null) {
+            String resource = resolved.replaceFirst("^\\./+", "");
+            if (hasMetaInfResource(resource)) {
                 if (!resolved.startsWith("./")) {
                     log().warn(
                             "Use the './' prefix for files in JAR files: '{}', please update your component.",
@@ -178,6 +178,13 @@ public abstract class NodeUpdater implements FallibleCommand {
             }
         }
         return resolved;
+    }
+
+    private boolean hasMetaInfResource(String resource) {
+        return finder.getResource(
+                RESOURCES_FRONTEND_DEFAULT + "/" + resource) != null
+                || finder.getResource(COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT
+                        + "/" + resource) != null;
     }
 
     JsonObject getMainPackageJson() throws IOException {
@@ -211,11 +218,17 @@ public abstract class NodeUpdater implements FallibleCommand {
                 "@webcomponents/webcomponentsjs", "^2.2.10") || added;
         // dependency for the custom package.json placed in the generated
         // folder.
-        String customPkg = "./" + npmFolder.getAbsoluteFile().toPath()
-                .relativize(generatedFolder.toPath()).toString();
-        added = addDependency(packageJson, DEPENDENCIES, DEP_NAME_FLOW_DEPS,
-                customPkg.replaceAll("\\\\", "/")) || added;
-
+        try {
+            String customPkg = "./" + npmFolder.getAbsoluteFile().toPath()
+                    .relativize(generatedFolder.getAbsoluteFile().toPath()).toString();
+            added = addDependency(packageJson, DEPENDENCIES, DEP_NAME_FLOW_DEPS,
+                    customPkg.replaceAll("\\\\", "/")) || added;
+        } catch (IllegalArgumentException iae) {
+            log().error("Exception in relativization of '%s' to '%s'",
+                    npmFolder.getAbsoluteFile().toPath(),
+                    generatedFolder.getAbsoluteFile().toPath());
+            throw iae;
+        }
         added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack",
                 "4.30.0") || added;
         added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack-cli",
@@ -255,20 +268,22 @@ public abstract class NodeUpdater implements FallibleCommand {
         return false;
     }
 
-    void writeMainPackageFile(JsonObject packageJson) throws IOException {
-        writePackageFile(packageJson, new File(npmFolder, PACKAGE_JSON));
+    String writeMainPackageFile(JsonObject packageJson) throws IOException {
+        return writePackageFile(packageJson, new File(npmFolder, PACKAGE_JSON));
     }
 
-    void writeAppPackageFile(JsonObject packageJson) throws IOException {
-        writePackageFile(packageJson, new File(generatedFolder, PACKAGE_JSON));
+    String writeAppPackageFile(JsonObject packageJson) throws IOException {
+        return writePackageFile(packageJson,
+                new File(generatedFolder, PACKAGE_JSON));
     }
 
-    void writePackageFile(JsonObject json, File packageFile)
+    String writePackageFile(JsonObject json, File packageFile)
             throws IOException {
         log().info("Updated npm {}.", packageFile.getAbsolutePath());
         FileUtils.forceMkdirParent(packageFile);
-        FileUtils.writeStringToFile(packageFile, stringify(json, 2) + "\n",
-                UTF_8.name());
+        String content = stringify(json, 2) + "\n";
+        FileUtils.writeStringToFile(packageFile, content, UTF_8.name());
+        return content;
     }
 
     Logger log() {

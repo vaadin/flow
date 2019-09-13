@@ -36,6 +36,11 @@ public final class Constants implements Serializable {
 
     public static final String SERVLET_PARAMETER_PRODUCTION_MODE = "productionMode";
 
+    // Token file keys used for defining folder paths for dev server
+    public static final String NPM_TOKEN = "npmFolder";
+    public static final String FRONTEND_TOKEN = "frontendFolder";
+    public static final String GENERATED_TOKEN = "generatedFolder";
+
     /**
      * enable it if your project is a Polymer 2.0 one, should be removed in V15
      *
@@ -163,9 +168,15 @@ public final class Constants implements Serializable {
     public static final String PACKAGE_JSON = "package.json";
 
     /**
+     * Location for the frontend resources in jar files for compatibility mode
+     * (also obsolete but supported for NPM mode).
+     */
+    public static final String COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT = "META-INF/resources/frontend";
+
+    /**
      * Location for the frontend resources in jar files.
      */
-    public static final String RESOURCES_FRONTEND_DEFAULT = "META-INF/resources/frontend";
+    public static final String RESOURCES_FRONTEND_DEFAULT = "META-INF/frontend";
 
     /**
      * Configuration name for the time waiting for webpack output success or

@@ -18,6 +18,9 @@ package com.vaadin.flow.osgi;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 
+import java.util.Dictionary;
+import java.util.Hashtable;
+
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
@@ -108,25 +111,29 @@ public class Activator implements BundleActivator {
                 service.unregister("/view-es6-url/*");
             }
 
+            @SuppressWarnings({ "unchecked", "rawtypes" })
             @Override
             public HttpService addingService(
                     ServiceReference<HttpService> reference) {
                 // HTTP service is available, register our servlet...
                 HttpService httpService = this.context.getService(reference);
+                Dictionary dictionary = new Hashtable<>();
+                dictionary.put("bowerMode", Boolean.TRUE.toString());
                 try {
                     httpService.registerServlet("/view/*",
-                            new FixedViewServlet(), null, null);
+                            new FixedViewServlet(), dictionary, null);
                     httpService.registerServlet("/frontend/*",
-                            new WebJarsServlet(), null, null);
+                            new WebJarsServlet(), dictionary, null);
                     httpService.registerServlet("/new-router-session/*",
-                            new FixedRouterServlet(), null, null);
+                            new FixedRouterServlet(), dictionary, null);
                     httpService.registerServlet("/view-production/*",
-                            new FixedProductionModeViewServlet(), null, null);
+                            new FixedProductionModeViewServlet(), dictionary,
+                            null);
                     httpService.registerServlet("/view-production-timing/*",
                             new FixedProductionModeTimingDataViewServlet(),
-                            null, null);
+                            dictionary, null);
                     httpService.registerServlet("/view-es6-url/*",
-                            new FixedEs6UrlViewServlet(), null, null);
+                            new FixedEs6UrlViewServlet(), dictionary, null);
                 } catch (ServletException | NamespaceException exception) {
                     throw new RuntimeException(exception);
                 }

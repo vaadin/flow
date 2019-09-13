@@ -16,6 +16,7 @@
 package com.vaadin.flow.server.communication;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -35,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.NoInputStreamException;
@@ -85,6 +87,10 @@ public class StreamReceiverHandler implements Serializable {
         public UploadInterruptedException() {
             super("Upload interrupted by other thread");
         }
+    }
+
+    enum UploadStatus {
+        OK, ERROR
     }
 
     /**
@@ -168,15 +174,24 @@ public class StreamReceiverHandler implements Serializable {
     protected void doHandleMultipartFileUpload(VaadinSession session,
             VaadinRequest request, VaadinResponse response,
             StreamReceiver streamReceiver, StateNode owner) throws IOException {
-
-        if (hasParts(request)) {
-            handleMultipartFileUploadFromParts(session, request, streamReceiver,
-                    owner);
-        } else {
-            handleMultipartFileUploadFromInputStream(session, request,
-                    streamReceiver, owner);
+        boolean success = false;
+        try {
+            if (hasParts(request)) {
+                success = handleMultipartFileUploadFromParts(session, request,
+                        streamReceiver, owner);
+            } else {
+                success = handleMultipartFileUploadFromInputStream(session,
+                        request, streamReceiver, owner);
+            }
+        } catch (Exception exception) {
+            session.lock();
+            try {
+                session.getErrorHandler().error(new ErrorEvent(exception));
+            } finally {
+                session.unlock();
+            }
         }
-        sendUploadResponse(response);
+        sendUploadResponse(response, success);
     }
 
     private boolean hasParts(VaadinRequest request) throws IOException {
@@ -192,27 +207,36 @@ public class StreamReceiverHandler implements Serializable {
         }
     }
 
-    private void handleMultipartFileUploadFromParts(VaadinSession session,
+    private boolean handleMultipartFileUploadFromParts(VaadinSession session,
             VaadinRequest request, StreamReceiver streamReceiver,
             StateNode owner) throws IOException {
         // If we try to parse the request now, we will get an exception
         // since it has already been parsed and turned into Parts.
+        boolean success = true;
         try {
             Iterator<Part> iter = getParts(request).iterator();
             while (iter.hasNext()) {
                 Part part = iter.next();
-                handleStream(session, streamReceiver, owner, part);
+                boolean partSuccess = handleStream(session, streamReceiver,
+                        owner, part);
+                success = success && partSuccess;
             }
         } catch (Exception e) {
+            success = false;
             // This should only happen if the request is not a multipart
             // request and this we have already checked in hasParts().
             getLogger().warn("File upload failed.", e);
         }
+        return success;
     }
 
-    private void handleMultipartFileUploadFromInputStream(VaadinSession session,
+    private boolean handleMultipartFileUploadFromInputStream(VaadinSession session,
             VaadinRequest request, StreamReceiver streamReceiver,
             StateNode owner) throws IOException {
+        // Create a new file upload handler
+        ServletFileUpload upload = new ServletFileUpload();
+
+        boolean success = true;
         long contentLength = request.getContentLength();
         // Parse the request
         FileItemIterator iter;
@@ -220,38 +244,45 @@ public class StreamReceiverHandler implements Serializable {
             iter = getItemIterator(request);
             while (iter.hasNext()) {
                 FileItemStream item = iter.next();
-                handleStream(session, streamReceiver, owner, contentLength,
-                        item);
+                boolean itemSuccess = handleStream(session, streamReceiver,
+                        owner, contentLength, item);
+                success = success && itemSuccess;
             }
         } catch (FileUploadException e) {
+            success = false;
             getLogger().warn("File upload failed.", e);
         }
+        return success;
     }
 
-    private void handleStream(VaadinSession session,
+    private boolean handleStream(VaadinSession session,
             StreamReceiver streamReceiver, StateNode owner, Part part)
             throws IOException {
         String name = part.getSubmittedFileName();
         InputStream stream = part.getInputStream();
         try {
-            handleFileUploadValidationAndData(session, stream, streamReceiver,
-                    name, part.getContentType(), part.getSize(), owner);
+            return handleFileUploadValidationAndData(session, stream,
+                    streamReceiver, name, part.getContentType(), part.getSize(),
+                    owner);
         } catch (UploadException e) {
             session.getErrorHandler().error(new ErrorEvent(e));
         }
+        return false;
     }
 
-    private void handleStream(VaadinSession session,
+    private boolean handleStream(VaadinSession session,
             StreamReceiver streamReceiver, StateNode owner, long contentLength,
             FileItemStream item) throws IOException {
         String name = item.getName();
         InputStream stream = item.openStream();
         try {
-            handleFileUploadValidationAndData(session, stream, streamReceiver,
-                    name, item.getContentType(), contentLength, owner);
+            return handleFileUploadValidationAndData(session, stream,
+                    streamReceiver, name, item.getContentType(), contentLength,
+                    owner);
         } catch (UploadException e) {
             session.getErrorHandler().error(new ErrorEvent(e));
         }
+        return false;
     }
 
     /**
@@ -289,16 +320,17 @@ public class StreamReceiverHandler implements Serializable {
         final String mimeType = filename;
         final InputStream stream = request.getInputStream();
 
+        boolean success = false;
         try {
-            handleFileUploadValidationAndData(session, stream, streamReceiver,
-                    filename, mimeType, contentLength, owner);
+            success = handleFileUploadValidationAndData(session, stream,
+                    streamReceiver, filename, mimeType, contentLength, owner);
         } catch (UploadException e) {
             session.getErrorHandler().error(new ErrorEvent(e));
         }
-        sendUploadResponse(response);
+        sendUploadResponse(response, success);
     }
 
-    private void handleFileUploadValidationAndData(VaadinSession session,
+    private boolean handleFileUploadValidationAndData(VaadinSession session,
             InputStream inputStream, StreamReceiver streamReceiver,
             String filename, String mimeType, long contentLength,
             StateNode node) throws UploadException {
@@ -318,11 +350,13 @@ public class StreamReceiverHandler implements Serializable {
         try {
             // Store ui reference so we can do cleanup even if node is
             // detached in some event handler
-            boolean forgetVariable = streamToReceiver(session, inputStream,
-                    streamReceiver, filename, mimeType, contentLength);
-            if (forgetVariable) {
+            Pair<Boolean, UploadStatus> result = streamToReceiver(session,
+                    inputStream, streamReceiver, filename, mimeType,
+                    contentLength);
+            if (result.getFirst()) {
                 cleanStreamVariable(session, streamReceiver);
             }
+            return result.getSecond() == UploadStatus.OK;
         } catch (Exception e) {
             session.lock();
             try {
@@ -331,6 +365,7 @@ public class StreamReceiverHandler implements Serializable {
                 session.unlock();
             }
         }
+        return false;
     }
 
     /**
@@ -365,18 +400,23 @@ public class StreamReceiverHandler implements Serializable {
      * @throws IOException
      *             exception when writing to stream
      */
-    private void sendUploadResponse(VaadinResponse response)
+    private void sendUploadResponse(VaadinResponse response, boolean success)
             throws IOException {
         response.setContentType(
                 ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8);
-        try (OutputStream out = response.getOutputStream()) {
-            final PrintWriter outWriter = new PrintWriter(
-                    new BufferedWriter(new OutputStreamWriter(out, UTF_8)));
-            try {
-                outWriter.print("<html><body>download handled</body></html>");
-            } finally {
-                outWriter.flush();
+        if (success) {
+            try (OutputStream out = response.getOutputStream()) {
+                final PrintWriter outWriter = new PrintWriter(
+                        new BufferedWriter(new OutputStreamWriter(out, UTF_8)));
+                try {
+                    outWriter.print(
+                            "<html><body>download handled</body></html>");
+                } finally {
+                    outWriter.flush();
+                }
             }
+        } else {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -390,10 +430,10 @@ public class StreamReceiverHandler implements Serializable {
         }
     }
 
-    private final boolean streamToReceiver(VaadinSession session,
-            final InputStream in, StreamReceiver streamReceiver,
-            String filename, String type, long contentLength)
-            throws UploadException {
+    private final Pair<Boolean, UploadStatus> streamToReceiver(
+            VaadinSession session, final InputStream in,
+            StreamReceiver streamReceiver, String filename, String type,
+            long contentLength) throws UploadException {
         StreamVariable streamVariable = streamReceiver.getStreamVariable();
         if (streamVariable == null) {
             throw new IllegalStateException(
@@ -404,6 +444,7 @@ public class StreamReceiverHandler implements Serializable {
         long totalBytes = 0;
         StreamingStartEventImpl startedEvent = new StreamingStartEventImpl(
                 filename, type, contentLength);
+        boolean success = false;
         try {
             boolean listenProgress;
             session.lock();
@@ -457,7 +498,7 @@ public class StreamReceiverHandler implements Serializable {
             } finally {
                 session.unlock();
             }
-
+            success = true;
         } catch (UploadInterruptedException e) {
             // Download interrupted by application code
             tryToCloseStream(out);
@@ -485,7 +526,8 @@ public class StreamReceiverHandler implements Serializable {
                 session.unlock();
             }
         }
-        return startedEvent.isDisposed();
+        return new Pair<>(startedEvent.isDisposed(),
+                success ? UploadStatus.OK : UploadStatus.ERROR);
     }
 
     private long updateProgress(VaadinSession session,

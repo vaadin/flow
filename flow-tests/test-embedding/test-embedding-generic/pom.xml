@@ -4,8 +4,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <artifactId>test-embedding</artifactId>
         <groupId>com.vaadin</groupId>
+        <artifactId>test-embedding</artifactId>
         <version>2.1.portal-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-embedding-generic</artifactId>
@@ -16,12 +16,6 @@
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>flow-test-resources</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-embedding-test-assets</artifactId>
