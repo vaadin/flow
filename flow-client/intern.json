@@ -9,6 +9,9 @@
           "window-size=1024x768"
         ]
       },
+      "goog:chromeOptions": {
+        "w3c": false
+      },
       "fixSessionCapabilities": "no-detect"
     }
   ],
