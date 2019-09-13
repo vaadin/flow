@@ -271,11 +271,6 @@ public class VaadinServletContextInitializer
     private class DevModeServletContextListener
             implements ServletContextListener {
 
-        /**
-         * 
-         */
-        private static final String SEARCH_TIME_MESSAGE = "Search for {} took {} seconds";
-
         @SuppressWarnings({ "unchecked", "rawtypes" })
         @Override
         public void contextInitialized(ServletContextEvent event) {
@@ -308,44 +303,21 @@ public class VaadinServletContextInitializer
                 basePackages = Collections.singleton("");
             }
 
-            // Handle classes Route.class, NpmPackage.class,
-            // WebComponentExporter.class
             long start = System.currentTimeMillis();
-            Set<Class<?>> classes = findByAnnotation(basePackages, customLoader,
-                    Route.class, NpmPackage.class, NpmPackage.Container.class)
-                            .collect(Collectors.toSet());
-            long annotationScanning = System.currentTimeMillis();
+
+            List<Class<? extends Annotation>> annotations = Arrays.asList(
+                    Route.class, NpmPackage.class, NpmPackage.Container.class);
+            List<Class<?>> supertypes = Arrays.asList(
+                    WebComponentExporter.class, UIInitListener.class,
+                    VaadinServiceInitListener.class);
+            Set<Class<?>> classes = findByAnnotationOrSuperType(basePackages,
+                    customLoader, annotations, supertypes)
+                    .collect(Collectors.toSet());
+
+            final long classScanning = System.currentTimeMillis();
             getLogger().info(
-                    "Search for classes with annotations took {} seconds",
-                    (annotationScanning - start) / 1000);
-
-            classes.addAll(findBySuperType(basePackages, customLoader,
-                    WebComponentExporter.class).collect(Collectors.toSet()));
-            long webComponentsScanning = System.currentTimeMillis();
-            getLogger().info(SEARCH_TIME_MESSAGE,
-                    WebComponentExporter.class.getSimpleName(),
-                    (webComponentsScanning - annotationScanning) / 1000);
-
-            classes.addAll(findBySuperType(basePackages, customLoader,
-                    UIInitListener.class).collect(Collectors.toSet()));
-            long uiInitScanning = System.currentTimeMillis();
-            getLogger().info(SEARCH_TIME_MESSAGE,
-                    UIInitListener.class.getSimpleName(),
-                    (uiInitScanning - webComponentsScanning) / 1000);
-
-            classes.addAll(findBySuperType(basePackages, customLoader,
-                    VaadinServiceInitListener.class)
-                            .collect(Collectors.toSet()));
-            long serviceInitScanning = System.currentTimeMillis();
-            getLogger().info(SEARCH_TIME_MESSAGE,
-                    VaadinServiceInitListener.class.getSimpleName(),
-                    (serviceInitScanning - uiInitScanning) / 1000);
-
-            getLogger().info("Search for subclasses took {} seconds",
-                    (serviceInitScanning - annotationScanning) / 1000);
-
-            getLogger().info("Search for all classes took {} seconds",
-                    (serviceInitScanning - start) / 1000);
+                    "Search for subclasses and classes with annotations took {} seconds",
+                    (classScanning - start) / 1000);
 
             try {
                 DevModeInitializer.initDevModeHandler(classes,
@@ -501,15 +473,8 @@ public class VaadinServletContextInitializer
 
     private Stream<Class<?>> findByAnnotation(Collection<String> packages,
             ResourceLoader loader, Class<? extends Annotation>... annotations) {
-        ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(
-                false);
-
-        scanner.setResourceLoader(loader);
-        Stream.of(annotations).forEach(annotation -> scanner
-                .addIncludeFilter(new AnnotationTypeFilter(annotation)));
-
-        return packages.stream().map(scanner::findCandidateComponents)
-                .flatMap(Collection::stream).map(this::getBeanClass);
+        return findByAnnotationOrSuperType(packages,loader,
+                Arrays.asList(annotations), Collections.emptySet());
     }
 
     private Stream<Class<?>> findBySuperType(Collection<String> packages,
@@ -519,13 +484,22 @@ public class VaadinServletContextInitializer
 
     private Stream<Class<?>> findBySuperType(Collection<String> packages,
             ResourceLoader loader, Class<?> type) {
+        return findByAnnotationOrSuperType(packages, loader,
+                Collections.emptySet(), Collections.singleton(type));
+    }
+
+    private Stream<Class<?>> findByAnnotationOrSuperType(Collection<String> packages,
+            ResourceLoader loader, Collection<Class<? extends Annotation>> annotations,
+            Collection<Class<?>> types) {
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(
                 false);
         scanner.setResourceLoader(loader);
-        scanner.addIncludeFilter(new AssignableTypeFilter(type));
-
+        annotations.forEach(annotation ->
+                scanner.addIncludeFilter(new AnnotationTypeFilter(annotation)));
+        types.forEach(type ->
+                scanner.addIncludeFilter(new AssignableTypeFilter(type)));
         return packages.stream().map(scanner::findCandidateComponents)
-                .flatMap(set -> set.stream()).map(this::getBeanClass);
+                .flatMap(Collection::stream).map(this::getBeanClass);
     }
 
     private Class<?> getBeanClass(BeanDefinition beanDefinition) {
