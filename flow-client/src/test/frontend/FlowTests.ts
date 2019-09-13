@@ -122,12 +122,12 @@ suite("Flow", () => {
       .navigate({pathname: "Foo"})
       .then(e1 => {
         return flow
-        .navigate({pathname: "Bar"})
-        .then(e2 => {
-          assert.equal(1, Object.keys(flowRoot.$).length);
-          assert.equal(e1, e2);
-          assert.equal(e1.id, e2.id);
-        });
+          .navigate({pathname: "Bar"})
+          .then(e2 => {
+            assert.equal(1, Object.keys(flowRoot.$).length);
+            assert.equal(e1, e2);
+            assert.equal(e1.id, e2.id);
+          });
       });
   });
 
@@ -169,7 +169,7 @@ suite("Flow", () => {
     const route = new Flow().route;
 
     return route.action({pathname: 'Foo/Bar.baz'})
-      .then(async(elem) => {
+      .then((elem) => {
 
         // Check that flowInit() was called
         assert.isDefined((window as any).Vaadin.Flow.resolveUri);
@@ -185,11 +185,11 @@ suite("Flow", () => {
         assert.isDefined(elem.onBeforeEnter);
 
         // @ts-ignore
-        const promise = elem.onBeforeEnter({pathname: 'Foo/Bar.baz'}, {prevent: () => {
+        elem.onBeforeEnter({pathname: 'Foo/Bar.baz'}, {prevent: () => {
           return {cancel: true};
-        }});
+        }})
+        .then(obj => assert.isTrue(obj.cancel));
 
-        promise.then(obj => assert.isTrue(obj.cancel));
       });
   });
 
@@ -198,48 +198,42 @@ suite("Flow", () => {
     stubServerRemoteFunction('foobar-12345', true);
 
     mockInitResponse('foobar-12345');
-
     const route = new Flow().route;
 
     return route.action({pathname: 'Foo/Bar.baz'})
-      .then(async(elem) => {
+      .then((elem: any) => {
 
-        // When using router API, it should expose the onBeforeEnter handler
-        assert.isDefined(elem.onBeforeLeave);
+        // `onBeforeLeave` is not yet set at this point
+        assert.isUndefined(elem.onBeforeLeave);
 
-        // @ts-ignore
-        const promise = elem.onBeforeLeave({pathname: 'Foo/Bar.baz'}, {prevent: () => {
-          return {cancel: true};
-        }});
-
-        promise.then(obj => assert.isTrue(obj.cancel));
-      });
-  });
-
-  test("should not run onBeforeLeave if action already resolved", () => {
-    stubServerRemoteFunction('foobar-12345', false);
-    mockInitResponse('foobar-12345');
-
-    const route = new Flow().route;
-
-    return route.action({pathname: 'Foo/Bar.baz'})
-      .then(async(elem: any) => {
-        elem.onBeforeEnter({pathname: 'Foo/Bar.baz'}, {})
-        .then(() =>{
-          // onBeforeEnter called server to set view content
+        elem.onBeforeEnter({pathname: 'Foo/Bar.baz'}, {prevent: () => {
+          // set cancel to false even though server is cancelling
+          return {cancel: false};
+        }})
+        .then((result: any) => {
+          // view content was set
+          assert.isFalse(result.cancel);
           assert.equal(1, elem.children.length);
-          // remove view content
-          elem.innerHTML = '';
 
-          elem.onBeforeLeave({pathname: 'Foo/Bar.baz'}, {});
-          // onBeforeLeave should not call server to put add the view content
-          assert.equal(0, elem.children.length);
+          // `onBeforeEnter` defines `onBeforeLeave` function
+          assert.isDefined(elem.onBeforeLeave);
+
+          elem.onBeforeLeave({pathname: 'Foo/Bar.baz'}, {prevent: () => {
+            // set cancel to true
+            return {cancel: true};
+          }})
+          .then((result: any) => {
+            // Navigation cancelled onBeforeLeave
+            assert.isTrue(result.cancel);
+          });
         });
       });
   });
+
 });
 
 function stubServerRemoteFunction(id: string, cancel: boolean = false) {
+  let container : any;
   // Stub remote function exported in JavaScriptBootstrapUI.
   flowRoot.$server = {
     connectClient: (localName: string, elemId: string, route: string) => {
@@ -250,13 +244,20 @@ function stubServerRemoteFunction(id: string, cancel: boolean = false) {
       assert.equal(elemId, id);
       assert.equal(localName, `flow-container-${elemId.toLowerCase()}`);
 
-      assert.isDefined(flowRoot.$[elemId]);
-      assert.isDefined(flowRoot.$[elemId].serverConnected);
+      container = flowRoot.$[elemId];
 
-      flowRoot.$[elemId].appendChild(document.createElement('div'));
+      assert.isDefined(container);
+      assert.isDefined(container.serverConnected);
+
+      container.appendChild(document.createElement('div'));
 
       // Resolve the promise
       flowRoot.$[elemId].serverConnected(cancel);
+    },
+    leaveNavigation: (route: string) => {
+      assert.isDefined(route);
+      // Resolve the promise
+      container.serverConnected(cancel);
     }
   };
 }
