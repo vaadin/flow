@@ -29,6 +29,7 @@ interface FlowRoot {
 
 export interface NavigationParameters {
   pathname: string;
+  search: string;
 }
 
 export interface NavigationCommands {
@@ -114,9 +115,9 @@ export class Flow {
       // The callback to run from server side once the view is ready
       this.container.serverConnected = cancel =>
         resolve(cmd && cancel ? cmd.prevent() : this.container);
-
+      const flowRoute: string = ctx.pathname + (ctx.search ? ctx.search : '');
       // Call server side to navigate to the given route
-      this.flowRoot.$server.connectClient(this.container.localName, this.container.id, ctx.pathname);
+      this.flowRoot.$server.connectClient(this.container.localName, this.container.id, flowRoute);
     });
   }
 

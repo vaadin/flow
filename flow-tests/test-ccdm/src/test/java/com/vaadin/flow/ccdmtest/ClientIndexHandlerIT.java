@@ -189,6 +189,24 @@ public class ClientIndexHandlerIT extends ChromeBrowserTest {
     }
 
     @Test
+    public void should_executeSetParameter_WhenRouteHasParameterAndQueryString() {
+        openTestUrl("/");
+        waitForElementPresent(By.id("button3"));
+        String inputParam = "123";
+        String queryString = "query1=123&query2=456";
+        findElement(By.id("pathname"))
+                .sendKeys("paramview/" + inputParam + "?" + queryString);
+        findElement(By.id("button3")).click();
+        waitForElementPresent(By.id("result"));
+
+        String content = findElement(By.id("result")).getText();
+        Assert.assertEquals("Should execute set parameter method",
+                "Main layout\nParameter: " + inputParam + " - Query string: "
+                        + queryString,
+                content);
+    }
+
+    @Test
     public void should_rerouteToOtherView_WhenViewRerouteInOnBeforeEnter() {
         openTestUrl("/");
         waitForElementPresent(By.id("button3"));

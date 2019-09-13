@@ -25,6 +25,12 @@ public class ViewWithParameter extends Div implements HasUrlParameter<String> {
 
     @Override
     public void setParameter(BeforeEvent event, String parameter) {
-        setText("Parameter: " + parameter);
+        String textContent = "Parameter: " + parameter;
+        String queryString = event.getLocation().getQueryParameters()
+                .getQueryString();
+        if (queryString.length() > 0) {
+            textContent += " - Query string: " + queryString;
+        }
+        setText(textContent);
     }
 }
