@@ -83,9 +83,31 @@ public class JavaScriptBootstrapUITest  {
         // clean view cannot be rendered after dirty
         ui.connectClient("foo", "bar", "/clean");
         assertEquals(Tag.H1, ui.wrapperElement.getChild(0).getChild(0).getTag());
-        
+
         // an error route cannot be rendered after dirty
         ui.connectClient("foo", "bar", "/errr");
+        assertEquals(Tag.H1, ui.wrapperElement.getChild(0).getChild(0).getTag());
+    }
+
+    @Test
+    public void should_remove_content_on_leaveNavigation() {
+        ui.connectClient("foo", "bar", "/clean");
+        assertEquals(Tag.HEADER, ui.wrapperElement.getChild(0).getTag());
+        assertEquals(Tag.H2, ui.wrapperElement.getChild(0).getChild(0).getTag());
+
+        ui.leaveNavigation("/client-view");
+
+        assertEquals(0, ui.wrapperElement.getChildCount());
+    }
+
+    @Test
+    public void should_keep_content_on_leaveNavigation_postpone() {
+        ui.connectClient("foo", "bar", "/dirty");
+        assertEquals(Tag.SPAN, ui.wrapperElement.getChild(0).getTag());
+        assertEquals(Tag.H1, ui.wrapperElement.getChild(0).getChild(0).getTag());
+
+        ui.leaveNavigation("/client-view");
+        assertEquals(Tag.SPAN, ui.wrapperElement.getChild(0).getTag());
         assertEquals(Tag.H1, ui.wrapperElement.getChild(0).getChild(0).getTag());
     }
 

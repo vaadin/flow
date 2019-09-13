@@ -70,7 +70,6 @@ public class JavaScriptBootstrapUI extends UI {
      */
     @ClientCallable
     public void connectClient(String clientElementTag, String clientElementId, String flowRoute) {
-
         if (wrapperElement == null) {
             // Create flow reference for the client outlet element
             wrapperElement = new Element(clientElementTag);
@@ -81,10 +80,29 @@ public class JavaScriptBootstrapUI extends UI {
                     NodeProperties.INJECT_BY_ID, clientElementId);
         }
         // Render the flow view that the user wants to navigate to.
-        boolean posponed = renderViewForRoute(flowRoute);
+        boolean postponed = renderViewForRoute(flowRoute);
 
         // Inform the client, that everything went fine.
-        wrapperElement.executeJs("this.serverConnected($0)", posponed);
+        wrapperElement.executeJs("this.serverConnected($0)", postponed);
+    }
+
+    @ClientCallable
+    public void leaveNavigation(String newRoute) {
+        boolean postponed = postponedNavigation();
+        if (!postponed) {
+            wrapperElement.removeAllChildren();
+        }
+
+        // Inform the client whether the navigation should be postponed
+        wrapperElement.executeJs("this.serverConnected($0)", postponed);
+    }
+
+    private boolean postponedNavigation() {
+        Location activeLocation = this.getInternals().getActiveViewLocation();
+        Optional<NavigationState> navigationState = this.getRouter()
+                .resolveNavigationTarget(activeLocation);
+        return navigationState.isPresent()
+                && handleNavigation(activeLocation, navigationState.get());
     }
 
     private boolean renderViewForRoute(String route) {
@@ -98,13 +116,10 @@ public class JavaScriptBootstrapUI extends UI {
             // There is a valid route in flow.
             return handleNavigation(location, navigationState.get());
         } else {
-
             // When route does not exist, try to navigate to current route
             // in order to check if current view can be left before showing
             // the error page
-            Location activeLocation = this.getInternals().getActiveViewLocation();
-            navigationState = this.getRouter().resolveNavigationTarget(activeLocation);
-            if (navigationState.isPresent() && handleNavigation(activeLocation, navigationState.get())) {
+            if (postponedNavigation()) {
                 return true;
             }
 
