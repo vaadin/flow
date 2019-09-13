@@ -18,7 +18,6 @@ package com.vaadin.flow.server;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -45,6 +44,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.RequestUtil;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS;
@@ -319,22 +319,20 @@ public final class DevModeHandler implements Serializable {
         String requestFilename = request.getPathInfo().replace(VAADIN_MAPPING,
                 "");
 
-        HttpURLConnection connection = prepareConnection(requestFilename,
-                request.getMethod());
-
-        // Copies all the headers from the original request
-        Enumeration<String> headerNames = request.getHeaderNames();
-        while (headerNames.hasMoreElements()) {
-            String header = headerNames.nextElement();
-            connection.setRequestProperty(header,
-                    // Exclude keep-alive
-                    "Connect".equals(header) ? "close"
-                            : request.getHeader(header));
+        HttpURLConnection connection = null;
+        // Request gzipped resource if supported
+        if(RequestUtil.acceptsGzippedResource(request)) {
+            String zippedRequestFilename = requestFilename + ".gz";
+            connection = requestFile(request, zippedRequestFilename);
+            if(connection.getResponseCode() == HTTP_OK) {
+                response.setHeader("Content-Encoding", "gzip");
+                response.setHeader("Vary", "Accept-Encoding");
+            }
         }
 
-        // Send the request
-        getLogger().debug("Requesting resource to webpack {}",
-                connection.getURL());
+        if(connection == null || connection.getResponseCode() == HTTP_NOT_FOUND) {
+            connection = requestFile(request, requestFilename);
+        }
         int responseCode = connection.getResponseCode();
         if (responseCode == HTTP_NOT_FOUND) {
             getLogger().debug("Resource not served by webpack {}",
@@ -353,6 +351,11 @@ public final class DevModeHandler implements Serializable {
             }
         });
 
+        // In case of gzipped javaScript the type should still be javascript
+        if (requestFilename.endsWith(".js")) {
+            response.setContentType("application/javascript");
+        }
+
         if (responseCode == HTTP_OK) {
             // Copies response payload
             writeStream(response.getOutputStream(),
@@ -366,6 +369,27 @@ public final class DevModeHandler implements Serializable {
         response.getOutputStream().close();
 
         return true;
+    }
+
+    public HttpURLConnection requestFile(HttpServletRequest request,
+            String requestFilename) throws IOException {
+        HttpURLConnection connection = prepareConnection(requestFilename,
+                request.getMethod());
+
+        // Copies all the headers from the original request
+        Enumeration<String> headerNames = request.getHeaderNames();
+        while (headerNames.hasMoreElements()) {
+            String header = headerNames.nextElement();
+            connection.setRequestProperty(header,
+                    // Exclude keep-alive
+                    "Connect".equals(header) ? "close"
+                            : request.getHeader(header));
+        }
+
+        // Send the request
+        getLogger().debug("Requesting resource to webpack {}",
+                connection.getURL());
+        return connection;
     }
 
     private boolean checkWebpackConnection() {
@@ -414,9 +438,9 @@ public final class DevModeHandler implements Serializable {
     private void logStream(InputStream input, Pattern success,
             Pattern failure) {
         Thread thread = new Thread(() -> {
-            BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(input, StandardCharsets.UTF_8));
-            try {
+
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(input, StandardCharsets.UTF_8))) {
                 readLinesLoop(success, failure, reader);
             } catch (IOException e) {
                 getLogger().error("Exception when reading webpack output.", e);

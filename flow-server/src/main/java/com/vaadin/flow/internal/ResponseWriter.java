@@ -198,7 +198,7 @@ public class ResponseWriter implements Serializable {
      *         the resource, false otherwise
      */
     protected boolean acceptsGzippedResource(HttpServletRequest request) {
-        return acceptsEncoding(request, "gzip");
+        return RequestUtil.acceptsGzippedResource(request);
     }
 
     /**
@@ -214,30 +214,9 @@ public class ResponseWriter implements Serializable {
      *         the resource, false otherwise
      */
     protected boolean acceptsBrotliResource(HttpServletRequest request) {
-        return acceptsEncoding(request, "br");
+        return RequestUtil.acceptsBrotliResource(request);
     }
 
-    private static boolean acceptsEncoding(HttpServletRequest request,
-            String encodingName) {
-        String accept = request.getHeader("Accept-Encoding");
-        if (accept == null) {
-            return false;
-        }
-
-        accept = accept.replace(" ", "");
-        // Browser denies gzip compression if it reports
-        // gzip;q=0
-        //
-        // Browser accepts gzip compression if it reports
-        // "gzip"
-        // "gzip;q=[notzero]"
-        // "*"
-        // "*;q=[not zero]"
-        if (accept.contains(encodingName)) {
-            return !isQZero(accept, encodingName);
-        }
-        return accept.contains("*") && !isQZero(accept, "*");
-    }
 
     void writeContentType(String filenameWithPath, ServletRequest request,
             ServletResponse response) {
@@ -247,25 +226,6 @@ public class ResponseWriter implements Serializable {
         if (mimetype != null) {
             response.setContentType(mimetype);
         }
-    }
-
-    private static boolean isQZero(String acceptEncoding, String encoding) {
-        String qPrefix = encoding + ";q=";
-        int qValueIndex = acceptEncoding.indexOf(qPrefix);
-        if (qValueIndex == -1) {
-            return false;
-        }
-
-        // gzip;q=0.123 or gzip;q=0.123,compress...
-        String qValue = acceptEncoding
-                .substring(qValueIndex + qPrefix.length());
-        int endOfQValue = qValue.indexOf(',');
-        if (endOfQValue != -1) {
-            qValue = qValue.substring(0, endOfQValue);
-        }
-        return Objects.equals("0", qValue) || Objects.equals("0.0", qValue)
-                || Objects.equals("0.00", qValue)
-                || Objects.equals("0.000", qValue);
     }
 
     private Logger getLogger() {
