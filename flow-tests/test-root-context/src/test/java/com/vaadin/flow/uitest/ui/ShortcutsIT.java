@@ -174,12 +174,15 @@ public class ShortcutsIT extends ChromeBrowserTest {
         // The shortcut is removed at the same time, so another 'd' should be
         // printed out.
 
-        removalInput.sendKeys("abcd abcd");
+        removalInput.sendKeys("abcd");
+        Assert.assertEquals("removalInput should have 'ABC' and no 'd'", "ABC",
+                removalInput.getAttribute("value"));
 
+        removalInput.sendKeys("abcd");
         Assert.assertEquals(
-                "removalInput should have text, with some letters"
-                        + " capitalized and only one 'd' letter",
-                "ABC abcd", removalInput.getAttribute("value"));
+                "removalInput 'ABCabcd'. Since shortcut was removed, 'd' can "
+                        + "be typed.",
+                "ABCabcd", removalInput.getAttribute("value"));
     }
 
     @Test
