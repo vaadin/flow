@@ -6,6 +6,7 @@
  */
 const fs = require('fs');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 const {BabelMultiTargetPlugin} = require('webpack-babel-multi-target-plugin');
 
 const path = require('path');
@@ -154,6 +155,11 @@ module.exports = {
       from: `${baseDir}/node_modules/@webcomponents/webcomponentsjs`,
       to: `${build}/webcomponentsjs/`
     }]),
+
+    // Includes JS output bundles into "index.html"
+    new HtmlWebpackPlugin({
+      tempalte: "index.html"
+    }),
 
     useClientSideIndexFileForBootstrapping && new CopyWebpackPlugin([{
      from: `${frontendFolder}/index.html`,

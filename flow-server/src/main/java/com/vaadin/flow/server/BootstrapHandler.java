@@ -254,7 +254,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
                 if (pushMode.isEnabled() && !getRequest().getService()
                         .ensurePushAvailable()) {
-                    /*
+                    /*true
                      * Fall back if not supported (ensurePushAvailable will log
                      * information to the developer the first time this happens)
                      */
