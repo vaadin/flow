@@ -6,6 +6,7 @@
  */
 const fs = require('fs');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 const {BabelMultiTargetPlugin} = require('webpack-babel-multi-target-plugin');
 
 const path = require('path');
@@ -47,7 +48,7 @@ module.exports = {
   mode: 'production',
   context: frontendFolder,
   entry: {
-    bundle: useClientSideIndexFileForBootstrapping ? `${frontendFolder}/index` : fileNameOfTheFlowGeneratedMainEntryPoint
+    bundle: useClientSideIndexFileForBootstrapping ? './index' : fileNameOfTheFlowGeneratedMainEntryPoint
   },
 
   output: {
@@ -155,10 +156,10 @@ module.exports = {
       to: `${build}/webcomponentsjs/`
     }]),
 
-    useClientSideIndexFileForBootstrapping && new CopyWebpackPlugin([{
-     from: `${frontendFolder}/index.html`,
-     to: `${mavenOutputFolderForFlowBundledFiles}/index.html`
-    }]),
+    // Includes JS output bundles into "index.html"
+    useClientSideIndexFileForBootstrapping && new HtmlWebpackPlugin({
+      template: './index.html'
+    }),
   ].filter(Boolean)
 };
 

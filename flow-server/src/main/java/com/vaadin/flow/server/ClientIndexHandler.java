@@ -45,9 +45,6 @@ public class ClientIndexHandler extends SynchronizedRequestHandler {
             VaadinRequest request, VaadinResponse response) throws IOException {
         Document indexDocument = getIndexHtmlDocument(request);
         prependBaseHref(request, indexDocument);
-        BootstrapHandler.BootstrapPageBuilder
-                .appendNpmBundle(indexDocument.head(),
-                request.getService());
         response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
         request.getService().modifyClientIndexBootstrapPage(
                 new ClientIndexBootstrapPage(request, response, session,
