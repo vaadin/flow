@@ -56,6 +56,10 @@ public class ResponseWriterTest {
     private static final String PATH_JS = "/static/file.js";
     private static final String PATH_GZ = "/static/file.js.gz";
     private static final String PATH_BR = "/static/file.js.br";
+    private static final String CLASS_PATH_JS = "/VAADIN/build/file.js";
+    private static final String CLASS_PATH_GZ = "/VAADIN/build/file.js.gz";
+    private static final String FAULTY_CLASS_PATH_JS = "/VAADIN/config/file.js";
+    private static final String FAULTY_CLASS_PATH_GZ = "/VAADIN/config/file.js.gz";
 
     private static final byte[] fileJsContents = "File.js contents"
             .getBytes(StandardCharsets.UTF_8);
@@ -72,6 +76,14 @@ public class ResponseWriterTest {
                 createFileURLWithDataAndLength(PATH_GZ, fileJsGzippedContents));
         pathToUrl.put(PATH_BR,
                 createFileURLWithDataAndLength(PATH_BR, fileJsBrotliContents));
+        pathToUrl.put(CLASS_PATH_JS,
+                createFileURLWithDataAndLength(CLASS_PATH_JS, fileJsContents));
+        pathToUrl.put(CLASS_PATH_GZ,
+                createFileURLWithDataAndLength(CLASS_PATH_GZ, fileJsGzippedContents));
+        pathToUrl.put(FAULTY_CLASS_PATH_JS,
+                createFileURLWithDataAndLength(FAULTY_CLASS_PATH_JS, fileJsContents));
+        pathToUrl.put(FAULTY_CLASS_PATH_GZ,
+                createFileURLWithDataAndLength(FAULTY_CLASS_PATH_GZ, fileJsGzippedContents));
     }
 
     private ServletContext servletContext;
@@ -247,6 +259,26 @@ public class ResponseWriterTest {
     }
 
     @Test
+    public void writeDataGzippedClassPathResource() throws IOException {
+        responseWriter.overrideAcceptsGzippedResource = true;
+
+        makePathsAvailable(CLASS_PATH_JS);
+        makeClassPathAvailable(CLASS_PATH_GZ);
+
+        assertResponse(CLASS_PATH_JS, fileJsGzippedContents);
+    }
+
+    @Test
+    public void writeDataNotGzippedClassPathNotAcceptedPath() throws IOException {
+        responseWriter.overrideAcceptsGzippedResource = true;
+
+        makePathsAvailable(FAULTY_CLASS_PATH_JS);
+        makeClassPathAvailable(FAULTY_CLASS_PATH_GZ);
+
+        assertResponse(FAULTY_CLASS_PATH_JS, fileJsContents);
+    }
+
+    @Test
     public void writeDataNoGzippedVersion() throws IOException {
         responseWriter.overrideAcceptsGzippedResource = true;
 
@@ -311,9 +343,13 @@ public class ResponseWriterTest {
     }
 
     private void assertResponse(byte[] expectedResponse) throws IOException {
+        assertResponse(PATH_JS, expectedResponse);
+    }
+
+    private void assertResponse(String path, byte[] expectedResponse) throws IOException {
         CapturingServletOutputStream out = new CapturingServletOutputStream();
         Mockito.when(response.getOutputStream()).thenReturn(out);
-        responseWriter.writeResponseContents(PATH_JS, pathToUrl.get(PATH_JS),
+        responseWriter.writeResponseContents(path, pathToUrl.get(path),
                 request, response);
 
         Assert.assertArrayEquals(expectedResponse, out.getOutput());
@@ -329,6 +365,17 @@ public class ResponseWriterTest {
                 throw new IllegalArgumentException("Unsupported path: " + path);
             }
             Mockito.when(servletContext.getResource(path)).thenReturn(url);
+        }
+    }
+    private void makeClassPathAvailable(String... paths) {
+        for (String path : paths) {
+            URL url = pathToUrl.get(path);
+            if (url == null) {
+                throw new IllegalArgumentException("Unsupported path: " + path);
+            }
+            ClassLoader classLoader = Mockito.mock(ClassLoader.class);
+            Mockito.when(servletContext.getClassLoader()).thenReturn(classLoader);
+            Mockito.when(classLoader.getResource("META-INF" + path)).thenReturn(url);
         }
     }
 

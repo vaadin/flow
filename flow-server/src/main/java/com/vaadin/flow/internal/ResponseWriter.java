@@ -19,9 +19,9 @@ package com.vaadin.flow.internal;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.Objects;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.ServletRequest;
@@ -34,6 +34,8 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 
+import static com.vaadin.flow.server.Constants.VAADIN_BUILD_FILES_PATH;
+
 /**
  * The class that handles writing the response data into the response.
  *
@@ -45,6 +47,7 @@ public class ResponseWriter implements Serializable {
 
     private final int bufferSize;
     private final boolean brotliEnabled;
+    private final boolean compatibilityMode;
 
     /**
      * Create a response writer with buffer size equal to
@@ -59,6 +62,10 @@ public class ResponseWriter implements Serializable {
 
     /**
      * Creates a response writer with custom buffer size.
+     * <p>
+     * This will always mark us as compatibility mode and not accept loading
+     * resources from the classpath. To enable compressed resources use {@link
+     * #ResponseWriter(DeploymentConfiguration)}.
      *
      * @param bufferSize
      *            custom buffer size
@@ -67,7 +74,7 @@ public class ResponseWriter implements Serializable {
      */
     @Deprecated
     public ResponseWriter(int bufferSize) {
-        this(bufferSize, false);
+        this(bufferSize, false, true);
     }
 
     /**
@@ -77,12 +84,13 @@ public class ResponseWriter implements Serializable {
      *            the deployment configuration to use, not <code>null</code>
      */
     public ResponseWriter(DeploymentConfiguration deploymentConfiguration) {
-        this(DEFAULT_BUFFER_SIZE, deploymentConfiguration.isBrotli());
+        this(DEFAULT_BUFFER_SIZE, deploymentConfiguration.isBrotli(), deploymentConfiguration.isCompatibilityMode());
     }
 
-    private ResponseWriter(int bufferSize, boolean brotliEnabled) {
+    private ResponseWriter(int bufferSize, boolean brotliEnabled, boolean compatibilityMode) {
         this.brotliEnabled = brotliEnabled;
         this.bufferSize = bufferSize;
+        this.compatibilityMode = compatibilityMode;
     }
 
     /**
@@ -112,8 +120,7 @@ public class ResponseWriter implements Serializable {
         if (brotliEnabled && acceptsBrotliResource(request)) {
             String brotliFilenameWithPath = filenameWithPath + ".br";
             try {
-                URL url = request.getServletContext()
-                        .getResource(brotliFilenameWithPath);
+                URL url = getResource(request, brotliFilenameWithPath);
                 if (url != null) {
                     connection = url.openConnection();
                     dataStream = connection.getInputStream();
@@ -130,8 +137,7 @@ public class ResponseWriter implements Serializable {
             // try to serve a gzipped version if available
             String gzippedFilenameWithPath = filenameWithPath + ".gz";
             try {
-                URL url = request.getServletContext()
-                        .getResource(gzippedFilenameWithPath);
+                URL url = getResource(request, gzippedFilenameWithPath);
                 if (url != null) {
                     connection = url.openConnection();
                     dataStream = connection.getInputStream();
@@ -172,6 +178,47 @@ public class ResponseWriter implements Serializable {
                 getLogger().debug("Error closing input stream for resource", e);
             }
         }
+    }
+
+    private URL getResource(HttpServletRequest request, String resource )
+            throws MalformedURLException {
+        URL url = request.getServletContext()
+                .getResource(resource);
+        if (url != null) {
+            return url;
+        } else if (resource.startsWith("/" + VAADIN_BUILD_FILES_PATH)
+                && isAllowedVAADINBuildUrl(resource)) {
+            url = request.getServletContext().getClassLoader()
+                    .getResource("META-INF" + resource);
+        }
+        return url;
+    }
+    /**
+     * Check if it is ok to serve the requested file from the classpath.
+     * <p>
+     * ClassLoader is applicable for use when we are in NPM mode and
+     * are serving from the VAADIN/build folder with no folder changes in path.
+     *
+     * @param filenameWithPath requested filename containing path
+     * @return true if we are ok to try serving the file
+     */
+    private boolean isAllowedVAADINBuildUrl(String filenameWithPath) {
+        if (compatibilityMode) {
+            getLogger().trace("Serving from the classpath in legacy "
+                            + "mode is not accepted. "
+                            + "Letting request for '{}' go to servlet context.",
+                    filenameWithPath);
+            return false;
+        }
+        // Check that we target VAADIN/build and do not have '/../'
+        if (!filenameWithPath.startsWith("/" + VAADIN_BUILD_FILES_PATH)
+                || filenameWithPath.contains("/../")) {
+            getLogger().info("Blocked attempt to access file: {}",
+                    filenameWithPath);
+            return false;
+        }
+
+        return true;
     }
 
     private void writeStream(ServletOutputStream outputStream,
@@ -234,9 +281,9 @@ public class ResponseWriter implements Serializable {
         // "*"
         // "*;q=[not zero]"
         if (accept.contains(encodingName)) {
-            return !isQZero(accept, encodingName);
+            return !isQualityValueZero(accept, encodingName);
         }
-        return accept.contains("*") && !isQZero(accept, "*");
+        return accept.contains("*") && !isQualityValueZero(accept, "*");
     }
 
     void writeContentType(String filenameWithPath, ServletRequest request,
@@ -248,8 +295,17 @@ public class ResponseWriter implements Serializable {
             response.setContentType(mimetype);
         }
     }
-
-    private static boolean isQZero(String acceptEncoding, String encoding) {
+    /**
+     * Check the quality value of the encoding. If the value is zero the
+     * encoding is disabled and not accepted.
+     *
+     * @param acceptEncoding
+     *         Accept-Encoding header from request
+     * @param encoding
+     *         encoding to check
+     * @return true if quality value is Zero
+     */
+    private static boolean isQualityValueZero(String acceptEncoding, String encoding) {
         String qPrefix = encoding + ";q=";
         int qValueIndex = acceptEncoding.indexOf(qPrefix);
         if (qValueIndex == -1) {
@@ -263,9 +319,8 @@ public class ResponseWriter implements Serializable {
         if (endOfQValue != -1) {
             qValue = qValue.substring(0, endOfQValue);
         }
-        return Objects.equals("0", qValue) || Objects.equals("0.0", qValue)
-                || Objects.equals("0.00", qValue)
-                || Objects.equals("0.000", qValue);
+
+        return Double.valueOf(0.000).equals(Double.valueOf(qValue));
     }
 
     private Logger getLogger() {
