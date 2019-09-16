@@ -1077,7 +1077,7 @@ public class BootstrapHandlerTest {
     }
 
     @Test
-    public void index_appended_to_head_in_npm()
+    public void polyfill_appended_to_head_in_npm()
             throws InvalidRouteConfigurationException {
 
         initUI(testUI, createVaadinRequest(),
@@ -1086,31 +1086,15 @@ public class BootstrapHandlerTest {
         Document page = pageBuilder.getBootstrapPage(new BootstrapContext(
                 request, null, session, testUI, this::contextRootRelativePath));
 
-        Elements allElements = page.head().getAllElements();
+        Elements headElements = page.head().getAllElements();
 
         Assert.assertTrue(
                 "webcomponents-loader.js should be added to head. (not deferred)",
-                allElements.stream().map(Object::toString)
+                headElements.stream().map(Object::toString)
                         .anyMatch(element -> element.equals(
-                                "<script type=\"text/javascript\" src=\"./"
+                                "<script type=\"text/javascript\" src=\""
                                         + VAADIN_MAPPING
                                         + "build/webcomponentsjs/webcomponents-loader.js\"></script>")));
-
-        Assert.assertTrue(
-                "index.js should be added to head for ES6 browsers. (deferred and type module)",
-                allElements.stream().map(Object::toString)
-                        .anyMatch(element -> element
-                                .equals("<script type=\"module\" defer src=\"./"
-                                        + VAADIN_MAPPING
-                                        + "build/index-1111.cache.js\"></script>")));
-
-        Assert.assertTrue(
-                "index.js should be added to head for ES5 browsers. (deferred and nomodule)",
-                allElements.stream().map(Object::toString)
-                        .anyMatch(element -> element.equals(
-                                "<script type=\"text/javascript\" defer src=\"./"
-                                        + VAADIN_MAPPING
-                                        + "build/index.es5-2222.cache.js\" nomodule></script>")));
     }
 
     @Test // 3333

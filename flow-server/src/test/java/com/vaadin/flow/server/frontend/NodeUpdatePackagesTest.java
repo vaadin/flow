@@ -494,6 +494,8 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
                 devDependencies.hasKey("webpack-babel-multi-target-plugin"));
         Assert.assertTrue("Missing copy-webpack-plugin dev package",
                 devDependencies.hasKey("copy-webpack-plugin"));
+        Assert.assertTrue("Missing html-webpack-plugin dev package",
+                devDependencies.hasKey("html-webpack-plugin"));
     }
 
     private void assertAppPackageJsonContent() throws IOException {

@@ -6,6 +6,7 @@
  */
 const fs = require('fs');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 const {BabelMultiTargetPlugin} = require('webpack-babel-multi-target-plugin');
 
 const path = require('path');
@@ -15,6 +16,7 @@ const frontendFolder = '[to-be-generated-by-flow]';
 
 const fileNameOfTheFlowGeneratedMainEntryPoint = '[to-be-generated-by-flow]';
 const mavenOutputFolderForFlowBundledFiles = '[to-be-generated-by-flow]';
+const useClientSideIndexFileForBootstrapping = '[to-be-generated-by-flow]';
 
 // public path for resources, must match Flow VAADIN_BUILD
 const build = 'build';
@@ -140,5 +142,10 @@ module.exports = {
       from: `${baseDir}/node_modules/@webcomponents/webcomponentsjs`,
       to: `${build}/webcomponentsjs/`
     }]),
+
+    // Includes JS output bundles into "index.html"
+    new HtmlWebpackPlugin({
+        tempalte: "index.html"
+    }),
   ]
 };

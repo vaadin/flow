@@ -166,7 +166,8 @@ public class PrepareFrontendMojoTest {
 
         assertContainsPackage(packageJsonObject.getObject("devDependencies"),
                 "webpack", "webpack-cli", "webpack-dev-server",
-                "webpack-babel-multi-target-plugin", "copy-webpack-plugin");
+                "webpack-babel-multi-target-plugin", "copy-webpack-plugin",
+                "html-webpack-plugin");
     }
 
     private List<File> gatherFiles(File root) {
