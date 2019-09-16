@@ -86,8 +86,14 @@ public class JavaScriptBootstrapUI extends UI {
         wrapperElement.executeJs("this.serverConnected($0)", postponed);
     }
 
+    /**
+     * Check that the view can be leave.
+     *
+     * This is only called when client route navigates from a server to a client
+     * view.
+     */
     @ClientCallable
-    public void leaveNavigation(String newRoute) {
+    public void leaveNavigation() {
         boolean postponed = postponedNavigation();
         if (!postponed) {
             wrapperElement.removeAllChildren();
