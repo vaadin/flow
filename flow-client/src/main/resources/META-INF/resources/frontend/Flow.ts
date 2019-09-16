@@ -120,7 +120,10 @@ export class Flow {
 
   // Send a remote call to `JavaScriptBootstrapUI` to check
   // whether navigation has to be cancelled.
-  private async flowLeave(ctx: NavigationParameters, cmd?: NavigationCommands): Promise<any> {
+  private async flowLeave(
+    // @ts-ignore
+    ctx: NavigationParameters,
+    cmd?: NavigationCommands): Promise<any> {
     return new Promise(resolve => {
       // The callback to run from server side to cancel navigation
       this.container.serverConnected = cancel => {
@@ -128,7 +131,7 @@ export class Flow {
       }
 
       // Call server side to check whether we can leave the view
-      this.flowRoot.$server.leaveNavigation(ctx.pathname);
+      this.flowRoot.$server.leaveNavigation();
     });
   }
 
