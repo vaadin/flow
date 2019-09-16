@@ -1,9 +1,10 @@
 package com.vaadin.flow.internal;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Objects;
 
 public class RequestUtil {
+
+    private RequestUtil() {}
 
     /**
      * Returns whether it is ok to serve a gzipped version of the given
@@ -55,12 +56,23 @@ public class RequestUtil {
         // "*"
         // "*;q=[not zero]"
         if (accept.contains(encodingName)) {
-            return !isQZero(accept, encodingName);
+            return !isQualityValueZero(accept, encodingName);
         }
-        return accept.contains("*") && !isQZero(accept, "*");
+        return accept.contains("*") && !isQualityValueZero(accept, "*");
     }
 
-    private static boolean isQZero(String acceptEncoding, String encoding) {
+    /**
+     * Check the quality value of the encoding. If the value is zero the
+     * encoding is disabled and not accepted.
+     *
+     * @param acceptEncoding
+     *         Accept-Encoding header from request
+     * @param encoding
+     *         encoding to check
+     * @return true if quality value is Zero
+     */
+    private static boolean isQualityValueZero(String acceptEncoding,
+            String encoding) {
         String qPrefix = encoding + ";q=";
         int qValueIndex = acceptEncoding.indexOf(qPrefix);
         if (qValueIndex == -1) {
@@ -74,8 +86,6 @@ public class RequestUtil {
         if (endOfQValue != -1) {
             qValue = qValue.substring(0, endOfQValue);
         }
-        return Objects.equals("0", qValue) || Objects.equals("0.0", qValue)
-                || Objects.equals("0.00", qValue)
-                || Objects.equals("0.000", qValue);
+        return Double.valueOf(0.000).equals(Double.valueOf(qValue));
     }
 }

@@ -371,7 +371,18 @@ public final class DevModeHandler implements Serializable {
         return true;
     }
 
-    public HttpURLConnection requestFile(HttpServletRequest request,
+    /**
+     * Generate a request for the specified file to webpack dev server.
+     *
+     * @param request
+     *         current http request
+     * @param requestFilename
+     *         name of file to request
+     * @return A URLConnection with support for HTTP-specific features
+     * @throws IOException
+     *         on connection error
+     */
+    private HttpURLConnection requestFile(HttpServletRequest request,
             String requestFilename) throws IOException {
         HttpURLConnection connection = prepareConnection(requestFilename,
                 request.getMethod());
