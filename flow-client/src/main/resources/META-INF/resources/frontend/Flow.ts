@@ -43,6 +43,7 @@ export interface NavigationCommands {
 export class Flow {
   config: FlowConfig;
   response ?: AppInitResponse;
+  pathname = '';
 
   // flow uses body for keeping references
   flowRoot : FlowRoot = document.body as any;
@@ -99,23 +100,17 @@ export class Flow {
     // the syntax `flow.route` in vaadin-router.
     // @ts-ignore
     return async (params: NavigationParameters) => {
-      await this.flowInit();
-      // When an action happens, navigation will be resolved `onBeforeEnter` call
-      // thus, `onBeforeLeave` is not needed
-      this.container.onBeforeEnter = (ctx, cmd) => this.onBeforeEnter(ctx, cmd);
-      delete this.container.onBeforeLeave;
 
+      // Store last action pathname so as we can check it in events
+      this.pathname = params.pathname;
+
+      await this.flowInit();
+      // When an action happens, navigation will be resolved `onBeforeEnter`
+      this.container.onBeforeEnter = (ctx, cmd) => this.flowNavigate(ctx, cmd);
+      // For covering the 'server -> client' use case
+      this.container.onBeforeLeave = (ctx, cmd) => this.flowLeave(ctx, cmd);
       return this.container;
     }
-  }
-
-  private onBeforeEnter(ctx: NavigationParameters, cmd: NavigationCommands) {
-    return this.flowNavigate(ctx, cmd)
-      .then(result => {
-        // It's only needed on 'server -> client' navigation
-        this.container.onBeforeLeave = (ctx2, cmd2) => this.flowLeave(ctx2, cmd2);
-        return result;
-      });
   }
 
   // Send a remote call to `JavaScriptBootstrapUI` to check
@@ -124,6 +119,12 @@ export class Flow {
     // @ts-ignore
     ctx: NavigationParameters,
     cmd?: NavigationCommands): Promise<any> {
+
+    // server -> server
+    if (this.pathname === ctx.pathname) {
+      return Promise.resolve({});
+    }
+    // 'server -> client'
     return new Promise(resolve => {
       // The callback to run from server side to cancel navigation
       this.container.serverConnected = cancel => {

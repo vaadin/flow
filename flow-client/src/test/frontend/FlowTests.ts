@@ -193,20 +193,18 @@ suite("Flow", () => {
       });
   });
 
-  test("should be possible to cancel navigation when using router onBeforeLeave API", () => {
+  test("onBeforeLeave should cancel `server->client` navigation", () => {
     // true to prevent navigation from server
     stubServerRemoteFunction('foobar-12345', true);
-
     mockInitResponse('foobar-12345');
-    const route = new Flow().route;
 
-    return route.action({pathname: 'Foo/Bar.baz'})
+    const flow = new Flow();
+    return flow.route.action({pathname: 'Foo'})
       .then((elem: any) => {
+        assert.isDefined(elem.onBeforeLeave);
+        assert.equal('Foo', flow.pathname);
 
-        // `onBeforeLeave` is not yet set at this point
-        assert.isUndefined(elem.onBeforeLeave);
-
-        elem.onBeforeEnter({pathname: 'Foo/Bar.baz'}, {prevent: () => {
+        elem.onBeforeEnter({pathname: 'Foo'}, {prevent: () => {
           // set cancel to false even though server is cancelling
           return {cancel: false};
         }})
@@ -215,16 +213,40 @@ suite("Flow", () => {
           assert.isFalse(result.cancel);
           assert.equal(1, elem.children.length);
 
-          // `onBeforeEnter` defines `onBeforeLeave` function
-          assert.isDefined(elem.onBeforeLeave);
-
-          elem.onBeforeLeave({pathname: 'Foo/Bar.baz'}, {prevent: () => {
+          return elem.onBeforeLeave({pathname: 'Lorem'}, {prevent: () => {
             // set cancel to true
             return {cancel: true};
           }})
           .then((result: any) => {
             // Navigation cancelled onBeforeLeave
             assert.isTrue(result.cancel);
+          });
+        });
+      });
+  });
+
+  test("onBeforeLeave should not cause double round-trip on `server->server` navigation", () => {
+    // true to prevent navigation from server
+    stubServerRemoteFunction('foobar-12345', true);
+    mockInitResponse('foobar-12345');
+
+    const flow = new Flow();
+    return flow.route.action({pathname: 'Foo'})
+      .then((elem: any) => {
+        return elem.onBeforeEnter({pathname: 'Foo'}, {prevent: () => {
+          // set cancel to false even though server is cancelling
+          return {cancel: false};
+        }})
+        .then(() => {
+          return elem.onBeforeLeave({pathname: 'Foo'}, {prevent: () => {
+            // set cancel to true
+            return {cancel: true};
+          }})
+          .then((result: any) => {
+            // since server call is skipped, prevent() above is not executed
+            // checking that cancel was not set demonstrates that there
+            // were no double round-trip
+            assert.isUndefined(result.cancel);
           });
         });
       });
@@ -254,8 +276,7 @@ function stubServerRemoteFunction(id: string, cancel: boolean = false) {
       // Resolve the promise
       flowRoot.$[elemId].serverConnected(cancel);
     },
-    leaveNavigation: (route: string) => {
-      assert.isDefined(route);
+    leaveNavigation: () => {
       // Resolve the promise
       container.serverConnected(cancel);
     }
