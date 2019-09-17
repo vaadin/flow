@@ -250,6 +250,7 @@ public class JavaScriptBootstrapUI extends UI {
          * Public constructor for creating the instance from reflection.
          */
         public ClientViewPlaceholder() {
+            // Empty constructor
         }
     }
 }
