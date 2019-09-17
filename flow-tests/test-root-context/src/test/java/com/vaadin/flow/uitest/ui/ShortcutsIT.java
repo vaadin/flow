@@ -194,14 +194,20 @@ public class ShortcutsIT extends ChromeBrowserTest {
         // bug #5454:
         // if the shortcut is without modifiers, bindings on that
         // key with modifiers also trigger
+
+        // each shortcut has its own counter. each shortcut increments its
+        // respective counter and then all the counters are concatenated into
+        // "actual" text field. Should shortcuts cross-trigger, number two
+        // will be part of the string
+        // string order: [o][shift+o][alt+o]
         sendKeys("o");
-        assertActualEquals("1");
+        assertActualEquals("100");
 
         sendKeys("O"); // shift+o
-        assertActualEquals("2");
+        assertActualEquals("110");
 
         sendKeys(Keys.ALT, "o");
-        assertActualEquals("3");
+        assertActualEquals("111");
     }
 
     private void assertActualEquals(String expected) {

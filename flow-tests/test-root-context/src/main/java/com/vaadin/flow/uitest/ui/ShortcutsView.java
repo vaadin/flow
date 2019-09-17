@@ -30,7 +30,6 @@ import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.Command;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.ShortcutsView",
@@ -174,12 +173,21 @@ public class ShortcutsView extends Div {
         add(removalInput);
 
         // bindingShortcutToSameKeyWithDifferentModifiers_shouldNot_triggerTwice
-        AtomicInteger integer = new AtomicInteger(0);
-        Command command = () -> actual.setValue("" + integer.incrementAndGet());
-        UI.getCurrent().addShortcutListener(command, Key.KEY_O);
-        UI.getCurrent().addShortcutListener(command, Key.KEY_O,
-                KeyModifier.ALT);
-        UI.getCurrent().addShortcutListener(command, Key.KEY_O,
-                KeyModifier.SHIFT);
+        AtomicInteger oCounter = new AtomicInteger(0);
+        AtomicInteger oShiftCounter = new AtomicInteger(0);
+        AtomicInteger oAltCounter = new AtomicInteger(0);
+        UI.getCurrent()
+                .addShortcutListener(
+                        () -> actual.setValue("" + oCounter.incrementAndGet()
+                                + oShiftCounter.get() + oAltCounter.get()),
+                        Key.KEY_O);
+        UI.getCurrent()
+                .addShortcutListener(() -> actual.setValue("" + oCounter.get()
+                        + oShiftCounter.incrementAndGet() + oAltCounter.get()),
+                        Key.KEY_O, KeyModifier.SHIFT);
+        UI.getCurrent().addShortcutListener(
+                () -> actual.setValue("" + oCounter.get() + oShiftCounter.get()
+                        + oAltCounter.incrementAndGet()),
+                Key.KEY_O, KeyModifier.ALT);
     }
 }
