@@ -95,7 +95,7 @@ public class JavaScriptBootstrapUITest  {
         assertEquals(Tag.HEADER, ui.wrapperElement.getChild(0).getTag());
         assertEquals(Tag.H2, ui.wrapperElement.getChild(0).getChild(0).getTag());
 
-        ui.leaveNavigation();
+        ui.leaveNavigation("/client-view");
 
         assertEquals(0, ui.wrapperElement.getChildCount());
     }
@@ -106,7 +106,7 @@ public class JavaScriptBootstrapUITest  {
         assertEquals(Tag.SPAN, ui.wrapperElement.getChild(0).getTag());
         assertEquals(Tag.H1, ui.wrapperElement.getChild(0).getChild(0).getTag());
 
-        ui.leaveNavigation();
+        ui.leaveNavigation("/client-view");
         assertEquals(Tag.SPAN, ui.wrapperElement.getChild(0).getTag());
         assertEquals(Tag.H1, ui.wrapperElement.getChild(0).getChild(0).getTag());
     }

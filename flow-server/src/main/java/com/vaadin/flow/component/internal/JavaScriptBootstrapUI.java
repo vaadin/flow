@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
@@ -39,6 +40,7 @@ import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.router.internal.ErrorStateRenderer;
 import com.vaadin.flow.router.internal.NavigationStateRenderer;
 import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
+import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
 /**
@@ -93,8 +95,8 @@ public class JavaScriptBootstrapUI extends UI {
      * view.
      */
     @ClientCallable
-    public void leaveNavigation() {
-        boolean postponed = postponedNavigation();
+    public void leaveNavigation(String nextLocation) {
+        boolean postponed = navigateToPlaceholder(nextLocation);
         if (!postponed) {
             wrapperElement.removeAllChildren();
         }
@@ -103,16 +105,15 @@ public class JavaScriptBootstrapUI extends UI {
         wrapperElement.executeJs("this.serverConnected($0)", postponed);
     }
 
-    private boolean postponedNavigation() {
-        Location activeLocation = this.getInternals().getActiveViewLocation();
-        Optional<NavigationState> navigationState = this.getRouter()
-                .resolveNavigationTarget(activeLocation);
-        return navigationState.isPresent()
-                && handleNavigation(activeLocation, navigationState.get());
+    private boolean navigateToPlaceholder(String nextLocation) {
+        Location activeLocation = new Location(removeFirstSlash(nextLocation));
+        NavigationState build = new NavigationStateBuilder(this.getRouter())
+                .withTarget(ClientViewPlaceholder.class).build();
+        return handleNavigation(activeLocation, build);
     }
 
     private boolean renderViewForRoute(String route) {
-        route = route.replaceFirst("^/+", "");
+        route = removeFirstSlash(route);
 
         Location location = new Location(route);
         Optional<NavigationState> navigationState = this.getRouter()
@@ -125,7 +126,7 @@ public class JavaScriptBootstrapUI extends UI {
             // When route does not exist, try to navigate to current route
             // in order to check if current view can be left before showing
             // the error page
-            if (postponedNavigation()) {
+            if (navigateToPlaceholder(route)) {
                 return true;
             }
 
@@ -134,6 +135,10 @@ public class JavaScriptBootstrapUI extends UI {
             handleErrorNavigation(location);
         }
         return false;
+    }
+
+    private String removeFirstSlash(String route) {
+        return route.replaceFirst("^/+", "");
     }
 
     private boolean handleNavigation(Location location,
@@ -206,7 +211,6 @@ public class JavaScriptBootstrapUI extends UI {
             JavaScriptBootstrapUI jsUI = castToJavaScriptUI(ui);
             Element wrapperElement = jsUI.wrapperElement;
             Element rootElement = newRoot.getElement();
-
             if (!wrapperElement.equals(rootElement.getParent())) {
                 if (oldRoot != null) {
                     oldRoot.getElement().removeFromParent();
@@ -232,6 +236,20 @@ public class JavaScriptBootstrapUI extends UI {
             assert ui instanceof JavaScriptBootstrapUI;
             assert ((JavaScriptBootstrapUI) ui).wrapperElement != null;
             return (JavaScriptBootstrapUI) ui;
+        }
+    }
+
+    /**
+     * Placeholder view when navigating from server-side views to client-side
+     * views.
+     */
+    @Tag(Tag.DIV)
+    @NoTheme
+    public static class ClientViewPlaceholder extends Component {
+        /**
+         * Public constructor for creating the instance from reflection.
+         */
+        public ClientViewPlaceholder() {
         }
     }
 }
