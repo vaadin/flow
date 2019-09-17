@@ -35,6 +35,8 @@ public class ShortcutsIT extends ChromeBrowserTest {
             .of(Keys.SHIFT, Keys.ALT, Keys.CONTROL, Keys.META)
             .collect(Collectors.toSet());
 
+    private static final String DEFAULT_VALUE = "testing...";
+
     @Before
     public void before() {
         open();
@@ -86,16 +88,16 @@ public class ShortcutsIT extends ChromeBrowserTest {
         assertActualEquals("DISABLED CLICKED");
 
         resetActual();
-        assertActualEquals("testing...");
+        assertActualEquals(DEFAULT_VALUE);
 
         sendKeys(Keys.CONTROL, "U"); // ctrl+shift+u
-        assertActualEquals("testing...");
+        assertActualEquals(DEFAULT_VALUE);
     }
 
     @Test
     public void listenOnScopesTheShortcut() {
         sendKeys(Keys.ALT, "s");
-        assertActualEquals("testing..."); // nothing happened
+        assertActualEquals(DEFAULT_VALUE); // nothing happened
 
         WebElement innerInput = findElement(By.id("focusTarget"));
         innerInput.sendKeys(Keys.ALT, "s");
@@ -108,7 +110,7 @@ public class ShortcutsIT extends ChromeBrowserTest {
     @Test
     public void shortcutsOnlyWorkWhenComponentIsAttached() {
         sendKeys(Keys.ALT, "a");
-        assertActualEquals("testing..."); // nothing happens
+        assertActualEquals(DEFAULT_VALUE); // nothing happens
 
         // attaches the component
         sendKeys(Keys.ALT, "y");
@@ -181,6 +183,25 @@ public class ShortcutsIT extends ChromeBrowserTest {
                 "removalInput 'ABCabcd'. Since shortcut was removed, 'd' can "
                         + "be typed.",
                 "ABCabcd", removalInput.getAttribute("value"));
+    }
+
+    @Test
+    public void bindingShortcutToSameKeyWithDifferentModifiers_shouldNot_triggerTwice() {
+        // they bindings are "o", "shift+o", and "alt+o"
+
+        assertActualEquals(DEFAULT_VALUE);
+
+        // bug #5454:
+        // if the shortcut is without modifiers, bindings on that
+        // key with modifiers also trigger
+        sendKeys("o");
+        assertActualEquals("1");
+
+        sendKeys("O"); // shift+o
+        assertActualEquals("2");
+
+        sendKeys(Keys.ALT, "o");
+        assertActualEquals("3");
     }
 
     private void assertActualEquals(String expected) {

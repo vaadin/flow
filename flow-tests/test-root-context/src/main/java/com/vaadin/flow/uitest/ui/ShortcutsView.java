@@ -16,6 +16,7 @@
 
 package com.vaadin.flow.uitest.ui;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.vaadin.flow.component.Key;
@@ -29,6 +30,7 @@ import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.Command;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.ShortcutsView",
@@ -170,5 +172,14 @@ public class ShortcutsView extends Div {
                 }, Key.KEY_D);
         removalAtomicReference.set(removalRegistration);
         add(removalInput);
+
+        // bindingShortcutToSameKeyWithDifferentModifiers_shouldNot_triggerTwice
+        AtomicInteger integer = new AtomicInteger(0);
+        Command command = () -> actual.setValue("" + integer.incrementAndGet());
+        UI.getCurrent().addShortcutListener(command, Key.KEY_O);
+        UI.getCurrent().addShortcutListener(command, Key.KEY_O,
+                KeyModifier.ALT);
+        UI.getCurrent().addShortcutListener(command, Key.KEY_O,
+                KeyModifier.SHIFT);
     }
 }
