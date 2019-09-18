@@ -17,7 +17,7 @@ package com.vaadin.flow.component.page;
 
 /**
  * Page target element enum for inlining during bootstrap creation.
- * @since
+ * @since 1.0
  */
 public enum TargetElement {
     HEAD, BODY

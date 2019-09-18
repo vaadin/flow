@@ -26,7 +26,7 @@ import java.util.Set;
  * Verify the servlet version on container initialization.
  * <p>
  * In cases of non compatible servlet version application deployment will fail.
- * @since
+ * @since 1.0
  */
 public class ServletVerifier implements ServletContainerInitializer {
     @Override

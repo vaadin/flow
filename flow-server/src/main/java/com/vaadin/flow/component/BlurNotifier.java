@@ -25,7 +25,7 @@ import com.vaadin.flow.shared.Registration;
  * @param <T>
  *            the type of the component returned at the
  *            {@link BlurEvent#getSource()}
- * @since
+ * @since 1.0
  */
 public interface BlurNotifier<T extends Component> extends Serializable {
 

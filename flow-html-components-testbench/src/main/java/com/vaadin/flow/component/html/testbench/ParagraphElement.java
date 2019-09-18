@@ -20,7 +20,7 @@ import com.vaadin.testbench.elementsbase.Element;
 
 /**
  * A TestBench element representing a <code>&lt;p&gt;</code> element.
- * @since
+ * @since 1.0
  */
 @Element("p")
 public class ParagraphElement extends TestBenchElement {

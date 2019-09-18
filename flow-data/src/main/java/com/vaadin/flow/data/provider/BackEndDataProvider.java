@@ -26,7 +26,7 @@ import java.util.Objects;
  *            data provider data type
  * @param <F>
  *            data provider filter type
- * @since
+ * @since 1.0
  */
 public interface BackEndDataProvider<T, F> extends DataProvider<T, F> {
 

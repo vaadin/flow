@@ -36,7 +36,7 @@ import com.vaadin.testbench.parallel.ParallelTest;
 
 /**
  * Helpers for running testbench tests.
- * @since
+ * @since 1.0
  */
 public class TestBenchHelpers extends ParallelTest {
 

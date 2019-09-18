@@ -29,7 +29,7 @@ import java.util.stream.Stream;
  *            data provider data type
  * @param <F>
  *            data provider filter type
- * @since
+ * @since 1.0
  */
 public abstract class AbstractBackEndDataProvider<T, F> extends
         AbstractDataProvider<T, F> implements BackEndDataProvider<T, F> {

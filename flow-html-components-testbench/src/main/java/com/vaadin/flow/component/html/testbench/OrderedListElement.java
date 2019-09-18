@@ -20,7 +20,7 @@ import com.vaadin.testbench.elementsbase.Element;
 
 /**
  * A TestBench element representing an <code>&lt;ol&gt;</code> element.
- * @since
+ * @since 1.0
  */
 @Element("ol")
 public class OrderedListElement extends TestBenchElement {

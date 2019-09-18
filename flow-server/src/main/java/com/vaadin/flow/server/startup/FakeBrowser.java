@@ -19,7 +19,7 @@ import com.vaadin.flow.server.WebBrowser;
 
 /**
  * Browser instance targeted for server side resolving of resources.
- * @since
+ * @since 1.0
  */
 public abstract class FakeBrowser extends WebBrowser {
 

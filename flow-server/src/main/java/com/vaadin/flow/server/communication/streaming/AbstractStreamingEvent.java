@@ -19,7 +19,7 @@ import com.vaadin.flow.server.StreamVariable.StreamingEvent;
 
 /**
  * Abstract base class for StreamingEvent implementations.
- * @since
+ * @since 1.0
  */
 @SuppressWarnings("serial")
 abstract class AbstractStreamingEvent implements StreamingEvent {

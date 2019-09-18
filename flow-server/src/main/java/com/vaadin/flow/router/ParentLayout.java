@@ -24,7 +24,7 @@ import java.lang.annotation.Target;
 
 /**
  * Defines the parent layout for components in routing hierarchy.
- * @since
+ * @since 1.0
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

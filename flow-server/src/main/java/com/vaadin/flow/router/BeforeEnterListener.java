@@ -30,7 +30,7 @@ import com.vaadin.flow.router.internal.BeforeEnterHandler;
  *
  * All BeforeEnterListeners will be executed before the BeforeEnterObservers.
  * To control the order of execution of BeforeEnterListeners, see {@link ListenerPriority}
- * @since
+ * @since 1.0
  */
 @FunctionalInterface
 public interface BeforeEnterListener extends BeforeEnterHandler {

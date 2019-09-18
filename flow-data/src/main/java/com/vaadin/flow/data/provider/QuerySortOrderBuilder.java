@@ -24,7 +24,7 @@ package com.vaadin.flow.data.provider;
  * @see #thenDesc(String)
  * @see #thenDesc(String)
  * @see #build()
- * @since
+ * @since 1.0
  */
 public class QuerySortOrderBuilder
         extends SortOrderBuilder<QuerySortOrder, String> {

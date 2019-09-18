@@ -22,7 +22,7 @@ import elemental.json.JsonObject;
 /**
  * Base interface for classes that are serializable to and from
  * {@link JsonObject}.
- * @since
+ * @since 1.0
  */
 public interface JsonSerializable extends Serializable {
 

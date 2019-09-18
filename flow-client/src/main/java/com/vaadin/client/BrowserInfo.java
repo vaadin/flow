@@ -24,7 +24,7 @@ import com.vaadin.flow.shared.BrowserDetails;
  * Browser details are detected only once and those are stored in this singleton
  * class.
  *
- * @since
+ * @since 1.0
  */
 public class BrowserInfo {
 

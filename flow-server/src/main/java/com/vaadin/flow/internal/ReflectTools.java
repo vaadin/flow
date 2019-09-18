@@ -44,7 +44,7 @@ import com.vaadin.flow.shared.util.SharedUtil;
  * Vaadin and should not be used by application developers. Subject to change at
  * any time.
  *
- * @since
+ * @since 1.0
  */
 public class ReflectTools implements Serializable {
 

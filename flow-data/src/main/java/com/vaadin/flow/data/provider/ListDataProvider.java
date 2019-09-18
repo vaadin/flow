@@ -29,7 +29,7 @@ import com.vaadin.flow.function.SerializablePredicate;
  *
  * @param <T>
  *            data type
- * @since
+ * @since 1.0
  */
 public class ListDataProvider<T>
         extends AbstractDataProvider<T, SerializablePredicate<T>>

@@ -27,7 +27,7 @@ import com.vaadin.flow.theme.AbstractTheme;
 
 /**
  * Lumo component theme class implementation.
- * @since
+ * @since 1.0
  */
 @HtmlImport("frontend://bower_components/vaadin-lumo-styles/color.html")
 @HtmlImport("frontend://bower_components/vaadin-lumo-styles/typography.html")

@@ -29,7 +29,7 @@ import elemental.json.JsonValue;
 
 /**
  * Utility methods which are related to client side code only.
- * @since
+ * @since 1.0
  */
 public class WidgetUtil {
 

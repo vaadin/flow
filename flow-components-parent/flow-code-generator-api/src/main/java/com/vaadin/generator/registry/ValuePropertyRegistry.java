@@ -23,7 +23,7 @@ import java.util.Map;
  * element should extend AbstractField API.
  * 
  * @author Vaadin ltd
- * @since
+ * @since 1.0
  */
 public final class ValuePropertyRegistry {
 

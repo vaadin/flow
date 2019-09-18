@@ -33,7 +33,7 @@ import com.vaadin.flow.component.HasValue;
  * the server-side. Webcomponents that contain the registered behaviors or
  * mixins will inherit from the respective registered Java interface.
  *
- * @since
+ * @since 1.0
  */
 public final class BehaviorRegistry {
 

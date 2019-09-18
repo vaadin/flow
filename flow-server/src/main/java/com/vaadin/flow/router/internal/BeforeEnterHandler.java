@@ -21,7 +21,7 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 
 /**
  * The base interface for every {@link BeforeEnterEvent} handler.
- * @since
+ * @since 1.0
  */
 @FunctionalInterface
 public interface BeforeEnterHandler extends Serializable {

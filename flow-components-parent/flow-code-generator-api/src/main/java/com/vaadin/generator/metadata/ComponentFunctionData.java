@@ -22,7 +22,7 @@ import java.util.List;
  * server-side by the corresponding Java class.
  *
  * @see ComponentMetadata
- * @since
+ * @since 1.0
  */
 public class ComponentFunctionData {
 

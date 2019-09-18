@@ -17,7 +17,7 @@ package com.vaadin.flow.server;
 
 /**
  * Exception for when there is no {@link java.io.InputStream} available.
- * @since
+ * @since 1.0
  */
 public class NoInputStreamException extends Exception {
 

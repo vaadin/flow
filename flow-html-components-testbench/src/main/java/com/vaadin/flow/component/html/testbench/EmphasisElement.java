@@ -20,7 +20,7 @@ import com.vaadin.testbench.elementsbase.Element;
 
 /**
  * A TestBench element representing an <code>&lt;em&gt;</code> element.
- * @since
+ * @since 1.0
  */
 @Element("em")
 public class EmphasisElement extends TestBenchElement {

@@ -17,7 +17,7 @@ package com.vaadin.flow.server;
 
 /**
  * Exception indicating that Route layouts configuration has problems.
- * @since
+ * @since 1.0
  */
 public class InvalidRouteLayoutConfigurationException extends RuntimeException {
 

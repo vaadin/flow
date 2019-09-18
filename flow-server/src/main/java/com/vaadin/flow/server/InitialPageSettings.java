@@ -36,7 +36,7 @@ import org.jsoup.parser.Tag;
 
 /**
  * Initial page settings class for modifying the bootstrap page.
- * @since
+ * @since 1.0
  */
 public class InitialPageSettings implements Serializable {
 

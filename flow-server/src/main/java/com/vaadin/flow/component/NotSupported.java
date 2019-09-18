@@ -27,7 +27,7 @@ import java.lang.annotation.Target;
  * <p>
  * Subclasses can override the not supported methods and add meaningful
  * implementation to them.
- * @since
+ * @since 1.0
  */
 @Target(ElementType.METHOD)
 @Documented

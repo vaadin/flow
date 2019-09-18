@@ -22,7 +22,7 @@ import com.vaadin.flow.component.internal.AbstractAttachDetachEvent;
  * <p>
  * When a hierarchy of components is being detached, this event is fired
  * child-first.
- * @since
+ * @since 1.0
  */
 public class DetachEvent extends AbstractAttachDetachEvent {
 

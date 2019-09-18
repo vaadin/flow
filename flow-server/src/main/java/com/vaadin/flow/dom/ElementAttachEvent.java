@@ -22,7 +22,7 @@ import java.util.EventObject;
  * <p>
  * When a hierarchy of elements is being attached, this event is fired
  * child-first.
- * @since
+ * @since 1.0
  */
 public class ElementAttachEvent extends EventObject {
 

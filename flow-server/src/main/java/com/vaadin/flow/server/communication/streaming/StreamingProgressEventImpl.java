@@ -19,7 +19,7 @@ import com.vaadin.flow.server.StreamVariable.StreamingProgressEvent;
 
 /**
  * Implementation for {@link StreamingProgressEvent}.
- * @since
+ * @since 1.0
  */
 public final class StreamingProgressEventImpl extends AbstractStreamingEvent
         implements StreamingProgressEvent {

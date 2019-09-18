@@ -24,7 +24,7 @@ import com.vaadin.flow.function.ValueProvider;
  *
  * @param <T>
  *            data type
- * @since
+ * @since 1.0
  */
 public interface DataKeyMapper<T> extends Serializable {
 

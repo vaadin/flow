@@ -21,7 +21,7 @@ import java.io.Writer;
 /**
  * A {@link RequestHandler} that presents an informative page if the browser in
  * use is unsupported.
- * @since
+ * @since 1.0
  */
 public class UnsupportedBrowserHandler extends SynchronizedRequestHandler {
 

@@ -24,7 +24,7 @@ import com.vaadin.flow.server.communication.JSR356WebsocketInitializer;
 /**
  * All ServletContextListeners in Flow merged into one actual listener to be
  * able to control the order they are executed in.
- * @since
+ * @since 1.0
  */
 @WebListener
 public class ServletContextListeners implements ServletContextListener {

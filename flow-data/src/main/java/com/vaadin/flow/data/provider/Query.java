@@ -29,7 +29,7 @@ import java.util.Optional;
  *            bean type
  * @param <F>
  *            filter type
- * @since
+ * @since 1.0
  */
 public class Query<T, F> implements Serializable {
 

@@ -19,7 +19,7 @@ import java.io.Serializable;
 
 /**
  * Application errors handler.
- * @since
+ * @since 1.0
  */
 public interface ErrorHandler extends Serializable {
 

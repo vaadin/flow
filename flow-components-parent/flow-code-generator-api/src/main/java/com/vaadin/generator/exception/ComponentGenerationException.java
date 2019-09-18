@@ -17,7 +17,7 @@ package com.vaadin.generator.exception;
 
 /**
  * Runtime exception for errors on the code generation process.
- * @since
+ * @since 1.0
  */
 public class ComponentGenerationException extends RuntimeException {
 

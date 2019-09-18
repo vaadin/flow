@@ -20,7 +20,7 @@ import java.io.Serializable;
 /**
  * An error thrown by the framework and handled by an {@link ErrorHandler}.
  * Typically handled by {@link VaadinSession#getErrorHandler()}.
- * @since
+ * @since 1.0
  */
 public class ErrorEvent implements Serializable {
 

@@ -19,7 +19,7 @@ import com.vaadin.flow.component.HasElement;
 
 /**
  * A set of predefined {@link HighlightCondition}s.
- * @since
+ * @since 1.0
  */
 public final class HighlightConditions {
 
