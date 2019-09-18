@@ -436,4 +436,33 @@ public class ClientIndexHandlerIT extends ChromeBrowserTest {
         Assert.assertEquals("Should load a fresh view with all events",
                 expectedContent, mainLayoutContent);
     }
+
+    @Test
+    public void should_passCorrectLocationObject_When_NavigateServerToClient() {
+        openTestUrl("/");
+        waitForElementPresent(By.id("loadVaadinRouter"));
+        findElement(By.id("loadVaadinRouter")).click();
+        waitForElementPresent(By.id("outlet"));
+
+        findElement(By.linkText("Prevent leaving view")).click();
+        waitForElementPresent(By.id("mainLayout"));
+        findElement(By.id("preventRouteInput")).sendKeys("client-view\t");
+        findElement(By.id("preventRouteButton")).click();
+        waitForElementPresent(By.cssSelector("p[class=\"prevented-route\"]"));
+
+        findElement(By.linkText("Client view")).click();
+        String preventedRoute = findElement(
+                By.cssSelector("p[class" + "=\"prevented-route\"]")).getText();
+        Assert.assertEquals(
+                "Should pass correct location object in "
+                        + "navigation events so that the view can prevent the "
+                        + "navigation and stay in the same view",
+                "preventing navigation to 'client-view'", preventedRoute);
+
+        findElement(By.linkText("Server view")).click();
+        waitForElementPresent(By.id("serverView"));
+        String mainLayoutContent = findElement(By.id("mainLayout")).getText();
+        Assert.assertEquals("Should be able to navigate to other view",
+                "Main" + " layout\nServer view", mainLayoutContent);
+    }
 }
