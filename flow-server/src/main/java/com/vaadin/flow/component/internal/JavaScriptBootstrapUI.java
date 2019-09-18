@@ -52,6 +52,7 @@ public class JavaScriptBootstrapUI extends UI {
             "not supported for client-side projects";
 
     Element wrapperElement;
+    private NavigationState clientViewNavigationState;
 
     /**
      * Create UI for clientSideMode.
@@ -93,10 +94,13 @@ public class JavaScriptBootstrapUI extends UI {
      *
      * This is only called when client route navigates from a server to a client
      * view.
+     * 
+     * @param route
+     *            the route that is navigating to.
      */
     @ClientCallable
-    public void leaveNavigation(String nextLocation) {
-        boolean postponed = navigateToPlaceholder(nextLocation);
+    public void leaveNavigation(String route) {
+        boolean postponed = navigateToPlaceholder(route);
         if (!postponed) {
             wrapperElement.removeAllChildren();
         }
@@ -106,10 +110,16 @@ public class JavaScriptBootstrapUI extends UI {
     }
 
     private boolean navigateToPlaceholder(String nextLocation) {
-        Location activeLocation = new Location(removeFirstSlash(nextLocation));
-        NavigationState build = new NavigationStateBuilder(this.getRouter())
-                .withTarget(ClientViewPlaceholder.class).build();
-        return handleNavigation(activeLocation, build);
+        Location clientViewLocation = new Location(
+                removeFirstSlash(nextLocation));
+        if (clientViewNavigationState == null) {
+            clientViewNavigationState = new NavigationStateBuilder(
+                    this.getRouter()).withTarget(ClientViewPlaceholder.class)
+                            .build();
+        }
+        // Passing the `clientViewLocation` to make sure that the navigation
+        // events contain the correct location that we are navigating to.
+        return handleNavigation(clientViewLocation, clientViewNavigationState);
     }
 
     private boolean renderViewForRoute(String route) {
