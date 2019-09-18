@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
@@ -50,6 +51,7 @@ public class JavaScriptBootstrapUI extends UI {
             "not supported for client-side projects";
 
     Element wrapperElement;
+    private NavigationState clientViewNavigationState;
 
     /**
      * Create UI for clientSideMode.
@@ -91,28 +93,33 @@ public class JavaScriptBootstrapUI extends UI {
      *
      * This is only called when client route navigates from a server to a client
      * view.
+     * 
+     * @param route
+     *            the route that is navigating to.
      */
     @ClientCallable
-    public void leaveNavigation() {
-        boolean postponed = postponedNavigation();
-        if (!postponed) {
-            wrapperElement.removeAllChildren();
-        }
+    public void leaveNavigation(String route) {
+        boolean postponed = navigateToPlaceholder(route);
 
         // Inform the client whether the navigation should be postponed
         wrapperElement.executeJs("this.serverConnected($0)", postponed);
     }
 
-    private boolean postponedNavigation() {
-        Location activeLocation = this.getInternals().getActiveViewLocation();
-        Optional<NavigationState> navigationState = this.getRouter()
-                .resolveNavigationTarget(activeLocation);
-        return navigationState.isPresent()
-                && handleNavigation(activeLocation, navigationState.get());
+    private boolean navigateToPlaceholder(String nextLocation) {
+        Location clientViewLocation = new Location(
+                removeFirstSlash(nextLocation));
+        if (clientViewNavigationState == null) {
+            clientViewNavigationState = new NavigationStateBuilder(
+                    this.getRouter()).withTarget(ClientViewPlaceholder.class)
+                            .build();
+        }
+        // Passing the `clientViewLocation` to make sure that the navigation
+        // events contain the correct location that we are navigating to.
+        return handleNavigation(clientViewLocation, clientViewNavigationState);
     }
 
     private boolean renderViewForRoute(String route) {
-        route = route.replaceFirst("^/+", "");
+        route = removeFirstSlash(route);
 
         Location location = new Location(route);
         Optional<NavigationState> navigationState = this.getRouter()
@@ -125,7 +132,7 @@ public class JavaScriptBootstrapUI extends UI {
             // When route does not exist, try to navigate to current route
             // in order to check if current view can be left before showing
             // the error page
-            if (postponedNavigation()) {
+            if (navigateToPlaceholder(route)) {
                 return true;
             }
 
@@ -134,6 +141,10 @@ public class JavaScriptBootstrapUI extends UI {
             handleErrorNavigation(location);
         }
         return false;
+    }
+
+    private String removeFirstSlash(String route) {
+        return route.replaceFirst("^/+", "");
     }
 
     private boolean handleNavigation(Location location,
@@ -206,8 +217,11 @@ public class JavaScriptBootstrapUI extends UI {
             JavaScriptBootstrapUI jsUI = castToJavaScriptUI(ui);
             Element wrapperElement = jsUI.wrapperElement;
             Element rootElement = newRoot.getElement();
-
-            if (!wrapperElement.equals(rootElement.getParent())) {
+            if (newRoot instanceof ClientViewPlaceholder) {
+                // only need to remove all children when newRoot is a
+                // placeholder
+                wrapperElement.removeAllChildren();
+            } else if (!wrapperElement.equals(rootElement.getParent())) {
                 if (oldRoot != null) {
                     oldRoot.getElement().removeFromParent();
                 }
@@ -233,5 +247,13 @@ public class JavaScriptBootstrapUI extends UI {
             assert ((JavaScriptBootstrapUI) ui).wrapperElement != null;
             return (JavaScriptBootstrapUI) ui;
         }
+    }
+
+    /**
+     * Placeholder view when navigating from server-side views to client-side
+     * views.
+     */
+    @Tag(Tag.DIV)
+    public static class ClientViewPlaceholder extends Component {
     }
 }

@@ -23,5 +23,6 @@ import com.vaadin.flow.router.Route;
 public class ServerSideView extends Div {
     public ServerSideView() {
         add(new Text("Server view"));
+        setId("serverView");
     }
 }

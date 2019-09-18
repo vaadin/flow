@@ -132,7 +132,7 @@ export class Flow {
       }
 
       // Call server side to check whether we can leave the view
-      this.flowRoot.$server.leaveNavigation();
+      this.flowRoot.$server.leaveNavigation(this.getFlowRoute(ctx));
     });
   }
 
@@ -146,8 +146,12 @@ export class Flow {
 
       // Call server side to navigate to the given route
       this.flowRoot.$server
-        .connectClient(this.container.localName, this.container.id, ctx.pathname + (ctx.search || ''));
+        .connectClient(this.container.localName, this.container.id, this.getFlowRoute(ctx));
     });
+  }
+
+  private getFlowRoute(context: NavigationParameters): string {
+    return context.pathname + (context.search || '');
   }
 
   // import flow client modules and initialize UI in server side.

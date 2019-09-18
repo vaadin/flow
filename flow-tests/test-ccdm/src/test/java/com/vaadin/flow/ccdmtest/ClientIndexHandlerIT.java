@@ -324,6 +324,32 @@ public class ClientIndexHandlerIT extends ChromeBrowserTest {
     }
 
     @Test
+    public void should_navigateFromServerToServer_When_UsingVaadinRouter() {
+        openTestUrl("/");
+        waitForElementPresent(By.id("loadVaadinRouter"));
+        findElement(By.id("loadVaadinRouter")).click();
+        waitForElementPresent(By.id("outlet"));
+
+        findElement(By.linkText("View with all events")).click();
+        waitForElementPresent(By.id("mainLayout"));
+        String mainLayoutContent = findElement(By.id("mainLayout")).getText();
+        String expectedContent = "Main layout\nViewWithAllEvents: 1 "
+                + "setParameter\nViewWithAllEvents: 2 "
+                + "beforeEnter\nViewWithAllEvents: 3 "
+                + "onAttach\nViewWithAllEvents: 4 afterNavigation";
+        Assert.assertEquals("Should load view with all events", expectedContent,
+                mainLayoutContent);
+
+        findElement(By.linkText("Server view")).click();
+        waitForElementPresent(By.id("serverView"));
+        String serverViewContent = findElement(By.id("mainLayout"))
+                .getText();
+        Assert.assertEquals(
+                "Should load server side view content with vaadin-router",
+                "Main layout\nServer view", serverViewContent);
+    }
+
+    @Test
     public void should_returnNotFoundView_WhenRouteNotFound() {
         openTestUrl("/");
         waitForElementPresent(By.id("button3"));
@@ -335,5 +361,108 @@ public class ClientIndexHandlerIT extends ChromeBrowserTest {
         String content = findElement(By.id("result")).getText();
         Assert.assertTrue("Flow.navigate should return not found view",
                 content.contains("Could not navigate"));
+    }
+
+    @Test
+    public void should_notRunExtraEvents_When_NavigatingServerClientServer() {
+        openTestUrl("/");
+        waitForElementPresent(By.id("loadVaadinRouter"));
+        findElement(By.id("loadVaadinRouter")).click();
+        waitForElementPresent(By.id("outlet"));
+
+        findElement(By.linkText("View with all events")).click();
+        waitForElementPresent(By.id("mainLayout"));
+        String mainLayoutContent = findElement(By.id("mainLayout")).getText();
+        String expectedContent = "Main layout\nViewWithAllEvents: 1 "
+                + "setParameter\nViewWithAllEvents: 2 "
+                + "beforeEnter\nViewWithAllEvents: 3 "
+                + "onAttach\nViewWithAllEvents: 4 afterNavigation";
+        Assert.assertEquals("Should load view with all events", expectedContent,
+                mainLayoutContent);
+
+        findElement(By.linkText("Client view")).click();
+        waitForElementPresent(By.id("clientView"));
+        String clientSideViewContent = findElement(By.id("clientView"))
+                .getText();
+        Assert.assertEquals(
+                "Should load client side view content with vaadin-router",
+                "Client view", clientSideViewContent);
+
+        findElement(By.linkText("View with all events")).click();
+        waitForElementPresent(By.id("mainLayout"));
+        mainLayoutContent = findElement(By.id("mainLayout")).getText();
+        expectedContent = "Main layout\nViewWithAllEvents: 1 "
+                + "setParameter\nViewWithAllEvents: 2 "
+                + "beforeEnter\nViewWithAllEvents: 3 "
+                + "onAttach\nViewWithAllEvents: 4 afterNavigation";
+        Assert.assertEquals("Should load a fresh view with all events",
+                expectedContent, mainLayoutContent);
+    }
+
+    @Test
+    public void should_renderServerView_When_ClickSameServerLinkTwiceAndGoToClientView() {
+        openTestUrl("/");
+        waitForElementPresent(By.id("loadVaadinRouter"));
+        findElement(By.id("loadVaadinRouter")).click();
+        waitForElementPresent(By.id("outlet"));
+
+        findElement(By.linkText("View with all events")).click();
+        waitForElementPresent(By.id("mainLayout"));
+        // click the link again to trigger `action` of `flow.route`
+        findElement(By.linkText("View with all events")).click();
+        String mainLayoutContent = findElement(By.id("mainLayout")).getText();
+        String expectedContent = "Main layout\nViewWithAllEvents: 1 "
+                + "setParameter\nViewWithAllEvents: 2 "
+                + "beforeEnter\nViewWithAllEvents: 3 "
+                + "onAttach\nViewWithAllEvents: 4 afterNavigation";
+        Assert.assertEquals("Should load view with all events", expectedContent,
+                mainLayoutContent);
+
+        findElement(By.linkText("Client view")).click();
+        waitForElementPresent(By.id("clientView"));
+        String clientSideViewContent = findElement(By.id("clientView"))
+                .getText();
+        Assert.assertEquals(
+                "Should load client side view content with vaadin-router",
+                "Client view", clientSideViewContent);
+
+        findElement(By.linkText("View with all events")).click();
+        waitForElementPresent(By.id("mainLayout"));
+        mainLayoutContent = findElement(By.id("mainLayout")).getText();
+        expectedContent = "Main layout\nViewWithAllEvents: 1 "
+                + "setParameter\nViewWithAllEvents: 2 "
+                + "beforeEnter\nViewWithAllEvents: 3 "
+                + "onAttach\nViewWithAllEvents: 4 afterNavigation";
+        Assert.assertEquals("Should load a fresh view with all events",
+                expectedContent, mainLayoutContent);
+    }
+
+    @Test
+    public void should_passCorrectLocationObject_When_NavigateServerToClient() {
+        openTestUrl("/");
+        waitForElementPresent(By.id("loadVaadinRouter"));
+        findElement(By.id("loadVaadinRouter")).click();
+        waitForElementPresent(By.id("outlet"));
+
+        findElement(By.linkText("Prevent leaving view")).click();
+        waitForElementPresent(By.id("mainLayout"));
+        findElement(By.id("preventRouteInput")).sendKeys("client-view\t");
+        findElement(By.id("preventRouteButton")).click();
+        waitForElementPresent(By.cssSelector("p[class=\"prevented-route\"]"));
+
+        findElement(By.linkText("Client view")).click();
+        String preventedRoute = findElement(
+                By.cssSelector("p[class" + "=\"prevented-route\"]")).getText();
+        Assert.assertEquals(
+                "Should pass correct location object in "
+                        + "navigation events so that the view can prevent the "
+                        + "navigation and stay in the same view",
+                "preventing navigation to 'client-view'", preventedRoute);
+
+        findElement(By.linkText("Server view")).click();
+        waitForElementPresent(By.id("serverView"));
+        String mainLayoutContent = findElement(By.id("mainLayout")).getText();
+        Assert.assertEquals("Should be able to navigate to other view",
+                "Main" + " layout\nServer view", mainLayoutContent);
     }
 }
