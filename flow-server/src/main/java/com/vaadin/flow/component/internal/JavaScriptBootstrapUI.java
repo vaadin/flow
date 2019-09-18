@@ -101,9 +101,6 @@ public class JavaScriptBootstrapUI extends UI {
     @ClientCallable
     public void leaveNavigation(String route) {
         boolean postponed = navigateToPlaceholder(route);
-        if (!postponed) {
-            wrapperElement.removeAllChildren();
-        }
 
         // Inform the client whether the navigation should be postponed
         wrapperElement.executeJs("this.serverConnected($0)", postponed);
