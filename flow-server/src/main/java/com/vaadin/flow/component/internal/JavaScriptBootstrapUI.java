@@ -40,7 +40,6 @@ import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.router.internal.ErrorStateRenderer;
 import com.vaadin.flow.router.internal.NavigationStateRenderer;
 import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
-import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
 /**
@@ -218,7 +217,11 @@ public class JavaScriptBootstrapUI extends UI {
             JavaScriptBootstrapUI jsUI = castToJavaScriptUI(ui);
             Element wrapperElement = jsUI.wrapperElement;
             Element rootElement = newRoot.getElement();
-            if (!wrapperElement.equals(rootElement.getParent())) {
+            if (newRoot instanceof ClientViewPlaceholder) {
+                // only need to remove all children when newRoot is a
+                // placeholder
+                wrapperElement.removeAllChildren();
+            } else if (!wrapperElement.equals(rootElement.getParent())) {
                 if (oldRoot != null) {
                     oldRoot.getElement().removeFromParent();
                 }
@@ -251,13 +254,6 @@ public class JavaScriptBootstrapUI extends UI {
      * views.
      */
     @Tag(Tag.DIV)
-    @NoTheme
     public static class ClientViewPlaceholder extends Component {
-        /**
-         * Public constructor for creating the instance from reflection.
-         */
-        public ClientViewPlaceholder() {
-            // Empty constructor
-        }
     }
 }
