@@ -27,6 +27,7 @@ import elemental.html.Window;
  * A Simpler way to use {@link XMLHttpRequest}.
  *
  * Copied from the GWT project to make get/post return the XmlHttpRequest
+ * @since
  */
 public class Xhr {
     /**

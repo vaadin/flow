@@ -32,6 +32,7 @@ import com.vaadin.flow.component.dependency.StyleSheet;
 /**
  * Helper class for reading annotation data.
  *
+ * @since
  */
 public class AnnotationReader {
 

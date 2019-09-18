@@ -28,6 +28,7 @@ import com.vaadin.flow.component.HasValidation;
  * {@link HasValidation}.
  * 
  * @see ValidationTestView
+ * @since
  */
 public abstract class AbstractValidationTest extends AbstractComponentIT {
 

@@ -19,6 +19,7 @@ import org.openqa.selenium.WebElement;
 
 /**
  * Abstract base class for integration tests.
+ * @since
  */
 public class AbstractComponentIT extends ChromeBrowserTest {
 

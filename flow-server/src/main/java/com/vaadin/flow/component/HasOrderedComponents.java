@@ -25,6 +25,7 @@ import com.vaadin.flow.dom.Element;
  * 
  * @param <T>
  *            the type of the component which implements the interface
+ * @since
  */
 public interface HasOrderedComponents<T extends Component>
         extends HasComponents {

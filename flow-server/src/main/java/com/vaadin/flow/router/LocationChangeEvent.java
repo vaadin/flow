@@ -32,6 +32,7 @@ import com.vaadin.flow.router.internal.NavigationStateRenderer;
  * Event created when the location changes by any of the reasons defined at
  * {@link NavigationTrigger}.
  *
+ * @since
  */
 public class LocationChangeEvent extends EventObject {
     private final UI ui;

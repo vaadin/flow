@@ -25,6 +25,7 @@ import java.util.Optional;
  * names for the generated components' java API.
  *
  * @author Vaadin ltd
+ * @since
  */
 public final class PropertyNameRemapRegistry {
 

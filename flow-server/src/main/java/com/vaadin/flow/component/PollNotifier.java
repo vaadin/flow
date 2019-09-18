@@ -27,6 +27,7 @@ import com.vaadin.flow.shared.Registration;
  * message to the client, to check for asynchronous server-side modifications.
  *
  * @see UI#setPollInterval(int)
+ * @since
  */
 public interface PollNotifier extends Serializable {
     /**

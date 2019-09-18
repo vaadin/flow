@@ -47,6 +47,7 @@ import java.io.Serializable;
  * Please enable cookies in your browser and <u>click here</u> or press ESC to
  * try again.</li>
  * </ul>
+ * @since
  */
 public class SystemMessages implements Serializable {
     protected String sessionExpiredURL = null;

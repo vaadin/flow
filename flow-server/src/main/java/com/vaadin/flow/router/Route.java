@@ -32,6 +32,7 @@ import com.vaadin.flow.component.UI;
  * to this annotation and may be used mutiple times.
  *
  * @see RouteAlias
+ * @since
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

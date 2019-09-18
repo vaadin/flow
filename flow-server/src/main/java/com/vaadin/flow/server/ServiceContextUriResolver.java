@@ -22,6 +22,7 @@ import com.vaadin.flow.shared.VaadinUriResolver;
 /**
  * A URI resolver which resolves paths for loading through VaadinService
  * resource methods.
+ * @since
  */
 public class ServiceContextUriResolver extends VaadinUriResolver
         implements Serializable {

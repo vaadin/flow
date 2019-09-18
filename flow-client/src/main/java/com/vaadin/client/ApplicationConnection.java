@@ -32,6 +32,7 @@ import elemental.dom.Node;
  * Main class for an application / UI.
  * <p>
  * Initializes the registry and starts the application.
+ * @since
  */
 public class ApplicationConnection {
 

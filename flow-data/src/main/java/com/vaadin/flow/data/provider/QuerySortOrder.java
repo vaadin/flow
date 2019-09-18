@@ -19,6 +19,7 @@ package com.vaadin.flow.data.provider;
  * Sorting information for {@link Query}.
  *
  * @see Query
+ * @since
  */
 public class QuerySortOrder extends SortOrder<String> {
 

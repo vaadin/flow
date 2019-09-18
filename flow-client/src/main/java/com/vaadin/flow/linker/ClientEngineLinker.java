@@ -46,6 +46,7 @@ import com.google.gwt.util.tools.Utility;
  * cannot be called deferredly.
  *
  * @see SingleScriptLinker
+ * @since
  */
 @LinkerOrder(Order.PRIMARY)
 @Shardable

@@ -19,6 +19,7 @@ import com.vaadin.flow.server.StreamVariable.StreamingStartEvent;
 
 /**
  * Implementation for {@link StreamingStartEvent}.
+ * @since
  */
 public final class StreamingStartEventImpl extends AbstractStreamingEvent
         implements StreamingStartEvent {

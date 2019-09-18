@@ -24,6 +24,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 /**
  * Base class for the integration tests of component demos.
  *
+ * @since
  */
 public abstract class ComponentDemoTest extends ChromeBrowserTest {
     protected WebElement layout;

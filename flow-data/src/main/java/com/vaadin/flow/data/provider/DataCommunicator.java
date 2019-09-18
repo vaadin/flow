@@ -55,6 +55,7 @@ import elemental.json.JsonValue;
  * @param <T>
  *            the bean type
  *
+ * @since
  */
 public class DataCommunicator<T> implements Serializable {
     private final DataGenerator<T> dataGenerator;

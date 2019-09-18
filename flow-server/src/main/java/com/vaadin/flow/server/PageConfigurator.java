@@ -19,6 +19,7 @@ import java.io.Serializable;
 
 /**
  * Configures the initial page contents.
+ * @since
  */
 @FunctionalInterface
 public interface PageConfigurator extends Serializable {

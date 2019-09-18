@@ -20,6 +20,7 @@ import com.vaadin.testbench.elementsbase.Element;
 
 /**
  * A TestBench element representing a <code>&lt;button&gt;</code> element.
+ * @since
  */
 @Element("button")
 public class NativeButtonElement extends TestBenchElement {

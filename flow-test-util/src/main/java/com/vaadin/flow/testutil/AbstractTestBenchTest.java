@@ -42,6 +42,7 @@ import com.vaadin.testbench.parallel.DefaultBrowserFactory;
 
 /**
  * Abstract base class for flow TestBench tests.
+ * @since
  */
 @RunOnHub
 @BrowserFactory(DefaultBrowserFactory.class)

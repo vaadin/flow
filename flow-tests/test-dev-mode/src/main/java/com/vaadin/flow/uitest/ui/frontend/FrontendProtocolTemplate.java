@@ -23,6 +23,7 @@ import com.vaadin.flow.component.dependency.HtmlImport;
  * This is the Java wrapper for the webcomponent defined at the
  * frontend-protocol.html file. This component is tested by the
  * FrontendProtocolIT.
+ * @since
  */
 @Tag("frontend-protocol")
 @HtmlImport("frontend://components/frontend-protocol.html")

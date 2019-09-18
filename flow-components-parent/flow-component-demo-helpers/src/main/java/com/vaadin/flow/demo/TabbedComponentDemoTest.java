@@ -20,6 +20,7 @@ import org.openqa.selenium.By;
 /**
  * Base class for the component integration tests for views that use tabs.
  *
+ * @since
  */
 public abstract class TabbedComponentDemoTest extends ComponentDemoTest {
 

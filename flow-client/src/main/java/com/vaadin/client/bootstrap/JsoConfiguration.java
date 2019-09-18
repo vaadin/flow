@@ -21,6 +21,7 @@ import com.vaadin.client.ValueMap;
 /**
  * Helper class for reading configuration options from the bootstrap javascript
  *
+ * @since
  */
 public final class JsoConfiguration extends JavaScriptObject {
     protected JsoConfiguration() {

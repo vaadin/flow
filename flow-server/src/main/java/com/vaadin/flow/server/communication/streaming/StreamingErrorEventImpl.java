@@ -19,6 +19,7 @@ import com.vaadin.flow.server.StreamVariable.StreamingErrorEvent;
 
 /**
  * Implementation for {@link StreamingErrorEvent}.
+ * @since
  */
 public final class StreamingErrorEventImpl extends AbstractStreamingEvent
         implements StreamingErrorEvent {

@@ -22,6 +22,7 @@ import java.io.Serializable;
  *
  * @param <T>
  *            the target type of the highlight action
+ * @since
  */
 @FunctionalInterface
 public interface HighlightAction<T> extends Serializable {

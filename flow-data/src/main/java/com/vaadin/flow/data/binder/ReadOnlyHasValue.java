@@ -38,6 +38,7 @@ import com.vaadin.flow.shared.Registration;
  *
  * @param <V>
  *            the value type
+ * @since
  */
 public class ReadOnlyHasValue<V>
         implements HasValue<ValueChangeEvent<V>, V>, Serializable {

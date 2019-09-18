@@ -33,6 +33,7 @@ import java.util.List;
  * @see SortOrderBuilder#thenAsc(Object)
  * @see SortOrderBuilder#thenDesc(Object)
  * @see #build()
+ * @since
  */
 public abstract class SortOrderBuilder<T extends SortOrder<V>, V>
         implements Serializable {

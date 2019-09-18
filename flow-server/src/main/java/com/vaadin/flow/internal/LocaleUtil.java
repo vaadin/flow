@@ -24,6 +24,7 @@ import com.vaadin.flow.server.VaadinRequest;
 
 /**
  * Utility class for locale handling.
+ * @since
  */
 public final class LocaleUtil {
 

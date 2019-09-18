@@ -33,6 +33,7 @@ import com.vaadin.flow.theme.Theme;
 /**
  * Validation class that is run during servlet container initialization which
  * checks that specific annotations are not configured wrong.
+ * @since
  */
 @HandlesTypes({ Viewport.class, BodySize.class, Inline.class, Theme.class,
         Push.class })

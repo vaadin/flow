@@ -27,6 +27,7 @@ import com.vaadin.flow.function.SerializableFunction;
  * @param <R>
  *            the result value type
  *
+ * @since
  */
 class SimpleResult<R> implements Result<R> {
 

@@ -22,6 +22,7 @@ import java.io.Serializable;
  *
  * @param <T>
  *            the target type of the highlight condition
+ * @since
  */
 @FunctionalInterface
 public interface HighlightCondition<T> extends Serializable {

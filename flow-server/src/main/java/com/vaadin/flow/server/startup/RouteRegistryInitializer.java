@@ -30,6 +30,7 @@ import com.vaadin.flow.server.InvalidRouteConfigurationException;
 
 /**
  * Servlet initializer for collecting all available {@link Route}s on startup.
+ * @since
  */
 @HandlesTypes({ Route.class, RouteAlias.class })
 public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer

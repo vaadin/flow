@@ -32,6 +32,7 @@ import com.vaadin.flow.server.startup.RouteRegistry.ErrorTargetEntry;
 /**
  * Abstract before event class that has the common functionalities for
  * {@link BeforeLeaveEvent} and {@link BeforeEnterEvent}.
+ * @since
  */
 public abstract class BeforeEvent extends EventObject {
     private final Location location;

@@ -55,6 +55,7 @@ import static org.junit.Assert.fail;
  * classpath. Subclasses may adjust the whitelist by overriding
  * {@link #getExcludedPatterns()}, {@link #getBasePackages()},
  * {@link  #getJarPattern()}
+ * @since
  */
 
 public abstract class ClassesSerializableTest {

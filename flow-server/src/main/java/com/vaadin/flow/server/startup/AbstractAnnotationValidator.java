@@ -34,6 +34,7 @@ import com.vaadin.flow.server.InvalidApplicationConfigurationException;
 /**
  * Validation class that contains common logic to checks that specific
  * annotations are not configured wrong.
+ * @since
  */
 public abstract class AbstractAnnotationValidator implements Serializable {
 

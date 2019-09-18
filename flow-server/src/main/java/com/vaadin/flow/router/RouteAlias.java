@@ -39,6 +39,7 @@ import com.vaadin.flow.component.UI;
  * This annotation can be used multiple times on the same class.
  *
  * @see Route
+ * @since
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

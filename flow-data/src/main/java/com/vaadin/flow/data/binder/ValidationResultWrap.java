@@ -31,6 +31,7 @@ import com.vaadin.flow.function.SerializableFunction;
  * @param <R>
  *            the result data type
  *
+ * @since
  */
 class ValidationResultWrap<R> implements Result<R> {
 

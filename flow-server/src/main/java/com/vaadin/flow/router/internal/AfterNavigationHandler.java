@@ -21,6 +21,7 @@ import com.vaadin.flow.router.AfterNavigationEvent;
 
 /**
  * The base interface for every {@link AfterNavigationEvent} handler.
+ * @since
  */
 @FunctionalInterface
 public interface AfterNavigationHandler extends Serializable {

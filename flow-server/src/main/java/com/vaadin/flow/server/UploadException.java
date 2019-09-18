@@ -17,6 +17,7 @@ package com.vaadin.flow.server;
 
 /**
  * Upload exception class.
+ * @since
  */
 public class UploadException extends Exception {
     /**

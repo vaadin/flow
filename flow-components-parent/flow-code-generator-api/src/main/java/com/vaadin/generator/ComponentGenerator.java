@@ -89,6 +89,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  *
  * @see #generateClass(ComponentMetadata, String, String)
  * @see #generateClass(File, File, String, String)
+ * @since
  */
 public class ComponentGenerator {
     private static final String JAVADOC_THROWS = "@throws";

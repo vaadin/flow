@@ -22,6 +22,7 @@ import java.util.List;
  * Represents an event the webcomponent can trigger.
  *
  * @see ComponentMetadata
+ * @since
  */
 public class ComponentEventData {
 

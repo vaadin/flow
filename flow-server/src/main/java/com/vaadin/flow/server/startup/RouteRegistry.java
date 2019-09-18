@@ -60,6 +60,7 @@ import com.vaadin.flow.theme.ThemeDefinition;
 /**
  * Registry for holding navigation target components found on servlet
  * initialization.
+ * @since
  */
 public class RouteRegistry implements Serializable {
 

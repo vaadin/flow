@@ -17,6 +17,7 @@ package com.vaadin.flow.uitest;
 
 /**
  * Exception throw in HasUrlParameterErrorView.
+ * @since
  */
 public class MyException extends RuntimeException {
 }

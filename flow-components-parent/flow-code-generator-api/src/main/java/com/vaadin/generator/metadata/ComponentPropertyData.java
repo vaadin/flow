@@ -19,6 +19,7 @@ package com.vaadin.generator.metadata;
  * Represents a property exposed by the webcomponent.
  *
  * @see ComponentMetadata
+ * @since
  */
 public class ComponentPropertyData extends ComponentPropertyBaseData {
 

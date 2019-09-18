@@ -27,6 +27,7 @@ import java.util.List;
  *
  * @see ComponentPropertyBaseData
  * @see ComponentFunctionParameterData
+ * @since
  */
 public class ComponentObjectType implements ComponentType {
 

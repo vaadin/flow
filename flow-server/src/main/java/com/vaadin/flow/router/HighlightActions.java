@@ -20,6 +20,7 @@ import com.vaadin.flow.component.HasStyle;
 
 /**
  * A set of predefined {@link HighlightAction}s.
+ * @since
  */
 public final class HighlightActions {
 

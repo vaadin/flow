@@ -30,6 +30,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 /**
  * View for testing DOM changes inside attach listeners, based on
  * https://github.com/vaadin/flow/issues/4209
+ * @since
  */
 @Route(value = "com.vaadin.flow.uitest.ui.AttachListenerView", layout = ViewTestLayout.class)
 public class AttachListenerView extends AbstractDivView {

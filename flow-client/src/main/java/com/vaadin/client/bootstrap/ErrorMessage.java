@@ -20,6 +20,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 /**
  * Wraps a native javascript object containing fields for an error message
  *
+ * @since
  */
 public final class ErrorMessage extends JavaScriptObject {
 

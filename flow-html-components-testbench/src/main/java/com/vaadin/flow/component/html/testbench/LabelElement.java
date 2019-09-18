@@ -20,6 +20,7 @@ import com.vaadin.testbench.elementsbase.Element;
 
 /**
  * A TestBench element representing a <code>&lt;label&gt;</code> element.
+ * @since
  */
 @Element("label")
 public class LabelElement extends TestBenchElement {

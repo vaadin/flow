@@ -20,6 +20,7 @@ package com.vaadin.generator.metadata;
  * types.
  *
  * @see ComponentMetadata
+ * @since
  */
 public enum ComponentBasicType implements ComponentType {
 

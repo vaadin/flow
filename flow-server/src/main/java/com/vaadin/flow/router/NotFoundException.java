@@ -18,6 +18,7 @@ package com.vaadin.flow.router;
 /**
  * Exception indicating that something went wrong while resolving navigation
  * routes.
+ * @since
  */
 public class NotFoundException extends RuntimeException {
 

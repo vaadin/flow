@@ -25,6 +25,7 @@ import java.util.stream.Stream;
  * Validates custom-element name according to definition in <a href=
  * "https://www.w3.org/TR/custom-elements/#prod-potentialcustomelementname">Custom
  * element name</a>
+ * @since
  */
 public final class CustomElementNameValidator {
     private static final Pattern STARTS_WITH_A_DIGIT = Pattern.compile("\\d.*");

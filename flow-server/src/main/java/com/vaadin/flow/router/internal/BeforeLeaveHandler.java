@@ -21,6 +21,7 @@ import com.vaadin.flow.router.BeforeLeaveEvent;
 
 /**
  * The base interface for every {@link BeforeLeaveEvent} handler.
+ * @since
  */
 @FunctionalInterface
 public interface BeforeLeaveHandler extends Serializable {

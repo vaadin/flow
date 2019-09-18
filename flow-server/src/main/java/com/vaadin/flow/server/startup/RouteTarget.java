@@ -31,6 +31,7 @@ import com.vaadin.flow.theme.ThemeDefinition;
 /**
  * Route target holder that handles getting the correct type of has parameter
  * target.
+ * @since
  */
 public class RouteTarget implements Serializable {
     private Class<? extends Component> normal;

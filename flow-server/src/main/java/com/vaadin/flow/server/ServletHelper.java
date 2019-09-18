@@ -26,6 +26,7 @@ import com.vaadin.flow.shared.ApplicationConstants;
  * Contains helper methods for {@link VaadinServlet} and generally for handling
  * {@link VaadinRequest VaadinRequests}.
  *
+ * @since
  */
 public class ServletHelper implements Serializable {
 

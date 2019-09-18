@@ -22,6 +22,7 @@ import java.io.Serializable;
  *
  * @author Vaadin Ltd
  *
+ * @since
  */
 class Pair<U extends Serializable, V extends Serializable>
         implements Serializable {

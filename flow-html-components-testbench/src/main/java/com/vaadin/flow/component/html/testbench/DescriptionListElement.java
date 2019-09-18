@@ -20,6 +20,7 @@ import com.vaadin.testbench.elementsbase.Element;
 
 /**
  * A TestBench element representing a <code>&lt;dl&gt;</code> element.
+ * @since
  */
 @Element("dl")
 public class DescriptionListElement extends TestBenchElement {

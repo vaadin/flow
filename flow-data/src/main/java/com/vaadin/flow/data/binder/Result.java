@@ -37,6 +37,7 @@ import com.vaadin.flow.function.SerializableSupplier;
  * @param <R>
  *            the result value type
  *
+ * @since
  */
 public interface Result<R> extends Serializable {
 

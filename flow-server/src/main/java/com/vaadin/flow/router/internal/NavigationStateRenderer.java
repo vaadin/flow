@@ -35,6 +35,7 @@ import com.vaadin.flow.router.RouterLayout;
  *
  * @see NavigationState
  * @see Route
+ * @since
  */
 public class NavigationStateRenderer extends AbstractNavigationStateRenderer {
 
