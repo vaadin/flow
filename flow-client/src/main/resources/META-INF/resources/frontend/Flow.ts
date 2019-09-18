@@ -12,16 +12,10 @@ interface AppInitResponse {
   appConfig: AppConfig;
 }
 
-interface RouterLocation {
-  pathname: string;
-  search: string;
-}
-
 interface HTMLRouterContainer extends HTMLElement {
   onBeforeEnter ?: (ctx: NavigationParameters, cmd: NavigationCommands) => Promise<any>;
   onBeforeLeave ?: (ctx: NavigationParameters, cmd: NavigationCommands) => Promise<any>;
   serverConnected ?: (cancel: boolean) => void;
-  location ?: RouterLocation;
 }
 
 interface FlowRoute {
