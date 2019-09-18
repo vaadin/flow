@@ -21,7 +21,6 @@ import java.io.Serializable;
  * Represents a pair of two values.
  *
  * @author Vaadin Ltd
- *
  * @since 1.0
  */
 class Pair<U extends Serializable, V extends Serializable>

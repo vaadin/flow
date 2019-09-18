@@ -36,6 +36,7 @@ import elemental.json.JsonObject;
  * Nested POJOs represent complex data structures. Those POJOs are meant to be
  * static nested classes of the main component class. The nested POJOs can be
  * used in method calls, property getters/setters and inside events.
+ *
  * @since 1.0
  */
 public class NestedClassGenerator {

@@ -20,6 +20,7 @@ import com.vaadin.testbench.elementsbase.Element;
 
 /**
  * A TestBench element representing an <code>&lt;a&gt;</code> element.
+ *
  * @since 1.0
  */
 @Element("a")

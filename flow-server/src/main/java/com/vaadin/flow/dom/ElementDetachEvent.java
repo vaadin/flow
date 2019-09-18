@@ -22,6 +22,7 @@ import java.util.EventObject;
  * <p>
  * When a hierarchy of elements is being detached, this event is fired
  * child-first.
+ *
  * @since 1.0
  */
 public class ElementDetachEvent extends EventObject {

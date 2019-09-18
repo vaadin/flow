@@ -20,6 +20,7 @@ import com.vaadin.testbench.elementsbase.Element;
 
 /**
  * A TestBench element representing a <code>&lt;ul&gt;</code> element.
+ *
  * @since 1.0
  */
 @Element("ul")
