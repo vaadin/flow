@@ -42,6 +42,7 @@ import com.vaadin.flow.router.RouterLayout;
 
 /**
  * Utility class with methods for router layout handling.
+ *
  * @since 1.0
  */
 public final class RouterUtil {

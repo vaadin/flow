@@ -23,6 +23,7 @@ import com.vaadin.testbench.elementsbase.Element;
 /**
  * A TestBench element representing an <code>&lt;input type='text'&gt;</code>
  * element.
+ *
  * @since 1.0
  */
 @Element("input")

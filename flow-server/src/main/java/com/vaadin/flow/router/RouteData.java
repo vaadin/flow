@@ -26,6 +26,7 @@ import com.vaadin.flow.router.internal.RouterUtil;
 
 /**
  * Data collection of information for a specific registered route target.
+ *
  * @since 1.0
  */
 public class RouteData implements Comparable<RouteData>, Serializable {

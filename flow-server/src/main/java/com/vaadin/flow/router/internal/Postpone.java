@@ -21,6 +21,7 @@ import java.util.Deque;
 
 /**
  * Container class for containing left over listeners on postponed navigation.
+ *
  * @since 1.0
  */
 public class Postpone implements Serializable {

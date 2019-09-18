@@ -24,6 +24,7 @@ import com.vaadin.flow.uitest.MyException;
 
 /**
  * The exception handler for the
+ *
  * @since
  */
 public class MyExceptionHandler extends Div

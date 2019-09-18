@@ -35,6 +35,7 @@ import com.vaadin.flow.theme.NoTheme;
 
 /**
  * This is a basic default error view shown on routing exceptions.
+ *
  * @since 1.0
  */
 @Tag(Tag.DIV)

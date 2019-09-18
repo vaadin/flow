@@ -40,6 +40,7 @@ import elemental.json.JsonValue;
 
 /**
  * Utility methods for the code generation process.
+ *
  * @since 1.0
  */
 public final class ComponentGeneratorUtils {

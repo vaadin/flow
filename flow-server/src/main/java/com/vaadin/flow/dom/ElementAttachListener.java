@@ -20,6 +20,7 @@ import java.io.Serializable;
 /**
  * Listener for element attach events. It is invoked when the element is
  * attached to the UI.
+ *
  * @since 1.0
  */
 @FunctionalInterface

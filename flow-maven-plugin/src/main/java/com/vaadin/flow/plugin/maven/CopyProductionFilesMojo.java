@@ -37,6 +37,7 @@ import com.vaadin.flow.plugin.production.ProductionModeCopyStep;
  * copied from {@link CopyProductionFilesMojo#frontendWorkingDirectory}
  * directory, WebJars and regular jars, refer to {@link ProductionModeCopyStep}
  * for details.
+ *
  * @since 1.0
  */
 @Mojo(name = "copy-production-files", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.GENERATE_RESOURCES)

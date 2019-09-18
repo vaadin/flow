@@ -21,6 +21,7 @@ import com.vaadin.client.Registry;
  * Factory for {@link PushConnection}.
  *
  * Produces a {@link PushConnection} for the provided {@link Registry}
+ *
  * @since 1.0
  */
 @FunctionalInterface

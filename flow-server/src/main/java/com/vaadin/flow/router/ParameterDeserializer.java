@@ -31,6 +31,7 @@ import com.vaadin.flow.internal.ReflectTools;
 
 /**
  * Parameter deserialization utility.
+ *
  * @since 1.0
  */
 public final class ParameterDeserializer {

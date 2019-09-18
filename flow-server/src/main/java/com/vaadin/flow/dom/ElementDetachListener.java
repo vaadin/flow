@@ -20,6 +20,7 @@ import java.io.Serializable;
 /**
  * Listener for element detach events. It is invoked when the element is
  * detached from the UI.
+ *
  * @since 1.0
  */
 @FunctionalInterface
