@@ -22,6 +22,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -225,9 +227,14 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
 
     private String readFullyAndClose(String readErrorMessage,
             Supplier<InputStream> inputStreamSupplier) {
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
                 inputStreamSupplier.get(), StandardCharsets.UTF_8))) {
-            return br.lines().collect(Collectors.joining("\n"));
+            List<String> lines = new ArrayList<>();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                lines.add(line);
+            }
+            return lines.stream().collect(Collectors.joining("\n"));
         } catch (IOException e) {
             throw new UncheckedIOException(readErrorMessage, e);
         }
