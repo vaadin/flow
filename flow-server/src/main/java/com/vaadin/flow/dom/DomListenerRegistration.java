@@ -180,7 +180,7 @@ public interface DomListenerRegistration extends Registration {
      *            <code>null</code>
      * @return this registration, for chaining
      *
-     * @since
+     * @since 1.3
      */
     default DomListenerRegistration onUnregister(
             SerializableRunnable unregisterHandler) {
