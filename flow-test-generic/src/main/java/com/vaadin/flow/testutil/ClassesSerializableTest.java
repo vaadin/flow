@@ -55,7 +55,9 @@ import static java.lang.reflect.Modifier.isStatic;
  * tries to serialize every single class (except ones from whitelist) in the
  * classpath. Subclasses may adjust the whitelist by overriding
  * {@link #getExcludedPatterns()}, {@link #getBasePackages()},
- * {@link #getJarPattern()}
+ * {@link  #getJarPattern()}
+ *
+ * @since 1.0
  */
 
 public abstract class ClassesSerializableTest {
@@ -194,7 +196,7 @@ public abstract class ClassesSerializableTest {
     /**
      * The method is called right after a class instantiation and might be
      * overriden by subclasses to reset thread local values (ex. current UI).
-     * 
+     *
      * @see #setupThreadLocals
      */
     @SuppressWarnings("WeakerAccess")
@@ -205,7 +207,7 @@ public abstract class ClassesSerializableTest {
      * The method is called right a class instantiation and might be overriden
      * by subclasses to install some necessary thread local values (ex. current
      * UI).
-     * 
+     *
      * @see #resetThreadLocals
      */
     @SuppressWarnings("WeakerAccess")

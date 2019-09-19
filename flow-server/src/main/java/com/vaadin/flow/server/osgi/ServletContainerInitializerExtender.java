@@ -24,7 +24,7 @@ import org.osgi.util.tracker.BundleTracker;
  * Bundle activator which starts bundle tracker.
  * 
  * @author Vaadin Ltd
- *
+ * @since 1.2
  */
 public class ServletContainerInitializerExtender implements BundleActivator {
 

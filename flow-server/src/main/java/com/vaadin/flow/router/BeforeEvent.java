@@ -32,6 +32,8 @@ import com.vaadin.flow.router.internal.NavigationStateRenderer;
 /**
  * Abstract before event class that has the common functionalities for
  * {@link BeforeLeaveEvent} and {@link BeforeEnterEvent}.
+ *
+ * @since 1.0
  */
 public abstract class BeforeEvent extends EventObject {
     private final Location location;

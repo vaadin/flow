@@ -32,6 +32,7 @@ import com.vaadin.flow.function.SerializableFunction;
  * META-INF/services/com.vaadin.flow.server.communication.PushConnectionFactory file
  * present in the jar file containing the implementation class.
  *
+ * @since 1.0
  */
 public interface PushConnectionFactory extends SerializableFunction<UI, PushConnection> {
 }
