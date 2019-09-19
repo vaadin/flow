@@ -25,7 +25,7 @@ import com.vaadin.flow.client.ClientResources;
  * OSGi service to access to the client-side resources.
  *
  * @author Vaadin Ltd
- *
+ * @since 1.2
  */
 @Component(immediate = true, service = ClientResources.class)
 public class OsgiClientResources implements ClientResources {

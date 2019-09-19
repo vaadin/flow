@@ -38,6 +38,8 @@ import com.vaadin.flow.shared.Registration;
  * of VaadinSession. Routes can be added and removed from this registry and any
  * overlap with the registered routes between session and global scope will be
  * handled so that session scope paths overrides global paths.
+ *
+ * @since 1.3
  */
 public class SessionRouteRegistry extends AbstractRouteRegistry {
 

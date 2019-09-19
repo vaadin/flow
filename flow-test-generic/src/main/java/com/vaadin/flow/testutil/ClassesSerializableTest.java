@@ -55,7 +55,9 @@ import static org.junit.Assert.fail;
  * tries to serialize every single class (except ones from whitelist) in the
  * classpath. Subclasses may adjust the whitelist by overriding
  * {@link #getExcludedPatterns()}, {@link #getBasePackages()},
- * {@link #getJarPattern()}
+ * {@link  #getJarPattern()}
+ *
+ * @since 1.0
  */
 
 public abstract class ClassesSerializableTest {

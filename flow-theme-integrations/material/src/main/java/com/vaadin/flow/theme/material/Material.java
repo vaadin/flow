@@ -28,6 +28,8 @@ import com.vaadin.flow.theme.AbstractTheme;
 
 /**
  * Material component theme class implementation.
+ *
+ * @since 1.2
  */
 @NpmPackage(value = "@vaadin/vaadin-material-styles", version = "1.2.3")
 @HtmlImport("frontend://bower_components/vaadin-material-styles/color.html")

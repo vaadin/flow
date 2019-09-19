@@ -19,6 +19,8 @@ package com.github.eirslett.maven.plugins.frontend.lib;
 /**
  * Yarn runner that uses an specific configuration(paths) of node, yarn, working
  * directory and platform.
+ *
+ * @since 1.2
  */
 public class DefaultYarnRunnerLocal {
 

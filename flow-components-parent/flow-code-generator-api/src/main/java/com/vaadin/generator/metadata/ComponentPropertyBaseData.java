@@ -24,6 +24,7 @@ import java.util.Set;
  * themselves, event properties or function parameters.
  *
  * @see ComponentMetadata
+ * @since 1.0
  */
 public class ComponentPropertyBaseData {
 
