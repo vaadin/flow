@@ -45,6 +45,8 @@ import com.vaadin.flow.router.RouterLayout;
  *
  * @deprecated This is an internal class for Flow and should not be used outside.
  * This is deprecated since 1.3 and will be removed in later versions of Flow.
+ *
+ * @since 1.0
  */
 @Deprecated
 public final class RouterUtil extends RouteUtil {

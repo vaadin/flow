@@ -40,6 +40,8 @@ import org.slf4j.LoggerFactory;
  * manager first attempts to use the local tools, if the paths are provided,
  * then it tries to find the locally installed tools (if configured to do so)
  * and then it downloads the missing tools.
+ *
+ * @since 1.2
  */
 public class RunnerManager {
     private static final Logger LOGGER = LoggerFactory

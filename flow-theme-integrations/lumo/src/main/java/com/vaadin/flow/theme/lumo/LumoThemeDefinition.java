@@ -23,7 +23,7 @@ import com.vaadin.flow.theme.ThemeDefinition;
  * {@link Lumo} theme definition.
  *
  * @author Vaadin Ltd
- *
+ * @since 1.2
  */
 @Component(service = ThemeDefinition.class)
 public class LumoThemeDefinition extends ThemeDefinition {

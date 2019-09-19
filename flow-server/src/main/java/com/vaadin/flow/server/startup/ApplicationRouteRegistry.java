@@ -49,6 +49,8 @@ import org.slf4j.LoggerFactory;
 /**
  * Registry for holding navigation target components found on servlet
  * initialization.
+ *
+ * @since 1.3
  */
 public class ApplicationRouteRegistry extends AbstractRouteRegistry {
 

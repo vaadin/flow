@@ -50,6 +50,8 @@ import com.vaadin.flow.plugin.production.TranspilationStep;
  * Goal that prepares all web files from
  * {@link PackageForProductionMojo#transpileEs6SourceDirectory} for production
  * mode: minifies, transpiles and bundles them.
+ *
+ * @since 1.0
  */
 @Mojo(name = "package-for-production", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PROCESS_CLASSES)
 public class PackageForProductionMojo extends AbstractMojo {

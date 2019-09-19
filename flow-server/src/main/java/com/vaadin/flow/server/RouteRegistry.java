@@ -36,6 +36,8 @@ import com.vaadin.flow.shared.Registration;
  * <p>
  * This is used by {@link Router} when resolving navigation and layout chain
  * population.
+ *
+ * @since 1.3
  */
 public interface RouteRegistry extends Serializable {
 
