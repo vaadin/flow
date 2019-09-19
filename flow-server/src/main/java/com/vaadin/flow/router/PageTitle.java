@@ -25,6 +25,8 @@ import com.vaadin.flow.router.HasDynamicTitle;
 
 /**
  * Defines the HTML page title for a navigation target.
+ *
+ * @since 1.0
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

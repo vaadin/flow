@@ -28,6 +28,8 @@ import com.vaadin.flow.dom.Element;
  * Callback for handling attributes with special semantics. This is used for
  * e.g. <code>class</code> which is assembled from a separate list of tokens
  * instead of being stored as a regular attribute string.
+ *
+ * @since 1.0
  */
 public abstract class CustomAttribute implements Serializable {
 

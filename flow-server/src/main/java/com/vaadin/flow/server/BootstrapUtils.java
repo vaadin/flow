@@ -63,6 +63,8 @@ import elemental.json.JsonObject;
 
 /**
  * Utility methods used by the BootstrapHandler.
+ *
+ * @since 1.0
  */
 class BootstrapUtils {
 

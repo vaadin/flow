@@ -20,6 +20,8 @@ import com.vaadin.testbench.elementsbase.Element;
 
 /**
  * A TestBench element representing an <code>&lt;img&gt;</code> element.
+ *
+ * @since 1.0
  */
 @Element("img")
 public class ImageElement extends TestBenchElement {

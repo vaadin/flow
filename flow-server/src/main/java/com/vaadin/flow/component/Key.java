@@ -26,6 +26,8 @@ import java.util.Objects;
  * <p>
  * See
  * https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key/Key_Values
+ *
+ * @since 1.0
  */
 @FunctionalInterface
 public interface Key extends Serializable {

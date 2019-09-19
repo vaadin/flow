@@ -26,6 +26,8 @@ import com.vaadin.flow.theme.AbstractTheme;
 
 /**
  * Material component theme class implementation.
+ *
+ * @since 1.2
  */
 @HtmlImport("frontend://bower_components/vaadin-material-styles/color.html")
 @HtmlImport("frontend://bower_components/vaadin-material-styles/typography.html")

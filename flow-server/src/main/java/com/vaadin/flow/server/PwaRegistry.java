@@ -53,6 +53,8 @@ import elemental.json.JsonObject;
  * <li>Manifest json
  * <li>Service worker
  * </ul>
+ *
+ * @since 1.2
  */
 public class PwaRegistry implements Serializable {
     private static final String HEADLESS_PROPERTY = "java.awt.headless";

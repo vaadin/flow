@@ -26,6 +26,8 @@ import com.vaadin.flow.shared.communication.PushMode;
  * The property handling implementation of {@link DeploymentConfiguration} based
  * on a base
  * class for resolving system properties and a set of init parameters.
+ *
+ * @since 1.2
  */
 public class PropertyDeploymentConfiguration
         extends AbstractDeploymentConfiguration {

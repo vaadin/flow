@@ -56,9 +56,9 @@ import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
  * It doesn't do anything outside of OSGi.
  *
  * @author Vaadin Ltd
- *
+ * @since 1.2
+ * 
  * @see #getInstance()
- *
  */
 public final class OSGiAccess {
     private static final OSGiAccess INSTANCE = new OSGiAccess();
