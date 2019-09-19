@@ -303,10 +303,14 @@ public class FrontendUtils {
      */
     public static String streamToString(InputStream inputStream) {
         String ret = "";
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
                 inputStream, StandardCharsets.UTF_8.name()))) {
-
-            ret = br.lines()
+            List<String> lines = new ArrayList<>();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                lines.add(line);
+            }
+            ret = lines.stream()
                     .collect(Collectors.joining(System.lineSeparator()));
         } catch (IOException exception) {
             // ignore exception on close()
