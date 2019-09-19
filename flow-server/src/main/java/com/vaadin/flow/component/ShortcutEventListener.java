@@ -21,8 +21,9 @@ import java.util.EventListener;
 
 /**
  * Listener for shortcut events.
+ *
  * @author  Vaadin Ltd.
- * @since
+ * @since 1.3
  */
 @FunctionalInterface
 public interface ShortcutEventListener extends EventListener, Serializable {

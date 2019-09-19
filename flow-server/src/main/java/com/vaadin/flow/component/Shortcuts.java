@@ -23,7 +23,7 @@ import com.vaadin.flow.server.Command;
 
 /**
  * @author Vaadin Ltd.
- * @since
+ * @since 1.3
  */
 public final class Shortcuts {
     static final String NULL = "Parameter '%s' must not be null!";

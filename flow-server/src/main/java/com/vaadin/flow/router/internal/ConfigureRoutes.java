@@ -32,6 +32,8 @@ import com.vaadin.flow.server.startup.RouteTarget;
  * {@link ConfigureRoutes} is always mutable where as {@link ConfiguredRoutes}
  * is always
  * immutable.
+ *
+ * @since 1.3
  */
 public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
 
