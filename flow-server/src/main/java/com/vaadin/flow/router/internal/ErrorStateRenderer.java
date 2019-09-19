@@ -31,6 +31,7 @@ import com.vaadin.flow.router.RouterLayout;
  * Handles error navigation rendering in the target UI.
  *
  * @see HasErrorParameter
+ * @since 1.0
  */
 public class ErrorStateRenderer extends AbstractNavigationStateRenderer {
 

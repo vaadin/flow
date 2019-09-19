@@ -23,6 +23,7 @@ import java.io.Serializable;
  * @param <T>
  *            the type of the sorting information, usually a String (field id)
  *            or a {@link java.util.Comparator}.
+ * @since 1.0
  */
 public class SortOrder<T> implements Serializable {
 

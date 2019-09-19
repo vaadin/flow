@@ -39,7 +39,9 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
- * Class with utility methods for the code generation process.
+ * Utility methods for the code generation process.
+ *
+ * @since 1.0
  */
 public final class ComponentGeneratorUtils {
 
@@ -60,7 +62,7 @@ public final class ComponentGeneratorUtils {
 
     /**
      * Creates a valid Java class name based on the ES6 class name.
-     * 
+     *
      * @param webcomponentClassName
      *            The ES6 class name.
      * @return A valid Java class name.
@@ -79,7 +81,7 @@ public final class ComponentGeneratorUtils {
      *            <code>null</code>
      * @param propertyName
      *            property name to convert
-     * 
+     *
      * @return property method name
      */
     public static String generateMethodNameForProperty(String prefix,
@@ -93,7 +95,7 @@ public final class ComponentGeneratorUtils {
      * Same as calling
      * {@link #formatStringToValidJavaIdentifier(String, boolean)} with
      * <code>false</code> - not ignoring Java reserved words.
-     * 
+     *
      * @param name
      *            The name of the property that would be exposed to Java code.
      * @return A valid Java identifier based on the input name.
@@ -109,14 +111,14 @@ public final class ComponentGeneratorUtils {
      * If the end result is a Java reserved word, and the flag
      * <code>ignoreReservedWords</code> is <code>false</code>, the identifier is
      * suffixed with the <code>_</code> character.
-     * 
+     *
      * @param name
      *            The name of the property that would be exposed to Java code.
      * @param ignoreReservedWords
      *            <code>true</code> to ignore Java reserved words, such as "if"
      *            and "for", <code>false</code> otherwise.
      * @return A valid Java identifier based on the input name.
-     * 
+     *
      * @see Character#isJavaIdentifierStart(char)
      * @see Character#isJavaIdentifierPart(char)
      */
@@ -156,7 +158,7 @@ public final class ComponentGeneratorUtils {
 
     /**
      * Generates the directory structure based on a package name.
-     * 
+     *
      * @param basePath
      *            The base path of the directory to be generated.
      * @param packageName
@@ -167,7 +169,7 @@ public final class ComponentGeneratorUtils {
      *            without creating them.
      * @return a new File that represents the final directory of the package,
      *         with basePath as root.
-     * 
+     *
      * @throws IOException
      *             When createDirectories is <code>true</code> and the target
      *             directory cannot be created.
@@ -188,7 +190,7 @@ public final class ComponentGeneratorUtils {
      * Generates a package name based on a file path structure. The names are
      * converted to lowercase, and each folder of the file path is converted to
      * a package (split by ".").
-     * 
+     *
      * @param path
      *            The file path to be converted to a package name, such as
      *            "/components/vaadin-button/vaadin-button.html".
@@ -220,11 +222,11 @@ public final class ComponentGeneratorUtils {
     /**
      * Formats and ordinary String as a multi-line Java comment, that can be
      * safely added to any part of a Java code.
-     * 
+     *
      * @param input
      *            The text to be converted as a comment. Should not be
      *            <code>null</code>.
-     * 
+     *
      * @return The text ready to be added as a comment in a Java file.
      */
     public static String formatStringToJavaComment(String input) {
@@ -238,7 +240,7 @@ public final class ComponentGeneratorUtils {
     /**
      * Generates a code snippet that uses the {@link Element} API to retrieve
      * properties from the client model.
-     * 
+     *
      * @param basicType
      *            The javascript basic type of the property.
      * @param propertyName
@@ -279,7 +281,7 @@ public final class ComponentGeneratorUtils {
                     "Not a supported type for getters: " + basicType);
         }
     }
-    
+
     /**
      * Generates a code snippet that uses the {@link Element} API to retrieve
      * properties from the client model when it implements the {@link HasValue}
@@ -287,7 +289,7 @@ public final class ComponentGeneratorUtils {
      * <p>
      * The getter checks whether the return value is <code>null</code>, and
      * returns {@link HasValue#getEmptyValue()}.
-     * 
+     *
      * @param basicType
      *            The javascript basic type of the property.
      * @param propertyName
@@ -323,7 +325,7 @@ public final class ComponentGeneratorUtils {
         case BOOLEAN:
         case NUMBER:
             return generateElementApiGetterForType(basicType, propertyName);
-            
+
         default:
             throw new ComponentGenerationException(
                     "Not a supported type for getters: " + basicType);
@@ -341,7 +343,7 @@ public final class ComponentGeneratorUtils {
     /**
      * Generates a code snippet that uses the {@link Element} API to set
      * properties to the client model.
-     * 
+     *
      * @param basicType
      *            The javascript basic type of the property.
      * @param propertyName
@@ -375,7 +377,7 @@ public final class ComponentGeneratorUtils {
 
     /**
      * Converts a javascript basic type to a Java type.
-     * 
+     *
      * @param type
      *            The javascript basic type.
      * @return the corresponding Java type.
@@ -407,7 +409,7 @@ public final class ComponentGeneratorUtils {
      * separated by an hyphen.
      * <p>
      * For instance: {@code hasValue} would be converted to {@code has-value}.
-     * 
+     *
      * @param text
      *            the text to be converted
      * @return the converted text
@@ -435,7 +437,7 @@ public final class ComponentGeneratorUtils {
      * Adds a parameter with the specified {@code type} and {@code name} to the
      * given {@code method}, considering simple name for {@code java.lang}
      * package.
-     * 
+     *
      * @param javaClass
      *            the java class
      * @param method

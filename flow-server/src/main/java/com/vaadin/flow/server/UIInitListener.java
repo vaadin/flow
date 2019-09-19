@@ -20,6 +20,8 @@ import java.io.Serializable;
 /**
  * Event listener that can be registered for receiving an event when a
  * {@link com.vaadin.flow.component.UI} is initialized.
+ *
+ * @since 1.0
  */
 @FunctionalInterface
 public interface UIInitListener extends Serializable {

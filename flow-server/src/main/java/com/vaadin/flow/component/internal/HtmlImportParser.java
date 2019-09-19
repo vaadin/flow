@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
  * Helper for finding the HTML imports of a resource.
  *
  * @author Vaadin Ltd
+ * @since 1.2
  */
 public class HtmlImportParser {
 

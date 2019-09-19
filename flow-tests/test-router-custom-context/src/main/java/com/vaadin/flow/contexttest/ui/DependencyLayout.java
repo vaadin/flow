@@ -39,6 +39,8 @@ import java.nio.charset.StandardCharsets;
  * <li>Static JS script</li>
  * <li>Dynamically loadable JS script.</li>
  * </ul>
+ *
+ * @since 1.2
  */
 @StyleSheet("context://test-files/css/allred.css")
 @NoTheme

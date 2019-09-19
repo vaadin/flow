@@ -21,6 +21,8 @@ import com.vaadin.flow.component.UI;
 
 /**
  * Event fired to {@link UIInitListener} when a {@link UI} has been initialized.
+ *
+ * @since 1.0
  */
 public class UIInitEvent extends EventObject {
 

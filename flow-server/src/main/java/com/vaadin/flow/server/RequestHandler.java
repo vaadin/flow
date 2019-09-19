@@ -25,6 +25,8 @@ import com.vaadin.flow.component.UI;
  * Handler for producing a response to HTTP requests. Handlers can be either
  * added on a {@link VaadinService service} level, common for all users, or on a
  * {@link VaadinSession session} level for only a single user.
+ *
+ * @since 1.0
  */
 public interface RequestHandler extends Serializable {
 
