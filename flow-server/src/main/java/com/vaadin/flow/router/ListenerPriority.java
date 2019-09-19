@@ -44,6 +44,7 @@ import java.lang.annotation.Target;
  * </pre>
  *
  * @author Bernd Hopp
+  * @since 1.0
  */
  @Retention(RetentionPolicy.RUNTIME)
  @Target(ElementType.TYPE)

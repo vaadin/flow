@@ -19,7 +19,9 @@ import java.util.List;
 import java.util.stream.Stream;
 
 /**
- * Enumeration of modifier keys.
+ * Modifier keys.
+ *
+ * @since 1.0
  */
 public enum KeyModifier implements Key {
 

@@ -35,6 +35,7 @@ import static com.vaadin.flow.demo.DemoView.VARIANT_TOGGLE_BUTTONS_DIV_ID;
 /**
  * Base class for the integration tests of component demos.
  *
+ * @since 1.0
  */
 public abstract class ComponentDemoTest extends ChromeBrowserTest {
     protected WebElement layout;

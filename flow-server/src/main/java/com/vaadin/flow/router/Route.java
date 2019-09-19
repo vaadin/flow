@@ -35,6 +35,7 @@ import com.vaadin.flow.component.UI;
  * @see RoutePrefix
  * @see RouterLayout
  * @see UI
+ * @since 1.0
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

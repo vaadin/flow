@@ -18,7 +18,9 @@ package com.vaadin.flow.server;
 import java.io.Serializable;
 
 /**
- * Interface for configuring the initial page contents.
+ * Configures the initial page contents.
+ *
+ * @since 1.0
  */
 @FunctionalInterface
 public interface PageConfigurator extends Serializable {
