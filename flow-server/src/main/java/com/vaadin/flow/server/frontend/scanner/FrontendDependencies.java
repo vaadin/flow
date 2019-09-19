@@ -56,7 +56,7 @@ import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.VERSI
  *
  * @since 2.0
  */
-public class FrontendDependencies implements Serializable {
+public class FrontendDependencies implements FrontendDependenciesScanner {
 
     public static final String LUMO = "com.vaadin.flow.theme.lumo.Lumo";
 
@@ -171,6 +171,7 @@ public class FrontendDependencies implements Serializable {
      *
      * @return the set of npm packages
      */
+    @Override
     public Map<String, String> getPackages() {
         return packages;
     }
@@ -181,6 +182,7 @@ public class FrontendDependencies implements Serializable {
      *
      * @return list of JS modules
      */
+    @Override
     public List<String> getModules() {
         // A module may appear in both data.getThemeModules and data.getModules,
         // depending on how the classes were visited, hence the LinkedHashSet
@@ -199,6 +201,7 @@ public class FrontendDependencies implements Serializable {
      *
      * @return the set of JS files
      */
+    @Override
     public Set<String> getScripts() {
         Set<String> all = new LinkedHashSet<>();
         for (EndPointData data : endPoints.values()) {
@@ -212,6 +215,7 @@ public class FrontendDependencies implements Serializable {
      *
      * @return the set of CSS files
      */
+    @Override
     public Set<CssData> getCss() {
         Set<CssData> all = new LinkedHashSet<>();
         for (EndPointData data : endPoints.values()) {
@@ -243,6 +247,7 @@ public class FrontendDependencies implements Serializable {
      *
      * @return the theme definition
      */
+    @Override
     public ThemeDefinition getThemeDefinition() {
         return themeDefinition;
     }
@@ -252,6 +257,7 @@ public class FrontendDependencies implements Serializable {
      *
      * @return the theme instance
      */
+    @Override
     public AbstractTheme getTheme() {
         return themeInstance;
     }
