@@ -60,13 +60,13 @@ function setupWatchDog(firstRun){
     });
 
     client.on('close', function() {
-        if ( firstRun ){
+        client.destroy();
+        if (firstRun){
             console.debug('Watchdog connection closed. Trying to re-run watchdog.');
             setupWatchDog(false);
         }
         else {
             console.log('Watchdog connection closed. Terminating webpack process...');
-            client.destroy();
             process.exit(0);
         }
     });  
