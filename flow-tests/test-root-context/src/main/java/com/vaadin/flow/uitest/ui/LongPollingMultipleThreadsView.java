@@ -33,6 +33,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * Class for reproducing the bug https://github.com/vaadin/flow/issues/4660
+ * @since 1.4
  */
 @Route("com.vaadin.flow.uitest.ui.LongPollingMultipleThreadsView")
 @Push(transport = Transport.LONG_POLLING)

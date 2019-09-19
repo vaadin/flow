@@ -23,7 +23,7 @@ import com.vaadin.flow.component.Component;
  * target with the given path.
  *
  * @author Vaadin Ltd
- *
+ * @since 1.4
  */
 public class AmbiguousRouteConfigurationException
         extends InvalidRouteConfigurationException {
