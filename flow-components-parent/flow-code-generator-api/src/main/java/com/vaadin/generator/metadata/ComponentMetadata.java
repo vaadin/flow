@@ -24,6 +24,7 @@ import com.vaadin.flow.component.HasComponents;
  * holds all the data needed to generate the Java wrapper class that interacts
  * with the webcomponent at the client side.
  *
+ * @since 1.0
  */
 public class ComponentMetadata {
     private String tag;

@@ -42,6 +42,7 @@ import com.vaadin.flow.component.Tag;
  * @author Vaadin Ltd
  * @see <a href=
  *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Element/label">https://developer.mozilla.org/en-US/docs/Web/HTML/Element/label</a>
+ * @since 1.0
  */
 @Tag(Tag.LABEL)
 public class Label extends HtmlContainer {

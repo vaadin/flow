@@ -20,6 +20,8 @@ import java.util.stream.Stream;
 
 /**
  * Modifier keys.
+ *
+ * @since 1.0
  */
 public enum KeyModifier implements Key {
 
