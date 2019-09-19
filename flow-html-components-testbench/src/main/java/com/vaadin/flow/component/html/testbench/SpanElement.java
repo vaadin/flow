@@ -20,6 +20,8 @@ import com.vaadin.testbench.elementsbase.Element;
 
 /**
  * A TestBench element representing a <code>&lt;span&gt;</code> element.
+ *
+ * @since 1.0
  */
 @Element("span")
 public class SpanElement extends TestBenchElement {

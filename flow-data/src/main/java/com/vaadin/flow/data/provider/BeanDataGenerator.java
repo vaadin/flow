@@ -36,6 +36,7 @@ import elemental.json.JsonValue;
  * {@code [[item.value]]} in the template.
  * 
  * @author Vaadin Ltd.
+ * @since 1.2
  *
  * @param <T>
  *            the type of the bean to be serialized to the client

@@ -22,6 +22,8 @@ import com.vaadin.testbench.elementsbase.Element;
 
 /**
  * A TestBench element representing a <code>&lt;select&gt;</code> element.
+ *
+ * @since 1.0
  */
 @Element("select")
 public class SelectElement extends TestBenchElement {
