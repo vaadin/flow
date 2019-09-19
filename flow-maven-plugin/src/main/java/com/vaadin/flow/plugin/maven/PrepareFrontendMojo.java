@@ -44,7 +44,6 @@ import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFind
 import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.GENERATED_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
-import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
@@ -149,7 +148,7 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
                                     webpackTemplate, webpackGeneratedTemplate)
                             .createMissingPackageJson(true)
                             .enableImportsUpdate(false)
-                            .enablePackagesUpdate(false).runNpmInstall(false)
+                            .enablePackagesUpdate(true).runNpmInstall(true)
                             .build().execute();
         } catch (ExecutionFailedException exception) {
             throw new MojoFailureException(
