@@ -18,12 +18,11 @@ package com.vaadin.flow.server;
 import com.vaadin.flow.component.Component;
 
 /**
- *
  * Exception indicating that the application's routes already has the navigation
  * target with the given path.
  *
  * @author Vaadin Ltd
- *
+ * @since 1.4
  */
 public class AmbiguousRouteConfigurationException
         extends InvalidRouteConfigurationException {

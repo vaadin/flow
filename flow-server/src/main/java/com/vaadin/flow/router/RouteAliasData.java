@@ -26,6 +26,8 @@ import com.vaadin.flow.component.Component;
  * resolved for this path, but the parent layouts may differ.
  * <p>
  * Only for read as data is immutable.
+ *
+ * @since 1.3
  */
 public class RouteAliasData extends RouteBaseData<RouteAliasData> {
 

@@ -20,6 +20,7 @@ import java.util.List;
 /**
  * Used to declare multiple OsgiVaadinResources with a single OSGi component.
  *
+ * @since 1.2
  */
 public interface OsgiVaadinContributor {
     /**

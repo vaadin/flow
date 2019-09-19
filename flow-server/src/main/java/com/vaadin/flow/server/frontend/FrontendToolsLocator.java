@@ -31,6 +31,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Helps to locate the tools in the system by their names.
+ *
+ * @since 1.2
  */
 public class FrontendToolsLocator implements Serializable {
     private static final String FAILED_WITH_EXIT_CODE_MSG = "Command '{}' failed with exit code '{}'";

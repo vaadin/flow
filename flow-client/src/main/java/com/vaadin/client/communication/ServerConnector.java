@@ -28,6 +28,8 @@ import elemental.json.JsonValue;
 /**
  * Handles creating and sending messages to the server using
  * {@link ServerRpcQueue}.
+ *
+ * @since 1.0
  */
 public class ServerConnector {
 

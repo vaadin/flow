@@ -30,6 +30,7 @@ import com.vaadin.flow.function.SerializablePredicate;
  * data. Uses an instance of {@link TreeData} as its source of data.
  *
  * @author Vaadin Ltd
+ * @since 1.2
  *
  * @param <T>
  *            data type

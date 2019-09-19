@@ -34,6 +34,8 @@ import com.vaadin.flow.server.InvalidRouteConfigurationException;
 /**
  * Route target holder that handles getting the correct type of has parameter
  * target.
+ *
+ * @since 1.0
  */
 public class RouteTarget implements Serializable {
     private Class<? extends Component> normal;
