@@ -37,7 +37,9 @@ let stats;
 
 const watchDogPrefix = '--watchDogPort=';
 let watchDogPort = process.argv.find(v => v.indexOf(watchDogPrefix) >= 0);
-watchDogPort = watchDogPort.substr(watchDogPrefix.length);
+if (watchDogPort){
+    watchDogPort = watchDogPort.substr(watchDogPrefix.length);
+}
 
 const net = require('net');
 
@@ -70,7 +72,10 @@ function setupWatchDog(firstRun){
     });  
 }
 
-setupWatchDog(true);
+if (watchDogPort){
+    setupWatchDog(true);
+}
+
 
 exports = {
   frontendFolder: `${frontendFolder}`,
