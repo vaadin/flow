@@ -30,7 +30,7 @@ import com.vaadin.flow.data.provider.QuerySortOrder;
  *            bean type
  * @param <F>
  *            filter type
- *
+ * @since 1.2
  */
 public class HierarchicalQuery<T, F> extends Query<T, F> {
 

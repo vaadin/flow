@@ -32,6 +32,8 @@ import com.vaadin.flow.internal.AnnotationReader;
 /**
  * A class that creates {@link DeploymentConfiguration} filled with all
  * parameters specified by the framework users.
+ *
+ * @since 1.2
  */
 public final class DeploymentConfigurationFactory implements Serializable {
 

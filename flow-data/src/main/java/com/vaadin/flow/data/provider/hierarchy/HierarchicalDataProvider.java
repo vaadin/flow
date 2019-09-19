@@ -30,6 +30,7 @@ import com.vaadin.flow.data.provider.Query;
  *            data type
  * @param <F>
  *            filter type
+ * @since 1.2
  */
 public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
 
