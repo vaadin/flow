@@ -31,6 +31,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 
 /**
  * Copies JavaScript files from the given local frontend folder.
+ *
+ * @since 2.0
  */
 public class TaskCopyLocalFrontendFiles implements FallibleCommand {
 

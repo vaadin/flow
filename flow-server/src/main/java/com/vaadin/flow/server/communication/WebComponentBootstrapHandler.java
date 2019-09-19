@@ -52,6 +52,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * Bootstrap handler for WebComponent requests.
  *
  * @author Vaadin Ltd.
+ * @since 2.0
  */
 public class WebComponentBootstrapHandler extends BootstrapHandler {
     private static final String REQ_PARAM_URL = "url";

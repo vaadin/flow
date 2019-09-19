@@ -36,6 +36,7 @@ import elemental.json.JsonValue;
  * @param <C>
  *         type of the {@code component} exported as web component
  * @author Vaadin Ltd.
+ * @since 2.0
  */
 public final class WebComponent<C extends Component> implements Serializable {
     private static final String UPDATE_PROPERTY = "this" +

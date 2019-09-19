@@ -53,6 +53,8 @@ import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.VERSI
 
 /**
  * Represents the class dependency tree of the application.
+ *
+ * @since 2.0
  */
 public class FrontendDependencies implements Serializable {
 

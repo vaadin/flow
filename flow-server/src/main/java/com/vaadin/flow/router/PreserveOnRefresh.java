@@ -25,6 +25,8 @@ import java.lang.annotation.Target;
 /**
  * Indicates that a previous view instance should be-reused when reloading a
  * location in the same browser window/tab.
+ *
+ * @since 2.0
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

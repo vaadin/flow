@@ -38,6 +38,7 @@ import elemental.json.JsonValue;
  * browser since the original result would in that case already be discarded.
  *
  * @author Vaadin Ltd
+ * @since 2.0
  */
 @SuppressWarnings("deprecation")
 public interface PendingJavaScriptResult extends ExecutionCanceler {

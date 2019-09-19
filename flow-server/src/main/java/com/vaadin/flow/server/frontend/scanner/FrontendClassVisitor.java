@@ -35,6 +35,8 @@ import com.vaadin.flow.theme.Theme;
 
 /**
  * A class visitor for Flow components.
+ *
+ * @since 2.0
  */
 final class FrontendClassVisitor extends ClassVisitor {
 

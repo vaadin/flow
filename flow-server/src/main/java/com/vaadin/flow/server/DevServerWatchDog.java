@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
  * webpack dev server and it should be stopped.
  *
  * @author Vaadin Ltd
- *
+ * @since 2.0
  */
 class DevServerWatchDog {
 

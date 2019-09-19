@@ -19,7 +19,7 @@ package com.vaadin.flow.server;
  * Internal status to detect whether the compatibility value is explicitely set.
  *
  * @author Vaadin Ltd
- *
+ * @since 2.0
  */
 enum CompatibilityModeStatus {
 

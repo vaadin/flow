@@ -116,6 +116,8 @@ import java.lang.annotation.Target;
  *
  * </ul>
  *
+ * @since 2.0
+ *
  * @see JsModule
  */
 @Retention(RetentionPolicy.RUNTIME)

@@ -28,6 +28,8 @@ import com.vaadin.flow.internal.AnnotationReader;
 
 /**
  * Collects information of {@link Id @Id} mapped fields in a template class.
+ *
+ * @since 2.0
  */
 public class IdCollector {
     private final Map<String, String> tagById = new HashMap<>();

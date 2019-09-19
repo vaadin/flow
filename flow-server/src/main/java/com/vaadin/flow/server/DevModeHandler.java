@@ -68,6 +68,7 @@ import static java.net.HttpURLConnection.HTTP_OK;
  * By default it keeps updated npm dependencies and node imports before running
  * webpack server
  *
+ * @since 2.0
  */
 public final class DevModeHandler implements Serializable {
 
