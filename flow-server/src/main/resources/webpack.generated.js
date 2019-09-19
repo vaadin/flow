@@ -35,8 +35,9 @@ mkdirp(confFolder);
 const devMode = process.argv.find(v => v.indexOf('webpack-dev-server') >= 0);
 let stats;
 
-let watchDogPort = process.argv.find(v => v.indexOf('--watchDogPort=') >= 0);
-watchDogPort = watchDogPort.substr(15);
+const watchDogPrefix = '--watchDogPort=';
+let watchDogPort = process.argv.find(v => v.indexOf(watchDogPrefix) >= 0);
+watchDogPort = watchDogPort.substr(watchDogPrefix.length);
 
 const net = require('net');
 
