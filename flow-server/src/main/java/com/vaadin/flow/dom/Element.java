@@ -745,7 +745,7 @@ public class Element extends Node<Element> {
      * @return a handle that can be used for configuring or removing the
      *         listener
      *
-     * @since
+     * @since 1.3
      */
     public DomListenerRegistration addPropertyChangeListener(
             String propertyName, String domEventName,

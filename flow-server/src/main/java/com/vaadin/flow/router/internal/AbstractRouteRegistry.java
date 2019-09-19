@@ -44,6 +44,8 @@ import com.vaadin.flow.shared.Registration;
 
 /**
  * AbstractRouteRegistry with locking support and configuration.
+ *
+ * @since 1.3
  */
 public abstract class AbstractRouteRegistry implements RouteRegistry {
 

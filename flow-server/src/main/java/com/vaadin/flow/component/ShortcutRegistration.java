@@ -40,7 +40,7 @@ import com.vaadin.flow.shared.Registration;
  * keyboard shortcut.
  *
  * @author Vaadin Ltd.
- * @since
+ * @since 1.3
  */
 public class ShortcutRegistration implements Registration, Serializable {
     private boolean preventDefault = true;
