@@ -93,26 +93,6 @@ public class ClientIndexHandlerTest {
     }
 
     @Test
-    public void serveIndexHtml_requestWithRootPath_hasInjectedBundles()
-            throws IOException {
-        clientIndexBootstrapHandler
-                .synchronizedHandleRequest(session, createVaadinRequest(""),
-                        response);
-        String indexHtml = responseOutput
-                .toString(StandardCharsets.UTF_8.name());
-        Assert.assertTrue(
-                "Response should have ES6 bundle script based on "
-                        + "information in 'META-INF/VAADIN/config/stats.json'",
-                indexHtml.contains(
-                "<script type=\"module\" defer src=\"./VAADIN/build/index-1111.cache.js\"></script>"));
-        Assert.assertTrue(
-                "Response should have ES5 bundle script based on "
-                        + "information in 'META-INF/VAADIN/config/stats.json'",
-                indexHtml.contains(
-                "<script type=\"text/javascript\" defer src=\"./VAADIN/build/index.es5-2222.cache.js\" nomodule></script>"));
-    }
-
-    @Test
     public void canHandleRequest_requestWithRootPath_handleRequest() {
         boolean canHandleRequest = clientIndexBootstrapHandler
                 .canHandleRequest(createVaadinRequest(""));
