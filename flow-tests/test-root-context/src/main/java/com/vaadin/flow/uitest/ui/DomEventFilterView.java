@@ -15,13 +15,22 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.EventData;
+import com.vaadin.flow.component.KeyDownEvent;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.html.Input;
+import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.dom.DebouncePhase;
+import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.Registration;
@@ -90,6 +99,38 @@ public class DomEventFilterView extends AbstractDivView {
         messages.setAttribute("id", "messages");
         getElement().appendChild(space, debounce, component.getElement(),
                 messages);
+
+        // tests for#5090
+        final AtomicReference<DomListenerRegistration> atomicReference = new AtomicReference<>();
+        final Paragraph resultParagraph = new Paragraph();
+        resultParagraph.setId("result-paragraph");
+
+        NativeButton removalButton = new NativeButton("Remove DOM listener", event -> {
+            resultParagraph.setText("REMOVED");
+            atomicReference.get().remove();
+        });
+        removalButton.setId("listener-removal-button");
+
+        Input listenerInput = new Input(ValueChangeMode.ON_CHANGE);
+        listenerInput.setId("listener-input");
+
+        /*
+        The event.preventDefault() is here to make sure that the listener
+         has been cleaned on the client-side as well. The server-side
+         cleaning is not really in question.
+         */
+        ComponentUtil.addListener(listenerInput, KeyDownEvent.class,
+                event -> resultParagraph.setText("A"), registration -> {
+                    atomicReference.set(registration);
+                    registration.setFilter("event.key === 'a' && " +
+                            "(event.preventDefault() || true)");
+                });
+        ComponentUtil.addListener(listenerInput, KeyDownEvent.class,
+                event -> resultParagraph.setText("B"),
+                registration -> registration.setFilter("event.key === 'b' && " +
+                        "(event.preventDefault() || true)"));
+
+        add(listenerInput, removalButton, resultParagraph);
     }
 
     private void addMessage(String message) {
