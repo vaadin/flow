@@ -24,7 +24,7 @@ import com.vaadin.flow.component.dependency.HtmlImport;
  * frontend-protocol.html file. This component is tested by the
  * FrontendProtocolIT.
  *
- * @since
+ * @since 1.0
  */
 @Tag("frontend-protocol")
 @HtmlImport("frontend://components/frontend-protocol.html")

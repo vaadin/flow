@@ -25,7 +25,7 @@ import com.vaadin.flow.uitest.MyException;
 /**
  * The exception handler for the
  *
- * @since
+ * @since 1.0
  */
 public class MyExceptionHandler extends Div
         implements HasErrorParameter<MyException> {

@@ -31,6 +31,7 @@ import com.vaadin.flow.dom.StyleUtil;
 /**
  * Emulates the <code>style</code> attribute by delegating to
  * {@link Element#getStyle()}.
+ *
  * @since 1.0
  */
 public class StyleAttributeHandler extends CustomAttribute {

@@ -27,7 +27,7 @@ import com.vaadin.flow.router.Route;
  * is used by the FrontendProtocolIT to test the "frontend://" protocol in
  * multiple scenarios.
  *
- * @since
+ * @since 1.0
  */
 @Route(value = "com.vaadin.flow.uitest.ui.frontend.FrontendProtocolView", layout = ViewTestLayout.class)
 @Tag("div")
