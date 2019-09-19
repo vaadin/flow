@@ -27,7 +27,7 @@ import com.vaadin.flow.function.SerializableFunction;
  * Filter based utility methods for {@link HierarchicalDataProvider}.
  *
  * @author Vaadin Ltd
- *
+ * @since 1.3
  */
 final class HierarchicalFilterUtils {
 

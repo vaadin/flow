@@ -31,6 +31,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Helps to locate the tools in the system by their names.
+ *
+ * @since 1.2
  */
 public class FrontendToolsLocator implements Serializable {
     private static class CommandResult implements Serializable {

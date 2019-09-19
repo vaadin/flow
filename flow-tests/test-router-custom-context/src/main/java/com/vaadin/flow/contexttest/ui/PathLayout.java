@@ -27,6 +27,8 @@ import com.vaadin.flow.router.WildcardParameter;
 
 /**
  * UI to be a parent for routed layouts (see inner classes). Mapped to some context inside the application.
+ *
+ * @since 1.2
  */
 @RoutePrefix("routed")
 public class PathLayout extends Div implements RouterLayout {

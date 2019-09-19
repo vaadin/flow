@@ -31,6 +31,8 @@ import java.util.stream.Stream;
 
 /**
  * Parameter deserialization utility.
+ *
+ * @since 1.0
  */
 public final class ParameterDeserializer {
 

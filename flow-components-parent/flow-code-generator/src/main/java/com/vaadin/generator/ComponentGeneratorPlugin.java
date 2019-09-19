@@ -33,6 +33,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * from webcomponents.
  *
  * @see ComponentGenerator
+ * @since 1.0
  */
 @Mojo(defaultPhase = LifecyclePhase.GENERATE_SOURCES, name = "generate")
 public class ComponentGeneratorPlugin extends AbstractMojo {

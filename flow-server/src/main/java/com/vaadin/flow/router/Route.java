@@ -36,6 +36,7 @@ import com.vaadin.flow.router.internal.RouteUtil;
  * @see RoutePrefix
  * @see RouterLayout
  * @see UI
+ * @since 1.0
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

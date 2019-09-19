@@ -27,6 +27,7 @@ import com.vaadin.flow.data.provider.BackEndDataProvider;
  *            data provider data type
  * @param <F>
  *            data provider filter type
+ * @since 1.2
  */
 public interface BackEndHierarchicalDataProvider<T, F>
         extends HierarchicalDataProvider<T, F>, BackEndDataProvider<T, F> {
