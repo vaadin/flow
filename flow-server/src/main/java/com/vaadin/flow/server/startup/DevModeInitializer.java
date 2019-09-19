@@ -47,6 +47,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.dependency.CssImport;
+import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -78,7 +80,9 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
  */
 @HandlesTypes({ Route.class, NpmPackage.class, NpmPackage.Container.class,
         WebComponentExporter.class, UIInitListener.class,
-        VaadinServiceInitListener.class })
+        VaadinServiceInitListener.class, JsModule.class,
+        JsModule.Container.class, CssImport.class, CssImport.Container.class,
+        JavaScript.class, JavaScript.Container.class })
 @WebListener
 public class DevModeInitializer implements ServletContainerInitializer,
         Serializable, ServletContextListener {
