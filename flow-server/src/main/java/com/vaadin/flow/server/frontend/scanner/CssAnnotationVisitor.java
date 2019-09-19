@@ -23,6 +23,8 @@ import com.vaadin.flow.component.dependency.CssImport;
 
 /**
  * Visitor for {@link CssImport}.
+ *
+ * @since 2.0
  */
 final class CssAnnotationVisitor extends RepeatedAnnotationVisitor {
     private CssData cssData;

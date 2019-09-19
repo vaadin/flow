@@ -31,6 +31,8 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 /**
  * A class finder using org.reflections.
+ *
+ * @since 2.0
  */
 public class ReflectionsClassFinder implements ClassFinder {
     private final transient ClassLoader classLoader;

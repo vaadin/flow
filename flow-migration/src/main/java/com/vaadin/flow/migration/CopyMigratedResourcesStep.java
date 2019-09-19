@@ -28,7 +28,7 @@ import java.util.Set;
  * necessary.
  *
  * @author Vaadin Ltd
- *
+ * @since 2.0
  */
 public class CopyMigratedResourcesStep extends AbstractCopyResourcesStep {
 

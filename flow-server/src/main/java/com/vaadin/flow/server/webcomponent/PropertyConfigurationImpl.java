@@ -29,6 +29,7 @@ import com.vaadin.flow.function.SerializableBiConsumer;
  * @param <P>
  *         type of the property
  * @author Vaadin Ltd.
+ * @since 2.0
  */
 public final class PropertyConfigurationImpl<C extends Component,
         P extends Serializable> implements PropertyConfiguration<C, P> {

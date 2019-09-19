@@ -27,7 +27,7 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
  * Configuration for migration.
  *
  * @author Vaadin Ltd
- *
+ * @since 2.0
  */
 public class MigrationConfiguration {
 

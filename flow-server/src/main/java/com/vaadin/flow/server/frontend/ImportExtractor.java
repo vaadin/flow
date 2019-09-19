@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
  * Extracts import statements from the JS Polymer 3 source code.
  *
  * @author Vaadin Ltd
- *
+ * @since 2.0
  */
 class ImportExtractor implements Serializable {
 
