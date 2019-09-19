@@ -37,7 +37,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -196,7 +195,7 @@ public class DevModeInitializer implements ServletContainerInitializer,
             .compile(".*file:(.+\\.jar).*");
 
     private static final Pattern VFS_FILE_REGEX = Pattern
-            .compile(".*vfs:/(.+\\.jar).*");
+            .compile("(.*vfs:/.+\\.jar).*");
 
     // allow trailing slash
     private static final Pattern DIR_REGEX_FRONTEND_DEFAULT = Pattern.compile(
@@ -373,8 +372,8 @@ public class DevModeInitializer implements ServletContainerInitializer,
 
                 Matcher jarVfsMatcher = VFS_FILE_REGEX.matcher(url.toString());
                 if (jarVfsMatcher.find()) {
-                    frontendFiles
-                            .add(getVfsFrontendFolder(resourcesFolder, url));
+                    frontendFiles.add(getPhysicalFileOfJBossVfsJar(
+                            new URL(jarVfsMatcher.group(1))));
                     continue;
                 }
 
@@ -404,34 +403,19 @@ public class DevModeInitializer implements ServletContainerInitializer,
         return frontendFiles;
     }
 
-    private static File getVfsFrontendFolder(String resourcesFolder, URL url)
+    private static File getPhysicalFileOfJBossVfsJar(URL url)
             throws IOException, ServletException {
         try {
-            String frontendDir = url.toString();
-            url = new URL(frontendDir); // openStream() does not work here
-
             Object virtualFile = url.openConnection().getContent();
             Class virtualFileClass = virtualFile.getClass();
 
             // Reflection as we cannot afford a dependency to WildFly or JBoss
-            Method getChildrenRecursivelyMethod = virtualFileClass
-                    .getMethod("getChildrenRecursively");
             Method getPhysicalFileMethod = virtualFileClass
                     .getMethod("getPhysicalFile");
 
-            List virtualFiles = (List) getChildrenRecursivelyMethod
+            File jarPhysicalFile = (File) getPhysicalFileMethod
                     .invoke(virtualFile);
-            for (Object child : virtualFiles) {
-                // side effect: create real-world files
-                getPhysicalFileMethod.invoke(child);
-            }
-            File rootDir = (File) getPhysicalFileMethod.invoke(virtualFile);
-
-            String rootDirAbsPath = rootDir.getAbsolutePath();
-            rootDirAbsPath = rootDirAbsPath.substring(0,
-                    rootDirAbsPath.indexOf(resourcesFolder) - 1);
-
-            return new File(rootDirAbsPath);
+            return jarPhysicalFile;
         } catch (NoSuchMethodException | IllegalAccessException
                 | InvocationTargetException exc) {
             throw new ServletException(
