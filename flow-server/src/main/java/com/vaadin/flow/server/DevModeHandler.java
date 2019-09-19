@@ -105,7 +105,7 @@ public final class DevModeHandler implements Serializable {
     private int port;
     private transient Process webpackProcess;
     private final boolean reuseDevServer;
-    private final DevServerWatchDog watchDog;
+    private transient DevServerWatchDog watchDog;
 
     private DevModeHandler(DeploymentConfiguration config, int runningPort,
             File npmFolder, File webpack, File webpackConfig) {
