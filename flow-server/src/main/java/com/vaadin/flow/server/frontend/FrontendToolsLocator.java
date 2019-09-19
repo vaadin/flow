@@ -33,6 +33,8 @@ import org.slf4j.LoggerFactory;
  * Helps to locate the tools in the system by their names.
  */
 public class FrontendToolsLocator implements Serializable {
+    private static final String FAILED_WITH_EXIT_CODE_MSG = "Command '{}' failed with exit code '{}'";
+
     private static class CommandResult implements Serializable {
         private final String command;
         private final int exitCode;
@@ -68,7 +70,7 @@ public class FrontendToolsLocator implements Serializable {
      *         such tools
      */
     public Optional<File> tryLocateTool(String toolName) {
-        List<String> candidateLocations = executeCommand(
+        List<String> candidateLocations = executeCommand(false,
                 isWindows() ? "where" : "which", toolName)
                         .map(this::omitErrorResult)
                         .map(CommandResult::getStdout)
@@ -98,7 +100,7 @@ public class FrontendToolsLocator implements Serializable {
     public boolean verifyTool(File toolPath) {
         return Optional.ofNullable(toolPath).filter(File::isFile)
                 .map(File::getAbsolutePath)
-                .flatMap(path -> executeCommand(path, "-v"))
+                .flatMap(path -> executeCommand(true, path, "-v"))
                 .map(this::omitErrorResult).isPresent();
     }
 
@@ -107,7 +109,8 @@ public class FrontendToolsLocator implements Serializable {
         return osName != null && osName.toLowerCase().startsWith("windows");
     }
 
-    private Optional<CommandResult> executeCommand(String... commandParts) {
+    private Optional<CommandResult> executeCommand(boolean logErrorOnFail,
+            String... commandParts) {
         String commandString = Arrays.toString(commandParts);
         Process process;
         try {
@@ -140,8 +143,11 @@ public class FrontendToolsLocator implements Serializable {
         }
 
         if (exitCode > 0) {
-            log().error("Command '{}' failed with exit code '{}'",
-                    commandString, exitCode);
+            if (logErrorOnFail) {
+                log().error(FAILED_WITH_EXIT_CODE_MSG, commandString, exitCode);
+            } else if (log().isDebugEnabled()) {
+                log().debug(FAILED_WITH_EXIT_CODE_MSG, commandString, exitCode);
+            }
             return Optional.empty();
         }
 

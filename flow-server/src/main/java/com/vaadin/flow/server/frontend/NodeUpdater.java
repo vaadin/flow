@@ -229,10 +229,10 @@ public abstract class NodeUpdater implements FallibleCommand {
                     generatedFolder.getAbsoluteFile().toPath());
             throw iae;
         }
-        added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack",
-                "4.30.0") || added;
-        added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack-cli",
-                "3.3.0") || added;
+        added = addDependency(packageJson, DEV_DEPENDENCIES,
+                "webpack", "4.30.0") || added;
+        added = addDependency(packageJson, DEV_DEPENDENCIES,
+                "webpack-cli", "3.3.0") || added;
         added = addDependency(packageJson, DEV_DEPENDENCIES,
                 "webpack-dev-server", "3.3.0") || added;
         added = addDependency(packageJson, DEV_DEPENDENCIES,
@@ -241,14 +241,16 @@ public abstract class NodeUpdater implements FallibleCommand {
                 "copy-webpack-plugin", "5.0.3") || added;
         added = addDependency(packageJson, DEV_DEPENDENCIES,
                 "html-webpack-plugin", "3.2.0") || added;
-        added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack-merge",
-                "4.2.1") || added;
-        added = addDependency(packageJson, DEV_DEPENDENCIES, "raw-loader",
-                "3.0.0") || added;
-        added = addDependency(packageJson, DEV_DEPENDENCIES, "typescript",
-                "3.5.3") || added;
-        added = addDependency(packageJson, DEV_DEPENDENCIES, "awesome-typescript-loader",
-                "5.2.1") || added;
+        added = addDependency(packageJson, DEV_DEPENDENCIES,
+                "compression-webpack-plugin", "3.0.0") || added;
+        added = addDependency(packageJson, DEV_DEPENDENCIES,
+                "webpack-merge", "4.2.1") || added;
+        added = addDependency(packageJson, DEV_DEPENDENCIES,
+                "raw-loader", "3.0.0") || added;
+        added = addDependency(packageJson, DEV_DEPENDENCIES,
+                "typescript", "3.5.3") || added;
+        added = addDependency(packageJson, DEV_DEPENDENCIES,
+                "awesome-typescript-loader", "5.2.1") || added;
         return added;
     }
 

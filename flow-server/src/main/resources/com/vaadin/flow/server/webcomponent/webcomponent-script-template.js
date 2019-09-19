@@ -100,7 +100,9 @@ class _TagCamel_ extends HTMLElement {
           }
           properties[prop] = this[prop];
         }
-        flowClient.connectWebComponent({tag: '_TagDash_', id: this.$.id, attributeValues: _PropertyValues_});
+        flowClient.connectWebComponent({tag: '_TagDash_', id: this.$.id,
+            userAssignedId: this.id, attributeValues:
+            _PropertyValues_});
       } else {
         setTimeout(poller, 10);
       }

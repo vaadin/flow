@@ -7,6 +7,7 @@
 const fs = require('fs');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CompressionPlugin = require('compression-webpack-plugin');
 const {BabelMultiTargetPlugin} = require('webpack-babel-multi-target-plugin');
 
 const path = require('path');
@@ -106,6 +107,9 @@ module.exports = {
     maxAssetSize: 2097152 // 2MB
   },
   plugins: [
+    // Generate compressed bundles
+    new CompressionPlugin(),
+
     // Transpile with babel, and produce different bundles per browser
     new BabelMultiTargetPlugin({
       babel: {

@@ -106,6 +106,55 @@ public class DomEventFilterIT extends ChromeBrowserTest {
 
     }
 
+    @Test
+    public void twoListeners_removingOne_should_cleanItsFilter() {
+        open();
+
+        WebElement paragraph = findElement(By.id("result-paragraph"));
+        WebElement button = findElement(By.id("listener-removal-button"));
+        WebElement input = findElement(By.id("listener-input"));
+
+        Assert.assertEquals("Result paragraph should be empty", "",
+                paragraph.getText());
+
+        input.sendKeys("a");
+        Assert.assertEquals(
+                "Filter should have prevented default, and input is empty", "",
+                input.getAttribute("value"));
+        Assert.assertEquals(
+                "Event was sent to server and paragraph should be 'A'", "A",
+                paragraph.getText());
+
+        input.sendKeys("b");
+        Assert.assertEquals(
+                "Filter should have prevented default, and input is empty", "",
+                input.getAttribute("value"));
+        Assert.assertEquals(
+                "Event was sent to server and paragraph should be 'B'", "B",
+                paragraph.getText());
+
+        // remove keybind for A
+        button.click();
+        Assert.assertEquals("Result paragraph should be 'REMOVED'", "REMOVED",
+                paragraph.getText());
+
+        // keybind for A should no longer work
+        input.sendKeys("a");
+        Assert.assertEquals("Filter should be removed, and input has 'a'", "a",
+                input.getAttribute("value"));
+        Assert.assertEquals("Result paragraph should still be 'REMOVED'",
+                "REMOVED", paragraph.getText());
+
+        // b should still be functional
+        input.sendKeys("b");
+        Assert.assertEquals(
+                "Filter should have prevented default, and input has only 'a'",
+                "a", input.getAttribute("value"));
+        Assert.assertEquals(
+                "Event was sent to server and paragraph should be 'B'", "B",
+                paragraph.getText());
+    }
+
     private void assertMessages(int skip, String... expectedTail) {
         List<WebElement> messages = getMessages();
         if (messages.size() < skip) {
