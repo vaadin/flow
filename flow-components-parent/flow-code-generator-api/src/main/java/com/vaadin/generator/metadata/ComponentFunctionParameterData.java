@@ -19,6 +19,7 @@ package com.vaadin.generator.metadata;
  * Class that represents a parameter of a exposed function of the webcomponent.
  *
  * @see ComponentMetadata
+ * @since 1.0
  */
 public class ComponentFunctionParameterData extends ComponentPropertyBaseData {
 

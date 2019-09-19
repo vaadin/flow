@@ -43,6 +43,7 @@ import elemental.json.JsonValue;
  * 
  * @param <T>
  *            the target bean type
+ * @since 1.2
  */
 public class HierarchicalCommunicationController<T> implements Serializable {
 

@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
  * Utilities to load client access resources from the client side module.
  *
  * @author Vaadin Ltd
- *
+ * @since 1.2
  */
 public final class ClientResourcesUtils {
 

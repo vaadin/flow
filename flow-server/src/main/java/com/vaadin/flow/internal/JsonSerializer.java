@@ -43,6 +43,8 @@ import elemental.json.JsonValue;
 /**
  * General-purpose serializer of Java objects to {@link JsonValue} and
  * deserializer of JsonValue to Java objects.
+ *
+ * @since 1.0
  */
 public final class JsonSerializer {
 

@@ -30,7 +30,7 @@ import java.io.Serializable;
  * resources.
  *
  * @author Vaadin Ltd
- *
+ * @since 1.2
  */
 @FunctionalInterface
 public interface ClientResources extends Serializable {

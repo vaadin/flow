@@ -26,6 +26,7 @@ import elemental.client.Browser;
  * Browser details are detected only once and those are stored in this singleton
  * class.
  *
+ * @since 1.0
  */
 public class BrowserInfo {
 

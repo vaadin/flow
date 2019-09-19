@@ -21,6 +21,8 @@ import com.vaadin.flow.router.PageTitle;
 /**
  * Exception indicating a conflict between a route target implementing
  * {@link HasDynamicTitle} while also having a {@link PageTitle} annotation.
+ *
+ * @since 1.0
  */
 public class DuplicateNavigationTitleException extends RuntimeException {
 
