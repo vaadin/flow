@@ -9,7 +9,9 @@ import "../../main/resources/META-INF/resources/frontend/FlowBootstrap";
 import "../../main/resources/META-INF/resources/frontend/FlowClient";
 // Mock XMLHttpRequest so as we don't need flow-server running for tests.
 import mock from 'xhr-mock';
-const flowRoot = (window.document.body as any);
+
+const $wnd = window as any;
+const flowRoot = window.document.body as any;
 
 suite("Flow", () => {
 
@@ -29,22 +31,40 @@ suite("Flow", () => {
     assert.isDefined(flow.config.imports);
   });
 
-  test("should initialize Flow client when calling start()", () => {
-    const $wnd = window as any;
+  test("should initialize Flow server navigation when calling start()", () => {
     assert.isUndefined($wnd.Vaadin);
 
+    stubServerRemoteFunction('FooBar-12345');
     mockInitResponse('FooBar-12345');
-    return new Flow()
+
+    const flow = new Flow();
+    return flow
       .start()
-      .then(response => {
-        assert.isDefined(response);
-        assert.isDefined(response.appConfig);
+      .then(() => {
+
+        assert.isDefined(flow.response);
+        assert.isDefined(flow.response.appConfig);
+
+        // Check that serverside routing is enabled
+        assert.isFalse(flow.response.appConfig.webComponentMode);
+
         // Check that bootstrap was initialized
         assert.isDefined($wnd.Vaadin.Flow.initApplication);
         assert.isDefined($wnd.Vaadin.Flow.registerWidgetset);
         // Check that flowClient was initialized
         assert.isDefined($wnd.Vaadin.Flow.resolveUri);
         assert.isFalse($wnd.Vaadin.Flow.clients.FooBar.isActive());
+
+        // Check that bootstrap was initialized
+        assert.isDefined($wnd.Vaadin.Flow.initApplication);
+        assert.isDefined($wnd.Vaadin.Flow.registerWidgetset);
+
+        // Check that flowClient was initialized
+        assert.isDefined($wnd.Vaadin.Flow.resolveUri);
+        assert.isFalse($wnd.Vaadin.Flow.clients.FooBar.isActive());
+
+        // Check that flow container is in body
+        assert.equal(flow.container, document.body.lastElementChild);
       });
   });
 
@@ -71,11 +91,19 @@ suite("Flow", () => {
     stubServerRemoteFunction('foobar-1111111');
     mockInitResponse('foobar-1111111');
 
-    return new Flow()
+    const flow = new Flow();
+    return flow
       .navigate({pathname: "Foo/Bar.baz"})
       .then(() => {
         // Check that flowInit() was called
-        assert.isDefined((window as any).Vaadin.Flow.resolveUri);
+        assert.isDefined(flow.response);
+        assert.isDefined(flow.response.appConfig);
+        // Check that bootstrap was initialized
+        assert.isDefined($wnd.Vaadin.Flow.initApplication);
+        assert.isDefined($wnd.Vaadin.Flow.registerWidgetset);
+        // Check that flowClient was initialized
+        assert.isDefined($wnd.Vaadin.Flow.resolveUri);
+        assert.isFalse($wnd.Vaadin.Flow.clients.FooBar.isActive());
 
         // Assert that element was created amd put in flowRoot so as server can find it
         assert.isDefined(flowRoot.$);
@@ -141,7 +169,7 @@ suite("Flow", () => {
       .then(async(elem) => {
 
         // Check that flowInit() was called
-        assert.isDefined((window as any).Vaadin.Flow.resolveUri);
+        assert.isDefined($wnd.Vaadin.Flow.resolveUri);
         // Assert that flowRoot namespace was created
         assert.isDefined(flowRoot.$);
         // Assert that container was created and put in the flowRoot
@@ -172,7 +200,7 @@ suite("Flow", () => {
       .then((elem) => {
 
         // Check that flowInit() was called
-        assert.isDefined((window as any).Vaadin.Flow.resolveUri);
+        assert.isDefined($wnd.Vaadin.Flow.resolveUri);
         // Assert that flowRoot namespace was created
         assert.isDefined(flowRoot.$);
         // Assert that container was created and put in the flowRoot

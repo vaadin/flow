@@ -5,7 +5,8 @@ export interface FlowConfig {
 interface AppConfig {
   productionMode: boolean,
   appId: string,
-  uidl: object
+  uidl: object,
+  webComponentMode: boolean
 }
 
 interface AppInitResponse {
@@ -57,12 +58,15 @@ export class Flow {
   }
 
   /**
-   * This should initialize flow in full page mode when implementing
-   * https://github.com/vaadin/flow/issues/6256
-   * @deprecated
+   * Initialize flow in full page mode and with server side routing.
    */
-  async start(): Promise<AppInitResponse> {
-    return this.flowInit();
+  async start(): Promise<any> {
+    await this.flowInit(true);
+    document.body.appendChild(this.container);
+    return this.flowNavigate({
+      pathname: location.pathname,
+      search: location.search
+    });
   }
 
   /**
@@ -141,7 +145,7 @@ export class Flow {
   private async flowNavigate(ctx: NavigationParameters, cmd?: NavigationCommands): Promise<HTMLElement> {
     return new Promise(resolve => {
       // The callback to run from server side once the view is ready
-      this.container.serverConnected = cancel => 
+      this.container.serverConnected = cancel =>
         resolve(cmd && cancel ? cmd.prevent() : this.container);
 
       // Call server side to navigate to the given route
@@ -155,11 +159,14 @@ export class Flow {
   }
 
   // import flow client modules and initialize UI in server side.
-  private async flowInit(): Promise<AppInitResponse> {
+  private async flowInit(serverSideRouting = false): Promise<AppInitResponse> {
     // Do not start flow twice
     if (!this.response) {
       // Initialize server side UI
       this.response = await this.flowInitUi();
+
+      // Enable or disable server side routing
+      this.response.appConfig.webComponentMode = !serverSideRouting;
 
       // Load bootstrap script with server side parameters
       const bootstrapMod = await import('./FlowBootstrap');
