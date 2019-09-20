@@ -24,6 +24,8 @@ import elemental.json.JsonObject;
 
 /**
  * Creates the <code>package.json</code> if missing.
+ *
+ * @since 2.0
  */
 public class TaskCreatePackageJson extends NodeUpdater {
 

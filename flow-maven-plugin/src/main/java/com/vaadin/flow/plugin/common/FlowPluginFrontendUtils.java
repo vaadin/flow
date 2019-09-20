@@ -29,6 +29,8 @@ import com.vaadin.flow.utils.FlowFileUtils;
 
 /**
  * Utility methods used by all goals.
+ *
+ * @since 2.0
  */
 public class FlowPluginFrontendUtils {
 

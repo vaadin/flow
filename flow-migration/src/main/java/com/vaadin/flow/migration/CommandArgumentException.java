@@ -24,7 +24,7 @@ import org.apache.commons.cli.ParseException;
  * An exception is thrown if there is an error in command line arguments.
  *
  * @author Vaadin Ltd
- *
+ * @since 2.0
  */
 class CommandArgumentException extends Exception {
 
