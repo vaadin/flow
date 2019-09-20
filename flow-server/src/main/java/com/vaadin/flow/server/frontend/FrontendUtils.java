@@ -25,7 +25,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
@@ -305,10 +304,8 @@ public class FrontendUtils {
     public static String streamToString(InputStream inputStream) {
         String ret = "";
         try {
-            String[] lines = IOUtils
-                    .toString(inputStream, StandardCharsets.UTF_8).split("\\R");
-            ret = Stream.of(lines)
-                    .collect(Collectors.joining(System.lineSeparator()));
+            return IOUtils.toString(inputStream, StandardCharsets.UTF_8)
+                    .replaceAll("\\R", System.lineSeparator());
         } catch (IOException exception) {
             // ignore exception on close()
             LoggerFactory.getLogger(FrontendUtils.class)

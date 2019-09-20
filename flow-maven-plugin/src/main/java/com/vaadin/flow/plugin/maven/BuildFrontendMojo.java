@@ -22,7 +22,6 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -225,10 +224,8 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
     private String readFullyAndClose(String readErrorMessage,
             InputStream inputStreamSupplier) {
         try {
-            String[] lines = IOUtils
-                    .toString(inputStreamSupplier, StandardCharsets.UTF_8)
-                    .split("\\R");
-            return Stream.of(lines).collect(Collectors.joining("\n"));
+            return IOUtils.toString(inputStreamSupplier, StandardCharsets.UTF_8)
+                    .replaceAll("\\R", System.lineSeparator());
         } catch (IOException e) {
             throw new UncheckedIOException(readErrorMessage, e);
         }
