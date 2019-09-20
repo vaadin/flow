@@ -21,10 +21,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -153,26 +153,20 @@ public class FrontendToolsLocator implements Serializable {
             return Optional.empty();
         }
 
-        List<String> stdout = new ArrayList<>();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
+        List<String> stdout;
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(
                 process.getInputStream(), StandardCharsets.UTF_8))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                stdout.add(line);
-            }
+            stdout = br.lines().collect(Collectors.toList());
         } catch (IOException e) {
             log().error("Failed to read the command '{}' stdout", commandString,
                     e);
             return Optional.empty();
         }
 
-        List<String> stderr = new ArrayList<>();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
+        List<String> stderr;
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(
                 process.getErrorStream(), StandardCharsets.UTF_8))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                stdout.add(line);
-            }
+            stderr = br.lines().collect(Collectors.toList());
         } catch (IOException e) {
             log().error("Failed to read the command '{}' stderr", commandString,
                     e);
