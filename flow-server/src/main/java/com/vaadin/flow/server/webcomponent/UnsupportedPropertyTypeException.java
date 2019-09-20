@@ -20,6 +20,8 @@ package com.vaadin.flow.server.webcomponent;
  * {@code UnsupportedPropertyTypeException} is throw when
  * {@link com.vaadin.flow.component.WebComponentExporter} tries to register a
  * property encasing an unsupported value type.
+ *
+ * @since 2.0
  */
 public class UnsupportedPropertyTypeException extends RuntimeException {
     /**

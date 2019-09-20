@@ -21,6 +21,8 @@ import com.vaadin.flow.server.VaadinServlet;
 
 /**
  * This is a temporary workaround until #5740 is fixed.
+ *
+ * @since 2.0
  */
 @WebServlet("/*")
 public class WorkaroundServlet extends VaadinServlet {

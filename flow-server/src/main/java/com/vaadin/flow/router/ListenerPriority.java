@@ -20,30 +20,32 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
- /**
- * This annotation sets the priority of execution on {@link BeforeEnterListener}s,
- * {@link BeforeLeaveListener}s and {@link AfterNavigationListener}s. Listeners
- * will be sorted by their respective priority value in a descending order
- * before they are executed. Listeners that are not annotated with
- * {@literal @}ListenerPriority have a default priority of zero.
+/**
+ * This annotation sets the priority of execution on
+ * {@link BeforeEnterListener}s, {@link BeforeLeaveListener}s and
+ * {@link AfterNavigationListener}s. Listeners will be sorted by their
+ * respective priority value in a descending order before they are executed.
+ * Listeners that are not annotated with {@literal @}ListenerPriority have a
+ * default priority of zero.
  *
  * <pre>
- * //will be executed first
+ * // will be executed first
  * &#064;ListenerPriority(5)
  * class HighPriorityListener implements BeforeEnterListener {
  * }
  *
- * //will be executed second, default priority is 0
+ * // will be executed second, default priority is 0
  * class YetAnotherListener implements BeforeEnterListener {
  * }
  *
- * //will be executed third
+ * // will be executed third
  * &#064;ListenerPriority(-5)
  * class LowPriorityListener implements BeforeEnterListener {
  * }
  * </pre>
  *
  * @author Bernd Hopp
+ * @since 1.0
  */
  @Retention(RetentionPolicy.RUNTIME)
  @Target(ElementType.TYPE)

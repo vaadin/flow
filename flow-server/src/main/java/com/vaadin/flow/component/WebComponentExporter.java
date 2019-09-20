@@ -83,6 +83,7 @@ import elemental.json.JsonValue;
  * @param <C>
  *            type of the component to export
  * @author Vaadin Ltd.
+ * @since 2.0
  */
 public abstract class WebComponentExporter<C extends Component>
         implements Serializable {

@@ -43,7 +43,7 @@ import org.slf4j.LoggerFactory;
  * instance.
  *
  * @author Vaadin Ltd
- *
+ * @since 1.2
  */
 public class VaadinBundleTracker extends BundleTracker<Bundle> {
 

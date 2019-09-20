@@ -46,6 +46,8 @@ import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 /**
  * A class for static methods and definitions that might be used in different
  * locations.
+ *
+ * @since 2.0
  */
 public class FrontendUtils {
 

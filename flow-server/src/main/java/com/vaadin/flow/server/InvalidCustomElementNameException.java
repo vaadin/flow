@@ -17,6 +17,8 @@ package com.vaadin.flow.server;
 
 /**
  * Exception indicating that the custom-element name is invalid.
+ *
+ * @since 1.0
  */
 public class InvalidCustomElementNameException extends RuntimeException {
 

@@ -46,7 +46,7 @@ import com.vaadin.flow.utils.FlowFileUtils;
  * {@link JsModule} annotation.
  *
  * @author Vaadin Ltd
- *
+ * @since 2.0
  */
 public class RewriteLegacyAnnotationsStep extends ClassPathIntrospector {
 

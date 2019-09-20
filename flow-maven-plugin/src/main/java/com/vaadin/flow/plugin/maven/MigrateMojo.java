@@ -40,7 +40,7 @@ import com.vaadin.flow.plugin.common.FlowPluginFrontendUtils;
  * This goal migrates project from compatibility mode to NPM mode.
  *
  * @author Vaadin Ltd
- *
+ * @since 2.0
  */
 @Mojo(name = "migrate-to-p3", requiresDependencyResolution = ResolutionScope.COMPILE, defaultPhase = LifecyclePhase.PROCESS_CLASSES)
 public class MigrateMojo extends AbstractMojo {

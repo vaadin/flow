@@ -43,6 +43,8 @@ package com.vaadin.flow.server;
  * <li>Internal error: unhandled critical server error (e.g out of memory,
  * database crash)
  * </ul>
+ *
+ * @since 1.0
  */
 public class CustomizedSystemMessages extends SystemMessages {
 

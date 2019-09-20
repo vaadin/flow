@@ -29,6 +29,8 @@ import com.vaadin.flow.router.Route;
 /**
  * A simple container with the information related to an application end-point,
  * i.e. those classes annotated with the {@link Route} annotation.
+ *
+ * @since 2.0
  */
 public final class EndPointData implements Serializable {
     final String name;

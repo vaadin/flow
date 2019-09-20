@@ -25,6 +25,7 @@ import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
  * environment.
  *
  * @author Vaadin Ltd.
+ * @since 2.0
  */
 public class OSGiWebComponentConfigurationRegistry extends WebComponentConfigurationRegistry {
 

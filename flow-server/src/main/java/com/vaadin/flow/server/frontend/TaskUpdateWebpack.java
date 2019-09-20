@@ -34,6 +34,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
 
 /**
  * Updates the webpack config file according with current project settings.
+ *
+ * @since 2.0
  */
 public class TaskUpdateWebpack implements FallibleCommand {
 

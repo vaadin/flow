@@ -36,6 +36,7 @@ import elemental.json.JsonArray;
  * and logs a warning if it isn't.
  *
  * @author Vaadin Ltd
+ * @since 2.0
  */
 public class ReturnChannelMap extends ServerSideFeature {
 

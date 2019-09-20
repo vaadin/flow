@@ -23,6 +23,8 @@ import com.vaadin.flow.component.Tag;
 
 /**
  * Component representing a <code>&lt;option&gt;</code> element.
+ *
+ * @since 2.0
  */
 @Tag(Tag.OPTION)
 public class Option extends HtmlComponent implements HasText {
