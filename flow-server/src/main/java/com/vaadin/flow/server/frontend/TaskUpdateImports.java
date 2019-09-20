@@ -40,7 +40,7 @@ import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.CssData;
-import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
+import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
@@ -109,7 +109,7 @@ public class TaskUpdateImports extends NodeUpdater {
      *            a directory with project's frontend files
      */
     TaskUpdateImports(ClassFinder finder,
-            FrontendDependencies frontendDependencies, File npmFolder,
+            FrontendDependenciesScanner frontendDependencies, File npmFolder,
             File generatedPath, File frontendDirectory) {
         super(finder, frontendDependencies, npmFolder, generatedPath);
         this.frontendDirectory = frontendDirectory;
@@ -284,16 +284,14 @@ public class TaskUpdateImports extends NodeUpdater {
         }
 
         if (!resourceNotFound.isEmpty()) {
-            String prefix =  "Failed to find the following files: ";
-            String suffix = String.format(
-                    "%n  Locations searched were:"
-                            + "%n      - `%s` in this project"
-                            + "%n      - `%s` in included JARs"
-                            + "%n%n  Please, double check that those files exist. If you use a custom directory "
-                            + "for your resource files instead of default "
-                            + "`frontend` folder then make sure you it's correctly configured "
-                            + "(e.g. set '%s' property)",
-                    frontendDirectory.getPath(),
+            String prefix = "Failed to find the following files: ";
+            String suffix = String.format("%n  Locations searched were:"
+                    + "%n      - `%s` in this project"
+                    + "%n      - `%s` in included JARs"
+                    + "%n%n  Please, double check that those files exist. If you use a custom directory "
+                    + "for your resource files instead of default "
+                    + "`frontend` folder then make sure you it's correctly configured "
+                    + "(e.g. set '%s' property)", frontendDirectory.getPath(),
                     Constants.RESOURCES_FRONTEND_DEFAULT,
                     FrontendUtils.PARAM_FRONTEND_DIR);
             throw new IllegalStateException(
@@ -304,8 +302,8 @@ public class TaskUpdateImports extends NodeUpdater {
             log().info(notFoundMessage(npmNotFound,
                     "Failed to find the following imports in the `node_modules` tree:",
                     "If the build fails, check that npm packages are installed.\n\n"
-                    + "  To fix the build remove `node_modules` directory to reset modules.\n"
-                    + "  In addition you may run `npm install` to fix `node_modules` tree structure."));
+                            + "  To fix the build remove `node_modules` directory to reset modules.\n"
+                            + "  In addition you may run `npm install` to fix `node_modules` tree structure."));
         }
         return lines;
     }

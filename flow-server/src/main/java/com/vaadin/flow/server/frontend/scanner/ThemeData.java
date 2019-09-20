@@ -19,14 +19,21 @@ import java.io.Serializable;
 import java.util.Objects;
 
 /**
- * A container for Theme information when scanning the class path. It
- * overrides equals and hashCode in order to use HashSet to eliminate
- * duplicates.
+ * A container for Theme information when scanning the class path. It overrides
+ * equals and hashCode in order to use HashSet to eliminate duplicates.
  */
 final class ThemeData implements Serializable {
     String name;
     String variant = "";
     boolean notheme;
+
+    ThemeData(String name, String variant) {
+        this.name = name;
+        this.variant = variant;
+    }
+
+    ThemeData() {
+    }
 
     String getName() {
         return name;
@@ -38,6 +45,12 @@ final class ThemeData implements Serializable {
 
     boolean isNotheme() {
         return notheme;
+    }
+
+    static ThemeData createNoTheme() {
+        ThemeData data = new ThemeData();
+        data.notheme = true;
+        return data;
     }
 
     @Override

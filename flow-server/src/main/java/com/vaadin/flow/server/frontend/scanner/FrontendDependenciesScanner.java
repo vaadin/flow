@@ -52,7 +52,9 @@ public interface FrontendDependenciesScanner extends Serializable {
                 boolean allDependenciesScan, ClassFinder finder,
                 boolean generateEmbeddableWebComponents) {
             if (allDependenciesScan) {
-                return null;
+                // this dep scanner can't distinguish embeddable web component
+                // frontend related annotations
+                return new FullDependenciesScanner(finder);
             } else {
                 return new FrontendDependencies(finder,
                         generateEmbeddableWebComponents);
@@ -102,4 +104,12 @@ public interface FrontendDependenciesScanner extends Serializable {
      * @return the theme instance
      */
     AbstractTheme getTheme();
+
+    /**
+     * Get all Java classes considered when looking for used dependencies.
+     *
+     * @return the set of JS files
+     */
+    Set<String> getClasses();
+
 }
