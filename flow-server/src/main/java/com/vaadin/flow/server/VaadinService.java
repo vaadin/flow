@@ -628,7 +628,12 @@ public abstract class VaadinService implements Serializable {
      * @param response
      *            The object containing all relevant info needed by listeners to
      *            change the bootstrap page.
+     * 
+     * @deprecated use
+     *             {@link VaadinService#modifyClientIndexBootstrapPage(ClientIndexBootstrapPage)}
+     *             instead
      */
+    @Deprecated
     public void modifyBootstrapPage(BootstrapPageResponse response) {
         bootstrapListeners
                 .forEach(listener -> listener.modifyBootstrapPage(response));
