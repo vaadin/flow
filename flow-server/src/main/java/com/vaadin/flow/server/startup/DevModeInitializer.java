@@ -66,6 +66,8 @@ import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.server.frontend.NodeTasks.Builder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
+import com.vaadin.flow.theme.NoTheme;
+import com.vaadin.flow.theme.Theme;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
@@ -84,7 +86,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
         WebComponentExporter.class, UIInitListener.class,
         VaadinServiceInitListener.class, JsModule.class,
         JsModule.Container.class, CssImport.class, CssImport.Container.class,
-        JavaScript.class, JavaScript.Container.class })
+        JavaScript.class, JavaScript.Container.class, Theme.class,
+        NoTheme.class })
 @WebListener
 public class DevModeInitializer implements ServletContainerInitializer,
         Serializable, ServletContextListener {
