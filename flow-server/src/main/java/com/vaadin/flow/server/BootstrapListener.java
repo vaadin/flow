@@ -30,10 +30,13 @@ import java.util.EventListener;
  * 
  * @see ServiceInitEvent#addBootstrapListener(BootstrapListener)
  *
+ * @deprecated Use {@link ClientIndexBootstrapListener} instead
+ *
  * @author Vaadin Ltd
  * @since 1.0
  */
 @FunctionalInterface
+@Deprecated
 public interface BootstrapListener extends EventListener, Serializable {
 
     /**
