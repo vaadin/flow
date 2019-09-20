@@ -15,11 +15,9 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,6 +29,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -305,14 +304,10 @@ public class FrontendUtils {
      */
     public static String streamToString(InputStream inputStream) {
         String ret = "";
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                inputStream, StandardCharsets.UTF_8.name()))) {
-            List<String> lines = new ArrayList<>();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                lines.add(line);
-            }
-            ret = lines.stream()
+        try {
+            String[] lines = IOUtils
+                    .toString(inputStream, StandardCharsets.UTF_8).split("\\R");
+            ret = Stream.of(lines)
                     .collect(Collectors.joining(System.lineSeparator()));
         } catch (IOException exception) {
             // ignore exception on close()

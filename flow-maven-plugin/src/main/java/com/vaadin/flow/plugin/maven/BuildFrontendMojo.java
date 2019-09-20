@@ -15,20 +15,17 @@
  */
 package com.vaadin.flow.plugin.maven;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -219,22 +216,19 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
     private void readDetailsAndThrowException(Process webpackLaunch) {
         String stderr = readFullyAndClose(
                 "Failed to read webpack process stderr",
-                webpackLaunch::getErrorStream);
+                webpackLaunch.getErrorStream());
         throw new IllegalStateException(String.format(
                 "Webpack process exited with non-zero exit code.%nStderr: '%s'",
                 stderr));
     }
 
     private String readFullyAndClose(String readErrorMessage,
-            Supplier<InputStream> inputStreamSupplier) {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                inputStreamSupplier.get(), StandardCharsets.UTF_8))) {
-            List<String> lines = new ArrayList<>();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                lines.add(line);
-            }
-            return lines.stream().collect(Collectors.joining("\n"));
+            InputStream inputStreamSupplier) {
+        try {
+            String[] lines = IOUtils
+                    .toString(inputStreamSupplier, StandardCharsets.UTF_8)
+                    .split("\\R");
+            return Stream.of(lines).collect(Collectors.joining("\n"));
         } catch (IOException e) {
             throw new UncheckedIOException(readErrorMessage, e);
         }
