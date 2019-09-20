@@ -35,6 +35,7 @@ import com.vaadin.flow.server.VaadinSession;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+import static com.vaadin.flow.shared.ApplicationConstants.*;
 
 @NotThreadSafe
 public class JavaScriptBootstrapHandlerTest {
@@ -107,9 +108,8 @@ public class JavaScriptBootstrapHandlerTest {
         Assert.assertEquals(JavaScriptBootstrapUI.class, UI.getCurrent().getClass());
     }
 
-
     @Test
-    public void should_attachViewToUI() throws Exception {
+    public void should_attachViewTo_UiContainer() throws Exception {
         VaadinRequest request = mocks.createRequest(mocks, "/foo/?v-r=init&foo");
         jsInitHandler.handleRequest(session, request, response);
 
@@ -124,6 +124,26 @@ public class JavaScriptBootstrapHandlerTest {
         Assert.assertTrue(hasNodeTag(visitor, "^<div>.*", ElementType.REGULAR));
         Assert.assertTrue(
                 hasNodeTag(visitor, "^<div>.*Could not navigate to 'a-route'.*",
+                        ElementType.REGULAR));
+
+    }
+
+    @Test
+    public void should_attachViewTo_Body_when_location() throws Exception {
+
+        VaadinRequest request = mocks.createRequest(mocks, "/foo/?v-r=init&location=%2Fbar%3Fpar1%26par2");
+
+        jsInitHandler.handleRequest(session, request, response);
+
+        JavaScriptBootstrapUI ui = (JavaScriptBootstrapUI) UI.getCurrent();
+
+        TestNodeVisitor visitor = new TestNodeVisitor(true);
+        BasicElementStateProvider.get().visit(ui.getElement().getNode(), visitor);
+
+        Assert.assertTrue(hasNodeTag(visitor, "^<body>.*", ElementType.REGULAR));
+        Assert.assertTrue(hasNodeTag(visitor, "^<div>.*", ElementType.REGULAR));
+        Assert.assertTrue(
+                hasNodeTag(visitor, "^<div>.*Could not navigate to 'bar'.*",
                         ElementType.REGULAR));
 
     }

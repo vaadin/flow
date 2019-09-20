@@ -17,9 +17,11 @@
 package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -28,6 +30,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.UsageStatistics;
+import com.vaadin.flow.router.Location;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.ServletHelper;
@@ -131,6 +134,19 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
         config.put("requestURL", requestURL);
 
         return context;
+    }
+
+    @Override
+    protected void initializeUIWithRouter(VaadinRequest request, UI ui) {
+        String route = request.getParameter(ApplicationConstants.REQUEST_LOCATION_PARAMETER);
+        if (route != null) {
+            try {
+                route = URLDecoder.decode(route, "UTF-8").replaceFirst("^/+", "");
+            } catch (UnsupportedEncodingException e) {
+            }
+            Location location = new Location(route);
+            ui.getRouter().initializeUI(ui, location);
+        }
     }
 
     @Override
