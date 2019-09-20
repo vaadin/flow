@@ -194,9 +194,6 @@ public class BrowserDetails implements Serializable {
                     } else if (engineVersion >= 6060 && engineVersion < 6070) {
                         browserMajorVersion = 12;
                         browserMinorVersion = 0;
-                    } else if (engineVersion >= 6060 && engineVersion < 6070) {
-                        browserMajorVersion = 12;
-                        browserMinorVersion = 0;
                     } else if (engineVersion >= 6070) {
                         browserMajorVersion = 12;
                         browserMinorVersion = 1;
