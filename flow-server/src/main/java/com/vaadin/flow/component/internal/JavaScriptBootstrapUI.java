@@ -216,6 +216,9 @@ public class JavaScriptBootstrapUI extends UI {
         public void updateRoot(UI ui, HasElement oldRoot, HasElement newRoot) {
             JavaScriptBootstrapUI jsUI = castToJavaScriptUI(ui);
             Element wrapperElement = jsUI.wrapperElement;
+            if (wrapperElement == null) {
+                return;
+            }
             Element rootElement = newRoot.getElement();
             if (newRoot instanceof ClientViewPlaceholder) {
                 // only need to remove all children when newRoot is a
@@ -244,7 +247,6 @@ public class JavaScriptBootstrapUI extends UI {
 
         private JavaScriptBootstrapUI castToJavaScriptUI(UI ui) {
             assert ui instanceof JavaScriptBootstrapUI;
-            assert ((JavaScriptBootstrapUI) ui).wrapperElement != null;
             return (JavaScriptBootstrapUI) ui;
         }
     }

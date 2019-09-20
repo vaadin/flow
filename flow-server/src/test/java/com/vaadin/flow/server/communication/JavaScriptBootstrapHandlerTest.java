@@ -87,7 +87,7 @@ public class JavaScriptBootstrapHandlerTest {
         Assert.assertTrue(json.getObject("appConfig").hasKey("appId"));
         Assert.assertTrue(json.getObject("appConfig").getObject("uidl").hasKey("changes"));
         Assert.assertTrue(json.getObject("appConfig").getBoolean("debug"));
-        Assert.assertTrue(json.getObject("appConfig").getBoolean("webComponentMode"));
+        Assert.assertFalse(json.getObject("appConfig").hasKey("webComponentMode"));
 
         Assert.assertEquals("./", json.getObject("appConfig").getString("contextRootUrl"));
         Assert.assertEquals("//localhost:8888/foo/", json.getObject("appConfig").getString("serviceUrl"));
