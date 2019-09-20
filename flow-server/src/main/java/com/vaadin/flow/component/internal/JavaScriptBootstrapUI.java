@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.component.internal;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -50,7 +49,7 @@ public class JavaScriptBootstrapUI extends UI {
     private static final String NO_NAVIGATION = "Classic flow navigation is " +
             "not supported for client-side projects";
 
-    Element wrapperElement;
+    public Element wrapperElement;
     private NavigationState clientViewNavigationState;
 
     /**
@@ -93,7 +92,7 @@ public class JavaScriptBootstrapUI extends UI {
      *
      * This is only called when client route navigates from a server to a client
      * view.
-     * 
+     *
      * @param route
      *            the route that is navigating to.
      */
@@ -216,9 +215,15 @@ public class JavaScriptBootstrapUI extends UI {
         public void updateRoot(UI ui, HasElement oldRoot, HasElement newRoot) {
             JavaScriptBootstrapUI jsUI = castToJavaScriptUI(ui);
             Element wrapperElement = jsUI.wrapperElement;
+            // server-side routing
             if (wrapperElement == null) {
+                ui.getElement().removeAllChildren();
+                ui.getElement().appendChild(newRoot.getElement());
                 return;
             }
+
+
+            // client-side routing
             Element rootElement = newRoot.getElement();
             if (newRoot instanceof ClientViewPlaceholder) {
                 // only need to remove all children when newRoot is a
@@ -235,13 +240,18 @@ public class JavaScriptBootstrapUI extends UI {
 
         @Override
         public void moveToNewUI(UI oldUI, UI newUI) {
-            JavaScriptBootstrapUI jsUI = castToJavaScriptUI(newUI);
+            JavaScriptBootstrapUI newJsUI = castToJavaScriptUI(newUI);
             JavaScriptBootstrapUI oldJsUI = castToJavaScriptUI(oldUI);
-            final List<Element> uiChildren = oldJsUI.wrapperElement.getChildren()
-                    .collect(Collectors.toList());
-            uiChildren.forEach(element -> {
+
+            Element oldRoot = oldJsUI.wrapperElement == null
+                    ? oldJsUI.getElement() : oldJsUI.wrapperElement;
+            Element newRoot = newJsUI.wrapperElement == null
+                    ? newJsUI.getElement() : newJsUI.wrapperElement;
+
+            oldRoot.getChildren()
+                    .collect(Collectors.toList()).forEach(element -> {
                 element.removeFromTree();
-                jsUI.wrapperElement.appendChild(element);
+                newRoot.appendChild(element);
             });
         }
 

@@ -150,6 +150,13 @@ public class ApplicationConstants implements Serializable {
             + "client";
 
     /**
+     * Parameter for the initial router location when JavaScript bootstrapping.
+     * It is optional when {@link ApplicationConstants#REQUEST_TYPE_PARAMETER}
+     * has the {@link ApplicationConstants#REQUEST_TYPE_INIT} value
+     */
+    public static final String REQUEST_LOCATION_PARAMETER = "location";
+
+    /**
      * Get parameter used in framework requests to identify the request type.
      */
     public static final String REQUEST_TYPE_PARAMETER = "v-r";

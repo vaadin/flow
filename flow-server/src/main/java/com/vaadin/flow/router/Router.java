@@ -86,9 +86,22 @@ public class Router implements Serializable {
     public void initializeUI(UI ui, VaadinRequest initRequest) {
         Location location = getLocationForRequest(initRequest.getPathInfo(),
                 initRequest.getParameterMap());
+        initializeUI(ui, location);
+    }
+
+    /**
+     * Enables navigation for a new UI instance. This initializes the UI content
+     * based on the location used for loading the UI and sets up the UI to be
+     * updated when the user navigates to some other location.
+     *
+     * @param ui
+     *            the UI that navigation should be set up for
+     * @param location
+     *            the location object of the route
+     */
+    public void initializeUI(UI ui, Location location) {
         ui.getPage().getHistory().setHistoryStateChangeHandler(
                 e -> navigate(ui, e.getLocation(), e.getTrigger()));
-
         int statusCode = navigate(ui, location, NavigationTrigger.PAGE_LOAD);
 
         VaadinResponse response = VaadinService.getCurrentResponse();
@@ -96,6 +109,7 @@ public class Router implements Serializable {
             response.setStatus(statusCode);
         }
     }
+
 
     private Location getLocationForRequest(String pathInfo,
             Map<String, String[]> parameterMap) {

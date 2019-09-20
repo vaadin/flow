@@ -125,5 +125,7 @@ public class JavaScriptBootstrapUITest  {
         VaadinRequest request = mocks.createRequest(mocks, "/foo");
         ui.getRouter().initializeUI(ui, request);
         assertNull(ui.wrapperElement);
+        // attached to body
+        assertTrue(ui.getElement().toString().contains("Available routes:"));
     }
 }
