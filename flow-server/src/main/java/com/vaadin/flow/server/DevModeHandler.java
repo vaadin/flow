@@ -435,6 +435,7 @@ public final class DevModeHandler implements Serializable {
             // DevModeHandler to continue
             doNotify();
         });
+        thread.setDaemon(true);
         thread.setName("webpack");
         thread.start();
     }
