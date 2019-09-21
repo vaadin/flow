@@ -13,6 +13,57 @@ import mock from 'xhr-mock';
 const $wnd = window as any;
 const flowRoot = window.document.body as any;
 
+// A `changes` array that adds a div with 'Foo' text to body
+const changesResponse = `[
+  {
+    "node":1,
+    "type":"put",
+    "key":"tag",
+    "feat":0,
+    "value":"body"
+  },
+  {
+    "node":1,
+    "type":"splice",
+    "feat":2,
+    "index":0,
+    "addNodes":[
+      2
+    ]
+  },
+  {
+    "node":2,
+    "type":"attach"
+  },
+  {
+    "node":2,
+    "type":"put",
+    "key":"tag",
+    "feat":0,
+    "value":"div"
+  },
+  {
+    "node":2,
+    "type":"splice",
+    "feat":2,
+    "index":0,
+    "addNodes":[
+      3
+    ]
+  },
+  {
+    "node":3,
+    "type":"attach"
+  },
+  {
+    "node":3,
+    "type":"put",
+    "key":"text",
+    "feat":7,
+    "value":"Foo"
+  }
+]`;
+
 suite("Flow", () => {
 
   beforeEach(() => {
@@ -35,13 +86,12 @@ suite("Flow", () => {
     assert.isUndefined($wnd.Vaadin);
 
     stubServerRemoteFunction('FooBar-12345');
-    mockInitResponse('FooBar-12345');
+    mockInitResponse('FooBar-12345', changesResponse);
 
     const flow = new Flow();
     return flow
       .start()
       .then(() => {
-
         assert.isDefined(flow.response);
         assert.isDefined(flow.response.appConfig);
 
@@ -63,14 +113,14 @@ suite("Flow", () => {
         assert.isDefined($wnd.Vaadin.Flow.resolveUri);
         assert.isFalse($wnd.Vaadin.Flow.clients.FooBar.isActive());
 
-        // Check that flow container is in body
-        assert.equal(flow.container, document.body.lastElementChild);
+        // Check server added a div content with `Foo` text
+        assert.equal("Foo", document.body.lastElementChild.textContent);
       });
   });
 
   test("should throw when an incorrect server response is received", () => {
     // Configure an invalid server response
-    mock.get('VAADIN/?v-r=init', (req, res) => {
+    mock.get(/^VAADIN\/\?v-r=init&location=.+/, (req, res) => {
       assert.equal('GET', req.method());
       return res
         .status(500)
@@ -103,7 +153,7 @@ suite("Flow", () => {
         assert.isDefined($wnd.Vaadin.Flow.registerWidgetset);
         // Check that flowClient was initialized
         assert.isDefined($wnd.Vaadin.Flow.resolveUri);
-        assert.isFalse($wnd.Vaadin.Flow.clients.FooBar.isActive());
+        assert.isFalse($wnd.Vaadin.Flow.clients.foobar.isActive());
 
         // Assert that element was created amd put in flowRoot so as server can find it
         assert.isDefined(flowRoot.$);
@@ -311,9 +361,9 @@ function stubServerRemoteFunction(id: string, cancel: boolean = false) {
   };
 }
 
-function mockInitResponse(appId: string) {
+function mockInitResponse(appId: string, changes = '[]') {
   // Configure a valid server initialization response
-  mock.get('VAADIN/?v-r=init', (req, res) => {
+  mock.get(/^VAADIN\/\?v-r=init.*/, (req, res) => {
     assert.equal('GET', req.method());
     return res
       .status(200)
@@ -332,10 +382,10 @@ function mockInitResponse(appId: string) {
           "uidl": {
             "syncId": 0,
             "clientId": 0,
-            "changes": [],
             "timings": [],
             "Vaadin-Security-Key": "119a6005-e663-4a4c-a882-bbfa8bd0c304",
-            "Vaadin-Push-ID": "4b915ffb-4e0a-484c-9995-09500fe9fa3a"
+            "Vaadin-Push-ID": "4b915ffb-4e0a-484c-9995-09500fe9fa3a",
+            "changes": ${changes}
           }
         }
       }
