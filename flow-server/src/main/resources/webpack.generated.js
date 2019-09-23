@@ -20,7 +20,8 @@ const frontendFolder = '[to-be-generated-by-flow]';
 const fileNameOfTheFlowGeneratedMainEntryPoint = '[to-be-generated-by-flow]';
 const mavenOutputFolderForFlowBundledFiles = '[to-be-generated-by-flow]';
 const useClientSideIndexFileForBootstrapping = '[to-be-generated-by-flow]';
-
+const clientSideIndexHTML = '[to-be-generated-by-flow]';
+const clientSideIndexEntryPoint = '[to-be-generated-by-flow]';
 // public path for resources, must match Flow VAADIN_BUILD
 const build = 'build';
 // public path for resources, must match the request used in flow to get the /build/stats.json file
@@ -81,7 +82,7 @@ module.exports = {
   mode: 'production',
   context: frontendFolder,
   entry: {
-    bundle: useClientSideIndexFileForBootstrapping ? './index' : fileNameOfTheFlowGeneratedMainEntryPoint
+    bundle: useClientSideIndexFileForBootstrapping ? clientSideIndexEntryPoint : fileNameOfTheFlowGeneratedMainEntryPoint
   },
 
   output: {
@@ -194,7 +195,7 @@ module.exports = {
 
     // Includes JS output bundles into "index.html"
     useClientSideIndexFileForBootstrapping && new HtmlWebpackPlugin({
-      template: './index.html'
+      template: clientSideIndexHTML
     }),
   ].filter(Boolean)
 };

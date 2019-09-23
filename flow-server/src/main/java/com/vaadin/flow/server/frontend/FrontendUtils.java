@@ -122,6 +122,16 @@ public class FrontendUtils {
     public static final String INDEX_HTML = "index.html";
 
     /**
+     * File name of the index.ts in clientSideMode.
+     */
+    public static final String INDEX_TS = "index.ts";
+
+    /**
+     * File name of the index.js in clientSideMode.
+     */
+    public static final String INDEX_JS = "index.js";
+
+    /**
      * A parameter for overriding the
      * {@link FrontendUtils#DEFAULT_GENERATED_DIR} folder.
      */
