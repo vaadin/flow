@@ -15,17 +15,17 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -146,14 +146,12 @@ public class FrontendToolsLocator implements Serializable {
                     commandString, exitCode);
             return Optional.empty();
         }
-
         List<String> stdout = new ArrayList<>();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                process.getInputStream(), StandardCharsets.UTF_8))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                stdout.add(line);
-            }
+        try {
+        String stream = IOUtils.toString(process.getInputStream(), StandardCharsets.UTF_8);
+        if(!stream.isEmpty()) {
+            Stream.of(stream.split("\\R")).forEach(stdout::add);
+        }
         } catch (IOException e) {
             log().error("Failed to read the command '{}' stdout", commandString,
                     e);
@@ -161,11 +159,10 @@ public class FrontendToolsLocator implements Serializable {
         }
 
         List<String> stderr = new ArrayList<>();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                process.getErrorStream(), StandardCharsets.UTF_8))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                stdout.add(line);
+        try {
+            String stream = IOUtils.toString(process.getErrorStream(), StandardCharsets.UTF_8);
+            if(!stream.isEmpty()) {
+                Stream.of(stream.split("\\R")).forEach(stderr::add);
             }
         } catch (IOException e) {
             log().error("Failed to read the command '{}' stderr", commandString,
