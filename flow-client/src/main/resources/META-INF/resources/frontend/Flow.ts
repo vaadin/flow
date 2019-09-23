@@ -214,7 +214,7 @@ export class Flow {
     return new Promise((resolve, reject) => {
       const httpRequest = new (window as any).XMLHttpRequest();
       httpRequest.open('GET', 'VAADIN/?v-r=init' +
-        (serverSideRouting ? '&location=' + this.getFlowRoute(location) : ''));
+        (serverSideRouting ? `&location=${encodeURI(this.getFlowRoute(location))}` : ''));
       httpRequest.onload = () => {
         if (httpRequest.getResponseHeader('content-type') === 'application/json') {
           resolve(JSON.parse(httpRequest.responseText));

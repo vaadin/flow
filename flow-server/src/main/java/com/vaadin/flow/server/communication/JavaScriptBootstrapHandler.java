@@ -143,6 +143,7 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
             try {
                 route = URLDecoder.decode(route, "UTF-8").replaceFirst("^/+", "");
             } catch (UnsupportedEncodingException e) {
+                throw new IllegalArgumentException(e);
             }
             Location location = new Location(route);
             ui.getRouter().initializeUI(ui, location);
