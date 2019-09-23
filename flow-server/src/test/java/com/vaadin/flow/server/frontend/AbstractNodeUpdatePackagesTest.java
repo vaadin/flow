@@ -45,7 +45,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DI
 import static elemental.json.impl.JsonUtil.stringify;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
+public abstract class AbstractNodeUpdatePackagesTest
+        extends NodeUpdateTestUtil {
 
     private static final String DEPENDENCIES = "dependencies";
 
@@ -79,9 +80,7 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
         ClassFinder classFinder = getClassFinder();
         packageUpdater = new TaskUpdatePackages(classFinder,
-                new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
-                        .createScanner(false, classFinder, true),
-                baseDir, generatedDir, false);
+                getScanner(classFinder), baseDir, generatedDir, false);
         mainPackageJson = new File(baseDir, PACKAGE_JSON);
         appPackageJson = new File(generatedDir, PACKAGE_JSON);
 
@@ -94,6 +93,9 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
         flowDepsPackageJson = new File(flowDeps, PACKAGE_JSON);
     }
+
+    protected abstract FrontendDependenciesScanner getScanner(
+            ClassFinder finder);
 
     @Test
     public void should_CreatePackageJson() throws Exception {
