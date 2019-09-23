@@ -87,7 +87,7 @@ public class JavaScriptBootstrapHandlerTest {
         Assert.assertTrue(json.getObject("appConfig").hasKey("appId"));
         Assert.assertTrue(json.getObject("appConfig").getObject("uidl").hasKey("changes"));
         Assert.assertTrue(json.getObject("appConfig").getBoolean("debug"));
-        Assert.assertTrue(json.getObject("appConfig").getBoolean("webComponentMode"));
+        Assert.assertFalse(json.getObject("appConfig").hasKey("webComponentMode"));
 
         Assert.assertEquals("./", json.getObject("appConfig").getString("contextRootUrl"));
         Assert.assertEquals("//localhost:8888/foo/", json.getObject("appConfig").getString("serviceUrl"));
@@ -107,9 +107,8 @@ public class JavaScriptBootstrapHandlerTest {
         Assert.assertEquals(JavaScriptBootstrapUI.class, UI.getCurrent().getClass());
     }
 
-
     @Test
-    public void should_attachViewToUI() throws Exception {
+    public void should_attachViewTo_UiContainer() throws Exception {
         VaadinRequest request = mocks.createRequest(mocks, "/foo/?v-r=init&foo");
         jsInitHandler.handleRequest(session, request, response);
 
@@ -124,6 +123,26 @@ public class JavaScriptBootstrapHandlerTest {
         Assert.assertTrue(hasNodeTag(visitor, "^<div>.*", ElementType.REGULAR));
         Assert.assertTrue(
                 hasNodeTag(visitor, "^<div>.*Could not navigate to 'a-route'.*",
+                        ElementType.REGULAR));
+
+    }
+
+    @Test
+    public void should_attachViewTo_Body_when_location() throws Exception {
+
+        VaadinRequest request = mocks.createRequest(mocks, "/foo/?v-r=init&location=%2Fbar%3Fpar1%26par2");
+
+        jsInitHandler.handleRequest(session, request, response);
+
+        JavaScriptBootstrapUI ui = (JavaScriptBootstrapUI) UI.getCurrent();
+
+        TestNodeVisitor visitor = new TestNodeVisitor(true);
+        BasicElementStateProvider.get().visit(ui.getElement().getNode(), visitor);
+
+        Assert.assertTrue(hasNodeTag(visitor, "^<body>.*", ElementType.REGULAR));
+        Assert.assertTrue(hasNodeTag(visitor, "^<div>.*", ElementType.REGULAR));
+        Assert.assertTrue(
+                hasNodeTag(visitor, "^<div>.*Could not navigate to 'bar'.*",
                         ElementType.REGULAR));
 
     }

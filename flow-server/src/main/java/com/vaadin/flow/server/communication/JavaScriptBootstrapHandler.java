@@ -17,9 +17,11 @@
 package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -28,6 +30,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.UsageStatistics;
+import com.vaadin.flow.router.Location;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.ServletHelper;
@@ -123,9 +126,6 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
 
         config.put(ApplicationConstants.SERVICE_URL, serviceUrl);
 
-        // Do not listen to pushState and routerLink events.
-        config.put(ApplicationConstants.APP_WC_MODE, true);
-
         // TODO(manolo) this comment is left intentionally because we
         // need to revise whether the info passed to client is valid
         // when initialising push. Right now ccdm is not doing
@@ -138,8 +138,16 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
 
     @Override
     protected void initializeUIWithRouter(VaadinRequest request, UI ui) {
-        // We don't need to initialize UI with Router in CCDM.
-        // Showing view is handled by client-side.
+        String route = request.getParameter(ApplicationConstants.REQUEST_LOCATION_PARAMETER);
+        if (route != null) {
+            try {
+                route = URLDecoder.decode(route, "UTF-8").replaceFirst("^/+", "");
+            } catch (UnsupportedEncodingException e) {
+                throw new IllegalArgumentException(e);
+            }
+            Location location = new Location(route);
+            ui.getRouter().initializeUI(ui, location);
+        }
     }
 
     @Override

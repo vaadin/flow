@@ -13,8 +13,10 @@ import com.vaadin.flow.router.BeforeLeaveEvent;
 import com.vaadin.flow.router.BeforeLeaveObserver;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
+import com.vaadin.flow.server.VaadinRequest;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class JavaScriptBootstrapUITest  {
@@ -116,5 +118,14 @@ public class JavaScriptBootstrapUITest  {
         ui.connectClient("foo", "bar", "/err");
         assertEquals(Tag.DIV, ui.wrapperElement.getChild(0).getTag());
         assertTrue(ui.wrapperElement.toString().contains("Available routes:"));
+    }
+
+    @Test
+    public void should_initializeUI_when_wrapperElement_null() {
+        VaadinRequest request = mocks.createRequest(mocks, "/foo");
+        ui.getRouter().initializeUI(ui, request);
+        assertNull(ui.wrapperElement);
+        // attached to body
+        assertTrue(ui.getElement().toString().contains("Available routes:"));
     }
 }

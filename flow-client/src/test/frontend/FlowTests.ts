@@ -9,7 +9,60 @@ import "../../main/resources/META-INF/resources/frontend/FlowBootstrap";
 import "../../main/resources/META-INF/resources/frontend/FlowClient";
 // Mock XMLHttpRequest so as we don't need flow-server running for tests.
 import mock from 'xhr-mock';
-const flowRoot = (window.document.body as any);
+
+const $wnd = window as any;
+const flowRoot = window.document.body as any;
+
+// A `changes` array that adds a div with 'Foo' text to body
+const changesResponse = `[
+  {
+    "node":1,
+    "type":"put",
+    "key":"tag",
+    "feat":0,
+    "value":"body"
+  },
+  {
+    "node":1,
+    "type":"splice",
+    "feat":2,
+    "index":0,
+    "addNodes":[
+      2
+    ]
+  },
+  {
+    "node":2,
+    "type":"attach"
+  },
+  {
+    "node":2,
+    "type":"put",
+    "key":"tag",
+    "feat":0,
+    "value":"div"
+  },
+  {
+    "node":2,
+    "type":"splice",
+    "feat":2,
+    "index":0,
+    "addNodes":[
+      3
+    ]
+  },
+  {
+    "node":3,
+    "type":"attach"
+  },
+  {
+    "node":3,
+    "type":"put",
+    "key":"text",
+    "feat":7,
+    "value":"Foo"
+  }
+]`;
 
 suite("Flow", () => {
 
@@ -29,28 +82,45 @@ suite("Flow", () => {
     assert.isDefined(flow.config.imports);
   });
 
-  test("should initialize Flow client when calling start()", () => {
-    const $wnd = window as any;
+  test("should initialize Flow server navigation when calling start()", () => {
     assert.isUndefined($wnd.Vaadin);
 
-    mockInitResponse('FooBar-12345');
-    return new Flow()
+    stubServerRemoteFunction('FooBar-12345');
+    mockInitResponse('FooBar-12345', changesResponse);
+
+    const flow = new Flow();
+    return flow
       .start()
-      .then(response => {
-        assert.isDefined(response);
-        assert.isDefined(response.appConfig);
+      .then(() => {
+        assert.isDefined(flow.response);
+        assert.isDefined(flow.response.appConfig);
+
+        // Check that serverside routing is enabled
+        assert.isFalse(flow.response.appConfig.webComponentMode);
+
         // Check that bootstrap was initialized
         assert.isDefined($wnd.Vaadin.Flow.initApplication);
         assert.isDefined($wnd.Vaadin.Flow.registerWidgetset);
         // Check that flowClient was initialized
         assert.isDefined($wnd.Vaadin.Flow.resolveUri);
         assert.isFalse($wnd.Vaadin.Flow.clients.FooBar.isActive());
+
+        // Check that bootstrap was initialized
+        assert.isDefined($wnd.Vaadin.Flow.initApplication);
+        assert.isDefined($wnd.Vaadin.Flow.registerWidgetset);
+
+        // Check that flowClient was initialized
+        assert.isDefined($wnd.Vaadin.Flow.resolveUri);
+        assert.isFalse($wnd.Vaadin.Flow.clients.FooBar.isActive());
+
+        // Check server added a div content with `Foo` text
+        assert.equal("Foo", document.body.lastElementChild.textContent);
       });
   });
 
   test("should throw when an incorrect server response is received", () => {
     // Configure an invalid server response
-    mock.get('VAADIN/?v-r=init', (req, res) => {
+    mock.get(/^VAADIN\/\?v-r=init&location=.+/, (req, res) => {
       assert.equal('GET', req.method());
       return res
         .status(500)
@@ -71,11 +141,19 @@ suite("Flow", () => {
     stubServerRemoteFunction('foobar-1111111');
     mockInitResponse('foobar-1111111');
 
-    return new Flow()
+    const flow = new Flow();
+    return flow
       .navigate({pathname: "Foo/Bar.baz"})
       .then(() => {
         // Check that flowInit() was called
-        assert.isDefined((window as any).Vaadin.Flow.resolveUri);
+        assert.isDefined(flow.response);
+        assert.isDefined(flow.response.appConfig);
+        // Check that bootstrap was initialized
+        assert.isDefined($wnd.Vaadin.Flow.initApplication);
+        assert.isDefined($wnd.Vaadin.Flow.registerWidgetset);
+        // Check that flowClient was initialized
+        assert.isDefined($wnd.Vaadin.Flow.resolveUri);
+        assert.isFalse($wnd.Vaadin.Flow.clients.foobar.isActive());
 
         // Assert that element was created amd put in flowRoot so as server can find it
         assert.isDefined(flowRoot.$);
@@ -141,7 +219,7 @@ suite("Flow", () => {
       .then(async(elem) => {
 
         // Check that flowInit() was called
-        assert.isDefined((window as any).Vaadin.Flow.resolveUri);
+        assert.isDefined($wnd.Vaadin.Flow.resolveUri);
         // Assert that flowRoot namespace was created
         assert.isDefined(flowRoot.$);
         // Assert that container was created and put in the flowRoot
@@ -172,7 +250,7 @@ suite("Flow", () => {
       .then((elem) => {
 
         // Check that flowInit() was called
-        assert.isDefined((window as any).Vaadin.Flow.resolveUri);
+        assert.isDefined($wnd.Vaadin.Flow.resolveUri);
         // Assert that flowRoot namespace was created
         assert.isDefined(flowRoot.$);
         // Assert that container was created and put in the flowRoot
@@ -283,9 +361,9 @@ function stubServerRemoteFunction(id: string, cancel: boolean = false) {
   };
 }
 
-function mockInitResponse(appId: string) {
+function mockInitResponse(appId: string, changes = '[]') {
   // Configure a valid server initialization response
-  mock.get('VAADIN/?v-r=init', (req, res) => {
+  mock.get(/^VAADIN\/\?v-r=init.*/, (req, res) => {
     assert.equal('GET', req.method());
     return res
       .status(200)
@@ -304,10 +382,10 @@ function mockInitResponse(appId: string) {
           "uidl": {
             "syncId": 0,
             "clientId": 0,
-            "changes": [],
             "timings": [],
             "Vaadin-Security-Key": "119a6005-e663-4a4c-a882-bbfa8bd0c304",
-            "Vaadin-Push-ID": "4b915ffb-4e0a-484c-9995-09500fe9fa3a"
+            "Vaadin-Push-ID": "4b915ffb-4e0a-484c-9995-09500fe9fa3a",
+            "changes": ${changes}
           }
         }
       }
