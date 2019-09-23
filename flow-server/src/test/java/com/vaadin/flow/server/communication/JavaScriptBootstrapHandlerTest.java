@@ -35,7 +35,6 @@ import com.vaadin.flow.server.VaadinSession;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-import static com.vaadin.flow.shared.ApplicationConstants.*;
 
 @NotThreadSafe
 public class JavaScriptBootstrapHandlerTest {

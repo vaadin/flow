@@ -49,7 +49,7 @@ public class JavaScriptBootstrapUI extends UI {
     private static final String NO_NAVIGATION = "Classic flow navigation is " +
             "not supported for client-side projects";
 
-    public Element wrapperElement;
+    Element wrapperElement;
     private NavigationState clientViewNavigationState;
 
     /**
@@ -217,8 +217,7 @@ public class JavaScriptBootstrapUI extends UI {
             Element wrapperElement = jsUI.wrapperElement;
             // server-side routing
             if (wrapperElement == null) {
-                ui.getElement().removeAllChildren();
-                ui.getElement().appendChild(newRoot.getElement());
+                UIInternalUpdater.super.updateRoot(ui, oldRoot, newRoot);
                 return;
             }
 
