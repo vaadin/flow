@@ -21,7 +21,7 @@ import java.io.Serializable;
  * A generic command which may fail.
  *
  * @author Vaadin Ltd
- *
+ * @since 2.0
  */
 public interface FallibleCommand extends Serializable {
 

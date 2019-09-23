@@ -22,9 +22,9 @@ import java.io.Serializable;
  * the uI has changed.
  *
  * @author Vaadin Ltd
+ * @since 1.2
  *
  * @see Page#addBrowserWindowResizeListener(BrowserWindowResizeListener)
- *
  */
 @FunctionalInterface
 public interface BrowserWindowResizeListener extends Serializable {

@@ -46,6 +46,8 @@ import elemental.json.JsonValue;
  * Updates <code>package.json</code> by visiting {@link NpmPackage} annotations
  * found in the classpath. It also visits classes annotated with
  * {@link NpmPackage}
+ *
+ * @since 2.0
  */
 public class TaskUpdatePackages extends NodeUpdater {
 

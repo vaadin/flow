@@ -25,6 +25,8 @@ import com.vaadin.flow.component.Component;
  * Data collection of information for a specific registered route target.
  * <p>
  * Only for read as data is immutable.
+ *
+ * @since 1.0
  */
 public class RouteData extends RouteBaseData<RouteData> {
     private final List<RouteAliasData> routeAliases;

@@ -47,9 +47,10 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * parent components or implemented interfaces are read when sending the
  * dependencies to the browser.
  *
- * @see CssImport
- *
  * @author Vaadin Ltd
+ * @since 2.0
+ *
+ * @see CssImport
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

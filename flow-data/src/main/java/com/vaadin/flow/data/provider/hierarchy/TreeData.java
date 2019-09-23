@@ -35,6 +35,7 @@ import com.vaadin.flow.function.ValueProvider;
  * Typically used as a backing data source for {@link TreeDataProvider}.
  *
  * @author Vaadin Ltd
+ * @since 1.2
  *
  * @param <T>
  *            data type

@@ -21,9 +21,9 @@ import java.util.EventObject;
  * Event that is fired when a browser window containing a uI is resized.
  *
  * @author Vaadin Ltd
+ * @since 1.2
  *
  * @see BrowserWindowResizeListener
- *
  */
 public class BrowserWindowResizeEvent extends EventObject {
 

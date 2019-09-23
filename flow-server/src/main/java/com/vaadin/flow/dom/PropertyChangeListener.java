@@ -25,6 +25,7 @@ import com.vaadin.flow.shared.Registration;
  *
  * @see PropertyChangeEvent
  * @see Registration
+ * @since 1.0
  */
 @FunctionalInterface
 public interface PropertyChangeListener extends Serializable {

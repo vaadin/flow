@@ -18,6 +18,8 @@ package com.vaadin.flow.server;
 /**
  * Exception indicating that the application's I18N localization has been
  * configured incorrectly.
+ *
+ * @since 1.0
  */
 public class InvalidI18NConfigurationException extends RuntimeException {
 

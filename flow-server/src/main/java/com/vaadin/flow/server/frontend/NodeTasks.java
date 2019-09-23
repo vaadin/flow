@@ -37,6 +37,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
 /**
  * An executor that it's run when the servlet context is initialised in dev-mode
  * or when flow-maven-plugin goals are run. It can chain a set of task to run.
+ *
+ * @since 2.0
  */
 public class NodeTasks implements FallibleCommand {
 

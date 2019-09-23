@@ -21,6 +21,8 @@ import java.io.File;
 /**
  * Yarn configuration needed for its running. It specifies where node and yarn
  * are installed and where is the working directory.
+ *
+ * @since 1.2
  */
 public class YarnConfigurationLocal implements YarnExecutorConfig {
 

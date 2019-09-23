@@ -88,6 +88,7 @@ import com.vaadin.flow.theme.ThemeUtil;
  *
  * @see #init(VaadinRequest)
  *
+ * @since 1.0
  */
 public class UI extends Component
         implements PollNotifier, HasComponents, RouterLayout {

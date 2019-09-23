@@ -54,6 +54,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
  * This goal checks that node and npm tools are installed, copies frontend
  * resources available inside `.jar` dependencies to `node_modules`, and creates
  * or updates `package.json` and `webpack.config.json` files.
+ *
+ * @since 2.0
  */
 @Mojo(name = "prepare-frontend", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PROCESS_RESOURCES)
 public class PrepareFrontendMojo extends FlowModeAbstractMojo {

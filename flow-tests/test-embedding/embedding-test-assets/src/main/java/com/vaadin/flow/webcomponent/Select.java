@@ -25,6 +25,8 @@ import com.vaadin.flow.dom.Element;
 
 /**
  * Component representing a <code>&lt;select&gt;</code> element.
+ *
+ * @since 2.0
  */
 @Tag(Tag.SELECT)
 public class Select extends AbstractSinglePropertyField<Select, String> {

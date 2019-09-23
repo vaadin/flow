@@ -34,6 +34,8 @@ import com.vaadin.flow.router.internal.RouteUtil;
 
 /**
  * Utility class for getting default theme and navigation target theme.
+ *
+ * @since 1.3
  */
 public final class ThemeUtil {
 

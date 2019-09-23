@@ -75,6 +75,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
 /**
  * Servlet initializer starting node updaters as well as the webpack-dev-mode
  * server.
+ *
+ * @since 2.0
  */
 @HandlesTypes({ Route.class, NpmPackage.class, NpmPackage.Container.class,
         WebComponentExporter.class, UIInitListener.class,
