@@ -61,7 +61,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
+public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -100,9 +100,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         importsFile = new File(generatedPath, IMPORTS_NAME);
 
         ClassFinder classFinder = getClassFinder();
-        updater = new TaskUpdateImports(classFinder,
-                new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
-                        .createScanner(false, classFinder, true),
+        updater = new TaskUpdateImports(classFinder, getScanner(classFinder),
                 tmpRoot, generatedPath, frontendDirectory) {
             @Override
             Logger log() {
@@ -126,6 +124,9 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         System.clearProperty(SimpleLogger.LOG_FILE_KEY);
         initLogger();
     }
+
+    protected abstract FrontendDependenciesScanner getScanner(
+            ClassFinder finder);
 
     private void initLogger() throws Exception, SecurityException {
         // init method is protected

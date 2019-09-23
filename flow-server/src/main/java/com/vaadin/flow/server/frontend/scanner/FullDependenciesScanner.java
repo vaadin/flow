@@ -55,7 +55,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     private AbstractTheme themeInstance;
     private Set<String> classes = new HashSet<>();
     private Map<String, String> packages;
-    private Set<String> scripts = new HashSet<>();
+    private Set<String> scripts = new LinkedHashSet<>();
     private Set<CssData> cssData;
     private List<String> modules;
 
@@ -139,11 +139,19 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
 
     private CssData createCssData(Annotation cssImport) {
         CssData data = new CssData();
-        data.id = invokeAnnotationMethodAsString(cssImport, "id");
-        data.include = invokeAnnotationMethodAsString(cssImport, "include");
-        data.themefor = invokeAnnotationMethodAsString(cssImport, "themefor");
-        data.value = invokeAnnotationMethodAsString(cssImport, "value");
+        data.id = adaptCssValue(cssImport, "id");
+        data.include = adaptCssValue(cssImport, "include");
+        data.themefor = adaptCssValue(cssImport, "themeFor");
+        data.value = adaptCssValue(cssImport, "value");
         return data;
+    }
+
+    private String adaptCssValue(Annotation cssImport, String method) {
+        String value = invokeAnnotationMethodAsString(cssImport, method);
+        if (value == null) {
+            return value;
+        }
+        return value.isEmpty() ? null : value;
     }
 
     private Map<String, String> discoverPackages() {
@@ -231,7 +239,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     private void setupTheme(Class<? extends AbstractTheme> theme,
             String variant) {
         if (theme != null) {
-            themeDefinition = new ThemeDefinition(theme, "");
+            themeDefinition = new ThemeDefinition(theme, variant);
             try {
                 themeInstance = new ThemeWrapper(theme);
             } catch (InstantiationException | IllegalAccessException e) {
@@ -255,7 +263,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                     .map(theme -> new ThemeData(
                             ((Class<?>) invokeAnnotationMethod(theme, "value"))
                                     .getName(),
-                            invokeAnnotationMethodAsString(theme, "value")))
+                            invokeAnnotationMethodAsString(theme, "variant")))
                     .collect(Collectors.toSet());
 
             Class<? extends Annotation> loadedNoThemeAnnotation = finder
