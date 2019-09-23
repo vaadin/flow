@@ -47,6 +47,7 @@ import com.vaadin.flow.theme.Theme;
 
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
+
 import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFinder;
 import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.GENERATED_TOKEN;
@@ -126,6 +127,13 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
             + Constants.LOCAL_FRONTEND_RESOURCES_PATH)
     protected File frontendResourcesDirectory;
 
+    /**
+     * Whether to use byte code scanner strategy to discover frontend
+     * components.
+     */
+    @Parameter(defaultValue = "true")
+    private boolean useByteCodeScanner;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         super.execute();
@@ -168,7 +176,9 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
 
         new NodeTasks.Builder(getClassFinder(project), npmFolder,
                 generatedFolder, frontendDirectory).runNpmInstall(runNpmInstall)
-                        .enablePackagesUpdate(true).copyResources(jarFiles)
+                        .enablePackagesUpdate(true)
+                        .useByteCodeScanner(useByteCodeScanner)
+                        .copyResources(jarFiles)
                         .copyLocalResources(frontendResourcesDirectory)
                         .enableImportsUpdate(true)
                         .withEmbeddableWebComponents(
@@ -264,9 +274,8 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
     boolean isDefaultCompatibility() {
         File tokenFile = getTokenFile();
         if (!tokenFile.exists()) {
-            getLog().warn(
-                    "'build-frontend' goal was called without previously " +
-                            "calling 'prepare-frontend'");
+            getLog().warn("'build-frontend' goal was called without previously "
+                    + "calling 'prepare-frontend'");
             return true;
         }
         try {

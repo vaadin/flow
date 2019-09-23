@@ -75,6 +75,8 @@ public class NodeTasks implements FallibleCommand {
 
         private Set<String> visitedClasses = null;
 
+        private boolean useByteCodeScanner;
+
         /**
          * Directory for for npm and folders and files.
          */
@@ -295,6 +297,21 @@ public class NodeTasks implements FallibleCommand {
             this.frontendResourcesDirectory = frontendResourcesDirectory;
             return this;
         }
+
+        /**
+         * Sets frontend scanner strategy: byte code scanning strategy is used
+         * if {@code byteCodeScanner} is {@code true}, full classpath scanner
+         * strategy is used otherwise (by default).
+         *
+         * @param byteCodeScanner
+         *            if {@code true} then byte code scanner is used, full
+         *            scanner is used otherwise (by default).
+         * @return the builder, for chaining
+         */
+        public Builder useByteCodeScanner(boolean byteCodeScanner) {
+            this.useByteCodeScanner = byteCodeScanner;
+            return this;
+        }
     }
 
     private final Collection<FallibleCommand> commands = new ArrayList<>();
@@ -315,7 +332,7 @@ public class NodeTasks implements FallibleCommand {
             }
 
             frontendDependencies = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
-                    .createScanner(true, classFinder,
+                    .createScanner(builder.useByteCodeScanner, classFinder,
                             builder.generateEmbeddableWebComponents);
         }
 

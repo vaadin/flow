@@ -110,10 +110,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     protected NodeUpdater(ClassFinder finder,
             FrontendDependenciesScanner frontendDependencies, File npmFolder,
             File generatedPath) {
-        this.frontDeps = finder != null && frontendDependencies == null
-                ? new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
-                        .createScanner(true, finder, true)
-                : frontendDependencies;
+        this.frontDeps = frontendDependencies;
         this.finder = finder;
         this.npmFolder = npmFolder;
         this.nodeModulesFolder = new File(npmFolder, NODE_MODULES);
