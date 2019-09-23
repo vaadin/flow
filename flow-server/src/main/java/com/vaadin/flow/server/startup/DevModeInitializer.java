@@ -303,7 +303,8 @@ public class DevModeInitializer implements ServletContainerInitializer,
         Set<File> frontendLocations = getFrontendLocationsFromClassloader(
                 DevModeInitializer.class.getClassLoader());
         try {
-            builder.enablePackagesUpdate(true).copyResources(frontendLocations)
+            builder.enablePackagesUpdate(true).useByteCodeScanner(false)
+                    .copyResources(frontendLocations)
                     .copyLocalResources(new File(baseDir,
                             Constants.LOCAL_FRONTEND_RESOURCES_PATH))
                     .enableImportsUpdate(true).runNpmInstall(true)
