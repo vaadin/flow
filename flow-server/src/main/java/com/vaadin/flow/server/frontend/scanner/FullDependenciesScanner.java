@@ -300,12 +300,13 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
 
     private void handleModule(Class<?> clazz, String module,
             Set<String> modules, Map<String, List<String>> themeModules) {
-        classes.add(clazz.getName());
+
         if (abstractTheme.isAssignableFrom(clazz)) {
             List<String> themingModules = themeModules
                     .computeIfAbsent(clazz.getName(), cl -> new ArrayList<>());
             themingModules.add(module);
         } else {
+            classes.add(clazz.getName());
             modules.add(module);
         }
     }
@@ -317,6 +318,9 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                         : getThemeDefinition().getTheme().getName());
         if (themingModules == null) {
             return new ArrayList<>(modules);
+        }
+        if (getThemeDefinition() != null) {
+            classes.add(getThemeDefinition().getTheme().getName());
         }
         // get rid of duplicate but preserve the order
         LinkedHashSet<String> result = new LinkedHashSet<>(themingModules);
