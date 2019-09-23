@@ -40,6 +40,7 @@ import elemental.json.JsonValue;
  * to the client.
  *
  * @author Vaadin Ltd.
+ * @since 2.0
  */
 public class WebComponentGenerator {
     private static final String TOKEN_DEFAULT_VALUE = "_DefaultValue_";

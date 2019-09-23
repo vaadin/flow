@@ -100,6 +100,7 @@ import elemental.json.JsonObject;
  *
  * @see #generateClass(ComponentMetadata, String, String)
  * @see #generateClass(File, File, String, String)
+ * @since 1.0
  */
 public class ComponentGenerator {
     private static final String JAVADOC_THROWS = "@throws";

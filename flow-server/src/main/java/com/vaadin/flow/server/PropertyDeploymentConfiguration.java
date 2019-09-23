@@ -34,6 +34,8 @@ import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
 /**
  * The property handling implementation of {@link DeploymentConfiguration} based
  * on a base class for resolving system properties and a set of init parameters.
+ *
+ * @since 1.2
  */
 public class PropertyDeploymentConfiguration
         extends AbstractDeploymentConfiguration {

@@ -33,6 +33,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 
 /**
  * Copies JavaScript and CSS files from JAR files into a given folder.
+ *
+ * @since 2.0
  */
 public class TaskCopyFrontendFiles implements FallibleCommand {
     private static final String[] WILDCARD_INCLUSIONS = new String[] {

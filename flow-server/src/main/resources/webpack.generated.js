@@ -39,6 +39,48 @@ mkdirp(confFolder);
 const devMode = process.argv.find(v => v.indexOf('webpack-dev-server') >= 0);
 let stats;
 
+const watchDogPrefix = '--watchDogPort=';
+let watchDogPort = process.argv.find(v => v.indexOf(watchDogPrefix) >= 0);
+if (watchDogPort){
+    watchDogPort = watchDogPort.substr(watchDogPrefix.length);
+}
+
+const net = require('net');
+
+function setupWatchDog(firstRun){
+    var client = new net.Socket();
+    client.connect(watchDogPort, 'localhost', function() {
+        if (firstRun){
+            console.debug('Watchdog connected.');
+        } else {
+            console.log('Watchdog connected.');
+        }
+    });
+
+    client.on('error', function(){
+        console.error("Watchdog connection error. Terminating webpack process...");
+        client.destroy();
+        process.exit(0);
+    });
+
+    client.on('close', function() {
+        client.destroy();
+        if (firstRun){
+            console.debug('Watchdog connection closed. Trying to re-run watchdog.');
+            setupWatchDog(false);
+        }
+        else {
+            console.log('Watchdog connection closed. Terminating webpack process...');
+            process.exit(0);
+        }
+    });  
+}
+
+if (watchDogPort){
+    setupWatchDog(true);
+}
+
+
 exports = {
   frontendFolder: `${frontendFolder}`,
   buildFolder: `${buildFolder}`,

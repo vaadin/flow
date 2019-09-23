@@ -21,7 +21,7 @@ import java.io.Serializable;
  * Generic class representing an immutable pair of values.
  *
  * @author Vaadin Ltd
- *
+ * @since 1.0
  */
 public class Pair<U extends Serializable, V extends Serializable>
         implements Serializable {

@@ -27,6 +27,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAM
 
 /**
  * Run <code>npm install</code> after dependencies have been updated.
+ *
+ * @since 2.0
  */
 public class TaskRunNpmInstall implements FallibleCommand {
 

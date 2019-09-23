@@ -40,7 +40,7 @@ import com.vaadin.flow.server.scanner.ReflectionsClassFinder;
  * arguments.
  *
  * @author Vaadin Ltd
- *
+ * @since 2.0
  */
 public class MigrationTool {
 

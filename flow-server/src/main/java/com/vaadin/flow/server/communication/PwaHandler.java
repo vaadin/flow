@@ -45,6 +45,8 @@ import com.vaadin.flow.server.VaadinSession;
  * <li>offline fallback page
  * <li>icons
  * </ul>
+ *
+ * @since 1.2
  */
 public class PwaHandler implements RequestHandler {
     private final Map<String, RequestHandler> requestHandlerMap = new HashMap<>();

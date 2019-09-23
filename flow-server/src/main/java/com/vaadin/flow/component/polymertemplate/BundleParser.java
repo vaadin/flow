@@ -38,6 +38,8 @@ import static elemental.json.JsonType.STRING;
  * Parse statistics data provided by webpack.
  *
  * @author Vaadin Ltd
+ * @since 2.0
+ *
  * @see NpmTemplateParser
  */
 public final class BundleParser {

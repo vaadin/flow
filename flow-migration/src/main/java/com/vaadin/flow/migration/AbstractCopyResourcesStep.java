@@ -41,7 +41,7 @@ import org.slf4j.LoggerFactory;
  * Depending on provided parameter the content of copied file may be modified.
  *
  * @author Vaadin Ltd
- *
+ * @since 2.0
  */
 public abstract class AbstractCopyResourcesStep {
     protected static final String BOWER_COMPONENTS = "bower_components";

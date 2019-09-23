@@ -36,6 +36,7 @@ import com.vaadin.flow.component.Component;
  * file, making sure that only one dependency is created.
  *
  * @author Vaadin Ltd
+ * @since 2.0
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

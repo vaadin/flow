@@ -36,6 +36,7 @@ import com.vaadin.flow.theme.Theme;
  * The validation is run during servlet container initialization.
  *
  * @author Vaadin Ltd.
+ * @since 2.0
  */
 @HandlesTypes({Theme.class, Push.class})
 public class WebComponentExporterAwareValidator extends

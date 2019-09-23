@@ -24,6 +24,8 @@ import com.vaadin.flow.dom.Element;
 /**
  * Emulates the <code>class</code> attribute by delegating to
  * {@link Element#getClassList()}.
+ *
+ * @since 1.0
  */
 public class ClassAttributeHandler extends CustomAttribute {
     @Override

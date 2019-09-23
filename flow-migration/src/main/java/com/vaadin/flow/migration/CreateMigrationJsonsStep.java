@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
  * Step which creates {@code bower.json} and {@code package.json} files.
  *
  * @author Vaadin Ltd
- *
+ * @since 2.0
  */
 public class CreateMigrationJsonsStep {
 

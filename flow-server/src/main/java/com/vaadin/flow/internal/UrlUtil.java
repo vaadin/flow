@@ -22,6 +22,7 @@ import com.vaadin.flow.shared.ApplicationConstants;
  * Internal utility class for URL handling.
  *
  * @author Vaadin Ltd
+ * @since 2.0
  */
 public class UrlUtil {
 

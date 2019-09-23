@@ -26,6 +26,8 @@ import com.vaadin.flow.router.Route;
  * Wrapper view for the {@link FrontendProtocolTemplate} component. This class
  * is used by the FrontendProtocolIT to test the "frontend://" protocol in
  * multiple scenarios.
+ *
+ * @since 1.0
  */
 @Route(value = "com.vaadin.flow.uitest.ui.frontend.FrontendProtocolView", layout = ViewTestLayout.class)
 @Tag("div")

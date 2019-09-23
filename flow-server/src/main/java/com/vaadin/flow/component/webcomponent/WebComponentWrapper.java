@@ -34,6 +34,7 @@ import elemental.json.JsonValue;
  * methods that the client-side components expect to be available.
  *
  * @author Vaadin Ltd.
+ * @since 2.0
  */
 public class WebComponentWrapper extends Component {
 

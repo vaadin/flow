@@ -36,6 +36,7 @@ package com.vaadin.flow.osgi.support;
  * <code>VaadinResourceTrackerComponent</code> automatically publish the
  * resource with the given name.
  *
+ * @since 1.2
  */
 public interface OsgiVaadinStaticResource {
     /**

@@ -55,7 +55,9 @@ import static org.junit.Assert.fail;
  * tries to serialize every single class (except ones from whitelist) in the
  * classpath. Subclasses may adjust the whitelist by overriding
  * {@link #getExcludedPatterns()}, {@link #getBasePackages()},
- * {@link #getJarPattern()}
+ * {@link  #getJarPattern()}
+ *
+ * @since 1.0
  */
 
 public abstract class ClassesSerializableTest {
@@ -134,6 +136,7 @@ public abstract class ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.server\\.VaadinResponse",
                 "com\\.vaadin\\.flow\\.component\\.Key",
                 "com\\.vaadin\\.flow\\.server\\.VaadinRequest",
+                "com\\.vaadin\\.flow\\.server\\.DevServerWatchDog(\\$.*)?",
                 "com\\.vaadin\\.flow\\.router\\.RouteNotFoundError\\$LazyInit",
                 "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.TemplateDataAnalyzer\\$.*",
                 // De-facto abstract class

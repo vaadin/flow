@@ -23,7 +23,7 @@ import com.vaadin.flow.osgi.support.OsgiVaadinStaticResource;
  * Connector resource registration.
  *
  * @author Vaadin Ltd
- *
+ * @since 2.0
  */
 @Component(immediate = true, service = OsgiVaadinStaticResource.class)
 public class DndConnectorResource implements OsgiVaadinStaticResource {

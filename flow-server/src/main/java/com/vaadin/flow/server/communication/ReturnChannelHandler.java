@@ -34,6 +34,7 @@ import elemental.json.JsonObject;
  * RPC handler for return channel messages.
  *
  * @author Vaadin Ltd
+ * @since 2.0
  */
 public class ReturnChannelHandler extends AbstractRpcInvocationHandler {
 
