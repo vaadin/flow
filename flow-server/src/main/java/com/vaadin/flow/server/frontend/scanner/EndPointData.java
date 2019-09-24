@@ -89,8 +89,8 @@ public final class EndPointData implements Serializable {
         return name;
     }
 
-    Set<CssData> getCss() {
-        return css.stream().collect(Collectors.toSet());
+    LinkedHashSet<CssData> getCss() {
+        return new LinkedHashSet<>(css);
     }
 
     private String col2Str(Collection<?> s) {

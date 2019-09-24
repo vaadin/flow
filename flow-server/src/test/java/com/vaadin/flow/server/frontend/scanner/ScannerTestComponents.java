@@ -281,6 +281,14 @@ public class ScannerTestComponents {
     public static class CssClass2 extends CssClass1 {
     }
 
+    @Route("css-route-3")
+    @CssImport("./foo.css")
+    @CssImport(value = "./bar.css")
+    @CssImport(value = "./foofoo.css")
+    @CssImport(value = "./foobar.css")
+    public static class CssClass3 {
+    }
+
     @JsModule("dynamic-component.js")
     public static class DynamicComponentClass extends Component {
     }
