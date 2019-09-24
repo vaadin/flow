@@ -22,6 +22,8 @@ import java.io.File;
  * Contains the configuration for running gulp {@link DefaultGulpRunnerLocal}.
  * It specifies where node and npm are installed and the installation and
  * working directory.
+ *
+ * @since 1.2
  */
 public class NodeExecutorConfigLocal implements NodeExecutorConfig {
 

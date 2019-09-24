@@ -19,6 +19,8 @@ package com.github.eirslett.maven.plugins.frontend.lib;
 /**
  * Gulp runner that uses an specific configuration(paths) of node, npm,
  * installation directory and working directory and platform.
+ *
+ * @since 1.2
  */
 public class DefaultGulpRunnerLocal {
     private DefaultGulpRunner defaultGulpRunner;

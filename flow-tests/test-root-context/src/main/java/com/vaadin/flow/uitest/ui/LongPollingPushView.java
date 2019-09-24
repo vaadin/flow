@@ -23,6 +23,8 @@ import com.vaadin.flow.shared.ui.Transport;
 
 /**
  * Test for reproducing the bug https://github.com/vaadin/flow/issues/4353
+ *
+ * @since 1.0
  */
 @Route("com.vaadin.flow.uitest.ui.LongPollingPushView")
 @Push(transport = Transport.LONG_POLLING)

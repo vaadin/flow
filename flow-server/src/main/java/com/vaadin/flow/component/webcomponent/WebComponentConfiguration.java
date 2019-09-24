@@ -38,6 +38,8 @@ import elemental.json.JsonObject;
  * @param <C>
  *            type of the component being exported
  * @author Vaadin Ltd.
+ * @since 2.0
+ *
  * @see com.vaadin.flow.component.WebComponentExporter.WebComponentConfigurationFactory
  *      for constructing new instances
  */

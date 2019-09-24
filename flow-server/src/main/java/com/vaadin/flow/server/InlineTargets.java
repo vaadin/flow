@@ -31,6 +31,8 @@ import elemental.json.JsonObject;
 /**
  * Data holder class for collected {@link Inline} annotations to be added to the
  * initial page.
+ *
+ * @since 1.0
  */
 public class InlineTargets {
 

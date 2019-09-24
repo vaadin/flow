@@ -56,6 +56,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS
  * and <code>node_module/@vaadin/flow-frontend</code> contents by visiting all
  * classes with {@link JsModule} {@link HtmlImport} and {@link Theme}
  * annotations.
+ *
+ * @since 2.0
  */
 public class TaskUpdateImports extends NodeUpdater {
 

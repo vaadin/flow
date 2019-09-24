@@ -17,7 +17,7 @@ package com.vaadin.flow.migration;
 
 /**
  * @author Vaadin Ltd
- *
+ * @since 2.0
  */
 public class MigrationFailureException extends Exception {
 

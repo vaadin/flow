@@ -25,6 +25,7 @@ import com.vaadin.flow.component.internal.KeyboardEvent;
  *
  * @param <E>
  *            the type of the {@link KeyboardEvent}
+ * @since 1.0
  */
 public class KeyEventListener<E extends KeyboardEvent>
         implements ComponentEventListener<E> {

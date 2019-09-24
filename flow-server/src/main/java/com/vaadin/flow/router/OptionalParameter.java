@@ -23,6 +23,8 @@ import java.lang.annotation.Target;
 
 /**
  * Marks a Navigation url parameter as optional.
+ *
+ * @since 1.0
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.PARAMETER)

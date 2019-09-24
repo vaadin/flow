@@ -34,6 +34,7 @@ import net.bytebuddy.jar.asm.Opcodes;
  * and extract all the properties of an specific annotation defined in the
  * constructor.
  *
+ * @since 2.0
  */
 final class FrontendAnnotatedClassVisitor extends ClassVisitor {
     private final String annotationName;

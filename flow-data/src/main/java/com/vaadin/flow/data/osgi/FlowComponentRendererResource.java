@@ -25,7 +25,7 @@ import com.vaadin.flow.osgi.support.OsgiVaadinStaticResource;
  * Flow component renderer resource registration.
  *
  * @author Vaadin Ltd
- *
+ * @since 1.2
  */
 @Component(immediate = true, service = OsgiVaadinStaticResource.class)
 public class FlowComponentRendererResource

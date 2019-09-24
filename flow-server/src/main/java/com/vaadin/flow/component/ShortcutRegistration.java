@@ -39,6 +39,7 @@ import com.vaadin.flow.shared.Registration;
  * keyboard shortcut.
  *
  * @author Vaadin Ltd.
+ * @since 1.3
  */
 public class ShortcutRegistration implements Registration, Serializable {
     private boolean allowDefaultBehavior = false;
@@ -596,15 +597,18 @@ public class ShortcutRegistration implements Registration, Serializable {
     private static String generateEventModifierFilter(
             Collection<Key> modifiers) {
 
-        if (modifiers.isEmpty()) {
-            return "true";
-        }
+        final List<Key> realMods = modifiers.stream().filter(Key::isModifier)
+                .collect(Collectors.toList());
 
-        return modifiers.stream().filter(Key::isModifier)
-                .map(modifier ->
-                        "event.getModifierState('" +
-                                modifier.getKeys().get(0) + "')")
-                .collect(Collectors.joining(" && "));
+        // build a filter based on all the modifier keys. if modifier is not
+        // in the parameter collection, require it to be passive to match the
+        // shortcut
+        return Arrays.stream(KeyModifier.values()).map(modifier -> {
+            boolean modifierRequired = realMods.stream()
+                    .anyMatch(mod -> mod.matches(modifier.getKeys().get(0)));
+            return (modifierRequired ? "" : "!") + "event.getModifierState('"
+                    + modifier.getKeys().get(0) + "')";
+        }).collect(Collectors.joining(" && "));
     }
 
     private static String generateEventKeyFilter(Key key) {

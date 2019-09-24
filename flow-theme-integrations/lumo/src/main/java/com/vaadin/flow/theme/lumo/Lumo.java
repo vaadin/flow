@@ -29,6 +29,8 @@ import com.vaadin.flow.theme.AbstractTheme;
 
 /**
  * Lumo component theme class implementation.
+ *
+ * @since 1.0
  */
 @NpmPackage(value = "@vaadin/vaadin-lumo-styles", version = "1.5.0")
 @HtmlImport("frontend://bower_components/vaadin-lumo-styles/color.html")

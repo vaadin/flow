@@ -42,6 +42,7 @@ import java.util.stream.Collectors;
  * {@link WebComponentConfigurationRegistry}.
  *
  * @author Vaadin Ltd.
+ * @since 2.0
  */
 @HandlesTypes({WebComponentExporter.class})
 public class WebComponentConfigurationRegistryInitializer

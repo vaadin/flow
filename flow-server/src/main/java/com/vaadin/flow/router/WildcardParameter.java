@@ -24,6 +24,8 @@ import java.lang.annotation.Target;
 /**
  * Marks a Navigation url parameter as a wildcard allowing 0-N parameter parts
  * to be bound for this url parameter.
+ *
+ * @since 1.0
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.PARAMETER)

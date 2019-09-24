@@ -49,6 +49,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 /**
  * Base abstract class for frontend updaters that needs to be run when in
  * dev-mode or from the flow maven plugin.
+ *
+ * @since 2.0
  */
 public abstract class NodeUpdater implements FallibleCommand {
     /**
@@ -239,6 +241,8 @@ public abstract class NodeUpdater implements FallibleCommand {
                 "webpack-babel-multi-target-plugin", "2.1.0") || added;
         added = addDependency(packageJson, DEV_DEPENDENCIES,
                 "copy-webpack-plugin", "5.0.3") || added;
+        added = addDependency(packageJson, DEV_DEPENDENCIES,
+                "compression-webpack-plugin", "3.0.0") || added;
         added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack-merge",
                 "4.2.1") || added;
         added = addDependency(packageJson, DEV_DEPENDENCIES, "raw-loader",
