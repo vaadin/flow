@@ -28,11 +28,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.function.SerializableBiFunction;
 import com.vaadin.flow.server.frontend.NodeTestComponents;
 import com.vaadin.flow.server.frontend.NodeTestComponents.ExtraImport;
 import com.vaadin.flow.server.frontend.NodeTestComponents.LocalP3Template;
+import com.vaadin.flow.server.frontend.NodeTestComponents.LumoTest;
 import com.vaadin.flow.server.frontend.NodeTestComponents.VaadinElementMixin;
 import com.vaadin.flow.server.frontend.NodeTestComponents.VaadinShrinkWrap;
 import com.vaadin.flow.theme.AbstractTheme;
@@ -58,6 +60,11 @@ public class FullDependenciesScannerTest {
 
     }
 
+    @NoTheme
+    private static class NoThemeComponent extends Component {
+
+    }
+
     @Before
     public void setUp() throws ClassNotFoundException {
         Mockito.when(finder.loadClass(AbstractTheme.class.getName()))
@@ -78,6 +85,40 @@ public class FullDependenciesScannerTest {
                 scanner.getThemeDefinition().getTheme());
         Assert.assertEquals("", scanner.getThemeDefinition().getVariant());
 
+        Assert.assertEquals(0, scanner.getClasses().size());
+    }
+
+    @Test
+    public void getTheme_noTheme_noThemeIsDiscovered()
+            throws ClassNotFoundException {
+        setUpThemeScanner(Collections.emptySet(),
+                Collections.singleton(NoThemeComponent.class),
+                (type, annotationType) -> Collections.emptyList());
+
+        Mockito.verify(finder).loadClass(AbstractTheme.class.getName());
+
+        Assert.assertNull(scanner.getTheme());
+        Assert.assertNull(scanner.getThemeDefinition());
+        Assert.assertEquals(0, scanner.getClasses().size());
+    }
+
+    @Test
+    public void getTheme_explicitTheme_themeIsDiscovered()
+            throws ClassNotFoundException {
+        Mockito.when(finder.loadClass(LumoTest.class.getName()))
+                .thenReturn((Class) LumoTest.class);
+
+        setUpThemeScanner(getAnnotatedClasses(Theme.class),
+                Collections.emptySet(),
+                (type, annotationType) -> findAnnotations(type, Theme.class));
+
+        Mockito.verify(finder).loadClass(AbstractTheme.class.getName());
+
+        Assert.assertNotNull(scanner.getTheme());
+        Assert.assertEquals("theme/lumo/", scanner.getTheme().getThemeUrl());
+        Assert.assertEquals(LumoTest.class,
+                scanner.getThemeDefinition().getTheme());
+        Assert.assertEquals("dark", scanner.getThemeDefinition().getVariant());
         Assert.assertEquals(0, scanner.getClasses().size());
     }
 
