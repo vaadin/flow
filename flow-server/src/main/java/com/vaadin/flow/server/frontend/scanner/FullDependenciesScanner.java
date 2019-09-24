@@ -30,6 +30,9 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
@@ -50,9 +53,6 @@ import com.vaadin.flow.theme.ThemeDefinition;
  */
 class FullDependenciesScanner extends AbstractDependenciesScanner {
 
-    /**
-     *
-     */
     private static final String COULD_NOT_LOAD_ERROR_MSG = "Could not load annotation class ";
 
     private static final String VALUE = "value";
@@ -92,6 +92,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     FullDependenciesScanner(ClassFinder finder,
             SerializableBiFunction<Class<?>, Class<? extends Annotation>, List<? extends Annotation>> annotationFinder) {
         super(finder);
+        long start = System.currentTimeMillis();
         this.annotationFinder = annotationFinder;
         try {
             abstractTheme = finder.loadClass(AbstractTheme.class.getName());
@@ -121,6 +122,8 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
         discoverTheme();
 
         modules = calculateModules(regularModules, themeModules);
+        getLogger().info("Visited {} classes. Took {} ms.", getClasses().size(),
+                System.currentTimeMillis() - start);
     }
 
     @Override
@@ -385,6 +388,11 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                             target, methodName),
                     e);
         }
+    }
+
+    private Logger getLogger() {
+        // Using short prefix so as npm output is more readable
+        return LoggerFactory.getLogger("dev-updater");
     }
 
 }
