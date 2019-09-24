@@ -60,8 +60,18 @@ public class FullDependenciesScannerTest {
 
     }
 
+    @Theme(FakeLumoTheme.class)
+    public static class ThemedComponent extends Component {
+
+    }
+
     @NoTheme
     private static class NoThemeComponent extends Component {
+
+    }
+
+    @NoTheme
+    private static class NoThemeComponent1 extends Component {
 
     }
 
@@ -92,7 +102,8 @@ public class FullDependenciesScannerTest {
     public void getTheme_noTheme_noThemeIsDiscovered()
             throws ClassNotFoundException {
         setUpThemeScanner(Collections.emptySet(),
-                Collections.singleton(NoThemeComponent.class),
+                new HashSet<>(Arrays.asList(NoThemeComponent.class,
+                        NoThemeComponent1.class)),
                 (type, annotationType) -> Collections.emptyList());
 
         Mockito.verify(finder).loadClass(AbstractTheme.class.getName());
@@ -120,6 +131,23 @@ public class FullDependenciesScannerTest {
                 scanner.getThemeDefinition().getTheme());
         Assert.assertEquals("dark", scanner.getThemeDefinition().getVariant());
         Assert.assertEquals(0, scanner.getClasses().size());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void getTheme_noThemeAndExplicitTheme_throws()
+            throws ClassNotFoundException {
+        setUpThemeScanner(getAnnotatedClasses(Theme.class),
+                Collections.singleton(NoThemeComponent.class),
+                (type, annotationType) -> findAnnotations(type, Theme.class));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void getTheme_severalExplicitThemes_throws()
+            throws ClassNotFoundException {
+        Set<Class<?>> themeAnnotatedClasses = getAnnotatedClasses(Theme.class);
+        themeAnnotatedClasses.add(ThemedComponent.class);
+        setUpThemeScanner(themeAnnotatedClasses, Collections.emptySet(),
+                (type, annotationType) -> findAnnotations(type, Theme.class));
     }
 
     @Test
