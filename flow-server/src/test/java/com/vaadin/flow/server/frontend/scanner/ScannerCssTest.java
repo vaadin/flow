@@ -4,9 +4,10 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
+import com.vaadin.flow.component.dependency.CssImport;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.CssClass1;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.CssClass2;
-import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.CssClass3;
 
 import static com.vaadin.flow.server.frontend.scanner.ScannerDependenciesTest.getFrontendDependencies;
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
@@ -54,6 +55,16 @@ public class ScannerCssTest {
     public void should_sumarizeCssImports() throws Exception {
         FrontendDependencies deps = getFrontendDependencies(CssClass1.class, CssClass2.class);
         assertEquals(4, deps.getCss().size());
+    }
+
+    // Moved here from ScannerTestComponents. Otherwise this would affect
+    // NodeUpdateImportsTest.java
+    @Route("css-route-3")
+    @CssImport("./foo.css")
+    @CssImport(value = "./bar.css")
+    @CssImport(value = "./foofoo.css")
+    @CssImport(value = "./foobar.css")
+    public static class CssClass3 {
     }
 
 }
