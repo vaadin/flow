@@ -77,7 +77,7 @@ public class NodeTasks implements FallibleCommand {
 
         private Set<String> visitedClasses = null;
 
-        private boolean useByteCodeScanner;
+        private boolean useByteCodeScanner = false;
 
         /**
          * Directory for for npm and folders and files.

@@ -50,7 +50,12 @@ import com.vaadin.flow.theme.ThemeDefinition;
  */
 class FullDependenciesScanner extends AbstractDependenciesScanner {
 
-    private final ClassFinder finder;
+    /**
+     *
+     */
+    private static final String COULD_NOT_LOAD_ERROR_MSG = "Could not load annotation class ";
+
+    private static final String VALUE = "value";
 
     private ThemeDefinition themeDefinition;
     private AbstractTheme themeInstance;
@@ -72,8 +77,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
      *            a class finder
      */
     FullDependenciesScanner(ClassFinder finder) {
-        this(finder, (type, annotationType) -> AnnotationReader
-                .getAnnotationsFor(type, annotationType));
+        this(finder, AnnotationReader::getAnnotationsFor);
     }
 
     /**
@@ -95,24 +99,23 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
             throw new IllegalStateException("Could not load "
                     + AbstractTheme.class.getName() + " class", exception);
         }
-        this.finder = finder;
 
         packages = discoverPackages();
 
-        Map<String, List<String>> themeModules = new HashMap<>();
+        Map<String, Set<String>> themeModules = new HashMap<>();
         LinkedHashSet<String> regularModules = new LinkedHashSet<>();
 
         collectAnnotationValues(
                 (clazz, module) -> handleModule(clazz, module, regularModules,
                         themeModules),
                 JsModule.class,
-                module -> invokeAnnotationMethodAsString(module, "value"));
+                module -> invokeAnnotationMethodAsString(module, VALUE));
 
         collectAnnotationValues((clazz, script) -> {
             classes.add(clazz.getName());
             scripts.add(script);
         }, JavaScript.class,
-                module -> invokeAnnotationMethodAsString(module, "value"));
+                module -> invokeAnnotationMethodAsString(module, VALUE));
         cssData = discoverCss();
 
         discoverTheme();
@@ -137,7 +140,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
 
     @Override
     public Set<CssData> getCss() {
-        return cssData;
+        return Collections.unmodifiableSet(cssData);
     }
 
     @Override
@@ -160,7 +163,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
         data.id = adaptCssValue(cssImport, "id");
         data.include = adaptCssValue(cssImport, "include");
         data.themefor = adaptCssValue(cssImport, "themeFor");
-        data.value = adaptCssValue(cssImport, "value");
+        data.value = adaptCssValue(cssImport, VALUE);
         return data;
     }
 
@@ -174,31 +177,32 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
 
     private Map<String, String> discoverPackages() {
         try {
-            Class<? extends Annotation> loadedAnnotation = finder
+            Class<? extends Annotation> loadedAnnotation = getFinder()
                     .loadClass(NpmPackage.class.getName());
-            Set<Class<?>> annotatedClasses = finder
+            Set<Class<?>> annotatedClasses = getFinder()
                     .getAnnotatedClasses(loadedAnnotation);
             Map<String, String> result = new HashMap<>();
             for (Class<?> clazz : annotatedClasses) {
                 classes.add(clazz.getName());
-                List<? extends Annotation> packages = annotationFinder
+                List<? extends Annotation> packageAnnotations = annotationFinder
                         .apply(clazz, loadedAnnotation);
-                packages.forEach(pckg -> result.put(
-                        invokeAnnotationMethodAsString(pckg, "value"),
+                packageAnnotations.forEach(pckg -> result.put(
+                        invokeAnnotationMethodAsString(pckg, VALUE),
                         invokeAnnotationMethodAsString(pckg, "version")));
             }
             return result;
         } catch (ClassNotFoundException exception) {
-            throw new IllegalStateException("Could not load annotation class "
-                    + NpmPackage.class.getName(), exception);
+            throw new IllegalStateException(
+                    COULD_NOT_LOAD_ERROR_MSG + NpmPackage.class.getName(),
+                    exception);
         }
     }
 
     private Set<CssData> discoverCss() {
         try {
-            Class<? extends Annotation> loadedAnnotation = finder
+            Class<? extends Annotation> loadedAnnotation = getFinder()
                     .loadClass(CssImport.class.getName());
-            Set<Class<?>> annotatedClasses = finder
+            Set<Class<?>> annotatedClasses = getFinder()
                     .getAnnotatedClasses(loadedAnnotation);
             Set<CssData> result = new HashSet<>();
             for (Class<?> clazz : annotatedClasses) {
@@ -209,8 +213,9 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
             }
             return result;
         } catch (ClassNotFoundException exception) {
-            throw new IllegalStateException("Could not load annotation class "
-                    + CssData.class.getName(), exception);
+            throw new IllegalStateException(
+                    COULD_NOT_LOAD_ERROR_MSG + CssData.class.getName(),
+                    exception);
         }
     }
 
@@ -218,18 +223,17 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
             BiConsumer<Class<?>, String> valueHandler, Class<T> annotationType,
             Function<Annotation, String> valueExtractor) {
         try {
-            Class<? extends Annotation> loadedAnnotation = finder
+            Class<? extends Annotation> loadedAnnotation = getFinder()
                     .loadClass(annotationType.getName());
-            Set<Class<?>> annotatedClasses = finder
+            Set<Class<?>> annotatedClasses = getFinder()
                     .getAnnotatedClasses(loadedAnnotation);
-            annotatedClasses.stream().forEach(clazz -> {
-                annotationFinder.apply(clazz, loadedAnnotation)
-                        .forEach(ann -> valueHandler.accept(clazz,
-                                valueExtractor.apply(ann)));
-            });
+            annotatedClasses.stream().forEach(clazz -> annotationFinder
+                    .apply(clazz, loadedAnnotation).forEach(ann -> valueHandler
+                            .accept(clazz, valueExtractor.apply(ann))));
         } catch (ClassNotFoundException exception) {
-            throw new IllegalStateException("Could not load annotation class "
-                    + annotationType.getName(), exception);
+            throw new IllegalStateException(
+                    COULD_NOT_LOAD_ERROR_MSG + annotationType.getName(),
+                    exception);
         }
     }
 
@@ -246,7 +250,8 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
         }
 
         try {
-            Class<? extends AbstractTheme> theme = finder.loadClass(data.name);
+            Class<? extends AbstractTheme> theme = getFinder()
+                    .loadClass(data.name);
             setupTheme(theme, data.variant);
         } catch (ClassNotFoundException exception) {
             throw new IllegalStateException(
@@ -269,26 +274,26 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
 
     private ThemeData verifyTheme() {
         try {
-            Class<? extends Annotation> loadedThemeAnnotation = finder
+            Class<? extends Annotation> loadedThemeAnnotation = getFinder()
                     .loadClass(Theme.class.getName());
 
-            Set<Class<?>> annotatedClasses = finder
+            Set<Class<?>> annotatedClasses = getFinder()
                     .getAnnotatedClasses(loadedThemeAnnotation);
             Set<ThemeData> themes = annotatedClasses.stream()
                     .flatMap(clazz -> annotationFinder
                             .apply(clazz, loadedThemeAnnotation).stream())
                     .map(theme -> new ThemeData(
-                            ((Class<?>) invokeAnnotationMethod(theme, "value"))
+                            ((Class<?>) invokeAnnotationMethod(theme, VALUE))
                                     .getName(),
                             invokeAnnotationMethodAsString(theme, "variant")))
                     .collect(Collectors.toSet());
 
-            Class<? extends Annotation> loadedNoThemeAnnotation = finder
+            Class<? extends Annotation> loadedNoThemeAnnotation = getFinder()
                     .loadClass(NoTheme.class.getName());
             // Filter out build-in classes (which are in the router package)
             // which
             // are annotated with @NoTheme (see e.g. InternalServerError).
-            Set<Class<?>> notThemeClasses = finder
+            Set<Class<?>> notThemeClasses = getFinder()
                     .getAnnotatedClasses(loadedNoThemeAnnotation).stream()
                     .filter(clazz -> !clazz.getName()
                             .startsWith(Router.class.getPackage().getName()))
@@ -309,7 +314,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                 return ThemeData.createNoTheme();
 
             }
-            return themes.size() > 0 ? themes.iterator().next() : null;
+            return themes.isEmpty() ? null : themes.iterator().next();
         } catch (ClassNotFoundException exception) {
             throw new IllegalStateException(
                     "Could not load theme annotation class", exception);
@@ -324,11 +329,11 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     }
 
     private void handleModule(Class<?> clazz, String module,
-            Set<String> modules, Map<String, List<String>> themeModules) {
+            Set<String> modules, Map<String, Set<String>> themeModules) {
 
         if (abstractTheme.isAssignableFrom(clazz)) {
-            List<String> themingModules = themeModules
-                    .computeIfAbsent(clazz.getName(), cl -> new ArrayList<>());
+            Set<String> themingModules = themeModules.computeIfAbsent(
+                    clazz.getName(), cl -> new LinkedHashSet<>());
             themingModules.add(module);
         } else {
             classes.add(clazz.getName());
@@ -337,8 +342,8 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     }
 
     private List<String> calculateModules(Set<String> modules,
-            Map<String, List<String>> themeModules) {
-        List<String> themingModules = themeModules
+            Map<String, Set<String>> themeModules) {
+        Set<String> themingModules = themeModules
                 .get(getThemeDefinition() == null ? null
                         : getThemeDefinition().getTheme().getName());
         if (themingModules == null) {
@@ -348,9 +353,11 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
             classes.add(getThemeDefinition().getTheme().getName());
         }
         // get rid of duplicate but preserve the order
-        LinkedHashSet<String> result = new LinkedHashSet<>(themingModules);
+        List<String> result = new ArrayList<>(
+                themingModules.size() + modules.size());
+        result.addAll(themingModules);
         result.addAll(modules);
-        return new ArrayList<>(result);
+        return result;
     }
 
     private String invokeAnnotationMethodAsString(Annotation target,
