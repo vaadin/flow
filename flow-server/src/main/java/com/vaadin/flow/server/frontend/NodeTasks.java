@@ -334,7 +334,7 @@ public class NodeTasks implements FallibleCommand {
             }
 
             frontendDependencies = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
-                    .createScanner(builder.useByteCodeScanner, classFinder,
+                    .createScanner(!builder.useByteCodeScanner, classFinder,
                             builder.generateEmbeddableWebComponents);
         }
 

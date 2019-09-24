@@ -299,9 +299,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         ClassFinder classFinder = getClassFinder();
         // create a new package updater, with forced clean up enabled
         packageUpdater = new TaskUpdatePackages(classFinder,
-                new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
-                        .createScanner(false, classFinder, true),
-                baseDir, generatedDir, true);
+                getScanner(classFinder), baseDir, generatedDir, true);
         packageUpdater.execute();
 
         // clean up happened

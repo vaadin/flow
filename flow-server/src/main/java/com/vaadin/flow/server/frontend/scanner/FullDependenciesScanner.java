@@ -34,6 +34,7 @@ import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.function.SerializableBiFunction;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.theme.AbstractTheme;
@@ -61,6 +62,8 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
 
     private final Class<?> abstractTheme;
 
+    private final SerializableBiFunction<Class<?>, Class<? extends Annotation>, List<? extends Annotation>> annotationFinder;
+
     /**
      * Creates a new scanner instance which discovers all dependencies in the
      * classpath.
@@ -69,8 +72,23 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
      *            a class finder
      */
     FullDependenciesScanner(ClassFinder finder) {
-        super(finder);
+        this(finder, (type, annotationType) -> AnnotationReader
+                .getAnnotationsFor(type, annotationType));
+    }
 
+    /**
+     * Creates a new scanner instance which discovers all dependencies in the
+     * classpath using a given annotation finder.
+     *
+     * @param finder
+     *            a class finder
+     * @param annotationFinder
+     *            a strategy to discover class annotations
+     */
+    FullDependenciesScanner(ClassFinder finder,
+            SerializableBiFunction<Class<?>, Class<? extends Annotation>, List<? extends Annotation>> annotationFinder) {
+        super(finder);
+        this.annotationFinder = annotationFinder;
         try {
             abstractTheme = finder.loadClass(AbstractTheme.class.getName());
         } catch (ClassNotFoundException exception) {
@@ -163,8 +181,8 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
             Map<String, String> result = new HashMap<>();
             for (Class<?> clazz : annotatedClasses) {
                 classes.add(clazz.getName());
-                List<? extends Annotation> packages = AnnotationReader
-                        .getAnnotationsFor(clazz, loadedAnnotation);
+                List<? extends Annotation> packages = annotationFinder
+                        .apply(clazz, loadedAnnotation);
                 packages.forEach(pckg -> result.put(
                         invokeAnnotationMethodAsString(pckg, "value"),
                         invokeAnnotationMethodAsString(pckg, "version")));
@@ -185,8 +203,8 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
             Set<CssData> result = new HashSet<>();
             for (Class<?> clazz : annotatedClasses) {
                 classes.add(clazz.getName());
-                List<? extends Annotation> imports = AnnotationReader
-                        .getAnnotationsFor(clazz, loadedAnnotation);
+                List<? extends Annotation> imports = annotationFinder
+                        .apply(clazz, loadedAnnotation);
                 imports.stream().forEach(imp -> result.add(createCssData(imp)));
             }
             return result;
@@ -205,7 +223,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
             Set<Class<?>> annotatedClasses = finder
                     .getAnnotatedClasses(loadedAnnotation);
             annotatedClasses.stream().forEach(clazz -> {
-                AnnotationReader.getAnnotationsFor(clazz, loadedAnnotation)
+                annotationFinder.apply(clazz, loadedAnnotation)
                         .forEach(ann -> valueHandler.accept(clazz,
                                 valueExtractor.apply(ann)));
             });
@@ -257,9 +275,8 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
             Set<Class<?>> annotatedClasses = finder
                     .getAnnotatedClasses(loadedThemeAnnotation);
             Set<ThemeData> themes = annotatedClasses.stream()
-                    .flatMap(clazz -> AnnotationReader
-                            .getAnnotationsFor(clazz, loadedThemeAnnotation)
-                            .stream())
+                    .flatMap(clazz -> annotationFinder
+                            .apply(clazz, loadedThemeAnnotation).stream())
                     .map(theme -> new ThemeData(
                             ((Class<?>) invokeAnnotationMethod(theme, "value"))
                                     .getName(),
