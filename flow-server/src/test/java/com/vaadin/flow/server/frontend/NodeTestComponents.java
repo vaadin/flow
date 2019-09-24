@@ -42,6 +42,8 @@ public class NodeTestComponents {
 
     public static final String BUTTON_COMPONENT_FQN = ButtonComponent.class
             .getName();
+    public static final String ICON_COMPONENT_FQN = IconComponent.class
+            .getName();
 
     @NpmPackage(value = "@vaadin/vaadin-button", version = "1.1.1")
     class ButtonComponent extends Component {

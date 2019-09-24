@@ -55,7 +55,6 @@ import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.VERSI
  */
 public class FrontendDependencies extends AbstractDependenciesScanner {
 
-    private final ClassFinder finder;
     private final HashMap<String, EndPointData> endPoints = new HashMap<>();
     private ThemeDefinition themeDefinition;
     private AbstractTheme themeInstance;
@@ -90,7 +89,6 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         log().info(
                 "Scanning classes to find frontend configurations and dependencies...");
         long start = System.nanoTime();
-        this.finder = finder;
         try {
             computeEndpoints();
             computeApplicationTheme(endPoints);
@@ -218,19 +216,19 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     private void computeEndpoints() throws ClassNotFoundException, IOException {
         // Because of different classLoaders we need compare against class
         // references loaded by the specific class finder loader
-        Class<? extends Annotation> routeClass = finder
+        Class<? extends Annotation> routeClass = getFinder()
                 .loadClass(Route.class.getName());
-        for (Class<?> route : finder.getAnnotatedClasses(routeClass)) {
+        for (Class<?> route : getFinder().getAnnotatedClasses(routeClass)) {
             collectEndpoints(route);
         }
 
-        for (Class<?> initListener : finder.getSubTypesOf(
-                finder.loadClass(UIInitListener.class.getName()))) {
+        for (Class<?> initListener : getFinder().getSubTypesOf(
+                getFinder().loadClass(UIInitListener.class.getName()))) {
             collectEndpoints(initListener);
         }
 
-        for (Class<?> initListener : finder.getSubTypesOf(
-                finder.loadClass(VaadinServiceInitListener.class.getName()))) {
+        for (Class<?> initListener : getFinder().getSubTypesOf(getFinder()
+                .loadClass(VaadinServiceInitListener.class.getName()))) {
             collectEndpoints(initListener);
         }
     }
@@ -296,7 +294,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             ThemeData themeData = themes.iterator().next();
             if (!themeData.isNotheme()) {
                 variant = themeData.getVariant();
-                theme = finder.loadClass(themeData.getName());
+                theme = getFinder().loadClass(themeData.getName());
             }
 
         }
@@ -335,9 +333,9 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      */
     private void computePackages() throws ClassNotFoundException, IOException {
         FrontendAnnotatedClassVisitor npmPackageVisitor = new FrontendAnnotatedClassVisitor(
-                finder, NpmPackage.class.getName());
+                getFinder(), NpmPackage.class.getName());
 
-        for (Class<?> component : finder
+        for (Class<?> component : getFinder()
                 .getAnnotatedClasses(NpmPackage.class.getName())) {
             npmPackageVisitor.visitClass(component.getName());
         }
@@ -385,11 +383,11 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             IllegalAccessException, InstantiationException {
         // Because of different classLoaders we need compare against class
         // references loaded by the specific class finder loader
-        Class<? extends Annotation> routeClass = finder
+        Class<? extends Annotation> routeClass = getFinder()
                 .loadClass(Route.class.getName());
-        Class<WebComponentExporter<? extends Component>> exporterClass = finder
+        Class<WebComponentExporter<? extends Component>> exporterClass = getFinder()
                 .loadClass(WebComponentExporter.class.getName());
-        Set<? extends Class<? extends WebComponentExporter<? extends Component>>> exporterClasses = finder
+        Set<? extends Class<? extends WebComponentExporter<? extends Component>>> exporterClasses = getFinder()
                 .getSubTypesOf(exporterClass);
 
         // if no exporters in the project, return
@@ -486,7 +484,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     }
 
     private URL getUrl(String className) {
-        return finder.getResource(className.replace(".", "/") + ".class");
+        return getFinder().getResource(className.replace(".", "/") + ".class");
     }
 
     @Override
