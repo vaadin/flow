@@ -30,7 +30,9 @@ import java.util.EventListener;
  * 
  * @see ServiceInitEvent#addBootstrapListener(BootstrapListener)
  *
- * @deprecated Use {@link ClientIndexBootstrapListener} instead
+ * @deprecated This API is deprecated in favor of
+ *             {@link ClientIndexBootstrapListener} when using client-side
+ *             bootstrapping
  *
  * @author Vaadin Ltd
  * @since 1.0
