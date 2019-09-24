@@ -40,6 +40,9 @@ import com.vaadin.flow.theme.Theme;
  */
 public class NodeTestComponents {
 
+    public static final String BUTTON_COMPONENT_FQN = ButtonComponent.class
+            .getName();
+
     @NpmPackage(value = "@vaadin/vaadin-button", version = "1.1.1")
     class ButtonComponent extends Component {
     }
@@ -112,7 +115,6 @@ public class NodeTestComponents {
             return null;
         }
     }
-
 
     @Route(value = "", layout = MainLayout.class)
     public static class MainView extends Component {
