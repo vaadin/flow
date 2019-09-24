@@ -15,6 +15,152 @@
  */
 package com.vaadin.flow.server.frontend.scanner;
 
+import java.lang.annotation.Annotation;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+
+import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.function.SerializableBiFunction;
+import com.vaadin.flow.server.frontend.NodeTestComponents;
+import com.vaadin.flow.server.frontend.NodeTestComponents.ExtraImport;
+import com.vaadin.flow.server.frontend.NodeTestComponents.LocalP3Template;
+import com.vaadin.flow.server.frontend.NodeTestComponents.VaadinElementMixin;
+import com.vaadin.flow.server.frontend.NodeTestComponents.VaadinShrinkWrap;
+import com.vaadin.flow.theme.AbstractTheme;
+import com.vaadin.flow.theme.NoTheme;
+import com.vaadin.flow.theme.Theme;
+
 public class FullDependenciesScannerTest {
 
+    private ClassFinder finder = Mockito.mock(ClassFinder.class);
+    private FullDependenciesScanner scanner;
+
+    public static class FakeLumoTheme implements AbstractTheme {
+
+        @Override
+        public String getBaseUrl() {
+            return "foo";
+        }
+
+        @Override
+        public String getThemeUrl() {
+            return null;
+        }
+
+    }
+
+    @Before
+    public void setUp() throws ClassNotFoundException {
+        Mockito.when(finder.loadClass(AbstractTheme.class.getName()))
+                .thenReturn((Class) AbstractTheme.class);
+    }
+
+    @Test
+    public void getTheme_noExplicitTheme_lumoThemeIsDiscovered()
+            throws ClassNotFoundException {
+        setUpThemeScanner(Collections.emptySet(), Collections.emptySet(),
+                (type, annotationType) -> Collections.emptyList());
+
+        Mockito.verify(finder).loadClass(AbstractTheme.class.getName());
+
+        Assert.assertNotNull(scanner.getTheme());
+        Assert.assertEquals("foo", scanner.getTheme().getBaseUrl());
+        Assert.assertEquals(FakeLumoTheme.class,
+                scanner.getThemeDefinition().getTheme());
+        Assert.assertEquals("", scanner.getThemeDefinition().getVariant());
+
+        Assert.assertEquals(0, scanner.getClasses().size());
+    }
+
+    @Test
+    public void getPackages_returnsAllPackages_getClassesReturnAllPackageAnnotatedComponents()
+            throws ClassNotFoundException {
+        // use this fake/mock class for the loaded class to check that annotated
+        // classes are requested for the loaded class and not for the
+        // NpmPackage.class
+        Class clazz = Object.class;
+
+        Mockito.when(finder.loadClass(NpmPackage.class.getName()))
+                .thenReturn(clazz);
+
+        Mockito.when(finder.getAnnotatedClasses(clazz))
+                .thenReturn(getAnnotatedClasses(NpmPackage.class));
+
+        scanner = new FullDependenciesScanner(finder,
+                (type, annotation) -> findAnnotations(type, NpmPackage.class));
+
+        Map<String, String> packages = scanner.getPackages();
+
+        Assert.assertEquals(packages.get("@vaadin/vaadin-button"), "1.1.1");
+        Assert.assertEquals(packages.get("@vaadin/vaadin-element-mixin"),
+                "1.1.2");
+        Assert.assertEquals(packages.get("@foo/var-component"), "1.1.0");
+        Assert.assertEquals(packages.get("@webcomponents/webcomponentsjs"),
+                "2.2.9");
+        Assert.assertEquals(packages.get("@vaadin/vaadin-shrinkwrap"), "1.2.3");
+
+        Assert.assertEquals(5, packages.size());
+
+        Set<String> visitedClasses = scanner.getClasses();
+        Assert.assertTrue(
+                visitedClasses.contains(VaadinShrinkWrap.class.getName()));
+        Assert.assertTrue(
+                visitedClasses.contains(LocalP3Template.class.getName()));
+        Assert.assertTrue(visitedClasses
+                .contains(NodeTestComponents.BUTTON_COMPONENT_FQN));
+        Assert.assertTrue(
+                visitedClasses.contains(VaadinElementMixin.class.getName()));
+        Assert.assertTrue(visitedClasses.contains(ExtraImport.class.getName()));
+    }
+
+    private List<? extends Annotation> findAnnotations(Class<?> type,
+            Class<? extends Annotation> annotationType) {
+        return Arrays.asList(type.getAnnotationsByType(annotationType));
+    }
+
+    private Set<Class<?>> getAnnotatedClasses(
+            Class<? extends Annotation> annotationType) {
+        Class<?>[] classes = NodeTestComponents.class.getDeclaredClasses();
+        Set<Class<?>> result = new HashSet<>();
+        for (Class<?> clazz : classes) {
+            if (clazz.getAnnotationsByType(annotationType).length > 0) {
+                result.add(clazz);
+            }
+        }
+        return result;
+    }
+
+    private void setUpThemeScanner(Set<Class<?>> themedClasses,
+            Set<Class<?>> noThemeClasses,
+            SerializableBiFunction<Class<?>, Class<? extends Annotation>, List<? extends Annotation>> annotationFinder)
+            throws ClassNotFoundException {
+        Class fakeThemeClass = Object.class;
+        Class fakeNoThemeClass = Throwable.class;
+
+        Mockito.when(finder.loadClass(Theme.class.getName()))
+                .thenReturn(fakeThemeClass);
+        Mockito.when(finder.loadClass(NoTheme.class.getName()))
+                .thenReturn(fakeNoThemeClass);
+
+        Mockito.when(finder.getAnnotatedClasses(fakeThemeClass))
+                .thenReturn(themedClasses);
+        Mockito.when(finder.getAnnotatedClasses(fakeNoThemeClass))
+                .thenReturn(noThemeClasses);
+
+        scanner = new FullDependenciesScanner(finder, annotationFinder) {
+            @Override
+            protected Class<? extends AbstractTheme> getLumoTheme() {
+                return FakeLumoTheme.class;
+            }
+        };
+    }
 }
