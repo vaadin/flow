@@ -34,6 +34,10 @@ abstract class AbstractDependenciesScanner
         this.finder = finder;
     }
 
+    protected final ClassFinder getFinder() {
+        return finder;
+    }
+
     protected Class<? extends AbstractTheme> getLumoTheme() {
         try {
             return finder.loadClass(LUMO);

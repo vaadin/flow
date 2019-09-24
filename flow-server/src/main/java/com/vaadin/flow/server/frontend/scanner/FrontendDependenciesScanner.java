@@ -31,6 +31,12 @@ import com.vaadin.flow.theme.ThemeDefinition;
  */
 public interface FrontendDependenciesScanner extends Serializable {
 
+    /**
+     * Frontend dependencies scanner factory.
+     * 
+     * @author Vaadin Ltd
+     *
+     */
     class FrontendDependenciesScannerFactory {
 
         /**
