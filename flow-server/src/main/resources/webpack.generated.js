@@ -47,37 +47,27 @@ if (watchDogPort){
 
 const net = require('net');
 
-function setupWatchDog(firstRun){
+function setupWatchDog(){
     var client = new net.Socket();
     client.connect(watchDogPort, 'localhost', function() {
-        if (firstRun){
-            console.debug('Watchdog connected.');
-        } else {
-            console.log('Watchdog connected.');
-        }
+        console.debug('Watchdog connected.');
     });
 
     client.on('error', function(){
-        console.error("Watchdog connection error. Terminating webpack process...");
+        console.log("Watchdog connection error. Terminating webpack process...");
         client.destroy();
         process.exit(0);
     });
 
     client.on('close', function() {
         client.destroy();
-        if (firstRun){
-            console.debug('Watchdog connection closed. Trying to re-run watchdog.');
-            setupWatchDog(false);
-        }
-        else {
-            console.log('Watchdog connection closed. Terminating webpack process...');
-            process.exit(0);
-        }
+        console.debug('Watchdog connection closed. Trying to re-run watchdog.');
+        setupWatchDog();
     });  
 }
 
 if (watchDogPort){
-    setupWatchDog(true);
+    setupWatchDog();
 }
 
 
