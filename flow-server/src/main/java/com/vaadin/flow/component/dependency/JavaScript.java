@@ -34,9 +34,9 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * It is guaranteed that dependencies will be loaded only once. The files
  * loaded will be in the same order as the annotations were on the class.
  * However, loading order is only guaranteed on a class level; Annotations
- * from different classes may appear in different order. Also, files identified
- * by {@code @JavaScript} will be loaded after
- * {@link com.vaadin.flow.component.dependency.JsModule} and before
+ * from different classes may appear in different order, grouped by the
+ * annotated class. Also, files identified by {@code @JavaScript} will be
+ * loaded after {@link com.vaadin.flow.component.dependency.JsModule} and before
  * {@link com.vaadin.flow.component.dependency.CssImport}.
  * <p>
  * NOTE: while this annotation is not inherited using the
