@@ -907,7 +907,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             // Correct binding requires reactive involvement which doesn't
             // happen automatically when we are out of the phase. So we should
             // call <code>flush()</code> explicitly.
-            Reactive.flush();
+            // Defer the call to avoid issues due recursion. 
+            // See also https://github.com/vaadin/flow/issues/5806 
+            Scheduler.get().scheduleDeferred(()-> Reactive.flush());
         }
     }
 
