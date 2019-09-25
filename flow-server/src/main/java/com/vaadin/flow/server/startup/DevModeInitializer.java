@@ -25,6 +25,7 @@ import javax.servlet.annotation.HandlesTypes;
 import javax.servlet.annotation.WebListener;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.lang.annotation.Annotation;
@@ -33,17 +34,23 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -197,7 +204,10 @@ public class DevModeInitializer implements ServletContainerInitializer,
             .compile(".*file:(.+\\.jar).*");
 
     private static final Pattern VFS_FILE_REGEX = Pattern
-            .compile("(.*vfs:/.+\\.jar).*");
+            .compile("(vfs:/.+\\.jar).*");
+
+    private static final Pattern VFS_DIRECTORY_REGEX = Pattern
+            .compile("vfs:/.+");
 
     // allow trailing slash
     private static final Pattern DIR_REGEX_FRONTEND_DEFAULT = Pattern.compile(
@@ -371,11 +381,22 @@ public class DevModeInitializer implements ServletContainerInitializer,
             }
             while (en.hasMoreElements()) {
                 URL url = en.nextElement();
+                String urlString = url.toString();
 
-                Matcher jarVfsMatcher = VFS_FILE_REGEX.matcher(url.toString());
+                Matcher jarVfsMatcher = VFS_FILE_REGEX.matcher(urlString);
                 if (jarVfsMatcher.find()) {
                     frontendFiles.add(getPhysicalFileOfJBossVfsJar(
                             new URL(jarVfsMatcher.group(1))));
+                    continue;
+                }
+
+                Matcher directoryVfsMatcher = VFS_DIRECTORY_REGEX
+                        .matcher(urlString);
+                if (directoryVfsMatcher.find()) {
+                    URL vfsDirUrl = new URL(urlString.substring(0,
+                            urlString.lastIndexOf(resourcesFolder)));
+                    frontendFiles
+                            .add(getPhysicalFileOfJBossVfsDirectory(vfsDirUrl));
                     continue;
                 }
 
@@ -405,23 +426,85 @@ public class DevModeInitializer implements ServletContainerInitializer,
         return frontendFiles;
     }
 
-    private static File getPhysicalFileOfJBossVfsJar(URL url)
+    private static File getPhysicalFileOfJBossVfsDirectory(URL url)
             throws IOException, ServletException {
         try {
             Object virtualFile = url.openConnection().getContent();
             Class virtualFileClass = virtualFile.getClass();
 
             // Reflection as we cannot afford a dependency to WildFly or JBoss
+            Method getChildrenRecursivelyMethod = virtualFileClass
+                    .getMethod("getChildrenRecursively");
             Method getPhysicalFileMethod = virtualFileClass
                     .getMethod("getPhysicalFile");
 
-            File jarPhysicalFile = (File) getPhysicalFileMethod
+            // By calling getPhysicalFile, we make sure that the corresponding
+            // physical files/directories of the root directory and its children
+            // are created. Later, these physical files are scanned to collect
+            // their resources.
+            List virtualFiles = (List) getChildrenRecursivelyMethod
                     .invoke(virtualFile);
-            return jarPhysicalFile;
+            File rootDirectory = (File) getPhysicalFileMethod.invoke(virtualFile);
+            for (Object child : virtualFiles) {
+                // side effect: create real-world files
+                getPhysicalFileMethod.invoke(child);
+            }
+            return rootDirectory;
         } catch (NoSuchMethodException | IllegalAccessException
                 | InvocationTargetException exc) {
             throw new ServletException(
-                    "Failed to get physical files from JBoss.", exc);
+                    "Failed to invoke JBoss VFS API.", exc);
+        }
+    }
+
+    private static File getPhysicalFileOfJBossVfsJar(URL url)
+            throws IOException, ServletException {
+        try {
+            Object jarVirtualFile = url.openConnection().getContent();
+            Class virtualFileClass = jarVirtualFile.getClass();
+
+            // Reflection as we cannot afford a dependency to WildFly or JBoss
+            Method getChildrenRecursivelyMethod = virtualFileClass
+                    .getMethod("getChildrenRecursively");
+            Method openStreamMethod = virtualFileClass.getMethod("openStream");
+            Method isFileMethod = virtualFileClass.getMethod("isFile");
+            Method getPathNameRelativeToMethod = virtualFileClass
+                    .getMethod("getPathNameRelativeTo", virtualFileClass);
+
+            List jarVirtualChildren = (List) getChildrenRecursivelyMethod
+                    .invoke(jarVirtualFile);
+
+            // Creating a temporary jar file out of the vfs files
+            String vfsJarPath = url.toString();
+            String fileNamePrefix = vfsJarPath.substring(
+                    vfsJarPath.lastIndexOf('/') + 1,
+                    vfsJarPath.lastIndexOf(".jar"));
+            Path tempJar = Files.createTempFile(fileNamePrefix, ".jar");
+
+            try (ZipOutputStream zipOutputStream = new ZipOutputStream(
+                    Files.newOutputStream(tempJar))) {
+                for (Object child : jarVirtualChildren) {
+                    if (!(Boolean) isFileMethod.invoke(child))
+                        continue;
+
+                    String relativePath = (String) getPathNameRelativeToMethod
+                            .invoke(child, jarVirtualFile);
+                    InputStream inputStream = (InputStream) openStreamMethod
+                            .invoke(child);
+                    ZipEntry zipEntry = new ZipEntry(relativePath);
+                    zipOutputStream.putNextEntry(zipEntry);
+                    IOUtils.copy(inputStream, zipOutputStream);
+                    zipOutputStream.closeEntry();
+                }
+            }
+
+            File tempJarFile = tempJar.toFile();
+            tempJarFile.deleteOnExit();
+            return tempJarFile;
+        } catch (NoSuchMethodException | IllegalAccessException
+                | InvocationTargetException exc) {
+            throw new ServletException(
+                    "Failed to invoke JBoss VFS API.", exc);
         }
     }
 }
