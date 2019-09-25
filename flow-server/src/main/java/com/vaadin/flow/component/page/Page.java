@@ -266,31 +266,32 @@ public class Page implements Serializable {
     }
 
     /**
-     * Adds the given JavaScript module to the page and ensures that it is
-     * loaded successfully.
+     * Adds the given external JavaScript module to the page and ensures that it
+     * is loaded successfully.
      * <p>
-     * For component related JsModule dependencies, you should use the
-     * {@link JsModule @JsModule} annotation.
-     * <p>
-     * Is is guaranteed that script will be loaded before the first page load.
-     * For more options, refer to {@link #addJsModule(String, LoadMode)}
+     * If the JavaScript modules are local or do not need to be added
+     * dynamically, you should use the {@link JsModule @JsModule} annotation
+     * instead.
      *
      * @param url
-     *            the URL to load the JavaScript from, not <code>null</code>
+     *            the URL to load the JavaScript module from, not
+     *            <code>null</code>
      */
     public void addJsModule(String url) {
         addJsModule(url, LoadMode.EAGER);
     }
 
     /**
-     * Adds the given JavaScript module to the page and ensures that it is
-     * loaded successfully.
+     * Adds the given external JavaScript module to the page and ensures that it
+     * is loaded successfully.
      * <p>
-     * For component related JavaScript dependencies, you should use the
-     * {@link JsModule @JsModule} annotation.
+     * If the JavaScript modules are local or do not need to be added
+     * dynamically, you should use the {@link JsModule @JsModule} annotation
+     * instead.
      *
      * @param url
-     *            the URL to load the JavaScript from, not <code>null</code>
+     *            the URL to load the JavaScript module from, not
+     *            <code>null</code>
      * @param loadMode
      *            determines dependency load mode, refer to {@link LoadMode} for
      *            details
