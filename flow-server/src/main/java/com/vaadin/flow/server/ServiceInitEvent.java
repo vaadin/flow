@@ -73,7 +73,11 @@ public class ServiceInitEvent extends EventObject {
      *
      * @param bootstrapListener
      *            the bootstrap listener to add, not <code>null</code>
+     * @deprecated This API is deprecated in favor of
+     *             {@link ServiceInitEvent#addClientIndexBootstrapListener} when
+     *             using client-side bootstrapping
      */
+    @Deprecated
     public void addBootstrapListener(BootstrapListener bootstrapListener) {
         Objects.requireNonNull(bootstrapListener,
                 "Bootstrap listener cannot be null");
@@ -124,7 +128,11 @@ public class ServiceInitEvent extends EventObject {
      * service.
      *
      * @return the stream of added bootstrap listeners
+     * @deprecated This API is deprecated in favor of
+     *             {@link ServiceInitEvent#getAddedClientIndexBootstrapListeners()}
+     *             when using client-side bootstrapping
      */
+    @Deprecated
     public Stream<BootstrapListener> getAddedBootstrapListeners() {
         return addedBootstrapListeners.stream();
     }
