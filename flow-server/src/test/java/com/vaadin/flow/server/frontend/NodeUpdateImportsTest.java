@@ -240,28 +240,28 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         // An import not found in node_modules
         expectedLines.add("import 'unresolved/component';");
 
-        expectedLines.add("import $css_0 from 'Frontend/foo.css';");
+        expectedLines.add("import $css_0 from '@vaadin/vaadin-mixed-component/bar.css'");
         expectedLines.add("import $css_1 from 'Frontend/foo.css';");
         expectedLines.add("import $css_2 from 'Frontend/foo.css';");
         expectedLines.add(
-                "import $css_3 from '@vaadin/vaadin-mixed-component/bar.css';");
+                "import $css_3 from 'Frontend/foo.css';");
         expectedLines.add("import $css_4 from 'Frontend/foo.css';");
         expectedLines.add("import $css_5 from 'Frontend/foo.css';");
         expectedLines.add("import $css_6 from 'Frontend/foo.css';");
         expectedLines.add(
-                "addCssBlock(`<dom-module id=\"baz\"><template><style>${$css_0}</style></template></dom-module>`);");
+                "addCssBlock(`<custom-style><style>${$css_0}</style></custom-style>`);");
         expectedLines.add(
-                "addCssBlock(`<dom-module id=\"flow_css_mod_1\" theme-for=\"foo-bar\"><template><style>${$css_1}</style></template></dom-module>`);");
+                "addCssBlock(`<custom-style><style>${$css_1}</style></custom-style>`);");
         expectedLines.add(
-                "addCssBlock(`<dom-module id=\"flow_css_mod_2\" theme-for=\"foo-bar\"><template><style include=\"bar\">${$css_2}</style></template></dom-module>`);");
+                "addCssBlock(`<custom-style><style include=\"bar\">${$css_2}</style></custom-style>`);");
         expectedLines.add(
-                "addCssBlock(`<custom-style><style>${$css_3}</style></custom-style>`);");
+                "addCssBlock(`<dom-module id=\"baz\"><template><style>${$css_3}</style></template></dom-module>`);");
         expectedLines.add(
-                "addCssBlock(`<custom-style><style>${$css_4}</style></custom-style>`);");
+                "addCssBlock(`<dom-module id=\"baz\"><template><style include=\"bar\">${$css_4}</style></template></dom-module>`);");
         expectedLines.add(
-                "addCssBlock(`<custom-style><style include=\"bar\">${$css_5}</style></custom-style>`);");
+                "addCssBlock(`<dom-module id=\"flow_css_mod_5\" theme-for=\"foo-bar\"><template><style>${$css_5}</style></template></dom-module>`);");
         expectedLines.add(
-                "addCssBlock(`<dom-module id=\"baz\"><template><style include=\"bar\">${$css_6}</style></template></dom-module>`);");
+                "addCssBlock(`<dom-module id=\"flow_css_mod_6\" theme-for=\"foo-bar\"><template><style include=\"bar\">${$css_6}</style></template></dom-module>`);");
 
         assertFalse(importsFile.exists());
 
