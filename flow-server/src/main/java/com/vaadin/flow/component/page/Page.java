@@ -295,9 +295,9 @@ public class Page implements Serializable {
      * @param loadMode
      *            determines dependency load mode, refer to {@link LoadMode} for
      *            details
-     * @deprecated {@link com.vaadin.flow.shared.ui.LoadMode} is not functional
-     *             with external JavaScript modules, as those are loaded as
-     *             deferred due to {@code type=module} in {@code scrip} tag. Use
+     * @deprecated {@code LoadMode} is not functional with external JavaScript
+     *             modules, as those are loaded as deferred due to
+     *             {@code type=module} in {@code scrip} tag. Use
      *             {@link #addJsModule(String)} instead.
      */
     @Deprecated
