@@ -30,7 +30,10 @@ import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.SessionInitListener;
+import com.vaadin.flow.server.UIInitListener;
+import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.startup.DevModeInitializer.DevModeClassFinder;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
@@ -44,6 +47,9 @@ public class DevModeClassFinderTest {
     @Test
     public void applicableClasses_knownClasses() {
         Collection<Class<?>> classes = getApplicableClasses();
+        Assert.assertTrue(classes.contains(Route.class));
+        Assert.assertTrue(classes.contains(UIInitListener.class));
+        Assert.assertTrue(classes.contains(VaadinServiceInitListener.class));
         Assert.assertTrue(classes.contains(WebComponentExporter.class));
         Assert.assertTrue(classes.contains(NpmPackage.class));
         Assert.assertTrue(classes.contains(NpmPackage.Container.class));
@@ -56,7 +62,7 @@ public class DevModeClassFinderTest {
         Assert.assertTrue(classes.contains(Theme.class));
         Assert.assertTrue(classes.contains(NoTheme.class));
 
-        Assert.assertEquals(11, classes.size());
+        Assert.assertEquals(14, classes.size());
     }
 
     @Test
