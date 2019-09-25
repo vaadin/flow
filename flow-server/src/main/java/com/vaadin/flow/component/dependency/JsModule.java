@@ -40,12 +40,12 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * {@code src/main/resources/META-INF/resources/frontend} directory).
  * </ul>
  * <p>
- * It is guaranteed that dependencies will be loaded only once. The files
- * loaded will be in the same order as the annotations were on the class.
- * However, loading order is only guaranteed on a class level; Annotations
- * from different classes may appear in different order, grouped by the
- * annotated class. Also, files identified by {@code @JsModule} will be
- * loaded before {@link com.vaadin.flow.component.dependency.JavaScript} and
+ * It is guaranteed that dependencies will be loaded only once. The files loaded
+ * will be in the same order as the annotations were on the class. However,
+ * loading order is only guaranteed on a class level; Annotations from different
+ * classes may appear in different order, grouped by the annotated class. Also,
+ * files identified by {@code @JsModule} will be loaded before
+ * {@link com.vaadin.flow.component.dependency.JavaScript} and
  * {@link com.vaadin.flow.component.dependency.CssImport}.
  * <p>
  * NOTE: while this annotation is not inherited using the
@@ -54,12 +54,12 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * dependencies to the browser.
  * <p>
  * NOTE: Currently all frontend resources are bundled together into one big
- * bundle. This means, that JavaScript files loaded by one class will be
- * present on a view constructed by another class. For example, if there are
- * two classes {@code RootRoute} annotated with {@code @Route("")}, and
- * another class {@code RouteA} annotated with {@code @Route("route-a")} and
- * {@code @JsModule("./src/jsmodule.js")}, the {@code jsmodule.js} will be
- * run on the root route as well.
+ * bundle. This means, that JavaScript files loaded by one class will be present
+ * on a view constructed by another class. For example, if there are two classes
+ * {@code RootRoute} annotated with {@code @Route("")}, and another class
+ * {@code RouteA} annotated with {@code @Route("route-a")} and
+ * {@code @JsModule("./src/jsmodule.js")}, the {@code jsmodule.js} will be run
+ * on the root route as well.
  *
  * @author Vaadin Ltd
  * @since 2.0
@@ -70,6 +70,7 @@ import com.vaadin.flow.shared.ui.LoadMode;
 @Target(ElementType.TYPE)
 @Documented
 @Repeatable(JsModule.Container.class)
+@Inherited
 public @interface JsModule {
 
     /**
@@ -100,6 +101,7 @@ public @interface JsModule {
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.TYPE)
     @Documented
+    @Inherited
     @interface Container {
 
         /**
