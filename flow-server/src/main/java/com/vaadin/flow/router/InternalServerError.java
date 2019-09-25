@@ -16,6 +16,7 @@
 package com.vaadin.flow.router;
 
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -30,7 +31,6 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.theme.NoTheme;
 
 /**
  * This is a basic default error view shown on exceptions during navigation.
@@ -38,7 +38,6 @@ import com.vaadin.flow.theme.NoTheme;
  * @since 1.0
  */
 @Tag(Tag.DIV)
-@NoTheme
 public class InternalServerError extends Component
         implements HasErrorParameter<Exception> {
 
