@@ -31,7 +31,6 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.theme.NoTheme;
 
 /**
  * This is a basic default error view shown on routing exceptions.
@@ -39,7 +38,6 @@ import com.vaadin.flow.theme.NoTheme;
  * @since 1.0
  */
 @Tag(Tag.DIV)
-@NoTheme
 public class RouteNotFoundError extends Component
         implements HasErrorParameter<NotFoundException> {
 
@@ -110,7 +108,8 @@ public class RouteNotFoundError extends Component
             return elementAsLink(route.getUrl(), text);
         } else {
             Class<? extends Component> target = route.getNavigationTarget();
-            if (ParameterDeserializer.isAnnotatedParameter(target, OptionalParameter.class)) {
+            if (ParameterDeserializer.isAnnotatedParameter(target,
+                    OptionalParameter.class)) {
                 text = text + " (supports optional parameter)";
                 return elementAsLink(route.getUrl(), text);
             } else {
