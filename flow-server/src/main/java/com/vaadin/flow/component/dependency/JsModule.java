@@ -85,7 +85,13 @@ public @interface JsModule {
      * details.
      *
      * @return load mode for the dependency
+     * @deprecated {@link com.vaadin.flow.shared.ui.LoadMode} does not function
+     *             with JavaScript modules. If the module is local, it is
+     *             included into the frontend resource bundle. If the module is
+     *             external, it is loaded as deferred due to {@code type=module}
+     *             in {@code scrip} tag.
      */
+    @Deprecated
     LoadMode loadMode() default LoadMode.EAGER;
 
     /**
