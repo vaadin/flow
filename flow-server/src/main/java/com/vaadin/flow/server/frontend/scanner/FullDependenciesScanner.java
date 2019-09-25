@@ -207,7 +207,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                     .loadClass(CssImport.class.getName());
             Set<Class<?>> annotatedClasses = getFinder()
                     .getAnnotatedClasses(loadedAnnotation);
-            Set<CssData> result = new HashSet<>();
+            Set<CssData> result = new LinkedHashSet<>();
             for (Class<?> clazz : annotatedClasses) {
                 classes.add(clazz.getName());
                 List<? extends Annotation> imports = annotationFinder
