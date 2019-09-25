@@ -16,10 +16,7 @@
 package com.vaadin.flow.server.frontend.scanner;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.ArrayList;
@@ -56,66 +53,8 @@ import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.VERSI
  *
  * @since 2.0
  */
-public class FrontendDependencies implements Serializable {
+public class FrontendDependencies extends AbstractDependenciesScanner {
 
-    public static final String LUMO = "com.vaadin.flow.theme.lumo.Lumo";
-
-    /**
-     * A wrapper for the Theme instance that use reflection for executing its
-     * methods. This is needed because updaters can be executed from maven
-     * plugins that use different classloaders for the running process and for
-     * the project configuration.
-     */
-    private static class ThemeWrapper implements AbstractTheme, Serializable {
-        private final Serializable instance;
-
-        public ThemeWrapper(Class<? extends AbstractTheme> theme)
-                throws InstantiationException, IllegalAccessException {
-            instance = theme.newInstance();
-        }
-
-        @Override
-        public String getBaseUrl() {
-            return invoke(instance, "getBaseUrl");
-        }
-
-        @Override
-        public String getThemeUrl() {
-            return invoke(instance, "getThemeUrl");
-        }
-
-        @Override
-        public Map<String, String> getHtmlAttributes(String variant) {
-            return invoke(instance, "getHtmlAttributes", variant);
-        }
-
-        @Override
-        public List<String> getHeaderInlineContents() {
-            return invoke(instance, "getHeaderInlineContents");
-        }
-
-        @Override
-        public String translateUrl(String url) {
-            return invoke(instance, "translateUrl", url);
-        }
-
-        @SuppressWarnings("unchecked")
-        private <T> T invoke(Object instance, String methodName,
-                Object... arguments) {
-            try {
-                for (Method m : instance.getClass().getMethods()) {
-                    if (m.getName().equals(methodName)) {
-                        return (T) m.invoke(instance, arguments);
-                    }
-                }
-            } catch (IllegalAccessException | InvocationTargetException e) {
-                throw new IllegalArgumentException(e);
-            }
-            return null;
-        }
-    }
-
-    private final ClassFinder finder;
     private final HashMap<String, EndPointData> endPoints = new HashMap<>();
     private ThemeDefinition themeDefinition;
     private AbstractTheme themeInstance;
@@ -146,10 +85,10 @@ public class FrontendDependencies implements Serializable {
      */
     public FrontendDependencies(ClassFinder finder,
             boolean generateEmbeddableWebComponents) {
+        super(finder);
         log().info(
                 "Scanning classes to find frontend configurations and dependencies...");
         long start = System.nanoTime();
-        this.finder = finder;
         try {
             computeEndpoints();
             computeApplicationTheme(endPoints);
@@ -171,6 +110,7 @@ public class FrontendDependencies implements Serializable {
      *
      * @return the set of npm packages
      */
+    @Override
     public Map<String, String> getPackages() {
         return packages;
     }
@@ -181,6 +121,7 @@ public class FrontendDependencies implements Serializable {
      *
      * @return list of JS modules
      */
+    @Override
     public List<String> getModules() {
         // A module may appear in both data.getThemeModules and data.getModules,
         // depending on how the classes were visited, hence the LinkedHashSet
@@ -199,6 +140,7 @@ public class FrontendDependencies implements Serializable {
      *
      * @return the set of JS files
      */
+    @Override
     public Set<String> getScripts() {
         Set<String> all = new LinkedHashSet<>();
         for (EndPointData data : endPoints.values()) {
@@ -212,6 +154,7 @@ public class FrontendDependencies implements Serializable {
      *
      * @return the set of CSS files
      */
+    @Override
     public Set<CssData> getCss() {
         Set<CssData> all = new LinkedHashSet<>();
         for (EndPointData data : endPoints.values()) {
@@ -225,6 +168,7 @@ public class FrontendDependencies implements Serializable {
      *
      * @return the set of JS files
      */
+    @Override
     public Set<String> getClasses() {
         return visited;
     }
@@ -243,6 +187,7 @@ public class FrontendDependencies implements Serializable {
      *
      * @return the theme definition
      */
+    @Override
     public ThemeDefinition getThemeDefinition() {
         return themeDefinition;
     }
@@ -252,6 +197,7 @@ public class FrontendDependencies implements Serializable {
      *
      * @return the theme instance
      */
+    @Override
     public AbstractTheme getTheme() {
         return themeInstance;
     }
@@ -270,19 +216,19 @@ public class FrontendDependencies implements Serializable {
     private void computeEndpoints() throws ClassNotFoundException, IOException {
         // Because of different classLoaders we need compare against class
         // references loaded by the specific class finder loader
-        Class<? extends Annotation> routeClass = finder
+        Class<? extends Annotation> routeClass = getFinder()
                 .loadClass(Route.class.getName());
-        for (Class<?> route : finder.getAnnotatedClasses(routeClass)) {
+        for (Class<?> route : getFinder().getAnnotatedClasses(routeClass)) {
             collectEndpoints(route);
         }
 
-        for (Class<?> initListener : finder.getSubTypesOf(
-                finder.loadClass(UIInitListener.class.getName()))) {
+        for (Class<?> initListener : getFinder().getSubTypesOf(
+                getFinder().loadClass(UIInitListener.class.getName()))) {
             collectEndpoints(initListener);
         }
 
-        for (Class<?> initListener : finder.getSubTypesOf(
-                finder.loadClass(VaadinServiceInitListener.class.getName()))) {
+        for (Class<?> initListener : getFinder().getSubTypesOf(getFinder()
+                .loadClass(VaadinServiceInitListener.class.getName()))) {
             collectEndpoints(initListener);
         }
     }
@@ -348,7 +294,7 @@ public class FrontendDependencies implements Serializable {
             ThemeData themeData = themes.iterator().next();
             if (!themeData.isNotheme()) {
                 variant = themeData.getVariant();
-                theme = finder.loadClass(themeData.getName());
+                theme = getFinder().loadClass(themeData.getName());
             }
 
         }
@@ -387,9 +333,9 @@ public class FrontendDependencies implements Serializable {
      */
     private void computePackages() throws ClassNotFoundException, IOException {
         FrontendAnnotatedClassVisitor npmPackageVisitor = new FrontendAnnotatedClassVisitor(
-                finder, NpmPackage.class.getName());
+                getFinder(), NpmPackage.class.getName());
 
-        for (Class<?> component : finder
+        for (Class<?> component : getFinder()
                 .getAnnotatedClasses(NpmPackage.class.getName())) {
             npmPackageVisitor.visitClass(component.getName());
         }
@@ -437,11 +383,11 @@ public class FrontendDependencies implements Serializable {
             IllegalAccessException, InstantiationException {
         // Because of different classLoaders we need compare against class
         // references loaded by the specific class finder loader
-        Class<? extends Annotation> routeClass = finder
+        Class<? extends Annotation> routeClass = getFinder()
                 .loadClass(Route.class.getName());
-        Class<WebComponentExporter<? extends Component>> exporterClass = finder
+        Class<WebComponentExporter<? extends Component>> exporterClass = getFinder()
                 .loadClass(WebComponentExporter.class.getName());
-        Set<? extends Class<? extends WebComponentExporter<? extends Component>>> exporterClasses = finder
+        Set<? extends Class<? extends WebComponentExporter<? extends Component>>> exporterClasses = getFinder()
                 .getSubTypesOf(exporterClass);
 
         // if no exporters in the project, return
@@ -521,14 +467,6 @@ public class FrontendDependencies implements Serializable {
         return endPoint;
     }
 
-    private Class<? extends AbstractTheme> getLumoTheme() {
-        try {
-            return finder.loadClass(LUMO);
-        } catch (ClassNotFoundException ignore) { // NOSONAR
-            return null;
-        }
-    }
-
     private boolean isVisitable(String className) {
         // We should visit only those classes that might have NpmPackage,
         // JsImport, JavaScript and HtmlImport annotations, basically
@@ -546,7 +484,7 @@ public class FrontendDependencies implements Serializable {
     }
 
     private URL getUrl(String className) {
-        return finder.getResource(className.replace(".", "/") + ".class");
+        return getFinder().getResource(className.replace(".", "/") + ".class");
     }
 
     @Override
