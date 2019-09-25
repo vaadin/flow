@@ -67,10 +67,6 @@ public class DefaultDeploymentConfiguration
             + "and \"automatic\". The default of \"disabled\" will be used."
             + SEPARATOR;
 
-    private static final String CLIENT_SIDE_BOOTSTRAP_MODE = SEPARATOR
-            + "%nRunning the application in 'clientSideMode'.%n"
-            + "%s" + SEPARATOR;
-
     /**
      * Default value for {@link #getHeartbeatInterval()} = {@value} .
      */
@@ -311,8 +307,9 @@ public class DefaultDeploymentConfiguration
                     .getProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR));
             String indexHTMLMessage = getIndexHTMLMessage(frontendDir);
             String entryPointMessage = getEntryPointMessage(frontendDir);
-            String outputMessage = String.format(CLIENT_SIDE_BOOTSTRAP_MODE,
-                    indexHTMLMessage + entryPointMessage);
+            String outputMessage = SEPARATOR
+                    + "\nRunning the application in 'clientSideMode'.\n"
+                    + indexHTMLMessage + entryPointMessage + SEPARATOR;
             getLogger().info(outputMessage);
         }
     }

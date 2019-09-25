@@ -343,22 +343,7 @@ public class NodeTasks implements FallibleCommand {
             commands.add(packageCreator);
         }
 
-        if (builder.clientSideMode) {
-            File outputDirectory = new File(builder.npmFolder,
-                    FrontendUtils.TARGET);
-            TaskGenerateIndexHtml taskGenerateIndexHtml = new TaskGenerateIndexHtml(
-                    builder.frontendDirectory,
-                    outputDirectory);
-            commands.add(taskGenerateIndexHtml);
-            TaskGenerateIndexJs taskGenerateIndexJs = new TaskGenerateIndexJs(
-                    builder.frontendDirectory,
-                    new File(builder.generatedFolder, IMPORTS_NAME), outputDirectory);
-            commands.add(taskGenerateIndexJs);
-            TaskGenerateTsConfig taskGenerateTsConfig = new TaskGenerateTsConfig(
-                    builder.frontendDirectory,
-                    builder.npmFolder);
-            commands.add(taskGenerateTsConfig);
-        }
+        generateClientBootstrapFiles(builder);
 
         if (builder.enablePackagesUpdate) {
             TaskUpdatePackages packageUpdater = new TaskUpdatePackages(
@@ -398,6 +383,25 @@ public class NodeTasks implements FallibleCommand {
                 builder.visitedClasses
                         .addAll(frontendDependencies.getClasses());
             }
+        }
+    }
+
+    private void generateClientBootstrapFiles(Builder builder) {
+        if (builder.clientSideMode) {
+            File outputDirectory = new File(builder.npmFolder,
+                    FrontendUtils.TARGET);
+            TaskGenerateIndexHtml taskGenerateIndexHtml = new TaskGenerateIndexHtml(
+                    builder.frontendDirectory,
+                    outputDirectory);
+            commands.add(taskGenerateIndexHtml);
+            TaskGenerateIndexJs taskGenerateIndexJs = new TaskGenerateIndexJs(
+                    builder.frontendDirectory,
+                    new File(builder.generatedFolder, IMPORTS_NAME), outputDirectory);
+            commands.add(taskGenerateIndexJs);
+            TaskGenerateTsConfig taskGenerateTsConfig = new TaskGenerateTsConfig(
+                    builder.frontendDirectory,
+                    builder.npmFolder);
+            commands.add(taskGenerateTsConfig);
         }
     }
 
