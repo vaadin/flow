@@ -152,6 +152,13 @@ public class FrontendUtils {
      */
     public static final String PARAM_TOKEN_FILE = "vaadin.frontend.token.file";
 
+    /**
+     * Boolean parameter for enabling/disabling bytecode scanning in dev mode.
+     * If enabled, entry points are scanned for reachable frontend resources.
+     * If disabled, all classes on the classpath are scanned.
+     */
+    public static final String PARAM_USE_BYTECODE_SCANNER = "vaadin.useByteCodeScanner";
+
     private static final String NOT_FOUND = "%n%n======================================================================================================"
             + "%nFailed to determine '%s' tool." + "%nPlease install it either:"
             + "%n  - by following the https://nodejs.org/en/download/ guide to install it globally"
