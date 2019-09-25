@@ -68,7 +68,7 @@ public class DefaultDeploymentConfiguration
             + SEPARATOR;
 
     private static final String CLIENT_SIDE_BOOTSTRAP_MODE = SEPARATOR
-            + "\nRunning the application in 'clientSideMode'.\n"
+            + "%nRunning the application in 'clientSideMode'.%n"
             + "%s" + SEPARATOR;
 
     /**
@@ -341,10 +341,10 @@ public class DefaultDeploymentConfiguration
         String indexHTMLMessage;
         if (!indexHTML.exists()) {
             indexHTMLMessage = String.format(
-                    "'index.html' is not found from '%s'. Using default 'index.html'\n",
+                    "'index.html' is not found from '%s'. Using default 'index.html'%n",
                     indexHTML.getPath());
         } else {
-            indexHTMLMessage = String.format("Using 'index.html' from '%s'\n",
+            indexHTMLMessage = String.format("Using 'index.html' from '%s'%n",
                     indexHTML.getPath());
         }
         return indexHTMLMessage;
