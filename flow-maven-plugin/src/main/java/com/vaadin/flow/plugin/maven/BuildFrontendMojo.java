@@ -132,7 +132,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
      * components.
      */
     @Parameter(defaultValue = "true")
-    private boolean useByteCodeScanner;
+    private boolean optimizeBundle;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -177,7 +177,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
         new NodeTasks.Builder(getClassFinder(project), npmFolder,
                 generatedFolder, frontendDirectory).runNpmInstall(runNpmInstall)
                         .enablePackagesUpdate(true)
-                        .useByteCodeScanner(useByteCodeScanner)
+                        .useByteCodeScanner(optimizeBundle)
                         .copyResources(jarFiles)
                         .copyLocalResources(frontendResourcesDirectory)
                         .enableImportsUpdate(true)

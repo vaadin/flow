@@ -70,7 +70,7 @@ import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_USE_BYTECODE_SCANNER;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
@@ -304,8 +304,10 @@ public class DevModeInitializer implements ServletContainerInitializer,
                 DevModeInitializer.class.getClassLoader());
 
         boolean useByteCodeScanner = config.getBooleanProperty(
-                PARAM_USE_BYTECODE_SCANNER, Boolean.parseBoolean(
-                        System.getProperty(PARAM_USE_BYTECODE_SCANNER, "false")));
+                SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
+                Boolean.parseBoolean(
+                        System.getProperty(SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
+                                "false")));
         try {
             builder.enablePackagesUpdate(true)
                     .useByteCodeScanner(useByteCodeScanner)

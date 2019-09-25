@@ -23,7 +23,6 @@ import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.DevModeInitializer.VisitedClasses;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
@@ -197,8 +196,8 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     }
 
     @Test
-    public void shouldUseByteCodeScannerIfSystemPropertySet() throws Exception {
-        System.setProperty(FrontendUtils.PARAM_USE_BYTECODE_SCANNER, "true");
+    public void shouldUseByteCodeScannerIfPropertySet() throws Exception {
+        System.setProperty(Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE, "true");
         DevModeInitializer devModeInitializer = new DevModeInitializer();
         final Set<Class<?>> classes = new HashSet<>();
         classes.add(NotVisitedWithDeps.class);
@@ -216,8 +215,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     }
 
     @Test
-    public void shouldUseFullPathScannerIfSystemPropertySet() throws Exception {
-        System.setProperty(FrontendUtils.PARAM_USE_BYTECODE_SCANNER, "false");
+    public void shouldUseFullPathScannerByDefault() throws Exception {
         DevModeInitializer devModeInitializer = new DevModeInitializer();
         final Set<Class<?>> classes = new HashSet<>();
         classes.add(NotVisitedWithDeps.class);
