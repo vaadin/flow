@@ -39,7 +39,6 @@ import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.function.SerializableBiFunction;
 import com.vaadin.flow.internal.AnnotationReader;
-import com.vaadin.flow.router.Router;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
@@ -293,13 +292,9 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
 
             Class<? extends Annotation> loadedNoThemeAnnotation = getFinder()
                     .loadClass(NoTheme.class.getName());
-            // Filter out build-in classes (which are in the router package)
-            // which
-            // are annotated with @NoTheme (see e.g. InternalServerError).
+
             Set<Class<?>> notThemeClasses = getFinder()
                     .getAnnotatedClasses(loadedNoThemeAnnotation).stream()
-                    .filter(clazz -> !clazz.getName()
-                            .startsWith(Router.class.getPackage().getName()))
                     .collect(Collectors.toSet());
             if (themes.size() > 1) {
                 throw new IllegalStateException(
