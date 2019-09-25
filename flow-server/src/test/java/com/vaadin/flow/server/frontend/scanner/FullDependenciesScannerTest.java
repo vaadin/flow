@@ -16,6 +16,7 @@
 package com.vaadin.flow.server.frontend.scanner;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -228,28 +229,30 @@ public class FullDependenciesScannerTest {
     }
 
     @Test
-    public void getCss_returnAllCss_getClassesReturnAllCssAnnotatedComponents()
+    public void getCss_returnAllCss_orderPerClassIsPreserved_getClassesReturnAllCssAnnotatedComponents()
             throws ClassNotFoundException {
         FrontendDependenciesScanner scanner = setUpAnnotationScanner(
                 CssImport.class);
 
-        Set<CssData> css = scanner.getCss();
+        List<CssData> css = new ArrayList<>(scanner.getCss());
 
         Assert.assertEquals(7, css.size());
-        Assert.assertTrue(css.contains(createCssData(
-                "@vaadin/vaadin-mixed-component/bar.css", null, null, null)));
-        Assert.assertTrue(
-                css.contains(createCssData("./foo.css", null, null, null)));
-        Assert.assertTrue(
-                css.contains(createCssData("./foo.css", null, "bar", null)));
-        Assert.assertTrue(
-                css.contains(createCssData("./foo.css", "baz", null, null)));
-        Assert.assertTrue(
-                css.contains(createCssData("./foo.css", "baz", "bar", null)));
-        Assert.assertTrue(css
-                .contains(createCssData("./foo.css", null, null, "foo-bar")));
-        Assert.assertTrue(css
-                .contains(createCssData("./foo.css", null, "bar", "foo-bar")));
+        Assert.assertEquals(
+                createCssData("@vaadin/vaadin-mixed-component/bar.css", null,
+                        null, null),
+                css.get(0));
+        Assert.assertEquals(createCssData("./foo.css", null, null, null),
+                css.get(1));
+        Assert.assertEquals(createCssData("./foo.css", null, "bar", null),
+                css.get(2));
+        Assert.assertEquals(createCssData("./foo.css", "baz", null, null),
+                css.get(3));
+        Assert.assertEquals(createCssData("./foo.css", "baz", "bar", null),
+                css.get(4));
+        Assert.assertEquals(createCssData("./foo.css", null, null, "foo-bar"),
+                css.get(5));
+        Assert.assertEquals(createCssData("./foo.css", null, "bar", "foo-bar"),
+                css.get(6));
 
         Set<String> visitedClasses = scanner.getClasses();
         Assert.assertEquals(1, visitedClasses.size());
