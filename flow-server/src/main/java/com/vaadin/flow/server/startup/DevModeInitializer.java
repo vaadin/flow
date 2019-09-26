@@ -379,26 +379,10 @@ public class DevModeInitializer implements ServletContainerInitializer,
             if (en == null) {
                 return frontendFiles;
             }
+            Set<String> vfsJars = new HashSet<>();
             while (en.hasMoreElements()) {
                 URL url = en.nextElement();
                 String urlString = url.toString();
-
-                Matcher jarVfsMatcher = VFS_FILE_REGEX.matcher(urlString);
-                if (jarVfsMatcher.find()) {
-                    frontendFiles.add(getPhysicalFileOfJBossVfsJar(
-                            new URL(jarVfsMatcher.group(1))));
-                    continue;
-                }
-
-                Matcher directoryVfsMatcher = VFS_DIRECTORY_REGEX
-                        .matcher(urlString);
-                if (directoryVfsMatcher.find()) {
-                    URL vfsDirUrl = new URL(urlString.substring(0,
-                            urlString.lastIndexOf(resourcesFolder)));
-                    frontendFiles
-                            .add(getPhysicalFileOfJBossVfsDirectory(vfsDirUrl));
-                    continue;
-                }
 
                 String path = URLDecoder.decode(url.getPath(),
                         StandardCharsets.UTF_8.name());
@@ -406,6 +390,7 @@ public class DevModeInitializer implements ServletContainerInitializer,
                 Matcher dirMatcher = DIR_REGEX_FRONTEND_DEFAULT.matcher(path);
                 Matcher dirCompatibilityMatcher = DIR_REGEX_COMPATIBILITY_FRONTEND_DEFAULT
                         .matcher(path);
+                Matcher jarVfsMatcher = VFS_FILE_REGEX.matcher(urlString);
                 if (jarMatcher.find()) {
                     frontendFiles.add(new File(jarMatcher.group(1)));
                 } else if (dirMatcher.find()) {
@@ -413,6 +398,16 @@ public class DevModeInitializer implements ServletContainerInitializer,
                 } else if (dirCompatibilityMatcher.find()) {
                     frontendFiles
                             .add(new File(dirCompatibilityMatcher.group(1)));
+                } else if (jarVfsMatcher.find()) {
+                    String vfsJar = jarVfsMatcher.group(1);
+                    if (vfsJars.add(vfsJar))
+                        frontendFiles.add(
+                                getPhysicalFileOfJBossVfsJar(new URL(vfsJar)));
+                } else if (VFS_DIRECTORY_REGEX.matcher(urlString).find()) {
+                    URL vfsDirUrl = new URL(urlString.substring(0,
+                            urlString.lastIndexOf(resourcesFolder)));
+                    frontendFiles
+                            .add(getPhysicalFileOfJBossVfsDirectory(vfsDirUrl));
                 } else {
                     log().warn(
                             "Resource {} not visited because does not meet supported formats.",
@@ -444,7 +439,8 @@ public class DevModeInitializer implements ServletContainerInitializer,
             // their resources.
             List virtualFiles = (List) getChildrenRecursivelyMethod
                     .invoke(virtualFile);
-            File rootDirectory = (File) getPhysicalFileMethod.invoke(virtualFile);
+            File rootDirectory = (File) getPhysicalFileMethod
+                    .invoke(virtualFile);
             for (Object child : virtualFiles) {
                 // side effect: create real-world files
                 getPhysicalFileMethod.invoke(child);
@@ -452,8 +448,7 @@ public class DevModeInitializer implements ServletContainerInitializer,
             return rootDirectory;
         } catch (NoSuchMethodException | IllegalAccessException
                 | InvocationTargetException exc) {
-            throw new ServletException(
-                    "Failed to invoke JBoss VFS API.", exc);
+            throw new ServletException("Failed to invoke JBoss VFS API.", exc);
         }
     }
 
@@ -503,8 +498,7 @@ public class DevModeInitializer implements ServletContainerInitializer,
             return tempJarFile;
         } catch (NoSuchMethodException | IllegalAccessException
                 | InvocationTargetException exc) {
-            throw new ServletException(
-                    "Failed to invoke JBoss VFS API.", exc);
+            throw new ServletException("Failed to invoke JBoss VFS API.", exc);
         }
     }
 }
