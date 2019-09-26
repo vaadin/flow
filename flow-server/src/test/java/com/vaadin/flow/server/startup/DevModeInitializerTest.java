@@ -1,5 +1,6 @@
 package com.vaadin.flow.server.startup;
 
+import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -67,27 +68,27 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
     @Test
     public void loadingJars_useModernResourcesFolder_allFilesExist()
-            throws IOException {
+            throws IOException, ServletException {
         loadingJars_allFilesExist(Constants.RESOURCES_FRONTEND_DEFAULT);
     }
 
     @Test
     public void loadingJars_useObsoleteResourcesFolder_allFilesExist()
-            throws IOException {
+            throws IOException, ServletException {
         loadingJars_allFilesExist(
                 Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT);
     }
 
     @Test
     public void loadingFsResources_useModernResourcesFolder_allFilesExist()
-            throws IOException {
+            throws IOException, ServletException {
         loadingFsResources_allFilesExist("/dir-with-modern-frontend/",
                 Constants.RESOURCES_FRONTEND_DEFAULT);
     }
 
     @Test
     public void loadingFsResources_useObsoleteResourcesFolder_allFilesExist()
-            throws IOException {
+            throws IOException, ServletException {
         loadingFsResources_allFilesExist("/dir-with-frontend-resources/",
                 Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT);
     }
@@ -233,7 +234,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     }
 
     private void loadingJars_allFilesExist(String resourcesFolder)
-            throws IOException {
+            throws IOException, ServletException {
         // Create jar urls for test
         URL jar = new URL("jar:"
                 + this.getClass().getResource("/").toString()
@@ -261,7 +262,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     }
 
     private void loadingFsResources_allFilesExist(String resourcesRoot,
-                                                  String resourcesFolder) throws IOException {
+            String resourcesFolder) throws IOException, ServletException {
         List<URL> urls = Collections.singletonList(
                 getClass().getResource(resourcesRoot + resourcesFolder));
 
