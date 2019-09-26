@@ -19,6 +19,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -51,6 +52,21 @@ public class UploadIT extends AbstractSpringTest {
         waitUntil(driver -> isElementPresent(By.className("uploaded-text")));
         WebElement uploadedText = findElement(By.className("uploaded-text"));
         Assert.assertEquals("foo", uploadedText.getText());
+    }
+
+    @Test
+    public void uploadComponentIsInitialized() {
+        open();
+
+        waitUntil(driver -> isElementPresent(By.id("upload"))
+                && findElement(By.id("upload")).isDisplayed());
+
+        List<TestBenchElement> inputs = $(TestBenchElement.class).id("upload")
+                .$("input").all();
+        Assert.assertFalse(
+                "Upload element is not initialized: it doesn't contain "
+                        + "any child element (so it has no element in the shadow root)",
+                inputs.isEmpty());
     }
 
     @Override
