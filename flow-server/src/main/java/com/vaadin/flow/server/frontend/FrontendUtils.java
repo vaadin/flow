@@ -116,6 +116,16 @@ public class FrontendUtils {
     public static final String IMPORTS_NAME = "generated-flow-imports.js";
 
     /**
+     * Name of the file that contains all application imports, javascript, theme
+     * and style annotations which are not discovered by the current scanning
+     * strategy (but they are in the project classpath). This file is
+     * dynamically imported by the {@link FrontendUtils#IMPORTS_NAME} file. It
+     * is always generated in the {@link FrontendUtils#DEFAULT_GENERATED_DIR}
+     * folder.
+     */
+    public static final String FALLBACK_IMPORTS_NAME = "generated-flow-imports-fallback.js";
+
+    /**
      * A parameter for overriding the
      * {@link FrontendUtils#DEFAULT_GENERATED_DIR} folder.
      */
