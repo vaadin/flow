@@ -38,6 +38,8 @@ export interface NavigationCommands {
   prevent: () => any;
 }
 
+const $wnd = window as any;
+
 /**
  * Client API for flow UI operations.
  */
@@ -183,7 +185,6 @@ export class Flow {
         const tag = `flow-container-${id.toLowerCase()}`;
         this.container = this.flowRoot.$[id] = document.createElement(tag);
         this.container.id = id;
-        window.console.log("Created container for the flow UI with " + tag);
       }
     }
     return this.response;
@@ -195,7 +196,6 @@ export class Flow {
     clientMod.init();
     // client init is async, we need to loop until initialized
     return new Promise(resolve => {
-      const $wnd = window as any;
       const intervalId = setInterval(() => {
         // client `isActive() == true` while initializing
         const initializing = Object.keys($wnd.Vaadin.Flow.clients)
@@ -208,9 +208,16 @@ export class Flow {
     });
   }
 
-  // Send the remote call to `JavaScriptBootstrapHandler` in order to init
-  // server session and UI, and get the `appConfig` and `uidl`
+  // Returns the `appConfig` object
   private async flowInitUi(serverSideRouting: boolean): Promise<AppInitResponse> {
+    // appConfig was sent in the index.html request
+    const initial = $wnd.Vaadin && $wnd.Vaadin.Flow && $wnd.Vaadin.Flow.initial;
+    if (initial) {
+      $wnd.Vaadin.Flow.initial = undefined;
+      return Promise.resolve(initial);
+    }
+
+    // send a request to the `JavaScriptBootstrapHandler`
     return new Promise((resolve, reject) => {
       const httpRequest = new (window as any).XMLHttpRequest();
       httpRequest.open('GET', 'VAADIN/?v-r=init' +
