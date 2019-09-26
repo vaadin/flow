@@ -456,18 +456,6 @@ public class DevModeInitializer implements ServletContainerInitializer,
             throws IOException, ServletException {
         try {
             Object jarVirtualFile = url.openConnection().getContent();
-            Class virtualFileClass = jarVirtualFile.getClass();
-
-            // Reflection as we cannot afford a dependency to WildFly or JBoss
-            Method getChildrenRecursivelyMethod = virtualFileClass
-                    .getMethod("getChildrenRecursively");
-            Method openStreamMethod = virtualFileClass.getMethod("openStream");
-            Method isFileMethod = virtualFileClass.getMethod("isFile");
-            Method getPathNameRelativeToMethod = virtualFileClass
-                    .getMethod("getPathNameRelativeTo", virtualFileClass);
-
-            List jarVirtualChildren = (List) getChildrenRecursivelyMethod
-                    .invoke(jarVirtualFile);
 
             // Creating a temporary jar file out of the vfs files
             String vfsJarPath = url.toString();
@@ -476,22 +464,7 @@ public class DevModeInitializer implements ServletContainerInitializer,
                     vfsJarPath.lastIndexOf(".jar"));
             Path tempJar = Files.createTempFile(fileNamePrefix, ".jar");
 
-            try (ZipOutputStream zipOutputStream = new ZipOutputStream(
-                    Files.newOutputStream(tempJar))) {
-                for (Object child : jarVirtualChildren) {
-                    if (!(Boolean) isFileMethod.invoke(child))
-                        continue;
-
-                    String relativePath = (String) getPathNameRelativeToMethod
-                            .invoke(child, jarVirtualFile);
-                    InputStream inputStream = (InputStream) openStreamMethod
-                            .invoke(child);
-                    ZipEntry zipEntry = new ZipEntry(relativePath);
-                    zipOutputStream.putNextEntry(zipEntry);
-                    IOUtils.copy(inputStream, zipOutputStream);
-                    zipOutputStream.closeEntry();
-                }
-            }
+            generateJarFromJBossVfsFolder(jarVirtualFile, tempJar);
 
             File tempJarFile = tempJar.toFile();
             tempJarFile.deleteOnExit();
@@ -499,6 +472,39 @@ public class DevModeInitializer implements ServletContainerInitializer,
         } catch (NoSuchMethodException | IllegalAccessException
                 | InvocationTargetException exc) {
             throw new ServletException("Failed to invoke JBoss VFS API.", exc);
+        }
+    }
+
+    private static void generateJarFromJBossVfsFolder(Object jarVirtualFile,
+            Path tempJar) throws IOException, IllegalAccessException,
+            InvocationTargetException, NoSuchMethodException {
+        // We should use reflection to use JBoss VFS API as we cannot afford a
+        // dependency to WildFly or JBoss
+        Class virtualFileClass = jarVirtualFile.getClass();
+        Method getChildrenRecursivelyMethod = virtualFileClass
+                .getMethod("getChildrenRecursively");
+        Method openStreamMethod = virtualFileClass.getMethod("openStream");
+        Method isFileMethod = virtualFileClass.getMethod("isFile");
+        Method getPathNameRelativeToMethod = virtualFileClass
+                .getMethod("getPathNameRelativeTo", virtualFileClass);
+
+        List jarVirtualChildren = (List) getChildrenRecursivelyMethod
+                .invoke(jarVirtualFile);
+        try (ZipOutputStream zipOutputStream = new ZipOutputStream(
+                Files.newOutputStream(tempJar))) {
+            for (Object child : jarVirtualChildren) {
+                if (!(Boolean) isFileMethod.invoke(child))
+                    continue;
+
+                String relativePath = (String) getPathNameRelativeToMethod
+                        .invoke(child, jarVirtualFile);
+                InputStream inputStream = (InputStream) openStreamMethod
+                        .invoke(child);
+                ZipEntry zipEntry = new ZipEntry(relativePath);
+                zipOutputStream.putNextEntry(zipEntry);
+                IOUtils.copy(inputStream, zipOutputStream);
+                zipOutputStream.closeEntry();
+            }
         }
     }
 }
