@@ -16,6 +16,7 @@
 
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
+        <vaadin.clientSideMode>true</vaadin.clientSideMode>
     </properties>
 
     <dependencies>
@@ -61,7 +62,6 @@
                 <configuration>
                     <compatibilityMode>false</compatibilityMode>
                     <productionMode>true</productionMode>
-                    <clientSideMode>true</clientSideMode>
                 </configuration>
             </plugin>
         </plugins>

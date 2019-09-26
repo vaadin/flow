@@ -45,7 +45,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
     public boolean productionMode;
 
     /**
-     * Whether or not we are running in client-side bootstrap mode (CCDM).
+     * Whether or not we are running in client-side bootstrap mode (CCDM). True
+     * if not defined.
      */
     @Parameter(defaultValue = "${vaadin.clientSideMode}")
     private String clientSideMode;
@@ -72,9 +73,13 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
         compatibility = compatibilityMode != null
                 ? Boolean.valueOf(compatibilityMode)
                 : isDefaultCompatibility();
-        // Default bootstrapping mode for V15 is clientSideMode
     }
 
+    /**
+     * Check if the plugin is running in `clientSideMode` or not. Default: true.
+     * 
+     * @return true if the `clientSideMode` property is not defined or empty.
+     */
     public boolean isClientSideMode() {
         if (clientSideMode == null || clientSideMode.isEmpty()) {
             return true;
