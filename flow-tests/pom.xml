@@ -22,6 +22,7 @@
             concurrent running of test modules. -->
         <server.port>8888</server.port>
         <server.stop.port>8889</server.stop.port>
+        <vaadin.clientSideMode>false</vaadin.clientSideMode>
     </properties>
 
     <dependencies>
@@ -197,6 +198,12 @@
                         <stopPort>${server.stop.port}</stopPort>
                         <stopKey>foo</stopKey>
                         <stopWait>5</stopWait>
+                        <systemProperties>
+                            <systemProperty>
+                                <name>vaadin.clientSideMode</name>
+                                <value>${vaadin.clientSideMode}</value>
+                            </systemProperty>
+                        </systemProperties>
                     </configuration>
                 </plugin>
             </plugins>

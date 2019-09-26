@@ -16,6 +16,7 @@
 
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
+        <vaadin.clientSideMode>true</vaadin.clientSideMode>
     </properties>
 
     <build>
@@ -30,10 +31,6 @@
                             <!-- make sure we do not leave webpack-dev-server running after IT -->
                             <name>vaadin.reuseDevServer</name>
                             <value>false</value>
-                        </systemProperty>
-                        <systemProperty>
-                            <name>vaadin.clientSideMode</name>
-                            <value>true</value>
                         </systemProperty>
                     </systemProperties>
                 </configuration>
@@ -53,7 +50,6 @@
                 <configuration>
                     <compatibilityMode>false</compatibilityMode>
                     <productionMode>false</productionMode>
-                    <clientSideMode>true</clientSideMode>
                 </configuration>
             </plugin>
         </plugins>

@@ -123,6 +123,9 @@
                             <!-- removing build simulates pure jetty:run -->
 <!--                            <goal>build-frontend</goal>-->
                         </goals>
+                        <configuration>
+                            <clientSideMode>false</clientSideMode>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
