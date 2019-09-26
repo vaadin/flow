@@ -26,23 +26,32 @@ import javax.servlet.annotation.WebListener;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -130,7 +139,7 @@ public class DevModeInitializer implements ServletContainerInitializer,
      * are actually used.
      */
     public static class VisitedClasses implements Serializable {
-        private Set<String> visitedClassNames;
+        private final Set<String> visitedClassNames;
 
         /**
          * Creates a new instance based on a set of class names.
@@ -195,12 +204,21 @@ public class DevModeInitializer implements ServletContainerInitializer,
     private static final Pattern JAR_FILE_REGEX = Pattern
             .compile(".*file:(.+\\.jar).*");
 
-    private static final Pattern DIR_REGEX_FRONTEND_DEFAULT = Pattern.compile(
-            "^(?:file:)?(.+)" + Constants.RESOURCES_FRONTEND_DEFAULT + "$");
+    private static final Pattern VFS_FILE_REGEX = Pattern
+            .compile("(vfs:/.+\\.jar).*");
 
+    private static final Pattern VFS_DIRECTORY_REGEX = Pattern
+            .compile("vfs:/.+");
+
+    // allow trailing slash
+    private static final Pattern DIR_REGEX_FRONTEND_DEFAULT = Pattern.compile(
+            "^(?:file:0)?(.+)" + Constants.RESOURCES_FRONTEND_DEFAULT + "/?$");
+
+    // allow trailing slash
     private static final Pattern DIR_REGEX_COMPATIBILITY_FRONTEND_DEFAULT = Pattern
             .compile("^(?:file:)?(.+)"
-                    + Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT + "$");
+                    + Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT
+                    + "/?$");
 
     @Override
     public void onStartup(Set<Class<?>> classes, ServletContext context)
@@ -304,7 +322,7 @@ public class DevModeInitializer implements ServletContainerInitializer,
                     .collectVisitedClasses(visitedClassNames).build().execute();
         } catch (ExecutionFailedException exception) {
             log().debug(
-                    "Could not initializer dev mode handler. One of the node tasks failed",
+                    "Could not initialize dev mode handler. One of the node tasks failed",
                     exception);
             throw new ServletException(exception);
         }
@@ -344,48 +362,150 @@ public class DevModeInitializer implements ServletContainerInitializer,
      * will fail in Java 9+
      */
     protected static Set<File> getJarFilesFromClassloader(
-            ClassLoader classLoader) {
-        Set<File> jarFiles = new HashSet<>();
-        jarFiles.addAll(getFrontendLocationsFromClassloader(classLoader,
+            ClassLoader classLoader) throws ServletException {
+        Set<File> frontendFiles = new HashSet<>();
+        frontendFiles.addAll(getFrontendLocationsFromClassloader(classLoader,
                 Constants.RESOURCES_FRONTEND_DEFAULT));
-        jarFiles.addAll(getFrontendLocationsFromClassloader(classLoader,
+        frontendFiles.addAll(getFrontendLocationsFromClassloader(classLoader,
                 Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT));
-        return jarFiles;
+        return frontendFiles;
     }
 
     private static Set<File> getFrontendLocationsFromClassloader(
-            ClassLoader classLoader, String resourcesFolder) {
-        Set<File> jarFiles = new HashSet<>();
+            ClassLoader classLoader, String resourcesFolder)
+            throws ServletException {
+        Set<File> frontendFiles = new HashSet<>();
         try {
             Enumeration<URL> en = classLoader.getResources(resourcesFolder);
             if (en == null) {
-                return jarFiles;
+                return frontendFiles;
             }
+            Set<String> vfsJars = new HashSet<>();
             while (en.hasMoreElements()) {
                 URL url = en.nextElement();
+                String urlString = url.toString();
+
                 String path = URLDecoder.decode(url.getPath(),
                         StandardCharsets.UTF_8.name());
                 Matcher jarMatcher = JAR_FILE_REGEX.matcher(path);
                 Matcher dirMatcher = DIR_REGEX_FRONTEND_DEFAULT.matcher(path);
                 Matcher dirCompatibilityMatcher = DIR_REGEX_COMPATIBILITY_FRONTEND_DEFAULT
                         .matcher(path);
+                Matcher jarVfsMatcher = VFS_FILE_REGEX.matcher(urlString);
                 if (jarMatcher.find()) {
-                    jarFiles.add(new File(jarMatcher.group(1)));
+                    frontendFiles.add(new File(jarMatcher.group(1)));
                 } else if (dirMatcher.find()) {
-                    jarFiles.add(new File(dirMatcher.group(1)));
+                    frontendFiles.add(new File(dirMatcher.group(1)));
                 } else if (dirCompatibilityMatcher.find()) {
-                    jarFiles.add(new File(dirCompatibilityMatcher.group(1)));
+                    frontendFiles
+                            .add(new File(dirCompatibilityMatcher.group(1)));
+                } else if (jarVfsMatcher.find()) {
+                    String vfsJar = jarVfsMatcher.group(1);
+                    if (vfsJars.add(vfsJar))
+                        frontendFiles.add(
+                                getPhysicalFileOfJBossVfsJar(new URL(vfsJar)));
+                } else if (VFS_DIRECTORY_REGEX.matcher(urlString).find()) {
+                    URL vfsDirUrl = new URL(urlString.substring(0,
+                            urlString.lastIndexOf(resourcesFolder)));
+                    frontendFiles
+                            .add(getPhysicalFileOfJBossVfsDirectory(vfsDirUrl));
                 } else {
                     log().warn(
                             "Resource {} not visited because does not meet supported formats.",
                             url.getPath());
                 }
             }
-        } catch (
-
-        IOException e) {
+        } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
-        return jarFiles;
+
+        return frontendFiles;
+    }
+
+    private static File getPhysicalFileOfJBossVfsDirectory(URL url)
+            throws IOException, ServletException {
+        try {
+            Object virtualFile = url.openConnection().getContent();
+            Class virtualFileClass = virtualFile.getClass();
+
+            // Reflection as we cannot afford a dependency to WildFly or JBoss
+            Method getChildrenRecursivelyMethod = virtualFileClass
+                    .getMethod("getChildrenRecursively");
+            Method getPhysicalFileMethod = virtualFileClass
+                    .getMethod("getPhysicalFile");
+
+            // By calling getPhysicalFile, we make sure that the corresponding
+            // physical files/directories of the root directory and its children
+            // are created. Later, these physical files are scanned to collect
+            // their resources.
+            List virtualFiles = (List) getChildrenRecursivelyMethod
+                    .invoke(virtualFile);
+            File rootDirectory = (File) getPhysicalFileMethod
+                    .invoke(virtualFile);
+            for (Object child : virtualFiles) {
+                // side effect: create real-world files
+                getPhysicalFileMethod.invoke(child);
+            }
+            return rootDirectory;
+        } catch (NoSuchMethodException | IllegalAccessException
+                | InvocationTargetException exc) {
+            throw new ServletException("Failed to invoke JBoss VFS API.", exc);
+        }
+    }
+
+    private static File getPhysicalFileOfJBossVfsJar(URL url)
+            throws IOException, ServletException {
+        try {
+            Object jarVirtualFile = url.openConnection().getContent();
+
+            // Creating a temporary jar file out of the vfs files
+            String vfsJarPath = url.toString();
+            String fileNamePrefix = vfsJarPath.substring(
+                    vfsJarPath.lastIndexOf('/') + 1,
+                    vfsJarPath.lastIndexOf(".jar"));
+            Path tempJar = Files.createTempFile(fileNamePrefix, ".jar");
+
+            generateJarFromJBossVfsFolder(jarVirtualFile, tempJar);
+
+            File tempJarFile = tempJar.toFile();
+            tempJarFile.deleteOnExit();
+            return tempJarFile;
+        } catch (NoSuchMethodException | IllegalAccessException
+                | InvocationTargetException exc) {
+            throw new ServletException("Failed to invoke JBoss VFS API.", exc);
+        }
+    }
+
+    private static void generateJarFromJBossVfsFolder(Object jarVirtualFile,
+            Path tempJar) throws IOException, IllegalAccessException,
+            InvocationTargetException, NoSuchMethodException {
+        // We should use reflection to use JBoss VFS API as we cannot afford a
+        // dependency to WildFly or JBoss
+        Class virtualFileClass = jarVirtualFile.getClass();
+        Method getChildrenRecursivelyMethod = virtualFileClass
+                .getMethod("getChildrenRecursively");
+        Method openStreamMethod = virtualFileClass.getMethod("openStream");
+        Method isFileMethod = virtualFileClass.getMethod("isFile");
+        Method getPathNameRelativeToMethod = virtualFileClass
+                .getMethod("getPathNameRelativeTo", virtualFileClass);
+
+        List jarVirtualChildren = (List) getChildrenRecursivelyMethod
+                .invoke(jarVirtualFile);
+        try (ZipOutputStream zipOutputStream = new ZipOutputStream(
+                Files.newOutputStream(tempJar))) {
+            for (Object child : jarVirtualChildren) {
+                if (!(Boolean) isFileMethod.invoke(child))
+                    continue;
+
+                String relativePath = (String) getPathNameRelativeToMethod
+                        .invoke(child, jarVirtualFile);
+                InputStream inputStream = (InputStream) openStreamMethod
+                        .invoke(child);
+                ZipEntry zipEntry = new ZipEntry(relativePath);
+                zipOutputStream.putNextEntry(zipEntry);
+                IOUtils.copy(inputStream, zipOutputStream);
+                zipOutputStream.closeEntry();
+            }
+        }
     }
 }
