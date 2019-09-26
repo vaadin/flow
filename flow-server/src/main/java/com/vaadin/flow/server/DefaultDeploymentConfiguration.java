@@ -155,7 +155,7 @@ public class DefaultDeploymentConfiguration
     }
 
     /**
-     * {@inheritDoc} The default is false.
+     * {@inheritDoc} The default is true.
      * 
      */
     @Override
@@ -300,7 +300,7 @@ public class DefaultDeploymentConfiguration
      */
     private void checkClientSideMode(boolean loggWarning) {
         clientSideMode = getBooleanProperty(
-                Constants.SERVLET_PARAMETER_CLIENT_SIDE_MODE, false);
+                Constants.SERVLET_PARAMETER_CLIENT_SIDE_MODE, true);
         if (clientSideMode && loggWarning) {
             getLogger().info(CLIENT_SIDE_BOOTSTRAP_MODE);
         }
