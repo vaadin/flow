@@ -207,6 +207,14 @@ public final class Constants implements Serializable {
     public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS = "devmode.webpack.options";
 
     /**
+     * Boolean parameter for enabling/disabling bytecode scanning in dev mode.
+     * If enabled, entry points are scanned for reachable frontend resources.
+     * If disabled, all classes on the classpath are scanned.
+     */
+    public static final String SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE = "devmode.optimizeBundle";
+
+
+    /**
      * The path used in the vaadin servlet for handling static resources.
      */
     public static final String META_INF = "META-INF/";

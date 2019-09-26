@@ -134,7 +134,7 @@ public class BuildFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "runNpmInstall", false);
         ReflectionUtils.setVariableValueInObject(mojo, "compatibilityMode",
                 "false");
-        ReflectionUtils.setVariableValueInObject(mojo, "useByteCodeScanner",
+        ReflectionUtils.setVariableValueInObject(mojo, "optimizeBundle",
                 true);
 
         flowPackagPath.mkdirs();
