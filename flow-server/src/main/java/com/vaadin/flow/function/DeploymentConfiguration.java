@@ -76,7 +76,7 @@ public interface DeploymentConfiguration extends Serializable {
      */
     default boolean isClientSideMode() {
         return getBooleanProperty(SERVLET_PARAMETER_CLIENT_SIDE_MODE,
-                false);
+                true);
     }
 
     /**

@@ -150,7 +150,7 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
                     generatedFolder, frontendDirectory)
                             .withWebpack(webpackOutputDirectory,
                                     webpackTemplate, webpackGeneratedTemplate)
-                            .enableClientSideMode(clientSideMode)
+                            .enableClientSideMode(isClientSideMode())
                             .createMissingPackageJson(true)
                             .enableImportsUpdate(false)
                             .enablePackagesUpdate(false).runNpmInstall(false)
@@ -169,7 +169,7 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         JsonObject buildInfo = Json.createObject();
         buildInfo.put(SERVLET_PARAMETER_COMPATIBILITY_MODE, compatibility);
         buildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, productionMode);
-        buildInfo.put(SERVLET_PARAMETER_CLIENT_SIDE_MODE, clientSideMode);
+        buildInfo.put(SERVLET_PARAMETER_CLIENT_SIDE_MODE, isClientSideMode());
         buildInfo.put(SERVLET_PARAMETER_INITIAL_UIDL, eagerServerLoad);
         buildInfo.put(NPM_TOKEN, npmFolder.getAbsolutePath());
         buildInfo.put(GENERATED_TOKEN, generatedFolder.getAbsolutePath());
