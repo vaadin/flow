@@ -119,7 +119,8 @@ public abstract class NodeUpdater implements FallibleCommand {
         this.generatedFolder = generatedPath;
     }
 
-    Set<String> getGeneratedModules(File directory, Set<String> excludes) {
+    static Set<String> getGeneratedModules(File directory,
+            Set<String> excludes) {
         if (!directory.exists()) {
             return Collections.emptySet();
         }

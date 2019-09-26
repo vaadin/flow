@@ -139,8 +139,8 @@ public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
                 return new ThemeDefinition(MyTheme.class, "");
             }
         };
-        updater = new TaskUpdateImports(finder, deps, tmpRoot, generatedPath,
-                frontendDirectory);
+        updater = new TaskUpdateImports(finder, deps, cf -> null, tmpRoot,
+                generatedPath, frontendDirectory);
     }
 
     @Test

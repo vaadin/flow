@@ -101,7 +101,7 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         ClassFinder classFinder = getClassFinder();
         updater = new TaskUpdateImports(classFinder, getScanner(classFinder),
-                tmpRoot, generatedPath, frontendDirectory) {
+                finder -> null, tmpRoot, generatedPath, frontendDirectory) {
             @Override
             Logger log() {
                 if (useMockLog) {
