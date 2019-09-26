@@ -55,6 +55,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.dependency.CssImport;
+import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -72,8 +74,11 @@ import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.server.frontend.NodeTasks.Builder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
+import com.vaadin.flow.theme.NoTheme;
+import com.vaadin.flow.theme.Theme;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
@@ -86,9 +91,11 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
  *
  * @since 2.0
  */
-@HandlesTypes({ Route.class, NpmPackage.class, NpmPackage.Container.class,
-        WebComponentExporter.class, UIInitListener.class,
-        VaadinServiceInitListener.class })
+@HandlesTypes({Route.class, UIInitListener.class,
+        VaadinServiceInitListener.class, WebComponentExporter.class,
+        NpmPackage.class, NpmPackage.Container.class, JsModule.class,
+        JsModule.Container.class, CssImport.class, CssImport.Container.class,
+        JavaScript.class, JavaScript.Container.class, Theme.class, NoTheme.class})
 @WebListener
 public class DevModeInitializer implements ServletContainerInitializer,
         Serializable, ServletContextListener {
@@ -312,8 +319,16 @@ public class DevModeInitializer implements ServletContainerInitializer,
         Set<String> visitedClassNames = new HashSet<>();
         Set<File> frontendLocations = getFrontendLocationsFromClassloader(
                 DevModeInitializer.class.getClassLoader());
+
+        boolean useByteCodeScanner = config.getBooleanProperty(
+                SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
+                Boolean.parseBoolean(
+                        System.getProperty(SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
+                                Boolean.FALSE.toString())));
         try {
-            builder.enablePackagesUpdate(true).copyResources(frontendLocations)
+            builder.enablePackagesUpdate(true)
+                    .useByteCodeScanner(useByteCodeScanner)
+                    .copyResources(frontendLocations)
                     .copyLocalResources(new File(baseDir,
                             Constants.LOCAL_FRONTEND_RESOURCES_PATH))
                     .enableImportsUpdate(true).runNpmInstall(true)

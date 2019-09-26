@@ -10,8 +10,10 @@ import java.util.Collections;
 import java.util.EventListener;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import net.jcip.annotations.NotThreadSafe;
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -19,6 +21,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.startup.DevModeInitializer.VisitedClasses;
@@ -53,6 +56,11 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     }
 
     public static class VisitedSubclass extends Visited {
+    }
+
+    @Route
+    public static class RoutedWithReferenceToVisited {
+        Visited b;
     }
 
     @Rule
@@ -188,12 +196,49 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
                 visited.allDependenciesVisited(WithDepsSubclass.class));
     }
 
+    @Test
+    public void shouldUseByteCodeScannerIfPropertySet() throws Exception {
+        System.setProperty(Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE, "true");
+        DevModeInitializer devModeInitializer = new DevModeInitializer();
+        final Set<Class<?>> classes = new HashSet<>();
+        classes.add(NotVisitedWithDeps.class);
+        classes.add(Visited.class);
+        classes.add(RoutedWithReferenceToVisited.class);
+        devModeInitializer.onStartup(classes, servletContext);
+        ArgumentCaptor<? extends VisitedClasses> arg = ArgumentCaptor
+                .forClass(VisitedClasses.class);
+        Mockito.verify(servletContext, Mockito.atLeastOnce())
+                .setAttribute(Mockito.eq(VisitedClasses.class.getName()), arg.capture());
+        VisitedClasses visitedClasses = arg.getValue();
+        Assert.assertTrue(visitedClasses.allDependenciesVisited(RoutedWithReferenceToVisited.class));
+        Assert.assertTrue(visitedClasses.allDependenciesVisited(Visited.class));
+        Assert.assertFalse(visitedClasses.allDependenciesVisited(NotVisitedWithDeps.class));
+    }
+
+    @Test
+    public void shouldUseFullPathScannerByDefault() throws Exception {
+        DevModeInitializer devModeInitializer = new DevModeInitializer();
+        final Set<Class<?>> classes = new HashSet<>();
+        classes.add(NotVisitedWithDeps.class);
+        classes.add(Visited.class);
+        classes.add(RoutedWithReferenceToVisited.class);
+        devModeInitializer.onStartup(classes, servletContext);
+        ArgumentCaptor<? extends VisitedClasses> arg = ArgumentCaptor
+                .forClass(VisitedClasses.class);
+        Mockito.verify(servletContext, Mockito.atLeastOnce())
+                .setAttribute(Mockito.eq(VisitedClasses.class.getName()), arg.capture());
+        VisitedClasses visitedClasses = arg.getValue();
+        Assert.assertTrue(visitedClasses.allDependenciesVisited(RoutedWithReferenceToVisited.class));
+        Assert.assertTrue(visitedClasses.allDependenciesVisited(Visited.class));
+        Assert.assertTrue(visitedClasses.allDependenciesVisited(NotVisitedWithDeps.class));
+    }
+
     private void loadingJars_allFilesExist(String resourcesFolder)
             throws IOException, ServletException {
         // Create jar urls for test
         URL jar = new URL("jar:"
                 + this.getClass().getResource("/").toString()
-                        .replace("target/test-classes/", "")
+                .replace("target/test-classes/", "")
                 + "src/test/resources/with%20space/jar-with-frontend-resources.jar!/META-INF/resources/frontend");
         List<URL> urls = new ArrayList<>();
         urls.add(jar);

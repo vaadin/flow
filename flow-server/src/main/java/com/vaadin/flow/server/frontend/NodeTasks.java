@@ -26,7 +26,7 @@ import java.util.Set;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.FallibleCommand;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
-import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
+import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
@@ -76,6 +76,8 @@ public class NodeTasks implements FallibleCommand {
         private File frontendResourcesDirectory = null;
 
         private Set<String> visitedClasses = null;
+
+        private boolean useByteCodeScanner = false;
 
         /**
          * Directory for for npm and folders and files.
@@ -212,7 +214,8 @@ public class NodeTasks implements FallibleCommand {
          */
         public Builder enableImportsUpdate(boolean enableImportsUpdate) {
             this.enableImportsUpdate = enableImportsUpdate;
-            this.createMissingPackageJson = enableImportsUpdate || createMissingPackageJson;
+            this.createMissingPackageJson = enableImportsUpdate
+                    || createMissingPackageJson;
             return this;
         }
 
@@ -296,6 +299,21 @@ public class NodeTasks implements FallibleCommand {
             this.frontendResourcesDirectory = frontendResourcesDirectory;
             return this;
         }
+
+        /**
+         * Sets frontend scanner strategy: byte code scanning strategy is used
+         * if {@code byteCodeScanner} is {@code true}, full classpath scanner
+         * strategy is used otherwise (by default).
+         *
+         * @param byteCodeScanner
+         *            if {@code true} then byte code scanner is used, full
+         *            scanner is used otherwise (by default).
+         * @return the builder, for chaining
+         */
+        public Builder useByteCodeScanner(boolean byteCodeScanner) {
+            this.useByteCodeScanner = byteCodeScanner;
+            return this;
+        }
     }
 
     private final Collection<FallibleCommand> commands = new ArrayList<>();
@@ -303,7 +321,7 @@ public class NodeTasks implements FallibleCommand {
     private NodeTasks(Builder builder) {
 
         ClassFinder classFinder = null;
-        FrontendDependencies frontendDependencies = null;
+        FrontendDependenciesScanner frontendDependencies = null;
 
         if (builder.enablePackagesUpdate || builder.enableImportsUpdate) {
             classFinder = new ClassFinder.CachedClassFinder(
@@ -315,8 +333,9 @@ public class NodeTasks implements FallibleCommand {
                 generator.generateWebComponents(builder.generatedFolder);
             }
 
-            frontendDependencies = new FrontendDependencies(classFinder,
-                    builder.generateEmbeddableWebComponents);
+            frontendDependencies = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
+                    .createScanner(!builder.useByteCodeScanner, classFinder,
+                            builder.generateEmbeddableWebComponents);
         }
 
         if (builder.createMissingPackageJson) {

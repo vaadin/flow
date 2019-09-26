@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.vaadin.flow.server.Constants;
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
@@ -48,6 +47,10 @@ import org.mockito.internal.util.collections.Sets;
 import org.slf4j.Logger;
 import org.slf4j.impl.SimpleLogger;
 
+import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
+
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
@@ -55,10 +58,10 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
+public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -96,8 +99,9 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         generatedPath = new File(tmpRoot, DEFAULT_GENERATED_DIR);
         importsFile = new File(generatedPath, IMPORTS_NAME);
 
-        updater = new TaskUpdateImports(getClassFinder(), null, tmpRoot,
-                generatedPath, frontendDirectory) {
+        ClassFinder classFinder = getClassFinder();
+        updater = new TaskUpdateImports(classFinder, getScanner(classFinder),
+                tmpRoot, generatedPath, frontendDirectory) {
             @Override
             Logger log() {
                 if (useMockLog) {
@@ -121,6 +125,9 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         initLogger();
     }
 
+    protected abstract FrontendDependenciesScanner getScanner(
+            ClassFinder finder);
+
     private void initLogger() throws Exception, SecurityException {
         // init method is protected
         Method method = SimpleLogger.class.getDeclaredMethod("init");
@@ -142,8 +149,8 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         boolean atLeastOneRemoved = false;
         for (String imprt : getExpectedImports()) {
             if (imprt.startsWith("@vaadin") && imprt.endsWith(".js")) {
-                assertTrue(resolveImportFile(nodeModulesPath,
-                        nodeModulesPath, imprt).delete());
+                assertTrue(resolveImportFile(nodeModulesPath, nodeModulesPath,
+                        imprt).delete());
                 atLeastOneRemoved = true;
             }
         }
@@ -177,7 +184,9 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
             Assert.fail("Execute should have failed with missing file");
         } catch (IllegalStateException e) {
             assertThat(e.getCause().getMessage(),
-                    CoreMatchers.containsString(getFormattedFrontendErrorMessage(Sets.newSet(fooFileName))));
+                    CoreMatchers
+                            .containsString(getFormattedFrontendErrorMessage(
+                                    Sets.newSet(fooFileName))));
         }
 
     }
@@ -197,29 +206,33 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
             updater.execute();
             Assert.fail("Execute should have failed with missing files");
         } catch (IllegalStateException e) {
-            assertThat(e.getCause().getMessage(),
-                    CoreMatchers.containsString(getFormattedFrontendErrorMessage(Sets.newSet(localTemplateFileName, fooFileName))));
+            assertThat(e.getCause().getMessage(), CoreMatchers
+                    .containsString(getFormattedFrontendErrorMessage(
+                            Sets.newSet(localTemplateFileName, fooFileName))));
         }
 
     }
 
     private void assertFileRemoved(String fileName, File directory) {
-        assertTrue(String.format("File `%s` was not removed from, or does not exist in, `%s`",
+        assertTrue(String.format(
+                "File `%s` was not removed from, or does not exist in, `%s`",
                 fileName, directory),
                 resolveImportFile(directory, directory, fileName).delete());
     }
 
-    private String getFormattedFrontendErrorMessage(Set<String> resourcesNotFound) {
-        String prefix =  "Failed to find the following files: ";
+    private String getFormattedFrontendErrorMessage(
+            Set<String> resourcesNotFound) {
+        String prefix = "Failed to find the following files: ";
 
-        String suffix = String.format(
-                "%n  Locations searched were:"
-                        + "%n      - `%s` in this project"
-                        + "%n      - `%s` in included JARs"
-                        + "%n%n  Please, double check that those files exist. If you use a custom directory "
-                        + "for your resource files instead of default "
-                        + "`frontend` folder then make sure you it's correctly configured "
-                        + "(e.g. set '%s' property)", frontendDirectory.getPath(), Constants.RESOURCES_FRONTEND_DEFAULT, FrontendUtils.PARAM_FRONTEND_DIR);
+        String suffix = String.format("%n  Locations searched were:"
+                + "%n      - `%s` in this project"
+                + "%n      - `%s` in included JARs"
+                + "%n%n  Please, double check that those files exist. If you use a custom directory "
+                + "for your resource files instead of default "
+                + "`frontend` folder then make sure you it's correctly configured "
+                + "(e.g. set '%s' property)", frontendDirectory.getPath(),
+                Constants.RESOURCES_FRONTEND_DEFAULT,
+                FrontendUtils.PARAM_FRONTEND_DIR);
 
         return String.format("%n%n  %s%n      - %s%n  %s%n%n", prefix,
                 String.join("\n      - ", resourcesNotFound), suffix);
@@ -240,28 +253,28 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         // An import not found in node_modules
         expectedLines.add("import 'unresolved/component';");
 
-        expectedLines.add("import $css_0 from 'Frontend/foo.css';");
+        expectedLines.add(
+                "import $css_0 from '@vaadin/vaadin-mixed-component/bar.css'");
         expectedLines.add("import $css_1 from 'Frontend/foo.css';");
         expectedLines.add("import $css_2 from 'Frontend/foo.css';");
-        expectedLines.add(
-                "import $css_3 from '@vaadin/vaadin-mixed-component/bar.css';");
+        expectedLines.add("import $css_3 from 'Frontend/foo.css';");
         expectedLines.add("import $css_4 from 'Frontend/foo.css';");
         expectedLines.add("import $css_5 from 'Frontend/foo.css';");
         expectedLines.add("import $css_6 from 'Frontend/foo.css';");
         expectedLines.add(
-                "addCssBlock(`<dom-module id=\"baz\"><template><style>${$css_0}</style></template></dom-module>`);");
+                "addCssBlock(`<custom-style><style>${$css_0}</style></custom-style>`);");
         expectedLines.add(
-                "addCssBlock(`<dom-module id=\"flow_css_mod_1\" theme-for=\"foo-bar\"><template><style>${$css_1}</style></template></dom-module>`);");
+                "addCssBlock(`<custom-style><style>${$css_1}</style></custom-style>`);");
         expectedLines.add(
-                "addCssBlock(`<dom-module id=\"flow_css_mod_2\" theme-for=\"foo-bar\"><template><style include=\"bar\">${$css_2}</style></template></dom-module>`);");
+                "addCssBlock(`<custom-style><style include=\"bar\">${$css_2}</style></custom-style>`);");
         expectedLines.add(
-                "addCssBlock(`<custom-style><style>${$css_3}</style></custom-style>`);");
+                "addCssBlock(`<dom-module id=\"baz\"><template><style>${$css_3}</style></template></dom-module>`);");
         expectedLines.add(
-                "addCssBlock(`<custom-style><style>${$css_4}</style></custom-style>`);");
+                "addCssBlock(`<dom-module id=\"baz\"><template><style include=\"bar\">${$css_4}</style></template></dom-module>`);");
         expectedLines.add(
-                "addCssBlock(`<custom-style><style include=\"bar\">${$css_5}</style></custom-style>`);");
+                "addCssBlock(`<dom-module id=\"flow_css_mod_5\" theme-for=\"foo-bar\"><template><style>${$css_5}</style></template></dom-module>`);");
         expectedLines.add(
-                "addCssBlock(`<dom-module id=\"baz\"><template><style include=\"bar\">${$css_6}</style></template></dom-module>`);");
+                "addCssBlock(`<dom-module id=\"flow_css_mod_6\" theme-for=\"foo-bar\"><template><style include=\"bar\">${$css_6}</style></template></dom-module>`);");
 
         assertFalse(importsFile.exists());
 
@@ -377,14 +390,16 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
     // flow #6408
     @Test
-    public void jsModuleOnRouterLayout_shouldBe_addedAfterLumoStyles() throws Exception {
+    public void jsModuleOnRouterLayout_shouldBe_addedAfterLumoStyles()
+            throws Exception {
         updater.execute();
 
         assertContainsImports(true, "Frontend/common-js-file.js");
 
         assertImportOrder("@vaadin/vaadin-lumo-styles/color.js",
                 "Frontend/common-js-file.js");
-        assertImportOrder("@vaadin/vaadin-mixed-component/theme/lumo/vaadin-something-else.js",
+        assertImportOrder(
+                "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-something-else.js",
                 "Frontend/common-js-file.js");
     }
 
