@@ -1,4 +1,4 @@
-import { Flow } from '@vaadin/flow-frontend/Flow';
+import { Flow } from '@vaadin/flow-frontend/Flow.js';
 
 const flow = new Flow({
   imports: () => import('[to-be-generated-by-flow]')
