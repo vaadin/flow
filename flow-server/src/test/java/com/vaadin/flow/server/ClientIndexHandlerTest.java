@@ -60,7 +60,7 @@ public class ClientIndexHandlerTest {
     public void serveIndexHtml_requestWithRootPath_serveContentFromTemplate()
             throws IOException {
         clientIndexBootstrapHandler
-                .synchronizedHandleRequest(session, createVaadinRequest(""),
+                .synchronizedHandleRequest(session, createVaadinRequest("/"),
                         response);
         String indexHtml = responseOutput
                 .toString(StandardCharsets.UTF_8.name());
@@ -73,7 +73,7 @@ public class ClientIndexHandlerTest {
     public void serveIndexHtml_requestWithRootPath_hasBaseHrefElement()
             throws IOException {
         clientIndexBootstrapHandler
-                .synchronizedHandleRequest(session, createVaadinRequest(""),
+                .synchronizedHandleRequest(session, createVaadinRequest("/"),
                         response);
         String indexHtml = responseOutput
                 .toString(StandardCharsets.UTF_8.name());
@@ -95,7 +95,7 @@ public class ClientIndexHandlerTest {
     @Test
     public void canHandleRequest_requestWithRootPath_handleRequest() {
         boolean canHandleRequest = clientIndexBootstrapHandler
-                .canHandleRequest(createVaadinRequest(""));
+                .canHandleRequest(createVaadinRequest("/"));
         Assert.assertTrue("The handler should handle a root path request",
                 canHandleRequest);
     }
@@ -156,7 +156,7 @@ public class ClientIndexHandlerTest {
                 .appendElement("script").attr("src", "testing.2"));
 
         clientIndexBootstrapHandler.synchronizedHandleRequest(session,
-                createVaadinRequest(""), response);
+                createVaadinRequest("/"), response);
         String indexHtml = responseOutput
                 .toString(StandardCharsets.UTF_8.name());
         Document document = Jsoup.parse(indexHtml);
@@ -164,6 +164,24 @@ public class ClientIndexHandlerTest {
         Assert.assertEquals(2, scripts.size());
         Assert.assertEquals("testing.1", scripts.get(0).attr("src"));
         Assert.assertEquals("testing.2", scripts.get(1).attr("src"));
+    }
+
+    @Test
+    public void should_add_initialUidl()
+            throws IOException {
+
+        // Test that ClientIndexInitialListener is in the configuration file:
+        // `resources/META-INF/services/com.vaadin.flow.server.VaadinServiceInitListener`
+
+        clientIndexBootstrapHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+        String indexHtml = responseOutput
+                .toString(StandardCharsets.UTF_8.name());
+        Document document = Jsoup.parse(indexHtml);
+
+        Elements scripts = document.head().getElementsByTag("script");
+        Assert.assertEquals(1, scripts.size());
+        Assert.assertEquals("", scripts.get(0).attr("initial"));
     }
 
     @After
@@ -181,6 +199,7 @@ public class ClientIndexHandlerTest {
         HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
         Mockito.doAnswer(invocation -> "").when(request).getServletPath();
         Mockito.doAnswer(invocation -> pathInfo).when(request).getPathInfo();
+        Mockito.doAnswer(invocation -> new StringBuffer(pathInfo)).when(request).getRequestURL();
         return request;
     }
 }

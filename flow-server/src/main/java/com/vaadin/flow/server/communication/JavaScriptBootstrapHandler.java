@@ -28,7 +28,6 @@ import java.util.function.Function;
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
-import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.server.BootstrapHandler;
@@ -156,23 +155,28 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
         return new JavaScriptBootstrapContext(request, response, ui, callback);
     }
 
-
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session, VaadinRequest request, VaadinResponse response) throws IOException {
-        Class<? extends UI> uiClass = getUIClass(request);
-
-        BootstrapContext context = createAndInitUI(uiClass, request, response,
-                session);
 
         ServletHelper.setResponseNoCacheHeaders(response::setHeader,
                 response::setDateHeader);
 
+        writeResponse(response, getAppConfig(request, response, session));
+        return true;
+    }
+
+
+    public JsonObject getAppConfig(VaadinRequest request,
+            VaadinResponse response, VaadinSession session) {
+        BootstrapContext context = createAndInitUI(JavaScriptBootstrapUI.class,
+                request, response, session);
+
         JsonObject json = Json.createObject();
 
-        DeploymentConfiguration config = context.getSession()
-                .getConfiguration();
+        boolean productionMode = context.getSession().getConfiguration()
+                .isProductionMode();
 
-        if (!config.isProductionMode()) {
+        if (!productionMode) {
             json.put("stats", getStats());
         }
         json.put("errors", getErrors());
@@ -181,11 +185,15 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
             json.put("pushScript", getPushScript(context));
         }
 
-        JsonObject initialUIDL = getInitialUidl(context.getUI());
-        json.put("appConfig", getAppConfig(initialUIDL, context));
+        JsonObject appConfig = context.getApplicationParameters();
 
-        writeResponse(response, json);
-        return true;
+        appConfig.put("productionMode", Json.create(productionMode));
+        appConfig.put("appId", context.getAppId());
+        appConfig.put("uidl", getInitialUidl(context.getUI()));
+
+        json.put("appConfig", appConfig);
+
+        return json;
     }
 
     private String getServiceUrl(VaadinRequest request) {
@@ -248,20 +256,6 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
         return pushJSPath;
     }
 
-    private JsonObject getAppConfig(JsonValue initialUIDL,
-            BootstrapContext context) {
-
-        boolean productionMode = context.getSession().getConfiguration()
-                .isProductionMode();
-
-        JsonObject appConfig = context.getApplicationParameters();
-
-        appConfig.put("productionMode", Json.create(productionMode));
-        appConfig.put("appId", context.getAppId());
-        appConfig.put("uidl", initialUIDL);
-
-        return appConfig;
-    }
     private void writeResponse(VaadinResponse response, JsonObject json) throws IOException {
         response.setContentType("application/json");
         response.setStatus(HttpURLConnection.HTTP_OK);
