@@ -307,7 +307,7 @@ public class DevModeInitializer implements ServletContainerInitializer,
                 SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
                 Boolean.parseBoolean(
                         System.getProperty(SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
-                                "false")));
+                                Boolean.FALSE.toString())));
         try {
             builder.enablePackagesUpdate(true)
                     .useByteCodeScanner(useByteCodeScanner)
