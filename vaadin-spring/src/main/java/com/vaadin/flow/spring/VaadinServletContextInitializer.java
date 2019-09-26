@@ -58,6 +58,9 @@ import org.springframework.core.type.filter.AssignableTypeFilter;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.dependency.CssImport;
+import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.HasErrorParameter;
@@ -81,6 +84,7 @@ import com.vaadin.flow.server.startup.WebComponentConfigurationRegistryInitializ
 import com.vaadin.flow.server.startup.WebComponentExporterAwareValidator;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.spring.VaadinScanPackagesRegistrar.VaadinScanPackages;
+import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
 
 /**
@@ -102,15 +106,13 @@ public class VaadinServletContextInitializer
     private ResourceLoader customLoader;
 
     /**
-     * packages that are white-listed (should be scanned) by default and
-     * can't be overriden by <code>addedWhiteListed</code>.
+     * packages that are white-listed (should be scanned) by default and can't
+     * be overriden by <code>addedWhiteListed</code>.
      */
     private static final List<String> DEFAULT_WHITE_LISTED = Stream
-            .of(
-                    Component.class.getPackage().getName(),
-                    Theme.class.getPackage().getName(),
-                    "com.vaadin.shrinkwrap"
-            ).collect(Collectors.toList());
+            .of(Component.class.getPackage().getName(),
+                    Theme.class.getPackage().getName(), "com.vaadin.shrinkwrap")
+            .collect(Collectors.toList());
 
     /**
      * Packages whitelisted by the user
@@ -295,7 +297,6 @@ public class VaadinServletContextInitializer
                 return;
             }
 
-
             Set<String> basePackages;
             if (isWhitelistSet()) {
                 basePackages = new HashSet<>(getWhiteListPackages());
@@ -306,13 +307,16 @@ public class VaadinServletContextInitializer
             long start = System.currentTimeMillis();
 
             List<Class<? extends Annotation>> annotations = Arrays.asList(
-                    Route.class, NpmPackage.class, NpmPackage.Container.class);
+                    NpmPackage.class, NpmPackage.Container.class,
+                    JsModule.class, JsModule.Container.class, CssImport.class,
+                    CssImport.Container.class, JavaScript.class,
+                    JavaScript.Container.class, Theme.class, NoTheme.class);
             List<Class<?>> supertypes = Arrays.asList(
                     WebComponentExporter.class, UIInitListener.class,
                     VaadinServiceInitListener.class);
             Set<Class<?>> classes = findByAnnotationOrSuperType(basePackages,
                     customLoader, annotations, supertypes)
-                    .collect(Collectors.toSet());
+                            .collect(Collectors.toSet());
 
             final long classScanning = System.currentTimeMillis();
             getLogger().info(
@@ -414,7 +418,8 @@ public class VaadinServletContextInitializer
 
         } else {
             customWhitelist = Arrays.stream(whitelistProperty.split(","))
-                    .map(whitelistedPackage -> whitelistedPackage.replace('/', '.').trim())
+                    .map(whitelistedPackage -> whitelistedPackage
+                            .replace('/', '.').trim())
                     .collect(Collectors.toList());
             customLoader = appContext;
         }
@@ -473,7 +478,7 @@ public class VaadinServletContextInitializer
 
     private Stream<Class<?>> findByAnnotation(Collection<String> packages,
             ResourceLoader loader, Class<? extends Annotation>... annotations) {
-        return findByAnnotationOrSuperType(packages,loader,
+        return findByAnnotationOrSuperType(packages, loader,
                 Arrays.asList(annotations), Collections.emptySet());
     }
 
@@ -488,16 +493,17 @@ public class VaadinServletContextInitializer
                 Collections.emptySet(), Collections.singleton(type));
     }
 
-    private Stream<Class<?>> findByAnnotationOrSuperType(Collection<String> packages,
-            ResourceLoader loader, Collection<Class<? extends Annotation>> annotations,
+    private Stream<Class<?>> findByAnnotationOrSuperType(
+            Collection<String> packages, ResourceLoader loader,
+            Collection<Class<? extends Annotation>> annotations,
             Collection<Class<?>> types) {
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(
                 false);
         scanner.setResourceLoader(loader);
-        annotations.forEach(annotation ->
-                scanner.addIncludeFilter(new AnnotationTypeFilter(annotation)));
-        types.forEach(type ->
-                scanner.addIncludeFilter(new AssignableTypeFilter(type)));
+        annotations.forEach(annotation -> scanner
+                .addIncludeFilter(new AnnotationTypeFilter(annotation)));
+        types.forEach(type -> scanner
+                .addIncludeFilter(new AssignableTypeFilter(type)));
         return packages.stream().map(scanner::findCandidateComponents)
                 .flatMap(Collection::stream).map(this::getBeanClass);
     }
@@ -579,12 +585,12 @@ public class VaadinServletContextInitializer
                 "org/springframework", "org/webjars/bowergithub", "org/yaml")
                 .collect(Collectors.toList());
 
-        private static List<String> defaultWhiteList =
-                DEFAULT_WHITE_LISTED.stream().map(packageName -> packageName.replace('.',
-                        '/')).collect(Collectors.toList());
+        private static List<String> defaultWhiteList = DEFAULT_WHITE_LISTED
+                .stream().map(packageName -> packageName.replace('.', '/'))
+                .collect(Collectors.toList());
 
         public CustomResourceLoader(ResourceLoader resourceLoader,
-                                    List<String> addedBlacklist) {
+                List<String> addedBlacklist) {
             super(resourceLoader);
 
             Objects.requireNonNull(addedBlacklist,
