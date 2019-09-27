@@ -55,6 +55,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.client.ClientResourcesUtils;
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
 import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.Viewport;
@@ -1537,5 +1538,39 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static void writeSecurityKeyUIDL(JsonObject response, UI ui) {
         String seckey = ui.getCsrfToken();
         response.put(ApplicationConstants.UIDL_SECURITY_TOKEN_ID, seckey);
+    }
+
+    /**
+     * Returns the JSON object with the application config and UIDL info that
+     * can be used in the bootstrapper to embed that info in the initial page.
+     *
+     * @param request
+     *            the vaadin request.
+     * @param response
+     *            the response.
+     * @param session
+     *            the vaadin session.
+     * @return the initial application JSON.
+     */
+    public JsonObject getInitialJson(VaadinRequest request,
+            VaadinResponse response, VaadinSession session) {
+
+        BootstrapContext context = createAndInitUI(JavaScriptBootstrapUI.class,
+                request, response, session);
+
+        JsonObject initial = Json.createObject();
+
+        boolean productionMode = context.getSession().getConfiguration()
+                .isProductionMode();
+
+        JsonObject appConfig = context.getApplicationParameters();
+
+        appConfig.put("productionMode", Json.create(productionMode));
+        appConfig.put("appId", context.getAppId());
+        appConfig.put("uidl", getInitialUidl(context.getUI()));
+
+        initial.put("appConfig", appConfig);
+
+        return initial;
     }
 }

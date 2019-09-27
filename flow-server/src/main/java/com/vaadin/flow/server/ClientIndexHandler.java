@@ -24,6 +24,7 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8;
@@ -35,7 +36,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * folder. The handler will calculate and inject baseHref as well as the bundle
  * scripts into the template.
  */
-public class ClientIndexHandler extends SynchronizedRequestHandler {
+public class ClientIndexHandler extends JavaScriptBootstrapHandler {
 
     private static final Pattern PATH_WITH_EXTENSION = Pattern
             .compile("\\.[A-z][A-z\\d]+$");
@@ -48,7 +49,7 @@ public class ClientIndexHandler extends SynchronizedRequestHandler {
         response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
         request.getService().modifyClientIndexBootstrapPage(
                 new ClientIndexBootstrapPage(request, response, session,
-                        indexDocument));
+                        indexDocument, this));
         try {
             response.getOutputStream()
                     .write(indexDocument.html().getBytes(UTF_8));
