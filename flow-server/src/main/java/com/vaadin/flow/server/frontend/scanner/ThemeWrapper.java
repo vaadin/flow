@@ -28,6 +28,8 @@ import com.vaadin.flow.theme.AbstractTheme;
  * methods. This is needed because updaters can be executed from maven plugins
  * that use different classloaders for the running process and for the project
  * configuration.
+ *
+ * @since
  */
 class ThemeWrapper implements AbstractTheme, Serializable {
     private final Serializable instance;
