@@ -1,1 +1,1 @@
-com.vaadin.flow.server.ClientIndexInitialListener
+com.vaadin.flow.server.ClientIndexHandlerTest$MyInitialListener
