@@ -7,6 +7,7 @@
 const fs = require('fs');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
 const {BabelMultiTargetPlugin} = require('webpack-babel-multi-target-plugin');
 
@@ -195,7 +196,11 @@ module.exports = {
 
     // Includes JS output bundles into "index.html"
     useClientSideIndexFileForBootstrapping && new HtmlWebpackPlugin({
-      template: clientSideIndexHTML
+      template: clientSideIndexHTML,
+      inject: 'head'
+    }),
+    useClientSideIndexFileForBootstrapping && new ScriptExtHtmlWebpackPlugin({
+      defaultAttribute: 'defer'
     }),
   ].filter(Boolean)
 };

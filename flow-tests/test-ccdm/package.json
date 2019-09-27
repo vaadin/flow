@@ -18,6 +18,7 @@
     "typescript": "3.5.3",
     "awesome-typescript-loader": "5.2.1",
     "html-webpack-plugin": "3.2.0",
-    "compression-webpack-plugin": "3.0.0"
+    "compression-webpack-plugin": "3.0.0",
+    "script-ext-html-webpack-plugin": "2.1.4"
   }
 }

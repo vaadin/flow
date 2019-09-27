@@ -1,5 +1,5 @@
 // import Flow module to enable traditional Vaadin server-side navigation
-// If you prefer to use TypeScript, you can import `Flow.ts` instead
+// If you prefer to use TypeScript, you can import `@vaadin/flow-frontend/Flow.ts` instead
 import { Flow } from '@vaadin/flow-frontend/Flow.js';
 
 const flow = new Flow({
