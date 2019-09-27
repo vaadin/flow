@@ -166,6 +166,18 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
     }
 
 
+    /**
+     * Returns the JSON object with the application config and UIDL info that
+     * can be used in the bootstrapper to embed that info in the initial page.
+     *
+     * @param request
+     *            the vaadin request.
+     * @param response
+     *            the response.
+     * @param session
+     *            the vaadin session.
+     * @return the initial application JSON.
+     */
     public JsonObject getAppConfig(VaadinRequest request,
             VaadinResponse response, VaadinSession session) {
         BootstrapContext context = createAndInitUI(JavaScriptBootstrapUI.class,
