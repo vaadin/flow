@@ -48,7 +48,7 @@ import com.vaadin.flow.theme.ThemeDefinition;
  * Full classpath scanner.
  *
  * @author Vaadin Ltd
- *
+ * @since
  */
 class FullDependenciesScanner extends AbstractDependenciesScanner {
 
