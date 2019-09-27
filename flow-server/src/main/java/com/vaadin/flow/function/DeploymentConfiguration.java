@@ -71,7 +71,7 @@ public interface DeploymentConfiguration extends Serializable {
 
     /**
      * Returns whether Vaadin is running in clientSideMode.
-     * 
+     *
      * @return true if in clientSideMode, false otherwise.
      */
     default boolean isClientSideMode() {
@@ -409,5 +409,28 @@ public interface DeploymentConfiguration extends Serializable {
     default boolean reuseDevServer() {
         return getBooleanProperty(
                 Constants.SERVLET_PARAMETER_REUSE_DEV_SERVER, true);
+    }
+
+    /**
+     * Get if the bootstrap page should include the initial UIDL fragment. This
+     * only makes sense for the client-side bootstrapping.
+     * <p>
+     * By default it is <code>false</code>.
+     * <p>
+     * Enabling this flag, it will make the initial application load a couple of
+     * seconds faster in very slow networks because of the extra round-trip to
+     * request the UIDL after the index.html is loaded.
+     * <p>
+     * Otherwise, keeping the flag as false is beneficial, specially in
+     * application that mix client and server side views, since the `index.html`
+     * can be cached and served by service workers in PWAs, as well as in the
+     * server side session and UI initialization is deferred until a server view
+     * is actually requested by the user.
+     *
+     * @return true if initial UIDL should be included in page
+     */
+    default boolean includeBootsrapInitialUidl() {
+        return getBooleanProperty(
+                Constants.SERVLET_PARAMETER_INITIAL_UIDL, false);
     }
 }

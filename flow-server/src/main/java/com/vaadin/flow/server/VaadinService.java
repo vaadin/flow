@@ -16,6 +16,42 @@
 
 package com.vaadin.flow.server;
 
+import javax.servlet.Servlet;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletResponse;
+
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.Serializable;
+import java.lang.reflect.Constructor;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.ServiceLoader;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.DependencyTreeCache;
 import com.vaadin.flow.component.internal.HtmlImportParser;
@@ -46,44 +82,11 @@ import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.theme.AbstractTheme;
+
 import elemental.json.Json;
 import elemental.json.JsonException;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.servlet.Servlet;
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.Serializable;
-import java.lang.reflect.Constructor;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.ServiceLoader;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -181,6 +184,8 @@ public abstract class VaadinService implements Serializable {
 
     private boolean atmosphereAvailable = checkAtmosphereSupport();
 
+    private BootstrapInitialPredicate bootstrapInitialPredicate;
+
     /**
      * Keeps track of whether a warning about missing push support has already
      * been logged. This is used to avoid spamming the log with the same message
@@ -265,6 +270,9 @@ public abstract class VaadinService implements Serializable {
         List<RequestHandler> handlers = createRequestHandlers();
 
         ServiceInitEvent event = new ServiceInitEvent(this);
+
+        event.addClientIndexBootstrapListener(
+                new BootstrapInitialInserter());
 
         // allow service init listeners and DI to use thread local access to
         // e.g. application scoped route registry
@@ -628,7 +636,7 @@ public abstract class VaadinService implements Serializable {
      * @param response
      *            The object containing all relevant info needed by listeners to
      *            change the bootstrap page.
-     * 
+     *
      * @deprecated This API is deprecated in favor of
      *             {@link VaadinService#modifyClientIndexBootstrapPage(ClientIndexBootstrapPage)}
      *             when using client-side bootstrapping
@@ -2342,5 +2350,30 @@ public abstract class VaadinService implements Serializable {
         } finally {
             setCurrent(null);
         }
+    }
+
+    /**
+     * Get the predicate for including the initial Uidl fragment in the
+     * bootstrap page.
+     * <p>
+     * By default it returns an instance that instruct to include the fragment in the case
+     *
+     * @return a non-null instance.
+     */
+    public BootstrapInitialPredicate getBootstrapInitialPredicate() {
+        if (bootstrapInitialPredicate == null) {
+            bootstrapInitialPredicate = request -> deploymentConfiguration.includeBootsrapInitialUidl();
+        }
+        return bootstrapInitialPredicate;
+    }
+
+    /**
+     * Set the predicate that decides whether to include the initial Uidl fragment in the bootstrap page.
+     *
+     * @param bootstrapInitialPredicate the predicate.
+     */
+    public void setBootstrapInitialPredicate(
+            BootstrapInitialPredicate bootstrapInitialPredicate) {
+        this.bootstrapInitialPredicate = bootstrapInitialPredicate;
     }
 }
