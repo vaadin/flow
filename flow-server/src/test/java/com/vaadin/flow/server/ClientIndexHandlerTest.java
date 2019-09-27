@@ -166,13 +166,18 @@ public class ClientIndexHandlerTest {
         Assert.assertEquals("testing.2", scripts.get(1).attr("src"));
     }
 
+    // Test class that should be included in the configuration file:
+    // `resources/META-INF/services/com.vaadin.flow.server.VaadinServiceInitListener`
+    public static class MyInitialListener extends ClientIndexInitialListener {
+        @Override
+        public boolean isValidRoute(VaadinRequest request) {
+            return request.getPathInfo().equals("/");
+        }
+    }
+
     @Test
-    public void should_add_initialUidl()
+    public void should_add_initialUidl_when_valid_route()
             throws IOException {
-
-        // Test that ClientIndexInitialListener is in the configuration file:
-        // `resources/META-INF/services/com.vaadin.flow.server.VaadinServiceInitListener`
-
         clientIndexBootstrapHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
         String indexHtml = responseOutput
@@ -182,6 +187,19 @@ public class ClientIndexHandlerTest {
         Elements scripts = document.head().getElementsByTag("script");
         Assert.assertEquals(1, scripts.size());
         Assert.assertEquals("", scripts.get(0).attr("initial"));
+    }
+
+    @Test
+    public void should_not_add_initialUidl_when_invalid_route()
+            throws IOException {
+        clientIndexBootstrapHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/foo"), response);
+        String indexHtml = responseOutput
+                .toString(StandardCharsets.UTF_8.name());
+        Document document = Jsoup.parse(indexHtml);
+
+        Elements scripts = document.head().getElementsByTag("script");
+        Assert.assertEquals(0, scripts.size());
     }
 
     @After
@@ -202,4 +220,5 @@ public class ClientIndexHandlerTest {
         Mockito.doAnswer(invocation -> new StringBuffer(pathInfo)).when(request).getRequestURL();
         return request;
     }
+
 }

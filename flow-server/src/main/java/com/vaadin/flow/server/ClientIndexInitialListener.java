@@ -33,26 +33,33 @@ import elemental.json.impl.JsonUtil;
  * Bootstrap listener that inserts the initial application configuration into
  * the client-side bootstrapping page.
  *
- * To enable this feature add tje class name to the listeners configuration
- * file:
+ * To enable this feature add the class name of
+ * {@link ClientIndexInitialListener} or the name of a custom class extending
+ * this to the file:
  * `src/main/resources/META-INF/services/com.vaadin.flow.server.VaadinServiceInitListener`.
  *
  */
 public class ClientIndexInitialListener implements VaadinServiceInitListener {
 
-    @Override
-    public void serviceInit(ServiceInitEvent event) {
-        event.addClientIndexBootstrapListener(page -> {
+    private class ClientIndexInitialBootstrapListener
+            implements ClientIndexBootstrapListener {
+
+        @Override
+        public void modifyBootstrapPage(ClientIndexBootstrapPage page) {
+            VaadinRequest request = page.getVaadinRequest();
+            if (!isValidRoute(request)) {
+                return;
+            }
+
+            request.setAttribute(
+                    ApplicationConstants.REQUEST_LOCATION_PARAMETER,
+                    request.getPathInfo());
+
             JavaScriptBootstrapHandler jsHandler = (JavaScriptBootstrapHandler) StreamSupport
                     .stream(CurrentInstance.get(VaadinService.class)
                             .getRequestHandlers().spliterator(), false)
                     .filter(r -> r instanceof JavaScriptBootstrapHandler)
                     .findFirst().get();
-
-            VaadinRequest request = page.getVaadinRequest();
-            request.setAttribute(
-                    ApplicationConstants.REQUEST_LOCATION_PARAMETER,
-                    request.getPathInfo());
 
             JsonObject initial = jsHandler.getAppConfig(request,
                     page.getVaadinResponse(), page.getVaadinSession());
@@ -62,7 +69,13 @@ public class ClientIndexInitialListener implements VaadinServiceInitListener {
             elm.text("window.Vaadin = {Flow : {initial: "
                     + JsonUtil.stringify(initial) + "}}");
             page.getDocument().head().insertChildren(0, elm);
-        });
+
+        }
+    }
+
+    @Override
+    public void serviceInit(ServiceInitEvent event) {
+        event.addClientIndexBootstrapListener(new ClientIndexInitialBootstrapListener());
     }
 
     /**
