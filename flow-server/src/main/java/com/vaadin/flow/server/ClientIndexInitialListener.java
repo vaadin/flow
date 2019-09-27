@@ -43,16 +43,20 @@ public class ClientIndexInitialListener implements VaadinServiceInitListener {
     @Override
     public void serviceInit(ServiceInitEvent event) {
         event.addClientIndexBootstrapListener(page -> {
+            VaadinRequest request = page.getVaadinRequest();
+            if (!isValidRoute(request)) {
+                return;
+            }
+
+            request.setAttribute(
+                    ApplicationConstants.REQUEST_LOCATION_PARAMETER,
+                    request.getPathInfo());
+
             JavaScriptBootstrapHandler jsHandler = (JavaScriptBootstrapHandler) StreamSupport
                     .stream(CurrentInstance.get(VaadinService.class)
                             .getRequestHandlers().spliterator(), false)
                     .filter(r -> r instanceof JavaScriptBootstrapHandler)
                     .findFirst().get();
-
-            VaadinRequest request = page.getVaadinRequest();
-            request.setAttribute(
-                    ApplicationConstants.REQUEST_LOCATION_PARAMETER,
-                    request.getPathInfo());
 
             JsonObject initial = jsHandler.getAppConfig(request,
                     page.getVaadinResponse(), page.getVaadinSession());
