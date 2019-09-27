@@ -29,10 +29,11 @@ public class ClientIndexBootstrapPage {
     private final VaadinResponse vaadinResponse;
     private final VaadinSession vaadinSession;
     private final Document document;
+    private final BootstrapHandler handler;
 
     /**
      * Create a response object in clientSideMode.
-     * 
+     *
      * @param vaadinRequest
      *            the vaadin request which is handling
      * @param vaadinResponse
@@ -41,19 +42,22 @@ public class ClientIndexBootstrapPage {
      *            the current vaadin session
      * @param document
      *            the {@link Document} object of the response page
+     * @param handler
+     *            the bootstrap handler processing this request
      */
     public ClientIndexBootstrapPage(VaadinRequest vaadinRequest,
             VaadinResponse vaadinResponse, VaadinSession vaadinSession,
-            Document document) {
+            Document document, BootstrapHandler handler) {
         this.vaadinRequest = vaadinRequest;
         this.vaadinResponse = vaadinResponse;
         this.vaadinSession = vaadinSession;
         this.document = document;
+        this.handler = handler;
     }
 
     /**
      * Get the request which triggers client index response.
-     * 
+     *
      * @return the Vaadin request
      */
     public VaadinRequest getVaadinRequest() {
@@ -63,7 +67,7 @@ public class ClientIndexBootstrapPage {
     /**
      * Get the Vaadin response object including all the headers which will be
      * sent to browser.
-     * 
+     *
      * @return the Vaadin response
      */
     public VaadinResponse getVaadinResponse() {
@@ -72,7 +76,7 @@ public class ClientIndexBootstrapPage {
 
     /**
      * Get the current Vaadin session.
-     * 
+     *
      * @return the Vaadin session
      */
     public VaadinSession getVaadinSession() {
@@ -81,10 +85,19 @@ public class ClientIndexBootstrapPage {
 
     /**
      * Get the index.html response in form of a {@link Document} instance.
-     * 
+     *
      * @return the index document
      */
     public Document getDocument() {
         return document;
+    }
+
+    /**
+     * Get the bootstrap handler processing the page.
+     *
+     * @return the bootstrap handler
+     */
+    public BootstrapHandler getHandler() {
+        return handler;
     }
 }

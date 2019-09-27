@@ -40,6 +40,7 @@ public class ClientIndexHandlerTest {
     private ClientIndexHandler clientIndexBootstrapHandler;
     private VaadinResponse response;
     private ByteArrayOutputStream responseOutput;
+    private MockDeploymentConfiguration deploymentConfiguration;
 
     @Before
     public void setUp() throws Exception {
@@ -49,8 +50,7 @@ public class ClientIndexHandlerTest {
         response = Mockito.mock(VaadinResponse.class);
         responseOutput = new ByteArrayOutputStream();
         Mockito.when(response.getOutputStream()).thenReturn(responseOutput);
-        MockDeploymentConfiguration deploymentConfiguration = mocks
-                .getDeploymentConfiguration();
+        deploymentConfiguration = mocks.getDeploymentConfiguration();
         deploymentConfiguration.setEnableDevServer(false);
         deploymentConfiguration.setClientSideMode(true);
         clientIndexBootstrapHandler = new ClientIndexHandler();
@@ -166,18 +166,11 @@ public class ClientIndexHandlerTest {
         Assert.assertEquals("testing.2", scripts.get(1).attr("src"));
     }
 
-    // Test class that should be included in the configuration file:
-    // `resources/META-INF/services/com.vaadin.flow.server.VaadinServiceInitListener`
-    public static class MyInitialListener extends ClientIndexInitialListener {
-        @Override
-        public boolean isValidRoute(VaadinRequest request) {
-            return request.getPathInfo().equals("/");
-        }
-    }
-
     @Test
-    public void should_add_initialUidl_when_valid_route()
+    public void should_add_initialUidl_when_includeInitialBootstrapUidl()
             throws IOException {
+        deploymentConfiguration.includeBootsrapInitialUidl(true);
+
         clientIndexBootstrapHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
         String indexHtml = responseOutput
@@ -187,11 +180,52 @@ public class ClientIndexHandlerTest {
         Elements scripts = document.head().getElementsByTag("script");
         Assert.assertEquals(1, scripts.size());
         Assert.assertEquals("", scripts.get(0).attr("initial"));
+        Assert.assertTrue(scripts.get(0).toString().contains("Could not navigate"));
+    }
+
+    @Test
+    public void should_add_initialUidl_when_not_includeInitialBootstrapUidl()
+            throws IOException {
+        clientIndexBootstrapHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+        String indexHtml = responseOutput
+                .toString(StandardCharsets.UTF_8.name());
+        Document document = Jsoup.parse(indexHtml);
+
+        Elements scripts = document.head().getElementsByTag("script");
+        Assert.assertEquals(0, scripts.size());
+    }
+
+    @Test
+    public void should_add_initialUidl_when_valid_route()
+            throws IOException {
+        deploymentConfiguration.includeBootsrapInitialUidl(true);
+
+        service.setBootstrapInitialPredicate(request -> {
+            return request.getPathInfo().equals("/");
+        });
+
+        clientIndexBootstrapHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+        String indexHtml = responseOutput
+                .toString(StandardCharsets.UTF_8.name());
+        Document document = Jsoup.parse(indexHtml);
+
+        Elements scripts = document.head().getElementsByTag("script");
+        Assert.assertEquals(1, scripts.size());
+        Assert.assertEquals("", scripts.get(0).attr("initial"));
+        Assert.assertTrue(scripts.get(0).toString().contains("Could not navigate"));
     }
 
     @Test
     public void should_not_add_initialUidl_when_invalid_route()
             throws IOException {
+        deploymentConfiguration.includeBootsrapInitialUidl(true);
+
+        service.setBootstrapInitialPredicate(request -> {
+            return request.getPathInfo().equals("/");
+        });
+
         clientIndexBootstrapHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/foo"), response);
         String indexHtml = responseOutput
@@ -218,6 +252,7 @@ public class ClientIndexHandlerTest {
         Mockito.doAnswer(invocation -> "").when(request).getServletPath();
         Mockito.doAnswer(invocation -> pathInfo).when(request).getPathInfo();
         Mockito.doAnswer(invocation -> new StringBuffer(pathInfo)).when(request).getRequestURL();
+        Mockito.doAnswer(invocation -> "/").when(request).getAttribute(Mockito.anyString());
         return request;
     }
 

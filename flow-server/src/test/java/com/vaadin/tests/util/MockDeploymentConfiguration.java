@@ -27,6 +27,7 @@ public class MockDeploymentConfiguration
     private boolean syncIdCheckEnabled = true;
     private boolean sendUrlsAsParameters = true;
     private boolean brotli = false;
+    private boolean includeBootsrapInitialUidl = false;
 
     @Override
     public boolean isProductionMode() {
@@ -173,5 +174,14 @@ public class MockDeploymentConfiguration
 
     public void setClientSideMode(boolean clientSideMode) {
         this.clientSideMode = clientSideMode;
+    }
+
+    @Override
+    public boolean includeBootsrapInitialUidl() {
+        return this.includeBootsrapInitialUidl ;
+    }
+
+    public void includeBootsrapInitialUidl(boolean includeBootsrapInitialUidl) {
+        this.includeBootsrapInitialUidl = includeBootsrapInitialUidl;
     }
 }

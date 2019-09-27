@@ -138,6 +138,9 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
     @Override
     protected void initializeUIWithRouter(VaadinRequest request, UI ui) {
         String route = request.getParameter(ApplicationConstants.REQUEST_LOCATION_PARAMETER);
+        if (route == null) {
+            route = (String)request.getAttribute(ApplicationConstants.REQUEST_LOCATION_PARAMETER);
+        }
         if (route != null) {
             try {
                 route = URLDecoder.decode(route, "UTF-8").replaceFirst("^/+", "");
@@ -161,51 +164,29 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
         ServletHelper.setResponseNoCacheHeaders(response::setHeader,
                 response::setDateHeader);
 
-        writeResponse(response, getAppConfig(request, response, session));
+        writeResponse(response, getInitialJson(request, response, session));
         return true;
     }
 
-
-    /**
-     * Returns the JSON object with the application config and UIDL info that
-     * can be used in the bootstrapper to embed that info in the initial page.
-     *
-     * @param request
-     *            the vaadin request.
-     * @param response
-     *            the response.
-     * @param session
-     *            the vaadin session.
-     * @return the initial application JSON.
-     */
-    public JsonObject getAppConfig(VaadinRequest request,
+    @Override
+    public JsonObject getInitialJson(VaadinRequest request,
             VaadinResponse response, VaadinSession session) {
+
         BootstrapContext context = createAndInitUI(JavaScriptBootstrapUI.class,
                 request, response, session);
 
-        JsonObject json = Json.createObject();
+        JsonObject initial = super.getInitialJson(request, response, session);
 
-        boolean productionMode = context.getSession().getConfiguration()
-                .isProductionMode();
-
-        if (!productionMode) {
-            json.put("stats", getStats());
+        if (!session.getConfiguration().isProductionMode()) {
+            initial.put("stats", getStats());
         }
-        json.put("errors", getErrors());
+        initial.put("errors", getErrors());
 
         if (context.getPushMode().isEnabled()) {
-            json.put("pushScript", getPushScript(context));
+            initial.put("pushScript", getPushScript(context));
         }
 
-        JsonObject appConfig = context.getApplicationParameters();
-
-        appConfig.put("productionMode", Json.create(productionMode));
-        appConfig.put("appId", context.getAppId());
-        appConfig.put("uidl", getInitialUidl(context.getUI()));
-
-        json.put("appConfig", appConfig);
-
-        return json;
+        return initial;
     }
 
     private String getServiceUrl(VaadinRequest request) {
