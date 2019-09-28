@@ -374,11 +374,11 @@ public class NodeTasks implements FallibleCommand {
         }
 
         if (builder.enableImportsUpdate) {
-            commands.add(
-                    new TaskUpdateImports(classFinder, frontendDependencies,
-                            finder -> getFallbackScanner(builder, finder),
-                            builder.npmFolder, builder.generatedFolder,
-                            builder.frontendDirectory));
+            commands.add(new TaskUpdateImports(classFinder,
+                    frontendDependencies,
+                    finder -> getFallbackScanner(builder, finder),
+                    builder.npmFolder, builder.generatedFolder,
+                    builder.frontendDirectory, builder.webpackOutputDirectory));
 
             if (builder.visitedClasses != null) {
                 builder.visitedClasses

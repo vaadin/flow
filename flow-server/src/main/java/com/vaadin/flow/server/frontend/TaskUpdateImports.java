@@ -18,15 +18,20 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
+
+import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
@@ -38,7 +43,13 @@ import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
+import elemental.json.Json;
+import elemental.json.JsonArray;
+import elemental.json.JsonObject;
+import elemental.json.impl.JsonUtil;
+
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
 /**
  * An updater that it's run when the servlet context is initialised in dev-mode
@@ -62,6 +73,7 @@ public class TaskUpdateImports extends NodeUpdater {
     private final File frontendDirectory;
     private final FrontendDependenciesScanner fallbackScanner;
     private final ClassFinder finder;
+    private final File webpackOutputDirectory;
 
     private class UpdateMainImportsFile extends AbstractUpdateImports {
 
@@ -80,6 +92,13 @@ public class TaskUpdateImports extends NodeUpdater {
 
         @Override
         protected void writeImportLines(List<String> lines) {
+            if (fallBackImports != null) {
+                lines.add(
+                        "window.Vaadin.Flow.loadFallback = function loadFallback(){");
+                lines.add("   return import('./" + fallBackImports.getName()
+                        + "');");
+                lines.add("}");
+            }
             try {
                 updateImportsFile(generatedFlowImports, lines);
             } catch (IOException e) {
@@ -127,9 +146,15 @@ public class TaskUpdateImports extends NodeUpdater {
 
         @Override
         protected Collection<String> getGeneratedModules() {
-            return NodeUpdater.getGeneratedModules(generatedFolder,
-                    new HashSet<>(Arrays.asList(generatedFlowImports.getName(),
-                            fallBackImports.getName())));
+            Set<String> exclude = null;
+            if (fallBackImports == null) {
+                exclude = Collections.singleton(generatedFlowImports.getName());
+            } else {
+                exclude = new HashSet<>(
+                        Arrays.asList(generatedFlowImports.getName(),
+                                fallBackImports.getName()));
+            }
+            return NodeUpdater.getGeneratedModules(generatedFolder, exclude);
         }
 
         @Override
@@ -147,6 +172,10 @@ public class TaskUpdateImports extends NodeUpdater {
             return frontDeps.getCss();
         }
 
+        @Override
+        protected Logger getLogger() {
+            return log();
+        }
     }
 
     private class UpdateFallBackImportsFile extends AbstractUpdateImports {
@@ -223,6 +252,11 @@ public class TaskUpdateImports extends NodeUpdater {
             return set;
         }
 
+        @Override
+        protected Logger getLogger() {
+            return log();
+        }
+
         File getGeneratedFallbackFile() {
             return generatedFallBack;
         }
@@ -243,15 +277,19 @@ public class TaskUpdateImports extends NodeUpdater {
      *            folder where flow generated files will be placed.
      * @param frontendDirectory
      *            a directory with project's frontend files
+     * @param webpackOutputDirectory
+     *            the directory to set for webpack to output its build results.
      */
     TaskUpdateImports(ClassFinder finder,
             FrontendDependenciesScanner frontendDepScanner,
             SerializableFunction<ClassFinder, FrontendDependenciesScanner> fallBackScannerProvider,
-            File npmFolder, File generatedPath, File frontendDirectory) {
+            File npmFolder, File generatedPath, File frontendDirectory,
+            File webpackOutputDirectory) {
         super(finder, frontendDepScanner, npmFolder, generatedPath);
         this.frontendDirectory = frontendDirectory;
         fallbackScanner = fallBackScannerProvider.apply(finder);
         this.finder = finder;
+        this.webpackOutputDirectory = webpackOutputDirectory;
     }
 
     @Override
@@ -262,6 +300,7 @@ public class TaskUpdateImports extends NodeUpdater {
                     finder, frontendDirectory, npmFolder, generatedFolder);
             fallBackUpdate.run();
             fallBack = fallBackUpdate.getGeneratedFallbackFile();
+            updateBuildFile();
         }
 
         UpdateMainImportsFile mainUpdate = new UpdateMainImportsFile(finder,
@@ -295,5 +334,87 @@ public class TaskUpdateImports extends NodeUpdater {
             return null;
         }
         return fallbackScanner.getTheme();
+    }
+
+    private void updateBuildFile() {
+        File tokenFile = getTokenFile();
+        if (!tokenFile.exists()) {
+            log().warn("Couldn't update build info file with "
+                    + "fallback chunk data due to missing token file.");
+            return;
+        }
+        if (fallbackScanner == null) {
+            return;
+        }
+        try {
+            String json = FileUtils.readFileToString(tokenFile,
+                    StandardCharsets.UTF_8);
+            JsonObject buildInfo = JsonUtil.parse(json);
+
+            JsonObject fallback = Json.createObject();
+            fallback.put("jsModules", makeFallbackModules());
+            fallback.put("cssImports", makeFallbackCssImports());
+
+            JsonObject chunks = Json.createObject();
+            chunks.put("fallback", fallback);
+
+            buildInfo.put("chunks", chunks);
+
+            FileUtils.write(tokenFile, JsonUtil.stringify(buildInfo, 2) + "\n",
+                    StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            log().warn("Unable to read token file", e);
+        }
+    }
+
+    private JsonArray makeFallbackModules() {
+        assert fallbackScanner != null;
+        JsonArray array = Json.createArray();
+        List<String> modules = fallbackScanner.getModules();
+        Set<String> scripts = fallbackScanner.getScripts();
+
+        Iterator<String> modulesIterator = modules.iterator();
+        Iterator<String> scriptsIterator = scripts.iterator();
+        for (int i = 0; i < modules.size() + scripts.size(); i++) {
+            if (i < modules.size()) {
+                array.set(i, modulesIterator.next());
+            } else {
+                array.set(i, scriptsIterator.next());
+            }
+
+        }
+        return array;
+    }
+
+    private JsonArray makeFallbackCssImports() {
+        assert fallbackScanner != null;
+        JsonArray array = Json.createArray();
+        Set<CssData> css = fallbackScanner.getCss();
+        Iterator<CssData> iterator = css.iterator();
+        for (int i = 0; i < css.size(); i++) {
+            array.set(i, makeCssJson(iterator.next()));
+        }
+        return null;
+    }
+
+    private JsonObject makeCssJson(CssData data) {
+        JsonObject object = Json.createObject();
+        if (data.getId() != null) {
+            object.put("id", data.getId());
+        }
+        if (data.getInclude() != null) {
+            object.put("include", data.getInclude());
+        }
+        if (data.getThemefor() != null) {
+            object.put("themeFor", data.getThemefor());
+        }
+        if (data.getValue() != null) {
+            object.put("value", data.getValue());
+        }
+        return object;
+    }
+
+    private File getTokenFile() {
+        return new File(webpackOutputDirectory, TOKEN_FILE);
     }
 }

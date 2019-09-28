@@ -52,7 +52,7 @@ import static com.vaadin.flow.shared.ApplicationConstants.FRONTEND_PROTOCOL_PREF
 
 /**
  * Common logic for generate import file JS content.
- * 
+ *
  * @author Vaadin Ltd
  *
  */
@@ -168,6 +168,13 @@ abstract class AbstractUpdateImports implements Runnable, Serializable {
      */
     protected abstract Collection<String> getGeneratedModules();
 
+    /**
+     * Get logger for this instance.
+     *
+     * @return a logger
+     */
+    protected abstract Logger getLogger();
+
     List<String> resolveModules(Collection<String> modules,
             boolean isJsModule) {
         return modules.stream()
@@ -205,11 +212,6 @@ abstract class AbstractUpdateImports implements Runnable, Serializable {
             lines.add("");
         }
         return lines;
-    }
-
-    protected Logger getLogger() {
-        // Using short prefix so as npm output is more readable
-        return LoggerFactory.getLogger("dev-updater");
     }
 
     protected void updateImportsFile(File importsFile, List<String> newContent)

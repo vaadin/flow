@@ -101,7 +101,8 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         ClassFinder classFinder = getClassFinder();
         updater = new TaskUpdateImports(classFinder, getScanner(classFinder),
-                finder -> null, tmpRoot, generatedPath, frontendDirectory) {
+                finder -> null, tmpRoot, generatedPath, frontendDirectory,
+                null) {
             @Override
             Logger log() {
                 if (useMockLog) {
@@ -183,7 +184,7 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
             updater.execute();
             Assert.fail("Execute should have failed with missing file");
         } catch (IllegalStateException e) {
-            assertThat(e.getCause().getMessage(),
+            assertThat(e.getMessage(),
                     CoreMatchers
                             .containsString(getFormattedFrontendErrorMessage(
                                     Sets.newSet(fooFileName))));
@@ -206,7 +207,7 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
             updater.execute();
             Assert.fail("Execute should have failed with missing files");
         } catch (IllegalStateException e) {
-            assertThat(e.getCause().getMessage(), CoreMatchers
+            assertThat(e.getMessage(), CoreMatchers
                     .containsString(getFormattedFrontendErrorMessage(
                             Sets.newSet(localTemplateFileName, fooFileName))));
         }
