@@ -24,6 +24,8 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
@@ -67,6 +69,16 @@ public class ClientIndexHandler extends JavaScriptBootstrapHandler {
         String pathInfo = request.getPathInfo();
         return pathInfo == null
                 || !PATH_WITH_EXTENSION.matcher(pathInfo).find();
+    }
+
+    @Override
+    protected void initializeUIWithRouter(VaadinRequest request, UI ui) {
+        new RuntimeException().printStackTrace();
+
+        if (CurrentInstance.get(VaadinService.class)
+                .getBootstrapInitialPredicate().includeInitial(request)) {
+            ui.getRouter().initializeUI(ui, request);
+        }
     }
 
     private static void prependBaseHref(VaadinRequest request,

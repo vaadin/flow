@@ -38,7 +38,6 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.Version;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.theme.ThemeDefinition;
 
@@ -82,7 +81,6 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
     public JavaScriptBootstrapHandler() {
         super(context -> null);
     }
-
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
@@ -172,19 +170,12 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
     public JsonObject getInitialJson(VaadinRequest request,
             VaadinResponse response, VaadinSession session) {
 
-        BootstrapContext context = createAndInitUI(JavaScriptBootstrapUI.class,
-                request, response, session);
-
         JsonObject initial = super.getInitialJson(request, response, session);
 
         if (!session.getConfiguration().isProductionMode()) {
             initial.put("stats", getStats());
         }
         initial.put("errors", getErrors());
-
-        if (context.getPushMode().isEnabled()) {
-            initial.put("pushScript", getPushScript(context));
-        }
 
         return initial;
     }
@@ -228,25 +219,6 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
             }
         }
         return errors.keys().length > 0 ? errors : Json.createNull();
-    }
-
-    private String getPushScript(BootstrapContext context) {
-        VaadinRequest request = context.getRequest();
-        // Parameter appended to JS to bypass caches after version upgrade.
-        String versionQueryParam = "?v=" + Version.getFullVersion();
-        // Load client-side dependencies for push support
-        String pushJSPath = context.getRequest().getService()
-                .getContextRootRelativePath(request);
-
-        if (request.getService().getDeploymentConfiguration()
-                .isProductionMode()) {
-            pushJSPath += ApplicationConstants.VAADIN_PUSH_JS;
-        } else {
-            pushJSPath += ApplicationConstants.VAADIN_PUSH_DEBUG_JS;
-        }
-
-        pushJSPath += versionQueryParam;
-        return pushJSPath;
     }
 
     private void writeResponse(VaadinResponse response, JsonObject json) throws IOException {
