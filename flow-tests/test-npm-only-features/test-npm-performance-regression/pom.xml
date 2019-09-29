@@ -95,6 +95,12 @@
                         <allowDuplicateFragmentNames>true
                         </allowDuplicateFragmentNames>
                     </webAppConfig>
+                    <systemProperties>
+                        <systemProperty>
+                            <name>devmode.optimizeBundle</name>
+                            <value>true</value>
+                        </systemProperty>
+                    </systemProperties>
                 </configuration>
                 <executions>
                     <!-- start and stop jetty (running our app) when running
