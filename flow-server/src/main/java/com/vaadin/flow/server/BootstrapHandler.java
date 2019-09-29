@@ -790,7 +790,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             }
 
             if (context.getPushMode().isEnabled()) {
-                head.appendChild(getPushScript(context));
+                head.appendChild(
+                        createJavaScriptElement(getPushScript(context)));
             }
 
             head.appendChild(getBootstrapScript(initialUIDL, context));
@@ -1103,28 +1104,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     .append("You have to enable javascript in your browser to use this web site.");
         }
 
-        private Element getPushScript(BootstrapContext context) {
-            VaadinRequest request = context.getRequest();
-
-            // Parameter appended to JS to bypass caches after version upgrade.
-            String versionQueryParam = "?v=" + Version.getFullVersion();
-
-            // Load client-side dependencies for push support
-            String pushJSPath = context.getRequest().getService()
-                    .getContextRootRelativePath(request);
-
-            if (request.getService().getDeploymentConfiguration()
-                    .isProductionMode()) {
-                pushJSPath += ApplicationConstants.VAADIN_PUSH_JS;
-            } else {
-                pushJSPath += ApplicationConstants.VAADIN_PUSH_DEBUG_JS;
-            }
-
-            pushJSPath += versionQueryParam;
-
-            return createJavaScriptElement(pushJSPath);
-        }
-
         private Element getBootstrapScript(JsonValue initialUIDL,
                 BootstrapContext context) {
             return createInlineJavaScriptElement(
@@ -1334,6 +1313,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     protected BootstrapContext createAndInitUI(Class<? extends UI> uiClass,
             VaadinRequest request, VaadinResponse response,
             VaadinSession session) {
+
         UI ui = ReflectTools.createInstance(uiClass);
         ui.getInternals().setContextRoot(
                 request.getService().getContextRootRelativePath(request));
@@ -1568,9 +1548,31 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         appConfig.put("productionMode", Json.create(productionMode));
         appConfig.put("appId", context.getAppId());
         appConfig.put("uidl", getInitialUidl(context.getUI()));
+        if (context.getPushMode().isEnabled()) {
+            initial.put("pushScript", getPushScript(context));
+        }
 
         initial.put("appConfig", appConfig);
 
         return initial;
+    }
+
+    protected static String getPushScript(BootstrapContext context) {
+        VaadinRequest request = context.getRequest();
+        // Parameter appended to JS to bypass caches after version upgrade.
+        String versionQueryParam = "?v=" + Version.getFullVersion();
+        // Load client-side dependencies for push support
+        String pushJSPath = context.getRequest().getService()
+                .getContextRootRelativePath(request);
+
+        if (request.getService().getDeploymentConfiguration()
+                .isProductionMode()) {
+            pushJSPath += ApplicationConstants.VAADIN_PUSH_JS;
+        } else {
+            pushJSPath += ApplicationConstants.VAADIN_PUSH_DEBUG_JS;
+        }
+
+        pushJSPath += versionQueryParam;
+        return pushJSPath;
     }
 }

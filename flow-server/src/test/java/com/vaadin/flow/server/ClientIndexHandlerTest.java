@@ -30,6 +30,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 public class ClientIndexHandlerTest {
@@ -197,7 +198,7 @@ public class ClientIndexHandlerTest {
     }
 
     @Test
-    public void should_add_initialUidl_when_valid_route()
+    public void should_initialize_UI_and_add_initialUidl_when_valid_route()
             throws IOException {
         deploymentConfiguration.includeBootsrapInitialUidl(true);
 
@@ -215,10 +216,11 @@ public class ClientIndexHandlerTest {
         Assert.assertEquals(1, scripts.size());
         Assert.assertEquals("", scripts.get(0).attr("initial"));
         Assert.assertTrue(scripts.get(0).toString().contains("Could not navigate"));
+        Assert.assertNotNull(UI.getCurrent());
     }
 
     @Test
-    public void should_not_add_initialUidl_when_invalid_route()
+    public void should_not_initialize_UI_and_add_initialUidl_when_invalid_route()
             throws IOException {
         deploymentConfiguration.includeBootsrapInitialUidl(true);
 
@@ -234,6 +236,15 @@ public class ClientIndexHandlerTest {
 
         Elements scripts = document.head().getElementsByTag("script");
         Assert.assertEquals(0, scripts.size());
+        Assert.assertNull(UI.getCurrent());
+    }
+
+    @Test
+    public void should_AA()
+            throws IOException {
+
+        clientIndexBootstrapHandler.initializeUIWithRouter(createVaadinRequest("/"), null);
+        Assert.assertNull(UI.getCurrent());
     }
 
     @After
@@ -252,7 +263,6 @@ public class ClientIndexHandlerTest {
         Mockito.doAnswer(invocation -> "").when(request).getServletPath();
         Mockito.doAnswer(invocation -> pathInfo).when(request).getPathInfo();
         Mockito.doAnswer(invocation -> new StringBuffer(pathInfo)).when(request).getRequestURL();
-        Mockito.doAnswer(invocation -> "/").when(request).getAttribute(Mockito.anyString());
         return request;
     }
 
