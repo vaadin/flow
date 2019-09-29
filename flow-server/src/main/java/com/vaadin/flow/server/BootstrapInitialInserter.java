@@ -32,15 +32,13 @@ class BootstrapInitialInserter
 
     @Override
     public void modifyBootstrapPage(ClientIndexBootstrapPage page) {
-        VaadinService vaadinService = CurrentInstance
-                .get(VaadinService.class);
+        VaadinRequest request = page.getVaadinRequest();
 
-        if (!vaadinService.getBootstrapInitialPredicate()
-                .includeInitial(page.getVaadinRequest())) {
+        if (!CurrentInstance.get(VaadinService.class)
+                .getBootstrapInitialPredicate().includeInitial(request)) {
             return;
         }
 
-        VaadinRequest request = page.getVaadinRequest();
         request.setAttribute(
                 ApplicationConstants.REQUEST_LOCATION_PARAMETER,
                 request.getPathInfo());
@@ -55,6 +53,5 @@ class BootstrapInitialInserter
         elm.text("window.Vaadin = {Flow : {initial: "
                 + JsonUtil.stringify(initial) + "}}");
         page.getDocument().head().insertChildren(0, elm);
-
     }
 }
