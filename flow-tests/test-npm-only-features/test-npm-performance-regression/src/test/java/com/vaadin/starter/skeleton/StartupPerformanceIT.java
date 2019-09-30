@@ -29,17 +29,29 @@ import org.junit.Test;
 
 public class StartupPerformanceIT {
     @Test
-    public void devModeInitializerToWebPackUpIsBelow2000ms() {
+    public void devModeInitializerToWebpackUpIsBelow2000ms() {
         int startupTime = measureLogEntryTimeDistance(
                 "com.vaadin.flow.server.startup.DevModeInitializer - Starting dev-mode updaters in",
-                "dev-webpack.*Time: [0-9]+ms"
+                "dev-webpack.*Time: [0-9]+ms",
+                true
         );
+
+        int npmInstallTime = measureLogEntryTimeDistance(
+                "dev-updater - Running `npm install`",
+                "dev-updater - package.json updated and npm dependencies installed",
+                false
+        );
+
+        int startupTimeWithoutNpmInstallTime = startupTime - npmInstallTime;
+
         final int thresholdMs = 2000;
-        Assert.assertTrue(String.format("startupTime expected <= %d but was %d", thresholdMs, startupTime),
-                startupTime <= thresholdMs);
+        Assert.assertTrue(String.format("startup time expected <= %d but was %d",
+                thresholdMs, startupTimeWithoutNpmInstallTime),
+                startupTimeWithoutNpmInstallTime <= thresholdMs);
     }
 
-    private int measureLogEntryTimeDistance(String startFragment, String endFragment) {
+    private int measureLogEntryTimeDistance(String startFragment, String endFragment,
+                                            boolean failIfNotFound) {
         Pattern startPattern = createPattern(startFragment);
         Pattern endPattern = createPattern(endFragment);
         AtomicInteger startTime = new AtomicInteger();
@@ -56,13 +68,13 @@ public class StartupPerformanceIT {
                             endTime.set(Integer.parseInt(matcherEnd.group(1)));
                         }
                     });
-            if (startTime.get() == 0) {
+            if (startTime.get() == 0 && failIfNotFound) {
                 throw new RuntimeException("No match: " + startFragment);
             }
-            if (endTime.get() == 0) {
+            if (endTime.get() == 0 && failIfNotFound) {
                 throw new RuntimeException("No match: " + endFragment);
             }
-            return endTime.get() - startTime.get();
+            return Math.max(0, endTime.get() - startTime.get());
         } catch (IOException ioe) {
             throw new RuntimeException(ioe);
         }
