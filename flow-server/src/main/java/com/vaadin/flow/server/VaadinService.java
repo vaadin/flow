@@ -2362,7 +2362,7 @@ public abstract class VaadinService implements Serializable {
      */
     public BootstrapInitialPredicate getBootstrapInitialPredicate() {
         if (bootstrapInitialPredicate == null) {
-            bootstrapInitialPredicate = request -> deploymentConfiguration.includeBootsrapInitialUidl();
+            bootstrapInitialPredicate = request -> deploymentConfiguration.isEagerServerLoad();
         }
         return bootstrapInitialPredicate;
     }

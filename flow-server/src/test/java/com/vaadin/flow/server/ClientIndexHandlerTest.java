@@ -170,7 +170,7 @@ public class ClientIndexHandlerTest {
     @Test
     public void should_add_initialUidl_when_includeInitialBootstrapUidl()
             throws IOException {
-        deploymentConfiguration.includeBootsrapInitialUidl(true);
+        deploymentConfiguration.setEagerServerLoad(true);
 
         clientIndexBootstrapHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
@@ -200,7 +200,7 @@ public class ClientIndexHandlerTest {
     @Test
     public void should_initialize_UI_and_add_initialUidl_when_valid_route()
             throws IOException {
-        deploymentConfiguration.includeBootsrapInitialUidl(true);
+        deploymentConfiguration.setEagerServerLoad(true);
 
         service.setBootstrapInitialPredicate(request -> {
             return request.getPathInfo().equals("/");
@@ -222,7 +222,7 @@ public class ClientIndexHandlerTest {
     @Test
     public void should_not_initialize_UI_and_add_initialUidl_when_invalid_route()
             throws IOException {
-        deploymentConfiguration.includeBootsrapInitialUidl(true);
+        deploymentConfiguration.setEagerServerLoad(true);
 
         service.setBootstrapInitialPredicate(request -> {
             return request.getPathInfo().equals("/");

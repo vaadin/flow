@@ -22,7 +22,7 @@ import java.util.EventListener;
 /**
  * The callback used by bootstrap handlers in order to know when a request needs
  * to pre-render the UI and include the initial UIDL in the page.
- * 
+ *
  * @since 3.0
  */
 @FunctionalInterface
@@ -31,11 +31,11 @@ public interface BootstrapInitialPredicate extends EventListener, Serializable {
     /**
      * Return whether the bootstrap handler has to include initial UIDL in the
      * response.
-     * 
+     *
      * @param request
      *            Vaadin request.
      * @return true if initial should be included
      */
-    boolean includeInitial(VaadinRequest request);
+    boolean includeInitialUidl(VaadinRequest request);
 
 }

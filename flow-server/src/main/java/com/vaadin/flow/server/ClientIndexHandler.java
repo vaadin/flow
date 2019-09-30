@@ -25,7 +25,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
@@ -73,8 +72,8 @@ public class ClientIndexHandler extends JavaScriptBootstrapHandler {
 
     @Override
     protected void initializeUIWithRouter(VaadinRequest request, UI ui) {
-        if (CurrentInstance.get(VaadinService.class)
-                .getBootstrapInitialPredicate().includeInitial(request)) {
+        if (request.getService().getBootstrapInitialPredicate()
+                .includeInitialUidl(request)) {
             ui.getRouter().initializeUI(ui, request);
         }
     }

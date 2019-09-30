@@ -17,6 +17,8 @@ package com.vaadin.flow.server;
 
 import org.jsoup.nodes.Document;
 
+import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
+
 /**
  * This represents the state of a client index bootstrap page being generated.
  * The bootstrap page contains of the full DOM of the HTML document as well as
@@ -29,7 +31,7 @@ public class ClientIndexBootstrapPage {
     private final VaadinResponse vaadinResponse;
     private final VaadinSession vaadinSession;
     private final Document document;
-    private final BootstrapHandler handler;
+    private final JavaScriptBootstrapHandler handler;
 
     /**
      * Create a response object in clientSideMode.
@@ -47,7 +49,7 @@ public class ClientIndexBootstrapPage {
      */
     public ClientIndexBootstrapPage(VaadinRequest vaadinRequest,
             VaadinResponse vaadinResponse, VaadinSession vaadinSession,
-            Document document, BootstrapHandler handler) {
+            Document document, JavaScriptBootstrapHandler handler) {
         this.vaadinRequest = vaadinRequest;
         this.vaadinResponse = vaadinResponse;
         this.vaadinSession = vaadinSession;
@@ -95,9 +97,9 @@ public class ClientIndexBootstrapPage {
     /**
      * Get the bootstrap handler processing the page.
      *
-     * @return the bootstrap handler
+     * @return the JavaScript bootstrap handler
      */
-    public BootstrapHandler getHandler() {
+    public JavaScriptBootstrapHandler getHandler() {
         return handler;
     }
 }
