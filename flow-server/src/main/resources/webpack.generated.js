@@ -7,6 +7,7 @@
 const fs = require('fs');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
 const {BabelMultiTargetPlugin} = require('webpack-babel-multi-target-plugin');
 
@@ -20,7 +21,8 @@ const frontendFolder = '[to-be-generated-by-flow]';
 const fileNameOfTheFlowGeneratedMainEntryPoint = '[to-be-generated-by-flow]';
 const mavenOutputFolderForFlowBundledFiles = '[to-be-generated-by-flow]';
 const useClientSideIndexFileForBootstrapping = '[to-be-generated-by-flow]';
-
+const clientSideIndexHTML = '[to-be-generated-by-flow]';
+const clientSideIndexEntryPoint = '[to-be-generated-by-flow]';
 // public path for resources, must match Flow VAADIN_BUILD
 const build = 'build';
 // public path for resources, must match the request used in flow to get the /build/stats.json file
@@ -81,7 +83,7 @@ module.exports = {
   mode: 'production',
   context: frontendFolder,
   entry: {
-    bundle: useClientSideIndexFileForBootstrapping ? './index' : fileNameOfTheFlowGeneratedMainEntryPoint
+    bundle: useClientSideIndexFileForBootstrapping ? clientSideIndexEntryPoint : fileNameOfTheFlowGeneratedMainEntryPoint
   },
 
   output: {
@@ -194,7 +196,11 @@ module.exports = {
 
     // Includes JS output bundles into "index.html"
     useClientSideIndexFileForBootstrapping && new HtmlWebpackPlugin({
-      template: './index.html'
+      template: clientSideIndexHTML,
+      inject: 'head'
+    }),
+    useClientSideIndexFileForBootstrapping && new ScriptExtHtmlWebpackPlugin({
+      defaultAttribute: 'defer'
     }),
   ].filter(Boolean)
 };

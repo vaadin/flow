@@ -226,34 +226,36 @@ public abstract class NodeUpdater implements FallibleCommand {
             added = addDependency(packageJson, DEPENDENCIES, DEP_NAME_FLOW_DEPS,
                     customPkg.replaceAll("\\\\", "/")) || added;
         } catch (IllegalArgumentException iae) {
-            log().error("Exception in relativization of '%s' to '%s'",
+            log().error("Exception in relativization of '{}' to '{}'",
                     npmFolder.getAbsoluteFile().toPath(),
                     generatedFolder.getAbsoluteFile().toPath());
             throw iae;
         }
-        added = addDependency(packageJson, DEV_DEPENDENCIES,
-                "webpack", "4.30.0") || added;
-        added = addDependency(packageJson, DEV_DEPENDENCIES,
-                "webpack-cli", "3.3.0") || added;
-        added = addDependency(packageJson, DEV_DEPENDENCIES,
-                "webpack-dev-server", "3.3.0") || added;
-        added = addDependency(packageJson, DEV_DEPENDENCIES,
-                "webpack-babel-multi-target-plugin", "2.1.0") || added;
-        added = addDependency(packageJson, DEV_DEPENDENCIES,
-                "copy-webpack-plugin", "5.0.3") || added;
-        added = addDependency(packageJson, DEV_DEPENDENCIES,
-                "html-webpack-plugin", "3.2.0") || added;
-        added = addDependency(packageJson, DEV_DEPENDENCIES,
-                "compression-webpack-plugin", "3.0.0") || added;
-        added = addDependency(packageJson, DEV_DEPENDENCIES,
-                "webpack-merge", "4.2.1") || added;
-        added = addDependency(packageJson, DEV_DEPENDENCIES,
-                "raw-loader", "3.0.0") || added;
-        added = addDependency(packageJson, DEV_DEPENDENCIES,
-                "typescript", "3.5.3") || added;
-        added = addDependency(packageJson, DEV_DEPENDENCIES,
-                "awesome-typescript-loader", "5.2.1") || added;
+        added = addDevDependency(packageJson, "webpack", "4.30.0", added);
+        added = addDevDependency(packageJson, "webpack-cli", "3.3.0", added);
+        added = addDevDependency(packageJson, "webpack-dev-server", "3.3.0",
+                added);
+        added = addDevDependency(packageJson,
+                "webpack-babel-multi-target-plugin", "2.1.0", added);
+        added = addDevDependency(packageJson, "copy-webpack-plugin", "5.0.3",
+                added);
+        added = addDevDependency(packageJson, "html-webpack-plugin", "3.2.0",
+                added);
+        added = addDevDependency(packageJson, "script-ext-html-webpack-plugin",
+                "2.1.4", added);
+        added = addDevDependency(packageJson, "compression-webpack-plugin",
+                "3.0.0", added);
+        added = addDevDependency(packageJson, "webpack-merge", "4.2.1", added);
+        added = addDevDependency(packageJson, "raw-loader", "3.0.0", added);
+        added = addDevDependency(packageJson, "typescript", "3.5.3", added);
+        added = addDevDependency(packageJson, "awesome-typescript-loader",
+                "5.2.1", added);
         return added;
+    }
+
+    private boolean addDevDependency(JsonObject packageJson, String pkg,
+            String ver, boolean hasChanged) {
+        return addDependency(packageJson, DEV_DEPENDENCIES, pkg, ver) || hasChanged;
     }
 
     void updateAppDefaultDependencies(JsonObject packageJson) {

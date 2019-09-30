@@ -21,8 +21,13 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_JS;
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
+import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -157,8 +162,50 @@ public class TaskUpdateWebpack implements FallibleCommand {
             if (lines.get(i).startsWith("const useClientSideIndexFileForBootstrapping")) {
                 lines.set(i, isClientSideBootstrapModeLine);
             }
+            if (lines.get(i).startsWith("const clientSideIndexHTML")) {
+                lines.set(i, getIndexHtmlPath());
+            }
+
+            if (lines.get(i).startsWith("const clientSideIndexEntryPoint")) {
+                lines.set(i, getClientEntryPoint());
+            }
         }
         return lines;
+    }
+
+    private String getIndexHtmlPath() {
+        boolean exists = new File(frontendDirectory.toFile(), INDEX_HTML)
+                .exists();
+        String declaration = "const clientSideIndexHTML = %s;";
+        if (!exists) {
+            Path path = Paths.get(
+                    getEscapedRelativeWebpackPath(webpackConfigPath), TARGET,
+                    INDEX_HTML);
+            String relativePath = String.format(
+                    "require('path').resolve(__dirname, '%s')",
+                    getEscapedRelativeWebpackPath(path));
+            return String.format(declaration, relativePath);
+        } else {
+            return String.format(declaration, "'./" + INDEX_HTML +"'");
+        }
+    }
+
+    private String getClientEntryPoint() {
+        boolean exists = new File(frontendDirectory.toFile(), INDEX_TS)
+                .exists()
+                || new File(frontendDirectory.toFile(), INDEX_JS).exists();
+        String declaration = "const clientSideIndexEntryPoint = %s;";
+        if (!exists) {
+            Path path = Paths.get(
+                    getEscapedRelativeWebpackPath(webpackConfigPath), TARGET,
+                    INDEX_JS);
+            String relativePath = String.format(
+                    "require('path').resolve(__dirname, '%s')",
+                    getEscapedRelativeWebpackPath(path));
+            return String.format(declaration, relativePath);
+        } else {
+            return String.format(declaration, "'./index'");
+        }
     }
 
     private String getEscapedRelativeWebpackPath(Path path) {

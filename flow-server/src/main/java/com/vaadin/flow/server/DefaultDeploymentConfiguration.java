@@ -16,10 +16,16 @@
 
 package com.vaadin.flow.server;
 
+import java.io.File;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_JS;
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
+import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,11 +66,6 @@ public class DefaultDeploymentConfiguration
             + "in web.xml. The permitted values are \"disabled\", \"manual\",\n"
             + "and \"automatic\". The default of \"disabled\" will be used."
             + SEPARATOR;
-
-    private static final String CLIENT_SIDE_BOOTSTRAP_MODE = SEPARATOR
-            + "\nRunning the application in 'clientSideMode'.\n"
-            + "It requires an 'index.html' template in the 'frontend' folder "
-            + "for bootstrapping the application." + SEPARATOR;
 
     /**
      * Default value for {@link #getHeartbeatInterval()} = {@value} .
@@ -302,8 +303,48 @@ public class DefaultDeploymentConfiguration
         clientSideMode = getBooleanProperty(
                 Constants.SERVLET_PARAMETER_CLIENT_SIDE_MODE, false);
         if (clientSideMode && loggWarning) {
-            getLogger().info(CLIENT_SIDE_BOOTSTRAP_MODE);
+            String frontendDir = getStringProperty(PARAM_FRONTEND_DIR, System
+                    .getProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR));
+            String indexHTMLMessage = getIndexHTMLMessage(frontendDir);
+            String entryPointMessage = getEntryPointMessage(frontendDir);
+            String outputMessage = SEPARATOR
+                    + "\nRunning the application in 'clientSideMode'.\n"
+                    + indexHTMLMessage + entryPointMessage + SEPARATOR;
+            getLogger().info(outputMessage);
         }
+    }
+
+    private String getEntryPointMessage(String frontendDir) {
+        File indexEntry = new File(frontendDir, INDEX_JS);
+        File indexEntryTs = new File(frontendDir, INDEX_TS);
+        String entryPointMessage;
+        if (!indexEntry.exists() && !indexEntryTs.exists()) {
+            entryPointMessage = String.format(
+                    "'index.ts' (index.js) is not found from '%s'. Using default 'index.js'.",
+                    indexEntry.getPath());
+        } else {
+            String fileName = indexEntry.exists() ? "index.js" : "index.ts";
+            String filePath = indexEntry.exists() ? indexEntry.getPath()
+                    : indexEntryTs.getPath();
+            entryPointMessage = String.format("Using '%s' from '%s'", fileName,
+                    filePath);
+        }
+        return entryPointMessage;
+    }
+
+    private String getIndexHTMLMessage(String frontendDir) {
+        File indexHTML = new File(frontendDir, INDEX_HTML);
+
+        String indexHTMLMessage;
+        if (!indexHTML.exists()) {
+            indexHTMLMessage = String.format(
+                    "'index.html' is not found from '%s'. Using default 'index.html'%n",
+                    indexHTML.getPath());
+        } else {
+            indexHTMLMessage = String.format("Using 'index.html' from '%s'%n",
+                    indexHTML.getPath());
+        }
+        return indexHTMLMessage;
     }
 
     /**
