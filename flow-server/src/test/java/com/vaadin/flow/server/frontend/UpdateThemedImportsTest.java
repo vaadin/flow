@@ -140,7 +140,7 @@ public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
             }
         };
         updater = new TaskUpdateImports(finder, deps, cf -> null, tmpRoot,
-                generatedPath, frontendDirectory, null);
+                generatedPath, frontendDirectory, null, null);
     }
 
     @Test

@@ -166,9 +166,19 @@ public class FrontendUtils {
     public static final String CHUNKS = "chunks";
 
     /**
-     * A key in a Json object for ballback chunk.
+     * A key in a Json object for fallback chunk.
      */
     public static final String FALLBACK = "fallback";
+
+    /**
+     * A key in a Json object for css imports data.
+     */
+    public static final String CSS_IMPORTS = "cssImports";
+
+    /**
+     * A key in a Json object for js modules data.
+     */
+    public static final String JS_MODULES = "jsModules";
 
     /**
      * A parameter informing about the location of the
@@ -515,12 +525,12 @@ public class FrontendUtils {
         }
         obj = obj.getObject(FALLBACK);
         List<String> fallbackModles = new ArrayList<>();
-        JsonArray modules = obj.getArray("jsModules");
+        JsonArray modules = obj.getArray(JS_MODULES);
         for (int i = 0; i < modules.length(); i++) {
             fallbackModles.add(modules.getString(i));
         }
         List<CssImportData> fallbackCss = new ArrayList<>();
-        JsonArray css = obj.getArray("cssImports");
+        JsonArray css = obj.getArray(CSS_IMPORTS);
         for (int i = 0; i < css.length(); i++) {
             fallbackCss.add(createCssData(css.getObject(i)));
         }

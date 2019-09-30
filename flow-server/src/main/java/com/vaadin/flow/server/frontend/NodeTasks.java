@@ -387,7 +387,8 @@ public class NodeTasks implements FallibleCommand {
                     frontendDependencies,
                     finder -> getFallbackScanner(builder, finder),
                     builder.npmFolder, builder.generatedFolder,
-                    builder.frontendDirectory, builder.webpackOutputDirectory));
+                    builder.frontendDirectory, builder.webpackOutputDirectory,
+                    builder.tokenFileData));
 
             if (builder.visitedClasses != null) {
                 builder.visitedClasses

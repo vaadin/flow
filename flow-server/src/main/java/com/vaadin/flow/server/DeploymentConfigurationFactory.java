@@ -26,6 +26,7 @@ import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
 import java.util.Optional;
 import java.util.Properties;
@@ -180,7 +181,8 @@ public final class DeploymentConfigurationFactory implements Serializable {
             if (tokenLocation != null) {
                 File tokenFile = new File(tokenLocation);
                 if (tokenFile != null && tokenFile.canRead()) {
-                    json = FileUtils.readFileToString(tokenFile, "UTF-8");
+                    json = FileUtils.readFileToString(tokenFile,
+                            StandardCharsets.UTF_8);
                 }
             }
 
