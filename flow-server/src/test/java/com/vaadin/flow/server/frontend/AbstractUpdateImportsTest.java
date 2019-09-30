@@ -53,9 +53,7 @@ import com.vaadin.flow.theme.ThemeDefinition;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -68,7 +66,6 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
-    private File importsFile;
     private File generatedPath;
     private File frontendDirectory;
     private File nodeModulesPath;
@@ -167,7 +164,6 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         frontendDirectory = new File(tmpRoot, DEFAULT_FRONTEND_DIR);
         nodeModulesPath = new File(tmpRoot, NODE_MODULES);
         generatedPath = new File(tmpRoot, DEFAULT_GENERATED_DIR);
-        importsFile = new File(generatedPath, IMPORTS_NAME);
 
         ClassFinder classFinder = getClassFinder();
         updater = new UpdateImports(classFinder, getScanner(classFinder),
@@ -441,13 +437,6 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                     curIndex <= nextIndex);
             curIndex = nextIndex;
         }
-    }
-
-    private String addWebpackPrefix(String s) {
-        if (s.startsWith("./")) {
-            return WEBPACK_PREFIX_ALIAS + s.substring(2);
-        }
-        return s;
     }
 
 }
