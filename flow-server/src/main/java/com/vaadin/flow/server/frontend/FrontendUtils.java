@@ -531,7 +531,6 @@ public class FrontendUtils {
         }
         List<CssImportData> fallbackCss = new ArrayList<>();
         JsonArray css = obj.getArray(CSS_IMPORTS);
-
         for (int i = 0; i < css.length(); i++) {
             fallbackCss.add(createCssData(css.getObject(i)));
         }
