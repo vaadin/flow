@@ -19,14 +19,12 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.slf4j.impl.SimpleLogger;
 
 public class StartupPerformanceIT {
     @Test
@@ -85,7 +83,7 @@ public class StartupPerformanceIT {
         return Pattern.compile(String.format("([0-9]+).*%s.*", fragment));
     }
 
-    private Path getLogPath() throws IOException {
+    private Path getLogPath() {
         File logFile = new File(System.getProperty("server.log.location"));
         return logFile.toPath();
     }
