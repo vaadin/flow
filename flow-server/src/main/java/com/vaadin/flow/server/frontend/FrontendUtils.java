@@ -36,6 +36,10 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
+
+import elemental.json.JsonArray;
+import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
@@ -155,6 +159,16 @@ public class FrontendUtils {
      */
     public static final String TOKEN_FILE = Constants.VAADIN_CONFIGURATION
             + "flow-build-info.json";
+
+    /**
+     * A key in a Json object for chunks list.
+     */
+    public static final String CHUNKS = "chunks";
+
+    /**
+     * A key in a Json object for ballback chunk.
+     */
+    public static final String FALLBACK = "fallback";
 
     /**
      * A parameter informing about the location of the
@@ -482,6 +496,55 @@ public class FrontendUtils {
         return file.exists()
                 && FileUtils.readFileToString(file, StandardCharsets.UTF_8)
                         .contains("./webpack.generated.js");
+    }
+
+    /**
+     * Read fallback chunk data from a json object.
+     *
+     * @param object
+     *            json object to read fallback chunk data
+     * @return a fallback chunk data
+     */
+    public static FallbackChunk readFallbackChunk(JsonObject object) {
+        if (!object.hasKey(CHUNKS)) {
+            return null;
+        }
+        JsonObject obj = object.getObject(CHUNKS);
+        if (!obj.hasKey(FALLBACK)) {
+            return null;
+        }
+        obj = obj.getObject(FALLBACK);
+        List<String> fallbackModles = new ArrayList<>();
+        JsonArray modules = obj.getArray("jsModules");
+        for (int i = 0; i < modules.length(); i++) {
+            fallbackModles.add(modules.getString(i));
+        }
+        List<CssImportData> fallbackCss = new ArrayList<>();
+        JsonArray css = obj.getArray("cssImports");
+        for (int i = 0; i < css.length(); i++) {
+            fallbackCss.add(createCssData(css.getObject(i)));
+        }
+        return new FallbackChunk(fallbackModles, fallbackCss);
+    }
+
+    private static CssImportData createCssData(JsonObject object) {
+        String value = null;
+        String id = null;
+        String include = null;
+        String themeFor = null;
+        if (object.hasKey("value")) {
+            value = object.getString("value");
+        }
+        if (object.hasKey("id")) {
+            id = object.getString("id");
+        }
+        if (object.hasKey("include")) {
+            include = object.getString("include");
+        }
+        if (object.hasKey("themeFor")) {
+            themeFor = object.getString("themeFor");
+        }
+        return new CssImportData(value, id, include, themeFor);
     }
 
     static void validateToolVersion(String tool, String[] toolVersion,
