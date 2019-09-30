@@ -25,6 +25,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -183,34 +184,35 @@ abstract class AbstractUpdateImports implements Runnable, Serializable {
     }
 
     protected Collection<String> getCssLines() {
-        Collection<String> lines = new ArrayList<>();
         Set<CssData> css = getCss();
-        if (!css.isEmpty()) {
-            addLines(lines, CSS_PREPARE);
-
-            Set<String> cssNotFound = new HashSet<>();
-            int i = 0;
-
-            for (CssData cssData : css) {
-                if (!addCssLines(lines, cssData, i)) {
-                    cssNotFound.add(cssData.getValue());
-                }
-                i++;
-            }
-            if (!cssNotFound.isEmpty()) {
-                String prefix = String.format(
-                        "Failed to find the following css files in the `node_modules` or `%s` directory tree:",
-                        frontendDir.getPath());
-                String suffix = String.format(
-                        "Check that they exist or are installed. If you use a custom directory "
-                                + "for your resource files instead of the default `frontend` folder "
-                                + "then make sure it's correctly configured (e.g. set '%s' property)",
-                        FrontendUtils.PARAM_FRONTEND_DIR);
-                throw new IllegalStateException(
-                        notFoundMessage(cssNotFound, prefix, suffix));
-            }
-            lines.add("");
+        if (css.isEmpty()) {
+            return Collections.emptyList();
         }
+        Collection<String> lines = new ArrayList<>();
+        addLines(lines, CSS_PREPARE);
+
+        Set<String> cssNotFound = new HashSet<>();
+        int i = 0;
+
+        for (CssData cssData : css) {
+            if (!addCssLines(lines, cssData, i)) {
+                cssNotFound.add(cssData.getValue());
+            }
+            i++;
+        }
+        if (!cssNotFound.isEmpty()) {
+            String prefix = String.format(
+                    "Failed to find the following css files in the `node_modules` or `%s` directory tree:",
+                    frontendDir.getPath());
+            String suffix = String.format(
+                    "Check that they exist or are installed. If you use a custom directory "
+                            + "for your resource files instead of the default `frontend` folder "
+                            + "then make sure it's correctly configured (e.g. set '%s' property)",
+                    FrontendUtils.PARAM_FRONTEND_DIR);
+            throw new IllegalStateException(
+                    notFoundMessage(cssNotFound, prefix, suffix));
+        }
+        lines.add("");
         return lines;
     }
 
@@ -268,7 +270,7 @@ abstract class AbstractUpdateImports implements Runnable, Serializable {
     }
 
     protected void addLines(Collection<String> lines, String content) {
-        lines.addAll(Arrays.asList(content.split("\r?\n")));
+        lines.addAll(Arrays.asList(content.split("\\R")));
     }
 
     private void collectModules(List<String> lines) {
@@ -398,14 +400,16 @@ abstract class AbstractUpdateImports implements Runnable, Serializable {
     /**
      * Returns a file for the {@code jsImport} path ONLY if it's either in the
      * {@code "frontend"} folder or
-     * {@code "node_modules/@vaadin/flow-frontend/") folder.
+     * {@code "node_modules/@vaadin/flow-frontend/"} folder.
      *
-    <p>
-     * This method doesn't care about "published" WC paths (like "@vaadin/vaadin-grid" and so on).
-     * See the {@link #importedFileExists(String)} method implementation.
+     * <p>
+     * This method doesn't care about "published" WC paths (like
+     * "@vaadin/vaadin-grid" and so on). See the
+     * {@link #importedFileExists(String)} method implementation.
      *
      * @return a file on FS if it exists and it's inside a frontend folder or in
-     * node_modules/@vaadin/flow-frontend/, otherwise returns {@code null}
+     *         node_modules/@vaadin/flow-frontend/, otherwise returns
+     *         {@code null}
      */
     private File getImportedFrontendFile(String jsImport) {
         // file is in /frontend

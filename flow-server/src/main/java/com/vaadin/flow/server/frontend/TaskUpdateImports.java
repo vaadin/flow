@@ -361,7 +361,7 @@ public class TaskUpdateImports extends NodeUpdater {
 
             buildInfo.put("chunks", chunks);
 
-            FileUtils.write(tokenFile, JsonUtil.stringify(buildInfo, 2) + "\n",
+            FileUtils.write(tokenFile, JsonUtil.stringify(buildInfo, 2),
                     StandardCharsets.UTF_8);
         } catch (IOException e) {
             log().warn("Unable to read token file", e);
