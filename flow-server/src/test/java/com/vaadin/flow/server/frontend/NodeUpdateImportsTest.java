@@ -94,7 +94,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void extraComponentsInCP_compoenntsAreNotDiscoveredByMainScanner_fallbackIsGenerated()
+    public void extraComponentsInCP_componentsAreNotDiscoveredByMainScannerWrittenByFallback_fallbackIsGenerated()
             throws IOException {
         Stream<Class<?>> classes = Stream.concat(
                 Stream.of(NodeTestComponents.class.getDeclaredClasses()),
@@ -228,6 +228,110 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         Assert.assertEquals("extra-bar", cssImport.getString("include"));
         Assert.assertEquals("extra-foo", cssImport.getString("themeFor"));
         Assert.assertEquals("./extra-css.css", cssImport.getString("value"));
+    }
+
+    @Test
+    public void emptyByteCodeScannerData_themeIsDiscovered_fallbackIsGenerated()
+            throws IOException {
+        ClassFinder classFinder = new DefaultClassFinder(
+                new URLClassLoader(getClassPath()),
+                EmptyByteScannerDataTestComponents.class.getDeclaredClasses());
+
+        updater = new TaskUpdateImports(classFinder,
+                new FrontendDependenciesScannerFactory().createScanner(false,
+                        classFinder, true),
+                finder -> new FrontendDependenciesScannerFactory()
+                        .createScanner(true, finder, true),
+                tmpRoot, generatedPath, frontendDirectory, webpackDir) {
+            @Override
+            Logger log() {
+                return logger;
+            }
+        };
+
+        updater.execute();
+
+        assertTrue(importsFile.exists());
+
+        String mainContent = FileUtils.readFileToString(importsFile,
+                Charset.defaultCharset());
+
+        // ============== check main generated imports file ============
+
+        // Contains theme lines
+        Assert.assertThat(mainContent, CoreMatchers
+                .containsString("const div = document.createElement('div');"));
+
+        Assert.assertThat(mainContent, CoreMatchers.containsString(
+                "div.innerHTML = '<custom-style>foo</custom-style>';"));
+
+        // fallback chunk load function is generated
+        Assert.assertThat(mainContent, CoreMatchers.containsString(
+                "window.Vaadin.Flow.loadFallback = function loadFallback(){"));
+
+        Assert.assertThat(mainContent, CoreMatchers.containsString(
+                "return import('./generated-flow-imports-fallback.js');"));
+
+        // ============== check fallback generated imports file ============
+
+        String fallBackContent = FileUtils.readFileToString(fallBackImportsFile,
+                Charset.defaultCharset());
+
+        // Does not Contains theme lines
+        Assert.assertThat(fallBackContent, CoreMatchers.not(CoreMatchers
+                .containsString("const div = document.createElement('div');")));
+
+        // Contains CSS import lines from CP not discovered by byte scanner
+        Assert.assertThat(fallBackContent, CoreMatchers
+                .containsString("import $css_0 from 'Frontend/foo.css';"));
+        Assert.assertThat(fallBackContent, CoreMatchers.containsString(
+                "addCssBlock(`<dom-module id=\"baz\"><template><style include=\"bar\">${$css_0}</style></template></dom-module>`);"));
+
+        // Contains JS module imports
+        Assert.assertThat(fallBackContent, CoreMatchers.containsString(
+                "import '@vaadin/vaadin-lumo-styles/icons.js';"));
+        Assert.assertThat(fallBackContent, CoreMatchers
+                .containsString("import 'Frontend/common-js-file.js';"));
+
+        // Contains Javascript imports
+        Assert.assertThat(fallBackContent, CoreMatchers.containsString(
+                "import '@vaadin/flow-frontend/ExampleConnector.js';"));
+    }
+
+    @Test
+    public void noFallBackSCanner_fallbackIsNotGenerated() throws IOException {
+        Stream<Class<?>> classes = Stream.concat(
+                Stream.of(NodeTestComponents.class.getDeclaredClasses()),
+                Stream.of(ExtraNodeTestComponents.class.getDeclaredClasses()));
+        ClassFinder classFinder = new DefaultClassFinder(
+                new URLClassLoader(getClassPath()),
+                classes.toArray(Class<?>[]::new));
+
+        updater = new TaskUpdateImports(classFinder,
+                new FrontendDependenciesScannerFactory().createScanner(false,
+                        classFinder, true),
+                finder -> null, tmpRoot, generatedPath, frontendDirectory,
+                webpackDir) {
+            @Override
+            Logger log() {
+                return logger;
+            }
+        };
+
+        updater.execute();
+
+        assertTrue(importsFile.exists());
+
+        String mainContent = FileUtils.readFileToString(importsFile,
+                Charset.defaultCharset());
+
+        // fallback chunk load function is not generated
+        Assert.assertThat(mainContent,
+                CoreMatchers.not(CoreMatchers.containsString(
+                        "window.Vaadin.Flow.loadFallback = function loadFallback(){")));
+
+        Assert.assertFalse(fallBackImportsFile.exists());
+
     }
 
 }
