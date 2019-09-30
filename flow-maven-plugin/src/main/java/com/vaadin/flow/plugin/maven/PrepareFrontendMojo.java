@@ -150,7 +150,7 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
                                     webpackTemplate, webpackGeneratedTemplate)
                             .createMissingPackageJson(true)
                             .enableImportsUpdate(false)
-                            .enablePackagesUpdate(false).runNpmInstall(false)
+                            .enablePackagesUpdate(true).runNpmInstall(true)
                             .build().execute();
         } catch (ExecutionFailedException exception) {
             throw new MojoFailureException(
