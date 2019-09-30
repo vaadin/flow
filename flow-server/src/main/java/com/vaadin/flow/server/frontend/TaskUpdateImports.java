@@ -300,7 +300,7 @@ public class TaskUpdateImports extends NodeUpdater {
                     finder, frontendDirectory, npmFolder, generatedFolder);
             fallBackUpdate.run();
             fallBack = fallBackUpdate.getGeneratedFallbackFile();
-            updateBuildFile();
+            updateBuildFile(fallBackUpdate);
         }
 
         UpdateMainImportsFile mainUpdate = new UpdateMainImportsFile(finder,
@@ -336,24 +336,25 @@ public class TaskUpdateImports extends NodeUpdater {
         return fallbackScanner.getTheme();
     }
 
-    private void updateBuildFile() {
+    private void updateBuildFile(AbstractUpdateImports updater) {
         File tokenFile = getTokenFile();
         if (!tokenFile.exists()) {
-            log().warn("Couldn't update build info file with "
-                    + "fallback chunk data due to missing token file.");
-            return;
-        }
-        if (fallbackScanner == null) {
-            return;
+            log().warn("Missing token file. New token file will be created.");
         }
         try {
-            String json = FileUtils.readFileToString(tokenFile,
-                    StandardCharsets.UTF_8);
-            JsonObject buildInfo = JsonUtil.parse(json);
+            JsonObject buildInfo;
+            if (tokenFile.exists()) {
+                String json = FileUtils.readFileToString(tokenFile,
+                        StandardCharsets.UTF_8);
+                buildInfo = JsonUtil.parse(json);
+            } else {
+                FileUtils.forceMkdirParent(tokenFile);
+                buildInfo = Json.createObject();
+            }
 
             JsonObject fallback = Json.createObject();
-            fallback.put("jsModules", makeFallbackModules());
-            fallback.put("cssImports", makeFallbackCssImports());
+            fallback.put("jsModules", makeFallbackModules(updater));
+            fallback.put("cssImports", makeFallbackCssImports(updater));
 
             JsonObject chunks = Json.createObject();
             chunks.put("fallback", fallback);
@@ -367,11 +368,10 @@ public class TaskUpdateImports extends NodeUpdater {
         }
     }
 
-    private JsonArray makeFallbackModules() {
-        assert fallbackScanner != null;
+    private JsonArray makeFallbackModules(AbstractUpdateImports updater) {
         JsonArray array = Json.createArray();
-        List<String> modules = fallbackScanner.getModules();
-        Set<String> scripts = fallbackScanner.getScripts();
+        List<String> modules = updater.getModules();
+        Set<String> scripts = updater.getScripts();
 
         Iterator<String> modulesIterator = modules.iterator();
         Iterator<String> scriptsIterator = scripts.iterator();
@@ -386,15 +386,14 @@ public class TaskUpdateImports extends NodeUpdater {
         return array;
     }
 
-    private JsonArray makeFallbackCssImports() {
-        assert fallbackScanner != null;
+    private JsonArray makeFallbackCssImports(AbstractUpdateImports updater) {
         JsonArray array = Json.createArray();
-        Set<CssData> css = fallbackScanner.getCss();
+        Set<CssData> css = updater.getCss();
         Iterator<CssData> iterator = css.iterator();
         for (int i = 0; i < css.size(); i++) {
             array.set(i, makeCssJson(iterator.next()));
         }
-        return null;
+        return array;
     }
 
     private JsonObject makeCssJson(CssData data) {

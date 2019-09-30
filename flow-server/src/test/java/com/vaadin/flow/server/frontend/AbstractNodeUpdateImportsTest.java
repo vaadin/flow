@@ -52,7 +52,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DI
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -302,13 +301,6 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
                     curIndex <= nextIndex);
             curIndex = nextIndex;
         }
-    }
-
-    private String addWebpackPrefix(String s) {
-        if (s.startsWith("./")) {
-            return WEBPACK_PREFIX_ALIAS + s.substring(2);
-        }
-        return s;
     }
 
     private void removeImports(String... imports) throws IOException {
