@@ -27,7 +27,7 @@ public class MockDeploymentConfiguration
     private boolean syncIdCheckEnabled = true;
     private boolean sendUrlsAsParameters = true;
     private boolean brotli = false;
-    private boolean includeBootsrapInitialUidl = false;
+    private boolean eagerServerLoad = false;
 
     @Override
     public boolean isProductionMode() {
@@ -177,11 +177,11 @@ public class MockDeploymentConfiguration
     }
 
     @Override
-    public boolean includeBootsrapInitialUidl() {
-        return this.includeBootsrapInitialUidl ;
+    public boolean isEagerServerLoad() {
+        return this.eagerServerLoad ;
     }
 
-    public void includeBootsrapInitialUidl(boolean includeBootsrapInitialUidl) {
-        this.includeBootsrapInitialUidl = includeBootsrapInitialUidl;
+    public void setEagerServerLoad(boolean includeBootsrapInitialUidl) {
+        this.eagerServerLoad = includeBootsrapInitialUidl;
     }
 }

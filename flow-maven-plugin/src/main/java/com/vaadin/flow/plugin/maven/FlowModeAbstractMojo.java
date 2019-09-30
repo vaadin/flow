@@ -22,6 +22,8 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
 
+import com.vaadin.flow.server.Constants;
+
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 
 /**
@@ -49,6 +51,12 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
      */
     @Parameter(defaultValue = "${vaadin.clientSideMode}")
     public boolean clientSideMode;
+
+    /**
+     * Whether or not insert the initial Uidl object in the bootstrap index.html
+     */
+    @Parameter(defaultValue = "${vaadin." + Constants.SERVLET_PARAMETER_INITIAL_UIDL + "}")
+    public boolean eagerServerLoad;
 
     /**
      * The folder where webpack should output index.js and other generated

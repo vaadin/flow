@@ -425,11 +425,11 @@ public interface DeploymentConfiguration extends Serializable {
      * application that mix client and server side views, since the `index.html`
      * can be cached and served by service workers in PWAs, as well as in the
      * server side session and UI initialization is deferred until a server view
-     * is actually requested by the user.
+     * is actually requested by the user, saving some server resources.
      *
      * @return true if initial UIDL should be included in page
      */
-    default boolean includeBootsrapInitialUidl() {
+    default boolean isEagerServerLoad() {
         return getBooleanProperty(
                 Constants.SERVLET_PARAMETER_INITIAL_UIDL, false);
     }
