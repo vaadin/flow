@@ -17,7 +17,7 @@ package com.vaadin.flow.server;
 
 import org.jsoup.nodes.Element;
 
-import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 import elemental.json.JsonObject;
@@ -34,8 +34,8 @@ class BootstrapInitialInserter
     public void modifyBootstrapPage(ClientIndexBootstrapPage page) {
         VaadinRequest request = page.getVaadinRequest();
 
-        if (!CurrentInstance.get(VaadinService.class)
-                .getBootstrapInitialPredicate().includeInitial(request)) {
+        if (!request.getService().getBootstrapInitialPredicate()
+                .includeInitialUidl(request)) {
             return;
         }
 
@@ -43,7 +43,7 @@ class BootstrapInitialInserter
                 ApplicationConstants.REQUEST_LOCATION_PARAMETER,
                 request.getPathInfo());
 
-        BootstrapHandler handler = page.getHandler();
+        JavaScriptBootstrapHandler handler = page.getHandler();
 
         JsonObject initial = handler.getInitialJson(request,
                 page.getVaadinResponse(), page.getVaadinSession());

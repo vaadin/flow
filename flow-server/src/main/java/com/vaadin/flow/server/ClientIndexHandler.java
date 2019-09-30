@@ -73,8 +73,8 @@ public class ClientIndexHandler extends JavaScriptBootstrapHandler {
 
     @Override
     protected void initializeUIWithRouter(VaadinRequest request, UI ui) {
-        if (CurrentInstance.get(VaadinService.class)
-                .getBootstrapInitialPredicate().includeInitial(request)) {
+        if (request.getService().getBootstrapInitialPredicate()
+                .includeInitialUidl(request)) {
             ui.getRouter().initializeUI(ui, request);
         }
     }

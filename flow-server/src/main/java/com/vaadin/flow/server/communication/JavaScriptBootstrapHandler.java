@@ -163,20 +163,6 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
         return true;
     }
 
-    @Override
-    public JsonObject getInitialJson(VaadinRequest request,
-            VaadinResponse response, VaadinSession session) {
-
-        JsonObject initial = super.getInitialJson(request, response, session);
-
-        if (!session.getConfiguration().isProductionMode()) {
-            initial.put("stats", getStats());
-        }
-        initial.put("errors", getErrors());
-
-        return initial;
-    }
-
     private String getServiceUrl(VaadinRequest request) {
         // get service url from 'url' parameter
         String url = request.getParameter("url");
@@ -222,5 +208,47 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
         response.setContentType("application/json");
         response.setStatus(HttpURLConnection.HTTP_OK);
         response.getOutputStream().write(JsonUtil.stringify(json).getBytes("UTF-8"));
+    }
+
+
+    /**
+     * Returns the JSON object with the application config and UIDL info that
+     * can be used in the bootstrapper to embed that info in the initial page.
+     *
+     * @param request
+     *            the vaadin request.
+     * @param response
+     *            the response.
+     * @param session
+     *            the vaadin session.
+     * @return the initial application JSON.
+     */
+    public JsonObject getInitialJson(VaadinRequest request,
+            VaadinResponse response, VaadinSession session) {
+
+        BootstrapContext context = createAndInitUI(JavaScriptBootstrapUI.class,
+                request, response, session);
+
+        JsonObject initial = Json.createObject();
+
+        boolean productionMode = context.getSession().getConfiguration()
+                .isProductionMode();
+
+        JsonObject appConfig = context.getApplicationParameters();
+
+        appConfig.put("productionMode", Json.create(productionMode));
+        appConfig.put("appId", context.getAppId());
+        appConfig.put("uidl", getInitialUidl(context.getUI()));
+        initial.put("appConfig", appConfig);
+
+        if (context.getPushMode().isEnabled()) {
+            initial.put("pushScript", getPushScript(context));
+        }
+        if (!session.getConfiguration().isProductionMode()) {
+            initial.put("stats", getStats());
+        }
+        initial.put("errors", getErrors());
+
+        return initial;
     }
 }
