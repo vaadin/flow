@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.slf4j.impl.SimpleLogger;
 
 public class StartupPerformanceIT {
     @Test
@@ -85,9 +86,7 @@ public class StartupPerformanceIT {
     }
 
     private Path getLogPath() throws IOException {
-        Properties prop = new Properties();
-        prop.load(getClass().getClassLoader().getResourceAsStream("simplelogger.properties"));
-        File logFile = new File(prop.getProperty("org.slf4j.simpleLogger.logFile"));
+        File logFile = new File(System.getProperty("server.log.location"));
         return logFile.toPath();
     }
 }

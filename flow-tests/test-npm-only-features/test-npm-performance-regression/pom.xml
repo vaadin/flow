@@ -31,6 +31,7 @@
 
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
+        <server.log.location>${java.io.tmpdir}/${project.artifactId}.log</server.log.location>
     </properties>
 
     <dependencies>
@@ -85,6 +86,15 @@
         <defaultGoal>jetty:run</defaultGoal>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <systemPropertyVariables>
+                        <server.log.location>${server.log.location}</server.log.location>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
                 <version>${jetty.version}</version>
@@ -98,6 +108,20 @@
                     <systemProperties>
                         <systemProperty>
                             <name>devmode.optimizeBundle</name>
+                            <value>true</value>
+                        </systemProperty>
+                        <!-- Configure sl4j SimpleLogger to log to temporary
+                        file with millisecond timestamps -->
+                        <systemProperty>
+                            <name>org.slf4j.simpleLogger.logFile</name>
+                            <value>${server.log.location}</value>
+                        </systemProperty>
+                        <systemProperty>
+                            <name>org.slf4j.simpleLogger.defaultLogLevel</name>
+                            <value>info</value>
+                        </systemProperty>
+                        <systemProperty>
+                            <name>org.slf4j.simpleLogger.showDateTime</name>
                             <value>true</value>
                         </systemProperty>
                     </systemProperties>
