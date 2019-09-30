@@ -30,7 +30,7 @@ import org.slf4j.impl.SimpleLogger;
 
 public class StartupPerformanceIT {
     @Test
-    public void devModeInitializerToWebpackUpIsBelow2000ms() {
+    public void devModeInitializerToWebpackUpIsBelow5000ms() {
         int startupTime = measureLogEntryTimeDistance(
                 "com.vaadin.flow.server.startup.DevModeInitializer - Starting dev-mode updaters in",
                 "dev-webpack.*Time: [0-9]+ms",
@@ -45,7 +45,7 @@ public class StartupPerformanceIT {
 
         int startupTimeWithoutNpmInstallTime = startupTime - npmInstallTime;
 
-        final int thresholdMs = 2000;
+        final int thresholdMs = 5000;
         Assert.assertTrue(String.format("startup time expected <= %d but was %d",
                 thresholdMs, startupTimeWithoutNpmInstallTime),
                 startupTimeWithoutNpmInstallTime <= thresholdMs);
