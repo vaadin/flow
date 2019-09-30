@@ -106,10 +106,6 @@
                         </allowDuplicateFragmentNames>
                     </webAppConfig>
                     <systemProperties>
-                        <systemProperty>
-                            <name>devmode.optimizeBundle</name>
-                            <value>true</value>
-                        </systemProperty>
                         <!-- Configure sl4j SimpleLogger to log to temporary
                         file with millisecond timestamps -->
                         <systemProperty>
