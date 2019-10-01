@@ -103,9 +103,17 @@ suite("Flow", () => {
   });
 
   test("should accept a configuration object", () => {
+    assert.isUndefined($wnd.Vaadin);
     const flow = new Flow({imports: () => {}});
     assert.isDefined(flow.config);
     assert.isDefined(flow.config.imports);
+  });
+
+  test("should initialize window.Flow object", () => {
+    assert.isUndefined($wnd.Vaadin);
+    const flow = new Flow({imports: () => {}});
+    assert.isDefined($wnd.Vaadin);
+    assert.isDefined($wnd.Vaadin.Flow);
   });
 
   test("should initialize Flow server navigation when calling start()", () => {
