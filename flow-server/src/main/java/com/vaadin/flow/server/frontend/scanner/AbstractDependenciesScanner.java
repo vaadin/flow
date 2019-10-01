@@ -21,7 +21,7 @@ import com.vaadin.flow.theme.AbstractTheme;
  * Common scanner functionality.
  *
  * @author Vaadin Ltd
- *
+ * @since
  */
 abstract class AbstractDependenciesScanner
         implements FrontendDependenciesScanner {

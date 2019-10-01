@@ -82,7 +82,8 @@ module.exports = {
 
   output: {
     filename: `${build}/vaadin-[name]-[contenthash].cache.js`,
-    path: mavenOutputFolderForFlowBundledFiles
+    path: mavenOutputFolderForFlowBundledFiles,
+    publicPath: '/VAADIN/',
   },
 
   resolve: {

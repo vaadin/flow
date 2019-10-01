@@ -50,7 +50,6 @@ import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
-import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.getNodeExecutable;
 import static com.vaadin.flow.server.frontend.FrontendUtils.validateNodeAndNpmVersion;
@@ -322,11 +321,9 @@ public final class DevModeHandler implements Serializable {
      */
     public boolean serveDevModeRequest(HttpServletRequest request,
             HttpServletResponse response) throws IOException {
-        // Requests in devmode should come to /VAADIN/build/index....js where as
-        // webpack has the file in /build/index....js so we need to drop the
-        // /VAADIN
-        String requestFilename = request.getPathInfo().replace(VAADIN_MAPPING,
-                "");
+        // Since we have 'publicPath=/VAADIN/' in webpack config,
+        // a valid request for webpack-dev-server should start with '/VAADIN/'
+        String requestFilename = request.getPathInfo();
 
         HttpURLConnection connection = prepareConnection(requestFilename,
                 request.getMethod());
