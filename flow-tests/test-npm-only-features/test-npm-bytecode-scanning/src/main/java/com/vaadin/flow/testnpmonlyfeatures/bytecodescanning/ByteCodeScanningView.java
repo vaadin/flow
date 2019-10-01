@@ -25,8 +25,6 @@ import com.vaadin.flow.server.VaadinService;
 public class ByteCodeScanningView extends Div {
 
     public static final String MODE_LABEL_ID = "modeLabel";
-    public static final String COMPONENT_ID = "myButton";
-    public static final String COMPONENT_MISSING_LABEL_ID = "componentMissingLabel";
 
     public ByteCodeScanningView() throws Exception {
         /*
@@ -45,18 +43,14 @@ public class ByteCodeScanningView extends Div {
              */
             Class<?> clazz = Class.forName("com.vaadin.flow.testnpmonlyfeatures.bytecodescanning.MyButton");
             Component button = (Component) clazz.newInstance();
-            button.setId(COMPONENT_ID);
             add(button);
         } catch (IllegalStateException e) {
             /*
              * IllegalStateException will be thrown by NpmTemplateParser::getTemplateContent
-             * if bytecode scanning is enabled (since MyButton is not reachable).
-             * Add a simple label that can be verified in the IT. If bytecode
+             * if bytecode scanning is enabled (since MyButton is not reachable). If bytecode
              * scanning is disabled, we should never get here.
              */
-            Label componentMissingLabel = new Label(e.getMessage());
-            componentMissingLabel.setId(COMPONENT_MISSING_LABEL_ID);
-            add(componentMissingLabel);
+            e.printStackTrace();
         }
     }
 }
