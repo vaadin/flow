@@ -22,6 +22,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
@@ -35,6 +36,8 @@ import com.vaadin.flow.server.VaadinSession;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+
+import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
 
 @NotThreadSafe
 public class JavaScriptBootstrapHandlerTest {
@@ -105,6 +108,9 @@ public class JavaScriptBootstrapHandlerTest {
 
         Assert.assertNotNull(UI.getCurrent());
         Assert.assertEquals(JavaScriptBootstrapUI.class, UI.getCurrent().getClass());
+
+        Mockito.verify(session, Mockito.times(0)).setAttribute(SERVER_ROUTING, Boolean.TRUE);
+
     }
 
     @Test
@@ -145,6 +151,7 @@ public class JavaScriptBootstrapHandlerTest {
                 hasNodeTag(visitor, "^<div>.*Could not navigate to 'bar'.*",
                         ElementType.REGULAR));
 
+        Mockito.verify(session, Mockito.times(1)).setAttribute(SERVER_ROUTING, Boolean.TRUE);
     }
 
     private boolean hasNodeTag(TestNodeVisitor visitor, String htmContent, ElementType type) {

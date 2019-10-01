@@ -46,6 +46,8 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
 
+import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
+
 /**
  * Processes a 'start' request type from the client to initialize server session
  * and UI. It returns a JSON response with everything needed to bootstrapping
@@ -144,6 +146,10 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
             }
             Location location = new Location(route);
             ui.getRouter().initializeUI(ui, location);
+
+            // App is using classic server-routing, set a session attribute
+            // to know that in future navigation calls
+            ui.getSession().setAttribute(SERVER_ROUTING, Boolean.TRUE);
         }
     }
 
