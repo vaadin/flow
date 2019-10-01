@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.starter.skeleton;
+package com.vaadin.flow.testnpmonlyfeatures.performanceregression;
 
 import akka.actor.Actor;
 import akka.actor.ActorSelection;

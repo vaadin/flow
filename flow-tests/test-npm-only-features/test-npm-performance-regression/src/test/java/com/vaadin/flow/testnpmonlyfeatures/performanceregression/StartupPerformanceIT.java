@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.starter.skeleton;
+package com.vaadin.flow.testnpmonlyfeatures.performanceregression;
 
 import java.io.File;
 import java.io.IOException;
