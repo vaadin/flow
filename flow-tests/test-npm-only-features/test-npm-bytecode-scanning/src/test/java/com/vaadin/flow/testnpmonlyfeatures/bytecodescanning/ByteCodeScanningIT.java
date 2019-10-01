@@ -15,15 +15,13 @@
  */
 package com.vaadin.flow.testnpmonlyfeatures.bytecodescanning;
 
-import java.util.List;
-
 import org.junit.Assert;
 import org.junit.Test;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.component.html.testbench.LabelElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.ElementQuery;
+import com.vaadin.testbench.TestBenchElement;
 
 
 public class ByteCodeScanningIT extends ChromeBrowserTest {
@@ -34,22 +32,21 @@ public class ByteCodeScanningIT extends ChromeBrowserTest {
 
         LabelElement modeLabel = $(LabelElement.class).id(ByteCodeScanningView.MODE_LABEL_ID);
 
-        List<WebElement> elements = findElements(By.tagName("my-button"));
-        boolean exists;
-        try {
-            exists = !elements.isEmpty() && !findInShadowRoot(elements.get(0),
-                    By.id("actualButton")).isEmpty();
-        } catch (RuntimeException e) {
-            exists = false;
-        }
+        ElementQuery<TestBenchElement> component = $(TestBenchElement.class)
+                .attribute("id", ByteCodeScanningView.COMPONENT_ID);
+        ElementQuery<LabelElement> componentMissing = $(LabelElement.class)
+                .attribute("id", ByteCodeScanningView.COMPONENT_MISSING_LABEL_ID);
         boolean productionMode = Boolean.parseBoolean(modeLabel.getText());
         if (productionMode) {
             // in production mode we use optimized bundle by default, so component should be missing
             Assert.assertFalse("component expected missing in production mode",
-                    exists);
+                    component.exists());
         } else {
             // in dev mode we use complete bundle by default, so component should be present
-            Assert.assertTrue("component expected present in dev mode", exists);
+            Assert.assertTrue("component expected present in dev mode", component.exists());
+            Assert.assertFalse("label about missing component expected missing in dev mode",
+                    componentMissing.exists());
         }
     }
+
 }
