@@ -280,8 +280,35 @@ public class TaskUpdateImports extends NodeUpdater {
      *            a directory with project's frontend files
      * @param webpackOutputDirectory
      *            the directory to set for webpack to output its build results.
+     */
+    TaskUpdateImports(ClassFinder finder,
+            FrontendDependenciesScanner frontendDepScanner,
+            SerializableFunction<ClassFinder, FrontendDependenciesScanner> fallBackScannerProvider,
+            File npmFolder, File generatedPath, File frontendDirectory,
+            File webpackOutputDirectory) {
+        this(finder, frontendDepScanner, fallBackScannerProvider, npmFolder,
+                generatedPath, frontendDirectory, webpackOutputDirectory, null);
+    }
+
+    /**
+     * Create an instance of the updater given all configurable parameters.
+     *
+     * @param finder
+     *            a reusable class finder
+     * @param frontendDepScanner
+     *            a reusable frontend dependencies scanner
+     * @param fallBackScannerProvider
+     *            fallback scanner provider, not {@code null}
+     * @param npmFolder
+     *            folder with the `package.json` file
+     * @param generatedPath
+     *            folder where flow generated files will be placed.
+     * @param frontendDirectory
+     *            a directory with project's frontend files
+     * @param webpackOutputDirectory
+     *            the directory to set for webpack to output its build results.
      * @param tokenFileData
-     *            object to fill with token file data
+     *            object to fill with token file data, may be {@code null}
      */
     TaskUpdateImports(ClassFinder finder,
             FrontendDependenciesScanner frontendDepScanner,

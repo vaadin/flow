@@ -319,6 +319,13 @@ public class NodeTasks implements FallibleCommand {
             return this;
         }
 
+        /**
+         * Fill token file data into the provided {@code object}.
+         *
+         * @param object
+         *            the object to fill with token file data
+         * @return the builder, for chaining
+         */
         public Builder populateTokenFileData(JsonObject object) {
             tokenFileData = object;
             return this;
