@@ -17,9 +17,7 @@ package com.vaadin.flow.testnpmonlyfeatures.bytecodescanning;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.VaadinService;
 
 @Route("com.vaadin.flow.testnpmonlyfeatures.bytecodescanning.ByteCodeScanningView")
 public class ByteCodeScanningView extends Div {
@@ -28,19 +26,6 @@ public class ByteCodeScanningView extends Div {
     public static final String COMPONENT_ID = "myButton";
 
     public ByteCodeScanningView() throws Exception {
-        /*
-         * Add a label so that the IT can read the current mode.
-         */
-        boolean production = VaadinService.getCurrent()
-                .getDeploymentConfiguration().isProductionMode();
-        Label modeLabel = new Label(Boolean.toString(production));
-        modeLabel.setId(MODE_LABEL_ID);
-        add(modeLabel);
-
-        /*
-         * Create component using reflection, so that use will not be detected
-         * by the bytecode scanner.
-         */
         Class<?> clazz = Class.forName(
                 "com.vaadin.flow.testnpmonlyfeatures.bytecodescanning.MyButton");
         Component button = (Component) clazz.newInstance();

@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -206,7 +207,7 @@ public class UIInternals implements Serializable {
 
     private ExtendedClientDetails extendedClientDetails = null;
 
-    private Set<String> loadedChunks;
+    private boolean isFallbackChunkLoaded;
 
     /**
      * Creates a new instance for the given UI.
@@ -865,6 +866,9 @@ public class UIInternals implements Serializable {
     }
 
     private void addFallbackDepenencies(DependencyInfo dependency) {
+        if (isFallbackChunkLoaded) {
+            return;
+        }
         VaadinContext context = ui.getSession().getService().getContext();
         FallbackChunk chunk = context.getAttribute(FallbackChunk.class);
         if (chunk == null && getLogger().isDebugEnabled()) {
@@ -885,9 +889,42 @@ public class UIInternals implements Serializable {
         List<JavaScript> javaScripts = dependency.getJavaScripts();
         List<JsModule> jsModules = dependency.getJsModules();
 
-        if (loadedChunks == null) {
-            loadedChunks = new HashSet<>();
+        if (jsModules.stream().map(module -> module.value())
+                .anyMatch(modules::contains)) {
+            loadFallbackChunk();
+            return;
         }
+
+        if (javaScripts.stream().map(js -> js.value())
+                .anyMatch(modules::contains)) {
+            loadFallbackChunk();
+            return;
+        }
+
+        if (cssImports.stream().map(this::buildData)
+                .anyMatch(cssImportsData::contains)) {
+            loadFallbackChunk();
+            return;
+        }
+    }
+
+    private CssImportData buildData(CssImport imprt) {
+        Function<String, String> converter = str -> str.isEmpty() ? null : str;
+        return new CssImportData(converter.apply(imprt.value()),
+                converter.apply(imprt.id()), converter.apply(imprt.include()),
+                converter.apply(imprt.themeFor()));
+    }
+
+    private void loadFallbackChunk() {
+        if (isFallbackChunkLoaded) {
+            return;
+        }
+        loadDependency("return window.Vaadin.Flow.loadFallback();");
+        isFallbackChunkLoaded = true;
+    }
+
+    private void loadDependency(String js) {
+        // XXXXXXXXXXXXXXX: needs an impl
     }
 
     private void addExternalDependencies(DependencyInfo dependency) {
