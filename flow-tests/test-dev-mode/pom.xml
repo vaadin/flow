@@ -62,6 +62,10 @@
                             <name>vaadin.frontend.url.es5</name>
                             <value>context://frontend-es6/</value>
                         </systemProperty>
+                        <systemProperty>
+                            <name>vaadin.clientSideMode</name>
+                            <value>${vaadin.clientSideMode}</value>
+                        </systemProperty>
                     </systemProperties>
                 </configuration>
             </plugin>
