@@ -2,6 +2,7 @@ package com.vaadin.flow.component.internal;
 
 import java.util.Collections;
 
+import static org.junit.Assert.assertFalse;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -9,9 +10,13 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.BeforeLeaveEvent;
 import com.vaadin.flow.router.BeforeLeaveObserver;
+import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinRequest;
@@ -56,11 +61,23 @@ public class JavaScriptBootstrapUITest  {
         }
     }
 
+    @Route("product")
+    @Tag(Tag.SPAN)
+    public static class ProductView extends Component implements HasComponents {
+        public ProductView() {
+            // this should be ignored
+            UI.getCurrent().navigate("product");
+            setId("productView");
+        }
+    }
+
     @Before
     public void setup() throws Exception {
         mocks = new MockServletServiceSessionSetup();
         mocks.getService().getRouter().getRegistry().setRoute("clean", Clean.class, Collections.emptyList());
         mocks.getService().getRouter().getRegistry().setRoute("dirty", Dirty.class, Collections.emptyList());
+        mocks.getService().getRouter().getRegistry().setRoute("product",
+                ProductView.class, Collections.emptyList());
         ui = new JavaScriptBootstrapUI();
         ui.getInternals().setSession(mocks.getSession());
         CurrentInstance.setCurrent(ui);
@@ -144,6 +161,30 @@ public class JavaScriptBootstrapUITest  {
         ui.navigate("dirty");
         assertEquals(Tag.SPAN, ui.wrapperElement.getChild(0).getTag());
         assertEquals(Tag.H1, ui.wrapperElement.getChild(0).getChild(0).getTag());
+    }
+
+    @Test
+    public void should_not_create_navigation_loop_when_server_routing() {
+        Mockito.when(mocks.getSession().getAttribute(SERVER_ROUTING))
+                .thenReturn(Boolean.TRUE);
+
+        ui.navigate("product");
+        assertTrue(ui.getChildren().findFirst().isPresent());
+        assertEquals("productView",
+                ui.getChildren().findFirst().get().getId().get());
+    }
+
+    @Test
+    public void should_clearLastHandledNavigation_when_navigateToOtherViews() {
+        Mockito.when(mocks.getSession().getAttribute(SERVER_ROUTING))
+                .thenReturn(Boolean.TRUE);
+
+        ui.navigate("clean");
+        assertFalse("Should clear lastHandledNavigation after finishing",
+                ui.getInternals().hasLastHandledLocation());
+        ui.navigate("product");
+        assertFalse("Should clear lastHandledNavigation after finishing",
+                ui.getInternals().hasLastHandledLocation());
     }
 
     @Test
