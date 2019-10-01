@@ -193,17 +193,7 @@ public class DependencyLoader {
             Dependency.Type type = Dependency.Type
                     .valueOf(dependencyJson.getString(Dependency.KEY_TYPE));
             if (type == Dependency.Type.JS_EXPRESSION) {
-                JsonArray jsExpression = (JsonArray) JsJsonArray.createArray(1);
-                jsExpression.set(0,
-                            dependencyJson.getString(Dependency.KEY_EXPRESSION));
-
-                JsonArray jsInvocation = (JsonArray) JsJsonArray.createArray(1);
-                jsInvocation.set(0, jsExpression);
-
-                startEagerDependencyLoading();
-                //TODO: endEagerDependencyLoading should be called in `then`
-                // part of the Promise which is returned by the expression.
-                registry.getExecuteJavaScriptProcessor().execute(jsInvocation);
+                executeJsExpressionDependency(dependencyJson);
             } else {
                 BiConsumer<String, ResourceLoadListener> resourceLoader = getResourceLoader(
                         type, loadMode);
@@ -229,6 +219,23 @@ public class DependencyLoader {
             }
         }
         return lazyDependencies;
+    }
+
+    private void executeJsExpressionDependency(JsonObject dependencyJson) {
+        JsonArray jsExpressionArray = (JsonArray) JsJsonArray.createArray(1);
+        String jsExpression = dependencyJson
+                .getString(Dependency.KEY_EXPRESSION);
+        //TODO: report errors to the browser console and preferably server
+        jsExpression = "function(){" + jsExpression + "}().then("
+                + "function(result) {@com.vaadin.client.DependencyLoader::endEagerDependencyLoading(*)();}"
+                + ", function(error) {});";
+        jsExpressionArray.set(0, jsExpression);
+
+        JsonArray jsInvocation = (JsonArray) JsJsonArray.createArray(1);
+        jsInvocation.set(0, jsExpressionArray);
+
+        startEagerDependencyLoading();
+        registry.getExecuteJavaScriptProcessor().execute(jsInvocation);
     }
 
     private String getDependencyUrl(JsonObject dependencyJson) {
