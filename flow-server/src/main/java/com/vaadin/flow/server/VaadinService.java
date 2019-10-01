@@ -271,9 +271,6 @@ public abstract class VaadinService implements Serializable {
 
         ServiceInitEvent event = new ServiceInitEvent(this);
 
-        event.addClientIndexBootstrapListener(
-                new BootstrapInitialInserter());
-
         // allow service init listeners and DI to use thread local access to
         // e.g. application scoped route registry
         runWithServiceContext(() -> {

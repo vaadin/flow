@@ -223,7 +223,7 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
      *            the vaadin session.
      * @return the initial application JSON.
      */
-    public JsonObject getInitialJson(VaadinRequest request,
+    protected JsonObject getInitialJson(VaadinRequest request,
             VaadinResponse response, VaadinSession session) {
 
         BootstrapContext context = createAndInitUI(JavaScriptBootstrapUI.class,
