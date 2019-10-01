@@ -21,6 +21,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.HandlesTypes;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -58,10 +59,6 @@ import org.springframework.core.type.filter.AssignableTypeFilter;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
-import com.vaadin.flow.component.dependency.CssImport;
-import com.vaadin.flow.component.dependency.JavaScript;
-import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
@@ -72,8 +69,6 @@ import com.vaadin.flow.server.DeploymentConfigurationFactory;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.RouteRegistry;
-import com.vaadin.flow.server.UIInitListener;
-import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.startup.AbstractRouteRegistryInitializer;
 import com.vaadin.flow.server.startup.AnnotationValidator;
@@ -84,7 +79,6 @@ import com.vaadin.flow.server.startup.WebComponentConfigurationRegistryInitializ
 import com.vaadin.flow.server.startup.WebComponentExporterAwareValidator;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.spring.VaadinScanPackagesRegistrar.VaadinScanPackages;
-import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
 
 /**
@@ -306,16 +300,12 @@ public class VaadinServletContextInitializer
 
             long start = System.currentTimeMillis();
 
-            List<Class<? extends Annotation>> annotations = Arrays.asList(
-                    NpmPackage.class, NpmPackage.Container.class,
-                    JsModule.class, JsModule.Container.class, CssImport.class,
-                    CssImport.Container.class, JavaScript.class,
-                    JavaScript.Container.class, Theme.class, NoTheme.class);
-            List<Class<?>> supertypes = Arrays.asList(
-                    WebComponentExporter.class, UIInitListener.class,
-                    VaadinServiceInitListener.class);
+            List<Class<? extends Annotation>> annotations = new ArrayList<>();
+            List<Class<?>> superTypes = new ArrayList<>();
+            collectDevModeTypes(annotations, superTypes);
+
             Set<Class<?>> classes = findByAnnotationOrSuperType(basePackages,
-                    customLoader, annotations, supertypes)
+                    customLoader, annotations, superTypes)
                             .collect(Collectors.toSet());
 
             final long classScanning = System.currentTimeMillis();
@@ -344,6 +334,22 @@ public class VaadinServletContextInitializer
                 npmPackages.addAll(customWhitelist);
             }
             return npmPackages;
+        }
+
+        @SuppressWarnings("unchecked")
+        private void collectDevModeTypes(
+                List<Class<? extends Annotation>> annotations,
+                List<Class<?>> superTypes) {
+            HandlesTypes handleTypes = DevModeInitializer.class
+                    .getAnnotation(HandlesTypes.class);
+            assert handleTypes != null;
+            for (Class<?> clazz : handleTypes.value()) {
+                if (clazz.isAnnotation()) {
+                    annotations.add((Class<? extends Annotation>) clazz);
+                } else {
+                    superTypes.add(clazz);
+                }
+            }
         }
 
         private boolean isWhitelistSet() {
