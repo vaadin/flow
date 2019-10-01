@@ -84,6 +84,10 @@ public class JavaScriptBootstrapUI extends UI {
 
         // Inform the client, that everything went fine.
         wrapperElement.executeJs("this.serverConnected($0)", postponed);
+
+        // If this call happens, there is a client-side routing, thus
+        // it's needed to remove the flag that might be set in ClientIndexHandler
+        getSession().setAttribute(SERVER_ROUTING, Boolean.FALSE);
     }
 
     /**
