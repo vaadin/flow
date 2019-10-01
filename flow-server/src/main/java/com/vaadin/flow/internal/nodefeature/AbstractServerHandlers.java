@@ -166,15 +166,7 @@ public abstract class AbstractServerHandlers<T>
      */
     protected void addHandlerMethod(Method method, Collection<Method> methods) {
         ensureSupportedParameterTypes(method);
-        if (!void.class.equals(method.getReturnType())) {
-            String msg = String.format(Locale.ENGLISH,
-                    "Only void handler methods are supported. "
-                            + "Component '%s' has method '%s' annotated with '%s' whose return type is not void but %s",
-                    method.getDeclaringClass().getName(), method.getName(),
-                    getHandlerAnnotation().getName(),
-                    method.getReturnType().getSimpleName());
-            throw new IllegalStateException(msg);
-        }
+        ensureSupportedReturnType(method);
         Optional<Class<?>> checkedException = Stream
                 .of(method.getExceptionTypes())
                 .filter(ReflectTools::isCheckedException).findFirst();
@@ -189,6 +181,24 @@ public abstract class AbstractServerHandlers<T>
             throw new IllegalStateException(msg);
         }
         methods.add(method);
+    }
+
+    /**
+     * Validate return type support for given method.
+     *
+     * @param method
+     *            method to check return type for
+     */
+    protected void ensureSupportedReturnType(Method method) {
+        if (!void.class.equals(method.getReturnType())) {
+            String msg = String.format(Locale.ENGLISH,
+                    "Only void handler methods are supported. "
+                            + "Component '%s' has method '%s' annotated with '%s' whose return type is not void but \"%s\"",
+                    method.getDeclaringClass().getName(), method.getName(),
+                    getHandlerAnnotation().getName(),
+                    method.getReturnType().getSimpleName());
+            throw new IllegalStateException(msg);
+        }
     }
 
     /**

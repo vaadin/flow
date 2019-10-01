@@ -216,6 +216,17 @@ public class JsonConstants implements Serializable {
     public static final String RPC_TEMPLATE_EVENT_ARGS = "templateEventMethodArgs";
 
     /**
+     * Key used to hold the promise id for a server side method call.
+     */
+    public static final String RPC_TEMPLATE_EVENT_PROMISE = "promise";
+
+    /**
+     * Name of the $server property that is used to track pending promises. The
+     * name is chosen to avoid conflicts with genuine $server method names.
+     */
+    public static final String RPC_PROMISE_CALLBACK_NAME = "}p";
+
+    /**
      * Type value for attach existing element server callback.
      *
      * @see #RPC_ATTACH_ASSIGNED_ID
