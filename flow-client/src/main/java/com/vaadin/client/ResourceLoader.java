@@ -21,10 +21,12 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.RepeatingCommand;
 import com.google.gwt.user.client.Timer;
+
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsMap;
 import com.vaadin.client.flow.collection.JsSet;
+
 import elemental.client.Browser;
 import elemental.dom.Document;
 import elemental.dom.Element;
@@ -356,7 +358,7 @@ public class ResourceLoader {
      *            listener to notify when script is loaded
      */
     public void inlineScript(String scriptContents,
-                             final ResourceLoadListener resourceLoadListener) {
+            final ResourceLoadListener resourceLoadListener) {
         ResourceLoadEvent event = new ResourceLoadEvent(this, scriptContents);
         if (loadedResources.has(scriptContents)) {
             if (resourceLoadListener != null) {

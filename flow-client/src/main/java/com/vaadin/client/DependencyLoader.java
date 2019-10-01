@@ -18,6 +18,7 @@ package com.vaadin.client;
 import java.util.function.BiConsumer;
 
 import com.google.gwt.core.client.Scheduler;
+
 import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadListener;
 import com.vaadin.client.flow.collection.JsArray;
@@ -225,7 +226,7 @@ public class DependencyLoader {
         JsonArray jsExpressionArray = (JsonArray) JsJsonArray.createArray(1);
         String jsExpression = dependencyJson
                 .getString(Dependency.KEY_EXPRESSION);
-        //TODO: report errors to the browser console and preferably server
+        // TODO: report errors to the browser console and preferably server
         jsExpression = "function(){" + jsExpression + "}().then("
                 + "function(result) {@com.vaadin.client.DependencyLoader::endEagerDependencyLoading(*)();}"
                 + ", function(error) {});";
