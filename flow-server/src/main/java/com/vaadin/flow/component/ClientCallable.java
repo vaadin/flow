@@ -23,6 +23,7 @@ import java.lang.annotation.Target;
 
 import com.vaadin.flow.dom.DisabledUpdateMode;
 
+// TODO mention return values
 /**
  * Publishes the annotated method so it can be invoked from the client side
  * using the notation <code>this.$server.method()</code> in template methods.

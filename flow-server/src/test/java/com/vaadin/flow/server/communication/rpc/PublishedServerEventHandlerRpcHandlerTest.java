@@ -221,7 +221,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
     public void methodIsInvoked() {
         ComponentWithMethod component = new ComponentWithMethod();
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                component.getClass(), "method", Json.createArray());
+                component.getClass(), "method", Json.createArray(), -1);
 
         Assert.assertTrue(component.isInvoked);
     }
@@ -231,7 +231,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         CompositeOfComponentWithMethod composite = new CompositeOfComponentWithMethod();
         ComponentWithMethod component = composite.getContent();
         PublishedServerEventHandlerRpcHandler.invokeMethod(composite,
-                composite.getClass(), "method", Json.createArray());
+                composite.getClass(), "method", Json.createArray(), -1);
 
         Assert.assertTrue(component.isInvoked);
     }
@@ -241,7 +241,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         CompositeOfComposite composite = new CompositeOfComposite();
         ComponentWithMethod component = composite.getContent().getContent();
         PublishedServerEventHandlerRpcHandler.invokeMethod(composite,
-                composite.getClass(), "method", Json.createArray());
+                composite.getClass(), "method", Json.createArray(), -1);
 
         Assert.assertTrue(component.isInvoked);
     }
@@ -254,7 +254,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
 
         DecoderParameters component = new DecoderParameters();
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                component.getClass(), "method", params);
+                component.getClass(), "method", params, -1);
 
         Assert.assertTrue(component.isInvoked);
     }
@@ -267,7 +267,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
 
         DecoderParameters component = new DecoderParameters();
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                component.getClass(), "method", params);
+                component.getClass(), "method", params, -1);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -276,21 +276,21 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         args.set(0, true);
         ComponentWithMethod component = new ComponentWithMethod();
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                component.getClass(), "method", args);
+                component.getClass(), "method", args, -1);
     }
 
     @Test(expected = IllegalStateException.class)
     public void twoEventHandlerMethodsWithTheSameName() {
         ComponentWithTwoEventHandlerMethodSameName component = new ComponentWithTwoEventHandlerMethodSameName();
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                component.getClass(), "intMethod", Json.createArray());
+                component.getClass(), "intMethod", Json.createArray(), -1);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void methodWithParametersInvokedWithoutParameters() {
         MethodWithParameters component = new MethodWithParameters();
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                component.getClass(), "intMethod", Json.createArray());
+                component.getClass(), "intMethod", Json.createArray(), -1);
     }
 
     @Test
@@ -299,7 +299,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         array.set(0, 65);
         MethodWithParameters component = new MethodWithParameters();
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                component.getClass(), "intMethod", array);
+                component.getClass(), "intMethod", array, -1);
 
         Assert.assertEquals(65, component.intArg);
     }
@@ -314,7 +314,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         array.set(1, secondArg);
         MethodWithParameters component = new MethodWithParameters();
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                component.getClass(), "method1", array);
+                component.getClass(), "method1", array, -1);
 
         Assert.assertEquals("foo", component.strArg);
         Assert.assertArrayEquals(new boolean[] { true, false },
@@ -336,7 +336,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
 
         MethodWithParameters component = new MethodWithParameters();
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                component.getClass(), "method2", array);
+                component.getClass(), "method2", array, -1);
 
         Assert.assertArrayEquals(
                 new Double[] { firstArg.getNumber(0), firstArg.getNumber(1) },
@@ -370,7 +370,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
 
         MethodWithParameters component = new MethodWithParameters();
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                component.getClass(), "method3", array);
+                component.getClass(), "method3", array, -1);
 
         Assert.assertArrayEquals(new int[] { (int) first.getNumber(0),
                 (int) first.getNumber(1) }, component.doubleArray[0]);
@@ -389,7 +389,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
 
         MethodWithParameters component = new MethodWithParameters();
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                component.getClass(), "method4", array);
+                component.getClass(), "method4", array, -1);
 
         Assert.assertEquals(component.jsonValue, json);
     }
@@ -412,7 +412,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
 
         MethodWithParameters component = new MethodWithParameters();
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                component.getClass(), "method2", array);
+                component.getClass(), "method2", array, -1);
 
         Assert.assertArrayEquals(
                 new Double[] { firstArg.getNumber(0), firstArg.getNumber(1) },
@@ -429,7 +429,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
 
         MethodWithVarArgParameter component = new MethodWithVarArgParameter();
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                component.getClass(), "varArgMethod", array);
+                component.getClass(), "varArgMethod", array, -1);
 
         Assert.assertEquals(0, component.varArg.length);
     }
@@ -446,7 +446,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
 
         MethodWithParameters component = new MethodWithParameters();
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                component.getClass(), "method2", array);
+                component.getClass(), "method2", array, -1);
 
         Assert.assertArrayEquals(
                 new Double[] { firstArg.getNumber(0), firstArg.getNumber(1) },
@@ -464,7 +464,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
 
         MethodWithVarArgParameter component = new MethodWithVarArgParameter();
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                component.getClass(), "varArgMethod", array);
+                component.getClass(), "varArgMethod", array, -1);
 
         Assert.assertEquals(1, component.varArg.length);
         Assert.assertEquals("foo", component.varArg[0]);
@@ -480,7 +480,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
 
         MethodWithVarArgParameter component = new MethodWithVarArgParameter();
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                component.getClass(), "varArgMethod", array);
+                component.getClass(), "varArgMethod", array, -1);
 
         Assert.assertArrayEquals(new String[] { value.getString(0) },
                 component.varArg);
@@ -492,21 +492,21 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         array.set(0, Json.createNull());
         MethodWithParameters component = new MethodWithParameters();
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                component.getClass(), "method", array);
+                component.getClass(), "method", array, -1);
     }
 
     @Test(expected = IllegalStateException.class)
     public void noEventHandlerMethodException() {
         ComponentWithNoEventHandlerMethod component = new ComponentWithNoEventHandlerMethod();
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                component.getClass(), "operation", Json.createArray());
+                component.getClass(), "operation", Json.createArray(), -1);
     }
 
     @Test(expected = IllegalStateException.class)
     public void noMethodException() {
         ComponentWithNoEventHandlerMethod component = new ComponentWithNoEventHandlerMethod();
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                component.getClass(), "operation1", Json.createArray());
+                component.getClass(), "operation1", Json.createArray(), -1);
     }
 
     @Test
@@ -514,7 +514,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         ComponentWithMethodThrowingException component = new ComponentWithMethodThrowingException();
         try {
             PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                    component.getClass(), "method", Json.createArray());
+                    component.getClass(), "method", Json.createArray(), -1);
         } catch (RuntimeException e) {
             Assert.assertTrue(e.getCause() instanceof NullPointerException);
         }

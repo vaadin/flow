@@ -245,13 +245,14 @@ public class StateTree {
      *            the method name
      * @param argsArray
      *            the arguments array for the method
+     * @param promiseId
      */
     public void sendTemplateEventToServer(StateNode node, String methodName,
-            JsArray<?> argsArray) {
+            JsArray<?> argsArray, int promiseId) {
         if (isValidNode(node)) {
             JsonArray array = WidgetUtil.crazyJsCast(argsArray);
             registry.getServerConnector().sendTemplateEventMessage(node,
-                    methodName, array);
+                    methodName, array, promiseId);
         }
     }
 

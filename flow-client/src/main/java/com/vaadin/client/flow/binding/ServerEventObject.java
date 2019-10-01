@@ -15,7 +15,6 @@
  */
 package com.vaadin.client.flow.binding;
 
-
 import jsinterop.annotations.JsFunction;
 
 import com.google.gwt.core.client.JavaScriptObject;
@@ -76,6 +75,31 @@ public final class ServerEventObject extends JavaScriptObject {
     protected ServerEventObject() {
     }
 
+    private native void initPromiseHandler()
+    /*-{
+        // Use defineProperty to make it non-enumerable
+        // Name is chosen to not be valid Java method name
+        Object.defineProperty(this, '}p', {
+            value: function(promiseId, success, value) {
+                var promise = this['}p'].promises[promiseId];
+
+                // undefined if client-side node was recreated after execution was scheduled
+                if (promise !== undefined) {
+                    delete this['}p'].promises[promiseId];
+
+                    if (success) {
+                        // Resolve
+                        promise[0](value);
+                    } else {
+                        // Reject
+                        promise[1](Error("Something went wrong. Check server-side logs for more information."));
+                    }
+                }
+            }
+        });
+        this['}p'].promises = [];
+    }-*/;
+
     /**
      * Defines a method with the given name to be a callback to the server for
      * the given state node.
@@ -88,8 +112,10 @@ public final class ServerEventObject extends JavaScriptObject {
      * @param node
      *            the node to use as an identifier when sending an event to the
      *            server
+     * @param handlePromises
      */
-    public native void defineMethod(String methodName, StateNode node)
+    public native void defineMethod(String methodName, StateNode node,
+            boolean handlePromises)
     /*-{
         this[methodName] = $entry(function(eventParameter) {
             var prototype = Object.getPrototypeOf(this);
@@ -102,7 +128,24 @@ public final class ServerEventObject extends JavaScriptObject {
             if(args === null) {
                 args = Array.prototype.slice.call(arguments);
             }
-            tree.@com.vaadin.client.flow.StateTree::sendTemplateEventToServer(*)(node, methodName, args);
+    
+            var returnValue;
+            var promiseId = -1;
+    
+            if (handlePromises) {
+                var promises = this["}p"].promises;
+    
+                promiseId = promises.length;
+    
+                returnValue = new Promise(function(resolve, reject) {
+                    // Store each callback for later use
+                    promises[promiseId] = [resolve, reject];
+                });
+            }
+    
+            tree.@com.vaadin.client.flow.StateTree::sendTemplateEventToServer(*)(node, methodName, args, promiseId);
+    
+            return returnValue;
         });
     }-*/;
 
@@ -230,6 +273,7 @@ public final class ServerEventObject extends JavaScriptObject {
                 .crazyJsoCast(WidgetUtil.getJsProperty(element, "$server"));
         if (serverObject == null) {
             serverObject = (ServerEventObject) JavaScriptObject.createObject();
+            serverObject.initPromiseHandler();
             WidgetUtil.setJsProperty(element, "$server", serverObject);
         }
         return serverObject;

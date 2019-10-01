@@ -72,7 +72,7 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
 
             @Override
             public void sendTemplateEventToServer(StateNode node,
-                    String methodName, JsArray<?> argValues) {
+                    String methodName, JsArray<?> argValues, int promiseId) {
                 serverMethods.put(methodName, argValues);
                 serverRpcNodes.put(methodName, node);
             }
@@ -219,7 +219,7 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
      * Add a function to the element prototype ("default" function) for
      * {@code methodName} that adds the second argument to the event (first
      * argument) as a result
-     * 
+     *
      * @param element
      *            Element to add "default" method to
      * @param methodName
@@ -328,7 +328,7 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
     /**
      * Add get functionality to element if not defined. Add the key value pair
      * to property object or create object if not available.
-     * 
+     *
      * @param node
      *            Target node
      * @param property

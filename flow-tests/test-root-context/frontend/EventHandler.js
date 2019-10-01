@@ -20,10 +20,11 @@ class EventHandler extends PolymerElement {
     event.result = "ClientSide handler";
   }
 
-  clientHandler() {
-    const msg = "foo";
-    const enabled = true;
-    this.$server.handleClientCall(msg, enabled);
+  async clientHandler() {
+      const msg = "foo";
+      const enabled = true;
+      let result = await this.$server.handleClientCall(msg, enabled);
+      console.log("Got result");
   }
 }
 customElements.define(EventHandler.is, EventHandler);

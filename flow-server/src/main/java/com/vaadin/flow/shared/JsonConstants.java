@@ -314,4 +314,6 @@ public class JsonConstants implements Serializable {
      */
     public static final String RPC_CHANNEL_ARGUMENTS = "args";
 
+    public static final String RPC_TEMPLATE_EVENT_PROMISE = "promise";
+
 }

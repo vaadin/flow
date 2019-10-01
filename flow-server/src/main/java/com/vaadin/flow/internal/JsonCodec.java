@@ -80,6 +80,7 @@ public class JsonCodec {
      * @return the value encoded as JSON
      */
     public static JsonValue encodeWithTypeInfo(Object value) {
+        // When making changes here, also update canEncodeWithTypeInfo
         if (value instanceof Component) {
             return encodeNode(((Component) value).getElement());
         } else if (value instanceof Node<?>) {
@@ -134,6 +135,12 @@ public class JsonCodec {
                 || JsonValue.class.isAssignableFrom(type);
     }
 
+    public static boolean canEncodeWithTypeInfo(Class<?> type) {
+        return canEncodeWithoutTypeInfo(type) || Node.class.equals(type)
+                || Component.class.isAssignableFrom(type)
+                || ReturnChannelRegistration.class.isAssignableFrom(type);
+    }
+
     /**
      * Encodes a "primitive" value or a constant pool reference to JSON. This
      * methods supports {@link ConstantPoolKey} in addition to the types
@@ -165,6 +172,7 @@ public class JsonCodec {
      * @return the value encoded as JSON
      */
     public static JsonValue encodeWithoutTypeInfo(Object value) {
+        // When making changes here, also update canEncodeWithoutTypeInfo
         if (value == null) {
             return Json.createNull();
         }
