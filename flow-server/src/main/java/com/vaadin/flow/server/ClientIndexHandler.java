@@ -20,6 +20,7 @@ import java.util.regex.Pattern;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +28,9 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+
+import elemental.json.JsonObject;
+import elemental.json.impl.JsonUtil;
 
 import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -46,11 +50,19 @@ public class ClientIndexHandler extends JavaScriptBootstrapHandler {
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
         Document indexDocument = getIndexHtmlDocument(request);
+
         prependBaseHref(request, indexDocument);
+        if (request.getService().getBootstrapInitialPredicate()
+                .includeInitialUidl(request)) {
+            includeInitialUidl(session, request, response, indexDocument);
+        }
+
         response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
+
         request.getService().modifyClientIndexBootstrapPage(
                 new ClientIndexBootstrapPage(request, response, session,
-                        indexDocument, this));
+                        indexDocument));
+
         try {
             response.getOutputStream()
                     .write(indexDocument.html().getBytes(UTF_8));
@@ -61,6 +73,17 @@ public class ClientIndexHandler extends JavaScriptBootstrapHandler {
             return false;
         }
         return true;
+    }
+
+    private void includeInitialUidl(VaadinSession session, VaadinRequest request,
+            VaadinResponse response, Document indexDocument) {
+        JsonObject initial = getInitialJson(request, response, session);
+
+        Element elm = new Element("script");
+        elm.attr("initial", "");
+        elm.text("window.Vaadin = {Flow : {initial: "
+                + JsonUtil.stringify(initial) + "}}");
+        indexDocument.head().insertChildren(0, elm);
     }
 
     @Override
