@@ -23,6 +23,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
 import javax.servlet.annotation.WebListener;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -69,6 +70,7 @@ import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletContext;
+import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.server.frontend.NodeTasks.Builder;
@@ -76,6 +78,9 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
+
+import elemental.json.Json;
+import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE;
@@ -91,11 +96,12 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
  *
  * @since 2.0
  */
-@HandlesTypes({Route.class, UIInitListener.class,
+@HandlesTypes({ Route.class, UIInitListener.class,
         VaadinServiceInitListener.class, WebComponentExporter.class,
         NpmPackage.class, NpmPackage.Container.class, JsModule.class,
         JsModule.Container.class, CssImport.class, CssImport.Container.class,
-        JavaScript.class, JavaScript.Container.class, Theme.class, NoTheme.class})
+        JavaScript.class, JavaScript.Container.class, Theme.class,
+        NoTheme.class })
 @WebListener
 public class DevModeInitializer implements ServletContainerInitializer,
         Serializable, ServletContextListener {
@@ -322,9 +328,12 @@ public class DevModeInitializer implements ServletContainerInitializer,
 
         boolean useByteCodeScanner = config.getBooleanProperty(
                 SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
-                Boolean.parseBoolean(
-                        System.getProperty(SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
-                                Boolean.FALSE.toString())));
+                Boolean.parseBoolean(System.getProperty(
+                        SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
+                        Boolean.FALSE.toString())));
+
+        VaadinContext vaadinContext = new VaadinServletContext(context);
+        JsonObject tokenFileData = Json.createObject();
         try {
             builder.enablePackagesUpdate(true)
                     .useByteCodeScanner(useByteCodeScanner)
@@ -333,7 +342,14 @@ public class DevModeInitializer implements ServletContainerInitializer,
                             Constants.LOCAL_FRONTEND_RESOURCES_PATH))
                     .enableImportsUpdate(true).runNpmInstall(true)
                     .withEmbeddableWebComponents(true)
+                    .populateTokenFileData(tokenFileData)
                     .collectVisitedClasses(visitedClassNames).build().execute();
+
+            FallbackChunk chunk = FrontendUtils
+                    .readFallbackChunk(tokenFileData);
+            if (chunk != null) {
+                vaadinContext.setAttribute(chunk);
+            }
         } catch (ExecutionFailedException exception) {
             log().debug(
                     "Could not initialize dev mode handler. One of the node tasks failed",
@@ -341,7 +357,6 @@ public class DevModeInitializer implements ServletContainerInitializer,
             throw new ServletException(exception);
         }
 
-        VaadinContext vaadinContext = new VaadinServletContext(context);
         vaadinContext.setAttribute(new VisitedClasses(visitedClassNames));
 
         try {
