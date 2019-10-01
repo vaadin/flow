@@ -80,6 +80,7 @@ public class JsonCodec {
      * @return the value encoded as JSON
      */
     public static JsonValue encodeWithTypeInfo(Object value) {
+        // When making changes here, also update canEncodeWithTypeInfo
         if (value instanceof Component) {
             return encodeNode(((Component) value).getElement());
         } else if (value instanceof Node<?>) {
@@ -119,7 +120,7 @@ public class JsonCodec {
 
     /**
      * Helper for checking whether the type is supported by
-     * {@link #encodeWithoutTypeInfo(Object)}. Supported values types are
+     * {@link #encodeWithoutTypeInfo(Object)}. Supported value types are
      * {@link String}, {@link Integer}, {@link Double}, {@link Boolean},
      * {@link JsonValue}.
      *
@@ -132,6 +133,22 @@ public class JsonCodec {
         return String.class.equals(type) || Integer.class.equals(type)
                 || Double.class.equals(type) || Boolean.class.equals(type)
                 || JsonValue.class.isAssignableFrom(type);
+    }
+
+    /**
+     * Helper for checking whether the type is supported by
+     * {@link #encodeWithTypeInfo(Object)}. Supported values types are
+     * {@link Node}, {@link Component}, {@link ReturnChannelRegistration} and
+     * anything accepted by {@link #canEncodeWithoutTypeInfo(Class)}.
+     *
+     * @param type
+     *            the type to check
+     * @return whether the type can be encoded
+     */
+    public static boolean canEncodeWithTypeInfo(Class<?> type) {
+        return canEncodeWithoutTypeInfo(type) || Node.class.equals(type)
+                || Component.class.isAssignableFrom(type)
+                || ReturnChannelRegistration.class.isAssignableFrom(type);
     }
 
     /**
@@ -165,6 +182,7 @@ public class JsonCodec {
      * @return the value encoded as JSON
      */
     public static JsonValue encodeWithoutTypeInfo(Object value) {
+        // When making changes here, also update canEncodeWithoutTypeInfo
         if (value == null) {
             return Json.createNull();
         }

@@ -63,5 +63,20 @@ public class EventHandlerIT extends ChromeBrowserTest {
                 "Overridden server event was invoked with result: ClientSide handler",
                 findElement(By.id("overridden-event-handler-result"))
                         .getText());
+
+        // @ClientCallable return value
+        template.$("button").id("client").click();
+        Assert.assertEquals("Server-side message should be present",
+                "Call from client, message: foo, true",
+                $("div").id("client-call").getText());
+        Assert.assertEquals(
+                "Message from awaiting return value should be present", "FOO",
+                template.$("span").id("status").getText());
+
+        template.$("button").id("clientError").click();
+        Assert.assertEquals(
+                "Message from awaiting exception should be present",
+                "Error: Something went wrong. Check server-side logs for more information.",
+                template.$("span").id("status").getText());
     }
 }
