@@ -24,7 +24,7 @@ export function loadRouter(flow) {
             return div;
           }
         },
-        flow.route
+        ...flow.serverSideRoutes
       ]
     }
   ];

@@ -83,24 +83,24 @@ export class Flow {
   }
 
   /**
-   * Return a `route` object for vaadin-router
+   * Return a `route` object for vaadin-router in an one-element array.
    *
-   * It returns a `FlowRoute` object whose `path` property handles any route,
+   * The `FlowRoute` object `path` property handles any route,
    * and the `action` returns the flow container without updating the content,
    * delaying the actual Flow server call to the `onBeforeEnter` phase.
    *
-   * This is a `vaadin-router` specific API.
+   * This is a specific API for its use with `vaadin-router`.
    */
-  get route(): FlowRoute {
-    return {
+  get serverSideRoutes(): [FlowRoute] {
+    return [{
       path: '(.*)',
       action: this.action
-    }
+    }];
   }
 
   private get action(): (params: NavigationParameters) => Promise<HTMLRouterContainer> {
     // Return a function which is bound to the flow instance, thus we can use
-    // the syntax `flow.route` in vaadin-router.
+    // the syntax `...serverSideRoutes` in vaadin-router.
     // @ts-ignore
     return async (params: NavigationParameters) => {
 
@@ -238,4 +238,3 @@ export class Flow {
     });
   }
 }
-

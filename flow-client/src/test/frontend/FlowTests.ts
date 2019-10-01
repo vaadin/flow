@@ -283,7 +283,7 @@ suite("Flow", () => {
     stubServerRemoteFunction('foobar-12345');
     mockInitResponse('foobar-12345');
 
-    const route = new Flow().route;
+    const route = new Flow().serverSideRoutes[0];
 
     return route.action({pathname: 'Foo/Bar.baz'})
       .then(async(elem) => {
@@ -314,7 +314,7 @@ suite("Flow", () => {
 
     mockInitResponse('foobar-12345');
 
-    const route = new Flow().route;
+    const route = new Flow().serverSideRoutes[0];
 
     return route.action({pathname: 'Foo/Bar.baz'})
       .then((elem) => {
@@ -347,7 +347,9 @@ suite("Flow", () => {
     mockInitResponse('foobar-12345');
 
     const flow = new Flow();
-    return flow.route.action({pathname: 'Foo'})
+    const route = flow.serverSideRoutes[0];
+
+    return route.action({pathname: 'Foo'})
       .then((elem: any) => {
         assert.isDefined(elem.onBeforeLeave);
         assert.equal('Foo', flow.pathname);
@@ -379,7 +381,9 @@ suite("Flow", () => {
     mockInitResponse('foobar-12345');
 
     const flow = new Flow();
-    return flow.route.action({pathname: 'Foo'})
+    const route = new Flow().serverSideRoutes[0];
+
+    return route.action({pathname: 'Foo'})
       .then((elem: any) => {
         return elem.onBeforeEnter({pathname: 'Foo'}, {prevent: () => {
           // set cancel to false even though server is cancelling
