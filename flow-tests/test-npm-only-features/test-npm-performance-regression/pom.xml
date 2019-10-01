@@ -41,9 +41,9 @@
 
         <!-- payload dependencies for the performance regression test -->
         <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-core</artifactId>
-            <version>5.4.5.Final</version>
+            <groupId>org.tensorflow</groupId>
+            <artifactId>tensorflow</artifactId>
+            <version>1.14.0</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
