@@ -27,7 +27,6 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.router.ErrorNavigationEvent;
 import com.vaadin.flow.router.ErrorParameter;
-import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationState;
@@ -46,8 +45,7 @@ import com.vaadin.flow.theme.ThemeDefinition;
  * internal use in clientSideMode.
  */
 public class JavaScriptBootstrapUI extends UI {
-    private static final String NO_NAVIGATION = "Classic flow navigation is " +
-            "not supported for client-side projects";
+    public static final String SERVER_ROUTING = "clientRoutingMode";
 
     Element wrapperElement;
     private NavigationState clientViewNavigationState;
@@ -81,10 +79,15 @@ public class JavaScriptBootstrapUI extends UI {
                     NodeProperties.INJECT_BY_ID, clientElementId);
         }
         // Render the flow view that the user wants to navigate to.
-        boolean postponed = renderViewForRoute(flowRoute);
+        boolean postponed = renderViewForRoute(
+                new Location(removeFirstSlash(flowRoute)));
 
         // Inform the client, that everything went fine.
         wrapperElement.executeJs("this.serverConnected($0)", postponed);
+
+        // If this call happens, there is a client-side routing, thus
+        // it's needed to remove the flag that might be set in ClientIndexHandler
+        getSession().setAttribute(SERVER_ROUTING, Boolean.FALSE);
     }
 
     /**
@@ -98,15 +101,13 @@ public class JavaScriptBootstrapUI extends UI {
      */
     @ClientCallable
     public void leaveNavigation(String route) {
-        boolean postponed = navigateToPlaceholder(route);
-
+        boolean postponed = navigateToPlaceholder(
+                new Location(removeFirstSlash(route)));
         // Inform the client whether the navigation should be postponed
         wrapperElement.executeJs("this.serverConnected($0)", postponed);
     }
 
-    private boolean navigateToPlaceholder(String nextLocation) {
-        Location clientViewLocation = new Location(
-                removeFirstSlash(nextLocation));
+    private boolean navigateToPlaceholder(Location location) {
         if (clientViewNavigationState == null) {
             clientViewNavigationState = new NavigationStateBuilder(
                     this.getRouter()).withTarget(ClientViewPlaceholder.class)
@@ -114,13 +115,10 @@ public class JavaScriptBootstrapUI extends UI {
         }
         // Passing the `clientViewLocation` to make sure that the navigation
         // events contain the correct location that we are navigating to.
-        return handleNavigation(clientViewLocation, clientViewNavigationState);
+        return handleNavigation(location, clientViewNavigationState);
     }
 
-    private boolean renderViewForRoute(String route) {
-        route = removeFirstSlash(route);
-
-        Location location = new Location(route);
+    private boolean renderViewForRoute(Location location) {
         Optional<NavigationState> navigationState = this.getRouter()
                 .resolveNavigationTarget(location);
 
@@ -131,7 +129,7 @@ public class JavaScriptBootstrapUI extends UI {
             // When route does not exist, try to navigate to current route
             // in order to check if current view can be left before showing
             // the error page
-            if (navigateToPlaceholder(route)) {
+            if (navigateToPlaceholder(location)) {
                 return true;
             }
 
@@ -140,6 +138,7 @@ public class JavaScriptBootstrapUI extends UI {
             handleErrorNavigation(location);
         }
         return false;
+
     }
 
     private String removeFirstSlash(String route) {
@@ -185,24 +184,17 @@ public class JavaScriptBootstrapUI extends UI {
     }
 
     @Override
-    public void navigate(String location) {
-        throw new UnsupportedOperationException(NO_NAVIGATION);
-    }
-
-    @Override
-    public void navigate(Class<? extends Component> navigationTarget) {
-        throw new UnsupportedOperationException(NO_NAVIGATION);
-    }
-
-    @Override
-    public <T, C extends Component & HasUrlParameter<T>> void navigate(
-            Class<? extends C> navigationTarget, T parameter) {
-        throw new UnsupportedOperationException(NO_NAVIGATION);
-    }
-
-    @Override
-    public void navigate(String location, QueryParameters queryParameters) {
-        throw new UnsupportedOperationException(NO_NAVIGATION);
+    public void navigate(String pathname, QueryParameters queryParameters) {
+        Location location = new Location(pathname, queryParameters);
+        if (Boolean.TRUE.equals(getSession().getAttribute(SERVER_ROUTING))) {
+            // server-side routing
+            renderViewForRoute(location);
+        } else {
+            // client-side routing
+            getPage().executeJs(
+                    "window.dispatchEvent(new CustomEvent('vaadin-router-go', {detail: {pathname: '/"
+                            + location.getPathWithQueryParameters() + "'}}))");
+        }
     }
 
     /**

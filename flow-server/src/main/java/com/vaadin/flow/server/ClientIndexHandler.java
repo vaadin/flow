@@ -32,6 +32,7 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
 
+import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
 import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -55,6 +56,10 @@ public class ClientIndexHandler extends JavaScriptBootstrapHandler {
         if (request.getService().getBootstrapInitialPredicate()
                 .includeInitialUidl(request)) {
             includeInitialUidl(session, request, response, indexDocument);
+
+            // App might be using classic server-routing, which is true
+            // unless we detect a call to JavaScriptBootstrapUI.connectClient
+            session.setAttribute(SERVER_ROUTING, Boolean.TRUE);
         }
 
         response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);

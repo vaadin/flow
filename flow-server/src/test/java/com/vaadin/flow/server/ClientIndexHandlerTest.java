@@ -31,7 +31,10 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
+
+import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
 
 public class ClientIndexHandlerTest {
 
@@ -182,10 +185,12 @@ public class ClientIndexHandlerTest {
         Assert.assertEquals(1, scripts.size());
         Assert.assertEquals("", scripts.get(0).attr("initial"));
         Assert.assertTrue(scripts.get(0).toString().contains("Could not navigate"));
+
+        Mockito.verify(session, Mockito.times(1)).setAttribute(SERVER_ROUTING, Boolean.TRUE);
     }
 
     @Test
-    public void should_add_initialUidl_when_not_includeInitialBootstrapUidl()
+    public void should_not_add_initialUidl_when_not_includeInitialBootstrapUidl()
             throws IOException {
         clientIndexBootstrapHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
@@ -195,6 +200,8 @@ public class ClientIndexHandlerTest {
 
         Elements scripts = document.head().getElementsByTag("script");
         Assert.assertEquals(0, scripts.size());
+
+        Mockito.verify(session, Mockito.times(0)).setAttribute(SERVER_ROUTING, Boolean.TRUE);
     }
 
     @Test
@@ -240,11 +247,20 @@ public class ClientIndexHandlerTest {
     }
 
     @Test
-    public void should_AA()
+    public void should_use_client_routing_when_there_is_a_router_call()
             throws IOException {
 
-        clientIndexBootstrapHandler.initializeUIWithRouter(createVaadinRequest("/"), null);
-        Assert.assertNull(UI.getCurrent());
+        deploymentConfiguration.setEagerServerLoad(true);
+
+        clientIndexBootstrapHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+
+        Mockito.verify(session, Mockito.times(1)).setAttribute(SERVER_ROUTING, Boolean.TRUE);
+        Mockito.verify(session, Mockito.times(0)).setAttribute(SERVER_ROUTING, Boolean.FALSE);
+
+        ((JavaScriptBootstrapUI)UI.getCurrent()).connectClient("foo", "bar", "/foo");
+
+        Mockito.verify(session, Mockito.times(1)).setAttribute(SERVER_ROUTING, Boolean.FALSE);
     }
 
     @After

@@ -4,6 +4,7 @@ import java.util.Collections;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
@@ -15,6 +16,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinRequest;
 
+import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -128,4 +130,35 @@ public class JavaScriptBootstrapUITest  {
         // attached to body
         assertTrue(ui.getElement().toString().contains("Available routes:"));
     }
+
+    @Test
+    public void should_navigate_when_server_routing() {
+        ui.connectClient("foo", "bar", "/clean");
+        assertEquals(Tag.HEADER, ui.wrapperElement.getChild(0).getTag());
+        assertEquals(Tag.H2, ui.wrapperElement.getChild(0).getChild(0).getTag());
+
+
+        Mockito.when(mocks.getSession().getAttribute(SERVER_ROUTING))
+                .thenReturn(Boolean.TRUE);
+
+        ui.navigate("dirty");
+        assertEquals(Tag.SPAN, ui.wrapperElement.getChild(0).getTag());
+        assertEquals(Tag.H1, ui.wrapperElement.getChild(0).getChild(0).getTag());
+    }
+
+    @Test
+    public void should_not_navigate_when_client_routing() {
+        ui.connectClient("foo", "bar", "/clean");
+        assertEquals(Tag.HEADER, ui.wrapperElement.getChild(0).getTag());
+        assertEquals(Tag.H2, ui.wrapperElement.getChild(0).getChild(0).getTag());
+
+
+        Mockito.when(mocks.getSession().getAttribute(SERVER_ROUTING))
+                .thenReturn(Boolean.FALSE);
+
+        // Dirty view is allowed after clean view
+        ui.navigate("dirty");
+        assertEquals(Tag.HEADER, ui.wrapperElement.getChild(0).getTag());
+    }
+
 }
