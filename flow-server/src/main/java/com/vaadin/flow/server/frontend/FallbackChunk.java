@@ -46,8 +46,8 @@ public class FallbackChunk implements Serializable {
      */
     public FallbackChunk(Collection<String> modules,
             Collection<CssImportData> css) {
-        this.modules = Objects.requireNonNull(new HashSet<>(modules));
-        this.cssImports = Objects.requireNonNull(new HashSet<>(css));
+        this.modules = new HashSet<>(Objects.requireNonNull(modules));
+        this.cssImports = new HashSet<>(Objects.requireNonNull(css));
     }
 
     /**
