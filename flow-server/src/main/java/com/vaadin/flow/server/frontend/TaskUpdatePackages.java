@@ -108,22 +108,36 @@ public class TaskUpdatePackages extends NodeUpdater {
                     deps);
             if (isModified) {
                 writeAppPackageFile(packageJson);
-                String content = "";
-                // If we have dependencies generate hash on ordered content.
-                if (packageJson.hasKey("dependencies")) {
-                    JsonObject dependencies = packageJson
-                            .getObject("dependencies");
-                    content = Stream.of(dependencies.keys())
-                            .map(key -> String.format("\"%s\": \"%s\"", key,
-                                    dependencies.get(key).asString()))
-                            .sorted(String::compareToIgnoreCase)
-                            .collect(Collectors.joining(",\n  "));
-                }
-                modified = updateAppPackageHash(getHash(content));
             }
+            modified = checkPackageHash(packageJson);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    /**
+     * Check and update the main package hash in all cases as we might have
+     * updated the main package with new dependencies.
+     *
+     * @param packageJson
+     *         application package json
+     * @return true if hash has changed
+     * @throws IOException
+     *         thrown from write exception
+     */
+    private boolean checkPackageHash(JsonObject packageJson) throws IOException {
+        String content = "";
+        // If we have dependencies generate hash on ordered content.
+        if (packageJson.hasKey("dependencies")) {
+            JsonObject dependencies = packageJson
+                    .getObject("dependencies");
+            content = Stream.of(dependencies.keys())
+                    .map(key -> String.format("\"%s\": \"%s\"", key,
+                            dependencies.get(key).asString()))
+                    .sorted(String::compareToIgnoreCase)
+                    .collect(Collectors.joining(",\n  "));
+        }
+        return updateAppPackageHash(getHash(content));
     }
 
     private boolean updatePackageJsonDependencies(JsonObject packageJson,
@@ -265,6 +279,9 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     private String getHash(String content) {
+        if(content.isEmpty()) {
+            return content;
+        }
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             return bytesToHex(
