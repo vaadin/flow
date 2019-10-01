@@ -121,24 +121,40 @@ public class JavaScriptBootstrapUI extends UI {
     private boolean renderViewForRoute(Location location) {
         Optional<NavigationState> navigationState = this.getRouter()
                 .resolveNavigationTarget(location);
+        if (!shouldHandleNavigation(location)) {
+            return false;
+        }
 
-        if (navigationState.isPresent()) {
-            // There is a valid route in flow.
-            return handleNavigation(location, navigationState.get());
-        } else {
-            // When route does not exist, try to navigate to current route
-            // in order to check if current view can be left before showing
-            // the error page
-            if (navigateToPlaceholder(location)) {
-                return true;
+        try {
+            getInternals().setLastHandledNavigation(location);
+            if (navigationState.isPresent()) {
+                // There is a valid route in flow.
+                return handleNavigation(location, navigationState.get());
+            } else {
+                // When route does not exist, try to navigate to current route
+                // in order to check if current view can be left before showing
+                // the error page
+                if (navigateToPlaceholder(location)) {
+                    return true;
+                }
+
+                // Route does not exist, and current view does not prevent navigation
+                // thus an error page is shown
+                handleErrorNavigation(location);
             }
-
-            // Route does not exist, and current view does not prevent navigation
-            // thus an error page is shown
-            handleErrorNavigation(location);
+        } finally {
+            getInternals().clearLastHandledNavigation();
         }
         return false;
 
+    }
+
+    private boolean shouldHandleNavigation(Location location) {
+        if (getInternals().hasLastHandledLocation()) {
+            return !location.getPathWithQueryParameters().equals(getInternals()
+                    .getLastHandledLocation().getPathWithQueryParameters());
+        }
+        return true;
     }
 
     private String removeFirstSlash(String route) {
