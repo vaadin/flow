@@ -30,6 +30,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 public class ClientIndexHandlerTest {
@@ -40,6 +41,7 @@ public class ClientIndexHandlerTest {
     private ClientIndexHandler clientIndexBootstrapHandler;
     private VaadinResponse response;
     private ByteArrayOutputStream responseOutput;
+    private MockDeploymentConfiguration deploymentConfiguration;
 
     @Before
     public void setUp() throws Exception {
@@ -49,8 +51,7 @@ public class ClientIndexHandlerTest {
         response = Mockito.mock(VaadinResponse.class);
         responseOutput = new ByteArrayOutputStream();
         Mockito.when(response.getOutputStream()).thenReturn(responseOutput);
-        MockDeploymentConfiguration deploymentConfiguration = mocks
-                .getDeploymentConfiguration();
+        deploymentConfiguration = mocks.getDeploymentConfiguration();
         deploymentConfiguration.setEnableDevServer(false);
         deploymentConfiguration.setClientSideMode(true);
         clientIndexBootstrapHandler = new ClientIndexHandler();
@@ -60,7 +61,7 @@ public class ClientIndexHandlerTest {
     public void serveIndexHtml_requestWithRootPath_serveContentFromTemplate()
             throws IOException {
         clientIndexBootstrapHandler
-                .synchronizedHandleRequest(session, createVaadinRequest(""),
+                .synchronizedHandleRequest(session, createVaadinRequest("/"),
                         response);
         String indexHtml = responseOutput
                 .toString(StandardCharsets.UTF_8.name());
@@ -73,7 +74,7 @@ public class ClientIndexHandlerTest {
     public void serveIndexHtml_requestWithRootPath_hasBaseHrefElement()
             throws IOException {
         clientIndexBootstrapHandler
-                .synchronizedHandleRequest(session, createVaadinRequest(""),
+                .synchronizedHandleRequest(session, createVaadinRequest("/"),
                         response);
         String indexHtml = responseOutput
                 .toString(StandardCharsets.UTF_8.name());
@@ -95,7 +96,7 @@ public class ClientIndexHandlerTest {
     @Test
     public void canHandleRequest_requestWithRootPath_handleRequest() {
         boolean canHandleRequest = clientIndexBootstrapHandler
-                .canHandleRequest(createVaadinRequest(""));
+                .canHandleRequest(createVaadinRequest("/"));
         Assert.assertTrue("The handler should handle a root path request",
                 canHandleRequest);
     }
@@ -156,7 +157,7 @@ public class ClientIndexHandlerTest {
                 .appendElement("script").attr("src", "testing.2"));
 
         clientIndexBootstrapHandler.synchronizedHandleRequest(session,
-                createVaadinRequest(""), response);
+                createVaadinRequest("/"), response);
         String indexHtml = responseOutput
                 .toString(StandardCharsets.UTF_8.name());
         Document document = Jsoup.parse(indexHtml);
@@ -164,6 +165,86 @@ public class ClientIndexHandlerTest {
         Assert.assertEquals(2, scripts.size());
         Assert.assertEquals("testing.1", scripts.get(0).attr("src"));
         Assert.assertEquals("testing.2", scripts.get(1).attr("src"));
+    }
+
+    @Test
+    public void should_add_initialUidl_when_includeInitialBootstrapUidl()
+            throws IOException {
+        deploymentConfiguration.setEagerServerLoad(true);
+
+        clientIndexBootstrapHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+        String indexHtml = responseOutput
+                .toString(StandardCharsets.UTF_8.name());
+        Document document = Jsoup.parse(indexHtml);
+
+        Elements scripts = document.head().getElementsByTag("script");
+        Assert.assertEquals(1, scripts.size());
+        Assert.assertEquals("", scripts.get(0).attr("initial"));
+        Assert.assertTrue(scripts.get(0).toString().contains("Could not navigate"));
+    }
+
+    @Test
+    public void should_add_initialUidl_when_not_includeInitialBootstrapUidl()
+            throws IOException {
+        clientIndexBootstrapHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+        String indexHtml = responseOutput
+                .toString(StandardCharsets.UTF_8.name());
+        Document document = Jsoup.parse(indexHtml);
+
+        Elements scripts = document.head().getElementsByTag("script");
+        Assert.assertEquals(0, scripts.size());
+    }
+
+    @Test
+    public void should_initialize_UI_and_add_initialUidl_when_valid_route()
+            throws IOException {
+        deploymentConfiguration.setEagerServerLoad(true);
+
+        service.setBootstrapInitialPredicate(request -> {
+            return request.getPathInfo().equals("/");
+        });
+
+        clientIndexBootstrapHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+        String indexHtml = responseOutput
+                .toString(StandardCharsets.UTF_8.name());
+        Document document = Jsoup.parse(indexHtml);
+
+        Elements scripts = document.head().getElementsByTag("script");
+        Assert.assertEquals(1, scripts.size());
+        Assert.assertEquals("", scripts.get(0).attr("initial"));
+        Assert.assertTrue(scripts.get(0).toString().contains("Could not navigate"));
+        Assert.assertNotNull(UI.getCurrent());
+    }
+
+    @Test
+    public void should_not_initialize_UI_and_add_initialUidl_when_invalid_route()
+            throws IOException {
+        deploymentConfiguration.setEagerServerLoad(true);
+
+        service.setBootstrapInitialPredicate(request -> {
+            return request.getPathInfo().equals("/");
+        });
+
+        clientIndexBootstrapHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/foo"), response);
+        String indexHtml = responseOutput
+                .toString(StandardCharsets.UTF_8.name());
+        Document document = Jsoup.parse(indexHtml);
+
+        Elements scripts = document.head().getElementsByTag("script");
+        Assert.assertEquals(0, scripts.size());
+        Assert.assertNull(UI.getCurrent());
+    }
+
+    @Test
+    public void should_AA()
+            throws IOException {
+
+        clientIndexBootstrapHandler.initializeUIWithRouter(createVaadinRequest("/"), null);
+        Assert.assertNull(UI.getCurrent());
     }
 
     @After
@@ -181,6 +262,8 @@ public class ClientIndexHandlerTest {
         HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
         Mockito.doAnswer(invocation -> "").when(request).getServletPath();
         Mockito.doAnswer(invocation -> pathInfo).when(request).getPathInfo();
+        Mockito.doAnswer(invocation -> new StringBuffer(pathInfo)).when(request).getRequestURL();
         return request;
     }
+
 }

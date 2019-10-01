@@ -19,6 +19,7 @@ package com.vaadin.flow.server;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -41,11 +42,12 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
 
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_CLIENT_SIDE_MODE;
 import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_CLIENT_SIDE_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_INITIAL_UIDL;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_REUSE_DEV_SERVER;
 import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
@@ -226,6 +228,16 @@ public final class DeploymentConfigurationFactory implements Serializable {
                 // because it has priority in the configuration getter
                 System.clearProperty(
                         VAADIN_PREFIX + SERVLET_PARAMETER_CLIENT_SIDE_MODE);
+            }
+            if (buildInfo.hasKey(SERVLET_PARAMETER_INITIAL_UIDL)) {
+                initParameters.setProperty(
+                        SERVLET_PARAMETER_INITIAL_UIDL,
+                        String.valueOf(buildInfo.getBoolean(
+                                SERVLET_PARAMETER_INITIAL_UIDL)));
+                // Need to be sure that we remove the system property,
+                // because it has priority in the configuration getter
+                System.clearProperty(
+                        VAADIN_PREFIX + SERVLET_PARAMETER_INITIAL_UIDL);
             }
 
             if (buildInfo.hasKey(NPM_TOKEN)) {

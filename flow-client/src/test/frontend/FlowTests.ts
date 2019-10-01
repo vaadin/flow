@@ -64,6 +64,31 @@ const changesResponse = `[
   }
 ]`;
 
+function createInitResponse(appId: string, changes = '[]'): string {
+  return `
+      {
+        "appConfig": {
+          "heartbeatInterval" : 300,
+          "contextRootUrl" : "../",
+          "debug" : true,
+          "v-uiId" : 0,
+          "serviceUrl" : "//localhost:8080/flow/",
+          "webComponentMode" : false,
+          "productionMode": false,
+          "appId": "${appId}",
+          "uidl": {
+            "syncId": 0,
+            "clientId": 0,
+            "timings": [],
+            "Vaadin-Security-Key": "119a6005-e663-4a4c-a882-bbfa8bd0c304",
+            "Vaadin-Push-ID": "4b915ffb-4e0a-484c-9995-09500fe9fa3a",
+            "changes": ${changes}
+          }
+        }
+      }
+    `;
+};
+
 suite("Flow", () => {
 
   beforeEach(() => {
@@ -72,6 +97,7 @@ suite("Flow", () => {
 
   afterEach(() => {
     mock.teardown();
+    delete $wnd.Vaadin;
     delete flowRoot.$;
     delete flowRoot.$server;
   });
@@ -115,6 +141,42 @@ suite("Flow", () => {
 
         // Check server added a div content with `Foo` text
         assert.equal("Foo", document.body.lastElementChild.textContent);
+      });
+  });
+
+  test("should initialize UI when calling start()", () => {
+    assert.isUndefined($wnd.Vaadin);
+
+    const initial = createInitResponse('FooBar-12345');
+    $wnd.Vaadin = {Flow: {initial: JSON.parse(initial)}};
+
+    const flow = new Flow();
+    return flow
+      .start()
+      .then(() => {
+        assert.isDefined(flow.response);
+        assert.isDefined(flow.response.appConfig);
+
+        // Check that serverside routing is enabled
+        assert.isFalse(flow.response.appConfig.webComponentMode);
+
+        // Check that bootstrap was initialized
+        assert.isDefined($wnd.Vaadin.Flow.initApplication);
+        assert.isDefined($wnd.Vaadin.Flow.registerWidgetset);
+        // Check that flowClient was initialized
+        assert.isDefined($wnd.Vaadin.Flow.resolveUri);
+        assert.isFalse($wnd.Vaadin.Flow.clients.FooBar.isActive());
+
+        // Check that bootstrap was initialized
+        assert.isDefined($wnd.Vaadin.Flow.initApplication);
+        assert.isDefined($wnd.Vaadin.Flow.registerWidgetset);
+
+        // Check that flowClient was initialized
+        assert.isDefined($wnd.Vaadin.Flow.resolveUri);
+        assert.isFalse($wnd.Vaadin.Flow.clients.FooBar.isActive());
+
+        // Check that initial was removed
+        assert.isUndefined($wnd.Vaadin.Flow.initial);
       });
   });
 
@@ -368,27 +430,6 @@ function mockInitResponse(appId: string, changes = '[]') {
     return res
       .status(200)
       .header("content-type","application/json")
-      .body(`
-      {
-        "appConfig": {
-          "heartbeatInterval" : 300,
-          "contextRootUrl" : "../",
-          "debug" : true,
-          "v-uiId" : 0,
-          "serviceUrl" : "//localhost:8080/flow/",
-          "webComponentMode" : false,
-          "productionMode": false,
-          "appId": "${appId}",
-          "uidl": {
-            "syncId": 0,
-            "clientId": 0,
-            "timings": [],
-            "Vaadin-Security-Key": "119a6005-e663-4a4c-a882-bbfa8bd0c304",
-            "Vaadin-Push-ID": "4b915ffb-4e0a-484c-9995-09500fe9fa3a",
-            "changes": ${changes}
-          }
-        }
-      }
-    `);
+      .body(createInitResponse(appId, changes));
   });
 }

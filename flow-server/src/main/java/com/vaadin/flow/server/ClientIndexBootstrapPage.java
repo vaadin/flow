@@ -32,7 +32,7 @@ public class ClientIndexBootstrapPage {
 
     /**
      * Create a response object in clientSideMode.
-     * 
+     *
      * @param vaadinRequest
      *            the vaadin request which is handling
      * @param vaadinResponse
@@ -53,7 +53,7 @@ public class ClientIndexBootstrapPage {
 
     /**
      * Get the request which triggers client index response.
-     * 
+     *
      * @return the Vaadin request
      */
     public VaadinRequest getVaadinRequest() {
@@ -63,7 +63,7 @@ public class ClientIndexBootstrapPage {
     /**
      * Get the Vaadin response object including all the headers which will be
      * sent to browser.
-     * 
+     *
      * @return the Vaadin response
      */
     public VaadinResponse getVaadinResponse() {
@@ -72,7 +72,7 @@ public class ClientIndexBootstrapPage {
 
     /**
      * Get the current Vaadin session.
-     * 
+     *
      * @return the Vaadin session
      */
     public VaadinSession getVaadinSession() {
@@ -81,7 +81,7 @@ public class ClientIndexBootstrapPage {
 
     /**
      * Get the index.html response in form of a {@link Document} instance.
-     * 
+     *
      * @return the index document
      */
     public Document getDocument() {
