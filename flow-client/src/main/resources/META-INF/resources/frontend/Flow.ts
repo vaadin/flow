@@ -57,6 +57,8 @@ export class Flow {
   constructor(config?: FlowConfig) {
     this.flowRoot.$ = this.flowRoot.$ || {};
     this.config = config || {};
+    $wnd.Vaadin = $wnd.Vaadin || {};
+    $wnd.Vaadin.Flow = $wnd.Vaadin.Flow || {};
   }
 
   /**
