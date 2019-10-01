@@ -36,13 +36,18 @@ public class Dependency implements Serializable {
     public static final String KEY_URL = "url";
     public static final String KEY_TYPE = "type";
     public static final String KEY_LOAD_MODE = "mode";
+    public static final String KEY_EXPRESSION = "expression";
     public static final String KEY_CONTENTS = "contents";
+
+    public String getExpression() {
+        return expression;
+    }
 
     /**
      * The type of a dependency.
      */
     public enum Type {
-        STYLESHEET, JAVASCRIPT, JS_MODULE, HTML_IMPORT;
+        STYLESHEET, JAVASCRIPT, JS_MODULE, HTML_IMPORT, JS_EXPRESSION;
 
         /**
          * Check if the given value is contained as a enum value.
@@ -60,6 +65,7 @@ public class Dependency implements Serializable {
     private final Type type;
     private final String url;
     private final LoadMode loadMode;
+    private final String expression;
 
     /**
      * Creates a new dependency of the given type, to be loaded from the given
@@ -95,6 +101,17 @@ public class Dependency implements Serializable {
                     ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
         }
         this.loadMode = loadMode;
+        this.expression = null;
+    }
+
+    public Dependency(Type type, String expression) {
+        assert type != null;
+        assert expression != null;
+
+        this.type = type;
+        this.expression = expression;
+        this.loadMode = LoadMode.EAGER;
+        this.url = null;
     }
 
     /**
@@ -135,6 +152,7 @@ public class Dependency implements Serializable {
         jsonObject.put(KEY_URL, url);
         jsonObject.put(KEY_TYPE, type.name());
         jsonObject.put(KEY_LOAD_MODE, loadMode.name());
+        jsonObject.put(KEY_EXPRESSION, expression);
         return jsonObject;
     }
 

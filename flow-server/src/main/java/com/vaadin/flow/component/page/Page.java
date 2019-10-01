@@ -666,4 +666,8 @@ public class Page implements Serializable {
                         getStringElseNull.apply("v-pr"),
                         getStringElseNull.apply("v-wn")));
     }
+
+    public void addJSExpressionDependency(String expression) {
+        addDependency(new Dependency(Type.JS_EXPRESSION, expression));
+    }
 }

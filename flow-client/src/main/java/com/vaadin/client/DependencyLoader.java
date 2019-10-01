@@ -25,6 +25,8 @@ import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsMap;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
+
+import elemental.js.json.JsJsonArray;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
@@ -188,28 +190,42 @@ public class DependencyLoader {
                 .map();
         for (int i = 0; i < dependencies.length(); i++) {
             JsonObject dependencyJson = dependencies.getObject(i);
-            BiConsumer<String, ResourceLoadListener> resourceLoader = getResourceLoader(
-                    Dependency.Type.valueOf(
-                            dependencyJson.getString(Dependency.KEY_TYPE)),
-                    loadMode);
+            Dependency.Type type = Dependency.Type
+                    .valueOf(dependencyJson.getString(Dependency.KEY_TYPE));
+            if (type == Dependency.Type.JS_EXPRESSION) {
+                JsonArray jsExpression = (JsonArray) JsJsonArray.createArray(1);
+                jsExpression.set(0,
+                            dependencyJson.getString(Dependency.KEY_EXPRESSION));
 
-            switch (loadMode) {
-            case EAGER:
-                loadEagerDependency(getDependencyUrl(dependencyJson),
-                        resourceLoader);
-                break;
-            case LAZY:
-                lazyDependencies.set(getDependencyUrl(dependencyJson),
-                        resourceLoader);
-                break;
-            case INLINE:
-                inlineDependency(
-                        dependencyJson.getString(Dependency.KEY_CONTENTS),
-                        resourceLoader);
-                break;
-            default:
-                throw new IllegalArgumentException(
-                        "Unknown load mode = " + loadMode);
+                JsonArray jsInvocation = (JsonArray) JsJsonArray.createArray(1);
+                jsInvocation.set(0, jsExpression);
+
+                startEagerDependencyLoading();
+                //TODO: endEagerDependencyLoading should be called in `then`
+                // part of the Promise which is returned by the expression.
+                registry.getExecuteJavaScriptProcessor().execute(jsInvocation);
+            } else {
+                BiConsumer<String, ResourceLoadListener> resourceLoader = getResourceLoader(
+                        type, loadMode);
+
+                switch (loadMode) {
+                case EAGER:
+                    loadEagerDependency(getDependencyUrl(dependencyJson),
+                            resourceLoader);
+                    break;
+                case LAZY:
+                    lazyDependencies.set(getDependencyUrl(dependencyJson),
+                            resourceLoader);
+                    break;
+                case INLINE:
+                    inlineDependency(
+                            dependencyJson.getString(Dependency.KEY_CONTENTS),
+                            resourceLoader);
+                    break;
+                default:
+                    throw new IllegalArgumentException(
+                            "Unknown load mode = " + loadMode);
+                }
             }
         }
         return lazyDependencies;
