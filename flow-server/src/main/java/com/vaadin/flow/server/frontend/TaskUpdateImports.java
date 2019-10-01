@@ -74,6 +74,7 @@ public class TaskUpdateImports extends NodeUpdater {
     private final FrontendDependenciesScanner fallbackScanner;
     private final ClassFinder finder;
     private final File webpackOutputDirectory;
+    private final JsonObject tokenFileData;
 
     private class UpdateMainImportsFile extends AbstractUpdateImports {
 
@@ -279,17 +280,20 @@ public class TaskUpdateImports extends NodeUpdater {
      *            a directory with project's frontend files
      * @param webpackOutputDirectory
      *            the directory to set for webpack to output its build results.
+     * @param tokenFileData
+     *            object to fill with token file data
      */
     TaskUpdateImports(ClassFinder finder,
             FrontendDependenciesScanner frontendDepScanner,
             SerializableFunction<ClassFinder, FrontendDependenciesScanner> fallBackScannerProvider,
             File npmFolder, File generatedPath, File frontendDirectory,
-            File webpackOutputDirectory) {
+            File webpackOutputDirectory, JsonObject tokenFileData) {
         super(finder, frontendDepScanner, npmFolder, generatedPath);
         this.frontendDirectory = frontendDirectory;
         fallbackScanner = fallBackScannerProvider.apply(finder);
         this.finder = finder;
         this.webpackOutputDirectory = webpackOutputDirectory;
+        this.tokenFileData = tokenFileData;
     }
 
     @Override
@@ -352,20 +356,29 @@ public class TaskUpdateImports extends NodeUpdater {
                 buildInfo = Json.createObject();
             }
 
-            JsonObject fallback = Json.createObject();
-            fallback.put("jsModules", makeFallbackModules(updater));
-            fallback.put("cssImports", makeFallbackCssImports(updater));
-
-            JsonObject chunks = Json.createObject();
-            chunks.put("fallback", fallback);
-
-            buildInfo.put("chunks", chunks);
+            populateFallbackData(buildInfo, updater);
+            if (tokenFileData != null) {
+                populateFallbackData(tokenFileData, updater);
+            }
 
             FileUtils.write(tokenFile, JsonUtil.stringify(buildInfo, 2),
                     StandardCharsets.UTF_8);
         } catch (IOException e) {
             log().warn("Unable to read token file", e);
         }
+    }
+
+    private void populateFallbackData(JsonObject object,
+            AbstractUpdateImports updater) {
+        JsonObject fallback = Json.createObject();
+        fallback.put(FrontendUtils.JS_MODULES, makeFallbackModules(updater));
+        fallback.put(FrontendUtils.CSS_IMPORTS,
+                makeFallbackCssImports(updater));
+
+        JsonObject chunks = Json.createObject();
+        chunks.put(FrontendUtils.FALLBACK, fallback);
+
+        object.put(FrontendUtils.CHUNKS, chunks);
     }
 
     private JsonArray makeFallbackModules(AbstractUpdateImports updater) {
