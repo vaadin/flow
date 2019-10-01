@@ -28,6 +28,8 @@ import com.vaadin.flow.server.FallibleCommand;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
+import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
@@ -78,6 +80,8 @@ public class NodeTasks implements FallibleCommand {
         private Set<String> visitedClasses = null;
 
         private boolean useByteCodeScanner = false;
+
+        private JsonObject tokenFileData;
 
         /**
          * Directory for for npm and folders and files.
@@ -314,6 +318,11 @@ public class NodeTasks implements FallibleCommand {
             this.useByteCodeScanner = byteCodeScanner;
             return this;
         }
+
+        public Builder populateTokenFileData(JsonObject object) {
+            tokenFileData = object;
+            return this;
+        }
     }
 
     private final Collection<FallibleCommand> commands = new ArrayList<>();
@@ -378,7 +387,8 @@ public class NodeTasks implements FallibleCommand {
                     frontendDependencies,
                     finder -> getFallbackScanner(builder, finder),
                     builder.npmFolder, builder.generatedFolder,
-                    builder.frontendDirectory, builder.webpackOutputDirectory));
+                    builder.frontendDirectory, builder.webpackOutputDirectory,
+                    builder.tokenFileData));
 
             if (builder.visitedClasses != null) {
                 builder.visitedClasses
