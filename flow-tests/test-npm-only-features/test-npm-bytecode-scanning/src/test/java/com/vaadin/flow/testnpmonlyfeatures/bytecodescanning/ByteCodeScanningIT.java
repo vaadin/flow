@@ -41,8 +41,6 @@ public class ByteCodeScanningIT extends ChromeBrowserTest {
             // in production mode we use optimized bundle by default, so component should be missing
             Assert.assertFalse("component expected missing in production mode",
                     component.exists());
-            Assert.assertTrue("label about missing component expected present in production mode",
-                    componentMissing.exists());
         } else {
             // in dev mode we use complete bundle by default, so component should be present
             Assert.assertTrue("component expected present in dev mode", component.exists());
