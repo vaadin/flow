@@ -56,7 +56,7 @@ public class TaskCreatePackageJson extends NodeUpdater {
                     log().debug(
                             "Main dependencies updated. Forcing npm install.");
                     mainContent.put(APP_PACKAGE_HASH,
-                            "main dependencies updated, force install");
+                            "Main dependencies updated, force install");
                 } else {
                     mainContent.put(APP_PACKAGE_HASH, "");
                 }
