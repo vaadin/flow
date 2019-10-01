@@ -27,7 +27,6 @@ import com.vaadin.client.flow.collection.JsMap;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 
-import elemental.js.json.JsJsonArray;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
@@ -50,8 +49,24 @@ public class DependencyLoader {
 
         @Override
         public void onError(ResourceLoadEvent event) {
-            Console.error(event.getResourceUrl() + " could not be loaded.");
+            Console.error(event.getResourceData() + " could not be loaded.");
             // The show must go on
+            onLoad(event);
+        }
+    };
+
+    private static final ResourceLoadListener DYNAMIC_IMPORT_LOAD_LISTENER = new ResourceLoadListener() {
+        @Override
+        public void onLoad(ResourceLoadEvent event) {
+            // Call start for next before calling end for current
+            endEagerDependencyLoading();
+        }
+
+        @Override
+        public void onError(ResourceLoadEvent event) {
+            Console.error(
+                    "\"" + event.getResourceData() + "\" could not be loaded.");
+            // show must go on
             onLoad(event);
         }
     };
@@ -64,7 +79,7 @@ public class DependencyLoader {
 
         @Override
         public void onError(ResourceLoadEvent event) {
-            Console.error(event.getResourceUrl() + " could not be loaded.");
+            Console.error(event.getResourceData() + " could not be loaded.");
             // The show must go on
             onLoad(event);
         }
@@ -99,6 +114,12 @@ public class DependencyLoader {
     private void loadLazyDependency(String dependencyUrl,
             final BiConsumer<String, ResourceLoadListener> loader) {
         loader.accept(dependencyUrl, LAZY_RESOURCE_LOAD_LISTENER);
+    }
+
+    private void loadDynamicImport(String expression,
+            final BiConsumer<String, ResourceLoadListener> loader) {
+        startEagerDependencyLoading();
+        loader.accept(expression, DYNAMIC_IMPORT_LOAD_LISTENER);
     }
 
     /**
@@ -193,12 +214,13 @@ public class DependencyLoader {
             JsonObject dependencyJson = dependencies.getObject(i);
             Dependency.Type type = Dependency.Type
                     .valueOf(dependencyJson.getString(Dependency.KEY_TYPE));
-            if (type == Dependency.Type.JS_EXPRESSION) {
-                executeJsExpressionDependency(dependencyJson);
-            } else {
-                BiConsumer<String, ResourceLoadListener> resourceLoader = getResourceLoader(
-                        type, loadMode);
+            BiConsumer<String, ResourceLoadListener> resourceLoader = getResourceLoader(
+                    type, loadMode);
 
+            if (type == Dependency.Type.DYNAMIC_IMPORT) {
+                loadDynamicImport(dependencyJson.getString(Dependency.KEY_URL),
+                        resourceLoader);
+            } else {
                 switch (loadMode) {
                 case EAGER:
                     loadEagerDependency(getDependencyUrl(dependencyJson),
@@ -220,23 +242,6 @@ public class DependencyLoader {
             }
         }
         return lazyDependencies;
-    }
-
-    private void executeJsExpressionDependency(JsonObject dependencyJson) {
-        JsonArray jsExpressionArray = (JsonArray) JsJsonArray.createArray(1);
-        String jsExpression = dependencyJson
-                .getString(Dependency.KEY_EXPRESSION);
-        // TODO: report errors to the browser console and preferably server
-        jsExpression = "function(){" + jsExpression + "}().then("
-                + "function(result) {@com.vaadin.client.DependencyLoader::endEagerDependencyLoading(*)();}"
-                + ", function(error) {});";
-        jsExpressionArray.set(0, jsExpression);
-
-        JsonArray jsInvocation = (JsonArray) JsJsonArray.createArray(1);
-        jsInvocation.set(0, jsExpressionArray);
-
-        startEagerDependencyLoading();
-        registry.getExecuteJavaScriptProcessor().execute(jsInvocation);
     }
 
     private String getDependencyUrl(JsonObject dependencyJson) {
@@ -274,6 +279,8 @@ public class DependencyLoader {
             }
             return (scriptUrl, resourceLoadListener) -> resourceLoader
                     .loadJsModule(scriptUrl, resourceLoadListener, false, true);
+        case DYNAMIC_IMPORT:
+            return resourceLoader::loadDynamicImport;
         default:
             throw new IllegalArgumentException(
                     "Unknown dependency type " + resourceType);

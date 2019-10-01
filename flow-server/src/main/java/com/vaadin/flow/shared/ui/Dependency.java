@@ -47,7 +47,7 @@ public class Dependency implements Serializable {
      * The type of a dependency.
      */
     public enum Type {
-        STYLESHEET, JAVASCRIPT, JS_MODULE, HTML_IMPORT, JS_EXPRESSION;
+        STYLESHEET, JAVASCRIPT, JS_MODULE, HTML_IMPORT, DYNAMIC_IMPORT;
 
         /**
          * Check if the given value is contained as a enum value.
