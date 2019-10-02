@@ -184,7 +184,7 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
         // create a dependency
         JsonObject dep = Json.createObject();
         dep.put(Dependency.KEY_TYPE, Dependency.Type.DYNAMIC_IMPORT.toString());
-        dep.put(Dependency.KEY_EXPRESSION,
+        dep.put(Dependency.KEY_URL,
                 "return new Promise(function(resolve){  window.testEvents = window.testEvents||[]; "
                         + "window.testEvents.push('test-dependency'); resolve(); });");
         array.set(0, dep);
