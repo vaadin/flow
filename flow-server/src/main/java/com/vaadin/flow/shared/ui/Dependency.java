@@ -39,10 +39,6 @@ public class Dependency implements Serializable {
     public static final String KEY_EXPRESSION = "expression";
     public static final String KEY_CONTENTS = "contents";
 
-    public String getExpression() {
-        return expression;
-    }
-
     /**
      * The type of a dependency.
      */
@@ -51,7 +47,7 @@ public class Dependency implements Serializable {
 
         /**
          * Check if the given value is contained as a enum value.
-         * 
+         *
          * @param value
          *            value to check
          * @return true if there is a matching enum value
@@ -104,13 +100,19 @@ public class Dependency implements Serializable {
         this.expression = null;
     }
 
+    /**
+     * Creates a new dependency of the given type, to be loaded using JS
+     * expression which is supposed to return a Promise.
+     *
+     * @param type
+     *            the type of the dependency, not {@code null}
+     * @param expression
+     *            the JS expression to load the dependency, not {@code null}
+     */
     public Dependency(Type type, String expression) {
-        assert type != null;
-        assert expression != null;
-
-        this.type = type;
-        this.expression = expression;
-        this.loadMode = LoadMode.EAGER;
+        this.type = Objects.requireNonNull(type);
+        this.expression = Objects.requireNonNull(expression);
+        this.loadMode = LoadMode.LAZY;
         this.url = null;
     }
 
@@ -149,16 +151,20 @@ public class Dependency implements Serializable {
      */
     public JsonObject toJson() {
         JsonObject jsonObject = Json.createObject();
-        jsonObject.put(KEY_URL, url);
+        if (url != null) {
+            jsonObject.put(KEY_URL, url);
+        }
         jsonObject.put(KEY_TYPE, type.name());
         jsonObject.put(KEY_LOAD_MODE, loadMode.name());
-        jsonObject.put(KEY_EXPRESSION, expression);
+        if (expression != null) {
+            jsonObject.put(KEY_EXPRESSION, expression);
+        }
         return jsonObject;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(type, url, loadMode);
+        return Objects.hash(type, url, loadMode, expression);
     }
 
     @Override
@@ -171,12 +177,13 @@ public class Dependency implements Serializable {
         }
         Dependency that = (Dependency) o;
         return type == that.type && loadMode == that.loadMode
-                && Objects.equals(url, that.url);
+                && Objects.equals(url, that.url)
+                && Objects.equals(expression, that.expression);
     }
 
     @Override
     public String toString() {
         return "Dependency [type=" + type + ", url=" + url + ", loadMode="
-                + loadMode + "]";
+                + loadMode + ", expression: " + expression + "]";
     }
 }
