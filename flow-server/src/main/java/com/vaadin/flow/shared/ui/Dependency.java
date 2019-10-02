@@ -36,7 +36,6 @@ public class Dependency implements Serializable {
     public static final String KEY_URL = "url";
     public static final String KEY_TYPE = "type";
     public static final String KEY_LOAD_MODE = "mode";
-    public static final String KEY_EXPRESSION = "expression";
     public static final String KEY_CONTENTS = "contents";
 
     /**
@@ -61,7 +60,6 @@ public class Dependency implements Serializable {
     private final Type type;
     private final String url;
     private final LoadMode loadMode;
-    private final String expression;
 
     /**
      * Creates a new dependency of the given type, to be loaded from the given
@@ -87,22 +85,22 @@ public class Dependency implements Serializable {
         if (url == null) {
             throw new IllegalArgumentException("url cannot be null");
         }
-        assert type != null;
+        this.type = Objects.requireNonNull(type);
 
-        this.type = type;
-        if (type.equals(Type.JS_MODULE)) {
+        if (type.equals(Type.JS_MODULE) || type.equals(Type.DYNAMIC_IMPORT)) {
             this.url = url;
         } else {
             this.url = SharedUtil.prefixIfRelative(url,
                     ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
         }
         this.loadMode = loadMode;
-        this.expression = null;
     }
 
     /**
      * Creates a new dependency of the given type, to be loaded using JS
      * expression which is supposed to return a Promise.
+     * <p>
+     * The created instance dependency mode is {@link LoadMode#LAZY}.
      *
      * @param type
      *            the type of the dependency, not {@code null}
@@ -110,10 +108,12 @@ public class Dependency implements Serializable {
      *            the JS expression to load the dependency, not {@code null}
      */
     public Dependency(Type type, String expression) {
-        this.type = Objects.requireNonNull(type);
-        this.expression = Objects.requireNonNull(expression);
-        this.loadMode = LoadMode.LAZY;
-        this.url = null;
+        // It's important that the load mode of the dependency is Lazy because
+        // any other mode is not sent to the client at all when it's added at
+        // the initial request: it's processed by the bootstrap handler via
+        // adding an element into the document head right away (no client side
+        // processing is involved).
+        this(type, expression, LoadMode.LAZY);
     }
 
     /**
@@ -151,20 +151,15 @@ public class Dependency implements Serializable {
      */
     public JsonObject toJson() {
         JsonObject jsonObject = Json.createObject();
-        if (url != null) {
-            jsonObject.put(KEY_URL, url);
-        }
+        jsonObject.put(KEY_URL, url);
         jsonObject.put(KEY_TYPE, type.name());
         jsonObject.put(KEY_LOAD_MODE, loadMode.name());
-        if (expression != null) {
-            jsonObject.put(KEY_EXPRESSION, expression);
-        }
         return jsonObject;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(type, url, loadMode, expression);
+        return Objects.hash(type, url, loadMode);
     }
 
     @Override
@@ -177,13 +172,13 @@ public class Dependency implements Serializable {
         }
         Dependency that = (Dependency) o;
         return type == that.type && loadMode == that.loadMode
-                && Objects.equals(url, that.url)
-                && Objects.equals(expression, that.expression);
+                && Objects.equals(url, that.url);
+
     }
 
     @Override
     public String toString() {
         return "Dependency [type=" + type + ", url=" + url + ", loadMode="
-                + loadMode + ", expression: " + expression + "]";
+                + loadMode + "]";
     }
 }
