@@ -245,6 +245,8 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
                 .filter(line -> line.contains("/"))
                 // trim the whitespaces
                 .map(line -> line.replaceAll("\\s", ""))
+                // publicPath is URI which should start with slash
+                .filter(line -> !line.startsWith("publicPath:"))
                 // check the equals ( a=something ) and object declarations (
                 // {a: something} )
                 .map(line -> {

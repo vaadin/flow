@@ -53,6 +53,7 @@ import com.vaadin.flow.plugin.TestUtils;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
+
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
@@ -133,6 +134,8 @@ public class BuildFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "runNpmInstall", false);
         ReflectionUtils.setVariableValueInObject(mojo, "compatibilityMode",
                 "false");
+        ReflectionUtils.setVariableValueInObject(mojo, "optimizeBundle",
+                true);
 
         flowPackagPath.mkdirs();
         generatedFolder.mkdirs();

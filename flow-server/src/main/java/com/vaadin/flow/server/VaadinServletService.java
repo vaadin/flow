@@ -26,6 +26,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.communication.FaviconHandler;
 import com.vaadin.flow.server.communication.PushRequestHandler;
+import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.theme.AbstractTheme;
@@ -68,8 +70,8 @@ public class VaadinServletService extends VaadinService {
 
     /**
      * Creates a servlet service. This method is for use by dependency injection
-     * frameworks etc. {@link #getServlet()} and {@link #getContext()} should be overridden (or otherwise
-     * intercepted) to not return <code>null</code>.
+     * frameworks etc. {@link #getServlet()} and {@link #getContext()} should be
+     * overridden (or otherwise intercepted) to not return <code>null</code>.
      */
     protected VaadinServletService() {
         servlet = null;
@@ -136,6 +138,19 @@ public class VaadinServletService extends VaadinService {
         return false;
     }
 
+    @Override
+    public void init() throws ServiceException {
+        DeploymentConfiguration deploymentConfiguration = getDeploymentConfiguration();
+        Properties initParameters = deploymentConfiguration.getInitParameters();
+        Object object = initParameters
+                .get(DeploymentConfigurationFactory.FALLBACK_CHUNK);
+        if (object instanceof FallbackChunk) {
+            VaadinContext context = getContext();
+            context.setAttribute(object);
+        }
+        super.init();
+    }
+
     private boolean isOtherRequest(VaadinRequest request) {
         String type = request.getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER);
         return type == null || ApplicationConstants.REQUEST_TYPE_INIT.equals(type);
@@ -187,7 +202,8 @@ public class VaadinServletService extends VaadinService {
 
     @Override
     protected RouteRegistry getRouteRegistry() {
-        return ApplicationRouteRegistry.getInstance(getServlet().getServletContext());
+        return ApplicationRouteRegistry
+                .getInstance(getServlet().getServletContext());
     }
 
     @Override
@@ -204,14 +220,14 @@ public class VaadinServletService extends VaadinService {
 
         String frontendRootUrl;
         DeploymentConfiguration config = getDeploymentConfiguration();
-        if(config.isCompatibilityMode()) {
+        if (config.isCompatibilityMode()) {
             if (browser.isEs6Supported()) {
                 frontendRootUrl = config.getEs6FrontendPrefix();
             } else {
                 frontendRootUrl = config.getEs5FrontendPrefix();
             }
         } else {
-            frontendRootUrl =  config.getNpmFrontendPrefix();
+            frontendRootUrl = config.getNpmFrontendPrefix();
         }
 
         return contextResolver.resolveVaadinUri(url, frontendRootUrl);
@@ -374,7 +390,8 @@ public class VaadinServletService extends VaadinService {
     @Override
     public String getContextRootRelativePath(VaadinRequest request) {
         assert request instanceof VaadinServletRequest;
-        return ServletHelper.getContextRootRelativePath((VaadinServletRequest) request) + "/";
+        return ServletHelper.getContextRootRelativePath(
+                (VaadinServletRequest) request) + "/";
     }
 
     @Override

@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>flow-test-npm-only-features</artifactId>
+        <groupId>com.vaadin</groupId>
+        <version>3.0-SNAPSHOT</version>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>flow-test-npm-performance-regression</artifactId>
+    <name>Startup performance regression test for dev mode</name>
+
+    <packaging>war</packaging>
+
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+        <server.log.location>${java.io.tmpdir}/${project.artifactId}.log</server.log.location>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>3.1.0</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+        </dependency>
+
+        <!-- payload dependencies for the performance regression test -->
+        <dependency>
+            <groupId>org.tensorflow</groupId>
+            <artifactId>tensorflow</artifactId>
+            <version>1.14.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>28.1-jre</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.inject</groupId>
+            <artifactId>guice</artifactId>
+            <version>4.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.dropwizard.metrics</groupId>
+            <artifactId>metrics-core</artifactId>
+            <version>4.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-actor_2.13</artifactId>
+            <version>2.5.23</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <defaultGoal>jetty:run</defaultGoal>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <systemPropertyVariables>
+                        <server.log.location>${server.log.location}</server.log.location>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-maven-plugin</artifactId>
+                <version>${jetty.version}</version>
+                <configuration>
+                    <scanIntervalSeconds>2</scanIntervalSeconds>
+                    <!-- Use war output directory to get the webpack files -->
+                    <webAppConfig>
+                        <allowDuplicateFragmentNames>true
+                        </allowDuplicateFragmentNames>
+                    </webAppConfig>
+                    <systemProperties>
+                        <!-- Configure sl4j SimpleLogger to log to temporary
+                        file with millisecond timestamps -->
+                        <systemProperty>
+                            <name>org.slf4j.simpleLogger.logFile</name>
+                            <value>${server.log.location}</value>
+                        </systemProperty>
+                        <systemProperty>
+                            <name>org.slf4j.simpleLogger.defaultLogLevel</name>
+                            <value>info</value>
+                        </systemProperty>
+                        <systemProperty>
+                            <name>org.slf4j.simpleLogger.showDateTime</name>
+                            <value>true</value>
+                        </systemProperty>
+                    </systemProperties>
+                </configuration>
+                <executions>
+                    <!-- start and stop jetty (running our app) when running
+                        integration tests -->
+                    <execution>
+                        <id>start-jetty</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>start</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>stop-jetty</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>stop</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>com.vaadin</groupId>
+                <artifactId>flow-maven-plugin</artifactId>
+                <version>${project.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-frontend</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>local-run</id>
+            <activation>
+                <property>
+                    <name>!test.use.hub</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.lazerycode.selenium</groupId>
+                        <artifactId>driver-binary-downloader-maven-plugin
+                        </artifactId>
+                        <version>
+                            ${driver.binary.downloader.maven.plugin.version}
+                        </version>
+                        <configuration>
+                            <onlyGetDriversForHostOperatingSystem>true
+                            </onlyGetDriversForHostOperatingSystem>
+                            <rootStandaloneServerDirectory>
+                                ${project.rootdir}/driver
+                            </rootStandaloneServerDirectory>
+                            <downloadedZipFileDirectory>
+                                ${project.rootdir}/driver_zips
+                            </downloadedZipFileDirectory>
+                            <customRepositoryMap>
+                                ${project.rootdir}/drivers.xml
+                            </customRepositoryMap>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>selenium</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>

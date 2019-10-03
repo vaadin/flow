@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Synchronize;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
@@ -75,6 +76,7 @@ public class ComponentMetaData {
         private final List<JavaScript> javaScripts = new ArrayList<>();
         private final List<JsModule> jsModules = new ArrayList<>();
         private final List<StyleSheet> styleSheets = new ArrayList<>();
+        private final List<CssImport> cssImports = new ArrayList<>();
 
         List<HtmlImportDependency> getHtmlImports() {
             return Collections.unmodifiableList(htmlImports);
@@ -90,6 +92,10 @@ public class ComponentMetaData {
 
         List<StyleSheet> getStyleSheets() {
             return Collections.unmodifiableList(styleSheets);
+        }
+
+        List<CssImport> getCssImports() {
+            return Collections.unmodifiableList(cssImports);
         }
     }
 
@@ -165,9 +171,9 @@ public class ComponentMetaData {
     }
 
     /**
-     * Finds all dependencies (JsModule, HTML, JavaScript, StyleSheet) for the
-     * class. Includes dependencies for all classes referred by a {@link Uses}
-     * annotation.
+     * Finds all dependencies (JsModule, HTML, JavaScript, StyleSheet,
+     * CssImport) for the class. Includes dependencies for all classes referred
+     * by a {@link Uses} annotation.
      *
      * @return an information object containing all the dependencies
      */
@@ -222,6 +228,8 @@ public class ComponentMetaData {
                 AnnotationReader.getJavaScriptAnnotations(componentClass));
         dependencyInfo.styleSheets.addAll(
                 AnnotationReader.getStyleSheetAnnotations(componentClass));
+        dependencyInfo.cssImports.addAll(
+                AnnotationReader.getCssImportAnnotations(componentClass));
 
         List<Uses> usesList = AnnotationReader.getAnnotationsFor(componentClass,
                 Uses.class);

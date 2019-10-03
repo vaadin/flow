@@ -26,6 +26,7 @@ import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
 import java.util.Optional;
 import java.util.Properties;
@@ -37,6 +38,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import elemental.json.JsonObject;
@@ -67,6 +69,9 @@ public final class DeploymentConfigurationFactory implements Serializable {
     public static final Object DEV_MODE_ENABLE_STRATEGY = new Serializable() {
     };
 
+    public static final Object FALLBACK_CHUNK = new Serializable() {
+    };
+
     public static final String ERROR_COMPATIBILITY_MODE_UNSET = "Unable to determine mode of operation. To use npm mode, ensure "
             + "'flow-build-info.json' exists on the classpath. With Maven, "
             + "this is handled by the 'prepare-frontend' goal. To use "
@@ -80,9 +85,8 @@ public final class DeploymentConfigurationFactory implements Serializable {
             + "the project/working directory. Ensure 'webpack.config.js' is present or trigger creation of "
             + "'flow-build-info.json' via running 'prepare-frontend' Maven goal.";
 
-    public static final String DEV_FOLDER_MISSING_MESSAGE =
-            "Running project in development mode with no access to folder '%s'.%n"
-                    + "Build project in production mode instead, see https://vaadin.com/docs/v14/flow/production/tutorial-production-mode-basic.html";
+    public static final String DEV_FOLDER_MISSING_MESSAGE = "Running project in development mode with no access to folder '%s'.%n"
+            + "Build project in production mode instead, see https://vaadin.com/docs/v14/flow/production/tutorial-production-mode-basic.html";
 
     private DeploymentConfigurationFactory() {
     }
@@ -179,7 +183,8 @@ public final class DeploymentConfigurationFactory implements Serializable {
             if (tokenLocation != null) {
                 File tokenFile = new File(tokenLocation);
                 if (tokenFile != null && tokenFile.canRead()) {
-                    json = FileUtils.readFileToString(tokenFile, "UTF-8");
+                    json = FileUtils.readFileToString(tokenFile,
+                            StandardCharsets.UTF_8);
                 }
             }
 
@@ -250,10 +255,11 @@ public final class DeploymentConfigurationFactory implements Serializable {
             if (buildInfo.hasKey(FRONTEND_TOKEN)) {
                 initParameters.setProperty(FrontendUtils.PARAM_FRONTEND_DIR,
                         buildInfo.getString(FRONTEND_TOKEN));
-                // Only verify frontend folder if it's not a subfolder of the npm folder.
-                if (!buildInfo.hasKey(NPM_TOKEN) || !buildInfo
-                        .getString(FRONTEND_TOKEN)
-                        .startsWith(buildInfo.getString(NPM_TOKEN))) {
+                // Only verify frontend folder if it's not a subfolder of the
+                // npm folder.
+                if (!buildInfo.hasKey(NPM_TOKEN)
+                        || !buildInfo.getString(FRONTEND_TOKEN)
+                                .startsWith(buildInfo.getString(NPM_TOKEN))) {
                     verifyFolderExists(initParameters,
                             buildInfo.getString(FRONTEND_TOKEN));
                 }
@@ -271,6 +277,12 @@ public final class DeploymentConfigurationFactory implements Serializable {
                 initParameters.setProperty(SERVLET_PARAMETER_REUSE_DEV_SERVER,
                         String.valueOf(buildInfo.getBoolean(
                                 SERVLET_PARAMETER_REUSE_DEV_SERVER)));
+            }
+
+            FallbackChunk fallbackChunk = FrontendUtils
+                    .readFallbackChunk(buildInfo);
+            if (fallbackChunk != null) {
+                initParameters.put(FALLBACK_CHUNK, fallbackChunk);
             }
         }
 
@@ -294,15 +306,15 @@ public final class DeploymentConfigurationFactory implements Serializable {
      * should probably be a production mode build.
      *
      * @param initParameters
-     *         deployment init parameters
+     *            deployment init parameters
      * @param folder
-     *         folder to check exists
+     *            folder to check exists
      */
     private static void verifyFolderExists(Properties initParameters,
             String folder) {
         Boolean productionMode = Boolean.parseBoolean(initParameters
                 .getProperty(SERVLET_PARAMETER_PRODUCTION_MODE, "false"));
-        if(!productionMode && !new File(folder).exists()) {
+        if (!productionMode && !new File(folder).exists()) {
             String message = String.format(DEV_FOLDER_MISSING_MESSAGE, folder);
             throw new IllegalStateException(message);
         }
