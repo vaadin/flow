@@ -184,7 +184,7 @@ public interface DropTarget<T extends Component> extends HasElement {
      * <p>
      * <em>NOTE: If the drop effect that doesn't match the effectAllowed of the
      * drag source, it DOES NOT prevent drop on IE11 and Safari! For FireFox and
-     * Chrome the drop is prevented if there they don't match.</em>
+     * Chrome the drop is prevented if the properties don't match.</em>
      *
      * @param dropEffect
      *            the drop effect to be set or {@code null} to not modify

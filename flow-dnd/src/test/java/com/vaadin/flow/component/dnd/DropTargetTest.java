@@ -19,7 +19,9 @@ package com.vaadin.flow.component.dnd;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dnd.internal.DndUtil;
 import com.vaadin.flow.router.RouterLink;
@@ -30,7 +32,8 @@ import org.junit.Test;
 public class DropTargetTest {
 
     @Tag("div")
-    class TestComponent extends Component implements DropTarget<TestComponent> {
+    class TestComponent extends Component
+            implements DropTarget<TestComponent>, HasComponents {
 
     }
 
@@ -175,5 +178,48 @@ public class DropTargetTest {
         DropEvent<RouterLink> dropEvent = new DropEvent<>(component, true,
                 "all");
         ComponentUtil.fireEvent(component, dropEvent);
+    }
+
+    @Test
+    public void testDropTarget_dropInSideSameUI_moveComponentToTargetInDropEvent() {
+        RouterLink source = new RouterLink();
+        TestComponent target = new TestComponent();
+        ui.add(source, target);
+
+        DragSource<RouterLink> dragSource = DragSource.create(source);
+        DropTarget<TestComponent> dropTarget = DropTarget.create(target);
+
+        DragStartEvent<RouterLink> startEvent = new DragStartEvent<RouterLink>(
+                source, true);
+        ComponentUtil.fireEvent(source, startEvent);
+        Assert.assertEquals(source, ui.getActiveDragSourceComponent());
+
+        ComponentEventListener<DropEvent<TestComponent>> dropListener = event -> {
+            event.getDragSourceComponent().ifPresent(dragSourceComponent -> {
+                TestComponent component = event.getComponent();
+
+                Assert.assertEquals("Invalid drag source component",
+                        dragSourceComponent, source);
+                Assert.assertEquals("Invalid event source", component, target);
+
+                target.add(dragSourceComponent);
+            });
+            // ELSE will be failed by the checks outside the listener
+        };
+        target.addDropListener(dropListener);
+
+        DropEvent<TestComponent> dropEvent = new DropEvent<>(target, true,
+                "all");
+        ComponentUtil.fireEvent(target, dropEvent);
+
+        Assert.assertEquals("Drag source component should have been moved",
+                source.getParent().get(), target);
+
+        DragEndEvent<RouterLink> endEvent = new DragEndEvent<>(source, true,
+                "move");
+        // should not throw for removing the active drag source
+        ComponentUtil.fireEvent(source, endEvent);
+
+        Assert.assertNull(ui.getActiveDragSourceComponent());
     }
 }
