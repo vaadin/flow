@@ -48,6 +48,7 @@ import com.vaadin.flow.theme.ThemeDefinition;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_D_TS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
 
 /**
@@ -62,6 +63,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS
 public class TaskUpdateImports extends NodeUpdater {
 
     private final File generatedFlowImports;
+    private final File generatedFlowDefinitions;
     private final File frontendDirectory;
     private static final String IMPORT_TEMPLATE = "import '%s';";
 
@@ -73,6 +75,8 @@ public class TaskUpdateImports extends NodeUpdater {
             " tpl.innerHTML = block;\n" +
             " document.head[before ? 'insertBefore' : 'appendChild'](tpl.content, document.head.firstChild);\n" +
             "};";
+
+    private static final String EXPORT_DEFINITIONS = "export function addCssBlock(block:string, before?:boolean): void;";
 
     private static final String CSS_PRE = "import $css_%d from '%s';%n"
             + "addCssBlock(`";
@@ -116,6 +120,7 @@ public class TaskUpdateImports extends NodeUpdater {
         super(finder, frontendDependencies, npmFolder, generatedPath);
         this.frontendDirectory = frontendDirectory;
         this.generatedFlowImports = new File(generatedPath, IMPORTS_NAME);
+        this.generatedFlowDefinitions = new File(generatedPath, IMPORTS_D_TS_NAME);
     }
 
     @Override
@@ -130,7 +135,9 @@ public class TaskUpdateImports extends NodeUpdater {
         modules.removeIf(UrlUtil::isExternal);
 
         try {
-            updateMainJsFile(getMainJsContent(modules));
+            updateFile(generatedFlowImports, getMainJsContent(modules));
+            updateFile(generatedFlowDefinitions,
+                    Arrays.asList(EXPORT_DEFINITIONS.split("\r?\n")));
         } catch (Exception e) {
             throw new IllegalStateException(
                     String.format("Failed to update the Flow imports file '%s'",
@@ -164,9 +171,7 @@ public class TaskUpdateImports extends NodeUpdater {
     }
 
     private Collection<String> getExportFunctions() {
-        List<String> lines = new ArrayList<>();
-        addLines(lines, EXPORT_FUNCTIONS);
-        return lines;
+        return Arrays.asList(EXPORT_FUNCTIONS.split("\r?\n"));
     }
 
     private Collection<String> getThemeLines() {
@@ -483,18 +488,19 @@ public class TaskUpdateImports extends NodeUpdater {
         return jsImport;
     }
 
-    private void updateMainJsFile(List<String> newContent) throws IOException {
+
+    private void updateFile(File file, List<String> newContent) throws IOException {
         List<String> oldContent = generatedFlowImports.exists()
                 ? FileUtils.readLines(generatedFlowImports, "UTF-8")
                 : null;
 
         if (newContent.equals(oldContent)) {
-            log().info("No js modules to update");
+            log().info("No changes for {}", file);
         } else {
-            FileUtils.forceMkdir(generatedFlowImports.getParentFile());
-            FileUtils.writeStringToFile(generatedFlowImports,
-                    String.join("\n", newContent), "UTF-8");
-            log().info("Updated {}", generatedFlowImports);
+            FileUtils.forceMkdir(file.getParentFile());
+            FileUtils.writeStringToFile(file, String.join("\n", newContent),
+                    "UTF-8");
+            log().info("Updated {}", file);
         }
     }
 
