@@ -368,6 +368,7 @@ public class Page implements Serializable {
      *
      * @see #addHtmlImport(String)
      * @param expression
+     *            the JavaScript expression which return a Promise
      */
     public void addDynamicImport(String expression) {
         addDependency(new Dependency(Type.DYNAMIC_IMPORT, expression));
