@@ -497,6 +497,7 @@ public abstract class AbstractNodeUpdatePackagesTest
                 "Modification flag should be true when main package was updated.",
                 packageUpdater.modified);
 
+        mainJson = getPackageJson(mainPackageJson);
         Assert.assertNotEquals(
                 "Main hash should have been updated to an actual hash.",
                 TaskCreatePackageJson.FORCE_INSTALL_HASH,
