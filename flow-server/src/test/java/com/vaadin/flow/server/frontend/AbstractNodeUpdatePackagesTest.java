@@ -489,13 +489,18 @@ public abstract class AbstractNodeUpdatePackagesTest
         mainJson = getPackageJson(mainPackageJson);
         Assert.assertEquals(
                 "Main package should have added dependency and rewritten the hash.",
-                "Main dependencies updated, force install",
+                TaskCreatePackageJson.FORCE_INSTALL_HASH,
                 mainJson.get(APP_PACKAGE_HASH).asString());
         packageUpdater.execute();
 
         Assert.assertTrue(
                 "Modification flag should be true when main package was updated.",
                 packageUpdater.modified);
+
+        Assert.assertNotEquals(
+                "Main hash should have been updated to an actual hash.",
+                TaskCreatePackageJson.FORCE_INSTALL_HASH,
+                mainJson.get(APP_PACKAGE_HASH).asString());
     }
 
     private void makeNodeModulesAndPackageLock() throws IOException {
