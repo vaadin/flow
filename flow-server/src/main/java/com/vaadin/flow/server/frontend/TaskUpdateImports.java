@@ -376,7 +376,8 @@ public class TaskUpdateImports extends NodeUpdater {
             if (tokenFileExists) {
                 String json = FileUtils.readFileToString(tokenFile,
                         StandardCharsets.UTF_8);
-                JsonObject buildInfo = JsonUtil.parse(json);
+                JsonObject buildInfo = json.isEmpty() ? Json.createObject()
+                        : JsonUtil.parse(json);
                 populateFallbackData(buildInfo, updater);
                 FileUtils.write(tokenFile, JsonUtil.stringify(buildInfo, 2),
                         StandardCharsets.UTF_8);

@@ -196,12 +196,9 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         classes.add(Visited.class);
         classes.add(RoutedWithReferenceToVisited.class);
         devModeInitializer.onStartup(classes, servletContext);
-        ArgumentCaptor<? extends FallbackChunk> arg = ArgumentCaptor
-                .forClass(FallbackChunk.class);
-        Mockito.verify(servletContext, Mockito.atLeastOnce()).setAttribute(
-                Mockito.eq(FallbackChunk.class.getName()), arg.capture());
-        FallbackChunk fallbackChunk = arg.getValue();
-        Assert.assertNull(fallbackChunk);
+        Mockito.verify(servletContext, Mockito.times(0)).setAttribute(
+                Mockito.eq(FallbackChunk.class.getName()),
+                Mockito.any(FallbackChunk.class));
     }
 
     private void loadingJars_allFilesExist(String resourcesFolder)
