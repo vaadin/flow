@@ -52,6 +52,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_TS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -67,6 +68,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
     public ExpectedException exception = ExpectedException.none();
 
     private File importsFile;
+    private File importsTsFile;
     private File generatedPath;
     private File frontendDirectory;
     private File nodeModulesPath;
@@ -95,6 +97,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         nodeModulesPath = new File(tmpRoot, NODE_MODULES);
         generatedPath = new File(tmpRoot, DEFAULT_GENERATED_DIR);
         importsFile = new File(generatedPath, IMPORTS_NAME);
+        importsTsFile = new File(generatedPath, IMPORTS_TS_NAME);
 
         updater = new TaskUpdateImports(getClassFinder(), null, tmpRoot,
                 generatedPath, frontendDirectory) {
@@ -226,7 +229,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void should_UpdateMainJsFile() throws Exception {
+    public void should_UpdateMainJsFile_And_MainTsFile() throws Exception {
         List<String> expectedLines = new ArrayList<>(Arrays.asList(
                 "export const addCssBlock = function(block, before = false) {",
                 " const tpl = document.createElement('template');",
@@ -267,9 +270,11 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 "addCssBlock(`<dom-module id=\"baz\"><template><style include=\"bar\">${$css_6}</style></template></dom-module>`);");
 
         assertFalse(importsFile.exists());
+        assertFalse(importsTsFile.exists());
 
         updater.execute();
         assertTrue(importsFile.exists());
+        assertTrue(importsTsFile.exists());
 
         assertContainsImports(true, expectedLines.toArray(new String[0]));
 
