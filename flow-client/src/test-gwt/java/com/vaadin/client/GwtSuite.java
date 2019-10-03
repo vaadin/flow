@@ -49,7 +49,7 @@ public class GwtSuite extends GWTTestSuite {
         suite.addTestSuite(GwtWidgetUtilTest.class);
         suite.addTestSuite(GwtExecuteJavaScriptElementUtilsTest.class);
         suite.addTestSuite(GwtDependencyLoaderTest.class);
-        suite.addTestSuite(GwtMessageHandler.class);
+        suite.addTestSuite(GwtMessageHandlerTest.class);
         suite.addTestSuite(GwtMultipleBindingTest.class);
         return suite;
     }

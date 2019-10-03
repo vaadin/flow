@@ -49,24 +49,9 @@ public class DependencyLoader {
 
         @Override
         public void onError(ResourceLoadEvent event) {
-            Console.error(event.getResourceData() + " could not be loaded.");
-            // The show must go on
-            onLoad(event);
-        }
-    };
-
-    private static final ResourceLoadListener DYNAMIC_IMPORT_LOAD_LISTENER = new ResourceLoadListener() {
-        @Override
-        public void onLoad(ResourceLoadEvent event) {
-            // Call start for next before calling end for current
-            endEagerDependencyLoading();
-        }
-
-        @Override
-        public void onError(ResourceLoadEvent event) {
             Console.error(
-                    "\"" + event.getResourceData() + "\" could not be loaded.");
-            // show must go on
+                    "'" + event.getResourceData() + "' could not be loaded.");
+            // The show must go on
             onLoad(event);
         }
     };
@@ -99,27 +84,15 @@ public class DependencyLoader {
         this.registry = registry;
     }
 
-    private void inlineDependency(String dependencyContents,
-            final BiConsumer<String, ResourceLoadListener> loader) {
-        startEagerDependencyLoading();
-        loader.accept(dependencyContents, EAGER_RESOURCE_LOAD_LISTENER);
-    }
-
-    private void loadEagerDependency(String dependencyUrl,
-            final BiConsumer<String, ResourceLoadListener> loader) {
-        startEagerDependencyLoading();
-        loader.accept(dependencyUrl, EAGER_RESOURCE_LOAD_LISTENER);
-    }
-
     private void loadLazyDependency(String dependencyUrl,
             final BiConsumer<String, ResourceLoadListener> loader) {
         loader.accept(dependencyUrl, LAZY_RESOURCE_LOAD_LISTENER);
     }
 
-    private void loadDynamicImport(String expression,
+    private void loadDependencyEagerly(String data,
             final BiConsumer<String, ResourceLoadListener> loader) {
         startEagerDependencyLoading();
-        loader.accept(expression, DYNAMIC_IMPORT_LOAD_LISTENER);
+        loader.accept(data, EAGER_RESOURCE_LOAD_LISTENER);
     }
 
     /**
@@ -218,12 +191,13 @@ public class DependencyLoader {
                     type, loadMode);
 
             if (type == Dependency.Type.DYNAMIC_IMPORT) {
-                loadDynamicImport(dependencyJson.getString(Dependency.KEY_URL),
+                loadDependencyEagerly(
+                        dependencyJson.getString(Dependency.KEY_URL),
                         resourceLoader);
             } else {
                 switch (loadMode) {
                 case EAGER:
-                    loadEagerDependency(getDependencyUrl(dependencyJson),
+                    loadDependencyEagerly(getDependencyUrl(dependencyJson),
                             resourceLoader);
                     break;
                 case LAZY:
@@ -231,7 +205,7 @@ public class DependencyLoader {
                             resourceLoader);
                     break;
                 case INLINE:
-                    inlineDependency(
+                    loadDependencyEagerly(
                             dependencyJson.getString(Dependency.KEY_CONTENTS),
                             resourceLoader);
                     break;
