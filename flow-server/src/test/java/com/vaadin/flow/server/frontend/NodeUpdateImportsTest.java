@@ -83,6 +83,8 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 FrontendUtils.FALLBACK_IMPORTS_NAME);
         webpackDir = temporaryFolder.newFolder();
         tokenFile = new File(webpackDir, "config/flow-build-info.json");
+        FileUtils.forceMkdirParent(tokenFile);
+        tokenFile.createNewFile();
 
         assertTrue(nodeModulesPath.mkdirs());
         createExpectedImports(frontendDirectory, nodeModulesPath);
@@ -209,7 +211,6 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         // ============== check token file with fallback chunk data ============
 
-        assertTrue(tokenFile.exists());
         String tokenContent = FileUtils.readFileToString(tokenFile,
                 Charset.defaultCharset());
         JsonObject object = Json.parse(tokenContent);
