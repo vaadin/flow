@@ -52,13 +52,15 @@ public class RemoveFallbackChunkInfo implements VaadinServiceInitListener {
         HttpServletRequest httpRequest = servletRequest.getHttpServletRequest();
         String query = httpRequest.getQueryString();
         if ("drop-fallback".equals(query)) {
+            // self check
             FallbackChunk chunk = session.getService().getContext()
                     .getAttribute(FallbackChunk.class);
-            // self check
+
             if (chunk == null) {
                 throw new RuntimeException(
                         "Vaadin context has no fallback chunk data");
             }
+
             // remove fallback chunk data to that the chunk won't be loaded
             session.getService().getContext()
                     .removeAttribute(FallbackChunk.class);

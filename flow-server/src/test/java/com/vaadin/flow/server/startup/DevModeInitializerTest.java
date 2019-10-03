@@ -1,11 +1,11 @@
 package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletException;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.EventListener;
 import java.util.HashSet;
@@ -24,13 +24,12 @@ import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
-import com.vaadin.flow.server.startup.DevModeInitializer.VisitedClasses;
+import com.vaadin.flow.server.frontend.FallbackChunk;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_REUSE_DEV_SERVER;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -45,7 +44,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     public static class NotVisitedWithoutDeps {
     }
 
-    @JsModule("foo")
+    @JsModule("bar")
     public static class NotVisitedWithDeps {
     }
 
@@ -171,48 +170,22 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     }
 
     @Test
-    public void visitedDependencies() {
-        VisitedClasses visited = new VisitedClasses(new HashSet<>(Arrays
-                .asList(Object.class.getName(), Visited.class.getName())));
-
-        assertTrue("Dependencies are ok for a visited class",
-                visited.allDependenciesVisited(Visited.class));
-
-        assertTrue(
-                "Dependencies are ok for an unvisited class without dependencies",
-                visited.allDependenciesVisited(NotVisitedWithoutDeps.class));
-        assertFalse(
-                "Dependnecies are not ok for an unvisited class with dependencies",
-                visited.allDependenciesVisited(NotVisitedWithDeps.class));
-
-        assertTrue(
-                "Dependencies are ok for an unvisited class without dependencies if super class is ok",
-                visited.allDependenciesVisited(VisitedSubclass.class));
-        assertTrue(
-                "Dependencies are ok for an unvisited class without dependencies if super class is ok",
-                visited.allDependenciesVisited(WithoutDepsSubclass.class));
-        assertFalse(
-                "Dependencies are  not ok for an unvisited class without dependencies if super class is not ok",
-                visited.allDependenciesVisited(WithDepsSubclass.class));
-    }
-
-    @Test
     public void shouldUseByteCodeScannerIfPropertySet() throws Exception {
-        System.setProperty(Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE, "true");
+        System.setProperty(Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
+                "true");
         DevModeInitializer devModeInitializer = new DevModeInitializer();
         final Set<Class<?>> classes = new HashSet<>();
         classes.add(NotVisitedWithDeps.class);
         classes.add(Visited.class);
         classes.add(RoutedWithReferenceToVisited.class);
         devModeInitializer.onStartup(classes, servletContext);
-        ArgumentCaptor<? extends VisitedClasses> arg = ArgumentCaptor
-                .forClass(VisitedClasses.class);
-        Mockito.verify(servletContext, Mockito.atLeastOnce())
-                .setAttribute(Mockito.eq(VisitedClasses.class.getName()), arg.capture());
-        VisitedClasses visitedClasses = arg.getValue();
-        Assert.assertTrue(visitedClasses.allDependenciesVisited(RoutedWithReferenceToVisited.class));
-        Assert.assertTrue(visitedClasses.allDependenciesVisited(Visited.class));
-        Assert.assertFalse(visitedClasses.allDependenciesVisited(NotVisitedWithDeps.class));
+        ArgumentCaptor<? extends FallbackChunk> arg = ArgumentCaptor
+                .forClass(FallbackChunk.class);
+        Mockito.verify(servletContext, Mockito.atLeastOnce()).setAttribute(
+                Mockito.eq(FallbackChunk.class.getName()), arg.capture());
+        FallbackChunk fallbackChunk = arg.getValue();
+        Assert.assertFalse(fallbackChunk.getModules().contains("foo"));
+        Assert.assertTrue(fallbackChunk.getModules().contains("bar"));
     }
 
     @Test
@@ -223,14 +196,12 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         classes.add(Visited.class);
         classes.add(RoutedWithReferenceToVisited.class);
         devModeInitializer.onStartup(classes, servletContext);
-        ArgumentCaptor<? extends VisitedClasses> arg = ArgumentCaptor
-                .forClass(VisitedClasses.class);
-        Mockito.verify(servletContext, Mockito.atLeastOnce())
-                .setAttribute(Mockito.eq(VisitedClasses.class.getName()), arg.capture());
-        VisitedClasses visitedClasses = arg.getValue();
-        Assert.assertTrue(visitedClasses.allDependenciesVisited(RoutedWithReferenceToVisited.class));
-        Assert.assertTrue(visitedClasses.allDependenciesVisited(Visited.class));
-        Assert.assertTrue(visitedClasses.allDependenciesVisited(NotVisitedWithDeps.class));
+        ArgumentCaptor<? extends FallbackChunk> arg = ArgumentCaptor
+                .forClass(FallbackChunk.class);
+        Mockito.verify(servletContext, Mockito.atLeastOnce()).setAttribute(
+                Mockito.eq(FallbackChunk.class.getName()), arg.capture());
+        FallbackChunk fallbackChunk = arg.getValue();
+        Assert.assertNull(fallbackChunk);
     }
 
     private void loadingJars_allFilesExist(String resourcesFolder)
@@ -238,7 +209,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         // Create jar urls for test
         URL jar = new URL("jar:"
                 + this.getClass().getResource("/").toString()
-                .replace("target/test-classes/", "")
+                        .replace("target/test-classes/", "")
                 + "src/test/resources/with%20space/jar-with-frontend-resources.jar!/META-INF/resources/frontend");
         List<URL> urls = new ArrayList<>();
         urls.add(jar);

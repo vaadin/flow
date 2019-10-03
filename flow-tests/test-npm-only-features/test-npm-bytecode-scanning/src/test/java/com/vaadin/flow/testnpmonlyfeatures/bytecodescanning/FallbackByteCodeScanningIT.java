@@ -18,6 +18,7 @@ package com.vaadin.flow.testnpmonlyfeatures.bytecodescanning;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
@@ -34,6 +35,11 @@ public class FallbackByteCodeScanningIT extends ChromeBrowserTest {
         // initialized
         Assert.assertFalse("component expected initialized in production mode",
                 component.$("button").all().isEmpty());
+    }
+
+    @Override
+    protected Class<? extends Component> getViewClass() {
+        return ByteCodeScanningView.class;
     }
 
 }

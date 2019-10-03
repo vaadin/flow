@@ -871,9 +871,11 @@ public class UIInternals implements Serializable {
         }
         VaadinContext context = ui.getSession().getService().getContext();
         FallbackChunk chunk = context.getAttribute(FallbackChunk.class);
-        if (chunk == null && getLogger().isDebugEnabled()) {
-            getLogger().debug(
-                    "Fallback chunk is not available, skipping fallback dependencies load");
+        if (chunk == null) {
+            if (getLogger().isDebugEnabled()) {
+                getLogger().debug(
+                        "Fallback chunk is not available, skipping fallback dependencies load");
+            }
             return;
         }
 
@@ -919,12 +921,9 @@ public class UIInternals implements Serializable {
         if (isFallbackChunkLoaded) {
             return;
         }
-        loadDependency("return window.Vaadin.Flow.loadFallback();");
+        ui.getPage()
+                .addDynamicImport("return window.Vaadin.Flow.loadFallback();");
         isFallbackChunkLoaded = true;
-    }
-
-    private void loadDependency(String js) {
-        // XXXXXXXXXXXXXXX: needs an impl
     }
 
     private void addExternalDependencies(DependencyInfo dependency) {
