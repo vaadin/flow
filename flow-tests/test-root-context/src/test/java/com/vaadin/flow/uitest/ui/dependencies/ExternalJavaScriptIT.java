@@ -56,7 +56,14 @@ public class ExternalJavaScriptIT extends ChromeBrowserTest {
                                 .equals(scriptTag.getAttribute("src"))
                                 && "text/javascript".equals(
                                         scriptTag.getAttribute("type"))));
-    }
+        Assert.assertTrue(
+                "Absolute JS annotated with @JavaScript annotation should be added as a script tag with text/javascript type to the page!",
+                scriptTags.stream().anyMatch(
+                        scriptTag -> ComponentWithExternalJavaScript.SOME_RANDOM_ABSOLUTE_JS_URL
+                                .equals(scriptTag.getAttribute("src"))
+                                && "text/javascript".equals(
+                                        scriptTag.getAttribute("type"))));
+  }
 
     @Test
     public void javaScriptAnnotation_externalJsInAComponentBeingAdded_shouldBeAddedToPage() {
@@ -78,5 +85,12 @@ public class ExternalJavaScriptIT extends ChromeBrowserTest {
                                 .equals(scriptTag.getAttribute("src"))
                                 && "text/javascript".equals(
                                         scriptTag.getAttribute("type"))));
-    }
+        Assert.assertTrue(
+                "Absolute JS annotated with @JavaScript annotation should be added as a script tag with text/javascript type to the page!",
+                scriptTags.stream().anyMatch(
+                        scriptTag -> ComponentWithExternalJavaScript.SOME_RANDOM_ABSOLUTE_JS_URL
+                                .equals(scriptTag.getAttribute("src"))
+                                && "text/javascript".equals(
+                                        scriptTag.getAttribute("type"))));
+  }
 }

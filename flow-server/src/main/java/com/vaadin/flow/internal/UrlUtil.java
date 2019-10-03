@@ -38,7 +38,9 @@ public class UrlUtil {
      * @return true if the url is external otherwise false.
      */
     public static boolean isExternal(String url) {
-        if (url.startsWith("//")) {
+        if (url.startsWith("/")) {
+            // This covers urls without protocol (//somedomain.com/foo.js) and
+            // also absolute URLs (/some/path/on-the-server.js)
             return true;
         }
         return url.contains("://") && !(url
