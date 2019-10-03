@@ -65,15 +65,15 @@ public class TaskUpdateImports extends NodeUpdater {
     private final File frontendDirectory;
     private static final String IMPORT_TEMPLATE = "import '%s';";
 
-    private static final String THEME_PREPARE = "const div = document.createElement('div');";
-    private static final String THEME_LINE_TPL = "div.innerHTML = '%s';%n"
-            + "document.head.insertBefore(div.firstElementChild, document.head.firstChild);";
+    private static final String THEME_LINE_TPL ="addCssBlock('%s', 1);";
     private static final String THEME_VARIANT_TPL = "document.body.setAttribute('%s', '%s');";
 
-    private static final String CSS_PREPARE = "function addCssBlock(block) {\n"
-            + " const tpl = document.createElement('template');\n"
-            + " tpl.innerHTML = block;\n"
-            + " document.head.appendChild(tpl.content);\n" + "}";
+    private static final String EXPORT_FUNCTIONS = "export const addCssBlock = function(block, before = false) {\n" +
+            " const tpl = document.createElement('template');\n" +
+            " tpl.innerHTML = block;\n" +
+            " document.head[before ? 'insertBefore' : 'appendChild'](tpl.content, document.head.firstChild);\n" +
+            "};";
+
     private static final String CSS_PRE = "import $css_%d from '%s';%n"
             + "addCssBlock(`";
     private static final String CSS_POST = "`);";
@@ -142,6 +142,7 @@ public class TaskUpdateImports extends NodeUpdater {
     private List<String> getMainJsContent(Set<String> modules) {
         List<String> lines = new ArrayList<>();
 
+        lines.addAll(getExportFunctions());
         lines.addAll(getThemeLines());
         lines.addAll(getCssLines());
 
@@ -162,13 +163,19 @@ public class TaskUpdateImports extends NodeUpdater {
         return lines;
     }
 
+    private Collection<String> getExportFunctions() {
+        List<String> lines = new ArrayList<>();
+        addLines(lines, EXPORT_FUNCTIONS);
+        return lines;
+    }
+
     private Collection<String> getThemeLines() {
         Collection<String> lines = new ArrayList<>();
         AbstractTheme theme = frontDeps.getTheme();
         ThemeDefinition themeDef = frontDeps.getThemeDefinition();
         if (theme != null) {
+            lines.add("");
             if (!theme.getHeaderInlineContents().isEmpty()) {
-                lines.add(THEME_PREPARE);
                 theme.getHeaderInlineContents().forEach(
                         html -> addLines(lines, String.format(THEME_LINE_TPL,
                                 NEW_LINE_TRIM.matcher(html).replaceAll(""))));
@@ -189,8 +196,6 @@ public class TaskUpdateImports extends NodeUpdater {
         Collection<String> lines = new ArrayList<>();
         Set<CssData> css = frontDeps.getCss();
         if (!css.isEmpty()) {
-            addLines(lines, CSS_PREPARE);
-
             Set<String> cssNotFound = new HashSet<>();
             int i = 0;
 
