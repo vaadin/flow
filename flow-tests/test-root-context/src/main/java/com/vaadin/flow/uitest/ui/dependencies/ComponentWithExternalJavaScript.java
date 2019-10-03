@@ -22,9 +22,13 @@ import com.vaadin.flow.component.html.Div;
 
 @JavaScript(ComponentWithExternalJavaScript.SOME_RANDOM_EXTERNAL_JS_URL)
 @JavaScript(ComponentWithExternalJavaScript.SOME_RANDOM_EXTERNAL_JS_URL_WITHOUT_PROTOCOL)
+@JavaScript(ComponentWithExternalJavaScript.SOME_RANDOM_ABSOLUTE_JS_URL)
 public class ComponentWithExternalJavaScript extends Div {
     public static final String SOME_RANDOM_EXTERNAL_JS_URL = "https://some-external-website.fi/another-js-module.js";
     public static final String SOME_RANDOM_EXTERNAL_JS_URL_WITHOUT_PROTOCOL = "//some-external-website.fi/another-js-module.js";
+    public static final String SOME_RANDOM_ABSOLUTE_JS_URL = "/on/the/same-site.js";
+    public static final String EXPECTED_SRC_FOR_ABSOLUTE_URL = "http://localhost:8888"
+            + SOME_RANDOM_ABSOLUTE_JS_URL;
 
     public ComponentWithExternalJavaScript() {
         add(new Text("A component with external JavaScript"));

@@ -24,6 +24,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @JsModule(ComponentWithExternalJsModule.SOME_RANDOM_EXTERNAL_JS_URL)
 @JsModule(ComponentWithExternalJsModule.SOME_RANDOM_EXTERNAL_JS_URL_WITHOUT_PROTOCOL)
+@JsModule(ComponentWithExternalJsModule.SOME_RANDOM_ABSOLUTE_JS_URL)
 @Route(value = "com.vaadin.flow.testnpmonlyfeatures.general.ExternalJSModuleView", layout = ViewTestLayout.class)
 public class ExternalJSModuleView extends Div {
 

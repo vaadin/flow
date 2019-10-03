@@ -24,6 +24,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @JavaScript(ComponentWithExternalJavaScript.SOME_RANDOM_EXTERNAL_JS_URL)
 @JavaScript(ComponentWithExternalJavaScript.SOME_RANDOM_EXTERNAL_JS_URL_WITHOUT_PROTOCOL)
+@JavaScript(ComponentWithExternalJavaScript.SOME_RANDOM_ABSOLUTE_JS_URL)
 @Route(value = "com.vaadin.flow.uitest.ui.dependencies.ExternalJavaScriptView", layout = ViewTestLayout.class)
 public class ExternalJavaScriptView extends Div {
 
