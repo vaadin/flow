@@ -59,10 +59,12 @@ import static com.vaadin.flow.shared.ApplicationConstants.FRONTEND_PROTOCOL_PREF
  */
 abstract class AbstractUpdateImports implements Runnable, Serializable {
 
-    private static final String CSS_PREPARE = "function addCssBlock(block) {\n"
+    private static final String EXPORT_MODULES = "export const addCssBlock = function(block, before = false) {\n"
             + " const tpl = document.createElement('template');\n"
             + " tpl.innerHTML = block;\n"
-            + " document.head.appendChild(tpl.content);\n" + "}";
+            + " document.head[before ? 'insertBefore' : 'appendChild'](tpl.content, document.head.firstChild);\n"
+            + "};";
+
     private static final String CSS_PRE = "import $css_%d from '%s';%n"
             + "addCssBlock(`";
     private static final String CSS_POST = "`);";
@@ -100,6 +102,7 @@ abstract class AbstractUpdateImports implements Runnable, Serializable {
     public void run() {
         List<String> lines = new ArrayList<>();
 
+        lines.addAll(getExportLines());
         lines.addAll(getThemeLines());
         lines.addAll(getCssLines());
 
@@ -156,6 +159,17 @@ abstract class AbstractUpdateImports implements Runnable, Serializable {
     protected abstract Set<CssData> getCss();
 
     /**
+     * Get exported modules.
+     *
+     * @return exported lines.
+     */
+    protected Collection<String> getExportLines() {
+        Collection<String> lines = new ArrayList<>();
+        addLines(lines, EXPORT_MODULES);
+        return lines;
+    }
+
+    /**
      * Get theme lines for the generated imports file content.
      *
      * @return theme related generated JS lines
@@ -189,7 +203,6 @@ abstract class AbstractUpdateImports implements Runnable, Serializable {
             return Collections.emptyList();
         }
         Collection<String> lines = new ArrayList<>();
-        addLines(lines, CSS_PREPARE);
 
         Set<String> cssNotFound = new HashSet<>();
         int i = 0;
