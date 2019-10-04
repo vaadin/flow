@@ -194,15 +194,14 @@ public class StateTreeTest {
         Assert.assertEquals("Both nodes should initially be empty",
                 new HashSet<>(Arrays.asList(node1, node2)), initialDirty);
 
-        Set<StateNode> emptyCollection = tree.collectDirtyNodes();
-        Assert.assertTrue("Dirty nodes should be empty after collection",
-                emptyCollection.isEmpty());
+        tree.collectChanges(change -> {
+        });
 
         node2.markAsDirty();
 
         Set<StateNode> collectAfterOneMarked = tree.collectDirtyNodes();
-        Assert.assertEquals("Marked node should be in collect result",
-                Collections.singleton(node2), collectAfterOneMarked);
+        Assert.assertTrue("Marked node should be in collect result",
+                collectAfterOneMarked.contains(node2));
     }
 
     @Test
@@ -222,6 +221,9 @@ public class StateTreeTest {
 
         Assert.assertArrayEquals(expected.toArray(),
                 tree.collectDirtyNodes().toArray());
+
+        tree.collectChanges(change -> {
+        });
 
         nodes.forEach(StateNode::markAsDirty);
         expected = new ArrayList<>(nodes);

@@ -559,6 +559,12 @@ public class StateNode implements Serializable {
      * {@link #collectChanges(Consumer)} has been called. If the node is
      * recently attached, then the reported changes will be relative to a newly
      * created node.
+     * <p>
+     * <b>WARNING:</b> this is in fact an internal (private method) which is
+     * expected to be called from {@link StateTree#collectChanges(Consumer)}
+     * method only (which is effectively private itself). Don't call this method
+     * from any other place because it will break the expected {@link UI} state.
+     *
      *
      * @param collector
      *            a consumer accepting node changes
