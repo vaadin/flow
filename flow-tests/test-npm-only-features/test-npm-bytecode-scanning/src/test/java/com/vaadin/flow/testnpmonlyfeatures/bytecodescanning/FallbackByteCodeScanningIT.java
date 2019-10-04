@@ -18,25 +18,28 @@ package com.vaadin.flow.testnpmonlyfeatures.bytecodescanning;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
-public class ByteCodeScanningIT extends ChromeBrowserTest {
+public class FallbackByteCodeScanningIT extends ChromeBrowserTest {
 
     @Test
-    public void buttonIsNotInitializedInProductionMode() {
-        // in case of this URL parameter presence the Fallback chunk data will
-        // be removed and the chunk won't be loaded
-        open("drop-fallback");
+    public void buttonIsInitializedInProductionMode() {
+        open();
 
         TestBenchElement component = $(TestBenchElement.class)
                 .id(ByteCodeScanningView.COMPONENT_ID);
 
-        // in production mode without fallback chunk we use optimized bundle by
-        // default, so component should not be initialized
-        Assert.assertTrue(
-                "component expected not initialized in production mode",
+        // in production mode with fallback chunk component should be
+        // initialized
+        Assert.assertFalse("component expected initialized in production mode",
                 component.$("button").all().isEmpty());
+    }
+
+    @Override
+    protected Class<? extends Component> getViewClass() {
+        return ByteCodeScanningView.class;
     }
 
 }

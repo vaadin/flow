@@ -21,6 +21,7 @@ import java.io.UncheckedIOException;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.frontend.TaskUpdatePackages.APP_PACKAGE_HASH;
 
 /**
