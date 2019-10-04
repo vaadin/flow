@@ -40,7 +40,7 @@ import com.vaadin.flow.function.SerializableFunction;
 public interface Converter<PRESENTATION, MODEL> extends Serializable {
 
     /**
-     * Converts the given value from presentation type to model type.
+     * Converts the given value from model type to presentation type.
      * <p>
      * A converter can optionally use locale to do the conversion.
      *
@@ -53,7 +53,7 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
     Result<MODEL> convertToModel(PRESENTATION value, ValueContext context);
 
     /**
-     * Converts the given value from model type to presentation type.
+     * Converts the given value from presentation type to model type.
      * <p>
      * A converter can optionally use locale to do the conversion.
      *

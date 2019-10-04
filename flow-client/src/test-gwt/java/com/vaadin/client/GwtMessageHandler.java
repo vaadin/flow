@@ -36,7 +36,7 @@ import elemental.json.JsonObject;
  * This class is used to test {@link MessageHandler} GWT functionality, that is
  * required to process all dependencies earlier any other message processing.
  */
-public class GwtMessageHandlerTest extends ClientEngineTestBase {
+public class GwtMessageHandler extends ClientEngineTestBase {
 
     private Registry registry;
     private TestMessageHandler handler;
@@ -99,7 +99,6 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
             scriptUrls.add(scriptUrl);
             resourceLoadListener.onLoad(new ResourceLoadEvent(this, scriptUrl));
             registry.get(EventsOrder.class).sources.add(ResourceLoader.class);
-            addInternalEvent(ResourceLoader.class.toString());
         }
 
     }
@@ -113,7 +112,6 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
         @Override
         public void setUpdateInProgress(boolean updateInProgress) {
             getRegistry().get(EventsOrder.class).sources.add(StateTree.class);
-            addInternalEvent(StateTree.class.toString());
         }
 
     }
@@ -137,7 +135,7 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
         handler = new TestMessageHandler(registry);
     }
 
-    public void testMessageProcessing_moduleDependencyIsHandledBeforeApplyingChangesToTree() {
+    public void testMessageProcessing_dependencyIsHandledBeforeApplyingChangesToTree() {
         JavaScriptObject object = JavaScriptObject.createObject();
         JsonObject obj = object.cast();
 
@@ -154,73 +152,21 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
         dep.put(Dependency.KEY_TYPE, Dependency.Type.JS_MODULE.toString());
         array.set(0, dep);
 
-        obj.put(LoadMode.LAZY.toString(), array);
+        obj.put(LoadMode.EAGER.toString(), array);
         handler.handleJSON(object.cast());
 
-        runDeferred(() -> {
-            assertTrue(getResourceLoader().scriptUrls.contains("foo"));
+        assertTrue(getResourceLoader().scriptUrls.contains("foo"));
 
-            EventsOrder eventsOrder = registry.get(EventsOrder.class);
-            assertTrue(eventsOrder.sources.size() >= 2);
-            // the first one is resource loaded which means dependency
-            // processing
-            assertEquals(ResourceLoader.class, eventsOrder.sources.get(0));
-            // the second one is applying changes to StatTree
-            assertEquals(StateTree.class, eventsOrder.sources.get(1));
-        });
-    }
-
-    public void testMessageProcessing_dynamicDependencyIsHandledBeforeApplyingChangesToTree() {
-        JavaScriptObject object = JavaScriptObject.createObject();
-        JsonObject obj = object.cast();
-
-        // make an empty changes list. It will initiate changes processing
-        // anyway
-        // Any changes processing should happen AFTER dependencies are loaded
-        obj.put("changes", Json.createArray());
-
-        JsonArray array = Json.createArray();
-
-        // create a dependency
-        JsonObject dep = Json.createObject();
-        dep.put(Dependency.KEY_TYPE, Dependency.Type.DYNAMIC_IMPORT.toString());
-        dep.put(Dependency.KEY_URL,
-                "return new Promise(function(resolve){  window.testEvents = window.testEvents||[]; "
-                        + "window.testEvents.push('test-dependency'); resolve(); });");
-        array.set(0, dep);
-
-        obj.put(LoadMode.LAZY.toString(), array);
-
-        handler.handleJSON(object.cast());
-
-        runDeferred(() -> {
-            assertEquals("test-dependency", getInternalEvent(0));
-            assertEquals(StateTree.class.getName(), getInternalEvent(1));
-        });
+        EventsOrder eventsOrder = registry.get(EventsOrder.class);
+        assertTrue(eventsOrder.sources.size() >= 2);
+        // the first one is resource loaded which means dependency processing
+        assertEquals(ResourceLoader.class, eventsOrder.sources.get(0));
+        // the second one is applying chnages to StatTree
+        assertEquals(StateTree.class, eventsOrder.sources.get(1));
     }
 
     private TestResourceLoader getResourceLoader() {
         return (TestResourceLoader) registry.getResourceLoader();
     }
-
-    private static native void addInternalEvent(String eventKey)
-    /*-{
-         window.testEvents = window.testEvents||[];
-         window.testEvents.push(eventKey);
-    }-*/;
-
-    private static native String getInternalEvent(int index)
-    /*-{
-         window.testEvents = window.testEvents||[];
-         return window.testEvents[index];
-    }-*/;
-
-    private static native void runDeferred(Runnable runnable)
-    /*-{
-         new Promise(function( resolve ){
-             resolve();}).then(
-                 function(){ runnable.@java.lang.Runnable::run(*)();
-             });
-    }-*/;
 
 }

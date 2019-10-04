@@ -66,7 +66,6 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
     private File nodeModulesPath;
     private TaskUpdateImports updater;
     private File tmpRoot;
-    private File webpackDir;
     private File tokenFile;
 
     private Logger logger = Mockito.mock(Logger.class);
@@ -81,8 +80,10 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         importsFile = new File(generatedPath, IMPORTS_NAME);
         fallBackImportsFile = new File(generatedPath,
                 FrontendUtils.FALLBACK_IMPORTS_NAME);
-        webpackDir = temporaryFolder.newFolder();
+        File webpackDir = temporaryFolder.newFolder();
         tokenFile = new File(webpackDir, "config/flow-build-info.json");
+        FileUtils.forceMkdirParent(tokenFile);
+        tokenFile.createNewFile();
 
         assertTrue(nodeModulesPath.mkdirs());
         createExpectedImports(frontendDirectory, nodeModulesPath);
@@ -110,7 +111,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                         classFinder, true),
                 finder -> new FrontendDependenciesScannerFactory()
                         .createScanner(true, finder, true),
-                tmpRoot, generatedPath, frontendDirectory, webpackDir,
+                tmpRoot, generatedPath, frontendDirectory, tokenFile,
                 fallBackData) {
             @Override
             Logger log() {
@@ -209,7 +210,6 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         // ============== check token file with fallback chunk data ============
 
-        assertTrue(tokenFile.exists());
         String tokenContent = FileUtils.readFileToString(tokenFile,
                 Charset.defaultCharset());
         JsonObject object = Json.parse(tokenContent);
@@ -230,7 +230,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                         classFinder, true),
                 finder -> new FrontendDependenciesScannerFactory()
                         .createScanner(true, finder, true),
-                tmpRoot, generatedPath, frontendDirectory, webpackDir, null) {
+                tmpRoot, generatedPath, frontendDirectory, tokenFile, null) {
             @Override
             Logger log() {
                 return logger;
@@ -299,7 +299,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 new FrontendDependenciesScannerFactory().createScanner(false,
                         classFinder, true),
                 finder -> null, tmpRoot, generatedPath, frontendDirectory,
-                webpackDir, null) {
+                tokenFile, null) {
             @Override
             Logger log() {
                 return logger;

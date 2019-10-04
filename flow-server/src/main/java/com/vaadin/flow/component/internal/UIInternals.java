@@ -23,6 +23,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -35,8 +37,10 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.internal.ComponentMetaData.DependencyInfo;
 import com.vaadin.flow.component.internal.ComponentMetaData.HtmlImportDependency;
@@ -66,10 +70,13 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.AfterNavigationHandler;
 import com.vaadin.flow.router.internal.BeforeEnterHandler;
 import com.vaadin.flow.router.internal.BeforeLeaveHandler;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.WebBrowser;
 import com.vaadin.flow.server.communication.PushConnection;
+import com.vaadin.flow.server.frontend.FallbackChunk;
+import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.theme.AbstractTheme;
@@ -199,6 +206,8 @@ public class UIInternals implements Serializable {
     private Component activeDragSourceComponent;
 
     private ExtendedClientDetails extendedClientDetails = null;
+
+    private boolean isFallbackChunkLoaded;
 
     /**
      * Creates a new instance for the given UI.
@@ -848,16 +857,83 @@ public class UIInternals implements Serializable {
                     js -> page.addJavaScript(js.value(), js.loadMode()));
         } else {
             // In npm mode, add external JavaScripts directly to the page.
-            dependencies.getJavaScripts().stream()
-                    .filter(js -> UrlUtil.isExternal(js.value()))
-                    .forEach(js -> page.addJavaScript(js.value(),
-                            js.loadMode()));
-            dependencies.getJsModules().stream()
-                    .filter(js -> UrlUtil.isExternal(js.value()))
-                    .forEach(js -> page.addJsModule(js.value(), js.loadMode()));
+            addExternalDependencies(dependencies);
+            addFallbackDepenencies(dependencies);
+
         }
         dependencies.getStyleSheets().forEach(styleSheet -> page
                 .addStyleSheet(styleSheet.value(), styleSheet.loadMode()));
+    }
+
+    private void addFallbackDepenencies(DependencyInfo dependency) {
+        if (isFallbackChunkLoaded) {
+            return;
+        }
+        VaadinContext context = ui.getSession().getService().getContext();
+        FallbackChunk chunk = context.getAttribute(FallbackChunk.class);
+        if (chunk == null) {
+            if (getLogger().isDebugEnabled()) {
+                getLogger().debug(
+                        "Fallback chunk is not available, skipping fallback dependencies load");
+            }
+            return;
+        }
+
+        Set<String> modules = chunk.getModules();
+        Set<CssImportData> cssImportsData = chunk.getCssImports();
+        if (modules.isEmpty() && cssImportsData.isEmpty()) {
+            getLogger().debug(
+                    "Fallback chunk is empty, skipping fallback dependencies load");
+            return;
+        }
+
+        List<CssImport> cssImports = dependency.getCssImports();
+        List<JavaScript> javaScripts = dependency.getJavaScripts();
+        List<JsModule> jsModules = dependency.getJsModules();
+
+        if (jsModules.stream().map(module -> module.value())
+                .anyMatch(modules::contains)) {
+            loadFallbackChunk();
+            return;
+        }
+
+        if (javaScripts.stream().map(js -> js.value())
+                .anyMatch(modules::contains)) {
+            loadFallbackChunk();
+            return;
+        }
+
+        if (cssImports.stream().map(this::buildData)
+                .anyMatch(cssImportsData::contains)) {
+            loadFallbackChunk();
+            return;
+        }
+    }
+
+    private CssImportData buildData(CssImport imprt) {
+        Function<String, String> converter = str -> str.isEmpty() ? null : str;
+        return new CssImportData(converter.apply(imprt.value()),
+                converter.apply(imprt.id()), converter.apply(imprt.include()),
+                converter.apply(imprt.themeFor()));
+    }
+
+    private void loadFallbackChunk() {
+        if (isFallbackChunkLoaded) {
+            return;
+        }
+        ui.getPage()
+                .addDynamicImport("return window.Vaadin.Flow.loadFallback();");
+        isFallbackChunkLoaded = true;
+    }
+
+    private void addExternalDependencies(DependencyInfo dependency) {
+        Page page = ui.getPage();
+        dependency.getJavaScripts().stream()
+                .filter(js -> UrlUtil.isExternal(js.value()))
+                .forEach(js -> page.addJavaScript(js.value(), js.loadMode()));
+        dependency.getJsModules().stream()
+                .filter(js -> UrlUtil.isExternal(js.value()))
+                .forEach(js -> page.addJsModule(js.value(), js.loadMode()));
     }
 
     private void addHtmlImport(HtmlImportDependency dependency, Page page) {

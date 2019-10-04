@@ -39,7 +39,6 @@ import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.startup.DevModeInitializer;
 import com.vaadin.flow.shared.ui.LoadMode;
 
 public class HtmlImportJsModuleTest {
@@ -48,7 +47,6 @@ public class HtmlImportJsModuleTest {
     private DeploymentConfiguration configuration;
     private UI ui;
     private Page page;
-    private DevModeInitializer.VisitedClasses visitedClasses;
 
     @Before
     public void setupMocks() {
@@ -59,14 +57,6 @@ public class HtmlImportJsModuleTest {
         VaadinContext context = Mockito.mock(VaadinContext.class);
 
         Mockito.when(service.getContext()).thenReturn(context);
-        Mockito.when(
-                context.getAttribute(DevModeInitializer.VisitedClasses.class))
-                .thenReturn(visitedClasses);
-        Mockito.doAnswer(
-                invocationOnMock -> visitedClasses = (DevModeInitializer.VisitedClasses) invocationOnMock
-                        .getArguments()[0])
-                .when(context).setAttribute(
-                        Mockito.any(DevModeInitializer.VisitedClasses.class));
 
         Mockito.when(session.getService()).thenReturn(service);
         Mockito.when(session.getConfiguration()).thenReturn(configuration);
@@ -75,6 +65,10 @@ public class HtmlImportJsModuleTest {
 
         ui = Mockito.mock(UI.class);
         page = Mockito.mock(Page.class);
+
+        Mockito.when(ui.getSession()).thenReturn(session);
+        Mockito.when(service.getContext())
+                .thenReturn(Mockito.mock(VaadinContext.class));
 
         Element element = Mockito.mock(Element.class);
         StateNode node = Mockito.mock(StateNode.class);

@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -44,7 +43,6 @@ import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.startup.DevModeInitializer.VisitedClasses;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.shared.util.SharedUtil;
@@ -179,11 +177,6 @@ public class ComponentMetaData {
      */
     private static DependencyInfo findDependencies(VaadinService service,
             Class<? extends Component> componentClass) {
-        Optional.ofNullable(
-                service.getContext().getAttribute(VisitedClasses.class))
-                .ifPresent(visitedClasses -> visitedClasses
-                        .ensureAllDependenciesVisited(componentClass));
-
         DependencyInfo dependencyInfo = new DependencyInfo();
 
         findDependencies(service, componentClass, dependencyInfo,

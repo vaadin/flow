@@ -32,6 +32,7 @@
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
         <vaadin.productionMode>true</vaadin.productionMode>
+        <exclude.it.tests>FullCPScanningIT,FallbackByteCodeScanningIT</exclude.it.tests>
     </properties>
 
     <dependencies>
