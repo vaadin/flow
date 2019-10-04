@@ -858,14 +858,14 @@ public class UIInternals implements Serializable {
         } else {
             // In npm mode, add external JavaScripts directly to the page.
             addExternalDependencies(dependencies);
-            addFallbackDepenencies(dependencies);
+            addFallbackDependencies(dependencies);
 
         }
         dependencies.getStyleSheets().forEach(styleSheet -> page
                 .addStyleSheet(styleSheet.value(), styleSheet.loadMode()));
     }
 
-    private void addFallbackDepenencies(DependencyInfo dependency) {
+    private void addFallbackDependencies(DependencyInfo dependency) {
         if (isFallbackChunkLoaded) {
             return;
         }
@@ -891,13 +891,13 @@ public class UIInternals implements Serializable {
         List<JavaScript> javaScripts = dependency.getJavaScripts();
         List<JsModule> jsModules = dependency.getJsModules();
 
-        if (jsModules.stream().map(module -> module.value())
+        if (jsModules.stream().map(JsModule::value)
                 .anyMatch(modules::contains)) {
             loadFallbackChunk();
             return;
         }
 
-        if (javaScripts.stream().map(js -> js.value())
+        if (javaScripts.stream().map(JavaScript::value)
                 .anyMatch(modules::contains)) {
             loadFallbackChunk();
             return;
