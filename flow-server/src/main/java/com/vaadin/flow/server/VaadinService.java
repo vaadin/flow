@@ -178,7 +178,7 @@ public abstract class VaadinService implements Serializable {
 
     private Iterable<BootstrapListener> bootstrapListeners;
 
-    private transient Iterable<ClientIndexBootstrapListener> clientIndexBootstrapListeners;
+    private transient Iterable<IndexHtmlRequestListener> indexHtmlRequestListeners;
 
     private Iterable<DependencyFilter> dependencyFilters;
 
@@ -291,9 +291,9 @@ public abstract class VaadinService implements Serializable {
             bootstrapListeners = instantiator
                     .getBootstrapListeners(event.getAddedBootstrapListeners())
                     .collect(Collectors.toList());
-            clientIndexBootstrapListeners = instantiator
-                    .getClientIndexBootstrapListeners(
-                            event.getAddedClientIndexBootstrapListeners())
+            indexHtmlRequestListeners = instantiator
+                    .getIndexHtmlRequestListeners(
+                            event.getAddedIndexHtmlRequestListeners())
                     .collect(Collectors.toList());
         });
 
@@ -635,7 +635,7 @@ public abstract class VaadinService implements Serializable {
      *            change the bootstrap page.
      *
      * @deprecated This API is deprecated in favor of
-     *             {@link VaadinService#modifyClientIndexBootstrapPage(ClientIndexBootstrapPage)}
+     *             {@link VaadinService#modifyIndexHtmlResponse(IndexHtmlResponse)}
      *             when using client-side bootstrapping
      */
     @Deprecated
@@ -646,19 +646,18 @@ public abstract class VaadinService implements Serializable {
 
     /**
      * Fires the
-     * {@link ClientIndexBootstrapListener#modifyBootstrapPage(ClientIndexBootstrapPage)}
-     * event to all registered {@link ClientIndexBootstrapListener}. This is
-     * called internally when the client index bootstrap page is created, so
+     * {@link IndexHtmlRequestListener#modifyIndexHtmlResponse(IndexHtmlResponse)}
+     * event to all registered {@link IndexHtmlRequestListener}. This is
+     * called internally when the Index HTML response is created, so
      * listeners can intercept the creation and change the result HTML.
      *
      * @param response
      *            The object containing all relevant info needed by listeners to
-     *            change the client index bootstrap page.
+     *            change the Index HTML response.
      */
-    public void modifyClientIndexBootstrapPage(
-            ClientIndexBootstrapPage response) {
-        clientIndexBootstrapListeners
-                .forEach(listener -> listener.modifyBootstrapPage(response));
+    public void modifyIndexHtmlResponse(IndexHtmlResponse response) {
+        indexHtmlRequestListeners
+                .forEach(listener -> listener.modifyIndexHtmlResponse(response));
     }
 
     /**

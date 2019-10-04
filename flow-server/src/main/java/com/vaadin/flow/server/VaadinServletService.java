@@ -98,9 +98,9 @@ public class VaadinServletService extends VaadinService {
 
     private void addBootstrapHandler(List<RequestHandler> handlers) {
         if (getDeploymentConfiguration().isClientSideMode()) {
-            handlers.add(0, new ClientIndexHandler());
+            handlers.add(0, new IndexHtmlRequestHandler());
             getLogger().debug("Using '{}' in clientSideMode",
-                    ClientIndexHandler.class.getName());
+                    IndexHtmlRequestHandler.class.getName());
         } else {
             handlers.add(0, new BootstrapHandler());
             getLogger().debug("Using '{}' in default mode",

@@ -27,7 +27,7 @@ import com.vaadin.flow.shared.VaadinUriResolver;
  * headers that will be included in the corresponding HTTP response.
  *
  * @deprecated This API is deprecated in favor of
- *             {@link ClientIndexBootstrapPage} when using client-side
+ *             {@link IndexHtmlResponse} when using client-side
  *             bootstrapping
  *
  * @author Vaadin Ltd

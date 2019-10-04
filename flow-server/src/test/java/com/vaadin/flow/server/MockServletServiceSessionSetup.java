@@ -43,7 +43,7 @@ public class MockServletServiceSessionSetup {
         private TestRouteRegistry routeRegistry;
         private Router router;
         private List<BootstrapListener> bootstrapListeners = new ArrayList<>();
-        private List<ClientIndexBootstrapListener> clientIndexBootstrapListeners = new ArrayList<>();
+        private List<IndexHtmlRequestListener> indexHtmlRequestListeners = new ArrayList<>();
 
         public TestVaadinServletService(TestVaadinServlet testVaadinServlet,
                 DeploymentConfiguration deploymentConfiguration) {
@@ -91,9 +91,8 @@ public class MockServletServiceSessionSetup {
             bootstrapListeners.add(listener);
         }
 
-        public void addClientIndexBootstrapListener(
-                ClientIndexBootstrapListener listener) {
-            clientIndexBootstrapListeners.add(listener);
+        public void addIndexHtmlRequestListener(IndexHtmlRequestListener listener) {
+            indexHtmlRequestListeners.add(listener);
         }
 
         @Override
@@ -105,13 +104,11 @@ public class MockServletServiceSessionSetup {
         }
 
         @Override
-        public void modifyClientIndexBootstrapPage(
-                ClientIndexBootstrapPage response) {
+        public void modifyIndexHtmlResponse(IndexHtmlResponse response) {
+            indexHtmlRequestListeners.forEach(
+                    listener -> listener.modifyIndexHtmlResponse(response));
 
-            super.modifyClientIndexBootstrapPage(response);
-
-            clientIndexBootstrapListeners.forEach(
-                    listener -> listener.modifyBootstrapPage(response));
+            super.modifyIndexHtmlResponse(response);
         }
     }
 

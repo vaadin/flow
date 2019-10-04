@@ -42,7 +42,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * folder. The handler will calculate and inject baseHref as well as the bundle
  * scripts into the template.
  */
-public class ClientIndexHandler extends JavaScriptBootstrapHandler {
+public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
     private static final Pattern PATH_WITH_EXTENSION = Pattern
             .compile("\\.[A-z][A-z\\d]+$");
@@ -64,9 +64,8 @@ public class ClientIndexHandler extends JavaScriptBootstrapHandler {
 
         response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
 
-        request.getService().modifyClientIndexBootstrapPage(
-                new ClientIndexBootstrapPage(request, response, session,
-                        indexDocument));
+        request.getService().modifyIndexHtmlResponse(
+                new IndexHtmlResponse(request, response, indexDocument));
 
         try {
             response.getOutputStream()
@@ -133,7 +132,7 @@ public class ClientIndexHandler extends JavaScriptBootstrapHandler {
     }
 
     private static Logger getLogger() {
-        return LoggerFactory.getLogger(ClientIndexHandler.class);
+        return LoggerFactory.getLogger(IndexHtmlRequestHandler.class);
     }
 
     /**

@@ -119,7 +119,7 @@ public abstract class ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.server\\.communication.JSR356WebsocketInitializer(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.BootstrapHandler(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.BootstrapPageResponse",
-                "com\\.vaadin\\.flow\\.server\\.ClientIndexBootstrapPage",
+                "com\\.vaadin\\.flow\\.server\\.IndexHtmlResponse",
                 "com\\.vaadin\\.flow\\.server\\.InlineTargets",
                 "com\\.vaadin\\.flow\\.server\\.communication\\.PushHandler(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.communication\\.PushRequestHandler(\\$.*)?",
