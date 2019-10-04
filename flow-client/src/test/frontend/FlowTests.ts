@@ -190,7 +190,7 @@ suite("Flow", () => {
 
   test("should throw when an incorrect server response is received", () => {
     // Configure an invalid server response
-    mock.get(/^VAADIN\/\?v-r=init&location=.+/, (req, res) => {
+    mock.get(/^.*\?v-r=init&location=.+/, (req, res) => {
       assert.equal('GET', req.method());
       return res
         .status(500)
@@ -437,7 +437,7 @@ function stubServerRemoteFunction(id: string, cancel: boolean = false) {
 
 function mockInitResponse(appId: string, changes = '[]') {
   // Configure a valid server initialization response
-  mock.get(/^VAADIN\/\?v-r=init.*/, (req, res) => {
+  mock.get(/^.*\?v-r=init.*/, (req, res) => {
     assert.equal('GET', req.method());
     return res
       .status(200)

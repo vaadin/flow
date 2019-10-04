@@ -222,8 +222,10 @@ export class Flow {
     // send a request to the `JavaScriptBootstrapHandler`
     return new Promise((resolve, reject) => {
       const httpRequest = new (window as any).XMLHttpRequest();
-      httpRequest.open('GET', 'VAADIN/?v-r=init' +
-        (serverSideRouting ? `&location=${encodeURI(this.getFlowRoute(location))}` : ''));
+      const currentPath = location.pathname || '/';
+      const requestPath = `${currentPath}?v-r=init` +
+                                  (serverSideRouting ? `&location=${encodeURI(this.getFlowRoute(location))}` : '');
+      httpRequest.open('GET', requestPath);
       httpRequest.onload = () => {
         if (httpRequest.getResponseHeader('content-type') === 'application/json') {
           resolve(JSON.parse(httpRequest.responseText));
