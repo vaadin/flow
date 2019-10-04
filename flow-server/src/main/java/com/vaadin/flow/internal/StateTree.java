@@ -34,6 +34,7 @@ import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.communication.UidlWriter;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -245,6 +246,12 @@ public class StateTree implements NodeOwner {
     /**
      * Collects all changes made to this tree since the last time
      * {@link #collectChanges(Consumer)} has been called.
+     * <p>
+     *
+     * <b>WARNING</b>: This is an internal method which is not intended to be
+     * used outside. The only proper caller of this method is {@link UidlWriter}
+     * class (the {@code UidlWriter::encodeChanges} method). Any call of this
+     * method in any other place will break the expected {@link UI} state.
      *
      * @param collector
      *            a consumer accepting node changes
@@ -256,7 +263,7 @@ public class StateTree implements NodeOwner {
         // The updateActiveState method can create new dirty nodes, so they need
         // to be collected as well
         while (evaluateNewDirtyNodes) {
-            Set<StateNode> dirtyNodesSet = collectDirtyNodes();
+            Set<StateNode> dirtyNodesSet = doCollectDirtyNodes(true);
             dirtyNodesSet.forEach(StateNode::updateActiveState);
             evaluateNewDirtyNodes = allDirtyNodes.addAll(dirtyNodesSet);
         }
@@ -275,15 +282,12 @@ public class StateTree implements NodeOwner {
     }
 
     /**
-     * Gets all the nodes that have been marked as dirty since the last time
-     * this method was invoked.
+     * Gets all the nodes that have been marked.
      *
      * @return a set of dirty nodes, in the order they were marked dirty
      */
     public Set<StateNode> collectDirtyNodes() {
-        Set<StateNode> collectedNodes = dirtyNodes;
-        dirtyNodes = new LinkedHashSet<>();
-        return collectedNodes;
+        return doCollectDirtyNodes(false);
     }
 
     /**
@@ -403,5 +407,23 @@ public class StateTree implements NodeOwner {
         if (session != null) {
             session.checkHasLock();
         }
+    }
+
+    /**
+     * Gets all the nodes that have been marked as dirty.
+     * <p>
+     * If {@code reset} is {@code true} then dirty nodes collection is reset.
+     *
+     * @return a set of dirty nodes, in the order they were marked dirty
+     */
+    private Set<StateNode> doCollectDirtyNodes(boolean reset) {
+        if (reset) {
+            Set<StateNode> collectedNodes = dirtyNodes;
+            dirtyNodes = new LinkedHashSet<>();
+            return collectedNodes;
+        } else {
+            return Collections.unmodifiableSet(dirtyNodes);
+        }
+
     }
 }
