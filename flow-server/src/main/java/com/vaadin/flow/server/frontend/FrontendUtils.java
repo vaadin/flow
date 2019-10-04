@@ -121,6 +121,11 @@ public class FrontendUtils {
     public static final String IMPORTS_NAME = "generated-flow-imports.js";
 
     /**
+     * The TypeScript definitions for the {@link FrontendUtils#IMPORTS_NAME} file.
+     */
+    public static final String IMPORTS_D_TS_NAME = "generated-flow-imports.d.ts";    
+
+    /**
      * File name of the index.html in clientSideMode.
      */
     public static final String INDEX_HTML = "index.html";
