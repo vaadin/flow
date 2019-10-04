@@ -307,8 +307,8 @@ public class Page implements Serializable {
 
     /**
      * In compatibility mode (or Flow 1.x), adds the given HTML import to the
-     * page and ensures that it is loaded successfully. In normal mode (Flow
-     * 2.x with npm support), throws an {@code UnsupportedOperationException}.
+     * page and ensures that it is loaded successfully. In normal mode (Flow 2.x
+     * with npm support), throws an {@code UnsupportedOperationException}.
      * <p>
      * Relative URLs are interpreted as relative to the configured
      * {@code frontend} directory location. You can prefix the URL with
@@ -329,8 +329,8 @@ public class Page implements Serializable {
 
     /**
      * In compatibility mode (or Flow 1.x), adds the given HTML import to the
-     * page and ensures that it is loaded successfully. In normal mode (Flow
-     * 2.x with npm support), throws an {@code UnsupportedOperationException}.
+     * page and ensures that it is loaded successfully. In normal mode (Flow 2.x
+     * with npm support), throws an {@code UnsupportedOperationException}.
      * <p>
      * Relative URLs are interpreted as relative to the configured
      * {@code frontend} directory location. You can prefix the URL with
@@ -356,9 +356,23 @@ public class Page implements Serializable {
         }
     }
 
-    private void addDependency(Dependency dependency) {
-        assert dependency != null;
-        ui.getInternals().getDependencyList().add(dependency);
+    /**
+     * Adds a dynamic import using a JavaScript {@code expression} which is
+     * supposed to return a JavaScript {@code Promise}.
+     * <p>
+     * No change will be applied on the client side until resulting
+     * {@code Promise} of the {@code expression} is completed. It behaves like
+     * other dependencies ({@link #addJavaScript(String)},
+     * {@link #addJsModule(String)}, etc.)
+     *
+     *
+     * @see #addHtmlImport(String)
+     *
+     * @param expression
+     *            the JavaScript expression which return a Promise
+     */
+    public void addDynamicImport(String expression) {
+        addDependency(new Dependency(Type.DYNAMIC_IMPORT, expression));
     }
 
     // When updating JavaDocs here, keep in sync with Element.executeJavaScript
@@ -563,6 +577,11 @@ public class Page implements Serializable {
         setLocation(uri.toString());
     }
 
+    private void addDependency(Dependency dependency) {
+        assert dependency != null;
+        ui.getInternals().getDependencyList().add(dependency);
+    }
+
     private static class LazyJsLoader implements Serializable {
 
         private static final String JS_FILE_NAME = "windowResizeListener.js";
@@ -595,7 +614,7 @@ public class Page implements Serializable {
 
         /**
          * Invoked when the client-side details are available.
-         * 
+         *
          * @param extendedClientDetails
          *            object containing extended client details
          */
@@ -666,4 +685,5 @@ public class Page implements Serializable {
                         getStringElseNull.apply("v-pr"),
                         getStringElseNull.apply("v-wn")));
     }
+
 }
