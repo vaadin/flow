@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.user.client.Timer;
 
 import com.vaadin.client.communication.MessageHandler;
 import com.vaadin.client.communication.RequestResponseTracker;
@@ -43,7 +44,7 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
 
     private static class EventsOrder {
 
-        private List<Class<?>> sources = new ArrayList<>();
+        private List<String> sources = new ArrayList<>();
     }
 
     private static class TestMessageHandler extends MessageHandler {
@@ -98,8 +99,9 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
                 boolean defer) {
             scriptUrls.add(scriptUrl);
             resourceLoadListener.onLoad(new ResourceLoadEvent(this, scriptUrl));
-            registry.get(EventsOrder.class).sources.add(ResourceLoader.class);
-            addInternalEvent(ResourceLoader.class.toString());
+            registry.get(EventsOrder.class).sources
+                    .add(ResourceLoader.class.getName());
+            addInternalEvent(ResourceLoader.class.getName());
         }
 
     }
@@ -112,8 +114,9 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
 
         @Override
         public void setUpdateInProgress(boolean updateInProgress) {
-            getRegistry().get(EventsOrder.class).sources.add(StateTree.class);
-            addInternalEvent(StateTree.class.toString());
+            getRegistry().get(EventsOrder.class).sources
+                    .add(StateTree.class.getName());
+            addInternalEvent(StateTree.class.getName());
         }
 
     }
@@ -138,6 +141,8 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
     }
 
     public void testMessageProcessing_moduleDependencyIsHandledBeforeApplyingChangesToTree() {
+        resetInternalEvents();
+
         JavaScriptObject object = JavaScriptObject.createObject();
         JsonObject obj = object.cast();
 
@@ -154,23 +159,33 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
         dep.put(Dependency.KEY_TYPE, Dependency.Type.JS_MODULE.toString());
         array.set(0, dep);
 
-        obj.put(LoadMode.LAZY.toString(), array);
+        obj.put(LoadMode.EAGER.toString(), array);
         handler.handleJSON(object.cast());
 
-        runDeferred(() -> {
-            assertTrue(getResourceLoader().scriptUrls.contains("foo"));
+        delayTestFinish(500);
 
-            EventsOrder eventsOrder = registry.get(EventsOrder.class);
-            assertTrue(eventsOrder.sources.size() >= 2);
-            // the first one is resource loaded which means dependency
-            // processing
-            assertEquals(ResourceLoader.class, eventsOrder.sources.get(0));
-            // the second one is applying changes to StatTree
-            assertEquals(StateTree.class, eventsOrder.sources.get(1));
-        });
+        new Timer() {
+            @Override
+            public void run() {
+                assertTrue(getResourceLoader().scriptUrls.contains("foo"));
+
+                EventsOrder eventsOrder = registry.get(EventsOrder.class);
+                assertTrue(eventsOrder.sources.size() >= 2);
+                // the first one is resource loaded which means dependency
+                // processing
+                assertEquals(ResourceLoader.class.getName(),
+                        eventsOrder.sources.get(0));
+                // the second one is applying changes to StatTree
+                assertEquals(StateTree.class.getName(),
+                        eventsOrder.sources.get(1));
+                finishTest();
+            }
+        }.schedule(100);
     }
 
     public void testMessageProcessing_dynamicDependencyIsHandledBeforeApplyingChangesToTree() {
+        resetInternalEvents();
+
         JavaScriptObject object = JavaScriptObject.createObject();
         JsonObject obj = object.cast();
 
@@ -184,43 +199,43 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
         // create a dependency
         JsonObject dep = Json.createObject();
         dep.put(Dependency.KEY_TYPE, Dependency.Type.DYNAMIC_IMPORT.toString());
-        dep.put(Dependency.KEY_URL,
-                "return new Promise(function(resolve){  window.testEvents = window.testEvents||[]; "
-                        + "window.testEvents.push('test-dependency'); resolve(); });");
+        dep.put(Dependency.KEY_URL, "return new Promise(function(resolve){ "
+                + "window.testEvents.push('test-dependency'); resolve(); });");
         array.set(0, dep);
 
         obj.put(LoadMode.LAZY.toString(), array);
 
         handler.handleJSON(object.cast());
 
-        runDeferred(() -> {
-            assertEquals("test-dependency", getInternalEvent(0));
-            assertEquals(StateTree.class.getName(), getInternalEvent(1));
-        });
+        delayTestFinish(500);
+
+        new Timer() {
+            @Override
+            public void run() {
+                assertEquals("test-dependency", getInternalEvent(0));
+                assertEquals(StateTree.class.getName(), getInternalEvent(1));
+                finishTest();
+            }
+        }.schedule(100);
     }
 
     private TestResourceLoader getResourceLoader() {
         return (TestResourceLoader) registry.getResourceLoader();
     }
 
+    private static native void resetInternalEvents()
+    /*-{
+         window.testEvents = [];
+    }-*/;
+
     private static native void addInternalEvent(String eventKey)
     /*-{
-         window.testEvents = window.testEvents||[];
          window.testEvents.push(eventKey);
     }-*/;
 
     private static native String getInternalEvent(int index)
     /*-{
-         window.testEvents = window.testEvents||[];
          return window.testEvents[index];
-    }-*/;
-
-    private static native void runDeferred(Runnable runnable)
-    /*-{
-         new Promise(function( resolve ){
-             resolve();}).then(
-                 function(){ runnable.@java.lang.Runnable::run(*)();
-             });
     }-*/;
 
 }
