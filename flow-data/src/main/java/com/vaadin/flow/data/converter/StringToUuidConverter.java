@@ -75,14 +75,9 @@ public class StringToUuidConverter implements Converter<String, UUID> {
         try {
             uuid = UUID.fromString(value);
         } catch (java.lang.IllegalArgumentException e) {
-            // Faulty input. Let `uuid` default to null. Report error below.
-        }
-
-        if (null != uuid) {
-            return Result.ok(uuid);  // Return the UUID object, converted from String.
-        } else {
             return Result.error(this.errorMessageProvider.apply(context));
         }
+        return Result.ok(uuid); // Return the UUID object, converted from String.
     }
 
     @Override
