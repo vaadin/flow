@@ -15,12 +15,12 @@
  */
 package com.vaadin.flow.server;
 
+import javax.servlet.ServletContext;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Optional;
-
-import javax.servlet.ServletContext;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.ContentTypeResolver;
@@ -91,7 +91,7 @@ public class StreamResource extends AbstractStreamResource {
                 OutputStream out) throws IOException {
             byte[] buf = new byte[BUFFER_SIZE];
             int n;
-            while ((n = read(session, source, buf)) > 0) {
+            while ((n = read(session, source, buf)) >= 0) {
                 out.write(buf, 0, n);
             }
         }

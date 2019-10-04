@@ -24,6 +24,8 @@ import com.vaadin.flow.server.RouteRegistry;
 /**
  * Result class containing the removed and added routes for the latest
  * configuration.
+ *
+ * @since 1.3
  */
 public class RoutesChangedEvent extends EventObject {
 

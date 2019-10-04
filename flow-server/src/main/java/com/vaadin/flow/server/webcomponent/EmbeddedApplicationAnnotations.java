@@ -25,7 +25,7 @@ import java.lang.annotation.RetentionPolicy;
  * For internal use only.
  *
  * @author Vaadin Ltd
- *
+ * @since 2.0
  */
 @Retention(RetentionPolicy.RUNTIME)
 @interface EmbeddedApplicationAnnotations {

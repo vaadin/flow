@@ -29,14 +29,21 @@ import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 
 /**
  * A container class for all components used in tests.
  */
-public class NodeTestComponents {
+public class NodeTestComponents extends NodeUpdateTestUtil {
+
+    public static final String BUTTON_COMPONENT_FQN = ButtonComponent.class
+            .getName();
+    public static final String ICON_COMPONENT_FQN = IconComponent.class
+            .getName();
 
     @NpmPackage(value = "@vaadin/vaadin-button", version = "1.1.1")
     class ButtonComponent extends Component {
@@ -87,9 +94,9 @@ public class NodeTestComponents {
     @CssImport(value = "./foo.css")
     @CssImport(value = "./foo.css", include = "bar")
     @CssImport(value = "./foo.css", id = "baz")
-    @CssImport(value = "./foo.css", id = "baz", include="bar")
+    @CssImport(value = "./foo.css", id = "baz", include = "bar")
     @CssImport(value = "./foo.css", themeFor = "foo-bar")
-    @CssImport(value = "./foo.css", themeFor = "foo-bar", include="bar")
+    @CssImport(value = "./foo.css", themeFor = "foo-bar", include = "bar")
     public static class FlatImport extends Component {
     }
 
@@ -101,8 +108,17 @@ public class NodeTestComponents {
 
     }
 
+    @JsModule("./common-js-file.js")
     @Theme(value = LumoTest.class, variant = LumoTest.DARK)
     @Route
+    public static class MainLayout implements RouterLayout {
+        @Override
+        public Element getElement() {
+            return null;
+        }
+    }
+
+    @Route(value = "", layout = MainLayout.class)
     public static class MainView extends Component {
         ButtonComponent buttonComponent;
         IconComponent iconComponent;
@@ -115,6 +131,7 @@ public class NodeTestComponents {
         FrontendP3Template frontendP3Template;
         FlatImport flatImport;
         TranslatedImports translatedImports;
+        JavaScriptOrder order;
     }
 
     /**
@@ -185,5 +202,13 @@ public class NodeTestComponents {
 
     @NpmPackage(value = "@vaadin/vaadin-shrinkwrap", version = "1.2.3")
     public static class VaadinShrinkWrap extends Component {
+    }
+
+    @JavaScript("javascript/a.js")
+    @JavaScript("javascript/b.js")
+    @JavaScript("javascript/c.js")
+    @JsModule("jsmodule/g.js")
+    public static class JavaScriptOrder extends Component {
+
     }
 }

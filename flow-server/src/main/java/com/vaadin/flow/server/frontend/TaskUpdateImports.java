@@ -17,36 +17,39 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
-import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.CssData;
-import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
+import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
-import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
+import elemental.json.Json;
+import elemental.json.JsonArray;
+import elemental.json.JsonObject;
+import elemental.json.impl.JsonUtil;
+
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
+import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
 /**
  * An updater that it's run when the servlet context is initialised in dev-mode
@@ -54,424 +57,403 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS
  * and <code>node_module/@vaadin/flow-frontend</code> contents by visiting all
  * classes with {@link JsModule} {@link HtmlImport} and {@link Theme}
  * annotations.
+ *
+ * @since 2.0
  */
 public class TaskUpdateImports extends NodeUpdater {
-
-    private final File generatedFlowImports;
-    private final File frontendDirectory;
-    private static final String IMPORT_TEMPLATE = "import '%s';";
 
     private static final String THEME_PREPARE = "const div = document.createElement('div');";
     private static final String THEME_LINE_TPL = "div.innerHTML = '%s';%n"
             + "document.head.insertBefore(div.firstElementChild, document.head.firstChild);";
     private static final String THEME_VARIANT_TPL = "document.body.setAttribute('%s', '%s');";
-
-    private static final String CSS_PREPARE = "function addCssBlock(block) {\n"
-            + " const tpl = document.createElement('template');\n"
-            + " tpl.innerHTML = block;\n"
-            + " document.head.appendChild(tpl.content);\n" + "}";
-    private static final String CSS_PRE = "import $css_%d from '%s';%n"
-            + "addCssBlock(`";
-    private static final String CSS_POST = "`);";
-    private static final String CSS_BASIC_TPL = CSS_PRE
-            + "<custom-style><style%s>${$css_%d}</style></custom-style>"
-            + CSS_POST;
-    private static final String CSS_MODULE_TPL = CSS_PRE
-            + "<dom-module id=\"%s\"><template><style%s>${$css_%d}</style></template></dom-module>"
-            + CSS_POST;
-    private static final String CSS_THEME_FOR_TPL = CSS_PRE
-            + "<dom-module id=\"flow_css_mod_%d\" theme-for=\"%s\"><template><style%s>${$css_%d}</style></template></dom-module>"
-            + CSS_POST;
-
     // Trim and remove new lines.
     private static final Pattern NEW_LINE_TRIM = Pattern
             .compile("(?m)(^\\s+|\\s?\n)");
+
+    private final File frontendDirectory;
+    private final FrontendDependenciesScanner fallbackScanner;
+    private final ClassFinder finder;
+    private final File webpackOutputDirectory;
+    private final JsonObject tokenFileData;
+
+    private class UpdateMainImportsFile extends AbstractUpdateImports {
+
+        private final File generatedFlowImports;
+        private final File fallBackImports;
+        private final ClassFinder finder;
+
+        UpdateMainImportsFile(ClassFinder classFinder, File frontendDirectory,
+                File npmDirectory, File generatedDirectory,
+                File fallBackImports) {
+            super(frontendDirectory, npmDirectory, generatedDirectory);
+            generatedFlowImports = new File(generatedDirectory, IMPORTS_NAME);
+            finder = classFinder;
+            this.fallBackImports = fallBackImports;
+        }
+
+        @Override
+        protected void writeImportLines(List<String> lines) {
+            if (fallBackImports != null) {
+                lines.add(
+                        "window.Vaadin.Flow.loadFallback = function loadFallback(){");
+                lines.add("   return import('./" + fallBackImports.getName()
+                        + "');");
+                lines.add("}");
+            }
+            try {
+                updateImportsFile(generatedFlowImports, lines);
+            } catch (IOException e) {
+                throw new IllegalStateException(String.format(
+                        "Failed to update the Flow imports file '%s'",
+                        generatedFlowImports), e);
+            }
+        }
+
+        @Override
+        protected Collection<String> getThemeLines() {
+            Collection<String> lines = new ArrayList<>();
+            AbstractTheme theme = getTheme();
+            ThemeDefinition themeDef = getThemeDefinition();
+            if (theme != null) {
+                if (!theme.getHeaderInlineContents().isEmpty()) {
+                    lines.add(THEME_PREPARE);
+                    theme.getHeaderInlineContents()
+                            .forEach(html -> addLines(lines,
+                                    String.format(THEME_LINE_TPL, NEW_LINE_TRIM
+                                            .matcher(html).replaceAll(""))));
+                }
+                theme.getHtmlAttributes(themeDef.getVariant())
+                        .forEach((key, value) -> addLines(lines,
+                                String.format(THEME_VARIANT_TPL, key, value)));
+                lines.add("");
+            }
+            return lines;
+        }
+
+        @Override
+        protected List<String> getModules() {
+            return frontDeps.getModules();
+        }
+
+        @Override
+        protected Set<String> getScripts() {
+            return frontDeps.getScripts();
+        }
+
+        @Override
+        protected URL getResource(String name) {
+            return finder.getResource(name);
+        }
+
+        @Override
+        protected Collection<String> getGeneratedModules() {
+            Set<String> exclude = null;
+            if (fallBackImports == null) {
+                exclude = Collections.singleton(generatedFlowImports.getName());
+            } else {
+                exclude = new HashSet<>(
+                        Arrays.asList(generatedFlowImports.getName(),
+                                fallBackImports.getName()));
+            }
+            return NodeUpdater.getGeneratedModules(generatedFolder, exclude);
+        }
+
+        @Override
+        protected ThemeDefinition getThemeDefinition() {
+            return TaskUpdateImports.this.getThemeDefinition();
+        }
+
+        @Override
+        protected AbstractTheme getTheme() {
+            return TaskUpdateImports.this.getTheme();
+        }
+
+        @Override
+        protected Set<CssData> getCss() {
+            return frontDeps.getCss();
+        }
+
+        @Override
+        protected Logger getLogger() {
+            return log();
+        }
+    }
+
+    private class UpdateFallBackImportsFile extends AbstractUpdateImports {
+
+        private final File generatedFallBack;
+        private final ClassFinder finder;
+
+        UpdateFallBackImportsFile(ClassFinder classFinder,
+                File frontendDirectory, File npmDirectory,
+                File generatedDirectory) {
+            super(frontendDirectory, npmDirectory, generatedDirectory);
+            generatedFallBack = new File(generatedDirectory,
+                    FrontendUtils.FALLBACK_IMPORTS_NAME);
+            finder = classFinder;
+        }
+
+        @Override
+        protected void writeImportLines(List<String> lines) {
+            try {
+                updateImportsFile(generatedFallBack, lines);
+            } catch (IOException e) {
+                throw new IllegalStateException(String.format(
+                        "Failed to update the Flow fallback imports file '%s'",
+                        getGeneratedFallbackFile()), e);
+            }
+        }
+
+        @Override
+        protected Collection<String> getThemeLines() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        protected List<String> getModules() {
+            LinkedHashSet<String> set = new LinkedHashSet<>(
+                    fallbackScanner.getModules());
+            set.removeAll(frontDeps.getModules());
+            return new ArrayList<String>(set);
+        }
+
+        @Override
+        protected Set<String> getScripts() {
+            LinkedHashSet<String> set = new LinkedHashSet<>(
+                    fallbackScanner.getScripts());
+            set.removeAll(frontDeps.getScripts());
+            return set;
+        }
+
+        @Override
+        protected URL getResource(String name) {
+            return finder.getResource(name);
+        }
+
+        @Override
+        protected Collection<String> getGeneratedModules() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        protected ThemeDefinition getThemeDefinition() {
+            return TaskUpdateImports.this.getThemeDefinition();
+        }
+
+        @Override
+        protected AbstractTheme getTheme() {
+            return TaskUpdateImports.this.getTheme();
+        }
+
+        @Override
+        protected Set<CssData> getCss() {
+            LinkedHashSet<CssData> set = new LinkedHashSet<>(
+                    fallbackScanner.getCss());
+            set.removeAll(frontDeps.getCss());
+            return set;
+        }
+
+        @Override
+        protected Logger getLogger() {
+            return log();
+        }
+
+        File getGeneratedFallbackFile() {
+            return generatedFallBack;
+        }
+    }
 
     /**
      * Create an instance of the updater given all configurable parameters.
      *
      * @param finder
      *            a reusable class finder
-     * @param frontendDependencies
-     *            a reusable frontend dependencies
+     * @param frontendDepScanner
+     *            a reusable frontend dependencies scanner
+     * @param fallBackScannerProvider
+     *            fallback scanner provider, not {@code null}
      * @param npmFolder
      *            folder with the `package.json` file
      * @param generatedPath
      *            folder where flow generated files will be placed.
      * @param frontendDirectory
      *            a directory with project's frontend files
+     * @param webpackOutputDirectory
+     *            the directory to set for webpack to output its build results.
      */
     TaskUpdateImports(ClassFinder finder,
-            FrontendDependencies frontendDependencies, File npmFolder,
-            File generatedPath, File frontendDirectory) {
-        super(finder, frontendDependencies, npmFolder, generatedPath);
+            FrontendDependenciesScanner frontendDepScanner,
+            SerializableFunction<ClassFinder, FrontendDependenciesScanner> fallBackScannerProvider,
+            File npmFolder, File generatedPath, File frontendDirectory,
+            File webpackOutputDirectory) {
+        this(finder, frontendDepScanner, fallBackScannerProvider, npmFolder,
+                generatedPath, frontendDirectory, webpackOutputDirectory, null);
+    }
+
+    /**
+     * Create an instance of the updater given all configurable parameters.
+     *
+     * @param finder
+     *            a reusable class finder
+     * @param frontendDepScanner
+     *            a reusable frontend dependencies scanner
+     * @param fallBackScannerProvider
+     *            fallback scanner provider, not {@code null}
+     * @param npmFolder
+     *            folder with the `package.json` file
+     * @param generatedPath
+     *            folder where flow generated files will be placed.
+     * @param frontendDirectory
+     *            a directory with project's frontend files
+     * @param webpackOutputDirectory
+     *            the directory to set for webpack to output its build results.
+     * @param tokenFileData
+     *            object to fill with token file data, may be {@code null}
+     */
+    TaskUpdateImports(ClassFinder finder,
+            FrontendDependenciesScanner frontendDepScanner,
+            SerializableFunction<ClassFinder, FrontendDependenciesScanner> fallBackScannerProvider,
+            File npmFolder, File generatedPath, File frontendDirectory,
+            File webpackOutputDirectory, JsonObject tokenFileData) {
+        super(finder, frontendDepScanner, npmFolder, generatedPath);
         this.frontendDirectory = frontendDirectory;
-        this.generatedFlowImports = new File(generatedPath, IMPORTS_NAME);
+        fallbackScanner = fallBackScannerProvider.apply(finder);
+        this.finder = finder;
+        this.webpackOutputDirectory = webpackOutputDirectory;
+        this.tokenFileData = tokenFileData;
     }
 
     @Override
     public void execute() {
-        Set<String> modules = new LinkedHashSet<>();
-        modules.addAll(resolveModules(frontDeps.getModules(), true));
-        modules.addAll(resolveModules(frontDeps.getScripts(), false));
-
-        modules.addAll(getGeneratedModules(generatedFolder,
-                Collections.singleton(generatedFlowImports.getName())));
-
-        // filter out external URLs (including "://")
-        modules.removeIf(module -> module.contains("://"));
-
-        try {
-            updateMainJsFile(getMainJsContent(modules));
-        } catch (Exception e) {
-            throw new IllegalStateException(
-                    String.format("Failed to update the Flow imports file '%s'",
-                            generatedFlowImports),
-                    e);
+        File fallBack = null;
+        if (fallbackScanner != null) {
+            UpdateFallBackImportsFile fallBackUpdate = new UpdateFallBackImportsFile(
+                    finder, frontendDirectory, npmFolder, generatedFolder);
+            fallBackUpdate.run();
+            fallBack = fallBackUpdate.getGeneratedFallbackFile();
+            updateBuildFile(fallBackUpdate);
         }
+
+        UpdateMainImportsFile mainUpdate = new UpdateMainImportsFile(finder,
+                frontendDirectory, npmFolder, generatedFolder, fallBack);
+        mainUpdate.run();
     }
 
-    private List<String> getMainJsContent(Set<String> modules) {
-        List<String> lines = new ArrayList<>();
-
-        lines.addAll(getThemeLines());
-        lines.addAll(getCssLines());
-        lines.addAll(getModuleLines(modules));
-
-        return lines;
+    private ThemeDefinition getThemeDefinition() {
+        ThemeDefinition def = frontDeps.getThemeDefinition();
+        if (def != null) {
+            return def;
+        }
+        if (fallbackScanner == null) {
+            return null;
+        }
+        def = fallbackScanner.getThemeDefinition();
+        if (def != null && log().isDebugEnabled()) {
+            log().debug("Theme definition is discoverd by the fallback "
+                    + "scanner and not discovered by the main scanner. Theme '{}' will be used",
+                    def.getTheme().getName());
+        }
+        return def;
     }
 
-    private Collection<String> getThemeLines() {
-        Collection<String> lines = new ArrayList<>();
+    private AbstractTheme getTheme() {
         AbstractTheme theme = frontDeps.getTheme();
-        ThemeDefinition themeDef = frontDeps.getThemeDefinition();
         if (theme != null) {
-            if (!theme.getHeaderInlineContents().isEmpty()) {
-                lines.add(THEME_PREPARE);
-                theme.getHeaderInlineContents().forEach(
-                        html -> addLines(lines, String.format(THEME_LINE_TPL,
-                                NEW_LINE_TRIM.matcher(html).replaceAll(""))));
-            }
-            theme.getHtmlAttributes(themeDef.getVariant())
-                    .forEach((key, value) -> addLines(lines,
-                            String.format(THEME_VARIANT_TPL, key, value)));
-            lines.add("");
+            return theme;
         }
-        return lines;
+        if (fallbackScanner == null) {
+            return null;
+        }
+        return fallbackScanner.getTheme();
     }
 
-    private void addLines(Collection<String> lines, String content) {
-        lines.addAll(Arrays.asList(content.split("\r?\n")));
-    }
-
-    private Collection<String> getCssLines() {
-        Collection<String> lines = new ArrayList<>();
-        Set<CssData> css = frontDeps.getCss();
-        if (!css.isEmpty()) {
-            addLines(lines, CSS_PREPARE);
-
-            Set<String> cssNotFound = new HashSet<>();
-            int i = 0;
-
-            for (CssData cssData : css) {
-                if (!addCssLines(lines, cssData, i)) {
-                    cssNotFound.add(cssData.getValue());
-                }
-                i++;
-            }
-            if (!cssNotFound.isEmpty()) {
-                String prefix = String.format(
-                        "Failed to find the following css files in the `node_modules` or `%s` directory tree:",
-                        frontendDirectory.getPath());
-                String suffix = String.format(
-                        "Check that they exist or are installed. If you use a custom directory "
-                                + "for your resource files instead of the default `frontend` folder "
-                                + "then make sure it's correctly configured (e.g. set '%s' property)",
-                        FrontendUtils.PARAM_FRONTEND_DIR);
-                throw new IllegalStateException(
-                        notFoundMessage(cssNotFound, prefix, suffix));
-            }
-            lines.add("");
+    private void updateBuildFile(AbstractUpdateImports updater) {
+        File tokenFile = getTokenFile();
+        if (!tokenFile.exists()) {
+            log().warn("Missing token file. New token file will be created.");
         }
-        return lines;
-    }
-
-    private boolean addCssLines(Collection<String> lines, CssData cssData,
-            int i) {
-        String cssFile = resolveResource(cssData.getValue(), false);
-        boolean found = importedFileExists(cssFile);
-        String cssImport = toValidBrowserImport(cssFile);
-        String include = cssData.getInclude() != null
-                ? " include=\"" + cssData.getInclude() + "\""
-                : "";
-
-        if (cssData.getThemefor() != null) {
-            addLines(lines, String.format(CSS_THEME_FOR_TPL, i, cssImport, i,
-                    cssData.getThemefor(), include, i));
-        } else if (cssData.getId() != null) {
-            addLines(lines, String.format(CSS_MODULE_TPL, i, cssImport,
-                    cssData.getId(), include, i));
-        } else {
-            addLines(lines,
-                    String.format(CSS_BASIC_TPL, i, cssImport, include, i));
-        }
-        return found;
-    }
-
-    private Collection<String> getModuleLines(Set<String> modules) {
-        Set<String> resourceNotFound = new HashSet<>();
-        Set<String> npmNotFound = new HashSet<>();
-        Set<String> visited = new HashSet<>();
-        AbstractTheme theme = frontDeps.getTheme();
-        Collection<String> lines = new ArrayList<>();
-
-        for (String originalModulePath : modules) {
-            String translatedModulePath = originalModulePath;
-            String localModulePath = null;
-            if (theme != null
-                    && translatedModulePath.contains(theme.getBaseUrl())) {
-                translatedModulePath = theme.translateUrl(translatedModulePath);
-                String themePath = theme.getThemeUrl();
-
-                // (#5964) Allows:
-                // - custom @Theme with files placed in /frontend
-                // - customize an already themed component
-                // @vaadin/vaadin-grid/theme/lumo/vaadin-grid.js ->
-                // theme/lumo/vaadin-grid.js
-                localModulePath = translatedModulePath
-                        .replaceFirst("@.+" + themePath, themePath);
-            }
-
-            if (localModulePath != null
-                    && frontendFileExists(localModulePath)) {
-                lines.add(String.format(IMPORT_TEMPLATE,
-                        toValidBrowserImport(localModulePath)));
-            } else if (importedFileExists(translatedModulePath)) {
-                lines.add(String.format(IMPORT_TEMPLATE,
-                        toValidBrowserImport(translatedModulePath)));
-            } else if (importedFileExists(originalModulePath)) {
-                lines.add(String.format(IMPORT_TEMPLATE,
-                        toValidBrowserImport(originalModulePath)));
-            } else if (originalModulePath.startsWith("./")) {
-                resourceNotFound.add(originalModulePath);
-            } else {
-                npmNotFound.add(originalModulePath);
-                lines.add(String.format(IMPORT_TEMPLATE, originalModulePath));
-            }
-
-            if (theme != null) {
-                handleImports(originalModulePath, theme, lines, visited);
-            }
-        }
-
-        if (!resourceNotFound.isEmpty()) {
-            String prefix = String.format(
-                    "Failed to resolve the following files either:"
-                            + "%n   · in the `%s` sources folder"
-                            + "%n   · or as a `META-INF/resources/frontend` resource in some JAR.",
-                    frontendDirectory.getPath());
-            String suffix = String.format(
-                    "Please, double check that those files exist. If you use a custom directory "
-                            + "for your resource files instead of default "
-                            + "`frontend` folder then make sure you it's correctly configured "
-                            + "(e.g. set '%s' property)",
-                    FrontendUtils.PARAM_FRONTEND_DIR);
-            throw new IllegalStateException(
-                    notFoundMessage(resourceNotFound, prefix, suffix));
-        }
-
-        if (!npmNotFound.isEmpty() && log().isInfoEnabled()) {
-            log().info(notFoundMessage(npmNotFound,
-                    "Failed to find the following imports in the `node_modules` tree:",
-                    "If the build fails, check that npm packages are installed.\n\n"
-                    + "  To fix the build remove `node_modules` directory to reset modules.\n"
-                    + "  In addition you may run `npm install` to fix `node_modules` tree structure."));
-        }
-        return lines;
-    }
-
-    private String notFoundMessage(Set<String> files, String prefix,
-            String suffix) {
-        return String.format("%n%n  %s%n      - %s%n  %s%n%n", prefix,
-                String.join("\n      - ", files), suffix);
-    }
-
-    private void handleImports(String path, AbstractTheme theme,
-            Collection<String> imports, Set<String> visitedImports) {
-        if (visitedImports.contains(path)) {
-            return;
-        }
-        File file = getImportedFrontendFile(path);
-        if (file == null) {
-            return;
-        }
-        Path filePath = file.toPath();
-        visitedImports.add(filePath.normalize().toString().replace("\\", "/"));
         try {
-            visitImportsRecursively(filePath, path, theme, imports,
-                    visitedImports);
-        } catch (IOException exception) {
-            LoggerFactory.getLogger(TaskUpdateImports.class)
-                    .warn("Could not read file {}. Skipping "
-                            + "applyig theme for its imports", file.getPath(),
-                            exception);
-        }
-    }
-
-    private void visitImportsRecursively(Path filePath, String path,
-            AbstractTheme theme, Collection<String> imports,
-            Set<String> visitedImports) throws IOException {
-        String content = Files.readAllLines(filePath, StandardCharsets.UTF_8)
-                .stream().collect(Collectors.joining("\n"));
-        ImportExtractor extractor = new ImportExtractor(content);
-        List<String> importedPaths = extractor.getImportedPaths();
-        for (String importedPath : importedPaths) {
-            // try to resolve path relatively to original filePath (inside user
-            // frontend folder)
-            String resolvedPath = resolve(importedPath, filePath, path);
-            File file = getImportedFrontendFile(resolvedPath);
-            if (file == null && !importedPath.startsWith("./")) {
-                // In case such file doesn't exist it may be external: inside
-                // node_modules folder
-                file = getFile(nodeModulesFolder, resolvedPath);
-                resolvedPath = importedPath;
+            JsonObject buildInfo;
+            if (tokenFile.exists()) {
+                String json = FileUtils.readFileToString(tokenFile,
+                        StandardCharsets.UTF_8);
+                buildInfo = JsonUtil.parse(json);
+            } else {
+                FileUtils.forceMkdirParent(tokenFile);
+                buildInfo = Json.createObject();
             }
-            if (file == null) {
-                // don't do anything if such file doesn't exist at all
-                continue;
+
+            populateFallbackData(buildInfo, updater);
+            if (tokenFileData != null) {
+                populateFallbackData(tokenFileData, updater);
             }
-            if (resolvedPath.contains(theme.getBaseUrl())) {
-                String translatedPath = theme.translateUrl(resolvedPath);
-                if (importedFileExists(translatedPath)) {
-                    imports.add(String.format(IMPORT_TEMPLATE,
-                            normalizeImportPath(translatedPath)));
-                }
+
+            FileUtils.write(tokenFile, JsonUtil.stringify(buildInfo, 2),
+                    StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            log().warn("Unable to read token file", e);
+        }
+    }
+
+    private void populateFallbackData(JsonObject object,
+            AbstractUpdateImports updater) {
+        JsonObject fallback = Json.createObject();
+        fallback.put(FrontendUtils.JS_MODULES, makeFallbackModules(updater));
+        fallback.put(FrontendUtils.CSS_IMPORTS,
+                makeFallbackCssImports(updater));
+
+        JsonObject chunks = Json.createObject();
+        chunks.put(FrontendUtils.FALLBACK, fallback);
+
+        object.put(FrontendUtils.CHUNKS, chunks);
+    }
+
+    private JsonArray makeFallbackModules(AbstractUpdateImports updater) {
+        JsonArray array = Json.createArray();
+        List<String> modules = updater.getModules();
+        Set<String> scripts = updater.getScripts();
+
+        Iterator<String> modulesIterator = modules.iterator();
+        Iterator<String> scriptsIterator = scripts.iterator();
+        for (int i = 0; i < modules.size() + scripts.size(); i++) {
+            if (i < modules.size()) {
+                array.set(i, modulesIterator.next());
+            } else {
+                array.set(i, scriptsIterator.next());
             }
-            handleImports(resolvedPath, theme, imports, visitedImports);
+
         }
+        return array;
     }
 
-    private String normalizeImportPath(String path) {
-        String importPath = toValidBrowserImport(path);
-        File file = new File(importPath);
-        return file.toPath().normalize().toString().replace("\\", "/");
-    }
-
-    /**
-     * Resolves {@code importedPath} declared in the {@code moduleFile} whose
-     * path (used in the app) is {@code path}.
-     *
-     * @param importedPath
-     *            the path to resolve
-     * @param moduleFile
-     *            the path to file which contains the import
-     * @param path
-     *            the path which is used in the app for the {@code moduleFile}
-     * @return resolved path to use in the application
-     */
-    private String resolve(String importedPath, Path moduleFile, String path) {
-        String pathPrefix = moduleFile.toString();
-        pathPrefix = pathPrefix.substring(0,
-                pathPrefix.length() - path.length());
-        String resolvedPath = moduleFile.getParent().resolve(importedPath)
-                .toString();
-        if (resolvedPath.startsWith(pathPrefix)) {
-            resolvedPath = resolvedPath.substring(pathPrefix.length());
+    private JsonArray makeFallbackCssImports(AbstractUpdateImports updater) {
+        JsonArray array = Json.createArray();
+        Set<CssData> css = updater.getCss();
+        Iterator<CssData> iterator = css.iterator();
+        for (int i = 0; i < css.size(); i++) {
+            array.set(i, makeCssJson(iterator.next()));
         }
-        return resolvedPath;
+        return array;
     }
 
-    private boolean frontendFileExists(String jsImport) {
-        File file = getFile(frontendDirectory, jsImport);
-        return file.exists();
-    }
-
-    private boolean importedFileExists(String importName) {
-        File file = getImportedFrontendFile(importName);
-        if (file != null) {
-            return true;
+    private JsonObject makeCssJson(CssData data) {
+        JsonObject object = Json.createObject();
+        if (data.getId() != null) {
+            object.put("id", data.getId());
         }
-
-        // full path import e.g
-        // /node_modules/@vaadin/vaadin-grid/vaadin-grid-column.js
-        boolean found = isFile(nodeModulesFolder, importName);
-        if (importName.toLowerCase().endsWith(".css")) {
-            return found;
+        if (data.getInclude() != null) {
+            object.put("include", data.getInclude());
         }
-        // omitted the .js extension e.g.
-        // /node_modules/@vaadin/vaadin-grid/vaadin-grid-column
-        found = found || isFile(nodeModulesFolder, importName + ".js");
-        // has a package.json file e.g. /node_modules/package-name/package.json
-        found = found || isFile(nodeModulesFolder, importName, PACKAGE_JSON);
-        // file was generated by flow
-        found = found || isFile(generatedFolder,
-                generatedResourcePathIntoRelativePath(importName));
-
-        return found;
-    }
-
-    /**
-     * Returns a file for the {@code jsImport} path ONLY if it's either in the
-     * {@code "frontend"} folder or
-     * {@code "node_modules/@vaadin/flow-frontend/") folder.
-     *
-    <p>
-     * This method doesn't care about "published" WC paths (like "@vaadin/vaadin-grid" and so on).
-     * See the {@link #importedFileExists(String)} method implementation.
-     *
-     * @return a file on FS if it exists and it's inside a frontend folder or in
-     * node_modules/@vaadin/flow-frontend/, otherwise returns {@code null}
-     */
-    private File getImportedFrontendFile(String jsImport) {
-        // file is in /frontend
-        File file = getFile(frontendDirectory, jsImport);
-        if (file.exists()) {
-            return file;
+        if (data.getThemefor() != null) {
+            object.put("themeFor", data.getThemefor());
         }
-        // file is a flow resource e.g.
-        // /node_modules/@vaadin/flow-frontend/gridConnector.js
-        file = getFile(nodeModulesFolder, FLOW_NPM_PACKAGE_NAME, jsImport);
-        return file.exists() ? file : null;
-    }
-
-    private File getFile(File base, String... path) {
-        return new File(base, String.join("/", path));
-    }
-
-    private boolean isFile(File base, String... path) {
-        return getFile(base, path).isFile();
-    }
-
-    private String toValidBrowserImport(String jsImport) {
-        if (jsImport.startsWith(GENERATED_PREFIX)) {
-            return generatedResourcePathIntoRelativePath(jsImport);
-        } else if (isFile(frontendDirectory, jsImport)) {
-            if (!jsImport.startsWith("./")) {
-                log().warn(
-                        "Use the './' prefix for files in the '{}' folder: '{}', please update your annotations.",
-                        frontendDirectory, jsImport);
-            }
-            return WEBPACK_PREFIX_ALIAS + jsImport.replaceFirst("^\\./", "");
+        if (data.getValue() != null) {
+            object.put("value", data.getValue());
         }
-        return jsImport;
+        return object;
     }
 
-    private void updateMainJsFile(List<String> newContent) throws IOException {
-        List<String> oldContent = generatedFlowImports.exists()
-                ? FileUtils.readLines(generatedFlowImports, "UTF-8")
-                : null;
-
-        if (newContent.equals(oldContent)) {
-            log().info("No js modules to update");
-        } else {
-            FileUtils.forceMkdir(generatedFlowImports.getParentFile());
-            FileUtils.writeStringToFile(generatedFlowImports,
-                    String.join("\n", newContent), "UTF-8");
-            log().info("Updated {}", generatedFlowImports);
-        }
-    }
-
-    private static String generatedResourcePathIntoRelativePath(String path) {
-        return path.replace(GENERATED_PREFIX, "./");
+    private File getTokenFile() {
+        return new File(webpackOutputDirectory, TOKEN_FILE);
     }
 }

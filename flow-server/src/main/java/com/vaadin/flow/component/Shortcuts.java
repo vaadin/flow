@@ -30,7 +30,8 @@ import com.vaadin.flow.server.Command;
  * enabled, the shortcut won't work, and vice-versa.
  *
  * @author Vaadin Ltd.
- * @since
+ * @since 1.3
+ *
  * @see Focusable#addFocusShortcut(Key, KeyModifier...) for adding a shortcut
  *         for focusing the component
  * @see ClickNotifier#addClickShortcut(Key, KeyModifier...) for adding a

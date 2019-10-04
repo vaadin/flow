@@ -30,6 +30,7 @@ import org.apache.maven.project.MavenProject;
 
 import com.vaadin.flow.plugin.common.ArtifactData;
 import com.vaadin.flow.plugin.production.ProductionModeCopyStep;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.JarContentsManager;
 
 /**
@@ -38,9 +39,14 @@ import com.vaadin.flow.server.frontend.JarContentsManager;
  * copied from {@link CopyProductionFilesMojo#frontendWorkingDirectory}
  * directory, WebJars and regular jars, refer to {@link ProductionModeCopyStep}
  * for details.
+ *
+ * @since 1.0
  */
 @Mojo(name = "copy-production-files", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.GENERATE_RESOURCES)
 public class CopyProductionFilesMojo extends FlowModeAbstractMojo {
+
+    private static final String ADD_ON_FRONTEND = "src/main/resources/"
+            + Constants.RESOURCES_FRONTEND_DEFAULT;
 
     /**
      * Target directory where the files that are used for the production build
@@ -85,7 +91,7 @@ public class CopyProductionFilesMojo extends FlowModeAbstractMojo {
         if (frontendWorkingDirectory == null) {
             // No directory given, try to find from common locations
             final List<String> potentialFrontEndDirectories = Arrays.asList(
-                    "src/main/webapp/frontend",
+                    "src/main/webapp/frontend", ADD_ON_FRONTEND,
                     "src/main/resources/META-INF/resources/frontend",
                     "src/main/resources/public/frontend",
                     "src/main/resources/static/frontend",

@@ -16,77 +16,78 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.FallibleCommand;
 
+import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 
 /**
  * Copies JavaScript and CSS files from JAR files into a given folder.
+ *
+ * @since 2.0
  */
 public class TaskCopyFrontendFiles implements FallibleCommand {
-    private static final String JAR_SUFFIX = ".jar";
     private static final String[] WILDCARD_INCLUSIONS = new String[] {
             "**/*.js", "**/*.css" };
 
     private File targetDirectory;
-    private transient Set<File> jarFiles = null;
+    private transient Set<File> resourceLocations = null;
 
     /**
-     * Scans the jar files given defined by {@code jarFilesToScan}.
+     * Scans the jar files given defined by {@code resourcesToScan}.
      *
      * @param npmFolder
      *            target directory for the discovered files
-     * @param jarFilesToScan
-     *            jar files to scan. Only files ending in " .jar" will be
-     *            scanned.
+     * @param resourcesToScan
+     *            folders and jar files to scan.
      */
-    TaskCopyFrontendFiles(File npmFolder, Set<File> jarFilesToScan) {
+    TaskCopyFrontendFiles(File npmFolder, Set<File> resourcesToScan) {
         Objects.requireNonNull(npmFolder,
                 "Parameter 'npmFolder' must not be " + "null");
-        Objects.requireNonNull(jarFilesToScan,
+        Objects.requireNonNull(resourcesToScan,
                 "Parameter 'jarFilesToScan' must not be null");
         this.targetDirectory = new File(npmFolder,
                 NODE_MODULES + FLOW_NPM_PACKAGE_NAME);
-        jarFiles = jarFilesToScan.stream()
-                .filter(file -> file.getName().endsWith(JAR_SUFFIX))
-                .filter(File::exists).collect(Collectors.toSet());
+        resourceLocations = resourcesToScan.stream().filter(File::exists)
+                .collect(Collectors.toSet());
     }
 
     @Override
     public void execute() {
         long start = System.nanoTime();
         log().info("Copying frontend resources from jar files ...");
-        createTargetFolder();
+        TaskCopyLocalFrontendFiles.createTargetFolder(targetDirectory);
         JarContentsManager jarContentsManager = new JarContentsManager();
-        for (File jarFile : jarFiles) {
-            jarContentsManager.copyIncludedFilesFromJarTrimmingBasePath(jarFile,
-                    RESOURCES_FRONTEND_DEFAULT, targetDirectory,
-                    WILDCARD_INCLUSIONS);
+        for (File location : resourceLocations) {
+            if (location.isDirectory()) {
+                TaskCopyLocalFrontendFiles.copyLocalResources(
+                        new File(location, RESOURCES_FRONTEND_DEFAULT),
+                        targetDirectory);
+                TaskCopyLocalFrontendFiles.copyLocalResources(
+                        new File(location,
+                                COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT),
+                        targetDirectory);
+            } else {
+                jarContentsManager.copyIncludedFilesFromJarTrimmingBasePath(
+                        location, RESOURCES_FRONTEND_DEFAULT, targetDirectory,
+                        WILDCARD_INCLUSIONS);
+                jarContentsManager.copyIncludedFilesFromJarTrimmingBasePath(
+                        location, COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT,
+                        targetDirectory, WILDCARD_INCLUSIONS);
+            }
         }
         long ms = (System.nanoTime() - start) / 1000000;
-        log().info("Visited {} jar files. Took {} ms.", jarFiles.size(), ms);
-    }
-
-
-    private void createTargetFolder() {
-        try {
-            FileUtils.forceMkdir(Objects.requireNonNull(targetDirectory));
-        } catch (IOException e) {
-            throw new UncheckedIOException(String.format(
-                    "Failed to create directory '%s'", targetDirectory), e);
-        }
+        log().info("Visited {} resources. Took {} ms.",
+                resourceLocations.size(), ms);
     }
 
     private static Logger log() {

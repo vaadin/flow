@@ -43,6 +43,7 @@ import com.vaadin.flow.migration.samplecode.Component2;
 import com.vaadin.flow.migration.samplecode.Component3;
 import com.vaadin.flow.migration.samplecode.EnclosingClassWithNestedClass;
 import com.vaadin.flow.migration.samplecode.EnclosingClassWithNestedClass.NestedComponent;
+import com.vaadin.flow.migration.samplecode.NonVaadinComponent;
 import com.vaadin.flow.migration.samplecode.ShouldNotBeRewritten;
 import com.vaadin.flow.migration.samplecode.StyledComponent;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -256,6 +257,24 @@ public class RewriteLegacyAnnotationsStepTest {
         Assert.assertThat(
                 FileUtils.readFileToString(sourceFile, StandardCharsets.UTF_8),
                 CoreMatchers.containsString("@JsModule(\"./baz.js\")"));
+    }
+
+    @Test
+    public void nonVaadinComponent_htmlImportsAreRewrittenUsing_NPM_VENDOR_Prefix()
+            throws IOException {
+        Mockito.when(finder.getAnnotatedClasses(HtmlImport.class))
+                .thenReturn(Collections.singleton(NonVaadinComponent.class));
+        File sourceFile = makeSourceJavaFile(sourceRoot1,
+                NonVaadinComponent.class);
+        step.rewrite();
+
+        String content = FileUtils.readFileToString(sourceFile,
+                StandardCharsets.UTF_8);
+        Assert.assertThat(content, CoreMatchers.allOf(
+                CoreMatchers.containsString(
+                        "import com.vaadin.flow.component.dependency.JsModule;"),
+                CoreMatchers.containsString(
+                        "@JsModule(\"NPM_VENDOR/non-vaadin/non-vaadin.js\")")));
     }
 
     private File makeSourceJavaFile(File root, Class<?> clazz)

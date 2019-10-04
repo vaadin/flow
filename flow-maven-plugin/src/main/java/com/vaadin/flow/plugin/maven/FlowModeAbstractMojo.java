@@ -26,6 +26,8 @@ import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 
 /**
  * The base class of Flow Mojos in order to compute correctly the modes.
+ *
+ * @since 2.0
  */
 public abstract class FlowModeAbstractMojo extends AbstractMojo {
     static final String VAADIN_COMPATIBILITY_MODE = "vaadin.compatibilityMode";

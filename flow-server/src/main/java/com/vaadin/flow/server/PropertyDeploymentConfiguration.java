@@ -34,6 +34,8 @@ import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
 /**
  * The property handling implementation of {@link DeploymentConfiguration} based
  * on a base class for resolving system properties and a set of init parameters.
+ *
+ * @since 1.2
  */
 public class PropertyDeploymentConfiguration
         extends AbstractDeploymentConfiguration {
@@ -148,7 +150,7 @@ public class PropertyDeploymentConfiguration
 
     @Override
     public boolean isBowerMode() {
-        return getBooleanProperty(SERVLET_PARAMETER_BOWER_MODE, true);
+        return getBooleanProperty(SERVLET_PARAMETER_BOWER_MODE, false);
     }
 
     @Override
@@ -156,7 +158,7 @@ public class PropertyDeploymentConfiguration
         String bower = getStringProperty(SERVLET_PARAMETER_BOWER_MODE, null);
         if (bower == null) {
             return getBooleanProperty(
-                    Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE, true);
+                    Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE, false);
         }
         return isBowerMode();
     }

@@ -28,6 +28,7 @@ import java.util.stream.Stream;
  * Event when shortcut is detected.
  *
  * @author  Vaadin Ltd.
+ * @since 1.3
  */
 public class ShortcutEvent extends EventObject implements Serializable {
     private Component lifecycleOwner;

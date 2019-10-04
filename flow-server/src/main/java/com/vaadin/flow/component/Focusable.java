@@ -24,8 +24,9 @@ import com.vaadin.flow.dom.Element;
  *            the type of the component which implements the interface
  * @see BlurNotifier
  * @see FocusNotifier
+ *
  * @author Vaadin Ltd.
- * @since
+ * @since 1.0
  */
 public interface Focusable<T extends Component>
         extends HasElement, BlurNotifier<T>, FocusNotifier<T>, HasEnabled {

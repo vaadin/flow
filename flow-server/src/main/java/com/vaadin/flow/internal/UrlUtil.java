@@ -22,6 +22,7 @@ import com.vaadin.flow.shared.ApplicationConstants;
  * Internal utility class for URL handling.
  *
  * @author Vaadin Ltd
+ * @since 2.0
  */
 public class UrlUtil {
 
@@ -37,6 +38,9 @@ public class UrlUtil {
      * @return true if the url is external otherwise false.
      */
     public static boolean isExternal(String url) {
+        if (url.startsWith("//")) {
+            return true;
+        }
         return url.contains("://") && !(url
                 .startsWith(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX)
                 || url.startsWith(ApplicationConstants.FRONTEND_PROTOCOL_PREFIX)

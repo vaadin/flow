@@ -25,6 +25,7 @@ import com.vaadin.flow.function.SerializableFunction;
  * class.
  *
  * @author Vaadin Ltd.
+ * @since 2.0
  */
 public final class WebComponentExporterTagExtractor
         implements SerializableFunction<Class<? extends WebComponentExporter<? extends Component>>, String> {

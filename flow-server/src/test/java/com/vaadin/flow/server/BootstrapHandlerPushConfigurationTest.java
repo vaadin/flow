@@ -1,6 +1,7 @@
 package com.vaadin.flow.server;
 
 import javax.servlet.http.HttpServletRequest;
+
 import java.io.IOException;
 
 import org.hamcrest.CoreMatchers;
@@ -66,9 +67,10 @@ public class BootstrapHandlerPushConfigurationTest {
         mocks.setBrowserEs6(false);
 
         // Update sessionRegistry due to after init change of global registry
-        SessionRouteRegistry sessionRegistry = new SessionRouteRegistry(session,
-                service);
-        Mockito.when(session.getAttribute(SessionRouteRegistry.class)).thenReturn(sessionRegistry);
+        SessionRouteRegistry sessionRegistry = new SessionRouteRegistry(
+                session);
+        Mockito.when(session.getAttribute(SessionRouteRegistry.class))
+                .thenReturn(sessionRegistry);
 
         testUI = new BootstrapHandlerTest.TestUI();
         testUI.getInternals().setSession(session);

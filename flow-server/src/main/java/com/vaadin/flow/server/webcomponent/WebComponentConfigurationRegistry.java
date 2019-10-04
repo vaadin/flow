@@ -40,6 +40,7 @@ import java.util.stream.Collectors;
  * Registry for storing available web component configuration implementations.
  *
  * @author Vaadin Ltd.
+ * @since 2.0
  */
 @EmbeddedApplicationAnnotations({Theme.class, Push.class})
 public class WebComponentConfigurationRegistry implements Serializable {

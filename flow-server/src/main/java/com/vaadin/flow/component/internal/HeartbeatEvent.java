@@ -21,6 +21,8 @@ import com.vaadin.flow.component.UI;
 
 /**
  * Event created for a application heartbeat from the client.
+ *
+ * @since 2.0
  */
 public class HeartbeatEvent extends EventObject {
 

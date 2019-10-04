@@ -39,8 +39,11 @@ import com.vaadin.flow.server.frontend.NodeTasks;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
+
 import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFinder;
-import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
+import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
+import static com.vaadin.flow.server.Constants.GENERATED_TOKEN;
+import static com.vaadin.flow.server.Constants.NPM_TOKEN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
@@ -50,6 +53,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
  * This goal checks that node and npm tools are installed, copies frontend
  * resources available inside `.jar` dependencies to `node_modules`, and creates
  * or updates `package.json` and `webpack.config.json` files.
+ *
+ * @since 2.0
  */
 @Mojo(name = "prepare-frontend", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PROCESS_RESOURCES)
 public class PrepareFrontendMojo extends FlowModeAbstractMojo {
@@ -75,14 +80,6 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
-
-    /**
-     * Comma separated values for the paths that should be analyzed in every
-     * project dependency jar and, if files suitable for copying present in
-     * those paths, those should be copied.
-     */
-    @Parameter(defaultValue = RESOURCES_FRONTEND_DEFAULT)
-    private String jarResourcePathsToCopy;
 
     /**
      * The folder where `package.json` file is located. Default is project root
@@ -169,9 +166,9 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         JsonObject buildInfo = Json.createObject();
         buildInfo.put(SERVLET_PARAMETER_COMPATIBILITY_MODE, compatibility);
         buildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, productionMode);
-        buildInfo.put("npmFolder", npmFolder.getAbsolutePath());
-        buildInfo.put("generatedFolder", generatedFolder.getAbsolutePath());
-        buildInfo.put("frontendFolder", frontendDirectory.getAbsolutePath());
+        buildInfo.put(NPM_TOKEN, npmFolder.getAbsolutePath());
+        buildInfo.put(GENERATED_TOKEN, generatedFolder.getAbsolutePath());
+        buildInfo.put(FRONTEND_TOKEN, frontendDirectory.getAbsolutePath());
         try {
             FileUtils.forceMkdir(token.getParentFile());
             FileUtils.write(token, JsonUtil.stringify(buildInfo, 2) + "\n",
@@ -191,12 +188,12 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         if (log.isDebugEnabled()) {
             log.debug(String.format(
                     "%n>>> Running prepare-frontend in %s project%nSystem"
-                            + ".properties:%n productionMode: %s%n bowerMode:" +
-                            " %s%n compatibilityMode: %s%n webpackPort: %s%n " +
-                            "project.basedir: %s%nGoal parameters:%n " +
-                            "productionMode: %s%n compatibilityMode: %s%n " +
-                            "compatibility: %b%n npmFolder: %s%nToken file: " +
-                            "%s%n" + "Token content: %s%n",
+                            + ".properties:%n productionMode: %s%n bowerMode:"
+                            + " %s%n compatibilityMode: %s%n webpackPort: %s%n "
+                            + "project.basedir: %s%nGoal parameters:%n "
+                            + "productionMode: %s%n compatibilityMode: %s%n "
+                            + "compatibility: %b%n npmFolder: %s%nToken file: "
+                            + "%s%n" + "Token content: %s%n",
                     project.getName(),
                     System.getProperty("vaadin.productionMode"),
                     System.getProperty("vaadin.bowerMode"),

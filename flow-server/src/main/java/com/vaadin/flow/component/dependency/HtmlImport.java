@@ -32,11 +32,23 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * times.
  * <p>
  * It is guaranteed that dependencies will be loaded only once.
+ * </p>
  * <p>
  * NOTE: while this annotation is not inherited using the
  * {@link Inherited @Inherited} annotation, the annotations of the possible
  * parent components or implemented interfaces are read when sending the
  * dependencies to the browser.
+ * </p>
+ * <p>
+ * NOTE: this annotation is only useful in compatibility mode and it is ignored
+ * in normal mode. In order to use a Polymer template inside a component in
+ * Vaadin 14+, {@link JsModule} annotation should be used. And to use a css
+ * file, {@link CssImport} should be used. If you want to be able to use your
+ * component in both compatibility mode and normal mode of Vaadin 14+ you need
+ * to have @HtmlImport along with @JsModule and/or @CssImport annotations. See
+ * <a href="https://vaadin.com/docs/v14/flow/v14-migration/v14-migration-guide.html#3-convert-polymer-2-to-polymer-3">Vaadin 14 Migration Guide</a>
+ * for more information on how to migrate templates from Polymer 2 to Polymer 3.
+ * </p>
  *
  * @author Vaadin Ltd
  * @since 1.0

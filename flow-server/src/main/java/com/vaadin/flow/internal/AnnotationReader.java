@@ -25,6 +25,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
@@ -33,6 +34,7 @@ import com.vaadin.flow.component.dependency.StyleSheet;
 /**
  * Helper class for reading annotation data.
  *
+ * @since 1.0
  */
 public class AnnotationReader {
 
@@ -53,6 +55,21 @@ public class AnnotationReader {
     public static List<StyleSheet> getStyleSheetAnnotations(
             Class<? extends Component> componentClass) {
         return getAnnotationsFor(componentClass, StyleSheet.class);
+    }
+
+    /**
+     * Finds all {@link CssImport} annotations on the given {@link Component}
+     * class, its super classes and implemented interfaces.
+     *
+     * @param componentClass
+     *            the component class to search for the annotation
+     * @return a list the CssImport annotations found
+     * @see #getAnnotationFor(Class, Class) for what order the annotations are
+     *      in the list
+     */
+    public static List<CssImport> getCssImportAnnotations(
+            Class<? extends Component> componentClass) {
+        return getAnnotationsFor(componentClass, CssImport.class);
     }
 
     /**
@@ -255,5 +272,4 @@ public class AnnotationReader {
         return getAnnotationsFor(clazz, annotationType).stream()
                 .map(valueExtractor);
     }
-
 }

@@ -22,7 +22,7 @@ import com.vaadin.flow.shared.ApplicationConstants;
 /**
  * Constants used by the server side framework.
  *
- *
+ * @since 1.0
  */
 public final class Constants implements Serializable {
 
@@ -35,6 +35,11 @@ public final class Constants implements Serializable {
     public static final String VAADIN_PREFIX = "vaadin.";
 
     public static final String SERVLET_PARAMETER_PRODUCTION_MODE = "productionMode";
+
+    // Token file keys used for defining folder paths for dev server
+    public static final String NPM_TOKEN = "npmFolder";
+    public static final String FRONTEND_TOKEN = "frontendFolder";
+    public static final String GENERATED_TOKEN = "generatedFolder";
 
     /**
      * enable it if your project is a Polymer 2.0 one, should be removed in V15
@@ -163,9 +168,15 @@ public final class Constants implements Serializable {
     public static final String PACKAGE_JSON = "package.json";
 
     /**
+     * Location for the frontend resources in jar files for compatibility mode
+     * (also obsolete but supported for NPM mode).
+     */
+    public static final String COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT = "META-INF/resources/frontend";
+
+    /**
      * Location for the frontend resources in jar files.
      */
-    public static final String RESOURCES_FRONTEND_DEFAULT = "META-INF/resources/frontend";
+    public static final String RESOURCES_FRONTEND_DEFAULT = "META-INF/frontend";
 
     /**
      * Configuration name for the time waiting for webpack output success or
@@ -194,6 +205,14 @@ public final class Constants implements Serializable {
      * Configuration name for adding extra options to the webpack-dev-server.
      */
     public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS = "devmode.webpack.options";
+
+    /**
+     * Boolean parameter for enabling/disabling bytecode scanning in dev mode.
+     * If enabled, entry points are scanned for reachable frontend resources.
+     * If disabled, all classes on the classpath are scanned.
+     */
+    public static final String SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE = "devmode.optimizeBundle";
+
 
     /**
      * The path used in the vaadin servlet for handling static resources.

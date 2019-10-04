@@ -2,30 +2,42 @@ package com.vaadin.flow.server;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 import org.easymock.Capture;
 import org.easymock.EasyMock;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.frontend.FallbackChunk;
+import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.DeploymentConfigurationFactory.DEV_FOLDER_MISSING_MESSAGE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 import static java.util.Collections.emptyMap;
@@ -44,10 +56,10 @@ public class DeploymentConfigurationFactoryTest {
     private File tokenFile;
     private ServletContext contextMock;
 
-    private static Map<String, String> defaultServletParams =
-            Collections.singletonMap(
-                    Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                    Boolean.FALSE.toString());
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
+
+    private Map<String, String> defaultServletParams = new HashMap<>();
 
     private static class NoSettings extends VaadinServlet {
     }
@@ -67,7 +79,12 @@ public class DeploymentConfigurationFactoryTest {
                 temporaryFolder.getRoot().getAbsolutePath());
         tokenFile = new File(temporaryFolder.getRoot(),
                 VAADIN_SERVLET_RESOURCES + TOKEN_FILE);
+        FileUtils.writeLines(tokenFile, Arrays.asList("{", "}"));
         contextMock = mock(ServletContext.class);
+
+        defaultServletParams.put(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                Boolean.FALSE.toString());
+        defaultServletParams.put(PARAM_TOKEN_FILE, tokenFile.getPath());
     }
 
     public void tearDown() {
@@ -78,11 +95,14 @@ public class DeploymentConfigurationFactoryTest {
     public void servletWithEnclosingUI_hasItsNameInConfig() throws Exception {
         Class<TestUI.ServletWithEnclosingUi> servlet = TestUI.ServletWithEnclosingUi.class;
 
-        Map<String, String> servletConfigParams = new HashMap<>(new HashMap<>(defaultServletParams));
+        Map<String, String> servletConfigParams = new HashMap<>(
+                new HashMap<>(defaultServletParams));
 
         DeploymentConfiguration config = DeploymentConfigurationFactory
                 .createDeploymentConfiguration(servlet,
-                        createServletConfigMock(servletConfigParams, emptyMap()));
+                        createServletConfigMock(servletConfigParams,
+                                Collections.singletonMap(PARAM_TOKEN_FILE,
+                                        tokenFile.getPath())));
 
         Class<?> customUiClass = servlet.getEnclosingClass();
         assertTrue(String.format(
@@ -99,11 +119,12 @@ public class DeploymentConfigurationFactoryTest {
             throws Exception {
         Class<NoSettings> servlet = NoSettings.class;
 
-        Map<String, String> servletConfigParams = new HashMap<>(defaultServletParams);
+        Map<String, String> servletConfigParams = new HashMap<>(
+                defaultServletParams);
 
         DeploymentConfiguration config = DeploymentConfigurationFactory
-                .createDeploymentConfiguration(servlet,
-                        createServletConfigMock(servletConfigParams, emptyMap()));
+                .createDeploymentConfiguration(servlet, createServletConfigMock(
+                        servletConfigParams, emptyMap()));
 
         Class<?> notUiClass = servlet.getEnclosingClass();
         assertFalse(String.format(
@@ -118,11 +139,12 @@ public class DeploymentConfigurationFactoryTest {
     public void vaadinServletConfigurationRead() throws Exception {
         Class<VaadinSettings> servlet = VaadinSettings.class;
 
-        Map<String, String> servletConfigParams = new HashMap<>(defaultServletParams);
+        Map<String, String> servletConfigParams = new HashMap<>(
+                defaultServletParams);
 
         DeploymentConfiguration config = DeploymentConfigurationFactory
-                .createDeploymentConfiguration(servlet,
-                        createServletConfigMock(servletConfigParams, emptyMap()));
+                .createDeploymentConfiguration(servlet, createServletConfigMock(
+                        servletConfigParams, emptyMap()));
 
         assertTrue(String.format(
                 "Unexpected value for production mode, check '%s' class annotation",
@@ -140,7 +162,8 @@ public class DeploymentConfigurationFactoryTest {
         boolean overridingProductionModeValue = false;
         int overridingHeartbeatIntervalValue = 444;
 
-        Map<String, String> servletConfigParams = new HashMap<>(defaultServletParams);
+        Map<String, String> servletConfigParams = new HashMap<>(
+                defaultServletParams);
         servletConfigParams.put(SERVLET_PARAMETER_PRODUCTION_MODE,
                 Boolean.toString(overridingProductionModeValue));
         servletConfigParams.put(Constants.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
@@ -167,7 +190,8 @@ public class DeploymentConfigurationFactoryTest {
         boolean overridingProductionModeValue = false;
         int overridingHeartbeatIntervalValue = 444;
 
-        Map<String, String> servletContextParams = new HashMap<>(defaultServletParams);
+        Map<String, String> servletContextParams = new HashMap<>(
+                defaultServletParams);
         servletContextParams.put(SERVLET_PARAMETER_PRODUCTION_MODE,
                 Boolean.toString(overridingProductionModeValue));
         servletContextParams.put(Constants.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
@@ -194,7 +218,8 @@ public class DeploymentConfigurationFactoryTest {
         boolean servletConfigProductionModeValue = true;
         int servletConfigHeartbeatIntervalValue = 333;
 
-        Map<String, String> servletConfigParams = new HashMap<>(defaultServletParams);
+        Map<String, String> servletConfigParams = new HashMap<>(
+                defaultServletParams);
         servletConfigParams.put(SERVLET_PARAMETER_PRODUCTION_MODE,
                 Boolean.toString(servletConfigProductionModeValue));
         servletConfigParams.put(Constants.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
@@ -222,9 +247,62 @@ public class DeploymentConfigurationFactoryTest {
                 config.getHeartbeatInterval());
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void should_throwIfModeNotSet() throws Exception {
+        exception.expect(IllegalStateException.class);
+        exception.expectMessage("Unable to determine mode of operation.");
         createConfig(emptyMap());
+    }
+
+    @Test
+    public void should_throwIfCompatibilityModeIsFalseButNoTokenFile()
+            throws Exception {
+        exception.expect(IllegalStateException.class);
+        exception.expectMessage(
+                "The compatibility mode is explicitly set to 'false'");
+        DeploymentConfigurationFactory.createDeploymentConfiguration(
+                VaadinServlet.class,
+                createServletConfigMock(Collections.singletonMap(
+                        Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                        Boolean.FALSE.toString()), emptyMap()));
+    }
+
+    @Test
+    public void shouldNotThrowIfCompatibilityModeIsFalse_noTokenFile_correctWebPackConfigExists()
+            throws Exception {
+        Map<String, String> map = new HashMap<>();
+        map.put(FrontendUtils.PROJECT_BASEDIR,
+                temporaryFolder.getRoot().getAbsolutePath());
+        map.put(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                Boolean.FALSE.toString());
+
+        File webPack = new File(temporaryFolder.getRoot().getAbsolutePath(),
+                FrontendUtils.WEBPACK_CONFIG);
+        FileUtils.writeLines(webPack, Arrays.asList("./webpack.generated.js"));
+
+        DeploymentConfigurationFactory.createDeploymentConfiguration(
+                VaadinServlet.class, createServletConfigMock(map, emptyMap()));
+    }
+
+    @Test
+    public void shouldTrhowIfCompatibilityModeIsFalse_noTokenFile_incorrectWebPackConfigExists()
+            throws Exception {
+        exception.expect(IllegalStateException.class);
+        exception.expectMessage(
+                "The compatibility mode is explicitly set to 'false'");
+
+        Map<String, String> map = new HashMap<>();
+        map.put(FrontendUtils.PROJECT_BASEDIR,
+                temporaryFolder.getRoot().getAbsolutePath());
+        map.put(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                Boolean.FALSE.toString());
+
+        File webPack = new File(temporaryFolder.getRoot().getAbsolutePath(),
+                FrontendUtils.WEBPACK_CONFIG);
+        webPack.createNewFile();
+
+        DeploymentConfigurationFactory.createDeploymentConfiguration(
+                VaadinServlet.class, createServletConfigMock(map, emptyMap()));
     }
 
     @Test
@@ -237,6 +315,133 @@ public class DeploymentConfigurationFactoryTest {
                 .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
         assertFalse(config.isCompatibilityMode());
         assertTrue(config.isProductionMode());
+    }
+
+    @Test
+    public void shouldThrow_tokenFileContainsNonExistingNpmFolderInDevMode()
+            throws Exception {
+        exception.expect(IllegalStateException.class);
+        exception.expectMessage(
+                String.format(DEV_FOLDER_MISSING_MESSAGE, "npm"));
+        FileUtils.writeLines(tokenFile,
+                Arrays.asList("{", "\"compatibilityMode\": false,",
+                        "\"productionMode\": false,", "\"npmFolder\": \"npm\",",
+                        "\"generatedFolder\": \"generated\",",
+                        "\"frontendFolder\": \"frontend\"", "}"));
+
+        createConfig(Collections.singletonMap(PARAM_TOKEN_FILE,
+                tokenFile.getPath()));
+    }
+
+    @Test
+    public void shouldThrow_tokenFileContainsNonExistingFrontendFolderNoNpmFolder()
+            throws Exception {
+        exception.expect(IllegalStateException.class);
+        exception.expectMessage(
+                String.format(DEV_FOLDER_MISSING_MESSAGE, "frontend"));
+        FileUtils.writeLines(tokenFile,
+                Arrays.asList("{", "\"compatibilityMode\": false,",
+                        "\"productionMode\": false,",
+                        "\"frontendFolder\": \"frontend\"", "}"));
+
+        createConfig(Collections.singletonMap(PARAM_TOKEN_FILE,
+                tokenFile.getPath()));
+    }
+
+    @Test
+    public void shouldThrow_tokenFileContainsNonExistingFrontendFolderOutsideNpmSubFolder()
+            throws Exception {
+        exception.expect(IllegalStateException.class);
+        exception.expectMessage(
+                String.format(DEV_FOLDER_MISSING_MESSAGE, "frontend"));
+        temporaryFolder.newFolder("npm");
+        String tempFolder = temporaryFolder.getRoot().getAbsolutePath()
+                .replace("\\", "/");
+        FileUtils.writeLines(tokenFile,
+                Arrays.asList("{", "\"compatibilityMode\": false,",
+                        "\"productionMode\": false,",
+                        "\"npmFolder\": \"" + tempFolder + "/npm\",",
+                        "\"frontendFolder\": \"frontend\"", "}"));
+
+        createConfig(Collections.singletonMap(PARAM_TOKEN_FILE,
+                tokenFile.getPath()));
+    }
+
+    @Test
+    public void shouldNotThrow_tokenFileFrontendFolderInDevMode()
+            throws Exception {
+        temporaryFolder.newFolder("npm");
+        String tempFolder = temporaryFolder.getRoot().getAbsolutePath()
+                .replace("\\", "/");
+        FileUtils.writeLines(tokenFile, Arrays.asList("{",
+                "\"compatibilityMode\": false,", "\"productionMode\": false,",
+                "\"npmFolder\": \"" + tempFolder + "/npm\",",
+                "\"frontendFolder\": \"" + tempFolder + "/npm/frontend\"",
+                "}"));
+
+        createConfig(Collections.singletonMap(PARAM_TOKEN_FILE,
+                tokenFile.getPath()));
+    }
+
+    @Test
+    public void shouldNotThrow_tokenFileFoldersExist() throws Exception {
+        temporaryFolder.newFolder("npm");
+        temporaryFolder.newFolder("frontend");
+        String tempFolder = temporaryFolder.getRoot().getAbsolutePath()
+                .replace("\\", "/");
+        FileUtils.writeLines(tokenFile, Arrays.asList("{",
+                "\"compatibilityMode\": false,", "\"productionMode\": false,",
+                "\"npmFolder\": \"" + tempFolder + "/npm\",",
+                "\"frontendFolder\": \"" + tempFolder + "/frontend\"", "}"));
+
+        createConfig(Collections.singletonMap(PARAM_TOKEN_FILE,
+                tokenFile.getPath()));
+    }
+
+    @Test
+    public void createInitParameters_fallbackChunkObjectIsInInitParams()
+            throws ServletException, IOException {
+        ServletContext context = Mockito.mock(ServletContext.class);
+        ServletConfig config = Mockito.mock(ServletConfig.class);
+        Mockito.when(config.getServletContext()).thenReturn(context);
+
+        Hashtable<String, String> table = new Hashtable<>(
+                Collections.singletonMap(FrontendUtils.PARAM_TOKEN_FILE, ""));
+        Mockito.when(context.getInitParameterNames()).thenReturn(table.keys());
+
+        Mockito.when(config.getInitParameterNames())
+                .thenReturn(new Hashtable<String, String>().keys());
+
+        File tokenFile = temporaryFolder.newFile();
+
+        Files.write(tokenFile.toPath(),
+                Collections.singletonList("{ 'chunks': { " + "'fallback': {"
+                        + "            'jsModules': ['foo', 'bar'],"
+                        + "           'cssImports': [ { 'value' :'foo-value' , 'id': 'bar-id'}]"
+                        + "}}" + "}"));
+
+        Mockito.when(context.getInitParameter(FrontendUtils.PARAM_TOKEN_FILE))
+                .thenReturn(tokenFile.getPath());
+
+        Properties properties = DeploymentConfigurationFactory
+                .createInitParameters(Object.class, config);
+
+        Object object = properties
+                .get(DeploymentConfigurationFactory.FALLBACK_CHUNK);
+
+        Assert.assertTrue(object instanceof FallbackChunk);
+
+        FallbackChunk chunk = (FallbackChunk) object;
+        Set<String> modules = chunk.getModules();
+        Assert.assertEquals(2, modules.size());
+        Assert.assertTrue(modules.contains("foo"));
+        Assert.assertTrue(modules.contains("bar"));
+
+        Set<CssImportData> cssImports = chunk.getCssImports();
+        Assert.assertEquals(1, cssImports.size());
+        CssImportData data = cssImports.iterator().next();
+        Assert.assertEquals("foo-value", data.getValue());
+        Assert.assertEquals("bar-id", data.getId());
     }
 
     private DeploymentConfiguration createConfig(Map<String, String> map)

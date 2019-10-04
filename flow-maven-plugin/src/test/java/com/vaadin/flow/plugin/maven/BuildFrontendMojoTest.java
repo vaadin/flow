@@ -134,6 +134,8 @@ public class BuildFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "runNpmInstall", false);
         ReflectionUtils.setVariableValueInObject(mojo, "compatibilityMode",
                 "false");
+        ReflectionUtils.setVariableValueInObject(mojo, "optimizeBundle",
+                true);
 
         flowPackagPath.mkdirs();
         generatedFolder.mkdirs();
@@ -246,6 +248,7 @@ public class BuildFrontendMojoTest {
         mojo.execute();
 
         assertContainsImports(false, "https://foo.com/bar.js");
+        assertContainsImports(false, "//foo.com/bar.js");
     }
 
     @Test
@@ -321,6 +324,9 @@ public class BuildFrontendMojoTest {
         JsonObject initialBuildInfo = Json.createObject();
         initialBuildInfo.put(SERVLET_PARAMETER_COMPATIBILITY_MODE, false);
         initialBuildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, false);
+        initialBuildInfo.put("npmFolder", "npm");
+        initialBuildInfo.put("generatedFolder", "generated");
+        initialBuildInfo.put("frontendFolder", "frontend");
         org.apache.commons.io.FileUtils.forceMkdir(tokenFile.getParentFile());
         org.apache.commons.io.FileUtils.write(tokenFile,
                 JsonUtil.stringify(initialBuildInfo, 2) + "\n", "UTF-8");
@@ -336,6 +342,12 @@ public class BuildFrontendMojoTest {
                 buildInfo.get(SERVLET_PARAMETER_COMPATIBILITY_MODE));
         Assert.assertNotNull("productionMode token should be available",
                 buildInfo.get(SERVLET_PARAMETER_PRODUCTION_MODE));
+        Assert.assertNull("npmFolder should have been removed",
+                buildInfo.get("npmFolder"));
+        Assert.assertNull("generatedFolder should have been removed",
+                buildInfo.get("generatedFolder"));
+        Assert.assertNull("frontendFolder should have been removed",
+                buildInfo.get("frontendFolder"));
     }
 
     @Test

@@ -35,6 +35,8 @@ import com.vaadin.flow.theme.Theme;
 
 /**
  * A class visitor for Flow components.
+ *
+ * @since 2.0
  */
 final class FrontendClassVisitor extends ClassVisitor {
 
@@ -87,7 +89,7 @@ final class FrontendClassVisitor extends ClassVisitor {
         }
 
         // Visit arguments, we only care those arguments that are Types,
-        // e.g dynamic-routes #5509, or factory-beans #5658 
+        // e.g dynamic-routes #5509, or factory-beans #5658
         @Override
         public void visitLdcInsn(Object value) {
             if (value instanceof Type) {
@@ -108,7 +110,7 @@ final class FrontendClassVisitor extends ClassVisitor {
      *            whether we are visiting from Theme
      */
     FrontendClassVisitor(String className, EndPointData endPoint,
-                         boolean themeScope) { // NOSONAR
+            boolean themeScope) { // NOSONAR
         super(Opcodes.ASM7);
         this.className = className;
         this.endPoint = endPoint;
@@ -189,7 +191,6 @@ final class FrontendClassVisitor extends ClassVisitor {
         addSignatureToClasses(children, superName);
     }
 
-
     // Executed for each method defined in the class.
     @Override
     public MethodVisitor visitMethod(int access, String name, String descriptor,
@@ -245,7 +246,6 @@ final class FrontendClassVisitor extends ClassVisitor {
         addSignatureToClasses(children, descriptor);
         return null;
     }
-
 
     /**
      * Return all discovered classes in the visit.

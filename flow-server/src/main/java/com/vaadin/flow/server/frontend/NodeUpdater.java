@@ -33,10 +33,12 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.FallibleCommand;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
+import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
+import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
@@ -48,6 +50,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 /**
  * Base abstract class for frontend updaters that needs to be run when in
  * dev-mode or from the flow maven plugin.
+ *
+ * @since 2.0
  */
 public abstract class NodeUpdater implements FallibleCommand {
     /**
@@ -63,7 +67,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     private static final String DEP_LICENSE_DEFAULT = "UNLICENSED";
     private static final String DEP_NAME_KEY = "name";
     private static final String DEP_NAME_DEFAULT = "no-name";
-    private static final String DEP_NAME_FLOW_DEPS = "@vaadin/flow-deps";
+    protected static final String DEP_NAME_FLOW_DEPS = "@vaadin/flow-deps";
     private static final String DEP_VERSION_KEY = "version";
     private static final String DEP_VERSION_DEFAULT = "1.0.0";
 
@@ -87,7 +91,7 @@ public abstract class NodeUpdater implements FallibleCommand {
      * The {@link FrontendDependencies} object representing the application
      * dependencies.
      */
-    protected final FrontendDependencies frontDeps;
+    protected final FrontendDependenciesScanner frontDeps;
 
     private final ClassFinder finder;
 
@@ -106,18 +110,17 @@ public abstract class NodeUpdater implements FallibleCommand {
      *            folder where flow generated files will be placed.
      */
     protected NodeUpdater(ClassFinder finder,
-            FrontendDependencies frontendDependencies, File npmFolder,
+            FrontendDependenciesScanner frontendDependencies, File npmFolder,
             File generatedPath) {
-        this.frontDeps = finder != null && frontendDependencies == null
-                ? new FrontendDependencies(finder)
-                : frontendDependencies;
+        this.frontDeps = frontendDependencies;
         this.finder = finder;
         this.npmFolder = npmFolder;
         this.nodeModulesFolder = new File(npmFolder, NODE_MODULES);
         this.generatedFolder = generatedPath;
     }
 
-    Set<String> getGeneratedModules(File directory, Set<String> excludes) {
+    static Set<String> getGeneratedModules(File directory,
+            Set<String> excludes) {
         if (!directory.exists()) {
             return Collections.emptySet();
         }
@@ -166,9 +169,8 @@ public abstract class NodeUpdater implements FallibleCommand {
             // We only should check here those paths starting with './' when all
             // flow components
             // have the './' prefix
-            String resource = resolved.replaceFirst("^./+", "");
-            if (finder.getResource(
-                    RESOURCES_FRONTEND_DEFAULT + "/" + resource) != null) {
+            String resource = resolved.replaceFirst("^\\./+", "");
+            if (hasMetaInfResource(resource)) {
                 if (!resolved.startsWith("./")) {
                     log().warn(
                             "Use the './' prefix for files in JAR files: '{}', please update your component.",
@@ -178,6 +180,13 @@ public abstract class NodeUpdater implements FallibleCommand {
             }
         }
         return resolved;
+    }
+
+    private boolean hasMetaInfResource(String resource) {
+        return finder.getResource(
+                RESOURCES_FRONTEND_DEFAULT + "/" + resource) != null
+                || finder.getResource(COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT
+                        + "/" + resource) != null;
     }
 
     JsonObject getMainPackageJson() throws IOException {
@@ -211,11 +220,18 @@ public abstract class NodeUpdater implements FallibleCommand {
                 "@webcomponents/webcomponentsjs", "^2.2.10") || added;
         // dependency for the custom package.json placed in the generated
         // folder.
-        String customPkg = "./" + npmFolder.getAbsoluteFile().toPath()
-                .relativize(generatedFolder.toPath()).toString();
-        added = addDependency(packageJson, DEPENDENCIES, DEP_NAME_FLOW_DEPS,
-                customPkg.replaceAll("\\\\", "/")) || added;
-
+        try {
+            String customPkg = "./" + npmFolder.getAbsoluteFile().toPath()
+                    .relativize(generatedFolder.getAbsoluteFile().toPath())
+                    .toString();
+            added = addDependency(packageJson, DEPENDENCIES, DEP_NAME_FLOW_DEPS,
+                    customPkg.replaceAll("\\\\", "/")) || added;
+        } catch (IllegalArgumentException iae) {
+            log().error("Exception in relativization of '%s' to '%s'",
+                    npmFolder.getAbsoluteFile().toPath(),
+                    generatedFolder.getAbsoluteFile().toPath());
+            throw iae;
+        }
         added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack",
                 "4.30.0") || added;
         added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack-cli",
@@ -226,6 +242,8 @@ public abstract class NodeUpdater implements FallibleCommand {
                 "webpack-babel-multi-target-plugin", "2.1.0") || added;
         added = addDependency(packageJson, DEV_DEPENDENCIES,
                 "copy-webpack-plugin", "5.0.3") || added;
+        added = addDependency(packageJson, DEV_DEPENDENCIES,
+                "compression-webpack-plugin", "3.0.0") || added;
         added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack-merge",
                 "4.2.1") || added;
         added = addDependency(packageJson, DEV_DEPENDENCIES, "raw-loader",
@@ -255,20 +273,22 @@ public abstract class NodeUpdater implements FallibleCommand {
         return false;
     }
 
-    void writeMainPackageFile(JsonObject packageJson) throws IOException {
-        writePackageFile(packageJson, new File(npmFolder, PACKAGE_JSON));
+    String writeMainPackageFile(JsonObject packageJson) throws IOException {
+        return writePackageFile(packageJson, new File(npmFolder, PACKAGE_JSON));
     }
 
-    void writeAppPackageFile(JsonObject packageJson) throws IOException {
-        writePackageFile(packageJson, new File(generatedFolder, PACKAGE_JSON));
+    String writeAppPackageFile(JsonObject packageJson) throws IOException {
+        return writePackageFile(packageJson,
+                new File(generatedFolder, PACKAGE_JSON));
     }
 
-    void writePackageFile(JsonObject json, File packageFile)
+    String writePackageFile(JsonObject json, File packageFile)
             throws IOException {
         log().info("Updated npm {}.", packageFile.getAbsolutePath());
         FileUtils.forceMkdirParent(packageFile);
-        FileUtils.writeStringToFile(packageFile, stringify(json, 2) + "\n",
-                UTF_8.name());
+        String content = stringify(json, 2) + "\n";
+        FileUtils.writeStringToFile(packageFile, content, UTF_8.name());
+        return content;
     }
 
     Logger log() {

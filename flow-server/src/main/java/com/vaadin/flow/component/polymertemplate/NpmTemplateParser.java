@@ -53,6 +53,8 @@ import elemental.json.JsonObject;
  * get its instance.
  *
  * @author Vaadin Ltd
+ * @since 2.0
+ *
  * @see BundleParser
  */
 public class NpmTemplateParser implements TemplateParser {
@@ -192,9 +194,9 @@ public class NpmTemplateParser implements TemplateParser {
      * we do not have a bundle.
      *
      * @param service
-     *         the Vaadin service.
+     *            the Vaadin service.
      * @return {@code true} if we need to re-load and parse stats.json, else
-     * {@code false}
+     *         {@code false}
      */
     protected boolean isStatsFileReadNeeded(VaadinService service)
             throws IOException {
@@ -213,7 +215,7 @@ public class NpmTemplateParser implements TemplateParser {
      * bundle file.
      *
      * @param config
-     *         deployment configuration
+     *            deployment configuration
      * @return true if production mode or disabled dev server
      */
     private boolean usesBundleFile(DeploymentConfiguration config) {

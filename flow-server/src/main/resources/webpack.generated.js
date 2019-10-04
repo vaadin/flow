@@ -6,6 +6,7 @@
  */
 const fs = require('fs');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const CompressionPlugin = require('compression-webpack-plugin');
 const {BabelMultiTargetPlugin} = require('webpack-babel-multi-target-plugin');
 
 const path = require('path');
@@ -34,6 +35,38 @@ mkdirp(confFolder);
 const devMode = process.argv.find(v => v.indexOf('webpack-dev-server') >= 0);
 let stats;
 
+const watchDogPrefix = '--watchDogPort=';
+let watchDogPort = process.argv.find(v => v.indexOf(watchDogPrefix) >= 0);
+if (watchDogPort){
+    watchDogPort = watchDogPort.substr(watchDogPrefix.length);
+}
+
+const net = require('net');
+
+function setupWatchDog(){
+    var client = new net.Socket();
+    client.connect(watchDogPort, 'localhost', function() {
+        console.debug('Watchdog connected.');
+    });
+
+    client.on('error', function(){
+        console.log("Watchdog connection error. Terminating webpack process...");
+        client.destroy();
+        process.exit(0);
+    });
+
+    client.on('close', function() {
+        client.destroy();
+        console.debug('Watchdog connection closed. Trying to re-run watchdog.');
+        setupWatchDog();
+    });  
+}
+
+if (watchDogPort){
+    setupWatchDog();
+}
+
+
 exports = {
   frontendFolder: `${frontendFolder}`,
   buildFolder: `${buildFolder}`,
@@ -49,7 +82,8 @@ module.exports = {
 
   output: {
     filename: `${build}/vaadin-[name]-[contenthash].cache.js`,
-    path: mavenOutputFolderForFlowBundledFiles
+    path: mavenOutputFolderForFlowBundledFiles,
+    publicPath: '/VAADIN/',
   },
 
   resolve: {
@@ -93,6 +127,9 @@ module.exports = {
     maxAssetSize: 2097152 // 2MB
   },
   plugins: [
+    // Generate compressed bundles
+    new CompressionPlugin(),
+
     // Transpile with babel, and produce different bundles per browser
     new BabelMultiTargetPlugin({
       babel: {

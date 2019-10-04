@@ -16,6 +16,9 @@
 
 package com.vaadin.flow.uitest.ui;
 
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.KeyModifier;
 import com.vaadin.flow.component.ShortcutRegistration;
@@ -25,6 +28,7 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
@@ -112,7 +116,7 @@ public class ShortcutsView extends Div {
             actual.setValue("toggled!");
         }, Key.KEY_Y, KeyModifier.ALT);
 
-            // modifyingShortcutShouldChangeShortcutEvent
+        // modifyingShortcutShouldChangeShortcutEvent
         flipFloppingRegistration =
                 UI.getCurrent().addShortcutListener(event -> {
                     if (event.getKeyModifiers().contains(KeyModifier.ALT)) {
@@ -155,5 +159,35 @@ public class ShortcutsView extends Div {
         wrapper1.add(clickInput1, clickButton1);
         wrapper2.add(clickInput2, clickButton2);
         add(wrapper1, wrapper2);
+
+        // removingShortcutCleansJavascriptEventSettingsItUsed
+        AtomicReference<ShortcutRegistration> removalAtomicReference = new AtomicReference<>();
+        final Input removalInput = new Input(ValueChangeMode.EAGER);
+        removalInput.setId("removal-input");
+        ShortcutRegistration removalRegistration = Shortcuts
+                .addShortcutListener(removalInput, () -> {
+                    removalInput.setValue(removalInput.getValue().toUpperCase());
+                    removalAtomicReference.get().remove();
+                }, Key.KEY_D);
+        removalAtomicReference.set(removalRegistration);
+        add(removalInput);
+
+        // bindingShortcutToSameKeyWithDifferentModifiers_shouldNot_triggerTwice
+        AtomicInteger oCounter = new AtomicInteger(0);
+        AtomicInteger oShiftCounter = new AtomicInteger(0);
+        AtomicInteger oAltCounter = new AtomicInteger(0);
+        UI.getCurrent()
+                .addShortcutListener(
+                        () -> actual.setValue("" + oCounter.incrementAndGet()
+                                + oShiftCounter.get() + oAltCounter.get()),
+                        Key.KEY_O);
+        UI.getCurrent()
+                .addShortcutListener(() -> actual.setValue("" + oCounter.get()
+                        + oShiftCounter.incrementAndGet() + oAltCounter.get()),
+                        Key.KEY_O, KeyModifier.SHIFT);
+        UI.getCurrent().addShortcutListener(
+                () -> actual.setValue("" + oCounter.get() + oShiftCounter.get()
+                        + oAltCounter.incrementAndGet()),
+                Key.KEY_O, KeyModifier.ALT);
     }
 }

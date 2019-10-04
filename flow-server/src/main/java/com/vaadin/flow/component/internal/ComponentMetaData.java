@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.component.internal;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,15 +23,18 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Synchronize;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
@@ -55,6 +57,15 @@ import com.vaadin.flow.shared.util.SharedUtil;
  */
 public class ComponentMetaData {
 
+    private static final String HTML_IMPORT_WITHOUT_JS_MODULE_WARNING = System
+            .lineSeparator()
+            + "{} has only @HtmlImport annotation(s) which is ignored in Vaadin 14+. "
+            + "This annotation is only useful in compatibility mode. "
+            + "In order to use a Polymer template inside a component in Vaadin 14+, @JsModule annotation should be used. "
+            + "And to use a css file, {@link CssImport} should be used. "
+            + "If you want to be able to use your component in both compatibility mode and normal mode of Vaadin 14+ you need to have @HtmlImport along with @JsModule and/or @CssImport annotations."
+            + "Go to Vaadin 14 Migration Guide (https://vaadin.com/docs/v14/flow/v14-migration/v14-migration-guide.html#3-convert-polymer-2-to-polymer-3) to see how to migrate templates from Polymer 2 to Polymer 3.";
+
     /**
      * Dependencies defined for a {@link Component} class.
      * <p>
@@ -65,6 +76,7 @@ public class ComponentMetaData {
         private final List<JavaScript> javaScripts = new ArrayList<>();
         private final List<JsModule> jsModules = new ArrayList<>();
         private final List<StyleSheet> styleSheets = new ArrayList<>();
+        private final List<CssImport> cssImports = new ArrayList<>();
 
         List<HtmlImportDependency> getHtmlImports() {
             return Collections.unmodifiableList(htmlImports);
@@ -82,6 +94,9 @@ public class ComponentMetaData {
             return Collections.unmodifiableList(styleSheets);
         }
 
+        List<CssImport> getCssImports() {
+            return Collections.unmodifiableList(cssImports);
+        }
     }
 
     public static class HtmlImportDependency {
@@ -151,10 +166,14 @@ public class ComponentMetaData {
         synchronizedProperties = findSynchronizedProperties(componentClass);
     }
 
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(ComponentMetaData.class.getName());
+    }
+
     /**
-     * Finds all dependencies (JsModule, HTML, JavaScript, StyleSheet) for the
-     * class. Includes dependencies for all classes referred by an {@link Uses}
-     * annotation.
+     * Finds all dependencies (JsModule, HTML, JavaScript, StyleSheet,
+     * CssImport) for the class. Includes dependencies for all classes referred
+     * by a {@link Uses} annotation.
      *
      * @return an information object containing all the dependencies
      */
@@ -192,8 +211,16 @@ public class ComponentMetaData {
             if (!jsModules.isEmpty()) {
                 dependencyInfo.jsModules.addAll(jsModules);
             } else {
-                dependencyInfo.jsModules.addAll(
-                        getHtmlImportAsJsModuleAnnotations(componentClass));
+                // Show a warning when @HtmlImport is present and there is no
+                // @JsModule or @CssImport.
+                if (!getHtmlImportDependencies(service, componentClass)
+                        .isEmpty()
+                        && AnnotationReader
+                                .getCssImportAnnotations(componentClass)
+                                .isEmpty()) {
+                    getLogger().error(HTML_IMPORT_WITHOUT_JS_MODULE_WARNING,
+                            componentClass.getName());
+                }
             }
         }
 
@@ -201,6 +228,8 @@ public class ComponentMetaData {
                 AnnotationReader.getJavaScriptAnnotations(componentClass));
         dependencyInfo.styleSheets.addAll(
                 AnnotationReader.getStyleSheetAnnotations(componentClass));
+        dependencyInfo.cssImports.addAll(
+                AnnotationReader.getCssImportAnnotations(componentClass));
 
         List<Uses> usesList = AnnotationReader.getAnnotationsFor(componentClass,
                 Uses.class);
@@ -326,50 +355,4 @@ public class ComponentMetaData {
                     propertyName, eventNames, annotation.allowUpdates()));
         }
     }
-
-    private static Collection<JsModule> getHtmlImportAsJsModuleAnnotations(
-            Class<? extends Component> componentClass) {
-        return AnnotationReader.getHtmlImportAnnotations(componentClass)
-                .stream()
-                .map(ComponentMetaData::getHtmlImportAsJsModuleAnnotation)
-                .filter(Objects::nonNull).collect(Collectors.toList());
-    }
-
-    private static JsModule getHtmlImportAsJsModuleAnnotation(
-            HtmlImport htmlImport) {
-
-        String value = SharedUtil.prefixIfRelative(htmlImport.value(),
-                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
-
-        String module = value
-                .replaceFirst("^.*bower_components/(vaadin-.*)\\.html",
-                        "@vaadin/$1.js")
-                .replaceFirst("^.*bower_components/((iron|paper)-.*)\\.html",
-                        "@polymer/$1.js");
-
-        return jsModule(module, htmlImport.loadMode());
-    }
-
-    private static JsModule jsModule(final String value,
-            final LoadMode loadMode) {
-
-        return new JsModule() {
-
-            @Override
-            public String value() {
-                return value;
-            }
-
-            @Override
-            public LoadMode loadMode() {
-                return loadMode;
-            }
-
-            @Override
-            public Class<? extends Annotation> annotationType() {
-                return JsModule.class;
-            }
-        };
-    }
-
 }

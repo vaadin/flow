@@ -27,6 +27,8 @@ import elemental.json.JsonValue;
 
 /**
  * A pending JavaScript result that can be sent to the client.
+ *
+ * @since 2.0
  */
 public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
     private static final String EXECUTION_CANCELED = "Execution canceled";

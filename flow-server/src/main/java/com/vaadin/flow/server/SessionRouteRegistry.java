@@ -38,11 +38,10 @@ import com.vaadin.flow.shared.Registration;
  * of VaadinSession. Routes can be added and removed from this registry and any
  * overlap with the registered routes between session and global scope will be
  * handled so that session scope paths overrides global paths.
+ *
+ * @since 1.3
  */
 public class SessionRouteRegistry extends AbstractRouteRegistry {
-
-    // SessionRegistry can not be used without a parentRegistry
-    private RouteRegistry parentRegistry;
 
     private final VaadinSession session;
 
@@ -53,18 +52,10 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
      * taken into consideration.
      *
      * @param session
-     *         vaadin session that this session registry is
-     * @param service
-     *         vaadin service for session lifecycle listening
+     *            vaadin session that this session registry is
      */
-    SessionRouteRegistry(VaadinSession session, VaadinService service) {
+    SessionRouteRegistry(VaadinSession session) {
         this.session = session;
-        if (service != null) {
-            // this is here only due to SerializationTest#testVaadinSession which
-            // doesn't accept mocks or service parts as they bring in sun.misc.Launcher$AppClassLoader
-            // Get the global route registry from the service
-            this.parentRegistry = service.getRouteRegistry();
-        }
     }
 
     /**
@@ -72,7 +63,7 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
      * then one will be created for given VaadinSession.
      *
      * @param session
-     *         vaadin session to get registry for
+     *            vaadin session to get registry for
      * @return session registry for given session
      */
     public static RouteRegistry getSessionRegistry(VaadinSession session) {
@@ -81,7 +72,7 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
         SessionRouteRegistry registry = session
                 .getAttribute(SessionRouteRegistry.class);
         if (registry == null) {
-            registry = new SessionRouteRegistry(session, session.getService());
+            registry = new SessionRouteRegistry(session);
             session.setAttribute(SessionRouteRegistry.class, registry);
         }
         if (!registry.session.equals(session)) {
@@ -95,7 +86,8 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
     public List<RouteData> getRegisteredRoutes() {
         List<RouteData> routes = new ArrayList<>(super.getRegisteredRoutes());
 
-        List<RouteData> registeredRoutes = parentRegistry.getRegisteredRoutes();
+        List<RouteData> registeredRoutes = getParentRegistry()
+                .getRegisteredRoutes();
         if (!registeredRoutes.isEmpty()) {
             Set<String> collect = routes.stream().map(RouteData::getUrl)
                     .collect(Collectors.toSet());
@@ -115,18 +107,19 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
      * was not masked by a registration in the session scope.
      *
      * @param listener
-     *         listener to add
+     *            listener to add
      * @return registration to remove the listener
      */
     @Override
     public Registration addRoutesChangeListener(
             RoutesChangedListener listener) {
 
-        final Registration parentRegistration = parentRegistry
+        final Registration parentRegistration = getParentRegistry()
                 .addRoutesChangeListener(event -> {
                     ConfiguredRoutes configuration = getConfiguration();
                     List<RouteBaseData<?>> addedVisible = event.getAddedRoutes()
-                            .stream().filter(routeData -> !configuration
+                            .stream()
+                            .filter(routeData -> !configuration
                                     .hasRoute(routeData.getUrl()))
                             .collect(Collectors.toList());
                     List<RouteBaseData<?>> removedVisible = event
@@ -140,8 +133,8 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
                                 addedVisible, removedVisible));
                     }
                 });
-        final Registration registration = super
-                .addRoutesChangeListener(listener);
+        final Registration registration = super.addRoutesChangeListener(
+                listener);
 
         return () -> {
             registration.remove();
@@ -160,7 +153,7 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
             return navigationTarget;
         }
 
-        return parentRegistry.getNavigationTarget(pathString);
+        return getParentRegistry().getNavigationTarget(pathString);
     }
 
     @Override
@@ -171,7 +164,7 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
             return getConfiguration().getRoute(pathString, segments);
         }
 
-        return parentRegistry.getNavigationTarget(pathString, segments);
+        return getParentRegistry().getNavigationTarget(pathString, segments);
     }
 
     @Override
@@ -183,7 +176,7 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
             return targetUrl;
         }
 
-        return parentRegistry.getTargetUrl(navigationTarget);
+        return getParentRegistry().getTargetUrl(navigationTarget);
     }
 
     @Override
@@ -192,6 +185,10 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
         if (getConfiguration().hasRoute(path)) {
             return super.getRouteLayouts(path, navigationTarget);
         }
-        return parentRegistry.getRouteLayouts(path, navigationTarget);
+        return getParentRegistry().getRouteLayouts(path, navigationTarget);
+    }
+
+    private RouteRegistry getParentRegistry() {
+        return session.getService().getRouteRegistry();
     }
 }

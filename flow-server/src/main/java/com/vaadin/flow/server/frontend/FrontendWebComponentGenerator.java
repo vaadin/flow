@@ -34,6 +34,7 @@ import com.vaadin.flow.server.webcomponent.WebComponentModulesWriter;
  * by {@link ClassFinder}.
  * 
  * @author Vaadin Ltd.
+ * @since 2.0
  */
 public class FrontendWebComponentGenerator implements Serializable {
     private final ClassFinder finder;

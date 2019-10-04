@@ -15,25 +15,28 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Helps to locate the tools in the system by their names.
+ *
+ * @since 1.2
  */
 public class FrontendToolsLocator implements Serializable {
+    private static final String FAILED_WITH_EXIT_CODE_MSG = "Command '{}' failed with exit code '{}'";
+
     private static class CommandResult implements Serializable {
         private final String command;
         private final int exitCode;
@@ -69,7 +72,7 @@ public class FrontendToolsLocator implements Serializable {
      *         such tools
      */
     public Optional<File> tryLocateTool(String toolName) {
-        List<String> candidateLocations = executeCommand(
+        List<String> candidateLocations = executeCommand(false,
                 isWindows() ? "where" : "which", toolName)
                         .map(this::omitErrorResult)
                         .map(CommandResult::getStdout)
@@ -99,7 +102,7 @@ public class FrontendToolsLocator implements Serializable {
     public boolean verifyTool(File toolPath) {
         return Optional.ofNullable(toolPath).filter(File::isFile)
                 .map(File::getAbsolutePath)
-                .flatMap(path -> executeCommand(path, "-v"))
+                .flatMap(path -> executeCommand(true, path, "-v"))
                 .map(this::omitErrorResult).isPresent();
     }
 
@@ -108,7 +111,8 @@ public class FrontendToolsLocator implements Serializable {
         return osName != null && osName.toLowerCase().startsWith("windows");
     }
 
-    private Optional<CommandResult> executeCommand(String... commandParts) {
+    private Optional<CommandResult> executeCommand(boolean logErrorOnFail,
+            String... commandParts) {
         String commandString = Arrays.toString(commandParts);
         Process process;
         try {
@@ -119,41 +123,53 @@ public class FrontendToolsLocator implements Serializable {
             return Optional.empty();
         }
 
-        boolean commandExited = false;
+        int exitCode = -1;
+        long timeStamp = System.currentTimeMillis();
         try {
-            commandExited = process.waitFor(3, TimeUnit.SECONDS);
+            exitCode = process.waitFor();
         } catch (InterruptedException e) {
             log().error(
                     "Unexpected interruption happened during '{}' command execution",
                     commandString, e);
             return Optional.empty();
         } finally {
-            if (!commandExited) {
+            if (exitCode == -1) {
                 process.destroyForcibly();
             }
         }
 
-        if (!commandExited) {
-            log().error(
-                    "Could not get a response from '{}' command in 3 seconds",
+        long executionTime = System.currentTimeMillis() - timeStamp;
+        if (log().isDebugEnabled() && executionTime > 3000) {
+            log().debug("Command '{}' execution took over 3 seconds",
                     commandString);
-            return Optional.empty();
         }
 
-        List<String> stdout;
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(
-                process.getInputStream(), StandardCharsets.UTF_8))) {
-            stdout = br.lines().collect(Collectors.toList());
+        if (exitCode > 0) {
+            if (logErrorOnFail) {
+                log().error(FAILED_WITH_EXIT_CODE_MSG, commandString, exitCode);
+            } else if (log().isDebugEnabled()) {
+                log().debug(FAILED_WITH_EXIT_CODE_MSG, commandString, exitCode);
+            }
+            return Optional.empty();
+        }
+        List<String> stdout = new ArrayList<>();
+        try {
+        String stream = IOUtils.toString(process.getInputStream(), StandardCharsets.UTF_8);
+        if(!stream.isEmpty()) {
+            Stream.of(stream.split("\\R")).forEach(stdout::add);
+        }
         } catch (IOException e) {
             log().error("Failed to read the command '{}' stdout", commandString,
                     e);
             return Optional.empty();
         }
 
-        List<String> stderr;
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(
-                process.getErrorStream(), StandardCharsets.UTF_8))) {
-            stderr = br.lines().collect(Collectors.toList());
+        List<String> stderr = new ArrayList<>();
+        try {
+            String stream = IOUtils.toString(process.getErrorStream(), StandardCharsets.UTF_8);
+            if(!stream.isEmpty()) {
+                Stream.of(stream.split("\\R")).forEach(stderr::add);
+            }
         } catch (IOException e) {
             log().error("Failed to read the command '{}' stderr", commandString,
                     e);

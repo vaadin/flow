@@ -34,7 +34,6 @@ import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 
 import static java.util.Collections.emptyList;
-import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static org.easymock.EasyMock.anyBoolean;
@@ -151,7 +150,10 @@ public class ServletDeployerTest {
             throws Exception {
         deployer.contextInitialized(getContextEvent(true, true,
                 getServletRegistration("testServlet", TestVaadinServlet.class,
-                        singletonList("/test/*"), emptyMap())));
+                        singletonList("/test/*"),
+                        Collections.singletonMap(
+                                Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                                "true"))));
 
         assertMappingsCount(1, 1);
         assertMappingIsRegistered("frontendFilesServlet", "/frontend/*");
@@ -183,16 +185,19 @@ public class ServletDeployerTest {
     @Test
     public void frontendServletIsRegisteredWhenAtLeastOneServletHasDevelopmentAndCompatibilityMode()
             throws Exception {
+        Map<String, String> productionMode = new HashMap<>();
+        productionMode.put(Constants.SERVLET_PARAMETER_PRODUCTION_MODE, "true");
+        productionMode.put(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                "true");
+
+        Map<String, String> devMode = new HashMap<>();
+        devMode.put(Constants.SERVLET_PARAMETER_PRODUCTION_MODE, "false");
+        devMode.put(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE, "true");
         deployer.contextInitialized(getContextEvent(true, true,
                 getServletRegistration("testServlet1", TestVaadinServlet.class,
-                        singletonList("/test1/*"), singletonMap(
-                                Constants.SERVLET_PARAMETER_PRODUCTION_MODE,
-                                "true")),
+                        singletonList("/test1/*"), productionMode),
                 getServletRegistration("testServlet2", TestVaadinServlet.class,
-                        singletonList("/test2/*"),
-                        singletonMap(
-                                Constants.SERVLET_PARAMETER_PRODUCTION_MODE,
-                                "false"))));
+                        singletonList("/test2/*"), devMode)));
 
         assertMappingsCount(1, 1);
         assertMappingIsRegistered("frontendFilesServlet", "/frontend/*");
@@ -223,6 +228,7 @@ public class ServletDeployerTest {
         Map<String, String> params = new HashMap<>();
         params.put(Constants.SERVLET_PARAMETER_PRODUCTION_MODE, "true");
         params.put(Constants.USE_ORIGINAL_FRONTEND_RESOURCES, "true");
+        params.put(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE, "true");
 
         deployer.contextInitialized(
                 getContextEvent(true, true, getServletRegistration("test",
@@ -237,7 +243,10 @@ public class ServletDeployerTest {
             throws Exception {
         deployer.contextInitialized(getContextEvent(true, true,
                 getServletRegistration("test", TestServlet.class,
-                        singletonList("/*"), Collections.emptyMap())));
+                        singletonList("/*"),
+                        Collections.singletonMap(
+                                Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                                "true"))));
 
         assertMappingsCount(1, 1);
         assertMappingIsRegistered("frontendFilesServlet", "/frontend/*");

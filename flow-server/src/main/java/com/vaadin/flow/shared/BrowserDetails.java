@@ -176,8 +176,26 @@ public class BrowserDetails implements Serializable {
                     if (engineVersion >= 6010 && engineVersion < 6015) {
                         browserMajorVersion = 9;
                         browserMinorVersion = 0;
-                    } else if (engineVersion >= 6015) {
+                    } else if (engineVersion >= 6015 && engineVersion < 6018) {
                         browserMajorVersion = 9;
+                        browserMinorVersion = 1;
+                    } else if (engineVersion >= 6020 && engineVersion < 6030) {
+                        browserMajorVersion = 10;
+                        browserMinorVersion = 0;
+                    } else if (engineVersion >= 6030 && engineVersion < 6040) {
+                        browserMajorVersion = 10;
+                        browserMinorVersion = 1;
+                    } else if (engineVersion >= 6040 && engineVersion < 6050) {
+                        browserMajorVersion = 11;
+                        browserMinorVersion = 0;
+                    } else if (engineVersion >= 6050 && engineVersion < 6060) {
+                        browserMajorVersion = 11;
+                        browserMinorVersion = 1;
+                    } else if (engineVersion >= 6060 && engineVersion < 6070) {
+                        browserMajorVersion = 12;
+                        browserMinorVersion = 0;
+                    } else if (engineVersion >= 6070) {
+                        browserMajorVersion = 12;
                         browserMinorVersion = 1;
                     }
                 }

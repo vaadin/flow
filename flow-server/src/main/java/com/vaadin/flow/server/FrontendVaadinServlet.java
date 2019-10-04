@@ -26,7 +26,7 @@ import java.io.IOException;
  * "/frontend" URI if the main Vaadin servlet has non-root mapping.
  *
  * @author Vaadin Ltd
- *
+ * @since 1.4
  */
 public class FrontendVaadinServlet extends VaadinServlet {
 

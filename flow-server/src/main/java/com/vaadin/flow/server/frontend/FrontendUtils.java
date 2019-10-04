@@ -15,11 +15,9 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,9 +25,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,6 +36,10 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
+
+import elemental.json.JsonArray;
+import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
@@ -45,6 +48,8 @@ import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 /**
  * A class for static methods and definitions that might be used in different
  * locations.
+ *
+ * @since 2.0
  */
 public class FrontendUtils {
 
@@ -115,6 +120,16 @@ public class FrontendUtils {
     public static final String IMPORTS_NAME = "generated-flow-imports.js";
 
     /**
+     * Name of the file that contains all application imports, javascript, theme
+     * and style annotations which are not discovered by the current scanning
+     * strategy (but they are in the project classpath). This file is
+     * dynamically imported by the {@link FrontendUtils#IMPORTS_NAME} file. It
+     * is always generated in the {@link FrontendUtils#DEFAULT_GENERATED_DIR}
+     * folder.
+     */
+    public static final String FALLBACK_IMPORTS_NAME = "generated-flow-imports-fallback.js";
+
+    /**
      * A parameter for overriding the
      * {@link FrontendUtils#DEFAULT_GENERATED_DIR} folder.
      */
@@ -144,6 +159,26 @@ public class FrontendUtils {
      */
     public static final String TOKEN_FILE = Constants.VAADIN_CONFIGURATION
             + "flow-build-info.json";
+
+    /**
+     * A key in a Json object for chunks list.
+     */
+    public static final String CHUNKS = "chunks";
+
+    /**
+     * A key in a Json object for fallback chunk.
+     */
+    public static final String FALLBACK = "fallback";
+
+    /**
+     * A key in a Json object for css imports data.
+     */
+    public static final String CSS_IMPORTS = "cssImports";
+
+    /**
+     * A key in a Json object for js modules data.
+     */
+    public static final String JS_MODULES = "jsModules";
 
     /**
      * A parameter informing about the location of the
@@ -302,11 +337,9 @@ public class FrontendUtils {
      */
     public static String streamToString(InputStream inputStream) {
         String ret = "";
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(
-                inputStream, StandardCharsets.UTF_8.name()))) {
-
-            ret = br.lines()
-                    .collect(Collectors.joining(System.lineSeparator()));
+        try {
+            return IOUtils.toString(inputStream, StandardCharsets.UTF_8)
+                    .replaceAll("\\R", System.lineSeparator());
         } catch (IOException exception) {
             // ignore exception on close()
             LoggerFactory.getLogger(FrontendUtils.class)
@@ -381,17 +414,19 @@ public class FrontendUtils {
      * returned.
      *
      * @param service
-     *         the Vaadin service.
+     *            the Vaadin service.
      * @return hash string for the stats.json file, empty string if none found
      * @throws IOException
-     *         if an I/O error occurs while creating the input stream.
+     *             if an I/O error occurs while creating the input stream.
      */
-    public static String getStatsHash(VaadinService service) throws IOException {
+    public static String getStatsHash(VaadinService service)
+            throws IOException {
         DeploymentConfiguration config = service.getDeploymentConfiguration();
         if (!config.isProductionMode() && config.enableDevServer()) {
             DevModeHandler handler = DevModeHandler.getDevModeHandler();
-            return streamToString(
-                    handler.prepareConnection("/stats.hash", "GET").getInputStream()).replaceAll("\"", "");
+            return streamToString(handler
+                    .prepareConnection("/stats.hash", "GET").getInputStream())
+                            .replaceAll("\"", "");
         }
 
         return "";
@@ -454,6 +489,72 @@ public class FrontendUtils {
             getLogger().warn("Error checking if npm is new enough", e);
         }
 
+    }
+
+    /**
+     * Checks whether the {@code file} is a webpack configuration file with the
+     * expected content (includes a configuration generated by Flow).
+     *
+     * @param file
+     *            a file to check
+     * @return {@code true} iff the file exists and includes a generated
+     *         configuration
+     * @throws IOException
+     *             if an I/O error occurs while reading the file
+     */
+    public static boolean isWebpackConfigFile(File file) throws IOException {
+        return file.exists()
+                && FileUtils.readFileToString(file, StandardCharsets.UTF_8)
+                        .contains("./webpack.generated.js");
+    }
+
+    /**
+     * Read fallback chunk data from a json object.
+     *
+     * @param object
+     *            json object to read fallback chunk data
+     * @return a fallback chunk data
+     */
+    public static FallbackChunk readFallbackChunk(JsonObject object) {
+        if (!object.hasKey(CHUNKS)) {
+            return null;
+        }
+        JsonObject obj = object.getObject(CHUNKS);
+        if (!obj.hasKey(FALLBACK)) {
+            return null;
+        }
+        obj = obj.getObject(FALLBACK);
+        List<String> fallbackModles = new ArrayList<>();
+        JsonArray modules = obj.getArray(JS_MODULES);
+        for (int i = 0; i < modules.length(); i++) {
+            fallbackModles.add(modules.getString(i));
+        }
+        List<CssImportData> fallbackCss = new ArrayList<>();
+        JsonArray css = obj.getArray(CSS_IMPORTS);
+        for (int i = 0; i < css.length(); i++) {
+            fallbackCss.add(createCssData(css.getObject(i)));
+        }
+        return new FallbackChunk(fallbackModles, fallbackCss);
+    }
+
+    private static CssImportData createCssData(JsonObject object) {
+        String value = null;
+        String id = null;
+        String include = null;
+        String themeFor = null;
+        if (object.hasKey("value")) {
+            value = object.getString("value");
+        }
+        if (object.hasKey("id")) {
+            id = object.getString("id");
+        }
+        if (object.hasKey("include")) {
+            include = object.getString("include");
+        }
+        if (object.hasKey("themeFor")) {
+            themeFor = object.getString("themeFor");
+        }
+        return new CssImportData(value, id, include, themeFor);
     }
 
     static void validateToolVersion(String tool, String[] toolVersion,

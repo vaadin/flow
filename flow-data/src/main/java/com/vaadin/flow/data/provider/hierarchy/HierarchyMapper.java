@@ -49,6 +49,7 @@ import com.vaadin.flow.internal.Range;
  *            the data type
  * @param <F>
  *            the filter type
+ * @since 1.2
  */
 public class HierarchyMapper<T, F> implements Serializable {
 

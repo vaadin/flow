@@ -30,11 +30,11 @@ import com.vaadin.flow.function.ValueProvider;
 import elemental.json.JsonObject;
 
 /**
- * 
+ *
  * Abstract renderer used as the base implementation for renderers that outputs
  * a simple value in the UI, such as {@link NumberRenderer} and
  * {@link LocalDateRenderer}.
- * 
+ *
  * @author Vaadin Ltd
  * @since 1.0.
  *
@@ -51,7 +51,7 @@ public abstract class BasicRenderer<SOURCE, TARGET>
     /**
      * Builds a new template renderer using the value provider as the source of
      * values to be rendered.
-     * 
+     *
      * @param valueProvider
      *            the callback to provide a objects to the renderer, not
      *            <code>null</code>
@@ -81,11 +81,17 @@ public abstract class BasicRenderer<SOURCE, TARGET>
 
     private void setupTemplate(Element owner, SimpleValueRendering rendering,
             DataKeyMapper<SOURCE> keyMapper) {
+    /*
+     * setupTemplateWhenAttached does some setup that will be needed by
+     * generateData. To ensure the setup has completed before it is needed,
+     * we forego the general convention of using beforeClientResponse to
+     * guard the action against duplicate invocation. This is not a big
+     * problem in this case since setupTemplateWhenAttached only sets
+     * properties but doesn't execute any JS.
+     */
         owner.getNode()
-                .runWhenAttached(ui -> ui.getInternals().getStateTree()
-                        .beforeClientResponse(owner.getNode(),
-                                context -> setupTemplateWhenAttached(owner,
-                                        rendering, keyMapper)));
+                .runWhenAttached(ui -> setupTemplateWhenAttached(owner,
+                         rendering, keyMapper));
     }
 
     private void setupTemplateWhenAttached(Element owner,
@@ -118,11 +124,11 @@ public abstract class BasicRenderer<SOURCE, TARGET>
      * <p>
      * This method is only called when
      * {@link #render(Element, DataKeyMapper, Element)} is invoked.
-     * 
+     *
      * @param context
      *            the rendering context
      * @return the property name to be used in template data bindings
-     * 
+     *
      * @see Rendering#getTemplateElement()
      */
     protected String getTemplatePropertyName(Rendering<SOURCE> context) {
@@ -141,14 +147,14 @@ public abstract class BasicRenderer<SOURCE, TARGET>
      * <p>
      * This method is only called when
      * {@link #render(Element, DataKeyMapper, Element)} is invoked.
-     * 
+     *
      * @param property
      *            the property to be used inside the template
      * @param context
      *            the rendering context
      * @return the template string to be used inside a {@code <template>}
      *         element
-     * 
+     *
      * @see #getTemplatePropertyName(Rendering)
      */
     protected String getTemplateForProperty(String property,
@@ -168,7 +174,7 @@ public abstract class BasicRenderer<SOURCE, TARGET>
      * the template.
      * <p>
      * By default it uses {@link String#valueOf(Object)} of the object.
-     * 
+     *
      * @param object
      *            the target object
      * @return the string representation of the object

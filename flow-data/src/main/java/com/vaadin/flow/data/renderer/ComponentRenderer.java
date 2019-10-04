@@ -126,7 +126,7 @@ public class ComponentRenderer<COMPONENT extends Component, SOURCE>
      * Some components may support several rendered components at once, so
      * different component instances should be created for each different item
      * for those components.
-     * 
+     *
      * @param componentFunction
      *            a function that can generate new component instances
      * @param componentUpdateFunction
@@ -157,13 +157,18 @@ public class ComponentRenderer<COMPONENT extends Component, SOURCE>
         ComponentRendering rendering = new ComponentRendering(
                 keyMapper == null ? null : keyMapper::key);
         rendering.setTemplateElement(contentTemplate);
-
+        /*
+         * setupTemplateWhenAttached does some setup that will be needed by
+         * generateData. To ensure the setup has completed before it is needed,
+         * we forego the general convention of using beforeClientResponse to
+         * guard the action against duplicate invocation. This is not a big
+         * problem in this case since setupTemplateWhenAttached only sets
+         * properties but doesn't execute any JS.
+         */
         container.getNode()
-                .runWhenAttached(ui -> ui.getInternals().getStateTree()
-                        .beforeClientResponse(container.getNode(),
-                                context -> setupTemplateWhenAttached(
-                                        context.getUI(), container, rendering,
-                                        keyMapper)));
+                .runWhenAttached(ui -> setupTemplateWhenAttached(
+                        ui, container, rendering,
+                        keyMapper));
 
         return rendering;
     }

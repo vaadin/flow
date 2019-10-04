@@ -31,6 +31,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 
 /**
  * Copies JavaScript files from the given local frontend folder.
+ *
+ * @since 2.0
  */
 public class TaskCopyLocalFrontendFiles implements FallibleCommand {
 
@@ -54,31 +56,37 @@ public class TaskCopyLocalFrontendFiles implements FallibleCommand {
 
     @Override
     public void execute() {
-        createTargetFolder();
+        createTargetFolder(targetDirectory);
 
         if (frontendResourcesDirectory != null
                 && frontendResourcesDirectory.isDirectory()) {
             log().info("Copying project local frontend resources.");
-            try {
-                FileUtils.copyDirectory(frontendResourcesDirectory,
-                        targetDirectory);
-            } catch (IOException e) {
-                throw new UncheckedIOException(String.format(
-                        "Failed to copy project frontend resources from '%s' to '%s'",
-                        frontendResourcesDirectory, targetDirectory), e);
-            }
+            copyLocalResources(frontendResourcesDirectory, targetDirectory);
             log().info("Copying frontend directory completed.");
         } else {
             log().debug("Found no local frontend resources for the project");
         }
     }
 
-    private void createTargetFolder() {
+    static void copyLocalResources(File source, File target) {
+        if (!source.isDirectory() || !target.isDirectory()) {
+            return;
+        }
         try {
-            FileUtils.forceMkdir(Objects.requireNonNull(targetDirectory));
+            FileUtils.copyDirectory(source, target);
         } catch (IOException e) {
             throw new UncheckedIOException(String.format(
-                    "Failed to create directory '%s'", targetDirectory), e);
+                    "Failed to copy project frontend resources from '%s' to '%s'",
+                    source, target), e);
+        }
+    }
+
+    static void createTargetFolder(File target) {
+        try {
+            FileUtils.forceMkdir(Objects.requireNonNull(target));
+        } catch (IOException e) {
+            throw new UncheckedIOException(String.format(
+                    "Failed to create directory '%s'", target), e);
         }
     }
 
