@@ -17,6 +17,7 @@ package com.vaadin.flow.theme;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -28,19 +29,20 @@ import java.lang.annotation.Target;
  * Flow uses the following logic to determine which theme to use for the
  * application:
  * <ul>
- * <li>If a {@link Theme} annotation is found at the root navigation level, the theme
- * defined by it is used.
- * <li>If a {@link NoTheme}  annotation is found at the root navigation level, theming
- * is disabled.
- * <li>If the <code>com.vaadin.flow.theme.lumo.Lumo</code> class is available in the
- * classpath (which comes from the vaadin-lumo-theme project), then it is used
- * as the default theme.
+ * <li>If a {@link Theme} annotation is found at the root navigation level, the
+ * theme defined by it is used.
+ * <li>If a {@link NoTheme} annotation is found at the root navigation level,
+ * theming is disabled.
+ * <li>If the <code>com.vaadin.flow.theme.lumo.Lumo</code> class is available in
+ * the classpath (which comes from the vaadin-lumo-theme project), then it is
+ * used as the default theme.
  * </ul>
  *
  * @since 1.0
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
+@Inherited
 @Documented
 public @interface NoTheme {
 }

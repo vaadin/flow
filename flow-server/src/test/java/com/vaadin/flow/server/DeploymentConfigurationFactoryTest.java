@@ -2,27 +2,37 @@ package com.vaadin.flow.server;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 import org.easymock.Capture;
 import org.easymock.EasyMock;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.frontend.FallbackChunk;
+import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
@@ -311,78 +321,127 @@ public class DeploymentConfigurationFactoryTest {
     public void shouldThrow_tokenFileContainsNonExistingNpmFolderInDevMode()
             throws Exception {
         exception.expect(IllegalStateException.class);
-        exception.expectMessage(String.format(DEV_FOLDER_MISSING_MESSAGE, "npm"));
+        exception.expectMessage(
+                String.format(DEV_FOLDER_MISSING_MESSAGE, "npm"));
         FileUtils.writeLines(tokenFile,
                 Arrays.asList("{", "\"compatibilityMode\": false,",
                         "\"productionMode\": false,", "\"npmFolder\": \"npm\",",
                         "\"generatedFolder\": \"generated\",",
                         "\"frontendFolder\": \"frontend\"", "}"));
 
-        createConfig(Collections
-                .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
+        createConfig(Collections.singletonMap(PARAM_TOKEN_FILE,
+                tokenFile.getPath()));
     }
 
     @Test
     public void shouldThrow_tokenFileContainsNonExistingFrontendFolderNoNpmFolder()
             throws Exception {
         exception.expect(IllegalStateException.class);
-        exception.expectMessage(String.format(DEV_FOLDER_MISSING_MESSAGE, "frontend"));
+        exception.expectMessage(
+                String.format(DEV_FOLDER_MISSING_MESSAGE, "frontend"));
         FileUtils.writeLines(tokenFile,
                 Arrays.asList("{", "\"compatibilityMode\": false,",
                         "\"productionMode\": false,",
                         "\"frontendFolder\": \"frontend\"", "}"));
 
-        createConfig(Collections
-                .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
+        createConfig(Collections.singletonMap(PARAM_TOKEN_FILE,
+                tokenFile.getPath()));
     }
-
 
     @Test
     public void shouldThrow_tokenFileContainsNonExistingFrontendFolderOutsideNpmSubFolder()
             throws Exception {
         exception.expect(IllegalStateException.class);
-        exception.expectMessage(String.format(DEV_FOLDER_MISSING_MESSAGE, "frontend"));
+        exception.expectMessage(
+                String.format(DEV_FOLDER_MISSING_MESSAGE, "frontend"));
         temporaryFolder.newFolder("npm");
-        String tempFolder = temporaryFolder.getRoot().getAbsolutePath().replace("\\", "/");
+        String tempFolder = temporaryFolder.getRoot().getAbsolutePath()
+                .replace("\\", "/");
         FileUtils.writeLines(tokenFile,
                 Arrays.asList("{", "\"compatibilityMode\": false,",
                         "\"productionMode\": false,",
-                        "\"npmFolder\": \""+ tempFolder +"/npm\",",
+                        "\"npmFolder\": \"" + tempFolder + "/npm\",",
                         "\"frontendFolder\": \"frontend\"", "}"));
 
-        createConfig(Collections
-                .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
+        createConfig(Collections.singletonMap(PARAM_TOKEN_FILE,
+                tokenFile.getPath()));
     }
 
     @Test
     public void shouldNotThrow_tokenFileFrontendFolderInDevMode()
             throws Exception {
         temporaryFolder.newFolder("npm");
-        String tempFolder = temporaryFolder.getRoot().getAbsolutePath().replace("\\", "/");
-        FileUtils.writeLines(tokenFile,
-                Arrays.asList("{", "\"compatibilityMode\": false,",
-                        "\"productionMode\": false,",
-                        "\"npmFolder\": \""+ tempFolder +"/npm\",",
-                        "\"frontendFolder\": \""+tempFolder+"/npm/frontend\"", "}"));
+        String tempFolder = temporaryFolder.getRoot().getAbsolutePath()
+                .replace("\\", "/");
+        FileUtils.writeLines(tokenFile, Arrays.asList("{",
+                "\"compatibilityMode\": false,", "\"productionMode\": false,",
+                "\"npmFolder\": \"" + tempFolder + "/npm\",",
+                "\"frontendFolder\": \"" + tempFolder + "/npm/frontend\"",
+                "}"));
 
-        createConfig(Collections
-                .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
+        createConfig(Collections.singletonMap(PARAM_TOKEN_FILE,
+                tokenFile.getPath()));
     }
 
     @Test
-    public void shouldNotThrow_tokenFileFoldersExist()
-            throws Exception {
+    public void shouldNotThrow_tokenFileFoldersExist() throws Exception {
         temporaryFolder.newFolder("npm");
         temporaryFolder.newFolder("frontend");
-        String tempFolder = temporaryFolder.getRoot().getAbsolutePath().replace("\\", "/");
-        FileUtils.writeLines(tokenFile,
-                Arrays.asList("{", "\"compatibilityMode\": false,",
-                        "\"productionMode\": false,",
-                        "\"npmFolder\": \""+ tempFolder +"/npm\",",
-                        "\"frontendFolder\": \""+tempFolder+"/frontend\"", "}"));
+        String tempFolder = temporaryFolder.getRoot().getAbsolutePath()
+                .replace("\\", "/");
+        FileUtils.writeLines(tokenFile, Arrays.asList("{",
+                "\"compatibilityMode\": false,", "\"productionMode\": false,",
+                "\"npmFolder\": \"" + tempFolder + "/npm\",",
+                "\"frontendFolder\": \"" + tempFolder + "/frontend\"", "}"));
 
-        createConfig(Collections
-                .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
+        createConfig(Collections.singletonMap(PARAM_TOKEN_FILE,
+                tokenFile.getPath()));
+    }
+
+    @Test
+    public void createInitParameters_fallbackChunkObjectIsInInitParams()
+            throws ServletException, IOException {
+        ServletContext context = Mockito.mock(ServletContext.class);
+        ServletConfig config = Mockito.mock(ServletConfig.class);
+        Mockito.when(config.getServletContext()).thenReturn(context);
+
+        Hashtable<String, String> table = new Hashtable<>(
+                Collections.singletonMap(FrontendUtils.PARAM_TOKEN_FILE, ""));
+        Mockito.when(context.getInitParameterNames()).thenReturn(table.keys());
+
+        Mockito.when(config.getInitParameterNames())
+                .thenReturn(new Hashtable<String, String>().keys());
+
+        File tokenFile = temporaryFolder.newFile();
+
+        Files.write(tokenFile.toPath(),
+                Collections.singletonList("{ 'chunks': { " + "'fallback': {"
+                        + "            'jsModules': ['foo', 'bar'],"
+                        + "           'cssImports': [ { 'value' :'foo-value' , 'id': 'bar-id'}]"
+                        + "}}" + "}"));
+
+        Mockito.when(context.getInitParameter(FrontendUtils.PARAM_TOKEN_FILE))
+                .thenReturn(tokenFile.getPath());
+
+        Properties properties = DeploymentConfigurationFactory
+                .createInitParameters(Object.class, config);
+
+        Object object = properties
+                .get(DeploymentConfigurationFactory.FALLBACK_CHUNK);
+
+        Assert.assertTrue(object instanceof FallbackChunk);
+
+        FallbackChunk chunk = (FallbackChunk) object;
+        Set<String> modules = chunk.getModules();
+        Assert.assertEquals(2, modules.size());
+        Assert.assertTrue(modules.contains("foo"));
+        Assert.assertTrue(modules.contains("bar"));
+
+        Set<CssImportData> cssImports = chunk.getCssImports();
+        Assert.assertEquals(1, cssImports.size());
+        CssImportData data = cssImports.iterator().next();
+        Assert.assertEquals("foo-value", data.getValue());
+        Assert.assertEquals("bar-id", data.getId());
     }
 
     private DeploymentConfiguration createConfig(Map<String, String> map)

@@ -33,6 +33,9 @@
         <module>test-npm-general</module>
         <module>test-npm-no-buildmojo</module>
         <module>test-npm-custom-frontend-directory</module>
+        <module>test-npm-bytecode-scanning/pom-devmode.xml</module>
+        <module>test-npm-bytecode-scanning/pom-production.xml</module>
+        <module>test-npm-performance-regression</module>
     </modules>
 
     <build>

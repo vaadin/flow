@@ -26,13 +26,18 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.dependency.CssImport;
+import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.SessionInitListener;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.startup.DevModeInitializer.DevModeClassFinder;
+import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
+import com.vaadin.flow.theme.ThemeDefinition;
 
 public class DevModeClassFinderTest {
 
@@ -43,13 +48,21 @@ public class DevModeClassFinderTest {
     public void applicableClasses_knownClasses() {
         Collection<Class<?>> classes = getApplicableClasses();
         Assert.assertTrue(classes.contains(Route.class));
-        Assert.assertTrue(classes.contains(NpmPackage.class));
-        Assert.assertTrue(classes.contains(NpmPackage.Container.class));
-        Assert.assertTrue(classes.contains(WebComponentExporter.class));
         Assert.assertTrue(classes.contains(UIInitListener.class));
         Assert.assertTrue(classes.contains(VaadinServiceInitListener.class));
+        Assert.assertTrue(classes.contains(WebComponentExporter.class));
+        Assert.assertTrue(classes.contains(NpmPackage.class));
+        Assert.assertTrue(classes.contains(NpmPackage.Container.class));
+        Assert.assertTrue(classes.contains(JsModule.class));
+        Assert.assertTrue(classes.contains(JsModule.Container.class));
+        Assert.assertTrue(classes.contains(JavaScript.class));
+        Assert.assertTrue(classes.contains(JavaScript.Container.class));
+        Assert.assertTrue(classes.contains(CssImport.class));
+        Assert.assertTrue(classes.contains(CssImport.Container.class));
+        Assert.assertTrue(classes.contains(Theme.class));
+        Assert.assertTrue(classes.contains(NoTheme.class));
 
-        Assert.assertEquals(6, classes.size());
+        Assert.assertEquals(14, classes.size());
     }
 
     @Test
@@ -93,7 +106,7 @@ public class DevModeClassFinderTest {
     @Test(expected = IllegalArgumentException.class)
     public void callGetgetAnnotatedClassesByName_unexpectedType_throw()
             throws ClassNotFoundException {
-        classFinder.getAnnotatedClasses(Theme.class.getName());
+        classFinder.getAnnotatedClasses(ThemeDefinition.class.getName());
     }
 
     @Test(expected = IllegalArgumentException.class)

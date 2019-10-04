@@ -36,7 +36,7 @@ import java.util.stream.Stream;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
-import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
+import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -90,7 +90,7 @@ public class TaskUpdatePackages extends NodeUpdater {
      *            up will be performed when platform version update is detected.
      */
     TaskUpdatePackages(ClassFinder finder,
-            FrontendDependencies frontendDependencies, File npmFolder,
+            FrontendDependenciesScanner frontendDependencies, File npmFolder,
             File generatedPath, boolean forceCleanUp) {
         super(finder, frontendDependencies, npmFolder, generatedPath);
         this.forceCleanUp = forceCleanUp;
@@ -110,8 +110,9 @@ public class TaskUpdatePackages extends NodeUpdater {
                 writeAppPackageFile(packageJson);
                 String content = "";
                 // If we have dependencies generate hash on ordered content.
-                if(packageJson.hasKey("dependencies")) {
-                    JsonObject dependencies = packageJson.getObject("dependencies");
+                if (packageJson.hasKey("dependencies")) {
+                    JsonObject dependencies = packageJson
+                            .getObject("dependencies");
                     content = Stream.of(dependencies.keys())
                             .map(key -> String.format("\"%s\": \"%s\"", key,
                                     dependencies.get(key).asString()))

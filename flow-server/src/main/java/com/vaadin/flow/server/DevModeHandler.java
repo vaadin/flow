@@ -322,7 +322,7 @@ public final class DevModeHandler implements Serializable {
      */
     public boolean serveDevModeRequest(HttpServletRequest request,
             HttpServletResponse response) throws IOException {
-        // Since we have 'outputPath=VAADIN/' in webpack config,
+        // Since we have 'publicPath=/VAADIN/' in webpack config,
         // a valid request for webpack-dev-server should start with '/VAADIN/'
         String requestFilename = request.getPathInfo();
 
@@ -433,6 +433,7 @@ public final class DevModeHandler implements Serializable {
             // DevModeHandler to continue
             doNotify();
         });
+        thread.setDaemon(true);
         thread.setName("webpack");
         thread.start();
     }
