@@ -360,9 +360,9 @@ public class Page implements Serializable {
      * Adds a dynamic import using a JavaScript {@code expression} which is
      * supposed to return a JavaScript {@code Promise}.
      * <p>
-     * No any change will be applied on the client side until resulting Promise
-     * of the {@code expression} is completed. It behaves like other
-     * dependencies ({@link #addJavaScript(String)},
+     * No change will be applied on the client side until resulting
+     * {@code Promise} of the {@code expression} is completed. It behaves like
+     * other dependencies ({@link #addJavaScript(String)},
      * {@link #addJsModule(String)}, etc.)
      *
      *
