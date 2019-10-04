@@ -151,7 +151,8 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
                             .createMissingPackageJson(true)
                             .enableImportsUpdate(false)
                             .enablePackagesUpdate(true).runNpmInstall(true)
-                            .build().execute();
+                            .withEmbeddableWebComponents(false).build()
+                            .execute();
         } catch (ExecutionFailedException exception) {
             throw new MojoFailureException(
                     "Could not execute prepare-frontend goal.", exception);
