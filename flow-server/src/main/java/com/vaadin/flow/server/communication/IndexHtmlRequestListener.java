@@ -14,10 +14,15 @@
  * the License.
  */
 
-package com.vaadin.flow.server;
+package com.vaadin.flow.server.communication;
 
 import java.io.Serializable;
 import java.util.EventListener;
+
+import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.ServiceInitEvent;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinResponse;
 
 /**
  * This event listener is notified when the Single Page Application's HTML page
@@ -25,9 +30,9 @@ import java.util.EventListener;
  * first constructed as an in-memory DOM representation which registered
  * listeners can modify before the final HTML is generated.
  * <p>
- * Index HTML request listeners are registered using the {@link ServiceInitEvent}
- * during the initialization of the application. Index HTML request listener is
- * used when the application is in
+ * Index HTML request listeners are registered using the
+ * {@link ServiceInitEvent} during the initialization of the application. Index
+ * HTML request listener is used when the application is in
  * {@link Constants#SERVLET_PARAMETER_CLIENT_SIDE_MODE}.
  *
  * @see ServiceInitEvent#addIndexHtmlRequestListener(IndexHtmlRequestListener)

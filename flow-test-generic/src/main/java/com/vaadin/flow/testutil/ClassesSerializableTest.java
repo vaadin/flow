@@ -55,7 +55,7 @@ import static org.junit.Assert.fail;
  * tries to serialize every single class (except ones from whitelist) in the
  * classpath. Subclasses may adjust the whitelist by overriding
  * {@link #getExcludedPatterns()}, {@link #getBasePackages()},
- * {@link  #getJarPattern()}
+ * {@link #getJarPattern()}
  *
  * @since 1.0
  */
@@ -119,8 +119,8 @@ public abstract class ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.server\\.communication.JSR356WebsocketInitializer(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.BootstrapHandler(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.BootstrapPageResponse",
-                "com\\.vaadin\\.flow\\.server\\.IndexHtmlResponse",
                 "com\\.vaadin\\.flow\\.server\\.InlineTargets",
+                "com\\.vaadin\\.flow\\.server\\.communication\\.IndexHtmlResponse",
                 "com\\.vaadin\\.flow\\.server\\.communication\\.PushHandler(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.communication\\.PushRequestHandler(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.communication\\.JavaScriptBootstrapHandler(\\$.*)?",

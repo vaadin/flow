@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
+
 /**
  * Event fired to {@link VaadinServiceInitListener} when a {@link VaadinService}
  * is being initialized.
@@ -80,12 +82,12 @@ public class ServiceInitEvent extends EventObject {
     @Deprecated
     public void addBootstrapListener(BootstrapListener bootstrapListener) {
         if (getSource().getDeploymentConfiguration().isClientSideMode()) {
-            throw new IllegalStateException("" +
-                    "The BootstrapListener API is not supported in the " +
-                    "client-side mode. Please use the IndexHtmlRequestListener " +
-                    "API instead, or disable the client-side mode with" +
-                    "-Dvaadin.clientSideMode=false to keep compatibility " +
-                    "with V14.");
+            throw new IllegalStateException(""
+                    + "The BootstrapListener API is not supported in the "
+                    + "client-side mode. Please use the IndexHtmlRequestListener "
+                    + "API instead, or disable the client-side mode with"
+                    + "-Dvaadin.clientSideMode=false to keep compatibility "
+                    + "with V14.");
         }
 
         Objects.requireNonNull(bootstrapListener,
@@ -95,9 +97,8 @@ public class ServiceInitEvent extends EventObject {
     }
 
     /**
-     * Adds a new Index HTML request listener that will be used by this
-     * service. The ordering of multiple added bootstrap listeners is not
-     * guaranteed.
+     * Adds a new Index HTML request listener that will be used by this service.
+     * The ordering of multiple added bootstrap listeners is not guaranteed.
      * 
      * @param indexHtmlRequestListener
      *            the Index HTML request listener to be added.
@@ -147,8 +148,8 @@ public class ServiceInitEvent extends EventObject {
     }
 
     /**
-     * Gets a stream of all Index HTML request listeners that have been
-     * added for the service.
+     * Gets a stream of all Index HTML request listeners that have been added
+     * for the service.
      *
      * @return the stream of added Index HTML request listeners
      */

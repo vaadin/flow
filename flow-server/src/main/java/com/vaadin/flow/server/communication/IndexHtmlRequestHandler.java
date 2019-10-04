@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server;
+package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
 import java.util.regex.Pattern;
@@ -26,7 +26,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
+import com.vaadin.flow.server.ServletHelper;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import elemental.json.JsonObject;
@@ -71,16 +74,15 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             response.getOutputStream()
                     .write(indexDocument.html().getBytes(UTF_8));
         } catch (IOException e) {
-            getLogger().error(
-                    "Error writing 'index.html' to response",
-                    e);
+            getLogger().error("Error writing 'index.html' to response", e);
             return false;
         }
         return true;
     }
 
-    private void includeInitialUidl(VaadinSession session, VaadinRequest request,
-            VaadinResponse response, Document indexDocument) {
+    private void includeInitialUidl(VaadinSession session,
+            VaadinRequest request, VaadinResponse response,
+            Document indexDocument) {
         JsonObject initial = getInitialJson(request, response, session);
 
         Element elm = new Element("script");

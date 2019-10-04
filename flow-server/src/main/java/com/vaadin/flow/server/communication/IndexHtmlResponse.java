@@ -13,14 +13,17 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server;
+package com.vaadin.flow.server.communication;
 
 import org.jsoup.nodes.Document;
 
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinResponse;
+
 /**
- * This represents the state of a Index HTML response being generated.
- * The Index HTML response contains of the full DOM of the HTML document as well as
- * the HTTP headers that will be included in the corresponding HTTP response.
+ * This represents the state of a Index HTML response being generated. The Index
+ * HTML response contains of the full DOM of the HTML document as well as the
+ * HTTP headers that will be included in the corresponding HTTP response.
  *
  */
 public class IndexHtmlResponse {
@@ -40,8 +43,7 @@ public class IndexHtmlResponse {
      *            the {@link Document} object of the response page
      */
     public IndexHtmlResponse(VaadinRequest vaadinRequest,
-                             VaadinResponse vaadinResponse,
-                             Document document) {
+            VaadinResponse vaadinResponse, Document document) {
         this.vaadinRequest = vaadinRequest;
         this.vaadinResponse = vaadinResponse;
         this.document = document;

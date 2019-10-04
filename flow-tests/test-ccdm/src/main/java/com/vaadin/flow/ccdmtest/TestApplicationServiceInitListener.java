@@ -17,10 +17,10 @@ package com.vaadin.flow.ccdmtest;
 
 import org.jsoup.nodes.Element;
 
-import com.vaadin.flow.server.IndexHtmlResponse;
 import com.vaadin.flow.server.ServiceInitEvent;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.VaadinServletRequest;
+import com.vaadin.flow.server.communication.IndexHtmlResponse;
 
 public class TestApplicationServiceInitListener
         implements VaadinServiceInitListener {
@@ -40,8 +40,7 @@ public class TestApplicationServiceInitListener
         });
     }
 
-    private static String getBaseUrl(
-            IndexHtmlResponse indexHtmlResponse) {
+    private static String getBaseUrl(IndexHtmlResponse indexHtmlResponse) {
         VaadinServletRequest request = (VaadinServletRequest) indexHtmlResponse
                 .getVaadinRequest();
         String scheme = request.getScheme() + "://";
