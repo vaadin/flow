@@ -19,6 +19,7 @@ package com.vaadin.flow.data.converter;
 import com.vaadin.flow.data.binder.ErrorMessageProvider;
 import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;
+import org.slf4j.LoggerFactory;
 
 import java.util.UUID;
 
@@ -75,6 +76,8 @@ public class StringToUuidConverter implements Converter<String, UUID> {
         try {
             uuid = UUID.fromString(value);
         } catch (java.lang.IllegalArgumentException e) {
+            LoggerFactory.getLogger(StringToUuidConverter.class.getName()).warn(
+                    "Unable to convert String to UUID: " + value, e);
             return Result.error(this.errorMessageProvider.apply(context));
         }
         return Result.ok(uuid); // Return the UUID object, converted from String.
