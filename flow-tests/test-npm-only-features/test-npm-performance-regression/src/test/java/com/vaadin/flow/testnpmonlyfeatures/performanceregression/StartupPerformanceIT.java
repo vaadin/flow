@@ -28,42 +28,45 @@ import org.junit.Test;
 
 public class StartupPerformanceIT {
     @Test
-    public void devModeInitializerToWebpackUpIsBelow5500ms() {
+    public void devModeInitializerToWebpackUpIsBelow5000ms() {
         int startupTime = measureLogEntryTimeDistance(
                 "com.vaadin.flow.server.startup.DevModeInitializer - Starting dev-mode updaters in",
-                "dev-webpack.*Time: [0-9]+ms", true);
+                "dev-webpack.*Time: [0-9]+ms",
+                true
+        );
 
         int npmInstallTime = measureLogEntryTimeDistance(
                 "dev-updater - Running `npm install`",
                 "dev-updater - package.json updated and npm dependencies installed",
-                false);
+                false
+        );
 
         int startupTimeWithoutNpmInstallTime = startupTime - npmInstallTime;
 
-        final int thresholdMs = 5500;
-        Assert.assertTrue(
-                String.format("startup time expected <= %d but was %d",
-                        thresholdMs, startupTimeWithoutNpmInstallTime),
+        final int thresholdMs = 5000;
+        Assert.assertTrue(String.format("startup time expected <= %d but was %d",
+                thresholdMs, startupTimeWithoutNpmInstallTime),
                 startupTimeWithoutNpmInstallTime <= thresholdMs);
     }
 
-    private int measureLogEntryTimeDistance(String startFragment,
-            String endFragment, boolean failIfNotFound) {
+    private int measureLogEntryTimeDistance(String startFragment, String endFragment,
+                                            boolean failIfNotFound) {
         Pattern startPattern = createPattern(startFragment);
         Pattern endPattern = createPattern(endFragment);
         AtomicInteger startTime = new AtomicInteger();
         AtomicInteger endTime = new AtomicInteger();
         try {
-            Files.lines(getLogPath()).forEach(line -> {
-                Matcher matcherFirst = startPattern.matcher(line);
-                if (matcherFirst.matches() && startTime.get() == 0) {
-                    startTime.set(Integer.parseInt(matcherFirst.group(1)));
-                }
-                Matcher matcherEnd = endPattern.matcher(line);
-                if (matcherEnd.matches()) {
-                    endTime.set(Integer.parseInt(matcherEnd.group(1)));
-                }
-            });
+            Files.lines(getLogPath())
+                    .forEach(line -> {
+                        Matcher matcherFirst = startPattern.matcher(line);
+                        if (matcherFirst.matches() && startTime.get() == 0) {
+                            startTime.set(Integer.parseInt(matcherFirst.group(1)));
+                        }
+                        Matcher matcherEnd = endPattern.matcher(line);
+                        if (matcherEnd.matches()) {
+                            endTime.set(Integer.parseInt(matcherEnd.group(1)));
+                        }
+                    });
             if (startTime.get() == 0 && failIfNotFound) {
                 throw new RuntimeException("No match: " + startFragment);
             }

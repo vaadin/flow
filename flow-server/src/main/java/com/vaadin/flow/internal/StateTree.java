@@ -417,8 +417,13 @@ public class StateTree implements NodeOwner {
      * @return a set of dirty nodes, in the order they were marked dirty
      */
     private Set<StateNode> doCollectDirtyNodes(boolean reset) {
-        Set<StateNode> collectedNodes = dirtyNodes;
-        dirtyNodes = new LinkedHashSet<>();
-        return collectedNodes;
+        if (reset) {
+            Set<StateNode> collectedNodes = dirtyNodes;
+            dirtyNodes = new LinkedHashSet<>();
+            return collectedNodes;
+        } else {
+            return Collections.unmodifiableSet(dirtyNodes);
+        }
+
     }
 }
