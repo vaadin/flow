@@ -42,6 +42,7 @@ import elemental.json.JsonValue;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
+import static com.vaadin.flow.server.frontend.TaskUpdatePackages.APP_PACKAGE_HASH;
 import static elemental.json.impl.JsonUtil.stringify;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -465,6 +466,43 @@ public abstract class AbstractNodeUpdatePackagesTest
         Assert.assertFalse(
                 "Modification flag should be false when there has never been dependencies.",
                 packageUpdater.modified);
+    }
+
+    @Test
+    public void updatedMainPackageJson_noDependencies_updaterIsMarkedModified()
+            throws IOException {
+        FrontendDependencies frontendDependencies = Mockito
+                .mock(FrontendDependencies.class);
+
+        Map<String, String> packages = new HashMap<>();
+        Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+
+        packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
+                baseDir, generatedDir, false);
+
+        // Set a package Hash
+        JsonObject mainJson = Json.createObject();
+        mainJson.put(APP_PACKAGE_HASH, "ow20f39ghs93");
+        Files.write(mainPackageJson.toPath(),
+                Collections.singletonList(stringify(mainJson)));
+
+        packageCreator.execute();
+        mainJson = getPackageJson(mainPackageJson);
+        Assert.assertEquals(
+                "Main package should have added dependency and rewritten the hash.",
+                TaskCreatePackageJson.FORCE_INSTALL_HASH,
+                mainJson.get(APP_PACKAGE_HASH).asString());
+        packageUpdater.execute();
+
+        Assert.assertTrue(
+                "Modification flag should be true when main package was updated.",
+                packageUpdater.modified);
+
+        mainJson = getPackageJson(mainPackageJson);
+        Assert.assertNotEquals(
+                "Main hash should have been updated to an actual hash.",
+                TaskCreatePackageJson.FORCE_INSTALL_HASH,
+                mainJson.get(APP_PACKAGE_HASH).asString());
     }
 
     private void makeNodeModulesAndPackageLock() throws IOException {

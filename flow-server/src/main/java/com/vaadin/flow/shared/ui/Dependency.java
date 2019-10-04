@@ -98,7 +98,7 @@ public class Dependency implements Serializable {
 
     /**
      * Creates a new dependency of the given type, to be loaded using JS
-     * expression which is supposed to return a Promise.
+     * expression which is supposed to return a {@code Promise}.
      * <p>
      * The created instance dependency mode is {@link LoadMode#LAZY}.
      *
