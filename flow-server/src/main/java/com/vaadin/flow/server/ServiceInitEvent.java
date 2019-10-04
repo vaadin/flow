@@ -79,6 +79,15 @@ public class ServiceInitEvent extends EventObject {
      */
     @Deprecated
     public void addBootstrapListener(BootstrapListener bootstrapListener) {
+        if (getSource().getDeploymentConfiguration().isClientSideMode()) {
+            throw new IllegalStateException("" +
+                    "The BootstrapListener API is not supported in the " +
+                    "client-side mode. Please use the IndexHtmlRequestListener " +
+                    "API instead, or disable the client-side mode with" +
+                    "-Dvaadin.clientSideMode=false to keep compatibility " +
+                    "with V14.");
+        }
+
         Objects.requireNonNull(bootstrapListener,
                 "Bootstrap listener cannot be null");
 
