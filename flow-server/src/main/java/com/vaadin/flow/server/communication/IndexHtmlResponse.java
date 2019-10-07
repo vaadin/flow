@@ -13,21 +13,23 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server;
+package com.vaadin.flow.server.communication;
 
 import org.jsoup.nodes.Document;
 
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinResponse;
+
 /**
- * This represents the state of a client index bootstrap page being generated.
- * The bootstrap page contains of the full DOM of the HTML document as well as
- * the HTTP headers that will be included in the corresponding HTTP response.
+ * This represents the state of a Index HTML response being generated. The Index
+ * HTML response contains of the full DOM of the HTML document as well as the
+ * HTTP headers that will be included in the corresponding HTTP response.
  *
  */
-public class ClientIndexBootstrapPage {
+public class IndexHtmlResponse {
 
     private final VaadinRequest vaadinRequest;
     private final VaadinResponse vaadinResponse;
-    private final VaadinSession vaadinSession;
     private final Document document;
 
     /**
@@ -37,22 +39,18 @@ public class ClientIndexBootstrapPage {
      *            the vaadin request which is handling
      * @param vaadinResponse
      *            the corresponding vaadin response
-     * @param vaadinSession
-     *            the current vaadin session
      * @param document
      *            the {@link Document} object of the response page
      */
-    public ClientIndexBootstrapPage(VaadinRequest vaadinRequest,
-            VaadinResponse vaadinResponse, VaadinSession vaadinSession,
-            Document document) {
+    public IndexHtmlResponse(VaadinRequest vaadinRequest,
+            VaadinResponse vaadinResponse, Document document) {
         this.vaadinRequest = vaadinRequest;
         this.vaadinResponse = vaadinResponse;
-        this.vaadinSession = vaadinSession;
         this.document = document;
     }
 
     /**
-     * Get the request which triggers client index response.
+     * Get the request which triggers the Index HTML response.
      *
      * @return the Vaadin request
      */
@@ -68,15 +66,6 @@ public class ClientIndexBootstrapPage {
      */
     public VaadinResponse getVaadinResponse() {
         return vaadinResponse;
-    }
-
-    /**
-     * Get the current Vaadin session.
-     *
-     * @return the Vaadin session
-     */
-    public VaadinSession getVaadinSession() {
-        return vaadinSession;
     }
 
     /**

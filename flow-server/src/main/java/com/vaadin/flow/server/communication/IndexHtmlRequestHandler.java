@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server;
+package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
 import java.util.regex.Pattern;
@@ -26,7 +26,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
+import com.vaadin.flow.server.ServletHelper;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import elemental.json.JsonObject;
@@ -42,7 +45,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * folder. The handler will calculate and inject baseHref as well as the bundle
  * scripts into the template.
  */
-public class ClientIndexHandler extends JavaScriptBootstrapHandler {
+public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
     private static final Pattern PATH_WITH_EXTENSION = Pattern
             .compile("\\.[A-z][A-z\\d]+$");
@@ -64,24 +67,22 @@ public class ClientIndexHandler extends JavaScriptBootstrapHandler {
 
         response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
 
-        request.getService().modifyClientIndexBootstrapPage(
-                new ClientIndexBootstrapPage(request, response, session,
-                        indexDocument));
+        request.getService().modifyIndexHtmlResponse(
+                new IndexHtmlResponse(request, response, indexDocument));
 
         try {
             response.getOutputStream()
                     .write(indexDocument.html().getBytes(UTF_8));
         } catch (IOException e) {
-            getLogger().error(
-                    "Error writing 'index.html' to response",
-                    e);
+            getLogger().error("Error writing 'index.html' to response", e);
             return false;
         }
         return true;
     }
 
-    private void includeInitialUidl(VaadinSession session, VaadinRequest request,
-            VaadinResponse response, Document indexDocument) {
+    private void includeInitialUidl(VaadinSession session,
+            VaadinRequest request, VaadinResponse response,
+            Document indexDocument) {
         JsonObject initial = getInitialJson(request, response, session);
 
         Element elm = new Element("script");
@@ -133,7 +134,7 @@ public class ClientIndexHandler extends JavaScriptBootstrapHandler {
     }
 
     private static Logger getLogger() {
-        return LoggerFactory.getLogger(ClientIndexHandler.class);
+        return LoggerFactory.getLogger(IndexHtmlRequestHandler.class);
     }
 
     /**

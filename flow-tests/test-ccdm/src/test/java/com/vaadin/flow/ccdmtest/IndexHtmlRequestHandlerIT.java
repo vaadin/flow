@@ -24,7 +24,7 @@ import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-public class ClientIndexHandlerIT extends ChromeBrowserTest {
+public class IndexHtmlRequestHandlerIT extends ChromeBrowserTest {
 
     private void openTestUrl(String url) {
         getDriver().get(getRootURL() + url);
@@ -39,7 +39,7 @@ public class ClientIndexHandlerIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void clientIndexBootstrapListener_openRootURL_shouldHaveModifiedLabel() {
+    public void indexHtmlRequestListener_openRootURL_shouldHaveModifiedLabel() {
         openTestUrl("/");
         waitForElementPresent(By.tagName("label"));
         String content = findElement(By.tagName("label")).getText();
@@ -48,7 +48,7 @@ public class ClientIndexHandlerIT extends ChromeBrowserTest {
                 "Modified page", content);
     }
 
-    public void clientIndexBootstrapListener_openRootURL_shouldDynamicMetaContent() {
+    public void indexHtmlRequestListener_openRootURL_shouldDynamicMetaContent() {
         openTestUrl("/");
         waitForElementPresent(By.cssSelector("meta[name]"));
         Optional<WebElement> ogImageMeta = findElements(By.tagName("meta"))

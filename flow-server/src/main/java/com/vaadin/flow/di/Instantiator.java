@@ -26,11 +26,11 @@ import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.server.BootstrapListener;
 import com.vaadin.flow.server.BootstrapPageResponse;
-import com.vaadin.flow.server.ClientIndexBootstrapListener;
 import com.vaadin.flow.server.DependencyFilter;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
 import com.vaadin.flow.server.communication.UidlWriter;
 
 /**
@@ -97,7 +97,7 @@ public interface Instantiator extends Serializable {
      * @return a stream of all bootstrap listeners to use, not <code>null</code>
      * 
      * @deprecated This API is deprecated in favor of
-     *             {@link Instantiator#getClientIndexBootstrapListeners(Stream)}
+     *             {@link Instantiator#getIndexHtmlRequestListeners(Stream)}
      *             when using client-side bootstrapping
      */
     @Deprecated
@@ -107,8 +107,8 @@ public interface Instantiator extends Serializable {
     }
 
     /**
-     * Processes the available client index bootstrap listeners. This method can
-     * supplement the set of bootstrap listeners provided by
+     * Processes the available Index HTML request listeners. This method can
+     * supplement the set of Index HTML request listeners provided by
      * {@link VaadinServiceInitListener} implementations.
      * <p>
      * The default implementation returns the original listeners without
@@ -118,15 +118,16 @@ public interface Instantiator extends Serializable {
      * execution of those listeners by the
      * {@link VaadinService#modifyBootstrapPage(BootstrapPageResponse)} method.
      *
-     * @param clientIndexBootstrapListener
-     *            a stream of client index bootstrap listeners provided by
-     *            service init listeners, not <code>null</code>
+     * @param indexHtmlRequestListeners
+     *            a stream of Index HTML request listeners provided by service
+     *            init listeners, not <code>null</code>
      *
-     * @return a stream of all bootstrap listeners to use, not <code>null</code>
+     * @return a stream of all Index HTML request listeners to use, not
+     *         <code>null</code>
      */
-    default Stream<ClientIndexBootstrapListener> getClientIndexBootstrapListeners(
-            Stream<ClientIndexBootstrapListener> clientIndexBootstrapListener) {
-        return clientIndexBootstrapListener;
+    default Stream<IndexHtmlRequestListener> getIndexHtmlRequestListeners(
+            Stream<IndexHtmlRequestListener> indexHtmlRequestListeners) {
+        return indexHtmlRequestListeners;
     }
 
     /**

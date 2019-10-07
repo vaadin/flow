@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.communication.FaviconHandler;
+import com.vaadin.flow.server.communication.IndexHtmlRequestHandler;
 import com.vaadin.flow.server.communication.PushRequestHandler;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
@@ -100,9 +101,9 @@ public class VaadinServletService extends VaadinService {
 
     private void addBootstrapHandler(List<RequestHandler> handlers) {
         if (getDeploymentConfiguration().isClientSideMode()) {
-            handlers.add(0, new ClientIndexHandler());
+            handlers.add(0, new IndexHtmlRequestHandler());
             getLogger().debug("Using '{}' in clientSideMode",
-                    ClientIndexHandler.class.getName());
+                    IndexHtmlRequestHandler.class.getName());
         } else {
             handlers.add(0, new BootstrapHandler());
             getLogger().debug("Using '{}' in default mode",
@@ -152,8 +153,10 @@ public class VaadinServletService extends VaadinService {
     }
 
     private boolean isOtherRequest(VaadinRequest request) {
-        String type = request.getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER);
-        return type == null || ApplicationConstants.REQUEST_TYPE_INIT.equals(type);
+        String type = request
+                .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER);
+        return type == null
+                || ApplicationConstants.REQUEST_TYPE_INIT.equals(type);
     }
 
     public static HttpServletRequest getCurrentServletRequest() {

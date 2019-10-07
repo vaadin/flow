@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
+
 /**
  * Event fired to {@link VaadinServiceInitListener} when a {@link VaadinService}
  * is being initialized.
@@ -38,7 +40,7 @@ public class ServiceInitEvent extends EventObject {
 
     private List<RequestHandler> addedRequestHandlers = new ArrayList<>();
     private List<BootstrapListener> addedBootstrapListeners = new ArrayList<>();
-    private List<ClientIndexBootstrapListener> addedClientIndexBootstrapListeners = new ArrayList<>();
+    private List<IndexHtmlRequestListener> addedIndexHtmlRequestListeners = new ArrayList<>();
     private List<DependencyFilter> addedDependencyFilters = new ArrayList<>();
 
     /**
@@ -74,11 +76,20 @@ public class ServiceInitEvent extends EventObject {
      * @param bootstrapListener
      *            the bootstrap listener to add, not <code>null</code>
      * @deprecated This API is deprecated in favor of
-     *             {@link ServiceInitEvent#addClientIndexBootstrapListener} when
+     *             {@link ServiceInitEvent#addIndexHtmlRequestListener} when
      *             using client-side bootstrapping
      */
     @Deprecated
     public void addBootstrapListener(BootstrapListener bootstrapListener) {
+        if (getSource().getDeploymentConfiguration().isClientSideMode()) {
+            throw new IllegalStateException(""
+                    + "The BootstrapListener API is not supported in the "
+                    + "client-side mode. Please use the IndexHtmlRequestListener "
+                    + "API instead, or disable the client-side mode with"
+                    + "-Dvaadin.clientSideMode=false to keep compatibility "
+                    + "with V14.");
+        }
+
         Objects.requireNonNull(bootstrapListener,
                 "Bootstrap listener cannot be null");
 
@@ -86,18 +97,17 @@ public class ServiceInitEvent extends EventObject {
     }
 
     /**
-     * Adds a new client index bootstrap listener that will be used by this
-     * service. The ordering of multiple added bootstrap listeners is not
-     * guaranteed.
+     * Adds a new Index HTML request listener that will be used by this service.
+     * The ordering of multiple added bootstrap listeners is not guaranteed.
      * 
-     * @param bootstrapListener
-     *            the client index bootstrap listener to be added.
+     * @param indexHtmlRequestListener
+     *            the Index HTML request listener to be added.
      */
-    public void addClientIndexBootstrapListener(
-            ClientIndexBootstrapListener bootstrapListener) {
-        Objects.requireNonNull(bootstrapListener,
-                "ClientIndex bootstrap listener cannot be null");
-        addedClientIndexBootstrapListeners.add(bootstrapListener);
+    public void addIndexHtmlRequestListener(
+            IndexHtmlRequestListener indexHtmlRequestListener) {
+        Objects.requireNonNull(indexHtmlRequestListener,
+                "Index HTML request listener cannot be null");
+        addedIndexHtmlRequestListeners.add(indexHtmlRequestListener);
     }
 
     /**
@@ -129,7 +139,7 @@ public class ServiceInitEvent extends EventObject {
      *
      * @return the stream of added bootstrap listeners
      * @deprecated This API is deprecated in favor of
-     *             {@link ServiceInitEvent#getAddedClientIndexBootstrapListeners()}
+     *             {@link ServiceInitEvent#getAddedIndexHtmlRequestListeners()}
      *             when using client-side bootstrapping
      */
     @Deprecated
@@ -138,13 +148,13 @@ public class ServiceInitEvent extends EventObject {
     }
 
     /**
-     * Gets a stream of all client index bootstrap listeners that have been
-     * added for the service.
+     * Gets a stream of all Index HTML request listeners that have been added
+     * for the service.
      *
-     * @return the stream of added client index bootstrap listeners
+     * @return the stream of added Index HTML request listeners
      */
-    public Stream<ClientIndexBootstrapListener> getAddedClientIndexBootstrapListeners() {
-        return addedClientIndexBootstrapListeners.stream();
+    public Stream<IndexHtmlRequestListener> getAddedIndexHtmlRequestListeners() {
+        return addedIndexHtmlRequestListeners.stream();
     }
 
     /**

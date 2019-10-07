@@ -1229,7 +1229,7 @@ public class BootstrapHandlerTest {
     }
 
     @Test
-    public void testBootstrapListener() throws ServiceException {
+    public void bootstrapListener_isInvokedInServerSideMode() throws ServiceException {
         AtomicReference<VaadinUriResolver> resolver = new AtomicReference<>();
         service.addBootstrapListener(evt -> evt.getDocument().head()
                 .getElementsByTag("script").remove());
@@ -1254,6 +1254,14 @@ public class BootstrapHandlerTest {
 
         Assert.assertNotNull(resolver.get());
         Assert.assertEquals(bootstrapContext.getUriResolver(), resolver.get());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void bootstrapListener_throwsInClientSideMode() throws ServiceException {
+        deploymentConfiguration.setClientSideMode(true);
+
+        ServiceInitEvent event = new ServiceInitEvent(service);
+        event.addBootstrapListener(evt -> {});
     }
 
     @Test

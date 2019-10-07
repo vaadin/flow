@@ -67,6 +67,8 @@ import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.ServletHelper.RequestType;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.HeartbeatHandler;
+import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
+import com.vaadin.flow.server.communication.IndexHtmlResponse;
 import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
 import com.vaadin.flow.server.communication.PwaHandler;
 import com.vaadin.flow.server.communication.SessionRequestHandler;
@@ -178,7 +180,7 @@ public abstract class VaadinService implements Serializable {
 
     private Iterable<BootstrapListener> bootstrapListeners;
 
-    private transient Iterable<ClientIndexBootstrapListener> clientIndexBootstrapListeners;
+    private transient Iterable<IndexHtmlRequestListener> indexHtmlRequestListeners;
 
     private Iterable<DependencyFilter> dependencyFilters;
 
@@ -244,9 +246,9 @@ public abstract class VaadinService implements Serializable {
      * Creates a service. This method is for use by dependency injection
      * frameworks etc. and must be followed by a call to
      * {@link #setClassLoader(ClassLoader)} or {@link #setDefaultClassLoader()}
-     * before use. Furthermore {@link #getDeploymentConfiguration()} and {@link #getContext()} should be
-     * overridden (or otherwise intercepted) not to return
-     * <code>null</code>.
+     * before use. Furthermore {@link #getDeploymentConfiguration()} and
+     * {@link #getContext()} should be overridden (or otherwise intercepted) not
+     * to return <code>null</code>.
      */
     protected VaadinService() {
         deploymentConfiguration = null;
@@ -291,9 +293,9 @@ public abstract class VaadinService implements Serializable {
             bootstrapListeners = instantiator
                     .getBootstrapListeners(event.getAddedBootstrapListeners())
                     .collect(Collectors.toList());
-            clientIndexBootstrapListeners = instantiator
-                    .getClientIndexBootstrapListeners(
-                            event.getAddedClientIndexBootstrapListeners())
+            indexHtmlRequestListeners = instantiator
+                    .getIndexHtmlRequestListeners(
+                            event.getAddedIndexHtmlRequestListeners())
                     .collect(Collectors.toList());
         });
 
@@ -349,10 +351,11 @@ public abstract class VaadinService implements Serializable {
     protected abstract PwaRegistry getPwaRegistry();
 
     /**
-     * Returns relative context path for given request.
-     * Override this method in subclasses.
+     * Returns relative context path for given request. Override this method in
+     * subclasses.
      *
-     * @param request Request.
+     * @param request
+     *            Request.
      * @return Relative context root path for that request.
      */
     public abstract String getContextRootRelativePath(VaadinRequest request);
@@ -392,9 +395,9 @@ public abstract class VaadinService implements Serializable {
     }
 
     private boolean hasWebComponentConfigurations() {
-            WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
-                    .getInstance(this.getContext());
-            return registry.hasConfigurations();
+        WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
+                .getInstance(this.getContext());
+        return registry.hasConfigurations();
     }
 
     /**
@@ -635,7 +638,7 @@ public abstract class VaadinService implements Serializable {
      *            change the bootstrap page.
      *
      * @deprecated This API is deprecated in favor of
-     *             {@link VaadinService#modifyClientIndexBootstrapPage(ClientIndexBootstrapPage)}
+     *             {@link VaadinService#modifyIndexHtmlResponse(IndexHtmlResponse)}
      *             when using client-side bootstrapping
      */
     @Deprecated
@@ -646,19 +649,18 @@ public abstract class VaadinService implements Serializable {
 
     /**
      * Fires the
-     * {@link ClientIndexBootstrapListener#modifyBootstrapPage(ClientIndexBootstrapPage)}
-     * event to all registered {@link ClientIndexBootstrapListener}. This is
-     * called internally when the client index bootstrap page is created, so
-     * listeners can intercept the creation and change the result HTML.
+     * {@link IndexHtmlRequestListener#modifyIndexHtmlResponse(IndexHtmlResponse)}
+     * event to all registered {@link IndexHtmlRequestListener}. This is called
+     * internally when the Index HTML response is created, so listeners can
+     * intercept the creation and change the result HTML.
      *
      * @param response
      *            The object containing all relevant info needed by listeners to
-     *            change the client index bootstrap page.
+     *            change the Index HTML response.
      */
-    public void modifyClientIndexBootstrapPage(
-            ClientIndexBootstrapPage response) {
-        clientIndexBootstrapListeners
-                .forEach(listener -> listener.modifyBootstrapPage(response));
+    public void modifyIndexHtmlResponse(IndexHtmlResponse response) {
+        indexHtmlRequestListeners.forEach(
+                listener -> listener.modifyIndexHtmlResponse(response));
     }
 
     /**
@@ -1403,7 +1405,8 @@ public abstract class VaadinService implements Serializable {
      */
     private int getUidlRequestTimeout(VaadinSession session) {
         return getDeploymentConfiguration().isCloseIdleSessions()
-                ? session.getSession().getMaxInactiveInterval() : -1;
+                ? session.getSession().getMaxInactiveInterval()
+                : -1;
     }
 
     /**
@@ -2316,21 +2319,25 @@ public abstract class VaadinService implements Serializable {
     /**
      * Constructs {@link VaadinContext} for this service.
      *
-     * This method will be called only once, upon first call to {@link #getContext()}.
+     * This method will be called only once, upon first call to
+     * {@link #getContext()}.
+     * 
      * @return Context. This may never be {@code null}.
      */
     protected abstract VaadinContext constructVaadinContext();
 
     /**
      * Returns {@link VaadinContext} for this service.
+     * 
      * @return A non-null context instance.
      */
     public VaadinContext getContext() {
-        if(vaadinContext == null) {
+        if (vaadinContext == null) {
             vaadinContext = constructVaadinContext();
         }
         return vaadinContext;
     }
+
     /**
      *
      * Executes a {@code runnable} with a {@link VaadinService} available in the
@@ -2353,21 +2360,25 @@ public abstract class VaadinService implements Serializable {
      * Get the predicate for including the initial Uidl fragment in the
      * bootstrap page.
      * <p>
-     * By default it returns an instance that instruct to include the fragment in the case
+     * By default it returns an instance that instruct to include the fragment
+     * in the case
      *
      * @return a non-null instance.
      */
     public BootstrapInitialPredicate getBootstrapInitialPredicate() {
         if (bootstrapInitialPredicate == null) {
-            bootstrapInitialPredicate = request -> deploymentConfiguration.isEagerServerLoad();
+            bootstrapInitialPredicate = request -> deploymentConfiguration
+                    .isEagerServerLoad();
         }
         return bootstrapInitialPredicate;
     }
 
     /**
-     * Set the predicate that decides whether to include the initial Uidl fragment in the bootstrap page.
+     * Set the predicate that decides whether to include the initial Uidl
+     * fragment in the bootstrap page.
      *
-     * @param bootstrapInitialPredicate the predicate.
+     * @param bootstrapInitialPredicate
+     *            the predicate.
      */
     public void setBootstrapInitialPredicate(
             BootstrapInitialPredicate bootstrapInitialPredicate) {

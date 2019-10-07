@@ -19,6 +19,8 @@ package com.vaadin.flow.server;
 import java.io.Serializable;
 import java.util.EventListener;
 
+import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
+
 /**
  * This event listener is notified when the bootstrap HTML is about to be
  * generated and sent to the client. The bootstrap HTML is first constructed as
@@ -31,7 +33,7 @@ import java.util.EventListener;
  * @see ServiceInitEvent#addBootstrapListener(BootstrapListener)
  *
  * @deprecated This API is deprecated in favor of
- *             {@link ClientIndexBootstrapListener} when using client-side
+ *             {@link IndexHtmlRequestListener} when using client-side
  *             bootstrapping
  *
  * @author Vaadin Ltd

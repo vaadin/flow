@@ -19,6 +19,7 @@ package com.vaadin.flow.server;
 import org.jsoup.nodes.Document;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.server.communication.IndexHtmlResponse;
 import com.vaadin.flow.shared.VaadinUriResolver;
 
 /**
@@ -26,9 +27,8 @@ import com.vaadin.flow.shared.VaadinUriResolver;
  * page contains of the full DOM of the HTML document as well as the HTTP
  * headers that will be included in the corresponding HTTP response.
  *
- * @deprecated This API is deprecated in favor of
- *             {@link ClientIndexBootstrapPage} when using client-side
- *             bootstrapping
+ * @deprecated This API is deprecated in favor of {@link IndexHtmlResponse} when
+ *             using client-side bootstrapping
  *
  * @author Vaadin Ltd
  * @since 1.0
