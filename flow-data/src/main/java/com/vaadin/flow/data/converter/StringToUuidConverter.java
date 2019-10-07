@@ -36,7 +36,6 @@ import java.util.UUID;
  * </p>
  *
  * @author Vaadin Ltd
- * @since 1.0
  */
 public class StringToUuidConverter implements Converter<String, UUID> {
 
@@ -56,7 +55,6 @@ public class StringToUuidConverter implements Converter<String, UUID> {
      * Empty strings are converted to <code>null</code>.
      *
      * @param errorMessageProvider the error message provider to use if conversion fails
-     * @since 8.4
      */
     public StringToUuidConverter(ErrorMessageProvider errorMessageProvider) {
         this.errorMessageProvider = errorMessageProvider;
