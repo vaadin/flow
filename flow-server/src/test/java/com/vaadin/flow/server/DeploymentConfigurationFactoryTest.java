@@ -260,6 +260,10 @@ public class DeploymentConfigurationFactoryTest {
         exception.expect(IllegalStateException.class);
         exception.expectMessage(
                 "The compatibility mode is explicitly set to 'false'");
+
+        URLClassLoader classLoader = new URLClassLoader(new URL[]{});
+        expect(contextMock.getClassLoader()).andReturn(classLoader);
+
         DeploymentConfigurationFactory.createDeploymentConfiguration(
                 VaadinServlet.class,
                 createServletConfigMock(Collections.singletonMap(
@@ -285,11 +289,14 @@ public class DeploymentConfigurationFactoryTest {
     }
 
     @Test
-    public void shouldTrhowIfCompatibilityModeIsFalse_noTokenFile_incorrectWebPackConfigExists()
+    public void shouldThrowIfCompatibilityModeIsFalse_noTokenFile_incorrectWebPackConfigExists()
             throws Exception {
         exception.expect(IllegalStateException.class);
         exception.expectMessage(
                 "The compatibility mode is explicitly set to 'false'");
+
+        URLClassLoader classLoader = new URLClassLoader(new URL[]{});
+        expect(contextMock.getClassLoader()).andReturn(classLoader);
 
         Map<String, String> map = new HashMap<>();
         map.put(FrontendUtils.PROJECT_BASEDIR,
@@ -398,6 +405,44 @@ public class DeploymentConfigurationFactoryTest {
                 tokenFile.getPath()));
     }
 
+    @Test // #6616
+    public void multipleTokenFiles_shouldLoadOnlyNonJarOne()
+            throws Exception {
+        FileUtils.writeLines(tokenFile, Arrays.asList("{",
+                "\"compatibilityMode\": false,", "\"productionMode\": false,", "}"));
+
+        URLClassLoader classLoader = Mockito.mock(URLClassLoader.class);
+        Mockito.when(classLoader.getResources(VAADIN_SERVLET_RESOURCES + TOKEN_FILE))
+                .thenReturn(Collections.enumeration(Arrays.asList(tokenFile.toURI().toURL(),
+                        new URL("file:/C:/Users/.m2/repository/org/vaadin/my-add-on/1.1/my-add-on-1.1.jar!/META-INF/VAADIN/config/flow-build-info.json")
+                )));
+
+        expect(contextMock.getClassLoader()).andReturn(classLoader);
+
+        new DefaultDeploymentConfiguration(VaadinServlet.class,
+                DeploymentConfigurationFactory.createInitParameters(VaadinServlet.class, createServletConfigMock(emptyMap(), emptyMap())));
+    }
+
+    @Test // #6616
+    public void multipleJarTokenFiles_noTokenFileIsLoaded_exceptionThrown()
+            throws Exception {
+        exception.expect(IllegalStateException.class);
+        exception.expectMessage("Unable to determine mode of operation.");
+
+        URLClassLoader classLoader = Mockito.mock(URLClassLoader.class);
+        Mockito.when(classLoader.getResources(VAADIN_SERVLET_RESOURCES + TOKEN_FILE))
+                .thenReturn(Collections.enumeration(Arrays.asList(
+                        new URL("file:/C:/Users/tmp/apache-tomcat-9.0.24/webapps/project_base_war/WEB-INF/lib/my-add-on-1.1.jar!/META-INF/VAADIN/config/flow-build-info.json"),
+                        new URL("file:/C:/Users/tmp/apache-tomcat-9.0.24/webapps/project_base_war/WEB-INF/lib/pdfs-1.1.jar!/META-INF/VAADIN/config/flow-build-info.json")
+                )));
+
+        expect(contextMock.getClassLoader()).andReturn(classLoader);
+
+        new DefaultDeploymentConfiguration(VaadinServlet.class,
+                DeploymentConfigurationFactory.createInitParameters(VaadinServlet.class, createServletConfigMock(emptyMap(), emptyMap())));
+
+    }
+
     @Test
     public void createInitParameters_fallbackChunkObjectIsInInitParams()
             throws ServletException, IOException {
@@ -455,7 +500,7 @@ public class DeploymentConfigurationFactoryTest {
             Map<String, String> servletContextParameters) throws Exception {
 
         URLClassLoader classLoader = new URLClassLoader(
-                new URL[] { temporaryFolder.getRoot().toURI().toURL() });
+                new URL[]{temporaryFolder.getRoot().toURI().toURL()});
 
         expect(contextMock.getInitParameterNames())
                 .andAnswer(() -> Collections
