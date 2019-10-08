@@ -87,6 +87,8 @@ public final class DeploymentConfigurationFactory implements Serializable {
     public static final String DEV_FOLDER_MISSING_MESSAGE = "Running project in development mode with no access to folder '%s'.%n"
             + "Build project in production mode instead, see https://vaadin.com/docs/v14/flow/production/tutorial-production-mode-basic.html";
 
+    private static Pattern JAR_REGEX = Pattern.compile("(.+\\.jar).*");
+
     private DeploymentConfigurationFactory() {
     }
 
@@ -191,8 +193,7 @@ public final class DeploymentConfigurationFactory implements Serializable {
                                         VAADIN_SERVLET_RESOURCES + TOKEN_FILE));
                 URL resource = null;
                 if (!resources.isEmpty()) {
-                    Pattern jarFileRegex = Pattern.compile("(.+\\.jar).*");
-                    resource = resources.stream().filter(url -> !jarFileRegex.matcher(url.getPath())
+                    resource = resources.stream().filter(url -> !JAR_REGEX.matcher(url.getPath())
                                     .find()).findFirst().orElse(null);
                 }
                 if (resource != null) {

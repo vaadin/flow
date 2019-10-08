@@ -3,7 +3,6 @@ package com.vaadin.flow.server;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -406,41 +405,48 @@ public class DeploymentConfigurationFactoryTest {
     }
 
     @Test // #6616
-    public void multipleTokenFiles_shouldLoadOnlyNonJarOne()
-            throws Exception {
-        FileUtils.writeLines(tokenFile, Arrays.asList("{",
-                "\"compatibilityMode\": false,", "\"productionMode\": false,", "}"));
+    public void multipleTokenFiles_shouldLoadOnlyNonJarOne() throws Exception {
+        FileUtils.writeLines(tokenFile,
+                Arrays.asList("{", "\"compatibilityMode\": false,",
+                        "\"productionMode\": false,", "}"));
 
         URLClassLoader classLoader = Mockito.mock(URLClassLoader.class);
-        Mockito.when(classLoader.getResources(VAADIN_SERVLET_RESOURCES + TOKEN_FILE))
-                .thenReturn(Collections.enumeration(Arrays.asList(tokenFile.toURI().toURL(),
-                        new URL("file:/C:/Users/.m2/repository/org/vaadin/my-add-on/1.1/my-add-on-1.1.jar!/META-INF/VAADIN/config/flow-build-info.json")
-                )));
+        Mockito.when(
+                classLoader.getResources(VAADIN_SERVLET_RESOURCES + TOKEN_FILE))
+                .thenReturn(Collections.enumeration(
+                        Arrays.asList(tokenFile.toURI().toURL(),
+                                new URL("file:/C:/Users/.m2/repository/org/vaadin/my-add-on/1.1/my-add-on-1.1.jar!/META-INF/VAADIN/config/flow-build-info.json"))));
 
         expect(contextMock.getClassLoader()).andReturn(classLoader);
 
-        new DefaultDeploymentConfiguration(VaadinServlet.class,
-                DeploymentConfigurationFactory.createInitParameters(VaadinServlet.class, createServletConfigMock(emptyMap(), emptyMap())));
+        Properties initParameters = DeploymentConfigurationFactory
+                .createInitParameters(VaadinServlet.class,
+                        createServletConfigMock(emptyMap(), emptyMap()));
+
+        Assert.assertEquals("Compatibility mode should have been read from the build file", "false", initParameters.getProperty("compatibilityMode"));
+        Assert.assertEquals("Production mode should have been read from the build file", "false", initParameters.getProperty("productionMode"));
     }
 
     @Test // #6616
-    public void multipleJarTokenFiles_noTokenFileIsLoaded_exceptionThrown()
+    public void multipleJarTokenFiles_noTokenFileIsLoaded_noInitParametersAreLoaded()
             throws Exception {
         exception.expect(IllegalStateException.class);
         exception.expectMessage("Unable to determine mode of operation.");
 
         URLClassLoader classLoader = Mockito.mock(URLClassLoader.class);
-        Mockito.when(classLoader.getResources(VAADIN_SERVLET_RESOURCES + TOKEN_FILE))
+        Mockito.when(
+                classLoader.getResources(VAADIN_SERVLET_RESOURCES + TOKEN_FILE))
                 .thenReturn(Collections.enumeration(Arrays.asList(
                         new URL("file:/C:/Users/tmp/apache-tomcat-9.0.24/webapps/project_base_war/WEB-INF/lib/my-add-on-1.1.jar!/META-INF/VAADIN/config/flow-build-info.json"),
-                        new URL("file:/C:/Users/tmp/apache-tomcat-9.0.24/webapps/project_base_war/WEB-INF/lib/pdfs-1.1.jar!/META-INF/VAADIN/config/flow-build-info.json")
-                )));
+                        new URL("file:/C:/Users/tmp/apache-tomcat-9.0.24/webapps/project_base_war/WEB-INF/lib/pdfs-1.1.jar!/META-INF/VAADIN/config/flow-build-info.json"))));
 
         expect(contextMock.getClassLoader()).andReturn(classLoader);
 
         new DefaultDeploymentConfiguration(VaadinServlet.class,
-                DeploymentConfigurationFactory.createInitParameters(VaadinServlet.class, createServletConfigMock(emptyMap(), emptyMap())));
-
+                DeploymentConfigurationFactory
+                        .createInitParameters(VaadinServlet.class,
+                                createServletConfigMock(emptyMap(),
+                                        emptyMap())));
     }
 
     @Test
