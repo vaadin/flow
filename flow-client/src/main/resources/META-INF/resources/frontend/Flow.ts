@@ -47,13 +47,12 @@ export class Flow {
   config: FlowConfig;
   response ?: AppInitResponse;
   pathname = '';
-  baseRegex = /^\//;
-
   // flow uses body for keeping references
   flowRoot : FlowRoot = document.body as any;
-
   // @ts-ignore
   container : HTMLRouterContainer;
+
+  private baseRegex = /^\//;
 
   constructor(config?: FlowConfig) {
     this.flowRoot.$ = this.flowRoot.$ || {};

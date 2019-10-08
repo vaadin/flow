@@ -237,7 +237,7 @@ suite("Flow", () => {
     mockInitResponse('foobar-1111111');
 
     const flow = new Flow();
-    flow.baseRegex = /^\/foo\//;
+    flow['baseRegex'] = /^\/foo\//;
 
     return flow
       .navigate({pathname: "/foo/Foo/Bar.baz"})
