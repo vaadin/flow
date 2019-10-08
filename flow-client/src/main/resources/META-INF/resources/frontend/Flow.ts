@@ -47,6 +47,7 @@ export class Flow {
   config: FlowConfig;
   response ?: AppInitResponse;
   pathname = '';
+  baseRegex = /^\//;
 
   // flow uses body for keeping references
   flowRoot : FlowRoot = document.body as any;
@@ -59,6 +60,13 @@ export class Flow {
     this.config = config || {};
     $wnd.Vaadin = $wnd.Vaadin || {};
     $wnd.Vaadin.Flow = $wnd.Vaadin.Flow || {};
+
+    // Regular expression used to remove the app-context
+    const elm = document.head.querySelector('base');
+    this.baseRegex = new RegExp('^' +
+      // IE11 does not support document.baseURI
+      (document.baseURI || elm && elm.href || '/')
+        .replace(/^https?:\/\/[^\/]+/i, ''));
   }
 
   /**
@@ -154,7 +162,7 @@ export class Flow {
   }
 
   private getFlowRoute(context: NavigationParameters | Location): string {
-    return context.pathname + (context.search || '');
+    return (context.pathname + (context.search || '')).replace(this.baseRegex, '');
   }
 
   // import flow client modules and initialize UI in server side.
