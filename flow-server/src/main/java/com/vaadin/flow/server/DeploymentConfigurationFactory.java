@@ -191,10 +191,8 @@ public final class DeploymentConfigurationFactory implements Serializable {
                                         VAADIN_SERVLET_RESOURCES + TOKEN_FILE));
                 URL resource = null;
                 if (!resources.isEmpty()) {
-                    Pattern JAR_FILE_REGEX = Pattern.compile("(.+\\.jar).*");
-                    resources.stream().forEach(url -> System.out
-                            .println(url.getPath()));
-                    resource = resources.stream().filter(url -> !JAR_FILE_REGEX.matcher(url.getPath())
+                    Pattern jarFileRegex = Pattern.compile("(.+\\.jar).*");
+                    resource = resources.stream().filter(url -> !jarFileRegex.matcher(url.getPath())
                                     .find()).findFirst().orElse(null);
                 }
                 if (resource != null) {
