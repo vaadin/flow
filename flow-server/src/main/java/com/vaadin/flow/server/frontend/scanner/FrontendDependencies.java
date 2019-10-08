@@ -288,7 +288,11 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         Class<? extends AbstractTheme> theme = null;
         String variant = "";
         if (themes.isEmpty()) {
-            theme = getDefaultTheme();
+            Optional<EndPointData> endPointData =
+                    endPoints.values().stream().findFirst();
+            if (endPointData.isPresent()) {
+                theme = getDefaultTheme(endPointData.get());
+            }
         } else {
             // we have a proper theme or no-theme for the app
             ThemeData themeData = themes.iterator().next();
@@ -306,20 +310,27 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         }
     }
 
-    private Class<? extends AbstractTheme> getDefaultTheme()
+    /**
+     * Finds the default theme and attaches it to the given endpoint as though
+     * the endpoint had a {@code Theme} annotation.
+     *
+     * @param themeEndPoint
+     *         {@code EndPointData} to which the theme will be attached. Cannot
+     *         be null.
+     * @return Lumo or null
+     * @throws IOException
+     */
+    private Class<? extends AbstractTheme> getDefaultTheme(EndPointData themeEndPoint)
             throws IOException {
+        assert themeEndPoint != null : "themeEndPoint is null";
         // No theme annotation found by the scanner
         final Class<? extends AbstractTheme> defaultTheme = getLumoTheme();
         // call visitClass on the default theme using the first available
         // endpoint. If not endpoint is available, default theme won't be
         // set.
         if (defaultTheme != null) {
-            Optional<EndPointData> endPointData = endPoints.values().stream()
-                    .findFirst();
-            if (endPointData.isPresent()) {
-                visitClass(defaultTheme.getName(), endPointData.get(), true);
-                return defaultTheme;
-            }
+            visitClass(defaultTheme.getName(), themeEndPoint, true);
+            return defaultTheme;
         }
         return null;
     }
@@ -361,9 +372,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     }
 
     /**
-     * Visits all classes extending
-     * {@link com.vaadin.flow.component.WebComponentExporter} and update an
-     * {@link EndPointData} object with the info found.
+     * Visits all classes extending {@link com.vaadin.flow.component.WebComponentExporter}
+     * and update an {@link EndPointData} object with the info found.
      * <p>
      * The limitation with {@code WebComponentExporters} is that only one theme
      * can be defined. If the more than one {@code @Theme} annotation is found
