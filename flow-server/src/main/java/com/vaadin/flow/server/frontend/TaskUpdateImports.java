@@ -146,14 +146,9 @@ public class TaskUpdateImports extends NodeUpdater {
 
         @Override
         protected Collection<String> getGeneratedModules() {
-            Set<String> exclude = null;
-            if (fallBackImports == null) {
-                exclude = Collections.singleton(generatedFlowImports.getName());
-            } else {
-                exclude = new HashSet<>(
-                        Arrays.asList(generatedFlowImports.getName(),
-                                fallBackImports.getName()));
-            }
+            final Set<String> exclude = new HashSet<>(
+                    Arrays.asList(generatedFlowImports.getName(),
+                            FrontendUtils.FALLBACK_IMPORTS_NAME));
             return NodeUpdater.getGeneratedModules(generatedFolder, exclude);
         }
 
