@@ -33,6 +33,9 @@
                             <value>false</value>
                         </systemProperty>
                     </systemProperties>
+                    <webApp>
+                        <contextPath>/foo</contextPath>
+                    </webApp>
                 </configuration>
             </plugin>
             <plugin>
