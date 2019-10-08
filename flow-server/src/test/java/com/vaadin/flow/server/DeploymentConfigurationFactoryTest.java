@@ -405,7 +405,7 @@ public class DeploymentConfigurationFactoryTest {
     }
 
     @Test // #6616
-    public void multipleTokenFiles_shouldLoadOnlyNonJarOne() throws Exception {
+    public void multipleTokenFiles_shouldLoadNonJarToken_noExceptionShouldBeThrown() throws Exception {
         FileUtils.writeLines(tokenFile,
                 Arrays.asList("{", "\"compatibilityMode\": false,",
                         "\"productionMode\": false,", "}"));
