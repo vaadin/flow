@@ -20,19 +20,28 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Files;
+import java.util.Collections;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.MockVaadinServletService;
+import com.vaadin.flow.server.VaadinService;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.Mockito;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.frontend.FrontendUtils.UnknownVersionException;
 
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON;
+import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
+import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubNode;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
@@ -216,4 +225,117 @@ public class FrontendUtilsTest {
         FrontendUtils.parseVersion(" \n");
     }
 
+    @Test
+    public void assetsByChunkIsCorrectlyParsedFromStats() throws IOException {
+        File statsFile = tmpDir.newFile("stats.json");
+
+        Files.write(statsFile.toPath(),
+                Collections.singletonList("{\n" +
+                        "  \"errors\": [],\n" +
+                        "  \"warnings\": [],\n" +
+                        "  \"version\": \"4.29.1\",\n" +
+                        "  \"hash\": \"64bb80639ef116681818\",\n" +
+                        "  \"time\": 1148,\n" +
+                        "  \"builtAt\": 1549540586721,\n" +
+                        "  \"publicPath\": \"\",\n" +
+                        "  \"outputPath\": \"/Volumes/Framework/updates/skeleton-starter-flow/src/main/webapp/frontend/dist\",\n" +
+                        "  \"assetsByChunkName\" :{\n" +
+                        "    \"index\": \"build/index-1111.cache.js\",\n" +
+                        "    \"index.es5\": \"build/index.es5-2222.cache.js\"\n" +
+                        "  },\n" +
+                        "  \"assets\": [\n" +
+                        "    {\n" +
+                        "      \"name\": \"0.fragment.js\",\n" +
+                        "      \"size\": 618382,\n" +
+                        "      \"chunks\": [\n" +
+                        "        0\n" +
+                        "      ],\n" +
+                        "      \"chunkNames\": [],\n" +
+                        "      \"emitted\": true\n" +
+                        "    }\n" +
+                        "]\n" +
+                        "}\n"));
+
+        VaadinService service = Mockito.mock(VaadinService.class);
+        ClassLoader classLoader = Mockito.mock(ClassLoader.class);
+        DeploymentConfiguration deploymentConfiguration = Mockito
+                .mock(DeploymentConfiguration.class);
+
+        Mockito.when(service.getClassLoader()).thenReturn(classLoader);
+        Mockito.when(service.getDeploymentConfiguration())
+                .thenReturn(deploymentConfiguration);
+        Mockito.when(deploymentConfiguration
+                .getStringProperty(SERVLET_PARAMETER_STATISTICS_JSON,
+                        VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
+                .thenReturn(VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT);
+        Mockito.when(classLoader.getResource(
+                VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
+                .thenReturn(statsFile.toURI().toURL());
+
+
+        String statsAssetsByChunkName = FrontendUtils
+                .getStatsAssetsByChunkName(service);
+
+        Assert.assertEquals("{" +
+                "\"index\": \"build/index-1111.cache.js\"," +
+                "\"index.es5\": \"build/index.es5-2222.cache.js\"" +
+                "}", statsAssetsByChunkName);
+    }
+
+
+    @Test
+    public void faultyStatsFileReturnsNull() throws IOException {
+        File statsFile = tmpDir.newFile("stats.json");
+
+        Files.write(statsFile.toPath(),
+                Collections.singletonList("{\n" +
+                        "  \"errors\": [],\n" +
+                        "  \"warnings\": [],\n" +
+                        "  \"version\": \"4.29.1\",\n" +
+                        "  \"hash\": \"64bb80639ef116681818\",\n" +
+                        "  \"time\": 1148,\n" +
+                        "  \"builtAt\": 1549540586721,\n" +
+                        "  \"publicPath\": \"\",\n" +
+                        "  \"outputPath\": \"/Volumes/Framework/updates/skeleton-starter-flow/src/main/webapp/frontend/dist\",\n" +
+                        "  \"assetsByChunkName\" :{\n" +
+                        "    \"index\": \"build/index-1111.cache.js\",\n" +
+                        "    \"index.es5\": \"build/index.es5-2222.cache.js\"\n" +
+                        "{\n" +
+                        "}\n" +
+                        "  },\n" +
+                        "  \"assets\": [\n" +
+                        "    {\n" +
+                        "      \"name\": \"0.fragment.js\",\n" +
+                        "      \"size\": 618382,\n" +
+                        "      \"chunks\": [\n" +
+                        "        0\n" +
+                        "      ],\n" +
+                        "      \"chunkNames\": [],\n" +
+                        "      \"emitted\": true\n" +
+                        "    }\n" +
+                        "]\n" +
+                        "}\n"));
+
+        VaadinService service = Mockito.mock(VaadinService.class);
+        ClassLoader classLoader = Mockito.mock(ClassLoader.class);
+        DeploymentConfiguration deploymentConfiguration = Mockito
+                .mock(DeploymentConfiguration.class);
+
+        Mockito.when(service.getClassLoader()).thenReturn(classLoader);
+        Mockito.when(service.getDeploymentConfiguration())
+                .thenReturn(deploymentConfiguration);
+        Mockito.when(deploymentConfiguration
+                .getStringProperty(SERVLET_PARAMETER_STATISTICS_JSON,
+                        VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
+                .thenReturn(VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT);
+        Mockito.when(classLoader.getResource(
+                VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
+                .thenReturn(statsFile.toURI().toURL());
+
+
+        String statsAssetsByChunkName = FrontendUtils
+                .getStatsAssetsByChunkName(service);
+
+        Assert.assertNull(statsAssetsByChunkName);
+    }
 }
