@@ -460,10 +460,19 @@ public class FrontendUtils {
      * object string.
      *
      * @param service
-     *         the Vaadin service.
+     *            the Vaadin service.
      * @return json for assetsByChunkName object in stats.json
      */
-    public static String getStatsAssetsByChunkName(VaadinService service) {
+    public static String getStatsAssetsByChunkName(VaadinService service)
+            throws IOException {
+        DeploymentConfiguration config = service.getDeploymentConfiguration();
+        if (!config.isProductionMode() && config.enableDevServer()) {
+            DevModeHandler handler = DevModeHandler.getDevModeHandler();
+            return streamToString(
+                    handler.prepareConnection("/assetsByChunkName", "GET")
+                            .getInputStream());
+        }
+
         String stats = service.getDeploymentConfiguration()
                 .getStringProperty(SERVLET_PARAMETER_STATISTICS_JSON,
                         VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT)
