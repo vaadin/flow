@@ -91,11 +91,11 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         long start = System.nanoTime();
         try {
             computeEndpoints();
-            computeApplicationTheme(endPoints);
-            computePackages();
             if (generateEmbeddableWebComponents) {
-                computeExporters();
+                computeExporterEndpoints();
             }
+            computeApplicationTheme();
+            computePackages();
             long ms = (System.nanoTime() - start) / 1000000;
             log().info("Visited {} classes. Took {} ms.", visited.size(), ms);
         } catch (ClassNotFoundException | InstantiationException
@@ -239,13 +239,15 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         endPoints.put(className, visitClass(className, data, false));
     }
 
-    // Visit all end-points and compute the theme for the application.
-    // It fails in the case that there are multiple themes for the application
-    // or in the
-    // case of Theme and NoTheme found in the application.
-    // If no theme is found, it uses lumo if found in the class-path
-    private void computeApplicationTheme(
-            HashMap<String, EndPointData> endPoints)
+    /*
+     * Visit all end-points and computes the theme for the application. It fails
+     * in the case that there are multiple themes for the application or in the
+     * case of Theme and NoTheme found in the application.
+     *
+     * If no theme is found and the application has endpoints, it uses lumo if
+     * found in the class-path
+     */
+    private void computeApplicationTheme()
             throws ClassNotFoundException, InstantiationException,
             IllegalAccessException, IOException {
 
@@ -265,21 +267,20 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                 // consider only endPoints with theme information
                 .filter(data -> data.getTheme().getName() != null
                         || data.getTheme().isNotheme())
-                .map(data -> data.getTheme())
+                .map(EndPointData::getTheme)
                 // Remove duplicates by returning a set
                 .collect(Collectors.toSet());
 
         if (themes.size() > 1) {
-            String names = String.join("\n      ",
-                    endPoints.values().stream()
-                            .filter(data -> data.getTheme().getName() != null
-                                    || data.getTheme().isNotheme())
-                            .map(data -> "found '"
-                                    + (data.getTheme().isNotheme()
-                                            ? NoTheme.class.getName()
-                                            : data.getTheme().getName())
-                                    + "' in '" + data.getName() + "'")
-                            .collect(Collectors.toList()));
+            String names = endPoints.values().stream()
+                    .filter(data -> data.getTheme().getName() != null
+                            || data.getTheme().isNotheme())
+                    .map(data -> "found '"
+                            + (data.getTheme().isNotheme()
+                                    ? NoTheme.class.getName()
+                                    : data.getTheme().getName())
+                            + "' in '" + data.getName() + "'")
+                    .collect(Collectors.joining("\n      "));
             throw new IllegalStateException(
                     "\n Multiple Theme configuration is not supported:\n      "
                             + names);
@@ -288,11 +289,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         Class<? extends AbstractTheme> theme = null;
         String variant = "";
         if (themes.isEmpty()) {
-            Optional<EndPointData> endPointData =
-                    endPoints.values().stream().findFirst();
-            if (endPointData.isPresent()) {
-                theme = getDefaultTheme(endPointData.get());
-            }
+            theme = getDefaultTheme();
         } else {
             // we have a proper theme or no-theme for the app
             ThemeData themeData = themes.iterator().next();
@@ -314,22 +311,21 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      * Finds the default theme and attaches it to the given endpoint as though
      * the endpoint had a {@code Theme} annotation.
      *
-     * @param themeEndPoint
-     *         {@code EndPointData} to which the theme will be attached. Cannot
-     *         be null.
      * @return Lumo or null
-     * @throws IOException
      */
-    private Class<? extends AbstractTheme> getDefaultTheme(EndPointData themeEndPoint)
+    private Class<? extends AbstractTheme> getDefaultTheme()
             throws IOException {
-        assert themeEndPoint != null : "themeEndPoint is null";
         // No theme annotation found by the scanner
         final Class<? extends AbstractTheme> defaultTheme = getLumoTheme();
         // call visitClass on the default theme using the first available
         // endpoint. If not endpoint is available, default theme won't be
         // set.
         if (defaultTheme != null) {
-            visitClass(defaultTheme.getName(), themeEndPoint, true);
+            Optional<EndPointData> endPointData = endPoints.values().stream()
+                    .findFirst();
+            if (endPointData.isPresent()) {
+                visitClass(defaultTheme.getName(), endPointData.get(), true);
+            }
             return defaultTheme;
         }
         return null;
@@ -372,8 +368,9 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     }
 
     /**
-     * Visits all classes extending {@link com.vaadin.flow.component.WebComponentExporter}
-     * and update an {@link EndPointData} object with the info found.
+     * Visits all classes extending
+     * {@link com.vaadin.flow.component.WebComponentExporter} and update an
+     * {@link EndPointData} object with the info found.
      * <p>
      * The limitation with {@code WebComponentExporters} is that only one theme
      * can be defined. If the more than one {@code @Theme} annotation is found
@@ -383,14 +380,13 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      * available.
      *
      * @throws ClassNotFoundException
+     *             if unable to load a class by class name
      * @throws IOException
-     * @throws IllegalAccessException
-     * @throws InstantiationException
-     * @throws IllegalStateException
+     *             if unable to scan the class byte code
      */
     @SuppressWarnings("unchecked")
-    private void computeExporters() throws ClassNotFoundException, IOException,
-            IllegalAccessException, InstantiationException {
+    private void computeExporterEndpoints()
+            throws ClassNotFoundException, IOException {
         // Because of different classLoaders we need compare against class
         // references loaded by the specific class finder loader
         Class<? extends Annotation> routeClass = getFinder()
@@ -427,7 +423,6 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             }
         }
 
-        computeApplicationTheme(exportedPoints);
         endPoints.putAll(exportedPoints);
     }
 
