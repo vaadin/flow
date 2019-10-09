@@ -27,8 +27,8 @@ import com.vaadin.flow.component.Component;
  * {@link ServiceLoader}. This means that all implementations must have a
  * zero-argument constructor and the fully qualified name of the implementation
  * class must be listed on a separate line in a
- * META-INF/services/cocom.vaadin.flow.server.startup.RouteFilter file present
- * in the jar file containing the implementation class.
+ * META-INF/services/cocom.vaadin.flow.server.startup.NavigationTargetFilter
+ * file present in the jar file containing the implementation class.
  *
  * @author Vaadin Ltd
  * @since 1.0
