@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -227,34 +228,31 @@ public class FrontendUtilsTest {
 
     @Test
     public void assetsByChunkIsCorrectlyParsedFromStats() throws IOException {
-        File statsFile = tmpDir.newFile("stats.json");
-
-        Files.write(statsFile.toPath(),
-                Collections.singletonList("{\n" +
-                        "  \"errors\": [],\n" +
-                        "  \"warnings\": [],\n" +
-                        "  \"version\": \"4.29.1\",\n" +
-                        "  \"hash\": \"64bb80639ef116681818\",\n" +
-                        "  \"time\": 1148,\n" +
-                        "  \"builtAt\": 1549540586721,\n" +
-                        "  \"publicPath\": \"\",\n" +
-                        "  \"outputPath\": \"/Volumes/Framework/updates/skeleton-starter-flow/src/main/webapp/frontend/dist\",\n" +
-                        "  \"assetsByChunkName\" :{\n" +
-                        "    \"index\": \"build/index-1111.cache.js\",\n" +
-                        "    \"index.es5\": \"build/index.es5-2222.cache.js\"\n" +
-                        "  },\n" +
-                        "  \"assets\": [\n" +
-                        "    {\n" +
-                        "      \"name\": \"0.fragment.js\",\n" +
-                        "      \"size\": 618382,\n" +
-                        "      \"chunks\": [\n" +
-                        "        0\n" +
-                        "      ],\n" +
-                        "      \"chunkNames\": [],\n" +
-                        "      \"emitted\": true\n" +
-                        "    }\n" +
-                        "]\n" +
-                        "}\n"));
+        String stats = "{\n" +
+                "  \"errors\": [],\n" +
+                "  \"warnings\": [],\n" +
+                "  \"version\": \"4.29.1\",\n" +
+                "  \"hash\": \"64bb80639ef116681818\",\n" +
+                "  \"time\": 1148,\n" +
+                "  \"builtAt\": 1549540586721,\n" +
+                "  \"publicPath\": \"\",\n" +
+                "  \"outputPath\": \"/Volumes/Framework/updates/skeleton-starter-flow/src/main/webapp/frontend/dist\",\n" +
+                "  \"assetsByChunkName\" :{\n" +
+                "    \"index\": \"build/index-1111.cache.js\",\n" +
+                "    \"index.es5\": \"build/index.es5-2222.cache.js\"\n" +
+                "  },\n" +
+                "  \"assets\": [\n" +
+                "    {\n" +
+                "      \"name\": \"0.fragment.js\",\n" +
+                "      \"size\": 618382,\n" +
+                "      \"chunks\": [\n" +
+                "        0\n" +
+                "      ],\n" +
+                "      \"chunkNames\": [],\n" +
+                "      \"emitted\": true\n" +
+                "    }\n" +
+                "]\n" +
+                "}\n";
 
         VaadinService service = Mockito.mock(VaadinService.class);
         ClassLoader classLoader = Mockito.mock(ClassLoader.class);
@@ -268,9 +266,9 @@ public class FrontendUtilsTest {
                 .getStringProperty(SERVLET_PARAMETER_STATISTICS_JSON,
                         VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
                 .thenReturn(VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT);
-        Mockito.when(classLoader.getResource(
+        Mockito.when(classLoader.getResourceAsStream(
                 VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
-                .thenReturn(statsFile.toURI().toURL());
+                .thenReturn(new ByteArrayInputStream(stats.getBytes()));
 
 
         String statsAssetsByChunkName = FrontendUtils
@@ -285,10 +283,7 @@ public class FrontendUtilsTest {
 
     @Test
     public void faultyStatsFileReturnsNull() throws IOException {
-        File statsFile = tmpDir.newFile("stats.json");
-
-        Files.write(statsFile.toPath(),
-                Collections.singletonList("{\n" +
+        String stats = "{\n" +
                         "  \"errors\": [],\n" +
                         "  \"warnings\": [],\n" +
                         "  \"version\": \"4.29.1\",\n" +
@@ -314,7 +309,7 @@ public class FrontendUtilsTest {
                         "      \"emitted\": true\n" +
                         "    }\n" +
                         "]\n" +
-                        "}\n"));
+                        "}\n";
 
         VaadinService service = Mockito.mock(VaadinService.class);
         ClassLoader classLoader = Mockito.mock(ClassLoader.class);
@@ -328,9 +323,9 @@ public class FrontendUtilsTest {
                 .getStringProperty(SERVLET_PARAMETER_STATISTICS_JSON,
                         VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
                 .thenReturn(VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT);
-        Mockito.when(classLoader.getResource(
+        Mockito.when(classLoader.getResourceAsStream(
                 VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
-                .thenReturn(statsFile.toURI().toURL());
+                .thenReturn(new ByteArrayInputStream(stats.getBytes()));
 
 
         String statsAssetsByChunkName = FrontendUtils
