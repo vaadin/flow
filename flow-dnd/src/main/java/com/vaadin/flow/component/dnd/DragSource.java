@@ -180,11 +180,8 @@ public interface DragSource<T extends Component> extends HasElement {
             // The attribute is an enumerated one and not a Boolean one.
             getDraggableElement().setProperty("draggable",
                     Boolean.TRUE.toString());
-            getDraggableElement()
-                    .executeJavaScript(
-                            "window.Vaadin.Flow.dndConnector"
-                                    + ".activateDragSource($0)",
-                            getDraggableElement());
+            DndUtil.updateDragSourceActivation(this);
+
             // store & clear the component as active drag source for the UI
             Registration startListenerRegistration = addDragStartListener(
                     event -> getDragSourceComponent().getUI()
@@ -204,10 +201,7 @@ public interface DragSource<T extends Component> extends HasElement {
                     endListenerRegistration);
         } else {
             getDraggableElement().removeProperty("draggable");
-            getDraggableElement().executeJavaScript(
-                    "window.Vaadin.Flow.dndConnector"
-                            + ".deactivateDragSource($0)",
-                    getDraggableElement());
+            DndUtil.updateDragSourceActivation(this);
             // clear listeners for setting active data source
             Object startListenerRegistration = ComponentUtil.getData(
                     getDragSourceComponent(),

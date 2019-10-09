@@ -17,6 +17,11 @@
 package com.vaadin.flow.component.dnd.internal;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.dnd.DragSource;
+import com.vaadin.flow.component.dnd.DropTarget;
+import com.vaadin.flow.server.Command;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.LoadMode;
 
 /**
@@ -67,6 +72,11 @@ public class DndUtil {
      */
     public static final String DROP_EFFECT_ELEMENT_PROPERTY = "__dropEffect";
 
+    /**
+     * Key for storing detach listener for a drop target to component data.
+     */
+    private static final String DETACH_LISTENER_FOR_DROP_TARGET = "_detachListenerForDropTarget";
+
     private DndUtil() {
         // no instances from this class
     }
@@ -82,4 +92,59 @@ public class DndUtil {
         component.getElement().getNode().runWhenAttached(ui -> ui.getPage()
                 .addJavaScript(DND_CONNECTOR, LoadMode.EAGER));
     }
+
+    /**
+     * Triggers drag source activation method in JS connector once when the
+     * component has been attached.
+     * 
+     * @param dragSource
+     *            the drag source to update active status on
+     * @param <T>
+     *            the type of the drag source component
+     */
+    public static <T extends Component> void updateDragSourceActivation(
+            DragSource<T> dragSource) {
+        Command command = () -> dragSource.getDraggableElement().executeJs(
+                "window.Vaadin.Flow.dndConnector.updateDragSource($0)",
+                dragSource.getDraggableElement());
+        runOnAttachBeforeResponse(dragSource.getDragSourceComponent(), command);
+    }
+
+    /**
+     * Triggers drop target activation method in JS connector once when the
+     * component has been attached. Will make sure the activation in JS is done
+     * again when the component is detached and attached again, because
+     * otherwise the element will not be a drop target again.
+     * 
+     * @param dropTarget
+     *            the drop target to update active status on
+     * @param <T>
+     *            the type of the drop target component
+     */
+    public static <T extends Component> void updateDropTargetActivation(
+            DropTarget<T> dropTarget) {
+        Command command = () -> dropTarget.getElement().executeJs(
+                "window.Vaadin.Flow.dndConnector.updateDropTarget($0)",
+                dropTarget.getElement());
+
+        runOnAttachBeforeResponse(dropTarget.getDropTargetComponent(), command);
+
+        // add a detach listener which will make sure the activation is done
+        // again on the client side if the component is removed and added again
+        if (ComponentUtil.getData(dropTarget.getDropTargetComponent(),
+                DETACH_LISTENER_FOR_DROP_TARGET) == null) {
+            Registration detachRegistration = dropTarget.getElement()
+                    .addDetachListener(event -> runOnAttachBeforeResponse(
+                            dropTarget.getDropTargetComponent(), command));
+            ComponentUtil.setData(dropTarget.getDropTargetComponent(),
+                    DETACH_LISTENER_FOR_DROP_TARGET, detachRegistration);
+        }
+    }
+
+    private static void runOnAttachBeforeResponse(Component component,
+            Command command) {
+        component.getElement().getNode().runWhenAttached(ui -> ui
+                .beforeClientResponse(component, context -> command.execute()));
+    }
+
 }
