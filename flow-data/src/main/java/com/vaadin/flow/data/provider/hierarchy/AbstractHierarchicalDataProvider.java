@@ -29,6 +29,7 @@ import com.vaadin.flow.function.SerializableFunction;
  *            data type
  * @param <F>
  *            filter type
+ * @since 1.2
  */
 public abstract class AbstractHierarchicalDataProvider<T, F> extends
         AbstractDataProvider<T, F> implements HierarchicalDataProvider<T, F> {

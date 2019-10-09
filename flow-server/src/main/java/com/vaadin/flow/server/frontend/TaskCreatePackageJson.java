@@ -22,10 +22,16 @@ import java.io.UncheckedIOException;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
+import static com.vaadin.flow.server.frontend.TaskUpdatePackages.APP_PACKAGE_HASH;
+
 /**
  * Creates the <code>package.json</code> if missing.
+ *
+ * @since 2.0
  */
 public class TaskCreatePackageJson extends NodeUpdater {
+
+    protected static final String FORCE_INSTALL_HASH = "Main dependencies updated, force install";
 
     /**
      * Create an instance of the updater given all configurable parameters.
@@ -49,6 +55,13 @@ public class TaskCreatePackageJson extends NodeUpdater {
             }
             modified = updateMainDefaultDependencies(mainContent);
             if (modified) {
+                if (mainContent.hasKey(APP_PACKAGE_HASH)) {
+                    log().debug(
+                            "Main dependencies updated. Forcing npm install.");
+                    mainContent.put(APP_PACKAGE_HASH, FORCE_INSTALL_HASH);
+                } else {
+                    mainContent.put(APP_PACKAGE_HASH, "");
+                }
                 writeMainPackageFile(mainContent);
             }
             JsonObject customContent = getAppPackageJson();

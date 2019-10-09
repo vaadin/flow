@@ -22,6 +22,8 @@ import java.util.Objects;
  * A container for CssImport information when scanning the class path. It
  * overrides equals and hashCode in order to use HashSet to eliminate
  * duplicates.
+ *
+ * @since 2.0
  */
 public final class CssData implements Serializable {
     String value;

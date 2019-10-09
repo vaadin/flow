@@ -31,18 +31,33 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * multiple JavaScript files for a single component, you can use this annotation
  * multiple times.
  * <p>
- * It is guaranteed that dependencies will be loaded only once.
+ * It is guaranteed that dependencies will be loaded only once. The files loaded
+ * will be in the same order as the annotations were on the class. However,
+ * loading order is only guaranteed on a class level; Annotations from different
+ * classes may appear in different order, grouped by the annotated class. Also,
+ * files identified by {@code @JavaScript} will be loaded after
+ * {@link com.vaadin.flow.component.dependency.JsModule} and before
+ * {@link com.vaadin.flow.component.dependency.CssImport}.
  * <p>
  * NOTE: while this annotation is not inherited using the
  * {@link Inherited @Inherited} annotation, the annotations of the possible
  * parent components or implemented interfaces are read when sending the
  * dependencies to the browser.
+ * <p>
+ * NOTE: Currently all frontend resources are bundled together into one big
+ * bundle. This means, that JavaScript files loaded by one class will be present
+ * on a view constructed by another class. For example, if there are two classes
+ * {@code RootRoute} annotated with {@code @Route("")}, and another class
+ * {@code RouteA} annotated with {@code @Route("route-a")} and
+ * {@code @JavaScript("./src/javascript.js")}, the {@code javascript.js} will be
+ * run on the root route as well.
  *
  * @author Vaadin Ltd
  * @since 1.0
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
+@Inherited
 @Documented
 @Repeatable(JavaScript.Container.class)
 public @interface JavaScript {
@@ -74,6 +89,7 @@ public @interface JavaScript {
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.TYPE)
+    @Inherited
     @Documented
     public @interface Container {
 

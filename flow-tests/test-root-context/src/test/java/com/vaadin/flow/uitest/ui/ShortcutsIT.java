@@ -35,6 +35,8 @@ public class ShortcutsIT extends ChromeBrowserTest {
             .of(Keys.SHIFT, Keys.ALT, Keys.CONTROL, Keys.META)
             .collect(Collectors.toSet());
 
+    private static final String DEFAULT_VALUE = "testing...";
+
     @Before
     public void before() {
         open();
@@ -86,16 +88,16 @@ public class ShortcutsIT extends ChromeBrowserTest {
         assertActualEquals("DISABLED CLICKED");
 
         resetActual();
-        assertActualEquals("testing...");
+        assertActualEquals(DEFAULT_VALUE);
 
         sendKeys(Keys.CONTROL, "U"); // ctrl+shift+u
-        assertActualEquals("testing...");
+        assertActualEquals(DEFAULT_VALUE);
     }
 
     @Test
     public void listenOnScopesTheShortcut() {
         sendKeys(Keys.ALT, "s");
-        assertActualEquals("testing..."); // nothing happened
+        assertActualEquals(DEFAULT_VALUE); // nothing happened
 
         WebElement innerInput = findElement(By.id("focusTarget"));
         innerInput.sendKeys(Keys.ALT, "s");
@@ -108,7 +110,7 @@ public class ShortcutsIT extends ChromeBrowserTest {
     @Test
     public void shortcutsOnlyWorkWhenComponentIsAttached() {
         sendKeys(Keys.ALT, "a");
-        assertActualEquals("testing..."); // nothing happens
+        assertActualEquals(DEFAULT_VALUE); // nothing happens
 
         // attaches the component
         sendKeys(Keys.ALT, "y");
@@ -172,12 +174,40 @@ public class ShortcutsIT extends ChromeBrowserTest {
         // The shortcut is removed at the same time, so another 'd' should be
         // printed out.
 
-        removalInput.sendKeys("abcd abcd");
+        removalInput.sendKeys("abcd");
+        Assert.assertEquals("removalInput should have 'ABC' and no 'd'", "ABC",
+                removalInput.getAttribute("value"));
 
+        removalInput.sendKeys("abcd");
         Assert.assertEquals(
-                "removalInput should have text, with some letters"
-                        + " capitalized and only one 'd' letter",
-                "ABC abcd", removalInput.getAttribute("value"));
+                "removalInput 'ABCabcd'. Since shortcut was removed, 'd' can "
+                        + "be typed.",
+                "ABCabcd", removalInput.getAttribute("value"));
+    }
+
+    @Test
+    public void bindingShortcutToSameKeyWithDifferentModifiers_shouldNot_triggerTwice() {
+        // they bindings are "o", "shift+o", and "alt+o"
+
+        assertActualEquals(DEFAULT_VALUE);
+
+        // bug #5454:
+        // if the shortcut is without modifiers, bindings on that
+        // key with modifiers also trigger
+
+        // each shortcut has its own counter. each shortcut increments its
+        // respective counter and then all the counters are concatenated into
+        // "actual" text field. Should shortcuts cross-trigger, number two
+        // will be part of the string
+        // string order: [o][shift+o][alt+o]
+        sendKeys("o");
+        assertActualEquals("100");
+
+        sendKeys("O"); // shift+o
+        assertActualEquals("110");
+
+        sendKeys(Keys.ALT, "o");
+        assertActualEquals("111");
     }
 
     private void assertActualEquals(String expected) {

@@ -16,6 +16,7 @@
 
 package com.vaadin.flow.uitest.ui;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.vaadin.flow.component.Key;
@@ -170,5 +171,23 @@ public class ShortcutsView extends Div {
                 }, Key.KEY_D);
         removalAtomicReference.set(removalRegistration);
         add(removalInput);
+
+        // bindingShortcutToSameKeyWithDifferentModifiers_shouldNot_triggerTwice
+        AtomicInteger oCounter = new AtomicInteger(0);
+        AtomicInteger oShiftCounter = new AtomicInteger(0);
+        AtomicInteger oAltCounter = new AtomicInteger(0);
+        UI.getCurrent()
+                .addShortcutListener(
+                        () -> actual.setValue("" + oCounter.incrementAndGet()
+                                + oShiftCounter.get() + oAltCounter.get()),
+                        Key.KEY_O);
+        UI.getCurrent()
+                .addShortcutListener(() -> actual.setValue("" + oCounter.get()
+                        + oShiftCounter.incrementAndGet() + oAltCounter.get()),
+                        Key.KEY_O, KeyModifier.SHIFT);
+        UI.getCurrent().addShortcutListener(
+                () -> actual.setValue("" + oCounter.get() + oShiftCounter.get()
+                        + oAltCounter.incrementAndGet()),
+                Key.KEY_O, KeyModifier.ALT);
     }
 }

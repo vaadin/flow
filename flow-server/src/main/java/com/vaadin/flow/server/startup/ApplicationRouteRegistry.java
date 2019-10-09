@@ -52,6 +52,8 @@ import com.vaadin.flow.shared.Registration;
 /**
  * Registry for holding navigation target components found on servlet
  * initialization.
+ *
+ * @since 1.3
  */
 public class ApplicationRouteRegistry extends AbstractRouteRegistry {
 

@@ -28,6 +28,7 @@ import com.vaadin.flow.shared.ui.Dependency;
  * {@link JavaScript @JavaScript} and {@link HtmlImport @HtmlImport}.
  *
  * @see ServiceInitEvent#addDependencyFilter(DependencyFilter)
+ * @since 1.0
  */
 @FunctionalInterface
 public interface DependencyFilter extends Serializable {

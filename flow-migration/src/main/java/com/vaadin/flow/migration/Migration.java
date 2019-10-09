@@ -45,7 +45,7 @@ import elemental.json.JsonValue;
  * source files from V13 to V14.
  *
  * @author Vaadin Ltd
- *
+ * @since 2.0
  */
 public class Migration {
 

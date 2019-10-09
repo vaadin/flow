@@ -33,6 +33,7 @@ import com.vaadin.flow.server.webcomponent.WebComponentModulesWriter;
  * by {@link com.vaadin.flow.migration.ClassPathIntrospector}.
  * 
  * @author Vaadin Ltd.
+ * @since 2.0
  */
 public class WebComponentModulesGenerator extends ClassPathIntrospector {
     private Class<?> writerClass;

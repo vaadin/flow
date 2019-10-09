@@ -29,6 +29,7 @@ import com.vaadin.flow.component.Component;
  *
  * @param <T>
  *         base data implementation
+ * @since 1.3
  */
 public abstract class RouteBaseData<T extends RouteBaseData>
         implements Comparable<T>, Serializable {

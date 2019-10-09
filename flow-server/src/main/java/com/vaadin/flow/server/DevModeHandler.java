@@ -50,7 +50,6 @@ import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
-import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.getNodeExecutable;
 import static com.vaadin.flow.server.frontend.FrontendUtils.validateNodeAndNpmVersion;
@@ -68,6 +67,7 @@ import static java.net.HttpURLConnection.HTTP_OK;
  * By default it keeps updated npm dependencies and node imports before running
  * webpack server
  *
+ * @since 2.0
  */
 public final class DevModeHandler implements Serializable {
 
@@ -105,10 +105,10 @@ public final class DevModeHandler implements Serializable {
     private int port;
     private transient Process webpackProcess;
     private final boolean reuseDevServer;
+    private transient DevServerWatchDog watchDog;
 
-    private DevModeHandler(DeploymentConfiguration config,
-            int runningPort, File npmFolder,
-            File webpack, File webpackConfig) {
+    private DevModeHandler(DeploymentConfiguration config, int runningPort,
+            File npmFolder, File webpack, File webpackConfig) {
 
         port = runningPort;
         reuseDevServer = config.reuseDevServer();
@@ -116,16 +116,20 @@ public final class DevModeHandler implements Serializable {
         // If port is defined, means that webpack is already running
         if (port > 0) {
             if (checkWebpackConnection()) {
-                getLogger().info(
-                        "Reusing webpack-dev-server running at {}:{}", WEBPACK_HOST, port);
+                getLogger().info("Reusing webpack-dev-server running at {}:{}",
+                        WEBPACK_HOST, port);
 
                 // Save running port for next usage
                 saveRunningDevServerPort();
+                watchDog = null;
                 return;
             }
             throw new IllegalStateException(String.format(
-                    "webpack-dev-server port '%d' is defined but it's not working properly", port));
+                    "webpack-dev-server port '%d' is defined but it's not working properly",
+                    port));
         }
+
+        watchDog = new DevServerWatchDog();
 
         // Look for a free port
         port = getFreePort();
@@ -136,13 +140,13 @@ public final class DevModeHandler implements Serializable {
         validateNodeAndNpmVersion(npmFolder.getAbsolutePath());
 
         List<String> command = new ArrayList<>();
-        command.add(getNodeExecutable(
-                npmFolder.getAbsolutePath()));
+        command.add(getNodeExecutable(npmFolder.getAbsolutePath()));
         command.add(webpack.getAbsolutePath());
         command.add("--config");
         command.add(webpackConfig.getAbsolutePath());
         command.add("--port");
         command.add(String.valueOf(port));
+        command.add("--watchDogPort=" + watchDog.getWatchDogPort());
         command.addAll(Arrays.asList(config
                 .getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS,
                         "-d --inline=false")
@@ -166,7 +170,8 @@ public final class DevModeHandler implements Serializable {
             // global JVM.
             // We instruct the JVM to stop the webpack-dev-server daemon when
             // the JVM stops, to avoid leaving daemons running in the system.
-            // NOTE: that in the corner case that the JVM crashes or it is killed
+            // NOTE: that in the corner case that the JVM crashes or it is
+            // killed
             // the daemon will be kept running. But anyways it will also happens
             // if the system was configured to be stop the daemon when the
             // servlet context is destroyed.
@@ -208,7 +213,8 @@ public final class DevModeHandler implements Serializable {
      *
      * @return the instance in case everything is alright, null otherwise
      */
-    public static DevModeHandler start(DeploymentConfiguration configuration, File npmFolder) {
+    public static DevModeHandler start(DeploymentConfiguration configuration,
+            File npmFolder) {
         return start(0, configuration, npmFolder);
     }
 
@@ -226,11 +232,13 @@ public final class DevModeHandler implements Serializable {
      */
     public static DevModeHandler start(int runningPort,
             DeploymentConfiguration configuration, File npmFolder) {
-        if (configuration.isProductionMode() || configuration
-                .isCompatibilityMode() || !configuration.enableDevServer()) {
+        if (configuration.isProductionMode()
+                || configuration.isCompatibilityMode()
+                || !configuration.enableDevServer()) {
             return null;
         }
-        atomicHandler.compareAndSet(null, createInstance(runningPort, configuration, npmFolder));
+        atomicHandler.compareAndSet(null,
+                createInstance(runningPort, configuration, npmFolder));
         return getDevModeHandler();
     }
 
@@ -280,8 +288,8 @@ public final class DevModeHandler implements Serializable {
                 return null;
             }
         }
-        return new DevModeHandler(configuration, runningPort,
-                npmFolder, webpack, webpackConfig);
+        return new DevModeHandler(configuration, runningPort, npmFolder,
+                webpack, webpackConfig);
     }
 
     /**
@@ -313,11 +321,9 @@ public final class DevModeHandler implements Serializable {
      */
     public boolean serveDevModeRequest(HttpServletRequest request,
             HttpServletResponse response) throws IOException {
-        // Requests in devmode should come to /VAADIN/build/index....js where as
-        // webpack has the file in /build/index....js so we need to drop the
-        // /VAADIN
-        String requestFilename = request.getPathInfo().replace(VAADIN_MAPPING,
-                "");
+        // Since we have 'publicPath=/VAADIN/' in webpack config,
+        // a valid request for webpack-dev-server should start with '/VAADIN/'
+        String requestFilename = request.getPathInfo();
 
         HttpURLConnection connection = prepareConnection(requestFilename,
                 request.getMethod());
@@ -426,6 +432,7 @@ public final class DevModeHandler implements Serializable {
             // DevModeHandler to continue
             doNotify();
         });
+        thread.setDaemon(true);
         thread.setName("webpack");
         thread.start();
     }
@@ -502,7 +509,8 @@ public final class DevModeHandler implements Serializable {
         File portFile = computeDevServerPortFileName();
         try {
             FileUtils.forceMkdir(portFile.getParentFile());
-            FileUtils.writeStringToFile(portFile, String.valueOf(port), "UTF-8");
+            FileUtils.writeStringToFile(portFile, String.valueOf(port),
+                    "UTF-8");
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -513,7 +521,8 @@ public final class DevModeHandler implements Serializable {
         File portFile = computeDevServerPortFileName();
         if (portFile.canRead()) {
             try {
-                String portString = FileUtils.readFileToString(portFile, "UTF-8").trim();
+                String portString = FileUtils
+                        .readFileToString(portFile, "UTF-8").trim();
                 port = Integer.parseInt(portString);
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
@@ -524,16 +533,20 @@ public final class DevModeHandler implements Serializable {
 
     private static File computeDevServerPortFileName() {
         // The thread group is the same in each servlet-container restart
-        String threadGroup = String.valueOf(Thread.currentThread().getThreadGroup().hashCode());
+        String threadGroup = String
+                .valueOf(Thread.currentThread().getThreadGroup().hashCode());
 
         // There is an unique name for the JVM
         String jvmUniqueName = ManagementFactory.getRuntimeMXBean().getName();
 
-        // Use UUID for generate an unique identifier based on the thread and JVM
-        String uniqueUid = UUID.nameUUIDFromBytes((jvmUniqueName + threadGroup)
-                .getBytes(StandardCharsets.UTF_8)).toString();
+        // Use UUID for generate an unique identifier based on the thread and
+        // JVM
+        String uniqueUid = UUID.nameUUIDFromBytes(
+                (jvmUniqueName + threadGroup).getBytes(StandardCharsets.UTF_8))
+                .toString();
 
-        // File is placed in the user temporary folder, it works for all platforms
+        // File is placed in the user temporary folder, it works for all
+        // platforms
         return new File(System.getProperty("java.io.tmpdir"), uniqueUid);
     }
 
@@ -585,7 +598,13 @@ public final class DevModeHandler implements Serializable {
             // a listener that handles the stop command via HTTP and exits.
             prepareConnection("/stop", "GET").getResponseCode();
         } catch (IOException e) {
-            getLogger().debug("webpack-dev-server does not support the `/stop` command.", e);
+            getLogger().debug(
+                    "webpack-dev-server does not support the `/stop` command.",
+                    e);
+        }
+
+        if (watchDog != null) {
+            watchDog.stop();
         }
 
         if (webpackProcess != null && webpackProcess.isAlive()) {

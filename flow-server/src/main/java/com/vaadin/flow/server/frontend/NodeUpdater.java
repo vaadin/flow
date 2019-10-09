@@ -33,6 +33,7 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.FallibleCommand;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
+import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -49,6 +50,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 /**
  * Base abstract class for frontend updaters that needs to be run when in
  * dev-mode or from the flow maven plugin.
+ *
+ * @since 2.0
  */
 public abstract class NodeUpdater implements FallibleCommand {
     /**
@@ -88,7 +91,7 @@ public abstract class NodeUpdater implements FallibleCommand {
      * The {@link FrontendDependencies} object representing the application
      * dependencies.
      */
-    protected final FrontendDependencies frontDeps;
+    protected final FrontendDependenciesScanner frontDeps;
 
     private final ClassFinder finder;
 
@@ -107,18 +110,17 @@ public abstract class NodeUpdater implements FallibleCommand {
      *            folder where flow generated files will be placed.
      */
     protected NodeUpdater(ClassFinder finder,
-            FrontendDependencies frontendDependencies, File npmFolder,
+            FrontendDependenciesScanner frontendDependencies, File npmFolder,
             File generatedPath) {
-        this.frontDeps = finder != null && frontendDependencies == null
-                ? new FrontendDependencies(finder)
-                : frontendDependencies;
+        this.frontDeps = frontendDependencies;
         this.finder = finder;
         this.npmFolder = npmFolder;
         this.nodeModulesFolder = new File(npmFolder, NODE_MODULES);
         this.generatedFolder = generatedPath;
     }
 
-    Set<String> getGeneratedModules(File directory, Set<String> excludes) {
+    static Set<String> getGeneratedModules(File directory,
+            Set<String> excludes) {
         if (!directory.exists()) {
             return Collections.emptySet();
         }
@@ -220,7 +222,8 @@ public abstract class NodeUpdater implements FallibleCommand {
         // folder.
         try {
             String customPkg = "./" + npmFolder.getAbsoluteFile().toPath()
-                    .relativize(generatedFolder.getAbsoluteFile().toPath()).toString();
+                    .relativize(generatedFolder.getAbsoluteFile().toPath())
+                    .toString();
             added = addDependency(packageJson, DEPENDENCIES, DEP_NAME_FLOW_DEPS,
                     customPkg.replaceAll("\\\\", "/")) || added;
         } catch (IllegalArgumentException iae) {
@@ -239,6 +242,8 @@ public abstract class NodeUpdater implements FallibleCommand {
                 "webpack-babel-multi-target-plugin", "2.1.0") || added;
         added = addDependency(packageJson, DEV_DEPENDENCIES,
                 "copy-webpack-plugin", "5.0.3") || added;
+        added = addDependency(packageJson, DEV_DEPENDENCIES,
+                "compression-webpack-plugin", "3.0.0") || added;
         added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack-merge",
                 "4.2.1") || added;
         added = addDependency(packageJson, DEV_DEPENDENCIES, "raw-loader",

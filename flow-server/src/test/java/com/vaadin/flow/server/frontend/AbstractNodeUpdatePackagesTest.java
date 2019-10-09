@@ -32,17 +32,22 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
+import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
+
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
+import static com.vaadin.flow.server.frontend.TaskUpdatePackages.APP_PACKAGE_HASH;
 import static elemental.json.impl.JsonUtil.stringify;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
+public abstract class AbstractNodeUpdatePackagesTest
+        extends NodeUpdateTestUtil {
 
     private static final String DEPENDENCIES = "dependencies";
 
@@ -74,8 +79,9 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
         packageCreator = new TaskCreatePackageJson(baseDir, generatedDir);
 
-        packageUpdater = new TaskUpdatePackages(getClassFinder(), null, baseDir,
-                generatedDir, false);
+        ClassFinder classFinder = getClassFinder();
+        packageUpdater = new TaskUpdatePackages(classFinder,
+                getScanner(classFinder), baseDir, generatedDir, false);
         mainPackageJson = new File(baseDir, PACKAGE_JSON);
         appPackageJson = new File(generatedDir, PACKAGE_JSON);
 
@@ -88,6 +94,9 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
         flowDepsPackageJson = new File(flowDeps, PACKAGE_JSON);
     }
+
+    protected abstract FrontendDependenciesScanner getScanner(
+            ClassFinder finder);
 
     @Test
     public void should_CreatePackageJson() throws Exception {
@@ -212,9 +221,11 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
         assertVersionAndCleanUp();
     }
+
     @Test
     public void versionsDoNotMatch_inMainJson_cleanUp() throws IOException {
-        FrontendDependencies frontendDependencies = Mockito.mock(FrontendDependencies.class);
+        FrontendDependencies frontendDependencies = Mockito
+                .mock(FrontendDependencies.class);
 
         Map<String, String> packages = new HashMap<>();
         packages.put("@polymer/iron-list", "3.0.2");
@@ -226,8 +237,8 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
-        packageUpdater = new TaskUpdatePackages(null, frontendDependencies, baseDir,
-                generatedDir, false);
+        packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
+                baseDir, generatedDir, false);
 
         // Generate package json in a proper format first
         packageCreator.execute();
@@ -237,8 +248,7 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
         JsonObject packageJson = getPackageJson(mainPackageJson);
         packageJson.put(SHRINKWRAP, "1.1.1");
         Files.write(packageLock.toPath(),
-                Collections.singletonList(stringify(
-                        packageJson)));
+                Collections.singletonList(stringify(packageJson)));
 
         packageUpdater.execute();
 
@@ -247,7 +257,8 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
     @Test
     public void versionsMatch_noCleanUp() throws IOException {
-        FrontendDependencies frontendDependencies = Mockito.mock(FrontendDependencies.class);
+        FrontendDependencies frontendDependencies = Mockito
+                .mock(FrontendDependencies.class);
 
         Map<String, String> packages = new HashMap<>();
         packages.put("@polymer/iron-list", "3.0.2");
@@ -259,8 +270,8 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
-        packageUpdater = new TaskUpdatePackages(null, frontendDependencies, baseDir,
-                generatedDir, false);
+        packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
+                baseDir, generatedDir, false);
 
         // Generate package json in a proper format first
         packageCreator.execute();
@@ -286,9 +297,10 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
         makeNodeModulesAndPackageLock();
 
+        ClassFinder classFinder = getClassFinder();
         // create a new package updater, with forced clean up enabled
-        packageUpdater = new TaskUpdatePackages(getClassFinder(), null, baseDir,
-                generatedDir, true);
+        packageUpdater = new TaskUpdatePackages(classFinder,
+                getScanner(classFinder), baseDir, generatedDir, true);
         packageUpdater.execute();
 
         // clean up happened
@@ -328,7 +340,8 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
     @Test
     public void generateAppPackageJson_sameDependencies_updaterIsNotModified() {
-        FrontendDependencies frontendDependencies = Mockito.mock(FrontendDependencies.class);
+        FrontendDependencies frontendDependencies = Mockito
+                .mock(FrontendDependencies.class);
 
         Map<String, String> packages = new HashMap<>();
         packages.put("@polymer/iron-list", "3.0.2");
@@ -339,8 +352,8 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
-        packageUpdater = new TaskUpdatePackages(null, frontendDependencies, baseDir,
-                generatedDir, false);
+        packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
+                baseDir, generatedDir, false);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -359,7 +372,8 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
     @Test
     public void generateAppPackageJson_removedDependencies_updaterIsModified() {
-        FrontendDependencies frontendDependencies = Mockito.mock(FrontendDependencies.class);
+        FrontendDependencies frontendDependencies = Mockito
+                .mock(FrontendDependencies.class);
 
         Map<String, String> packages = new HashMap<>();
         packages.put("@polymer/iron-list", "3.0.2");
@@ -370,8 +384,8 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
-        packageUpdater = new TaskUpdatePackages(null, frontendDependencies, baseDir,
-                generatedDir, false);
+        packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
+                baseDir, generatedDir, false);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -392,7 +406,8 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
     @Test
     public void generateAppPackageJson_addedDependencies_updaterIsModified() {
-        FrontendDependencies frontendDependencies = Mockito.mock(FrontendDependencies.class);
+        FrontendDependencies frontendDependencies = Mockito
+                .mock(FrontendDependencies.class);
 
         Map<String, String> packages = new HashMap<>();
         packages.put("@polymer/iron-list", "3.0.2");
@@ -403,8 +418,8 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
-        packageUpdater = new TaskUpdatePackages(null, frontendDependencies, baseDir,
-                generatedDir, false);
+        packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
+                baseDir, generatedDir, false);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -422,15 +437,17 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
                 "Modification flag should be true when dependency added.",
                 packageUpdater.modified);
     }
+
     @Test
     public void generateAppPackageJson_noDependencies_updaterIsNotModified() {
-        FrontendDependencies frontendDependencies = Mockito.mock(FrontendDependencies.class);
+        FrontendDependencies frontendDependencies = Mockito
+                .mock(FrontendDependencies.class);
 
         Map<String, String> packages = new HashMap<>();
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
-        packageUpdater = new TaskUpdatePackages(null, frontendDependencies, baseDir,
-                generatedDir, false);
+        packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
+                baseDir, generatedDir, false);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -449,6 +466,43 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
         Assert.assertFalse(
                 "Modification flag should be false when there has never been dependencies.",
                 packageUpdater.modified);
+    }
+
+    @Test
+    public void updatedMainPackageJson_noDependencies_updaterIsMarkedModified()
+            throws IOException {
+        FrontendDependencies frontendDependencies = Mockito
+                .mock(FrontendDependencies.class);
+
+        Map<String, String> packages = new HashMap<>();
+        Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+
+        packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
+                baseDir, generatedDir, false);
+
+        // Set a package Hash
+        JsonObject mainJson = Json.createObject();
+        mainJson.put(APP_PACKAGE_HASH, "ow20f39ghs93");
+        Files.write(mainPackageJson.toPath(),
+                Collections.singletonList(stringify(mainJson)));
+
+        packageCreator.execute();
+        mainJson = getPackageJson(mainPackageJson);
+        Assert.assertEquals(
+                "Main package should have added dependency and rewritten the hash.",
+                TaskCreatePackageJson.FORCE_INSTALL_HASH,
+                mainJson.get(APP_PACKAGE_HASH).asString());
+        packageUpdater.execute();
+
+        Assert.assertTrue(
+                "Modification flag should be true when main package was updated.",
+                packageUpdater.modified);
+
+        mainJson = getPackageJson(mainPackageJson);
+        Assert.assertNotEquals(
+                "Main hash should have been updated to an actual hash.",
+                TaskCreatePackageJson.FORCE_INSTALL_HASH,
+                mainJson.get(APP_PACKAGE_HASH).asString());
     }
 
     private void makeNodeModulesAndPackageLock() throws IOException {

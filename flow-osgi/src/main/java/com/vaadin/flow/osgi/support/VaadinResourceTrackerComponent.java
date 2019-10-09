@@ -47,7 +47,7 @@ import org.osgi.service.http.NamespaceException;
  * {@link HttpService} to register them.
  *
  * @author Vaadin Ltd
- *
+ * @since 1.2
  */
 @Component(immediate = true)
 public class VaadinResourceTrackerComponent {

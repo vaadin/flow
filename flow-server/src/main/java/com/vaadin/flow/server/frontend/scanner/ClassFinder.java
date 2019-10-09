@@ -26,6 +26,8 @@ import java.util.stream.Collectors;
 
 /**
  * Interface for annotated and subclass class searches.
+ *
+ * @since 2.0
  */
 public interface ClassFinder extends Serializable {
 

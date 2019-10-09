@@ -30,6 +30,8 @@ import com.vaadin.flow.server.VaadinServletContext;
 /**
  * Servlet initializer for collecting all available error handler navigation
  * targets implementing {@link HasErrorParameter} on startup.
+ *
+ * @since 1.0
  */
 @HandlesTypes(HasErrorParameter.class)
 public class ErrorNavigationTargetInitializer

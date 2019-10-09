@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component.internal;
 
+import java.util.Collection;
+
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
@@ -23,6 +25,7 @@ import org.junit.Test;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.page.Page.ExecutionCanceler;
+import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.tests.util.MockUI;
 
 @NotThreadSafe
@@ -84,6 +87,17 @@ public class PageTest {
         Assert.assertEquals(0, countPendingInvocations());
 
         Assert.assertFalse(executeJavaScript.cancelExecution());
+    }
+
+    @Test
+    public void addDynamicImport_dynamicDependencyIsAvaialbleViaGetPendingSendToClient() {
+        page.addDynamicImport("foo");
+
+        DependencyList list = ui.getInternals().getDependencyList();
+        Collection<Dependency> dependencies = list.getPendingSendToClient();
+        Assert.assertEquals(1, dependencies.size());
+        Dependency dependency = dependencies.iterator().next();
+        Assert.assertEquals("foo", dependency.getUrl());
     }
 
     private long countPendingInvocations() {

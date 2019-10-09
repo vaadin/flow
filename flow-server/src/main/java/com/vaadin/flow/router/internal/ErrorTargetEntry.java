@@ -22,6 +22,8 @@ import com.vaadin.flow.component.Component;
 /**
  * A pair of a navigation target for handling exceptions and the exception
  * type handled by the navigation target.
+ *
+ * @since 1.3
  */
 public class ErrorTargetEntry implements Serializable {
     private final Class<? extends Component> navigationTarget;

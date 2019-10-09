@@ -37,6 +37,8 @@ import java.lang.annotation.Target;
  * transferred between locations. To avoid state leaking, provide unique id
  * for the embedded web component. The id must be unique across all the pages
  * where instances of the web component are embedded.
+ *
+ * @since 2.0
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

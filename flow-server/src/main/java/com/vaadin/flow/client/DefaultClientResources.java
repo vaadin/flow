@@ -23,7 +23,7 @@ import java.io.InputStream;
  * {@link Class#getResourceAsStream(String)} method.
  *
  * @author Vaadin Ltd
- *
+ * @since 1.2
  */
 public final class DefaultClientResources implements ClientResources {
 

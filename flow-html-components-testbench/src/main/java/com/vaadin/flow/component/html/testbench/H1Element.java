@@ -20,6 +20,8 @@ import com.vaadin.testbench.elementsbase.Element;
 
 /**
  * A TestBench element representing an <code>&lt;h1&gt;</code> element.
+ *
+ * @since 1.0
  */
 @Element("h1")
 public class H1Element extends TestBenchElement {

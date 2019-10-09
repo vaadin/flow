@@ -42,6 +42,8 @@ import com.vaadin.flow.shared.Registration;
 /**
  * Route configuration helper class for adding, removing and reading routes from
  * the different registries.
+ *
+ * @since 1.3
  */
 public class RouteConfiguration implements Serializable {
 

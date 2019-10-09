@@ -22,13 +22,14 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.vaadin.flow.router.Route;
 
 /**
  * A simple container with the information related to an application end-point,
  * i.e. those classes annotated with the {@link Route} annotation.
+ *
+ * @since 2.0
  */
 public final class EndPointData implements Serializable {
     final String name;
@@ -87,8 +88,8 @@ public final class EndPointData implements Serializable {
         return name;
     }
 
-    Set<CssData> getCss() {
-        return css.stream().collect(Collectors.toSet());
+    LinkedHashSet<CssData> getCss() {
+        return new LinkedHashSet<>(css);
     }
 
     private String col2Str(Collection<?> s) {

@@ -24,6 +24,7 @@ import java.util.Objects;
  * @param <P>
  *            type of the property's value
  * @author Vaadin Ltd.
+ * @since 2.0
  */
 public final class PropertyData<P extends Serializable>
         implements Serializable {

@@ -25,5 +25,5 @@
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="com.vaadin.client.GwtSuite"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="flow-client"/>
 <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/>
-<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Dgwt.args=&quot;-war target/www-test -logLevel INFO -prod -ea -sourceLevel 1.8 -runStyle HtmlUnit:FF38 -style PRETTY&quot;"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Dgwt.args=&quot;-war target/www-test -logLevel INFO -prod -ea -sourceLevel 1.8 -runStyle HtmlUnit:FF38 -style PRETTY&quot; -Dvaadin.enableDevServer=false"/>
 </launchConfiguration>

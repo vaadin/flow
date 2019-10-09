@@ -53,6 +53,7 @@ import elemental.json.JsonValue;
  * @param <T>
  *            the bean type
  * @author Vaadin Ltd
+ * @since 1.2
  */
 public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
