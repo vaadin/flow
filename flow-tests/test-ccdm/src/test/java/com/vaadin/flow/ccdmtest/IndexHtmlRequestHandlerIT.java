@@ -27,7 +27,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 public class IndexHtmlRequestHandlerIT extends ChromeBrowserTest {
 
     private void openTestUrl(String url) {
-        getDriver().get(getRootURL() + url);
+        getDriver().get(getRootURL() + "/foo" + url);
     }
 
     @Test

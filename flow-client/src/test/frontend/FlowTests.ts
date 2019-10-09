@@ -112,6 +112,7 @@ suite("Flow", () => {
   test("should initialize window.Flow object", () => {
     assert.isUndefined($wnd.Vaadin);
     const flow = new Flow({imports: () => {}});
+
     assert.isDefined($wnd.Vaadin);
     assert.isDefined($wnd.Vaadin.Flow);
   });
@@ -228,6 +229,20 @@ suite("Flow", () => {
         // Assert that element was created amd put in flowRoot so as server can find it
         assert.isDefined(flowRoot.$);
         assert.isDefined(flowRoot.$['foobar-1111111']);
+      });
+  });
+
+  test("should remove context-path in request", () => {
+    stubServerRemoteFunction('foobar-1111111', false, new RegExp('^Foo/Bar.baz$'));
+    mockInitResponse('foobar-1111111');
+
+    const flow = new Flow();
+    flow['baseRegex'] = /^\/foo\//;
+
+    return flow
+      .navigate({pathname: "/foo/Foo/Bar.baz"})
+      .then(() => {
+        assert.isDefined(flow.response);
       });
   });
 
@@ -406,7 +421,7 @@ suite("Flow", () => {
 
 });
 
-function stubServerRemoteFunction(id: string, cancel: boolean = false) {
+function stubServerRemoteFunction(id: string, cancel: boolean = false, routeRegex?: RegExp) {
   let container : any;
   // Stub remote function exported in JavaScriptBootstrapUI.
   flowRoot.$server = {
@@ -414,6 +429,9 @@ function stubServerRemoteFunction(id: string, cancel: boolean = false) {
       assert.isDefined(localName);
       assert.isDefined(elemId);
       assert.isDefined(route);
+      if (routeRegex) {
+        assert.match(route, routeRegex);
+      }
 
       assert.equal(elemId, id);
       assert.equal(localName, `flow-container-${elemId.toLowerCase()}`);
