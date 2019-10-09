@@ -169,17 +169,26 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
         return true;
     }
 
-    private String getServiceUrl(VaadinRequest request) {
-        // get service url from 'url' parameter
-        String url = request.getParameter("url");
-        // if 'url' parameter was not available, use request url
-        if (url == null) {
-            url = ((VaadinServletRequest) request).getRequestURL().toString();
+
+    /**
+     * Gets the service URL as a URL relative to the request URI.
+     *
+     * @param vaadinRequest
+     *            the request
+     * @return the relative service URL
+     */
+    protected static String getServiceUrl(VaadinRequest vaadinRequest) {
+        String pathInfo = vaadinRequest.getPathInfo();
+        if (pathInfo == null) {
+            return ".";
+        } else {
+            /*
+             * Make a relative URL to the servlet by adding one ../ for each
+             * path segment in pathInfo (i.e. the part of the requested path
+             * that comes after the servlet mapping)
+             */
+            return ServletHelper.getCancelingRelativePath(pathInfo);
         }
-        return url
-                // replace http:// or https:// with // to work with https:// proxies
-                // which proxies to the same http:// url
-                .replaceFirst("^https?://", "//");
     }
 
     private JsonObject getStats() {

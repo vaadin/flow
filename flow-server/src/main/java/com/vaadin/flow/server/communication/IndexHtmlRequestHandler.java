@@ -26,7 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.server.ServletHelper;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
@@ -135,26 +134,5 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
     private static Logger getLogger() {
         return LoggerFactory.getLogger(IndexHtmlRequestHandler.class);
-    }
-
-    /**
-     * Gets the service URL as a URL relative to the request URI.
-     *
-     * @param vaadinRequest
-     *            the request
-     * @return the relative service URL
-     */
-    private static String getServiceUrl(VaadinRequest vaadinRequest) {
-        String pathInfo = vaadinRequest.getPathInfo();
-        if (pathInfo == null) {
-            return ".";
-        } else {
-            /*
-             * Make a relative URL to the servlet by adding one ../ for each
-             * path segment in pathInfo (i.e. the part of the requested path
-             * that comes after the servlet mapping)
-             */
-            return ServletHelper.getCancelingRelativePath(pathInfo);
-        }
     }
 }
