@@ -252,7 +252,7 @@ public final class WebComponentBinding<C extends Component>
                 return;
             }
 
-            if (newValue != null && newValue.getClass() != getType()) {
+            if (newValue != null && !getType().isAssignableFrom(newValue.getClass())) {
                 throw new IllegalArgumentException(String.format("Parameter "
                         + "'newValue' is of the wrong type: onChangeHandler"
                         + " of the property expected to receive %s but "

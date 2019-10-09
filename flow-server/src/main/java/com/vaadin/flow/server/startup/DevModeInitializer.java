@@ -146,73 +146,6 @@ public class DevModeInitializer implements ServletContainerInitializer,
         }
     }
 
-    /**
-     * The classes that were visited when determining which frontend resources
-     * are actually used.
-     */
-    public static class VisitedClasses implements Serializable {
-        private final Set<String> visitedClassNames;
-
-        /**
-         * Creates a new instance based on a set of class names.
-         *
-         * @param visitedClassNames
-         *            the set of visited class names, not <code>null</code>
-         */
-        public VisitedClasses(Set<String> visitedClassNames) {
-            assert visitedClassNames != null;
-            this.visitedClassNames = visitedClassNames;
-        }
-
-        /**
-         * Checks whether all dependency annotations of the provided class have
-         * been visited.
-         *
-         * @param dependencyClass
-         *            the class to check
-         * @return <code>true</code> if all dependencies of the class have been
-         *         visited, <code>false</code> otherwise
-         */
-        public boolean allDependenciesVisited(Class<?> dependencyClass) {
-            if (visitedClassNames.contains(dependencyClass.getName())) {
-                return true;
-            }
-
-            /*
-             * Not being visited is only a problem if the class has own
-             * dependency annotations or the parent class has problems.
-             */
-            if (dependencyClass
-                    .getDeclaredAnnotationsByType(JsModule.class).length != 0) {
-                return false;
-            }
-
-            Class<?> superclass = dependencyClass.getSuperclass();
-            if (superclass == null) {
-                return true;
-            } else {
-                return allDependenciesVisited(superclass);
-            }
-        }
-
-        /**
-         * Ensures that all {@code clazz} dependencies are visited.
-         *
-         * @see #allDependenciesVisited(Class)
-         *
-         * @param clazz
-         *            the class to check
-         */
-        public void ensureAllDependenciesVisited(Class<?> clazz) {
-            if (!allDependenciesVisited(clazz)) {
-                DevModeInitializer.log().warn(
-                        "Frontend dependencies have not been analyzed for {}."
-                                + " To make the component's frontend dependencies work, you must ensure the component class is directly referenced through an application entry point such as a class annotated with @Route.",
-                        clazz.getName());
-            }
-        }
-    }
-
     private static final Pattern JAR_FILE_REGEX = Pattern
             .compile(".*file:(.+\\.jar).*");
 
@@ -324,7 +257,6 @@ public class DevModeInitializer implements ServletContainerInitializer,
             builder.createMissingPackageJson(true);
         }
 
-        Set<String> visitedClassNames = new HashSet<>();
         Set<File> frontendLocations = getFrontendLocationsFromClassloader(
                 DevModeInitializer.class.getClassLoader());
 
@@ -344,8 +276,7 @@ public class DevModeInitializer implements ServletContainerInitializer,
                             Constants.LOCAL_FRONTEND_RESOURCES_PATH))
                     .enableImportsUpdate(true).runNpmInstall(true)
                     .withEmbeddableWebComponents(true)
-                    .populateTokenFileData(tokenFileData)
-                    .collectVisitedClasses(visitedClassNames).build().execute();
+                    .populateTokenFileData(tokenFileData).build().execute();
 
             FallbackChunk chunk = FrontendUtils
                     .readFallbackChunk(tokenFileData);
@@ -358,8 +289,6 @@ public class DevModeInitializer implements ServletContainerInitializer,
                     exception);
             throw new ServletException(exception);
         }
-
-        vaadinContext.setAttribute(new VisitedClasses(visitedClassNames));
 
         try {
             DevModeHandler.start(config, builder.npmFolder);

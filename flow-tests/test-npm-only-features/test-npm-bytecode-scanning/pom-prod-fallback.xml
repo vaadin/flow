@@ -25,14 +25,14 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>flow-test-npm-bytecode-scanning-production</artifactId>
+    <artifactId>flow-test-npm-bytecode-scanning-fallback-production</artifactId>
 
-    <name>Flow test of bytecode scanner in production mode</name>
+    <name>Flow test fallback chunk in production mode</name>
     <packaging>war</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
         <vaadin.productionMode>true</vaadin.productionMode>
-        <exclude.it.tests>FullCPScanningIT,FallbackByteCodeScanningIT</exclude.it.tests>
+        <exclude.it.tests>FullCPScanningIT,ByteCodeScanningIT</exclude.it.tests>
     </properties>
 
     <dependencies>

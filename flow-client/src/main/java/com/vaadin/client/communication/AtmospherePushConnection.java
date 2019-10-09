@@ -743,7 +743,7 @@ public class AtmospherePushConnection implements PushConnection {
                 @Override
                 public void onError(ResourceLoadEvent event) {
                     getConnectionStateHandler()
-                            .pushScriptLoadError(event.getResourceUrl());
+                            .pushScriptLoadError(event.getResourceData());
 
                 }
             };

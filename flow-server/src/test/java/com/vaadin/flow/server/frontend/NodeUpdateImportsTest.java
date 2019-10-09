@@ -43,7 +43,6 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner.Front
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
-
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
@@ -68,7 +67,6 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
     private File nodeModulesPath;
     private TaskUpdateImports updater;
     private File tmpRoot;
-    private File webpackDir;
     private File tokenFile;
 
     private Logger logger = Mockito.mock(Logger.class);
@@ -84,8 +82,10 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         importsDefinitionFile = new File(generatedPath, IMPORTS_D_TS_NAME);
         fallBackImportsFile = new File(generatedPath,
                 FrontendUtils.FALLBACK_IMPORTS_NAME);
-        webpackDir = temporaryFolder.newFolder();
+        File webpackDir = temporaryFolder.newFolder();
         tokenFile = new File(webpackDir, "config/flow-build-info.json");
+        FileUtils.forceMkdirParent(tokenFile);
+        tokenFile.createNewFile();
 
         assertTrue(nodeModulesPath.mkdirs());
         createExpectedImports(frontendDirectory, nodeModulesPath);
@@ -113,7 +113,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                         classFinder, true),
                 finder -> new FrontendDependenciesScannerFactory()
                         .createScanner(true, finder, true),
-                tmpRoot, generatedPath, frontendDirectory, webpackDir,
+                tmpRoot, generatedPath, frontendDirectory, tokenFile,
                 fallBackData) {
             @Override
             Logger log() {
@@ -213,7 +213,6 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         // ============== check token file with fallback chunk data ============
 
-        assertTrue(tokenFile.exists());
         String tokenContent = FileUtils.readFileToString(tokenFile,
                 Charset.defaultCharset());
         JsonObject object = Json.parse(tokenContent);
@@ -244,7 +243,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                         classFinder, true),
                 finder -> new FrontendDependenciesScannerFactory()
                         .createScanner(true, finder, true),
-                tmpRoot, generatedPath, frontendDirectory, webpackDir, null) {
+                tmpRoot, generatedPath, frontendDirectory, tokenFile, null) {
             @Override
             Logger log() {
                 return logger;
@@ -298,7 +297,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void noFallBackSCanner_fallbackIsNotGenerated() throws IOException {
+    public void noFallBackScanner_fallbackIsNotGenerated() throws IOException {
         Stream<Class<?>> classes = Stream.concat(
                 Stream.of(NodeTestComponents.class.getDeclaredClasses()),
                 Stream.of(ExtraNodeTestComponents.class.getDeclaredClasses()));
@@ -310,7 +309,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 new FrontendDependenciesScannerFactory().createScanner(false,
                         classFinder, true),
                 finder -> null, tmpRoot, generatedPath, frontendDirectory,
-                webpackDir, null) {
+                tokenFile, null) {
             @Override
             Logger log() {
                 return logger;
@@ -331,6 +330,48 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         Assert.assertFalse(fallBackImportsFile.exists());
 
+    }
+
+    @Test
+    public void noFallBackScanner_fallbackIsNotImportedEvenIfTheFileExists() throws Exception {
+        Stream<Class<?>> classes = Stream.concat(
+                Stream.of(NodeTestComponents.class.getDeclaredClasses()),
+                Stream.of(ExtraNodeTestComponents.class.getDeclaredClasses()));
+        ClassFinder classFinder = new DefaultClassFinder(
+                new URLClassLoader(getClassPath()),
+                classes.toArray(Class<?>[]::new));
+
+
+        // create fallback imports file:
+        // it is present after generated but the user is now running
+        // everything without fallback. The file should not be included into
+        // the imports
+        fallBackImportsFile.mkdirs();
+        fallBackImportsFile.createNewFile();
+        Assert.assertTrue(fallBackImportsFile.exists());
+
+        updater = new TaskUpdateImports(classFinder,
+                new FrontendDependenciesScannerFactory().createScanner(false,
+                        classFinder, true),
+                finder -> null, tmpRoot, generatedPath, frontendDirectory,
+                tokenFile, null) {
+            @Override
+            Logger log() {
+                return logger;
+            }
+        };
+
+        updater.execute();
+
+        assertTrue(importsFile.exists());
+
+        String mainContent = FileUtils.readFileToString(importsFile,
+                Charset.defaultCharset());
+
+        // fallback file is not imported in generated-flow-imports
+        Assert.assertThat(mainContent,
+                CoreMatchers.not(CoreMatchers.containsString(
+                        FrontendUtils.FALLBACK_IMPORTS_NAME)));
     }
 
     private void assertTokenFileWithFallBack(JsonObject object)

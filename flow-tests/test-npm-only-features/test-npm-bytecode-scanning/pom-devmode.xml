@@ -31,6 +31,7 @@
     <packaging>war</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
+        <exclude.it.tests>ByteCodeScanningIT,FallbackByteCodeScanningIT</exclude.it.tests>
     </properties>
 
     <dependencies>

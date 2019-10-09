@@ -183,7 +183,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                         .enableImportsUpdate(true)
                         .withEmbeddableWebComponents(
                                 generateEmbeddableWebComponents)
-                        .build().execute();
+                        .withTokenFile(getTokenFile()).build().execute();
     }
 
     private void runWebpack() {

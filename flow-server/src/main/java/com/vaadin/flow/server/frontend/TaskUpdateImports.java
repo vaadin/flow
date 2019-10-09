@@ -51,7 +51,6 @@ import elemental.json.impl.JsonUtil;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FALLBACK_IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_D_TS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
 /**
  * An updater that it's run when the servlet context is initialised in dev-mode
@@ -73,7 +72,7 @@ public class TaskUpdateImports extends NodeUpdater {
     private final File frontendDirectory;
     private final FrontendDependenciesScanner fallbackScanner;
     private final ClassFinder finder;
-    private final File webpackOutputDirectory;
+    private final File tokenFile;
     private final JsonObject tokenFileData;
 
     private class UpdateMainImportsFile extends AbstractUpdateImports {
@@ -152,14 +151,9 @@ public class TaskUpdateImports extends NodeUpdater {
 
         @Override
         protected Collection<String> getGeneratedModules() {
-            Set<String> exclude = null;
-            if (fallBackImports == null) {
-                exclude = Collections.singleton(generatedFlowImports.getName());
-            } else {
-                exclude = new HashSet<>(
-                        Arrays.asList(generatedFlowImports.getName(),
-                                fallBackImports.getName()));
-            }
+            final Set<String> exclude = new HashSet<>(
+                    Arrays.asList(generatedFlowImports.getName(),
+                            FrontendUtils.FALLBACK_IMPORTS_NAME));
             return NodeUpdater.getGeneratedModules(generatedFolder, exclude);
         }
 
@@ -288,16 +282,16 @@ public class TaskUpdateImports extends NodeUpdater {
      *            folder where flow generated files will be placed.
      * @param frontendDirectory
      *            a directory with project's frontend files
-     * @param webpackOutputDirectory
-     *            the directory to set for webpack to output its build results.
+     * @param tokenFile
+     *            the token (flow-build-info.json) path, may be {@code null}
      */
     TaskUpdateImports(ClassFinder finder,
             FrontendDependenciesScanner frontendDepScanner,
             SerializableFunction<ClassFinder, FrontendDependenciesScanner> fallBackScannerProvider,
             File npmFolder, File generatedPath, File frontendDirectory,
-            File webpackOutputDirectory) {
+            File tokenFile) {
         this(finder, frontendDepScanner, fallBackScannerProvider, npmFolder,
-                generatedPath, frontendDirectory, webpackOutputDirectory, null);
+                generatedPath, frontendDirectory, tokenFile, null);
     }
 
     /**
@@ -315,8 +309,8 @@ public class TaskUpdateImports extends NodeUpdater {
      *            folder where flow generated files will be placed.
      * @param frontendDirectory
      *            a directory with project's frontend files
-     * @param webpackOutputDirectory
-     *            the directory to set for webpack to output its build results.
+     * @param tokenFile
+     *            the token (flow-build-info.json) path, may be {@code null}
      * @param tokenFileData
      *            object to fill with token file data, may be {@code null}
      */
@@ -324,12 +318,12 @@ public class TaskUpdateImports extends NodeUpdater {
             FrontendDependenciesScanner frontendDepScanner,
             SerializableFunction<ClassFinder, FrontendDependenciesScanner> fallBackScannerProvider,
             File npmFolder, File generatedPath, File frontendDirectory,
-            File webpackOutputDirectory, JsonObject tokenFileData) {
+            File tokenFile, JsonObject tokenFileData) {
         super(finder, frontendDepScanner, npmFolder, generatedPath);
         this.frontendDirectory = frontendDirectory;
         fallbackScanner = fallBackScannerProvider.apply(finder);
         this.finder = finder;
-        this.webpackOutputDirectory = webpackOutputDirectory;
+        this.tokenFile = tokenFile;
         this.tokenFileData = tokenFileData;
     }
 
@@ -378,30 +372,27 @@ public class TaskUpdateImports extends NodeUpdater {
     }
 
     private void updateBuildFile(AbstractUpdateImports updater) {
-        File tokenFile = getTokenFile();
-        if (!tokenFile.exists()) {
-            log().warn("Missing token file. New token file will be created.");
+        boolean tokenFileExists = tokenFile != null && tokenFile.exists();
+        if (!tokenFileExists) {
+            log().warn(
+                    "Token file is not available. Fallback chunk data won't be written.");
         }
         try {
-            JsonObject buildInfo;
-            if (tokenFile.exists()) {
+            if (tokenFileExists) {
                 String json = FileUtils.readFileToString(tokenFile,
                         StandardCharsets.UTF_8);
-                buildInfo = JsonUtil.parse(json);
-            } else {
-                FileUtils.forceMkdirParent(tokenFile);
-                buildInfo = Json.createObject();
+                JsonObject buildInfo = json.isEmpty() ? Json.createObject()
+                        : JsonUtil.parse(json);
+                populateFallbackData(buildInfo, updater);
+                FileUtils.write(tokenFile, JsonUtil.stringify(buildInfo, 2),
+                        StandardCharsets.UTF_8);
             }
 
-            populateFallbackData(buildInfo, updater);
-            if (tokenFileData != null) {
-                populateFallbackData(tokenFileData, updater);
-            }
-
-            FileUtils.write(tokenFile, JsonUtil.stringify(buildInfo, 2),
-                    StandardCharsets.UTF_8);
         } catch (IOException e) {
             log().warn("Unable to read token file", e);
+        }
+        if (tokenFileData != null) {
+            populateFallbackData(tokenFileData, updater);
         }
     }
 
@@ -463,7 +454,4 @@ public class TaskUpdateImports extends NodeUpdater {
         return object;
     }
 
-    private File getTokenFile() {
-        return new File(webpackOutputDirectory, TOKEN_FILE);
-    }
 }

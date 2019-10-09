@@ -42,11 +42,11 @@ public class Dependency implements Serializable {
      * The type of a dependency.
      */
     public enum Type {
-        STYLESHEET, JAVASCRIPT, JS_MODULE, HTML_IMPORT;
+        STYLESHEET, JAVASCRIPT, JS_MODULE, HTML_IMPORT, DYNAMIC_IMPORT;
 
         /**
          * Check if the given value is contained as a enum value.
-         * 
+         *
          * @param value
          *            value to check
          * @return true if there is a matching enum value
@@ -85,16 +85,35 @@ public class Dependency implements Serializable {
         if (url == null) {
             throw new IllegalArgumentException("url cannot be null");
         }
-        assert type != null;
+        this.type = Objects.requireNonNull(type);
 
-        this.type = type;
-        if (type.equals(Type.JS_MODULE)) {
+        if (type.equals(Type.JS_MODULE) || type.equals(Type.DYNAMIC_IMPORT)) {
             this.url = url;
         } else {
             this.url = SharedUtil.prefixIfRelative(url,
                     ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
         }
         this.loadMode = loadMode;
+    }
+
+    /**
+     * Creates a new dependency of the given type, to be loaded using JS
+     * expression which is supposed to return a {@code Promise}.
+     * <p>
+     * The created instance dependency mode is {@link LoadMode#LAZY}.
+     *
+     * @param type
+     *            the type of the dependency, not {@code null}
+     * @param expression
+     *            the JS expression to load the dependency, not {@code null}
+     */
+    public Dependency(Type type, String expression) {
+        // It's important that the load mode of the dependency is Lazy because
+        // any other mode is not sent to the client at all when it's added at
+        // the initial request: it's processed by the bootstrap handler via
+        // adding an element into the document head right away (no client side
+        // processing is involved).
+        this(type, expression, LoadMode.LAZY);
     }
 
     /**
@@ -154,6 +173,7 @@ public class Dependency implements Serializable {
         Dependency that = (Dependency) o;
         return type == that.type && loadMode == that.loadMode
                 && Objects.equals(url, that.url);
+
     }
 
     @Override
