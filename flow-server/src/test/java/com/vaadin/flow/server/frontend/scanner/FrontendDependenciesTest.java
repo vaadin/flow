@@ -21,12 +21,18 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinServiceInitListener;
@@ -35,6 +41,7 @@ import com.vaadin.flow.server.frontend.scanner.samples.MyServiceListener;
 import com.vaadin.flow.server.frontend.scanner.samples.MyUIInitListener;
 import com.vaadin.flow.server.frontend.scanner.samples.RouteComponent;
 import com.vaadin.flow.server.frontend.scanner.samples.RouteComponentWithLayout;
+import com.vaadin.flow.theme.AbstractTheme;
 
 import static org.hamcrest.CoreMatchers.is;
 
@@ -53,6 +60,13 @@ public class FrontendDependenciesTest {
         Mockito.when(classFinder
                 .loadClass(VaadinServiceInitListener.class.getName()))
                 .thenReturn((Class) VaadinServiceInitListener.class);
+
+        Mockito.when(classFinder
+                .loadClass(WebComponentExporter.class.getName()))
+                .thenReturn((Class) WebComponentExporter.class);
+
+        Mockito.when(classFinder.loadClass(FrontendDependencies.LUMO))
+                .thenReturn((Class) FakeLumo.class);
 
         Mockito.doAnswer(invocation -> {
             return FrontendDependenciesTest.class.getClassLoader()
@@ -137,4 +151,42 @@ public class FrontendDependenciesTest {
                 );
     }
 
+    @Test
+    public void defaultThemeIsLoadedForExporters() throws Exception {
+        FakeLumo.class.newInstance();
+        Mockito.when(classFinder.getSubTypesOf(WebComponentExporter.class))
+                .thenReturn(Stream.of(MyExporter.class)
+                        .collect(Collectors.toSet()));
+
+        FrontendDependencies dependencies = new FrontendDependencies(
+                classFinder, true);
+
+        Assert.assertNotNull(dependencies.getTheme());
+        Assert.assertNotNull(dependencies.getThemeDefinition());
+    }
+
+    public static class MyComponent extends Component {}
+
+    public static class MyExporter extends WebComponentExporter<MyComponent> {
+        public MyExporter() {
+            super("tag-tag");
+        }
+
+        @Override
+        protected void configureInstance(WebComponent<MyComponent> webComponent, MyComponent component) { }
+    }
+
+    public static class FakeLumo implements AbstractTheme {
+        public FakeLumo() {}
+
+        @Override
+        public String getBaseUrl() {
+            return null;
+        }
+
+        @Override
+        public String getThemeUrl() {
+            return null;
+        }
+    }
 }

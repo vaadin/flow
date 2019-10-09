@@ -152,11 +152,11 @@ public class FrontendDependencies implements Serializable {
         this.finder = finder;
         try {
             computeEndpoints();
-            computeApplicationTheme(endPoints);
-            computePackages();
             if (generateEmbeddableWebComponents) {
-                computeExporters();
+                computeExporterEndpoints();
             }
+            computeApplicationTheme();
+            computePackages();
             long ms = (System.nanoTime() - start) / 1000000;
             log().info("Visited {} classes. Took {} ms.", visited.size(), ms);
         } catch (ClassNotFoundException | InstantiationException
@@ -293,13 +293,15 @@ public class FrontendDependencies implements Serializable {
         endPoints.put(className, visitClass(className, data, false));
     }
 
-    // Visit all end-points and compute the theme for the application.
-    // It fails in the case that there are multiple themes for the application
-    // or in the
-    // case of Theme and NoTheme found in the application.
-    // If no theme is found, it uses lumo if found in the class-path
-    private void computeApplicationTheme(
-            HashMap<String, EndPointData> endPoints)
+    /*
+     * Visit all end-points and computes the theme for the application. It fails
+     * in the case that there are multiple themes for the application or in the
+     * case of Theme and NoTheme found in the application.
+     *
+     * If no theme is found and the application has endpoints, it uses lumo if
+     * found in the class-path
+     */
+    private void computeApplicationTheme()
             throws ClassNotFoundException, InstantiationException,
             IllegalAccessException, IOException {
 
@@ -319,21 +321,20 @@ public class FrontendDependencies implements Serializable {
                 // consider only endPoints with theme information
                 .filter(data -> data.getTheme().getName() != null
                         || data.getTheme().isNotheme())
-                .map(data -> data.getTheme())
+                .map(EndPointData::getTheme)
                 // Remove duplicates by returning a set
                 .collect(Collectors.toSet());
 
         if (themes.size() > 1) {
-            String names = String.join("\n      ",
-                    endPoints.values().stream()
-                            .filter(data -> data.getTheme().getName() != null
-                                    || data.getTheme().isNotheme())
-                            .map(data -> "found '"
-                                    + (data.getTheme().isNotheme()
-                                            ? NoTheme.class.getName()
-                                            : data.getTheme().getName())
-                                    + "' in '" + data.getName() + "'")
-                            .collect(Collectors.toList()));
+            String names = endPoints.values().stream()
+                    .filter(data -> data.getTheme().getName() != null
+                            || data.getTheme().isNotheme())
+                    .map(data -> "found '"
+                            + (data.getTheme().isNotheme()
+                                    ? NoTheme.class.getName()
+                                    : data.getTheme().getName())
+                            + "' in '" + data.getName() + "'")
+                    .collect(Collectors.joining("\n      "));
             throw new IllegalStateException(
                     "\n Multiple Theme configuration is not supported:\n      "
                             + names);
@@ -360,6 +361,12 @@ public class FrontendDependencies implements Serializable {
         }
     }
 
+    /**
+     * Finds the default theme and attaches it to the given endpoint as though
+     * the endpoint had a {@code Theme} annotation.
+     *
+     * @return Lumo or null
+     */
     private Class<? extends AbstractTheme> getDefaultTheme()
             throws IOException {
         // No theme annotation found by the scanner
@@ -372,8 +379,8 @@ public class FrontendDependencies implements Serializable {
                     .findFirst();
             if (endPointData.isPresent()) {
                 visitClass(defaultTheme.getName(), endPointData.get(), true);
-                return defaultTheme;
             }
+            return defaultTheme;
         }
         return null;
     }
@@ -427,14 +434,13 @@ public class FrontendDependencies implements Serializable {
      * available.
      *
      * @throws ClassNotFoundException
+     *             if unable to load a class by class name
      * @throws IOException
-     * @throws IllegalAccessException
-     * @throws InstantiationException
-     * @throws IllegalStateException
+     *             if unable to scan the class byte code
      */
     @SuppressWarnings("unchecked")
-    private void computeExporters() throws ClassNotFoundException, IOException,
-            IllegalAccessException, InstantiationException {
+    private void computeExporterEndpoints()
+            throws ClassNotFoundException, IOException {
         // Because of different classLoaders we need compare against class
         // references loaded by the specific class finder loader
         Class<? extends Annotation> routeClass = finder
@@ -471,7 +477,6 @@ public class FrontendDependencies implements Serializable {
             }
         }
 
-        computeApplicationTheme(exportedPoints);
         endPoints.putAll(exportedPoints);
     }
 
