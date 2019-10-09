@@ -93,7 +93,7 @@ public class JavaScriptBootstrapHandlerTest {
         Assert.assertFalse(json.getObject("appConfig").hasKey("webComponentMode"));
 
         Assert.assertEquals("./", json.getObject("appConfig").getString("contextRootUrl"));
-        Assert.assertEquals("//localhost:8888/foo/", json.getObject("appConfig").getString("serviceUrl"));
+        Assert.assertEquals("./..", json.getObject("appConfig").getString("serviceUrl"));
         Assert.assertEquals("http://localhost:8888/foo/", json.getObject("appConfig").getString("requestURL"));
 
         // Using regex, because version depends on the build
