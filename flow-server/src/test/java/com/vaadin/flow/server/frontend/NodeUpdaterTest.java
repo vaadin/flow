@@ -18,6 +18,10 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -85,6 +89,24 @@ public class NodeUpdaterTest {
     @Test
     public void resolveResource_doesNotHaveModernResourcesFolder() {
         resolveResource_unhappyPath(RESOURCES_FRONTEND_DEFAULT);
+    }
+
+    @Test
+    public void getGeneratedModules_should_excludeByFileName() throws IOException {
+        File generated = temporaryFolder.newFolder();
+        File fileA = new File(generated, "a.js");
+        File fileB = new File(generated, "b.js");
+        File fileC = new File(generated, "c.js");
+        fileA.createNewFile();
+        fileB.createNewFile();
+        fileC.createNewFile();
+        
+        Set<String> modules = NodeUpdater.getGeneratedModules(generated, Stream
+                .of("a.js", "/b.js").collect(Collectors.toSet()));
+
+        Assert.assertEquals(1, modules.size());
+        // GENERATED/ is an added prefix for files from this method
+        Assert.assertTrue(modules.contains("GENERATED/c.js"));
     }
 
     private void resolveResource_happyPath(String resourceFolder) {
