@@ -101,6 +101,9 @@ module.exports = {
       app.get(`/stats.hash`, function(req, res) {
         res.json(stats.toJson().hash.toString());
       });
+      app.get(`/assetsByChunkName`, function(req, res) {
+        res.json(stats.toJson().assetsByChunkName);
+      });
       app.get(`/stop`, function(req, res) {
         // eslint-disable-next-line no-console
         console.log("Stopped 'webpack-dev-server'");
