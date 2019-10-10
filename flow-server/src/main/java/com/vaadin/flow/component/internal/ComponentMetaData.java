@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -34,6 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Synchronize;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
@@ -43,7 +43,6 @@ import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.startup.DevModeInitializer.VisitedClasses;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.shared.util.SharedUtil;
@@ -75,6 +74,7 @@ public class ComponentMetaData {
         private final List<JavaScript> javaScripts = new ArrayList<>();
         private final List<JsModule> jsModules = new ArrayList<>();
         private final List<StyleSheet> styleSheets = new ArrayList<>();
+        private final List<CssImport> cssImports = new ArrayList<>();
 
         List<HtmlImportDependency> getHtmlImports() {
             return Collections.unmodifiableList(htmlImports);
@@ -90,6 +90,10 @@ public class ComponentMetaData {
 
         List<StyleSheet> getStyleSheets() {
             return Collections.unmodifiableList(styleSheets);
+        }
+
+        List<CssImport> getCssImports() {
+            return Collections.unmodifiableList(cssImports);
         }
     }
 
@@ -165,19 +169,14 @@ public class ComponentMetaData {
     }
 
     /**
-     * Finds all dependencies (JsModule, HTML, JavaScript, StyleSheet) for the
-     * class. Includes dependencies for all classes referred by a {@link Uses}
-     * annotation.
+     * Finds all dependencies (JsModule, HTML, JavaScript, StyleSheet,
+     * CssImport) for the class. Includes dependencies for all classes referred
+     * by a {@link Uses} annotation.
      *
      * @return an information object containing all the dependencies
      */
     private static DependencyInfo findDependencies(VaadinService service,
             Class<? extends Component> componentClass) {
-        Optional.ofNullable(
-                service.getContext().getAttribute(VisitedClasses.class))
-                .ifPresent(visitedClasses -> visitedClasses
-                        .ensureAllDependenciesVisited(componentClass));
-
         DependencyInfo dependencyInfo = new DependencyInfo();
 
         findDependencies(service, componentClass, dependencyInfo,
@@ -222,6 +221,8 @@ public class ComponentMetaData {
                 AnnotationReader.getJavaScriptAnnotations(componentClass));
         dependencyInfo.styleSheets.addAll(
                 AnnotationReader.getStyleSheetAnnotations(componentClass));
+        dependencyInfo.cssImports.addAll(
+                AnnotationReader.getCssImportAnnotations(componentClass));
 
         List<Uses> usesList = AnnotationReader.getAnnotationsFor(componentClass,
                 Uses.class);

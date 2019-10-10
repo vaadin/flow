@@ -21,6 +21,8 @@ import java.util.Locale;
 
 /**
  * I18N provider interface for internationalization usage.
+ *
+ * @since 1.0
  */
 public interface I18NProvider extends Serializable {
 

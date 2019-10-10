@@ -17,6 +17,7 @@ package com.vaadin.flow.component.dependency;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -115,11 +116,30 @@ import java.lang.annotation.Target;
  *
  *
  * </ul>
+ * <p>
+ * It is guaranteed that dependencies will be loaded only once. The files loaded
+ * will be in the same order as the annotations were on the class. However,
+ * loading order is only guaranteed on a class level; Annotations from different
+ * classes may appear in different order, grouped by the annotated class. Also,
+ * files identified by {@code @CssImport} will be loaded after
+ * {@link com.vaadin.flow.component.dependency.JsModule} and
+ * {@link com.vaadin.flow.component.dependency.JavaScript}.
+ * <p>
+ * NOTE: Currently all frontend resources are bundled together into one big
+ * bundle. This means, that CSS files loaded by one class will be present on a
+ * view constructed by another class. For example, if there are two classes
+ * {@code RootRoute} annotated with {@code @Route("")}, and another class
+ * {@code RouteA} annotated with {@code @Route("route-a")} and
+ * {@code @CssImport("./styles/custom-style.css")}, the {@code custom-style.css}
+ * will be present on the root route as well.
+ *
+ * @since 2.0
  *
  * @see JsModule
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
+@Inherited
 @Documented
 @Repeatable(CssImport.Container.class)
 public @interface CssImport {
@@ -158,6 +178,7 @@ public @interface CssImport {
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.TYPE)
+    @Inherited
     @Documented
     @interface Container {
         /**

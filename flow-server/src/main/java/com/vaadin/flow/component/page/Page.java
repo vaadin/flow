@@ -266,43 +266,49 @@ public class Page implements Serializable {
     }
 
     /**
-     * Adds the given JavaScript module to the page and ensures that it is
-     * loaded successfully.
+     * Adds the given external JavaScript module to the page and ensures that it
+     * is loaded successfully.
      * <p>
-     * For component related JsModule dependencies, you should use the
-     * {@link JsModule @JsModule} annotation.
-     * <p>
-     * Is is guaranteed that script will be loaded before the first page load.
-     * For more options, refer to {@link #addJsModule(String, LoadMode)}
+     * If the JavaScript modules are local or do not need to be added
+     * dynamically, you should use the {@link JsModule @JsModule} annotation
+     * instead.
      *
      * @param url
-     *            the URL to load the JavaScript from, not <code>null</code>
+     *            the URL to load the JavaScript module from, not
+     *            <code>null</code>
      */
     public void addJsModule(String url) {
         addJsModule(url, LoadMode.EAGER);
     }
 
     /**
-     * Adds the given JavaScript module to the page and ensures that it is
-     * loaded successfully.
+     * Adds the given external JavaScript module to the page and ensures that it
+     * is loaded successfully.
      * <p>
-     * For component related JavaScript dependencies, you should use the
-     * {@link JsModule @JsModule} annotation.
+     * If the JavaScript modules are local or do not need to be added
+     * dynamically, you should use the {@link JsModule @JsModule} annotation
+     * instead.
      *
      * @param url
-     *            the URL to load the JavaScript from, not <code>null</code>
+     *            the URL to load the JavaScript module from, not
+     *            <code>null</code>
      * @param loadMode
      *            determines dependency load mode, refer to {@link LoadMode} for
      *            details
+     * @deprecated {@code LoadMode} is not functional with external JavaScript
+     *             modules, as those are loaded as deferred due to
+     *             {@code type=module} in {@code scrip} tag. Use
+     *             {@link #addJsModule(String)} instead.
      */
+    @Deprecated
     public void addJsModule(String url, LoadMode loadMode) {
         addDependency(new Dependency(Type.JS_MODULE, url, loadMode));
     }
 
     /**
      * In compatibility mode (or Flow 1.x), adds the given HTML import to the
-     * page and ensures that it is loaded successfully. In normal mode (Flow
-     * 2.x with npm support), throws an {@code UnsupportedOperationException}.
+     * page and ensures that it is loaded successfully. In normal mode (Flow 2.x
+     * with npm support), throws an {@code UnsupportedOperationException}.
      * <p>
      * Relative URLs are interpreted as relative to the configured
      * {@code frontend} directory location. You can prefix the URL with
@@ -323,8 +329,8 @@ public class Page implements Serializable {
 
     /**
      * In compatibility mode (or Flow 1.x), adds the given HTML import to the
-     * page and ensures that it is loaded successfully. In normal mode (Flow
-     * 2.x with npm support), throws an {@code UnsupportedOperationException}.
+     * page and ensures that it is loaded successfully. In normal mode (Flow 2.x
+     * with npm support), throws an {@code UnsupportedOperationException}.
      * <p>
      * Relative URLs are interpreted as relative to the configured
      * {@code frontend} directory location. You can prefix the URL with
@@ -350,9 +356,22 @@ public class Page implements Serializable {
         }
     }
 
-    private void addDependency(Dependency dependency) {
-        assert dependency != null;
-        ui.getInternals().getDependencyList().add(dependency);
+    /**
+     * Adds a dynamic import using a JavaScript {@code expression} which is
+     * supposed to return a JavaScript {@code Promise}.
+     * <p>
+     * No change will be applied on the client side until resulting
+     * {@code Promise} of the {@code expression} is completed. It behaves like
+     * other dependencies ({@link #addJavaScript(String)},
+     * {@link #addJsModule(String)}, etc.)
+     *
+     *
+     * @see #addHtmlImport(String)
+     * @param expression
+     *            the JavaScript expression which return a Promise
+     */
+    public void addDynamicImport(String expression) {
+        addDependency(new Dependency(Type.DYNAMIC_IMPORT, expression));
     }
 
     // When updating JavaDocs here, keep in sync with Element.executeJavaScript
@@ -557,6 +576,11 @@ public class Page implements Serializable {
         setLocation(uri.toString());
     }
 
+    private void addDependency(Dependency dependency) {
+        assert dependency != null;
+        ui.getInternals().getDependencyList().add(dependency);
+    }
+
     private static class LazyJsLoader implements Serializable {
 
         private static final String JS_FILE_NAME = "windowResizeListener.js";
@@ -589,7 +613,7 @@ public class Page implements Serializable {
 
         /**
          * Invoked when the client-side details are available.
-         * 
+         *
          * @param extendedClientDetails
          *            object containing extended client details
          */
@@ -660,4 +684,5 @@ public class Page implements Serializable {
                         getStringElseNull.apply("v-pr"),
                         getStringElseNull.apply("v-wn")));
     }
+
 }

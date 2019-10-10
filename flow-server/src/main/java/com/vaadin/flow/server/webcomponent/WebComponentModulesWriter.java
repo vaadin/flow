@@ -44,7 +44,7 @@ import com.vaadin.flow.internal.ReflectTools;
  * to a target directory.
  *
  * @author Vaadin Ltd
- * @since
+ * @since 2.0
  */
 public final class WebComponentModulesWriter implements Serializable {
 

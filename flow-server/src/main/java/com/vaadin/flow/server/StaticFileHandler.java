@@ -26,7 +26,8 @@ import java.io.Serializable;
  * and serving the static files, based on the servlet request.
  * 
  * @author Vaadin Ltd.
- * 
+ * @since 1.3
+ *
  * @see StaticFileServer
  */
 public interface StaticFileHandler extends Serializable {

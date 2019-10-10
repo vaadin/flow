@@ -142,15 +142,27 @@ public interface DragSource<T extends Component> extends HasElement {
         return (T) this;
     };
 
+    @Override
+    default Element getElement() {
+        return getDragSourceComponent().getElement();
+    }
+
     /**
      * Returns the element where the {@code draggable} attribute is applied,
      * making it draggable by the user. By default it is the element of the
      * component returned by {@link #getDragSourceComponent()}.
-     * 
+     * <p>
+     * Override this method to provide another element to be draggable instead
+     * of the root element of the component.
+     *
      * @return the element made draggable
+     * @since 2.1
      */
-    @Override
-    default Element getElement() {
+    /*
+     * Implementation note: this is added so that user can change the draggable
+     * element to be something else than the root element of the component.
+     */
+    default Element getDraggableElement() {
         return getDragSourceComponent().getElement();
     }
 
@@ -166,9 +178,13 @@ public interface DragSource<T extends Component> extends HasElement {
         }
         if (draggable) {
             // The attribute is an enumerated one and not a Boolean one.
-            getElement().setProperty("draggable", Boolean.TRUE.toString());
-            getElement().executeJavaScript("window.Vaadin.Flow.dndConnector"
-                    + ".activateDragSource($0)", getElement());
+            getDraggableElement().setProperty("draggable",
+                    Boolean.TRUE.toString());
+            getDraggableElement()
+                    .executeJavaScript(
+                            "window.Vaadin.Flow.dndConnector"
+                                    + ".activateDragSource($0)",
+                            getDraggableElement());
             // store & clear the component as active drag source for the UI
             Registration startListenerRegistration = addDragStartListener(
                     event -> getDragSourceComponent().getUI()
@@ -187,9 +203,11 @@ public interface DragSource<T extends Component> extends HasElement {
                     DndUtil.END_LISTENER_REGISTRATION_KEY,
                     endListenerRegistration);
         } else {
-            getElement().removeProperty("draggable");
-            getElement().executeJavaScript("window.Vaadin.Flow.dndConnector"
-                    + ".deactivateDragSource($0)", getElement());
+            getDraggableElement().removeProperty("draggable");
+            getDraggableElement().executeJavaScript(
+                    "window.Vaadin.Flow.dndConnector"
+                            + ".deactivateDragSource($0)",
+                    getDraggableElement());
             // clear listeners for setting active data source
             Object startListenerRegistration = ComponentUtil.getData(
                     getDragSourceComponent(),
@@ -212,7 +230,7 @@ public interface DragSource<T extends Component> extends HasElement {
      * @return {@code true} draggable, {@code false} if not
      */
     default boolean isDraggable() {
-        return getElement().hasProperty("draggable");
+        return getDraggableElement().hasProperty("draggable");
     }
 
     /**
@@ -254,6 +272,14 @@ public interface DragSource<T extends Component> extends HasElement {
      * <p>
      * By default the value is {@link EffectAllowed#UNINITIALIZED} which is
      * equivalent to {@link EffectAllowed#ALL}.
+     * <p>
+     * <em>NOTE:</em> The effect should be set in advance, setting it after the
+     * user has started dragging and the {@link DragStartEvent} has been fired
+     * is too late - it will take effect only for next drag operation.
+     * <p>
+     * <em>NOTE 2: Edge, Safari and IE11 will allow the drop to occur even when
+     * the effect allowed does not match the drop effect set on the drop target.
+     * Chrome and Firefox prevent the drop if those do not match.</em>
      * 
      * @param effect
      *            Effects to allow for this draggable element. Cannot be {@code
@@ -266,7 +292,8 @@ public interface DragSource<T extends Component> extends HasElement {
         if (effect == null) {
             throw new IllegalArgumentException("Allowed effect cannot be null");
         }
-        getElement().setProperty(DndUtil.EFFECT_ALLOWED_ELEMENT_PROPERTY,
+        getDraggableElement().setProperty(
+                DndUtil.EFFECT_ALLOWED_ELEMENT_PROPERTY,
                 effect.getClientPropertyValue());
     }
 
@@ -278,7 +305,7 @@ public interface DragSource<T extends Component> extends HasElement {
      * @return effects that are allowed for this draggable element.
      */
     default EffectAllowed getEffectAllowed() {
-        return EffectAllowed.valueOf(getElement().getProperty(
+        return EffectAllowed.valueOf(getDraggableElement().getProperty(
                 DndUtil.EFFECT_ALLOWED_ELEMENT_PROPERTY,
                 EffectAllowed.UNINITIALIZED.getClientPropertyValue()
                         .toUpperCase(Locale.ENGLISH)));

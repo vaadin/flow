@@ -28,6 +28,8 @@ import com.vaadin.flow.router.internal.AfterNavigationHandler;
  *
  * All AfterNavigationListeners will be executed before the AfterNavigationObservers.
  * To control the order of execution of AfterNavigationListeners, see {@link ListenerPriority}
+ *
+ * @since 1.0
  */
 @FunctionalInterface
 public interface AfterNavigationListener extends AfterNavigationHandler {

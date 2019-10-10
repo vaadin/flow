@@ -23,6 +23,7 @@ import java.io.Serializable;
  * exported web component.
  *
  * @author Vaadin Ltd.
+ * @since 2.0
  */
 public class EventOptions implements Serializable {
     private boolean bubbles = false;

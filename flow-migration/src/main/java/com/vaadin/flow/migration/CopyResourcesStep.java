@@ -44,7 +44,7 @@ import org.jsoup.select.NodeVisitor;
  * remove the comments.
  *
  * @author Vaadin Ltd
- *
+ * @since 2.0
  */
 public class CopyResourcesStep extends AbstractCopyResourcesStep {
 

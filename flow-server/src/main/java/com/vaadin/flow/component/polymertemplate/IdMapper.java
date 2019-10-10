@@ -32,6 +32,8 @@ import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 
 /**
  * Creates or maps Element instances to fields mapped using {@link Id @Id}.
+ *
+ * @since 2.0
  */
 public class IdMapper implements Serializable {
 

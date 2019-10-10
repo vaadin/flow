@@ -47,7 +47,7 @@ import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_JAVA
  * the given tag.
  *
  * @author Vaadin Ltd.
- * @since
+ * @since 2.0
  */
 public class WebComponentProvider extends SynchronizedRequestHandler {
     private static final String WEB_COMPONENT_PATH = "web-component/";

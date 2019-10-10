@@ -15,18 +15,16 @@
  */
 package com.vaadin.flow.plugin.maven;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -47,6 +45,7 @@ import com.vaadin.flow.theme.Theme;
 
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
+
 import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFinder;
 import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.GENERATED_TOKEN;
@@ -72,6 +71,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
  * the classpath,</li>
  * <li>Update {@link FrontendUtils#WEBPACK_CONFIG} file.</li>
  * </ul>
+ *
+ * @since 2.0
  */
 @Mojo(name = "build-frontend", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
 public class BuildFrontendMojo extends FlowModeAbstractMojo {
@@ -126,6 +127,13 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
             + Constants.LOCAL_FRONTEND_RESOURCES_PATH)
     protected File frontendResourcesDirectory;
 
+    /**
+     * Whether to use byte code scanner strategy to discover frontend
+     * components.
+     */
+    @Parameter(defaultValue = "true")
+    private boolean optimizeBundle;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         super.execute();
@@ -168,12 +176,14 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
 
         new NodeTasks.Builder(getClassFinder(project), npmFolder,
                 generatedFolder, frontendDirectory).runNpmInstall(runNpmInstall)
-                        .enablePackagesUpdate(true).copyResources(jarFiles)
+                        .enablePackagesUpdate(true)
+                        .useByteCodeScanner(optimizeBundle)
+                        .copyResources(jarFiles)
                         .copyLocalResources(frontendResourcesDirectory)
                         .enableImportsUpdate(true)
                         .withEmbeddableWebComponents(
                                 generateEmbeddableWebComponents)
-                        .build().execute();
+                        .withTokenFile(getTokenFile()).build().execute();
     }
 
     private void runWebpack() {
@@ -215,17 +225,17 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
     private void readDetailsAndThrowException(Process webpackLaunch) {
         String stderr = readFullyAndClose(
                 "Failed to read webpack process stderr",
-                webpackLaunch::getErrorStream);
+                webpackLaunch.getErrorStream());
         throw new IllegalStateException(String.format(
                 "Webpack process exited with non-zero exit code.%nStderr: '%s'",
                 stderr));
     }
 
     private String readFullyAndClose(String readErrorMessage,
-            Supplier<InputStream> inputStreamSupplier) {
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(
-                inputStreamSupplier.get(), StandardCharsets.UTF_8))) {
-            return br.lines().collect(Collectors.joining("\n"));
+            InputStream inputStreamSupplier) {
+        try {
+            return IOUtils.toString(inputStreamSupplier, StandardCharsets.UTF_8)
+                    .replaceAll("\\R", System.lineSeparator());
         } catch (IOException e) {
             throw new UncheckedIOException(readErrorMessage, e);
         }
@@ -264,9 +274,8 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
     boolean isDefaultCompatibility() {
         File tokenFile = getTokenFile();
         if (!tokenFile.exists()) {
-            getLog().warn(
-                    "'build-frontend' goal was called without previously " +
-                            "calling 'prepare-frontend'");
+            getLog().warn("'build-frontend' goal was called without previously "
+                    + "calling 'prepare-frontend'");
             return true;
         }
         try {

@@ -22,6 +22,7 @@ import com.vaadin.flow.component.dependency.StyleSheet;
  * The strategy to rewrite {@link HtmlImport}/{@link StyleSheet}
  * annotations.
  *
+ * @since 2.0
  */
 public enum AnnotationsRewriteStrategy {
     ALWAYS, SKIP, SKIP_ON_ERROR;

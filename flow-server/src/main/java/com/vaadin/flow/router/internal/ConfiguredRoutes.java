@@ -33,6 +33,8 @@ import com.vaadin.flow.server.startup.RouteTarget;
  * <p>
  * Note! This is always immutable and any changes should be made from {@link
  * ConfigureRoutes}.
+ *
+ * @since 1.3
  */
 public class ConfiguredRoutes implements Serializable {
 

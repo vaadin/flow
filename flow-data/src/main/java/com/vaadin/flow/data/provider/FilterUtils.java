@@ -22,7 +22,7 @@ import com.vaadin.flow.function.SerializableFunction;
  * Internal filter related utilities for data provider.
  *
  * @author Vaadin Ltd
- *
+ * @since 1.3
  */
 public final class FilterUtils {
 

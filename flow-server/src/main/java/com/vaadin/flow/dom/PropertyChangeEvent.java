@@ -20,6 +20,8 @@ import java.util.EventObject;
 
 /**
  * An event fired when the value of a property changes.
+ *
+ * @since 1.0
  */
 public class PropertyChangeEvent extends EventObject {
 

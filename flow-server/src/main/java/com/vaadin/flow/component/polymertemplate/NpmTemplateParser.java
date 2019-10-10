@@ -53,6 +53,8 @@ import elemental.json.JsonObject;
  * get its instance.
  *
  * @author Vaadin Ltd
+ * @since 2.0
+ *
  * @see BundleParser
  */
 public class NpmTemplateParser implements TemplateParser {

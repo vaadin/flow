@@ -1,16 +1,19 @@
 package com.vaadin.flow.server.startup;
 
+import javax.servlet.ServletException;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.EventListener;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import net.jcip.annotations.NotThreadSafe;
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -18,15 +21,15 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
-import com.vaadin.flow.server.startup.DevModeInitializer.VisitedClasses;
+import com.vaadin.flow.server.frontend.FallbackChunk;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_REUSE_DEV_SERVER;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -41,7 +44,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     public static class NotVisitedWithoutDeps {
     }
 
-    @JsModule("foo")
+    @JsModule("bar")
     public static class NotVisitedWithDeps {
     }
 
@@ -54,32 +57,37 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     public static class VisitedSubclass extends Visited {
     }
 
+    @Route
+    public static class RoutedWithReferenceToVisited {
+        Visited b;
+    }
+
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
     @Test
     public void loadingJars_useModernResourcesFolder_allFilesExist()
-            throws IOException {
+            throws IOException, ServletException {
         loadingJars_allFilesExist(Constants.RESOURCES_FRONTEND_DEFAULT);
     }
 
     @Test
     public void loadingJars_useObsoleteResourcesFolder_allFilesExist()
-            throws IOException {
+            throws IOException, ServletException {
         loadingJars_allFilesExist(
                 Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT);
     }
 
     @Test
     public void loadingFsResources_useModernResourcesFolder_allFilesExist()
-            throws IOException {
+            throws IOException, ServletException {
         loadingFsResources_allFilesExist("/dir-with-modern-frontend/",
                 Constants.RESOURCES_FRONTEND_DEFAULT);
     }
 
     @Test
     public void loadingFsResources_useObsoleteResourcesFolder_allFilesExist()
-            throws IOException {
+            throws IOException, ServletException {
         loadingFsResources_allFilesExist("/dir-with-frontend-resources/",
                 Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT);
     }
@@ -162,33 +170,39 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     }
 
     @Test
-    public void visitedDependencies() {
-        VisitedClasses visited = new VisitedClasses(new HashSet<>(Arrays
-                .asList(Object.class.getName(), Visited.class.getName())));
+    public void shouldUseByteCodeScannerIfPropertySet() throws Exception {
+        System.setProperty(Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
+                "true");
+        DevModeInitializer devModeInitializer = new DevModeInitializer();
+        final Set<Class<?>> classes = new HashSet<>();
+        classes.add(NotVisitedWithDeps.class);
+        classes.add(Visited.class);
+        classes.add(RoutedWithReferenceToVisited.class);
+        devModeInitializer.onStartup(classes, servletContext);
+        ArgumentCaptor<? extends FallbackChunk> arg = ArgumentCaptor
+                .forClass(FallbackChunk.class);
+        Mockito.verify(servletContext, Mockito.atLeastOnce()).setAttribute(
+                Mockito.eq(FallbackChunk.class.getName()), arg.capture());
+        FallbackChunk fallbackChunk = arg.getValue();
+        Assert.assertFalse(fallbackChunk.getModules().contains("foo"));
+        Assert.assertTrue(fallbackChunk.getModules().contains("bar"));
+    }
 
-        assertTrue("Dependencies are ok for a visited class",
-                visited.allDependenciesVisited(Visited.class));
-
-        assertTrue(
-                "Dependencies are ok for an unvisited class without dependencies",
-                visited.allDependenciesVisited(NotVisitedWithoutDeps.class));
-        assertFalse(
-                "Dependnecies are not ok for an unvisited class with dependencies",
-                visited.allDependenciesVisited(NotVisitedWithDeps.class));
-
-        assertTrue(
-                "Dependencies are ok for an unvisited class without dependencies if super class is ok",
-                visited.allDependenciesVisited(VisitedSubclass.class));
-        assertTrue(
-                "Dependencies are ok for an unvisited class without dependencies if super class is ok",
-                visited.allDependenciesVisited(WithoutDepsSubclass.class));
-        assertFalse(
-                "Dependencies are  not ok for an unvisited class without dependencies if super class is not ok",
-                visited.allDependenciesVisited(WithDepsSubclass.class));
+    @Test
+    public void shouldUseFullPathScannerByDefault() throws Exception {
+        DevModeInitializer devModeInitializer = new DevModeInitializer();
+        final Set<Class<?>> classes = new HashSet<>();
+        classes.add(NotVisitedWithDeps.class);
+        classes.add(Visited.class);
+        classes.add(RoutedWithReferenceToVisited.class);
+        devModeInitializer.onStartup(classes, servletContext);
+        Mockito.verify(servletContext, Mockito.times(0)).setAttribute(
+                Mockito.eq(FallbackChunk.class.getName()),
+                Mockito.any(FallbackChunk.class));
     }
 
     private void loadingJars_allFilesExist(String resourcesFolder)
-            throws IOException {
+            throws IOException, ServletException {
         // Create jar urls for test
         URL jar = new URL("jar:"
                 + this.getClass().getResource("/").toString()
@@ -216,7 +230,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     }
 
     private void loadingFsResources_allFilesExist(String resourcesRoot,
-            String resourcesFolder) throws IOException {
+            String resourcesFolder) throws IOException, ServletException {
         List<URL> urls = Collections.singletonList(
                 getClass().getResource(resourcesRoot + resourcesFolder));
 

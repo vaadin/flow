@@ -24,9 +24,24 @@ import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
 
 /**
- * Component representing a <code>&lt;label&gt;</code> element.
+ * Component for a <code>&lt;label&gt;</code> element, which represents a
+ * caption for an item in a user interface.
+ * <p>
+ * Note that Label components are not meant for loose text in the page - they
+ * should be coupled with another component by using the
+ * {@link #setFor(Component)} or by adding them to it with the
+ * {@link #add(Component...)} method.
+ * <p>
+ * Clicking on a label automatically transfers the focus to the associated
+ * component. This is especially helpful when building forms with
+ * {@link Input}s.
+ * <p>
+ * For adding texts to the page without linking them to other components,
+ * consider using a {@link Span} or a {@link Div} instead.
  *
  * @author Vaadin Ltd
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Element/label">https://developer.mozilla.org/en-US/docs/Web/HTML/Element/label</a>
  * @since 1.0
  */
 @Tag(Tag.LABEL)

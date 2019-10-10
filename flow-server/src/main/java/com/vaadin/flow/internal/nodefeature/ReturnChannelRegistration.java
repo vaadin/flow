@@ -29,6 +29,7 @@ import elemental.json.JsonArray;
  * as a function that calls the registered handler.
  *
  * @author Vaadin Ltd
+ * @since 2.0
  */
 public interface ReturnChannelRegistration extends Registration {
     /**

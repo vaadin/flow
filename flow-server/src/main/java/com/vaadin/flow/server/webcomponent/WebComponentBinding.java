@@ -39,6 +39,8 @@ import elemental.json.JsonValue;
  * @param <C>
  *            type of the exported component
  * @author Vaadin Ltd.
+ * @since 2.0
+ *
  * @see WebComponentConfiguration#createWebComponentBinding(com.vaadin.flow.di.Instantiator,
  *      com.vaadin.flow.dom.Element, elemental.json.JsonObject) to create
  *      {@code WebComponentBindings}
@@ -250,7 +252,7 @@ public final class WebComponentBinding<C extends Component>
                 return;
             }
 
-            if (newValue != null && newValue.getClass() != getType()) {
+            if (newValue != null && !getType().isAssignableFrom(newValue.getClass())) {
                 throw new IllegalArgumentException(String.format("Parameter "
                         + "'newValue' is of the wrong type: onChangeHandler"
                         + " of the property expected to receive %s but "
