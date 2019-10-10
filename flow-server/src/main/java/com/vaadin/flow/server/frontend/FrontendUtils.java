@@ -404,7 +404,8 @@ public class FrontendUtils {
         if (content == null) {
             content = getStatsFromClassPath(service);
         }
-        return content != null ? streamToString(content) : null;
+        return content != null ?
+                IOUtils.toString(content, StandardCharsets.UTF_8) : null;
     }
 
     /**
@@ -473,7 +474,7 @@ public class FrontendUtils {
                             .getInputStream());
         }
 
-        String stats = service.getDeploymentConfiguration()
+        String stats = config
                 .getStringProperty(SERVLET_PARAMETER_STATISTICS_JSON,
                         VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT)
                 // Remove absolute
@@ -486,9 +487,13 @@ public class FrontendUtils {
             assets.append("{");
             // Scan until we reach the assetsByChunkName object line
             do {
-                String line = scan.nextLine();
+                String line = scan.nextLine().trim();
                 // Walk file until we get to the assetsByChunkName object.
-                if (line.trim().startsWith("\"assetsByChunkName\"")) {
+                if (line.startsWith("\"assetsByChunkName\"")) {
+                    if (!line.endsWith("{")) {
+                        assets.append(
+                                line.substring(line.indexOf('{') + 1).trim());
+                    }
                     break;
                 }
             } while (scan.hasNextLine());
@@ -498,7 +503,11 @@ public class FrontendUtils {
                 if (line.equals("}") || line.equals("},")) {
                     // Encountering } or }, means end of asset chunk
                     return assets.append("}").toString();
-                } else if (line.startsWith("{")) {
+                } else if (line.endsWith("}") || line.endsWith("},")) {
+                    return assets
+                            .append(line.substring(0, line.indexOf("}")).trim())
+                            .append("}").toString();
+                } else if (line.contains("{")) {
                     // Encountering { means something is wrong as the assets
                     // should only contain key-value pairs.
                     break;
