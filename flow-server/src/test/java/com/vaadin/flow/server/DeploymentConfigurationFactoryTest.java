@@ -11,15 +11,18 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
 import org.easymock.Capture;
 import org.easymock.EasyMock;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -250,6 +253,10 @@ public class DeploymentConfigurationFactoryTest {
         exception.expect(IllegalStateException.class);
         exception.expectMessage(
                 "The compatibility mode is explicitly set to 'false'");
+
+        URLClassLoader classLoader = new URLClassLoader(new URL[]{});
+        expect(contextMock.getClassLoader()).andReturn(classLoader);
+
         DeploymentConfigurationFactory.createDeploymentConfiguration(
                 VaadinServlet.class,
                 createServletConfigMock(Collections.singletonMap(
@@ -275,11 +282,14 @@ public class DeploymentConfigurationFactoryTest {
     }
 
     @Test
-    public void shouldTrhowIfCompatibilityModeIsFalse_noTokenFile_incorrectWebPackConfigExists()
+    public void shouldThrowIfCompatibilityModeIsFalse_noTokenFile_incorrectWebPackConfigExists()
             throws Exception {
         exception.expect(IllegalStateException.class);
         exception.expectMessage(
                 "The compatibility mode is explicitly set to 'false'");
+
+        URLClassLoader classLoader = new URLClassLoader(new URL[]{});
+        expect(contextMock.getClassLoader()).andReturn(classLoader);
 
         Map<String, String> map = new HashMap<>();
         map.put(FrontendUtils.PROJECT_BASEDIR,
@@ -381,10 +391,54 @@ public class DeploymentConfigurationFactoryTest {
                         "\"npmFolder\": \""+ tempFolder +"/npm\",",
                         "\"frontendFolder\": \""+tempFolder+"/frontend\"", "}"));
 
-        createConfig(Collections
-                .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
+        createConfig(Collections.singletonMap(PARAM_TOKEN_FILE,
+                tokenFile.getPath()));
     }
 
+    @Test // #6616
+    public void multipleTokenFiles_shouldLoadNonJarToken_noExceptionShouldBeThrown() throws Exception {
+        FileUtils.writeLines(tokenFile,
+                Arrays.asList("{", "\"compatibilityMode\": false,",
+                        "\"productionMode\": false,", "}"));
+
+        URLClassLoader classLoader = Mockito.mock(URLClassLoader.class);
+        Mockito.when(
+                classLoader.getResources(VAADIN_SERVLET_RESOURCES + TOKEN_FILE))
+                .thenReturn(Collections.enumeration(
+                        Arrays.asList(tokenFile.toURI().toURL(),
+                                new URL("file:/C:/Users/.m2/repository/org/vaadin/my-add-on/1.1/my-add-on-1.1.jar!/META-INF/VAADIN/config/flow-build-info.json"))));
+
+        expect(contextMock.getClassLoader()).andReturn(classLoader);
+
+        Properties initParameters = DeploymentConfigurationFactory
+                .createInitParameters(VaadinServlet.class,
+                        createServletConfigMock(emptyMap(), emptyMap()));
+
+        Assert.assertEquals("Compatibility mode should have been read from the build file", "false", initParameters.getProperty("compatibilityMode"));
+        Assert.assertEquals("Production mode should have been read from the build file", "false", initParameters.getProperty("productionMode"));
+    }
+
+    @Test // #6616
+    public void multipleJarTokenFiles_noTokenFileIsLoaded_noInitParametersAreLoaded()
+            throws Exception {
+        exception.expect(IllegalStateException.class);
+        exception.expectMessage("Unable to determine mode of operation.");
+
+        URLClassLoader classLoader = Mockito.mock(URLClassLoader.class);
+        Mockito.when(
+                classLoader.getResources(VAADIN_SERVLET_RESOURCES + TOKEN_FILE))
+                .thenReturn(Collections.enumeration(Arrays.asList(
+                        new URL("file:/C:/Users/tmp/apache-tomcat-9.0.24/webapps/project_base_war/WEB-INF/lib/my-add-on-1.1.jar!/META-INF/VAADIN/config/flow-build-info.json"),
+                        new URL("file:/C:/Users/tmp/apache-tomcat-9.0.24/webapps/project_base_war/WEB-INF/lib/pdfs-1.1.jar!/META-INF/VAADIN/config/flow-build-info.json"))));
+
+        expect(contextMock.getClassLoader()).andReturn(classLoader);
+
+        new DefaultDeploymentConfiguration(VaadinServlet.class,
+                DeploymentConfigurationFactory
+                        .createInitParameters(VaadinServlet.class,
+                                createServletConfigMock(emptyMap(),
+                                        emptyMap())));
+    }
     private DeploymentConfiguration createConfig(Map<String, String> map)
             throws Exception {
         return DeploymentConfigurationFactory.createDeploymentConfiguration(
@@ -396,7 +450,7 @@ public class DeploymentConfigurationFactoryTest {
             Map<String, String> servletContextParameters) throws Exception {
 
         URLClassLoader classLoader = new URLClassLoader(
-                new URL[] { temporaryFolder.getRoot().toURI().toURL() });
+                new URL[]{temporaryFolder.getRoot().toURI().toURL()});
 
         expect(contextMock.getInitParameterNames())
                 .andAnswer(() -> Collections
