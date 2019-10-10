@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2019 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,9 +25,12 @@ import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.LoggerFactory;
@@ -80,6 +83,8 @@ public final class DeploymentConfigurationFactory implements Serializable {
             "Running project in development mode with no access to folder '%s'.%n"
                     + "Build project in production mode instead, see https://vaadin.com/docs/v14/flow/production/tutorial-production-mode-basic.html";
 
+    private static Pattern JAR_REGEX = Pattern.compile("(.+\\.jar).*");
+
     private DeploymentConfigurationFactory() {
     }
 
@@ -92,7 +97,6 @@ public final class DeploymentConfigurationFactory implements Serializable {
      * @param servletConfig
      *            the config to get the rest of the properties from
      * @return {@link DeploymentConfiguration} instance
-     *
      * @throws ServletException
      *             if construction of the {@link Properties} for the parameters
      *             fails
@@ -114,7 +118,6 @@ public final class DeploymentConfigurationFactory implements Serializable {
      * @param servletConfig
      *            the config to get the rest of the properties from
      * @return {@link DeploymentConfiguration} instance
-     *
      * @throws ServletException
      *             if construction of the {@link Properties} for the parameters
      *             fails
@@ -135,7 +138,6 @@ public final class DeploymentConfigurationFactory implements Serializable {
      * @param servletConfig
      *            the config to get the rest of the properties from
      * @return {@link Properties} instance
-     *
      * @throws ServletException
      *             if construction of the {@link Properties} for the parameters
      *             fails
@@ -163,11 +165,11 @@ public final class DeploymentConfigurationFactory implements Serializable {
                     servletConfig.getInitParameter(name));
         }
 
-        readBuildInfo(initParameters);
+        readBuildInfo(initParameters, context);
         return initParameters;
     }
 
-    private static void readBuildInfo(Properties initParameters) {
+    private static void readBuildInfo(Properties initParameters, ServletContext context) {
         String json = null;
         try {
             // token file location passed via init parameter property
@@ -181,9 +183,14 @@ public final class DeploymentConfigurationFactory implements Serializable {
 
             // token file is in the class-path of the application
             if (json == null) {
-                URL resource = DeploymentConfigurationFactory.class
-                        .getClassLoader()
-                        .getResource(VAADIN_SERVLET_RESOURCES + TOKEN_FILE);
+                List<URL> resources = Collections
+                        .list(context.getClassLoader().getResources(
+                                        VAADIN_SERVLET_RESOURCES + TOKEN_FILE));
+                URL resource = null;
+                if (!resources.isEmpty()) {
+                    resource = resources.stream().filter(url -> !JAR_REGEX.matcher(url.getPath())
+                                    .find()).findFirst().orElse(null);
+                }
                 if (resource != null) {
                     json = FrontendUtils.streamToString(resource.openStream());
                 }
@@ -226,7 +233,8 @@ public final class DeploymentConfigurationFactory implements Serializable {
             if (buildInfo.hasKey(FRONTEND_TOKEN)) {
                 initParameters.setProperty(FrontendUtils.PARAM_FRONTEND_DIR,
                         buildInfo.getString(FRONTEND_TOKEN));
-                // Only verify frontend folder if it's not a subfolder of the npm folder.
+                // Only verify frontend folder if it's not a subfolder of the
+                // npm folder.
                 if (!buildInfo.hasKey(NPM_TOKEN) || !buildInfo
                         .getString(FRONTEND_TOKEN)
                         .startsWith(buildInfo.getString(NPM_TOKEN))) {
