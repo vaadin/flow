@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Scanner;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
@@ -403,7 +404,8 @@ public class FrontendUtils {
         if (content == null) {
             content = getStatsFromClassPath(service);
         }
-        return content != null ? streamToString(content) : null;
+        return content != null ?
+                IOUtils.toString(content, StandardCharsets.UTF_8) : null;
     }
 
     /**
@@ -451,6 +453,85 @@ public class FrontendUtils {
                     stats);
         }
         return stream;
+    }
+
+    /**
+     * Load the asset chunks from stats.json. We will only read the file until
+     * we have reached the assetsByChunkName json and return that as a json
+     * object string.
+     *
+     * @param service
+     *            the Vaadin service.
+     * @return json for assetsByChunkName object in stats.json
+     * @throws IOException
+     *             if an I/O error occurs while creating the input stream.
+     */
+    public static String getStatsAssetsByChunkName(VaadinService service)
+            throws IOException {
+        DeploymentConfiguration config = service.getDeploymentConfiguration();
+        if (!config.isProductionMode() && config.enableDevServer()) {
+            DevModeHandler handler = DevModeHandler.getDevModeHandler();
+            return streamToString(
+                    handler.prepareConnection("/assetsByChunkName", "GET")
+                            .getInputStream());
+        }
+
+        String stats = config
+                .getStringProperty(SERVLET_PARAMETER_STATISTICS_JSON,
+                        VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT)
+                // Remove absolute
+                .replaceFirst("^/", "");
+        InputStream resourceAsStream = service.getClassLoader()
+                .getResourceAsStream(stats);
+        try (Scanner scan = new Scanner(resourceAsStream,
+                StandardCharsets.UTF_8.name())) {
+            StringBuilder assets = new StringBuilder();
+            assets.append("{");
+            // Scan until we reach the assetsByChunkName object line
+            scanToAssetChunkStart(scan, assets);
+            // Add lines until we reach the first } breaking the object
+            while (scan.hasNextLine()) {
+                String line = scan.nextLine().trim();
+                if ("}".equals(line) || "},".equals(line)) {
+                    // Encountering } or }, means end of asset chunk
+                    return assets.append("}").toString();
+                } else if (line.endsWith("}") || line.endsWith("},")) {
+                    return assets
+                            .append(line.substring(0, line.indexOf('}')).trim())
+                            .append("}").toString();
+                } else if (line.contains("{")) {
+                    // Encountering { means something is wrong as the assets
+                    // should only contain key-value pairs.
+                    break;
+                }
+                assets.append(line);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Scan until we reach the assetsByChunkName json object start.
+     * If faulty format add first jsonObject to assets builder.
+     *
+     * @param scan
+     *         Scanner used to scan data
+     * @param assets
+     *         assets builder
+     */
+    private static void scanToAssetChunkStart(Scanner scan,
+                                              StringBuilder assets) {
+        do {
+            String line = scan.nextLine().trim();
+            // Walk file until we get to the assetsByChunkName object.
+            if (line.startsWith("\"assetsByChunkName\"")) {
+                if (!line.endsWith("{")) {
+                    assets.append(
+                            line.substring(line.indexOf('{') + 1).trim());
+                }
+                break;
+            }
+        } while (scan.hasNextLine());
     }
 
     /**
