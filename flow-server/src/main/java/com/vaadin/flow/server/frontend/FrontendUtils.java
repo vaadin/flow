@@ -463,6 +463,8 @@ public class FrontendUtils {
      * @param service
      *            the Vaadin service.
      * @return json for assetsByChunkName object in stats.json
+     * @throws IOException
+     *             if an I/O error occurs while creating the input stream.
      */
     public static String getStatsAssetsByChunkName(VaadinService service)
             throws IOException {
