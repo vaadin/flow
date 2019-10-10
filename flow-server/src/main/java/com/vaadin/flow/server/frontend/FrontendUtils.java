@@ -488,26 +488,16 @@ public class FrontendUtils {
             StringBuilder assets = new StringBuilder();
             assets.append("{");
             // Scan until we reach the assetsByChunkName object line
-            do {
-                String line = scan.nextLine().trim();
-                // Walk file until we get to the assetsByChunkName object.
-                if (line.startsWith("\"assetsByChunkName\"")) {
-                    if (!line.endsWith("{")) {
-                        assets.append(
-                                line.substring(line.indexOf('{') + 1).trim());
-                    }
-                    break;
-                }
-            } while (scan.hasNextLine());
+            scanToAssetChunkStart(scan, assets);
             // Add lines until we reach the first } breaking the object
             while (scan.hasNextLine()) {
                 String line = scan.nextLine().trim();
-                if (line.equals("}") || line.equals("},")) {
+                if ("}".equals(line) || "},".equals(line)) {
                     // Encountering } or }, means end of asset chunk
                     return assets.append("}").toString();
                 } else if (line.endsWith("}") || line.endsWith("},")) {
                     return assets
-                            .append(line.substring(0, line.indexOf("}")).trim())
+                            .append(line.substring(0, line.indexOf('}')).trim())
                             .append("}").toString();
                 } else if (line.contains("{")) {
                     // Encountering { means something is wrong as the assets
@@ -518,6 +508,30 @@ public class FrontendUtils {
             }
         }
         return null;
+    }
+
+    /**
+     * Scan until we reach the assetsByChunkName json object start.
+     * If faulty format add first jsonObject to assets builder.
+     *
+     * @param scan
+     *         Scanner used to scan data
+     * @param assets
+     *         assets builder
+     */
+    private static void scanToAssetChunkStart(Scanner scan,
+                                              StringBuilder assets) {
+        do {
+            String line = scan.nextLine().trim();
+            // Walk file until we get to the assetsByChunkName object.
+            if (line.startsWith("\"assetsByChunkName\"")) {
+                if (!line.endsWith("{")) {
+                    assets.append(
+                            line.substring(line.indexOf('{') + 1).trim());
+                }
+                break;
+            }
+        } while (scan.hasNextLine());
     }
 
     /**
