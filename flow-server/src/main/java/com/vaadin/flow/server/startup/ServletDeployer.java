@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.Map;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -183,7 +184,9 @@ public class ServletDeployer implements ServletContextListener {
                         context) == VaadinServletCreation.SERVLET_EXISTS
                 && hasDevelopmentMode && isCompatibilityMode) {
             createServletIfNotExists(context, "frontendFilesServlet",
-                    FrontendVaadinServlet.class, "/frontend/*");
+                    FrontendVaadinServlet.class, "/frontend/*",
+                    Collections.singletonMap("compatibilityMode",
+                            Boolean.TRUE.toString()));
         }
     }
 
@@ -234,6 +237,14 @@ public class ServletDeployer implements ServletContextListener {
     private VaadinServletCreation createServletIfNotExists(
             ServletContext context, String name,
             Class<? extends Servlet> servletClass, String path) {
+        return createServletIfNotExists(context, name, servletClass, path,
+                null);
+    }
+
+    private VaadinServletCreation createServletIfNotExists(
+            ServletContext context, String name,
+            Class<? extends Servlet> servletClass, String path,
+            Map<String, String> initParams) {
         ServletRegistration existingServlet = findServletByPathPart(context,
                 path);
         if (existingServlet != null) {
@@ -246,6 +257,9 @@ public class ServletDeployer implements ServletContextListener {
 
         ServletRegistration.Dynamic registration = context.addServlet(name,
                 servletClass);
+        if (initParams != null) {
+            registration.setInitParameters(initParams);
+        }
         if (registration == null) {
             // Not expected to ever happen
             getLogger().info("{} there is already a servlet with the name {}",

@@ -13,6 +13,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -54,6 +55,8 @@ public class ServletDeployerTest {
             .newCapture(CaptureType.ALL);
     private final Capture<String> servletMappings = EasyMock
             .newCapture(CaptureType.ALL);
+
+    private Consumer<ServletRegistration.Dynamic> dynamicMockCheck;
 
     private static class TestVaadinServlet extends VaadinServlet {
     }
@@ -148,6 +151,10 @@ public class ServletDeployerTest {
     @Test
     public void mainServletIsNotRegisteredWhenVaadinServletIsPresent_frontendServletIsRegistered()
             throws Exception {
+        dynamicMockCheck = registration -> EasyMock
+                .expect(registration.setInitParameters(Collections.singletonMap(
+                        "compatibilityMode", Boolean.TRUE.toString())))
+                .andReturn(null).once();
         deployer.contextInitialized(getContextEvent(true, true,
                 getServletRegistration("testServlet", TestVaadinServlet.class,
                         singletonList("/test/*"),
@@ -193,6 +200,12 @@ public class ServletDeployerTest {
         Map<String, String> devMode = new HashMap<>();
         devMode.put(Constants.SERVLET_PARAMETER_PRODUCTION_MODE, "false");
         devMode.put(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE, "true");
+
+        dynamicMockCheck = registration -> EasyMock
+                .expect(registration.setInitParameters(Collections.singletonMap(
+                        "compatibilityMode", Boolean.TRUE.toString())))
+                .andReturn(null).once();
+
         deployer.contextInitialized(getContextEvent(true, true,
                 getServletRegistration("testServlet1", TestVaadinServlet.class,
                         singletonList("/test1/*"), productionMode),
@@ -230,6 +243,10 @@ public class ServletDeployerTest {
         params.put(Constants.USE_ORIGINAL_FRONTEND_RESOURCES, "true");
         params.put(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE, "true");
 
+        dynamicMockCheck = registration -> EasyMock
+                .expect(registration.setInitParameters(Collections.singletonMap(
+                        "compatibilityMode", Boolean.TRUE.toString())))
+                .andReturn(null).once();
         deployer.contextInitialized(
                 getContextEvent(true, true, getServletRegistration("test",
                         TestVaadinServlet.class, emptyList(), params)));
@@ -241,6 +258,11 @@ public class ServletDeployerTest {
     @Test
     public void servletIsNotRegisteredWhenAnotherHasTheSamePathMapping_mainServlet()
             throws Exception {
+        dynamicMockCheck = registration -> EasyMock
+                .expect(registration.setInitParameters(Collections.singletonMap(
+                        "compatibilityMode", Boolean.TRUE.toString())))
+                .andReturn(null).once();
+
         deployer.contextInitialized(getContextEvent(true, true,
                 getServletRegistration("test", TestServlet.class,
                         singletonList("/*"),
@@ -301,6 +323,11 @@ public class ServletDeployerTest {
                 ServletRegistration.Dynamic.class);
         dynamicMock.setAsyncSupported(anyBoolean());
         EasyMock.expectLastCall().anyTimes();
+
+        if (dynamicMockCheck != null) {
+            dynamicMockCheck.accept(dynamicMock);
+        }
+
         expect(dynamicMock.addMapping(capture(servletMappings)))
                 .andReturn(Collections.emptySet()).anyTimes();
 
