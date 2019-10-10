@@ -131,7 +131,7 @@ module.exports = {
   },
   plugins: [
     // Generate compressed bundles
-    new CompressionPlugin(),
+    !devMode && new CompressionPlugin(),
 
     // Transpile with babel, and produce different bundles per browser
     new BabelMultiTargetPlugin({
