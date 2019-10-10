@@ -153,7 +153,8 @@ public class ServletDeployerTest {
             throws Exception {
         dynamicMockCheck = registration -> EasyMock
                 .expect(registration.setInitParameters(Collections.singletonMap(
-                        "compatibilityMode", Boolean.TRUE.toString())))
+                        Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                        Boolean.TRUE.toString())))
                 .andReturn(null).once();
         deployer.contextInitialized(getContextEvent(true, true,
                 getServletRegistration("testServlet", TestVaadinServlet.class,
@@ -203,7 +204,8 @@ public class ServletDeployerTest {
 
         dynamicMockCheck = registration -> EasyMock
                 .expect(registration.setInitParameters(Collections.singletonMap(
-                        "compatibilityMode", Boolean.TRUE.toString())))
+                        Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                        Boolean.TRUE.toString())))
                 .andReturn(null).once();
 
         deployer.contextInitialized(getContextEvent(true, true,
@@ -245,7 +247,8 @@ public class ServletDeployerTest {
 
         dynamicMockCheck = registration -> EasyMock
                 .expect(registration.setInitParameters(Collections.singletonMap(
-                        "compatibilityMode", Boolean.TRUE.toString())))
+                        Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                        Boolean.TRUE.toString())))
                 .andReturn(null).once();
         deployer.contextInitialized(
                 getContextEvent(true, true, getServletRegistration("test",
@@ -260,7 +263,8 @@ public class ServletDeployerTest {
             throws Exception {
         dynamicMockCheck = registration -> EasyMock
                 .expect(registration.setInitParameters(Collections.singletonMap(
-                        "compatibilityMode", Boolean.TRUE.toString())))
+                        Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                        Boolean.TRUE.toString())))
                 .andReturn(null).once();
 
         deployer.contextInitialized(getContextEvent(true, true,

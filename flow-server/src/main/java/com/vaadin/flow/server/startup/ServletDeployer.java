@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DeploymentConfigurationFactory;
 import com.vaadin.flow.server.FrontendVaadinServlet;
 import com.vaadin.flow.server.VaadinServlet;
@@ -185,7 +186,8 @@ public class ServletDeployer implements ServletContextListener {
                 && hasDevelopmentMode && isCompatibilityMode) {
             createServletIfNotExists(context, "frontendFilesServlet",
                     FrontendVaadinServlet.class, "/frontend/*",
-                    Collections.singletonMap("compatibilityMode",
+                    Collections.singletonMap(
+                            Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
                             Boolean.TRUE.toString()));
         }
     }
