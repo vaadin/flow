@@ -302,7 +302,7 @@ abstract class AbstractUpdateImports implements Runnable, Serializable {
         Set<String> npmNotFound = new HashSet<>();
         Set<String> visited = new HashSet<>();
         AbstractTheme theme = getTheme();
-        Collection<String> lines = new ArrayList<>();
+        Collection<String> lines = new HashSet<>();
 
         for (String originalModulePath : modules) {
             String translatedModulePath = originalModulePath;
