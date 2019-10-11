@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Before;
@@ -89,7 +90,8 @@ public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
         Assert.assertTrue(nodeModulesPath.mkdirs());
         createImport("./src/subfolder/sub-template.js", "");
         createImport("./src/client-side-template.js",
-                "import 'xx' from './subfolder/sub-template.js';");
+                "import 'xx' from './subfolder/sub-template.js';"
+                        + "import '@vaadin/vaadin-button/src/vaadin-button.js'");
         createImport("./src/client-side-no-themed-template.js", "");
         createImport("./src/main-template.js",
                 "import 'xx' from './client-side-template.js';"
@@ -161,6 +163,20 @@ public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
                         "import '@vaadin/vaadin-button/theme/myTheme/vaadin-button.js';"),
                 CoreMatchers.not(CoreMatchers.containsString(
                         "import 'theme/myTheme/wrong-themed-template.js';"))));
+    }
+
+    @Test
+    public void noDuplicateImportEntryIsWrittenIntoImportsFile()
+            throws Exception {
+        updater.execute();
+
+        String content = FileUtils.readFileToString(importsFile,
+                Charset.defaultCharset());
+        int count = StringUtils.countMatches(content,
+                "import '@vaadin/vaadin-button/theme/myTheme/vaadin-button.js';");
+        Assert.assertEquals(
+                "Import entries in the imports file should be unique.", 1,
+                count);
     }
 
     private void createImport(String path, String content) throws IOException {
