@@ -28,13 +28,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
 
 /**
  * Component used for checking role-based ACL in Vaadin Services.
@@ -88,15 +81,7 @@ public class VaadinConnectAccessChecker {
    *         occur, {@code null} otherwise
    */
   public String check(Method method) {
-    Authentication auth = SecurityContextHolder.getContext()
-        .getAuthentication();
-
-    if (auth instanceof OAuth2Authentication) {
-      return verifyAuthenticatedUser(method, (OAuth2Authentication) auth);
-    } else if (auth instanceof AnonymousAuthenticationToken) {
-      return verifyAnonymousUser(method);
-    }
-    return "Bad authentication, the request should use oauth2";
+      return null;
   }
 
   /**
@@ -122,15 +107,6 @@ public class VaadinConnectAccessChecker {
     if (!getSecurityTarget(method).isAnnotationPresent(AnonymousAllowed.class)
         || cannotAccessMethod(method, Collections.emptyList())) {
       return "Anonymous access is not allowed";
-    }
-    return null;
-  }
-
-  private String verifyAuthenticatedUser(Method method,
-      OAuth2Authentication auth) {
-    if (cannotAccessMethod(method, auth.getAuthorities().stream()
-        .map(GrantedAuthority::getAuthority).collect(Collectors.toList()))) {
-      return "Unauthorized access to vaadin service";
     }
     return null;
   }

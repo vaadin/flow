@@ -27,7 +27,6 @@ import java.util.stream.Stream;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
@@ -70,9 +69,8 @@ public class FrontendDependenciesTest {
 
         Mockito.doAnswer(invocation -> {
             return FrontendDependenciesTest.class.getClassLoader()
-                    .getResource(invocation.getArgumentAt(0, String.class));
+                    .getResource(invocation.getArgument(0));
         }).when(classFinder).getResource(Mockito.anyString());
-
     }
 
     @Test
