@@ -2,6 +2,7 @@ package com.vaadin.flow.server;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -11,18 +12,15 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
 import org.easymock.Capture;
 import org.easymock.EasyMock;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -321,22 +319,24 @@ public class DeploymentConfigurationFactoryTest {
     public void shouldThrow_tokenFileContainsNonExistingNpmFolderInDevMode()
             throws Exception {
         exception.expect(IllegalStateException.class);
-        exception.expectMessage(String.format(DEV_FOLDER_MISSING_MESSAGE, "npm"));
+        exception.expectMessage(
+                String.format(DEV_FOLDER_MISSING_MESSAGE, "npm"));
         FileUtils.writeLines(tokenFile,
                 Arrays.asList("{", "\"compatibilityMode\": false,",
                         "\"productionMode\": false,", "\"npmFolder\": \"npm\",",
                         "\"generatedFolder\": \"generated\",",
                         "\"frontendFolder\": \"frontend\"", "}"));
 
-        createConfig(Collections
-                .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
+        createConfig(Collections.singletonMap(PARAM_TOKEN_FILE,
+                tokenFile.getPath()));
     }
 
     @Test
     public void shouldThrow_tokenFileContainsNonExistingFrontendFolderNoNpmFolder()
             throws Exception {
         exception.expect(IllegalStateException.class);
-        exception.expectMessage(String.format(DEV_FOLDER_MISSING_MESSAGE, "frontend"));
+        exception.expectMessage(
+                String.format(DEV_FOLDER_MISSING_MESSAGE, "frontend"));
         FileUtils.writeLines(tokenFile,
                 Arrays.asList("{", "\"compatibilityMode\": false,",
                         "\"productionMode\": false,",
@@ -346,18 +346,19 @@ public class DeploymentConfigurationFactoryTest {
                 .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
     }
 
-
     @Test
     public void shouldThrow_tokenFileContainsNonExistingFrontendFolderOutsideNpmSubFolder()
             throws Exception {
         exception.expect(IllegalStateException.class);
-        exception.expectMessage(String.format(DEV_FOLDER_MISSING_MESSAGE, "frontend"));
+        exception.expectMessage(
+                String.format(DEV_FOLDER_MISSING_MESSAGE, "frontend"));
         temporaryFolder.newFolder("npm");
-        String tempFolder = temporaryFolder.getRoot().getAbsolutePath().replace("\\", "/");
+        String tempFolder = temporaryFolder.getRoot().getAbsolutePath()
+                .replace("\\", "/");
         FileUtils.writeLines(tokenFile,
                 Arrays.asList("{", "\"compatibilityMode\": false,",
                         "\"productionMode\": false,",
-                        "\"npmFolder\": \""+ tempFolder +"/npm\",",
+                        "\"npmFolder\": \"" + tempFolder + "/npm\",",
                         "\"frontendFolder\": \"frontend\"", "}"));
 
         createConfig(Collections
@@ -368,77 +369,33 @@ public class DeploymentConfigurationFactoryTest {
     public void shouldNotThrow_tokenFileFrontendFolderInDevMode()
             throws Exception {
         temporaryFolder.newFolder("npm");
-        String tempFolder = temporaryFolder.getRoot().getAbsolutePath().replace("\\", "/");
-        FileUtils.writeLines(tokenFile,
-                Arrays.asList("{", "\"compatibilityMode\": false,",
-                        "\"productionMode\": false,",
-                        "\"npmFolder\": \""+ tempFolder +"/npm\",",
-                        "\"frontendFolder\": \""+tempFolder+"/npm/frontend\"", "}"));
-
-        createConfig(Collections
-                .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
-    }
-
-    @Test
-    public void shouldNotThrow_tokenFileFoldersExist()
-            throws Exception {
-        temporaryFolder.newFolder("npm");
-        temporaryFolder.newFolder("frontend");
-        String tempFolder = temporaryFolder.getRoot().getAbsolutePath().replace("\\", "/");
-        FileUtils.writeLines(tokenFile,
-                Arrays.asList("{", "\"compatibilityMode\": false,",
-                        "\"productionMode\": false,",
-                        "\"npmFolder\": \""+ tempFolder +"/npm\",",
-                        "\"frontendFolder\": \""+tempFolder+"/frontend\"", "}"));
+        String tempFolder = temporaryFolder.getRoot().getAbsolutePath()
+                .replace("\\", "/");
+        FileUtils.writeLines(tokenFile, Arrays.asList("{",
+                "\"compatibilityMode\": false,", "\"productionMode\": false,",
+                "\"npmFolder\": \"" + tempFolder + "/npm\",",
+                "\"frontendFolder\": \"" + tempFolder + "/npm/frontend\"",
+                "}"));
 
         createConfig(Collections.singletonMap(PARAM_TOKEN_FILE,
                 tokenFile.getPath()));
     }
 
-    @Test // #6616
-    public void multipleTokenFiles_shouldLoadNonJarToken_noExceptionShouldBeThrown() throws Exception {
-        FileUtils.writeLines(tokenFile,
-                Arrays.asList("{", "\"compatibilityMode\": false,",
-                        "\"productionMode\": false,", "}"));
+    @Test
+    public void shouldNotThrow_tokenFileFoldersExist() throws Exception {
+        temporaryFolder.newFolder("npm");
+        temporaryFolder.newFolder("frontend");
+        String tempFolder = temporaryFolder.getRoot().getAbsolutePath()
+                .replace("\\", "/");
+        FileUtils.writeLines(tokenFile, Arrays.asList("{",
+                "\"compatibilityMode\": false,", "\"productionMode\": false,",
+                "\"npmFolder\": \"" + tempFolder + "/npm\",",
+                "\"frontendFolder\": \"" + tempFolder + "/frontend\"", "}"));
 
-        URLClassLoader classLoader = Mockito.mock(URLClassLoader.class);
-        Mockito.when(
-                classLoader.getResources(VAADIN_SERVLET_RESOURCES + TOKEN_FILE))
-                .thenReturn(Collections.enumeration(
-                        Arrays.asList(tokenFile.toURI().toURL(),
-                                new URL("file:/C:/Users/.m2/repository/org/vaadin/my-add-on/1.1/my-add-on-1.1.jar!/META-INF/VAADIN/config/flow-build-info.json"))));
-
-        expect(contextMock.getClassLoader()).andReturn(classLoader);
-
-        Properties initParameters = DeploymentConfigurationFactory
-                .createInitParameters(VaadinServlet.class,
-                        createServletConfigMock(emptyMap(), emptyMap()));
-
-        Assert.assertEquals("Compatibility mode should have been read from the build file", "false", initParameters.getProperty("compatibilityMode"));
-        Assert.assertEquals("Production mode should have been read from the build file", "false", initParameters.getProperty("productionMode"));
+        createConfig(Collections.singletonMap(PARAM_TOKEN_FILE,
+                tokenFile.getPath()));
     }
 
-    @Test // #6616
-    public void multipleJarTokenFiles_noTokenFileIsLoaded_noInitParametersAreLoaded()
-            throws Exception {
-        exception.expect(IllegalStateException.class);
-        exception.expectMessage("Unable to determine mode of operation.");
-
-        URLClassLoader classLoader = Mockito.mock(URLClassLoader.class);
-        Mockito.when(
-                classLoader.getResources(VAADIN_SERVLET_RESOURCES + TOKEN_FILE))
-                .thenReturn(Collections.enumeration(Arrays.asList(
-                        new URL("file:/C:/Users/tmp/apache-tomcat-9.0.24/webapps/project_base_war/WEB-INF/lib/my-add-on-1.1.jar!/META-INF/VAADIN/config/flow-build-info.json"),
-                        new URL("file:/C:/Users/tmp/apache-tomcat-9.0.24/webapps/project_base_war/WEB-INF/lib/pdfs-1.1.jar!/META-INF/VAADIN/config/flow-build-info.json"))));
-
-        expect(contextMock.getClassLoader()).andReturn(classLoader);
-
-        new DefaultDeploymentConfiguration(VaadinServlet.class,
-                DeploymentConfigurationFactory
-                        .createInitParameters(VaadinServlet.class,
-                                createServletConfigMock(emptyMap(),
-                                        emptyMap())));
-    }
     private DeploymentConfiguration createConfig(Map<String, String> map)
             throws Exception {
         return DeploymentConfigurationFactory.createDeploymentConfiguration(
@@ -450,7 +407,7 @@ public class DeploymentConfigurationFactoryTest {
             Map<String, String> servletContextParameters) throws Exception {
 
         URLClassLoader classLoader = new URLClassLoader(
-                new URL[]{temporaryFolder.getRoot().toURI().toURL()});
+                new URL[] { temporaryFolder.getRoot().toURI().toURL() });
 
         expect(contextMock.getInitParameterNames())
                 .andAnswer(() -> Collections
