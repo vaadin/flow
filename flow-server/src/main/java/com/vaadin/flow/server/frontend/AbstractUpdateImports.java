@@ -297,12 +297,13 @@ abstract class AbstractUpdateImports implements Runnable, Serializable {
         lines.addAll(internals);
     }
 
-    private Collection<String> getModuleLines(Set<String> modules) {
-        Set<String> resourceNotFound = new HashSet<>();
+    private Set<String> getUniqueEs6ImportPaths(
+            Collection<String> modules) {
         Set<String> npmNotFound = new HashSet<>();
-        Set<String> visited = new HashSet<>();
+        Set<String> resourceNotFound = new HashSet<>();
+        Set<String> es6ImportPaths = new LinkedHashSet<>();
         AbstractTheme theme = getTheme();
-        Collection<String> lines = new ArrayList<>();
+        Set<String> visited = new HashSet<>();
 
         for (String originalModulePath : modules) {
             String translatedModulePath = originalModulePath;
@@ -323,23 +324,21 @@ abstract class AbstractUpdateImports implements Runnable, Serializable {
 
             if (localModulePath != null
                     && frontendFileExists(localModulePath)) {
-                lines.add(String.format(IMPORT_TEMPLATE,
-                        toValidBrowserImport(localModulePath)));
+                es6ImportPaths.add(toValidBrowserImport(localModulePath));
             } else if (importedFileExists(translatedModulePath)) {
-                lines.add(String.format(IMPORT_TEMPLATE,
-                        toValidBrowserImport(translatedModulePath)));
+                es6ImportPaths.add(toValidBrowserImport(translatedModulePath));
             } else if (importedFileExists(originalModulePath)) {
-                lines.add(String.format(IMPORT_TEMPLATE,
-                        toValidBrowserImport(originalModulePath)));
+                es6ImportPaths.add(toValidBrowserImport(originalModulePath));
             } else if (originalModulePath.startsWith("./")) {
                 resourceNotFound.add(originalModulePath);
             } else {
                 npmNotFound.add(originalModulePath);
-                lines.add(String.format(IMPORT_TEMPLATE, originalModulePath));
+                es6ImportPaths.add(originalModulePath);
             }
 
             if (theme != null) {
-                handleImports(originalModulePath, theme, lines, visited);
+                handleImports(originalModulePath, theme, es6ImportPaths,
+                        visited);
             }
         }
 
@@ -365,7 +364,14 @@ abstract class AbstractUpdateImports implements Runnable, Serializable {
                             + "  To fix the build remove `node_modules` directory to reset modules.\n"
                             + "  In addition you may run `npm install` to fix `node_modules` tree structure."));
         }
-        return lines;
+
+        return es6ImportPaths;
+    }
+
+    private Collection<String> getModuleLines(Set<String> modules) {
+        return getUniqueEs6ImportPaths(modules).stream()
+                .map(path -> String.format(IMPORT_TEMPLATE, path))
+                .collect(Collectors.toList());
     }
 
     private boolean frontendFileExists(String jsImport) {
