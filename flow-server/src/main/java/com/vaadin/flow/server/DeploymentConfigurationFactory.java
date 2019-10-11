@@ -19,6 +19,7 @@ package com.vaadin.flow.server;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -45,6 +46,7 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
+
 import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
@@ -169,11 +171,11 @@ public final class DeploymentConfigurationFactory implements Serializable {
                     servletConfig.getInitParameter(name));
         }
 
-        readBuildInfo(initParameters, context);
+        readBuildInfo(initParameters);
         return initParameters;
     }
 
-    private static void readBuildInfo(Properties initParameters, ServletContext context) {
+    private static void readBuildInfo(Properties initParameters) {
         String json = null;
         try {
             // token file location passed via init parameter property
@@ -189,12 +191,14 @@ public final class DeploymentConfigurationFactory implements Serializable {
             // token file is in the class-path of the application
             if (json == null) {
                 List<URL> resources = Collections
-                        .list(context.getClassLoader().getResources(
+                        .list(DeploymentConfiguration.class.getClassLoader()
+                                .getResources(
                                         VAADIN_SERVLET_RESOURCES + TOKEN_FILE));
                 URL resource = null;
                 if (!resources.isEmpty()) {
-                    resource = resources.stream().filter(url -> !JAR_REGEX.matcher(url.getPath())
-                                    .find()).findFirst().orElse(null);
+                    resource = resources.stream().filter(
+                            url -> !JAR_REGEX.matcher(url.getPath()).find())
+                            .findFirst().orElse(null);
                 }
                 if (resource != null) {
                     json = FrontendUtils.streamToString(resource.openStream());
