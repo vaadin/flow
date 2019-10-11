@@ -222,6 +222,21 @@ src/test/resources/mockito-extensions/org.mockito.plugins.MockMaker
             <version>2.23.0</version>
             <scope>test</scope>
         </dependency>
+        <!--
+tests in package com.vaadin.connect.typeconversion
+         -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <version>5.1.2.RELEASE</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-test-autoconfigure</artifactId>
+            <version>2.1.0.RELEASE</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <build>
         <resources>

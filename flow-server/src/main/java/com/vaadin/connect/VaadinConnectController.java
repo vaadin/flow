@@ -149,10 +149,6 @@ public class VaadinConnectController {
         : getDefaultObjectMapper(context);
     this.accessChecker = accessChecker;
 
-
-
-    System.err.println(">>>>>>>>>>>> ---------- initialized controller: " + this.getClass().getName() );
-
     context.getBeansWithAnnotation(VaadinService.class)
         .forEach((name, serviceBean) -> {
           // Check the bean type instead of the implementation type in
