@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.connect.exception;
+package com.vaadin.flow.server.connect.exception;
 
 import java.util.Collections;
 import java.util.HashMap;

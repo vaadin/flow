@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.connect;
+package com.vaadin.flow.server.connect;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -59,10 +59,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.vaadin.connect.auth.VaadinConnectAccessChecker;
-import com.vaadin.connect.exception.VaadinConnectException;
-import com.vaadin.connect.exception.VaadinConnectValidationException;
-import com.vaadin.connect.exception.VaadinConnectValidationException.ValidationErrorData;
+import com.vaadin.flow.server.connect.auth.VaadinConnectAccessChecker;
+import com.vaadin.flow.server.connect.exception.VaadinConnectException;
+import com.vaadin.flow.server.connect.exception.VaadinConnectValidationException;
+import com.vaadin.flow.server.connect.exception.VaadinConnectValidationException.ValidationErrorData;
 
 /**
  * The controller that is responsible for processing Vaadin Connect requests.

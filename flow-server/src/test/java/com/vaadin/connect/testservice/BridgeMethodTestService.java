@@ -15,7 +15,7 @@
  */
 package com.vaadin.connect.testservice;
 
-import com.vaadin.connect.VaadinService;
+import com.vaadin.flow.server.connect.VaadinService;
 
 /**
  * Test case for https://github.com/vaadin/vaadin-connect/issues/162

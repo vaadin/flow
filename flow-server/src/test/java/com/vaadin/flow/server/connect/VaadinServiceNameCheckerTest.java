@@ -14,11 +14,13 @@
  * the License.
  */
 
-package com.vaadin.connect;
+package com.vaadin.flow.server.connect;
 
 import java.util.Arrays;
 
 import org.junit.Test;
+
+import com.vaadin.flow.server.connect.VaadinServiceNameChecker;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;

@@ -1,6 +1,6 @@
 package com.vaadin.flow.connect;
 
-import com.vaadin.connect.VaadinService;
+import com.vaadin.flow.server.connect.VaadinService;
 
 /**
  * Simple Vaadin Connect Service definition.

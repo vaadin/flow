@@ -14,13 +14,13 @@
  * the License.
  */
 
-package com.vaadin.connect.exception;
+package com.vaadin.flow.server.connect.exception;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import com.vaadin.connect.VaadinConnectController;
+import com.vaadin.flow.server.connect.VaadinConnectController;
 
 /**
  * An exception that is intended to be thrown by any Vaadin Connect service

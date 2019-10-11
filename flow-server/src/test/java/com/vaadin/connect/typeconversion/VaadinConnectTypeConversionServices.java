@@ -32,7 +32,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-import com.vaadin.connect.VaadinService;
+import com.vaadin.flow.server.connect.VaadinService;
 
 @VaadinService
 public class VaadinConnectTypeConversionServices {

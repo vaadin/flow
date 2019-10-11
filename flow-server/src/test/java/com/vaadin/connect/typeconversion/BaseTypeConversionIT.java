@@ -30,9 +30,9 @@ import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import com.vaadin.connect.VaadinConnectController;
-import com.vaadin.connect.VaadinServiceNameChecker;
-import com.vaadin.connect.auth.VaadinConnectAccessChecker;
+import com.vaadin.flow.server.connect.VaadinConnectController;
+import com.vaadin.flow.server.connect.VaadinServiceNameChecker;
+import com.vaadin.flow.server.connect.auth.VaadinConnectAccessChecker;
 
 import static org.mockito.Mockito.mock;
 

@@ -1,4 +1,4 @@
-package com.vaadin.connect;
+package com.vaadin.flow.server.connect;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -31,10 +31,13 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import com.vaadin.connect.auth.VaadinConnectAccessChecker;
-import com.vaadin.connect.exception.VaadinConnectException;
-import com.vaadin.connect.exception.VaadinConnectValidationException;
 import com.vaadin.connect.testservice.BridgeMethodTestService;
+import com.vaadin.flow.server.connect.VaadinConnectController;
+import com.vaadin.flow.server.connect.VaadinService;
+import com.vaadin.flow.server.connect.VaadinServiceNameChecker;
+import com.vaadin.flow.server.connect.auth.VaadinConnectAccessChecker;
+import com.vaadin.flow.server.connect.exception.VaadinConnectException;
+import com.vaadin.flow.server.connect.exception.VaadinConnectValidationException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;

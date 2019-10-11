@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.connect.auth;
+package com.vaadin.flow.server.connect.auth;
 
 import javax.annotation.security.DenyAll;
 import javax.annotation.security.PermitAll;
