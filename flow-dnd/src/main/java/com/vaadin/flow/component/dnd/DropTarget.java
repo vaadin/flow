@@ -152,17 +152,7 @@ public interface DropTarget<T extends Component> extends HasElement {
         if (isActive() != active) {
             getElement().setProperty(DndUtil.DROP_TARGET_ACTIVE_PROPERTY,
                     active);
-            if (active) {
-                getElement().executeJs(
-                        "window.Vaadin.Flow"
-                                + ".dndConnector.activateDropTarget($0)",
-                        getElement());
-            } else {
-                getElement().executeJavaScript(
-                        "window.Vaadin.Flow"
-                                + ".dndConnector.deactivateDropTarget($0)",
-                        getElement());
-            }
+            DndUtil.updateDropTargetActivation(this);
         }
     }
 
