@@ -26,10 +26,9 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dnd.internal.DndUtil;
 import com.vaadin.flow.router.RouterLink;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
-public class DropTargetTest {
+public class DropTargetTest extends AbstractDnDUnitTest {
 
     @Tag("div")
     class TestComponent extends Component
@@ -37,11 +36,9 @@ public class DropTargetTest {
 
     }
 
-    private MockUI ui;
-
-    @Before
-    public void setup() {
-        ui = new MockUI();
+    @Override
+    protected void runStaticCreateMethodForExtension(Component component) {
+        DropTarget.create(component);
     }
 
     @Test
