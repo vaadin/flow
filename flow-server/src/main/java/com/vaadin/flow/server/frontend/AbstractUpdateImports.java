@@ -302,7 +302,7 @@ abstract class AbstractUpdateImports implements Runnable, Serializable {
         Set<String> npmNotFound = new HashSet<>();
         Set<String> visited = new HashSet<>();
         AbstractTheme theme = getTheme();
-        Collection<String> lines = new LinkedHashSet<>();
+        Collection<String> lines = new ArrayList<>();
 
         for (String originalModulePath : modules) {
             String translatedModulePath = originalModulePath;
@@ -508,7 +508,9 @@ abstract class AbstractUpdateImports implements Runnable, Serializable {
             }
             if (resolvedPath.contains(theme.getBaseUrl())) {
                 String translatedPath = theme.translateUrl(resolvedPath);
-                if (importedFileExists(translatedPath)) {
+                if (!visitedImports.contains(translatedPath)
+                        && importedFileExists(translatedPath)) {
+                    visitedImports.add(translatedPath);
                     imports.add(String.format(IMPORT_TEMPLATE,
                             normalizeImportPath(translatedPath)));
                 }
