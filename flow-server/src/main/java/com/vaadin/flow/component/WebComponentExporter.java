@@ -86,7 +86,7 @@ import elemental.json.JsonValue;
  * @since 2.0
  */
 public abstract class WebComponentExporter<C extends Component>
-        implements Serializable {
+        implements ExportsWebComponent<C> {
 
     private static final List<Class> SUPPORTED_TYPES = Collections
             .unmodifiableList(Arrays.asList(Boolean.class, String.class,
@@ -112,13 +112,22 @@ public abstract class WebComponentExporter<C extends Component>
      */
     @SuppressWarnings("unchecked")
     protected WebComponentExporter(String tag) {
+        this.tag = tag;
+        componentClass = (Class<C>) ReflectTools.getGenericInterfaceType(
+                this.getClass(), WebComponentExporter.class);
+        validateTagAndComponent();
+    }
+
+    protected WebComponentExporter(String tag, Class<C> componentClass) {
+        this.tag = tag;
+        this.componentClass = componentClass;
+        validateTagAndComponent();
+    }
+
+    private void validateTagAndComponent() {
         if (tag == null) {
             throw new NullTagException("Parameter 'tag' must not be null!");
         }
-        this.tag = tag;
-
-        componentClass = (Class<C>) ReflectTools.getGenericInterfaceType(
-                this.getClass(), WebComponentExporter.class);
 
         if (componentClass == null) {
             throw new IllegalStateException(String.format("Failed to "
@@ -272,7 +281,37 @@ public abstract class WebComponentExporter<C extends Component>
      *            instance of the exported web component
      */
     protected abstract void configureInstance(WebComponent<C> webComponent,
-            C component);
+                                              C component);
+
+    @Override
+    public Class<C> getComponentClass() {
+        return componentClass;
+    }
+
+    @Override
+    public Map<String, PropertyConfigurationImpl<C, ? extends Serializable>> getPropertyConfigurationMap() {
+        return propertyConfigurationMap;
+    }
+
+    @Override
+    public void preConfigure() {
+        isConfigureInstanceCall = true;
+    }
+
+    @Override
+    public void configure(WebComponent<C> webComponent, C component) {
+        configureInstance(webComponent,component);
+    }
+
+    @Override
+    public void postConfigure() {
+        isConfigureInstanceCall = false;
+    }
+
+    @Override
+    public String getTag() {
+        return tag;
+    }
 
     private static boolean isSupportedType(Class clazz) {
         return SUPPORTED_TYPES.contains(clazz);
@@ -280,14 +319,14 @@ public abstract class WebComponentExporter<C extends Component>
 
     private static final class WebComponentConfigurationImpl<C extends Component>
             implements WebComponentConfiguration<C> {
-        private WebComponentExporter<C> exporter;
+        private ExportsWebComponent<C> exporter;
         private final Map<String, PropertyConfigurationImpl<C, ? extends Serializable>> immutablePropertyMap;
 
         private WebComponentConfigurationImpl(
-                WebComponentExporter<C> exporter) {
+                ExportsWebComponent<C> exporter) {
             this.exporter = exporter;
             immutablePropertyMap = Collections
-                    .unmodifiableMap(exporter.propertyConfigurationMap);
+                    .unmodifiableMap(exporter.getPropertyConfigurationMap());
         }
 
         @Override
@@ -308,7 +347,7 @@ public abstract class WebComponentExporter<C extends Component>
 
         @Override
         public Class<C> getComponentClass() {
-            return this.exporter.componentClass;
+            return this.exporter.getComponentClass();
         }
 
         @Override
@@ -338,14 +377,14 @@ public abstract class WebComponentExporter<C extends Component>
              * collecting all the exporters).
              */
             String componentTag = componentReference.getElement().getTag();
-            if (this.exporter.tag.equals(componentTag)) {
+            if (this.exporter.getTag().equals(componentTag)) {
                 throw new IllegalStateException(String.format(
                         "WebComponentExporter '%s' cannot share a tag with the "
                                 + "%s instance being exported! Change the tag "
                                 + "from '%s' to something else.",
                         this.getClass().getCanonicalName(),
                         componentReference.getClass().getCanonicalName(),
-                        this.exporter.tag));
+                        this.exporter.getTag()));
             }
 
             WebComponentBinding<C> binding = new WebComponentBinding<>(
@@ -369,13 +408,13 @@ public abstract class WebComponentExporter<C extends Component>
                         newDefaultValues.get(key));
             });
 
-            exporter.isConfigureInstanceCall = true;
+            exporter.preConfigure();
             try {
-                this.exporter.configureInstance(
+                this.exporter.configure(
                         new WebComponent<>(binding, element),
                         binding.getComponent());
             } finally {
-                exporter.isConfigureInstanceCall = false;
+                exporter.postConfigure();
             }
 
             binding.updatePropertiesToComponent();
@@ -385,7 +424,7 @@ public abstract class WebComponentExporter<C extends Component>
 
         @Override
         public String getTag() {
-            return this.exporter.tag;
+            return this.exporter.getTag();
         }
 
         @Override
@@ -459,9 +498,9 @@ public abstract class WebComponentExporter<C extends Component>
          *             when {@code clazz} is {@code null}
          */
         public WebComponentConfiguration<? extends Component> create(
-                Class<? extends WebComponentExporter<? extends Component>> clazz) {
+                Class<? extends ExportsWebComponent<? extends Component>> clazz) {
             Objects.requireNonNull(clazz, "Parameter 'clazz' cannot be null!");
-            WebComponentExporter<? extends Component> exporter;
+            ExportsWebComponent<? extends Component> exporter;
             try {
                 exporter = ReflectTools.createInstance(clazz);
             } catch (IllegalArgumentException e) {
@@ -496,7 +535,7 @@ public abstract class WebComponentExporter<C extends Component>
          *             when {@code exporter} is {@code null}
          */
         public WebComponentConfiguration<? extends Component> create(
-                WebComponentExporter<? extends Component> exporter) {
+                ExportsWebComponent<? extends Component> exporter) {
             Objects.requireNonNull(exporter,
                     "Parameter 'exporter' cannot be " + "null!");
 

@@ -35,7 +35,7 @@ import java.util.stream.Stream;
 import org.apache.commons.io.FileUtils;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.ExportsWebComponent;
 import com.vaadin.flow.internal.ReflectTools;
 
 /**
@@ -58,7 +58,7 @@ public final class WebComponentModulesWriter implements Serializable {
      * file is {@code [web component's tag].js}.
      *
      * @param exporterClasses
-     *            set of {@link com.vaadin.flow.component.WebComponentExporter}
+     *            set of {@link ExportsWebComponent}
      *            classes
      * @param outputDirectory
      *            target directory for the generated web component module files
@@ -72,7 +72,7 @@ public final class WebComponentModulesWriter implements Serializable {
      *             if {@code outputDirectory} is not a directory
      */
     private static Set<File> writeWebComponentsToDirectory( // NOSONAR
-            Set<Class<? extends WebComponentExporter<? extends Component>>> exporterClasses,
+            Set<Class<? extends ExportsWebComponent<? extends Component>>> exporterClasses,
             File outputDirectory, boolean compatibilityMode) {
         // this method is used via reflection by DirectoryWriter
         Objects.requireNonNull(exporterClasses,
@@ -92,10 +92,10 @@ public final class WebComponentModulesWriter implements Serializable {
                 .collect(Collectors.toSet());
     }
 
-    private static Stream<Class<? extends WebComponentExporter<? extends Component>>> filterConcreteExporters(
-            Set<Class<? extends WebComponentExporter<? extends Component>>> exporterClasses) {
+    private static Stream<Class<? extends ExportsWebComponent<? extends Component>>> filterConcreteExporters(
+            Set<Class<? extends ExportsWebComponent<? extends Component>>> exporterClasses) {
         return exporterClasses.stream()
-                .filter(clazz -> WebComponentExporter.class
+                .filter(clazz -> ExportsWebComponent.class
                         .isAssignableFrom(clazz) && !clazz.isInterface()
                         && !Modifier.isAbstract(clazz.getModifiers()));
     }
@@ -111,7 +111,7 @@ public final class WebComponentModulesWriter implements Serializable {
      * @return the generated module content
      */
     private static File writeWebComponentToDirectory(
-            Class<? extends WebComponentExporter<? extends Component>> clazz,
+            Class<? extends ExportsWebComponent<? extends Component>> clazz,
             File outputDirectory, boolean compatibilityMode) {
         String tag = getTag(clazz);
 
@@ -132,14 +132,14 @@ public final class WebComponentModulesWriter implements Serializable {
     }
 
     private static String generateModule(
-            Class<? extends WebComponentExporter<? extends Component>> exporterClass,
+            Class<? extends ExportsWebComponent<? extends Component>> exporterClass,
             boolean compatibilityMode) {
         return WebComponentGenerator.generateModule(exporterClass, "../",
                 compatibilityMode);
     }
 
     private static String getTag(
-            Class<? extends WebComponentExporter<? extends Component>> exporterClass) {
+            Class<? extends ExportsWebComponent<? extends Component>> exporterClass) {
         WebComponentExporterTagExtractor exporterTagExtractor = new WebComponentExporterTagExtractor();
         return exporterTagExtractor.apply(exporterClass);
     }
@@ -164,7 +164,7 @@ public final class WebComponentModulesWriter implements Serializable {
          *            {@code WebComponentModulesWriter} class
          * @param exporterClasses
          *            set of
-         *            {@link com.vaadin.flow.component.WebComponentExporter}
+         *            {@link ExportsWebComponent}
          *            classes, loaded with the same class loader as
          *            {@code writer}
          * @param outputDirectory

@@ -55,7 +55,7 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.ExportsWebComponent;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
@@ -97,7 +97,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
  * @since 2.0
  */
 @HandlesTypes({ Route.class, UIInitListener.class,
-        VaadinServiceInitListener.class, WebComponentExporter.class,
+        VaadinServiceInitListener.class, ExportsWebComponent.class,
         NpmPackage.class, NpmPackage.Container.class, JsModule.class,
         JsModule.Container.class, CssImport.class, CssImport.Container.class,
         JavaScript.class, JavaScript.Container.class, Theme.class,

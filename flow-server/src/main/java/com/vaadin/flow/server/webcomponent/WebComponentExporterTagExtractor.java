@@ -17,6 +17,7 @@
 package com.vaadin.flow.server.webcomponent;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ExportsWebComponent;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.function.SerializableFunction;
 
@@ -28,11 +29,11 @@ import com.vaadin.flow.function.SerializableFunction;
  * @since 2.0
  */
 public final class WebComponentExporterTagExtractor
-        implements SerializableFunction<Class<? extends WebComponentExporter<? extends Component>>, String> {
+        implements SerializableFunction<Class<? extends ExportsWebComponent<? extends Component>>, String> {
 
     @Override
     public String apply(Class<?
-            extends WebComponentExporter<? extends Component>> exporterClass) {
+            extends ExportsWebComponent<? extends Component>> exporterClass) {
         return new WebComponentExporter.WebComponentConfigurationFactory()
                 .create(exporterClass)
                 .getTag();
