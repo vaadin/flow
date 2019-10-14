@@ -17,7 +17,7 @@
 package com.vaadin.flow.server.webcomponent;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ExportsWebComponent;
+import com.vaadin.flow.component.internal.ExportsWebComponent;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.function.SerializableFunction;
 

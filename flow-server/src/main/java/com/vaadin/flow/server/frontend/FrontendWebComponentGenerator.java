@@ -20,7 +20,7 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.Set;
 
-import com.vaadin.flow.component.ExportsWebComponent;
+import com.vaadin.flow.component.internal.ExportsWebComponent;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.webcomponent.WebComponentModulesWriter;
 

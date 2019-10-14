@@ -13,12 +13,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component;
+package com.vaadin.flow.component.internal;
 
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Map;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.server.webcomponent.PropertyConfigurationImpl;
 
@@ -48,14 +49,6 @@ public interface ExportsWebComponent<C extends Component> extends Serializable {
      * @return the tag
      */
     String getTag();
-
-    /**
-     * The property configuration map for this exporter.
-     * @return a property configuration map
-     */
-    default Map<String, PropertyConfigurationImpl<C, ? extends Serializable>> getPropertyConfigurationMap() {
-        return Collections.emptyMap();
-    }
 
     /**
      * If custom initialization for the created {@link Component} instance is

@@ -35,7 +35,7 @@ import java.util.stream.Stream;
 import org.apache.commons.io.FileUtils;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ExportsWebComponent;
+import com.vaadin.flow.component.internal.ExportsWebComponent;
 import com.vaadin.flow.internal.ReflectTools;
 
 /**

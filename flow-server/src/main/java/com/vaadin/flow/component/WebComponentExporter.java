@@ -28,6 +28,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.component.internal.ExportsWebComponent;
 import com.vaadin.flow.component.webcomponent.PropertyConfiguration;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
@@ -288,10 +289,6 @@ public abstract class WebComponentExporter<C extends Component>
         return componentClass;
     }
 
-    @Override
-    public Map<String, PropertyConfigurationImpl<C, ? extends Serializable>> getPropertyConfigurationMap() {
-        return propertyConfigurationMap;
-    }
 
     @Override
     public void preConfigure() {
@@ -325,8 +322,14 @@ public abstract class WebComponentExporter<C extends Component>
         private WebComponentConfigurationImpl(
                 ExportsWebComponent<C> exporter) {
             this.exporter = exporter;
-            immutablePropertyMap = Collections
-                    .unmodifiableMap(exporter.getPropertyConfigurationMap());
+            if (exporter instanceof WebComponentExporter) {
+                WebComponentExporter wcExporter =
+                        (WebComponentExporter)exporter;
+                immutablePropertyMap = Collections
+                        .unmodifiableMap(wcExporter.propertyConfigurationMap);
+            } else {
+                immutablePropertyMap = Collections.emptyMap();
+            }
         }
 
         @Override
