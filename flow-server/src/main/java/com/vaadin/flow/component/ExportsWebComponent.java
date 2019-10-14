@@ -26,6 +26,12 @@ import com.vaadin.flow.server.webcomponent.PropertyConfigurationImpl;
  * Exports a {@link Component} as a web component embeddable in any web page.
  * To export your own web component, do not use this interface directly,
  * instead subclass {@link com.vaadin.flow.component.WebComponentExporter}.
+ *
+ * @param <C>
+ *            type of the component to export
+ *
+ * @author Vaadin Ltd.
+ * @since 2.1
  */
 public interface ExportsWebComponent<C extends Component> extends Serializable {
 
