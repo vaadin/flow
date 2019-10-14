@@ -524,6 +524,23 @@ public abstract class WebComponentExporter<C extends Component>
 
             return new WebComponentConfigurationImpl<>(exporter);
         }
+
+        /**
+         * Use {@link #create(ExportsWebComponent<? extends Component>)}
+         * instead.
+         *
+         * @param exporter
+         *            exporter instance, not {@code null}
+         * @return a web component configuration matching the instance of
+         *         received {@code exporter}
+         * @throws NullPointerException
+         *             when {@code exporter} is {@code null}
+         */
+        @Deprecated
+        public WebComponentConfiguration<? extends Component> create(
+                WebComponentExporter<? extends Component> exporter) {
+            return create((ExportsWebComponent<? extends Component>) exporter);
+        }
     }
 
     private static class NullTagException extends NullPointerException {
