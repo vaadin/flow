@@ -54,6 +54,7 @@ import static com.vaadin.flow.server.DevModeHandler.WEBPACK_SERVER;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.WEBPACK_TEST_OUT_FILE;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubWebpackServer;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
+import static java.net.HttpURLConnection.HTTP_NOT_MODIFIED;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static java.net.HttpURLConnection.HTTP_UNAUTHORIZED;
 import static org.junit.Assert.assertEquals;
@@ -71,6 +72,7 @@ public class DevModeHandlerTest {
 
     private HttpServer httpServer;
     private int responseStatus;
+    private int responseError;
     private File npmFolder;
 
     @Rule
@@ -277,7 +279,7 @@ public class DevModeHandlerTest {
 
         assertTrue(DevModeHandler.start(port, configuration, npmFolder)
                 .serveDevModeRequest(request, response));
-        assertEquals(HTTP_UNAUTHORIZED, responseStatus);
+        assertEquals(HTTP_UNAUTHORIZED, responseError);
     }
 
     @Test(expected = ConnectException.class)
@@ -299,6 +301,17 @@ public class DevModeHandlerTest {
 
         prepareServlet(port).service(request, response);
         assertEquals(HTTP_OK, responseStatus);
+    }
+
+    @Test
+    public void servlet_getValidRedirectResponse_When_WebpackListening()
+            throws Exception {
+        HttpServletRequest request = prepareRequest("/foo.js");
+        HttpServletResponse response = prepareResponse();
+        int port = prepareHttpServer(0, HTTP_NOT_MODIFIED, "");
+
+        prepareServlet(port).service(request, response);
+        assertEquals(HTTP_NOT_MODIFIED, responseStatus);
     }
 
     @Test
@@ -383,6 +396,8 @@ public class DevModeHandlerTest {
         ServletOutputStream output = mock(ServletOutputStream.class);
         Mockito.doAnswer(invocation -> output).when(response).getOutputStream();
         Mockito.doAnswer(invocation -> responseStatus = (int) invocation
+                .getArguments()[0]).when(response).setStatus(Mockito.anyInt());
+        Mockito.doAnswer(invocation -> responseError = (int) invocation
                 .getArguments()[0]).when(response).sendError(Mockito.anyInt());
         return response;
     }
