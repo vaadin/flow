@@ -19,6 +19,7 @@ import java.io.Serializable;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.webcomponent.WebComponent;
+import com.vaadin.flow.internal.ReflectTools;
 
 /**
  * Exports a {@link Component} as a web component embeddable in any web page.
@@ -34,18 +35,22 @@ import com.vaadin.flow.component.webcomponent.WebComponent;
 public interface ExportsWebComponent<C extends Component> extends Serializable {
 
     /**
-     * The concrete component class object.
-     *
-     * @return component class
-     */
-    Class<C> getComponentClass();
-
-    /**
      * The tag associated with the exported component.
      *
      * @return the tag
      */
     String getTag();
+
+    /**
+     * The concrete component class object. By default creates an instance of
+     * the actual type parameter.
+     *
+     * @return component class
+     */
+    default Class<C> getComponentClass() {
+        return (Class<C>) ReflectTools.getGenericInterfaceType(
+                this.getClass(), ExportsWebComponent.class);
+    }
 
     /**
      * If custom initialization for the created {@link Component} instance is

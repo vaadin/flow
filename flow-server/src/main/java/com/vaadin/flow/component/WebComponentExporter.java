@@ -94,7 +94,6 @@ public abstract class WebComponentExporter<C extends Component>
                     Integer.class, Double.class, JsonValue.class));
 
     private final String tag;
-    private final Class<C> componentClass;
     private HashMap<String, PropertyConfigurationImpl<C, ? extends Serializable>> propertyConfigurationMap = new HashMap<>();
 
     private boolean isConfigureInstanceCall;
@@ -113,27 +112,14 @@ public abstract class WebComponentExporter<C extends Component>
      */
     @SuppressWarnings("unchecked")
     protected WebComponentExporter(String tag) {
-        this.tag = tag;
-        componentClass = (Class<C>) ReflectTools.getGenericInterfaceType(
-                this.getClass(), WebComponentExporter.class);
-        validateTagAndComponent();
-    }
-
-    protected WebComponentExporter(String tag, Class<C> componentClass) {
-        this.tag = tag;
-        this.componentClass = componentClass;
-        validateTagAndComponent();
-    }
-
-    private void validateTagAndComponent() {
         if (tag == null) {
             throw new NullTagException("Parameter 'tag' must not be null!");
         }
-
-        if (componentClass == null) {
+        this.tag = tag;
+        if (getComponentClass() == null) {
             throw new IllegalStateException(String.format("Failed to "
-                    + "determine component type for '%s'. Please "
-                    + "provide a valid type for %s as a type parameter.",
+                            + "determine component type for '%s'. Please "
+                            + "provide a valid type for %s as a type parameter.",
                     getClass().getName(),
                     WebComponentExporter.class.getSimpleName()));
         }
@@ -162,7 +148,7 @@ public abstract class WebComponentExporter<C extends Component>
         }
 
         PropertyConfigurationImpl<C, P> propertyConfigurationImpl = new PropertyConfigurationImpl<>(
-                componentClass, name, type, defaultValue);
+                getComponentClass(), name, type, defaultValue);
 
         propertyConfigurationMap.put(name, propertyConfigurationImpl);
 
@@ -283,12 +269,6 @@ public abstract class WebComponentExporter<C extends Component>
      */
     protected abstract void configureInstance(WebComponent<C> webComponent,
                                               C component);
-
-    @Override
-    public Class<C> getComponentClass() {
-        return componentClass;
-    }
-
 
     @Override
     public final void preConfigure() {
