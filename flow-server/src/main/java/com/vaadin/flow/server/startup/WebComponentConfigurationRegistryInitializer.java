@@ -16,6 +16,7 @@
 package com.vaadin.flow.server.startup;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.internal.ExportsWebComponent;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.internal.CustomElementNameValidator;
@@ -44,7 +45,7 @@ import java.util.stream.Collectors;
  * @author Vaadin Ltd.
  * @since 2.0
  */
-@HandlesTypes({WebComponentExporter.class})
+@HandlesTypes({ExportsWebComponent.class})
 public class WebComponentConfigurationRegistryInitializer
         implements ServletContainerInitializer {
 
@@ -61,8 +62,8 @@ public class WebComponentConfigurationRegistryInitializer
         }
 
         try {
-            Set<Class<? extends WebComponentExporter<? extends Component>>> exporterClasses = set
-                    .stream().filter(WebComponentExporter.class::isAssignableFrom)
+            Set<Class<? extends ExportsWebComponent<? extends Component>>> exporterClasses = set
+                    .stream().filter(ExportsWebComponent.class::isAssignableFrom)
                     .filter(clazz -> !clazz.isInterface()
                             && !Modifier.isAbstract(clazz.getModifiers()))
                     .map(aClass -> (Class<? extends WebComponentExporter<? extends Component>>) aClass)
@@ -85,7 +86,7 @@ public class WebComponentConfigurationRegistryInitializer
     }
 
     private static Set<WebComponentConfiguration<? extends Component>> constructConfigurations(
-            Set<Class<? extends WebComponentExporter<? extends Component>>> exporterClasses) {
+            Set<Class<? extends ExportsWebComponent<? extends Component>>> exporterClasses) {
         Objects.requireNonNull(exporterClasses, "Parameter 'exporterClasses' " +
                 "cannot be null!");
 

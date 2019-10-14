@@ -25,7 +25,7 @@ import java.util.stream.Stream;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.internal.ExportsWebComponent;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
@@ -50,7 +50,7 @@ public class DevModeClassFinderTest {
         Assert.assertTrue(classes.contains(Route.class));
         Assert.assertTrue(classes.contains(UIInitListener.class));
         Assert.assertTrue(classes.contains(VaadinServiceInitListener.class));
-        Assert.assertTrue(classes.contains(WebComponentExporter.class));
+        Assert.assertTrue(classes.contains(ExportsWebComponent.class));
         Assert.assertTrue(classes.contains(NpmPackage.class));
         Assert.assertTrue(classes.contains(NpmPackage.Container.class));
         Assert.assertTrue(classes.contains(JsModule.class));
