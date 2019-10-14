@@ -16,12 +16,9 @@
 package com.vaadin.flow.component.internal;
 
 import java.io.Serializable;
-import java.util.Collections;
-import java.util.Map;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.webcomponent.WebComponent;
-import com.vaadin.flow.server.webcomponent.PropertyConfigurationImpl;
 
 /**
  * Exports a {@link Component} as a web component embeddable in any web page.
