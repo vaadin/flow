@@ -291,22 +291,22 @@ public abstract class WebComponentExporter<C extends Component>
 
 
     @Override
-    public void preConfigure() {
+    public final void preConfigure() {
         isConfigureInstanceCall = true;
     }
 
     @Override
-    public void configure(WebComponent<C> webComponent, C component) {
+    public final void configure(WebComponent<C> webComponent, C component) {
         configureInstance(webComponent,component);
     }
 
     @Override
-    public void postConfigure() {
+    public final void postConfigure() {
         isConfigureInstanceCall = false;
     }
 
     @Override
-    public String getTag() {
+    public final String getTag() {
         return tag;
     }
 
