@@ -526,8 +526,7 @@ public abstract class WebComponentExporter<C extends Component>
         }
 
         /**
-         * Use {@link #create(ExportsWebComponent<? extends Component>)}
-         * instead.
+         * Use {@link #create(ExportsWebComponent)} instead.
          *
          * @param exporter
          *            exporter instance, not {@code null}
