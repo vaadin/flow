@@ -86,13 +86,13 @@ public class NodeTasks implements FallibleCommand {
 
         private File tokenFile;
 
-        private URL[] classLoaderURLs;
+        private URL[] connectClassLoaderURLs;
 
-        private List<Path> sourcePaths;
+        private List<Path> connectSourcePaths;
 
-        private File generatedOpenAPIFile;
+        private File connectGeneratedOpenAPIFile;
 
-        private File applicationProperties;
+        private File connectApplicationProperties;
 
         /**
          * Directory for for npm and folders and files.
@@ -328,7 +328,7 @@ public class NodeTasks implements FallibleCommand {
          * @return the builder, for chaining
          */
         public Builder setConnectSourcePaths(List<Path> sourcePaths) {
-            this.sourcePaths = sourcePaths;
+            this.connectSourcePaths = sourcePaths;
             return this;
         }
 
@@ -342,7 +342,7 @@ public class NodeTasks implements FallibleCommand {
          * @return the builder, for chaining
          */
         public Builder setConnectClassLoaderURLs(URL[] classLoaderURLs) {
-            this.classLoaderURLs = classLoaderURLs;
+            this.connectClassLoaderURLs = classLoaderURLs;
             return this;
         }
 
@@ -355,7 +355,7 @@ public class NodeTasks implements FallibleCommand {
          */
         public Builder setConnectApplicationProperties(
                 File applicationProperties) {
-            this.applicationProperties = applicationProperties;
+            this.connectApplicationProperties = applicationProperties;
             return this;
         }
 
@@ -368,7 +368,7 @@ public class NodeTasks implements FallibleCommand {
          */
         public Builder setConnectGeneratedOpenAPIJson(
                 File generatedOpenAPIFile) {
-            this.generatedOpenAPIFile = generatedOpenAPIFile;
+            this.connectGeneratedOpenAPIFile = generatedOpenAPIFile;
             return this;
         }
 
@@ -497,11 +497,12 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateTsConfig taskGenerateTsConfig = new TaskGenerateTsConfig(
                     builder.frontendDirectory, builder.npmFolder);
             commands.add(taskGenerateTsConfig);
-            if (builder.sourcePaths != null) {
+            if (builder.connectSourcePaths != null) {
                 TaskGenerateOpenAPI taskGenerateOpenAPI = new TaskGenerateOpenAPI(
-                        builder.applicationProperties, builder.sourcePaths,
-                        builder.classLoaderURLs,
-                        builder.generatedOpenAPIFile.toPath());
+                        builder.connectApplicationProperties,
+                        builder.connectSourcePaths,
+                        builder.connectClassLoaderURLs,
+                        builder.connectGeneratedOpenAPIFile.toPath());
                 commands.add(taskGenerateOpenAPI);
             }
         }
