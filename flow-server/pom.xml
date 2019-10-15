@@ -103,7 +103,6 @@
         <dependency>
             <groupId>net.bytebuddy</groupId>
             <artifactId>byte-buddy</artifactId>
-            <version>1.10.1</version>
         </dependency>
 
         <!-- Small reflection library -->
