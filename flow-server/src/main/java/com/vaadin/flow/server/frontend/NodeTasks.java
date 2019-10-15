@@ -18,8 +18,11 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.Serializable;
+import java.net.URL;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -82,6 +85,14 @@ public class NodeTasks implements FallibleCommand {
         private JsonObject tokenFileData;
 
         private File tokenFile;
+
+        private URL[] classLoaderURLs;
+
+        private List<Path> sourcePaths;
+
+        private File generatedOpenAPIFile;
+
+        private File applicationProperties;
 
         /**
          * Directory for for npm and folders and files.
@@ -309,6 +320,59 @@ public class NodeTasks implements FallibleCommand {
         }
 
         /**
+         * Set source paths that OpenAPI generator searches for connect
+         * services.
+         * 
+         * @param sourcePaths
+         *            list of source paths
+         * @return the builder, for chaining
+         */
+        public Builder setConnectSourcePaths(List<Path> sourcePaths) {
+            this.sourcePaths = sourcePaths;
+            return this;
+        }
+
+        /**
+         * Set ClassLoader which is able to resolve types in the source paths.
+         * If this is null, the generator will use the current ClassLoader for
+         * resolving types when parsing the source.
+         * 
+         * @param classLoaderURLs
+         *            the class loader URLs
+         * @return the builder, for chaining
+         */
+        public Builder setConnectClassLoaderURLs(URL[] classLoaderURLs) {
+            this.classLoaderURLs = classLoaderURLs;
+            return this;
+        }
+
+        /**
+         * Set application properties file for Spring project.
+         * 
+         * @param applicationProperties
+         *            application properties file.
+         * @return this builder, for chaining
+         */
+        public Builder setConnectApplicationProperties(
+                File applicationProperties) {
+            this.applicationProperties = applicationProperties;
+            return this;
+        }
+
+        /**
+         * Set output location for the generated OpenAPI file.
+         * 
+         * @param generatedOpenAPIFile
+         *            the generated output file.
+         * @return the builder, for chaining
+         */
+        public Builder setConnectGeneratedOpenAPIJson(
+                File generatedOpenAPIFile) {
+            this.generatedOpenAPIFile = generatedOpenAPIFile;
+            return this;
+        }
+
+        /**
          * Sets frontend scanner strategy: byte code scanning strategy is used
          * if {@code byteCodeScanner} is {@code true}, full classpath scanner
          * strategy is used otherwise (by default).
@@ -433,6 +497,13 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateTsConfig taskGenerateTsConfig = new TaskGenerateTsConfig(
                     builder.frontendDirectory, builder.npmFolder);
             commands.add(taskGenerateTsConfig);
+            if (builder.sourcePaths != null) {
+                TaskGenerateOpenAPI taskGenerateOpenAPI = new TaskGenerateOpenAPI(
+                        builder.applicationProperties, builder.sourcePaths,
+                        builder.classLoaderURLs,
+                        builder.generatedOpenAPIFile.toPath());
+                commands.add(taskGenerateOpenAPI);
+            }
         }
     }
 
