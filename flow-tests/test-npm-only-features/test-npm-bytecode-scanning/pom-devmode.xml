@@ -27,7 +27,7 @@
 
     <artifactId>flow-test-npm-bytecode-scanning-devmode</artifactId>
 
-    <name>Flow test of full class scanning in dev mode</name>
+    <name>Flow test of bytecode scanner in dev mode</name>
     <packaging>war</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>

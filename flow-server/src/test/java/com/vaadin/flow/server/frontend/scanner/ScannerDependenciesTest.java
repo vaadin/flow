@@ -6,8 +6,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.junit.Test;
-
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
@@ -26,8 +24,10 @@ import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.SecondView;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.Theme1;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.ThirdView;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.UnAnnotatedClass;
+import com.vaadin.flow.server.frontend.scanner.samples.RouteInterfaceComponent;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.theme.NoTheme;
+import org.junit.Test;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -40,6 +40,26 @@ public class ScannerDependenciesTest {
                 new DefaultClassFinder(new HashSet<>(
                         new ArrayList<>(Arrays.asList(classes)))));
         return frontendDependencies;
+    }
+
+    @Test
+    public void should_visitInterface() throws Exception {
+        FrontendDependencies deps = getFrontendDependencies(RouteInterfaceComponent.class);
+
+        Set<String> classes = deps.getClasses();
+
+        assertTrue(
+                "Class com.vaadin.flow.server.frontend.scanner.samples.RouteInterfaceComponent not visited",
+                classes.contains(
+                        "com.vaadin.flow.server.frontend.scanner.samples.RouteInterfaceComponent"));
+
+        assertTrue(
+                "Class com.vaadin.flow.server.frontend.scanner.samples.RouteInterface not visited",
+                classes.contains(
+                        "com.vaadin.flow.server.frontend.scanner.samples.RouteInterface"));
+        
+        assertTrue("Missing dependency from implemented interface",
+                deps.getModules().contains("myModule.js"));
     }
 
     @Test

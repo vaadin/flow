@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2019 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -12,23 +12,19 @@
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
+ *
  */
-package com.vaadin.flow.testnpmonlyfeatures.bytecodescanning;
+package com.vaadin.flow.server.frontend.scanner.samples;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.router.Route;
 
-@Route("com.vaadin.flow.testnpmonlyfeatures.bytecodescanning.ByteCodeScanningView")
-public class ByteCodeScanningView extends Div {
+public interface RouteInterface {
 
-    public static final String COMPONENT_ID = "myButton";
-
-    public ByteCodeScanningView() throws Exception {
-        Class<?> clazz = Class.forName(
-                "com.vaadin.flow.testnpmonlyfeatures.bytecodescanning.MyButton");
-        Component button = (Component) clazz.newInstance();
-        button.setId(COMPONENT_ID);
-        add(button);
+    default void doSomething() {
+        JsModuleComponent component = new JsModuleComponent();
+        component.show();
     }
 }
