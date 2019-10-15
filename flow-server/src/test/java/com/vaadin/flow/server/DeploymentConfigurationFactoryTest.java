@@ -260,6 +260,10 @@ public class DeploymentConfigurationFactoryTest {
         exception.expect(IllegalStateException.class);
         exception.expectMessage(
                 "The compatibility mode is explicitly set to 'false'");
+
+        URLClassLoader classLoader = new URLClassLoader(new URL[] {});
+        expect(contextMock.getClassLoader()).andReturn(classLoader);
+
         DeploymentConfigurationFactory.createDeploymentConfiguration(
                 VaadinServlet.class,
                 createServletConfigMock(Collections.singletonMap(
@@ -285,11 +289,14 @@ public class DeploymentConfigurationFactoryTest {
     }
 
     @Test
-    public void shouldTrhowIfCompatibilityModeIsFalse_noTokenFile_incorrectWebPackConfigExists()
+    public void shouldThrowIfCompatibilityModeIsFalse_noTokenFile_incorrectWebPackConfigExists()
             throws Exception {
         exception.expect(IllegalStateException.class);
         exception.expectMessage(
                 "The compatibility mode is explicitly set to 'false'");
+
+        URLClassLoader classLoader = new URLClassLoader(new URL[] {});
+        expect(contextMock.getClassLoader()).andReturn(classLoader);
 
         Map<String, String> map = new HashMap<>();
         map.put(FrontendUtils.PROJECT_BASEDIR,

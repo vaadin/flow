@@ -27,17 +27,22 @@ import com.vaadin.flow.router.RouterLink;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class DragSourceTest {
+public class DragSourceTest extends AbstractDnDUnitTest {
 
     @Tag("div")
     class TestComponent extends Component implements DragSource<TestComponent> {
 
     }
 
+    @Override
+    protected void runStaticCreateMethodForExtension(Component component) {
+        DragSource.create(component);
+    }
+
     @Test
     public void testDragSource_mixinInterface() {
         TestComponent component = new TestComponent();
-        new MockUI().add(component);
+        ui.add(component);
         component.setDraggable(true);
 
         Assert.assertEquals("component element not set draggable", "true",
@@ -72,7 +77,7 @@ public class DragSourceTest {
     @Test
     public void testDragSource_dragStartEvent_canSetDragData() {
         TestComponent component = new TestComponent();
-        new MockUI().add(component);
+        ui.add(component);
         component.setDraggable(true);
 
         final String dragData = "FOOBAR";
@@ -134,7 +139,7 @@ public class DragSourceTest {
     @Test
     public void testDragSource_serverSideEvents_correctData() {
         RouterLink component = new RouterLink();
-        new MockUI().add(component);
+        ui.add(component);
         DragSource<RouterLink> dragSource = DragSource.create(component);
 
         AtomicReference<DragStartEvent<RouterLink>> startEventCapture = new AtomicReference<>();
@@ -186,23 +191,23 @@ public class DragSourceTest {
     @Test
     public void testDragSource_notAttachedToUIAndCatchesDragEndEvent_doesNotThrow() {
         RouterLink component = new RouterLink();
-        MockUI mockUI = new MockUI();
-        mockUI.add(component);
+        ui.add(component);
         DragSource<RouterLink> dragSource = DragSource.create(component);
 
         DragStartEvent<RouterLink> startEvent = new DragStartEvent<RouterLink>(
                 component, true);
         ComponentUtil.fireEvent(component, startEvent);
-        Assert.assertEquals(component, mockUI.getActiveDragSourceComponent());
+        Assert.assertEquals(component, ui.getActiveDragSourceComponent());
 
         // the drop event could remove the component if in same UI
-        mockUI.remove(component);
+        ui.remove(component);
 
         DragEndEvent<RouterLink> endEvent = new DragEndEvent<>(component, true,
                 "move");
         // should not throw for removing the active drag source
         ComponentUtil.fireEvent(component, endEvent);
 
-        Assert.assertNull(mockUI.getActiveDragSourceComponent());
+        Assert.assertNull(ui.getActiveDragSourceComponent());
     }
+
 }
