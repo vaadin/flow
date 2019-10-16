@@ -30,10 +30,10 @@ public class InterfaceBasedIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void indexPageGetsWebComponent_attributeIsReflectedToServer() {
+    public void webComponentExportedByExportsWebComponentInterfaceShouldBeDisplayedAndUpgraded() {
         open();
 
-        waitForElementVisible(By.id("paragraph"));
+        waitForElementVisible(By.id("interface"));
         WebElement webComponent = findElement(By.id("interface"));
         WebElement paragraph = webComponent.findElement(By.id("paragraph"));
 
