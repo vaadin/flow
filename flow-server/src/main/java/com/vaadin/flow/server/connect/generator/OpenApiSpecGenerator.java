@@ -16,12 +16,15 @@
 
 package com.vaadin.flow.server.connect.generator;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Collection;
 
 import io.swagger.v3.core.util.Json;
 import io.swagger.v3.oas.models.OpenAPI;
 import org.apache.commons.configuration2.PropertiesConfiguration;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,9 +79,16 @@ public class OpenApiSpecGenerator {
         sourcesPaths.forEach(generator::addSourcePath);
         log.info("Parsing java files from {}", sourcesPaths);
         OpenAPI openAPI = generator.generateOpenApi();
-
-        log.info("Writing output to {}", specOutputFile);
-        GeneratorUtils.writeToFile(specOutputFile, Json.pretty(openAPI));
+        try {
+            log.info("Writing output to {}", specOutputFile);
+            FileUtils.writeStringToFile(specOutputFile.toFile(),
+                    Json.pretty(openAPI), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            String errorMessage = String.format(
+                    "Error while writing OpenAPI json file at %s",
+                    specOutputFile.toString());
+            log.error(errorMessage, specOutputFile, e);
+        }
     }
 
     /**
