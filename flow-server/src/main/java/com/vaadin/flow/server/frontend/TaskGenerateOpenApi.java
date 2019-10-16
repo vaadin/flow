@@ -79,7 +79,8 @@ public class TaskGenerateOpenApi extends AbstractTaskConnectGenerator {
                     + "ClassLoader", output);
         } else {
             // when triggered by the maven plugin, we need to create an URL
-            // class loader from the project compiled class and its dependencies
+            // class loader from the compiled class of the project and its
+            // dependencies
             try (URLClassLoader classLoader = new URLClassLoader(
                     classLoaderURLs)) {
                 openApiSpecGenerator.generateOpenApiSpec(sourcePaths,

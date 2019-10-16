@@ -26,9 +26,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.vaadin.flow.server.connect.generator.GeneratorUtils.DEFAULT_ENDPOINT;
-import static com.vaadin.flow.server.connect.generator.GeneratorUtils.ENDPOINT;
-
 /**
  * A generator class that creates the OpenAPI specification file from the
  * sources provided.
@@ -37,14 +34,17 @@ import static com.vaadin.flow.server.connect.generator.GeneratorUtils.ENDPOINT;
  *      specification</a>
  */
 public class OpenApiSpecGenerator {
-    private static final String APPLICATION_TITLE = "vaadin.connect.application.title";
-    private static final String APPLICATION_API_VERSION = "vaadin.connect.api.version";
-    private static final String SERVER = "vaadin.connect.server";
-    private static final String SERVER_DESCRIPTION = "vaadin.connect.server.description";
-    private static final String DEFAULT_SERVER = "http://localhost:8080";
-    private static final String DEFAULT_SERVER_DESCRIPTION = "Vaadin Connect backend";
-    private static final String DEFAULT_APPLICATION_TITLE = "Vaadin Connect Application";
-    private static final String DEFAULT_APPLICATION_API_VERSION = "0.0.1";
+    public static final String APPLICATION_TITLE = "vaadin.connect" +
+            ".application.title";
+    public static final String APPLICATION_API_VERSION = "vaadin.connect.api.version";
+    public static final String SERVER = "vaadin.connect.server";
+    public static final String SERVER_DESCRIPTION = "vaadin.connect.server.description";
+    public static final String ENDPOINT = "vaadin.connect.endpoint";
+    public static final String DEFAULT_SERVER = "http://localhost:8080";
+    public static final String DEFAULT_SERVER_DESCRIPTION = "Vaadin Connect backend";
+    public static final String DEFAULT_APPLICATION_TITLE = "Vaadin Connect Application";
+    public static final String DEFAULT_APPLICATION_API_VERSION = "0.0.1";
+    public static final String DEFAULT_ENDPOINT = "/connect";
 
     private static final Logger log = LoggerFactory
             .getLogger(OpenApiSpecGenerator.class);

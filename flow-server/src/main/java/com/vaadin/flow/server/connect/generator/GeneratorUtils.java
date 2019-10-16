@@ -26,8 +26,6 @@ import java.nio.file.Path;
  * A set of utils for generator functionality.
  */
 final class GeneratorUtils {
-    static final String ENDPOINT = "vaadin.connect.endpoint";
-    static final String DEFAULT_ENDPOINT = "/connect";
 
     private GeneratorUtils() {
     }
