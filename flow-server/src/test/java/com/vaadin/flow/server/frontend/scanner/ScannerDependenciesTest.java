@@ -43,23 +43,16 @@ public class ScannerDependenciesTest {
     }
 
     @Test
-    public void should_visitInterface() throws Exception {
+    public void visitRouteEntryPoint_ExpectToAlsoVisitImplementedInterface() throws Exception {
         FrontendDependencies deps = getFrontendDependencies(RouteInterfaceComponent.class);
 
-        Set<String> classes = deps.getClasses();
-
-        assertTrue(
-                "Class com.vaadin.flow.server.frontend.scanner.samples.RouteInterfaceComponent not visited",
-                classes.contains(
-                        "com.vaadin.flow.server.frontend.scanner.samples.RouteInterfaceComponent"));
-
-        assertTrue(
-                "Class com.vaadin.flow.server.frontend.scanner.samples.RouteInterface not visited",
-                classes.contains(
-                        "com.vaadin.flow.server.frontend.scanner.samples.RouteInterface"));
-        
         assertTrue("Missing dependency from implemented interface",
                 deps.getModules().contains("myModule.js"));
+
+        assertEquals("There should be 1 css import", 1, deps.getCss().size());
+        
+        assertEquals("Invalid css import", "frontend://styles/interface.css",
+                deps.getCss().iterator().next().value);
     }
 
     @Test

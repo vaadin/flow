@@ -16,11 +16,9 @@
  */
 package com.vaadin.flow.server.frontend.scanner.samples;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.dependency.JavaScript;
-import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.router.Route;
+import com.vaadin.flow.component.dependency.CssImport;
 
+@CssImport("frontend://styles/interface.css")
 public interface RouteInterface {
 
     default void doSomething() {
