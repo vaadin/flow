@@ -19,9 +19,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
-import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
@@ -44,20 +42,16 @@ public class VaadinViewIT extends ChromeBrowserTest {
 
         // Open browser
         open();
-        
-        // Wait for the test WC tag in the page
-        String tagName = "test-component";
-        waitUntilWithMessage(
-                ExpectedConditions
-                        .presenceOfElementLocated(By.tagName(tagName)),
-                "Failed to load " + tagName, 25);
 
-        // Wait for the test WC to be initialised as a  Polymer element
+        String tagName = "test-component";
+
+        waitForElementPresent(By.tagName(tagName));
+
         testComponent = $(tagName).first();
-        waitUntillWithMessage(
+        waitUntil(
                 drv -> getCommandExecutor().executeScript(
                         "return arguments[0].$ !== undefined", testComponent),
-                "Failed to load $ for " + tagName);
+                25);
     }
 
     /**
@@ -73,30 +67,16 @@ public class VaadinViewIT extends ChromeBrowserTest {
 
     /**
      * Just a control test that assures that webcomponents is working.
-     * @throws Exception 
+     * @throws Exception
      */
     @Test
     public void should_request_connect_service() throws Exception {
         WebElement button = testComponent.$(TestBenchElement.class).id("connect");
         button.click();
+
         WebElement content = testComponent.$(TestBenchElement.class).id("content");
-
         // Wait for the server connect response
-        waitUntillWithMessage(ExpectedConditions.textToBePresentInElement(content, "Hello, Friend!"),
-                "Hello, Friend! not found");
-    }
-
-    private void waitUntillWithMessage(ExpectedCondition<?> condition,
-            String message) {
-        waitUntilWithMessage(condition, message, 10);
-    }
-
-    private void waitUntilWithMessage(ExpectedCondition<?> condition,
-            String message, long time) {
-        try {
-            waitUntil(condition, time);
-        } catch (TimeoutException te) {
-            Assert.fail(message);
-        }
+        waitUntil(ExpectedConditions.textToBePresentInElement(content,
+                "Hello, Friend!"), 25);
     }
 }

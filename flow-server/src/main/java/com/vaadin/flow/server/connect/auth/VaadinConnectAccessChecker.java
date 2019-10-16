@@ -76,6 +76,7 @@ public class VaadinConnectAccessChecker {
    *         occur, {@code null} otherwise
    */
   public String check(Method method) {
+      // NOP, will be implemented soon
       return null;
   }
 
