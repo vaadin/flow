@@ -164,7 +164,7 @@ public abstract class AbstractServiceGenerationTest {
         }
 
         // TODO: call verifyTsModule and verifyModelTsModule when moving the
-        // generator to flow
+        // ConnectTSModule generator to flow: https://github.com/vaadin/flow/issues/6643
     }
 
     private void verifyOpenApiObject() {
