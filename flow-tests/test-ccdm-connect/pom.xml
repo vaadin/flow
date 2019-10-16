@@ -18,6 +18,7 @@
         <spring.version>2.1.6.RELEASE</spring.version>
         <vaadin.spring.version>15.0-SNAPSHOT</vaadin.spring.version>
         <server.port>8888</server.port>
+        <vaadin.clientSideMode>true</vaadin.clientSideMode>
     </properties>
 
     <dependencyManagement>
@@ -65,6 +66,7 @@
                 <version>${project.version}</version>
                 <executions>
                     <execution>
+                        <phase>compile</phase>
                         <goals>
                             <goal>prepare-frontend</goal>
                             <goal>build-frontend</goal>

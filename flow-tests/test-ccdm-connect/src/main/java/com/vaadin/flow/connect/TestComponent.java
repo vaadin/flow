@@ -16,9 +16,7 @@
 package com.vaadin.flow.connect;
 
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.polymertemplate.Id;
@@ -26,13 +24,10 @@ import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
 /**
- * A Web Component that extends vaadin-element-mixin
- * so as we enable statistics.
+ * A Test Web Component.
  */
 @Tag("test-component")
 @JsModule("./src/test-component.js")
-@HtmlImport("frontend://src/test-component.html")
-@NpmPackage(value = "@vaadin/vaadin-element-mixin", version = "2.1.3")
 public class TestComponent extends PolymerTemplate<TemplateModel> {
 
     @Id
