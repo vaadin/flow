@@ -68,23 +68,10 @@ public class VaadinServletContext implements VaadinContext {
     }
 
     @Override
-    public Object getAttribute(String name) {
-        ensureServletContext();
-        return context.getAttribute(name);
-    }
-
-    @Override
     public <T> void setAttribute(T value) {
         assert value != null;
         ensureServletContext();
         context.setAttribute(value.getClass().getName(), value);
-    }
-
-    @Override
-    public <T> void setAttribute(String name, T value) {
-        assert value != null;
-        ensureServletContext();
-        context.setAttribute(name, value);
     }
 
     @Override
