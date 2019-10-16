@@ -170,8 +170,7 @@ public abstract class ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.server\\.communication\\.WebComponentBootstrapHandler(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.scanner\\..*",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.JarContentsManager",
-                "com\\.vaadin\\.flow\\.server\\.connect\\.generator\\..*",
-                "com\\.vaadin\\.flow\\.server\\.connect\\.aut\\..*",
+                "com\\.vaadin\\.flow\\.server\\.connect\\..*",
 
                 // Various test classes
                 ".*\\.test(s)?\\..*", ".*Test.*",
