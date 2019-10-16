@@ -31,7 +31,6 @@ public class DenyAllServiceGenerationTest
     }
 
     @Test
-    @Ignore("Ignore the test until AccessChecker is moved to Flow")
     public void should_notGenerateServiceMethodsWithoutSecurityAnnotations_When_DenyAllOnClass() {
         verifyOpenApiObjectAndGeneratedTs();
     }

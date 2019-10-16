@@ -16,6 +16,8 @@
 
 package com.vaadin.flow.server.connect.generator;
 
+import javax.annotation.security.DenyAll;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -68,6 +70,8 @@ import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 
 import com.vaadin.flow.server.connect.VaadinService;
+import com.vaadin.flow.server.connect.auth.AnonymousAllowed;
+import com.vaadin.flow.server.connect.auth.VaadinConnectAccessChecker;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -87,6 +91,7 @@ public abstract class AbstractServiceGenerationTest {
     private final List<Class<?>> serviceClasses = new ArrayList<>();
     private final List<Class<?>> nonServiceClasses = new ArrayList<>();
     private final Set<String> schemaReferences = new HashSet<>();
+    private static final VaadinConnectAccessChecker accessChecker = new VaadinConnectAccessChecker();
 
     private final Package testPackage;
 
@@ -205,10 +210,10 @@ public abstract class AbstractServiceGenerationTest {
         for (Class<?> testServiceClass : testServiceClasses) {
             for (Method expectedServiceMethod : testServiceClass
                     .getDeclaredMethods()) {
-                // TODO: Check the security annotation as well when moving
-                // the access checker to flow. Ref:
-                // https://github.com/vaadin/vaadin-connect/blob/master/vaadin-connect-maven-plugin/src/test/java/com/vaadin/connect/plugin/generator/services/AbstractServiceGenerationTest.java#L228
-                if (!Modifier.isPublic(expectedServiceMethod.getModifiers())) {
+                if (!Modifier.isPublic(expectedServiceMethod.getModifiers())
+                        || accessChecker
+                                .getSecurityTarget(expectedServiceMethod)
+                                .isAnnotationPresent(DenyAll.class)) {
                     continue;
                 }
                 pathCount++;
@@ -280,9 +285,16 @@ public abstract class AbstractServiceGenerationTest {
                     expectedServiceMethod), apiResponse.getContent());
         }
 
-        // TODO: test the AllowAnonymous annotation when moving access check
-        // to flow. Ref:
-        // https://github.com/vaadin/vaadin-connect/blob/master/vaadin-connect-maven-plugin/src/test/java/com/vaadin/connect/plugin/generator/services/AbstractServiceGenerationTest.java#L297
+        if (accessChecker.getSecurityTarget(expectedServiceMethod)
+                .isAnnotationPresent(AnonymousAllowed.class)) {
+            assertNull(
+                    "Expected to have no security data for anonymous service method",
+                    actualOperation.getSecurity());
+        } else {
+            assertNotNull(
+                    "Non-anonymous service method should have a security data defined for it in the schema",
+                    actualOperation.getSecurity());
+        }
     }
 
     private void assertRequestSchema(Schema requestSchema,
