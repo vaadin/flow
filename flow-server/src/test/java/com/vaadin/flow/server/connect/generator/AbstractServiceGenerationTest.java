@@ -79,9 +79,6 @@ public abstract class AbstractServiceGenerationTest {
             Number.class, byte.class, char.class, short.class, int.class,
             long.class, float.class, double.class);
 
-    // private static final VaadinConnectAccessChecker accessChecker = new
-    // VaadinConnectAccessChecker();
-
     @Rule
     public TemporaryFolder outputDirectory = new TemporaryFolder();
 
