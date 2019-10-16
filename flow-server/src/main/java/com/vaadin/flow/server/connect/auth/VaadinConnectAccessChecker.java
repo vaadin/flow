@@ -23,11 +23,6 @@ import javax.annotation.security.RolesAllowed;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Component used for checking role-based ACL in Vaadin Services.
@@ -101,38 +96,6 @@ public class VaadinConnectAccessChecker {
           method));
     }
     return hasSecurityAnnotation(method) ? method : method.getDeclaringClass();
-  }
-
-  private String verifyAnonymousUser(Method method) {
-    if (!getSecurityTarget(method).isAnnotationPresent(AnonymousAllowed.class)
-        || cannotAccessMethod(method, Collections.emptyList())) {
-      return "Anonymous access is not allowed";
-    }
-    return null;
-  }
-
-  private boolean cannotAccessMethod(Method method,
-      List<String> requestedAuthorities) {
-    return entityForbidden(getSecurityTarget(method), requestedAuthorities);
-  }
-
-  private boolean entityForbidden(AnnotatedElement entity,
-      List<String> requestedAuthorities) {
-    return entity.isAnnotationPresent(DenyAll.class)
-        || (!entity.isAnnotationPresent(AnonymousAllowed.class)
-            && !roleAllowed(entity.getAnnotation(RolesAllowed.class),
-                requestedAuthorities));
-  }
-
-  private boolean roleAllowed(RolesAllowed rolesAllowed,
-      List<String> requestedAuthorities) {
-    if (rolesAllowed == null) {
-      return true;
-    }
-
-    Set<String> allowedRoles = new HashSet<>(
-        Arrays.asList(rolesAllowed.value()));
-    return allowedRoles.containsAll(requestedAuthorities);
   }
 
   private boolean hasSecurityAnnotation(Method method) {

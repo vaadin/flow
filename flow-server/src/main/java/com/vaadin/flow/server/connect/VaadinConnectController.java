@@ -154,45 +154,49 @@ public class VaadinConnectController {
         this.accessChecker = accessChecker;
 
         context.getBeansWithAnnotation(VaadinService.class)
-                .forEach((name, serviceBean) -> {
-                    // Check the bean type instead of the implementation type in
-                    // case of e.g. proxies
-                    Class<?> beanType = context.getType(name);
-                    if (beanType == null) {
-                        throw new IllegalStateException(String.format(
-                                "Unable to determine a type for the bean with name '%s', "
-                                        + "double check your bean configuration",
-                                name));
-                    }
+            .forEach((name, serviceBean) -> 
+                validateServiceBean(serviceNameChecker, context, name, serviceBean));
+    }
 
-                    String serviceName = Optional
-                            .ofNullable(
-                                    beanType.getAnnotation(VaadinService.class))
-                            .map(VaadinService::value)
-                            .filter(value -> !value.isEmpty())
-                            .orElse(beanType.getSimpleName());
-                    if (serviceName.isEmpty()) {
-                        throw new IllegalStateException(String.format(
-                                "A bean with name '%s' and type '%s' is annotated with '%s' "
-                                        + "annotation but is an anonymous class hence has no name. ",
-                                name, beanType, VaadinService.class)
-                                + String.format(
-                                        "Either modify the bean declaration so that it is not an "
-                                                + "anonymous class or specify a service name in the '%s' annotation",
-                                        VaadinService.class));
-                    }
-                    String validationError = serviceNameChecker
-                            .check(serviceName);
-                    if (validationError != null) {
-                        throw new IllegalStateException(String.format(
-                                "Service name '%s' is invalid, reason: '%s'",
-                                serviceName, validationError));
-                    }
+    void validateServiceBean(VaadinServiceNameChecker serviceNameChecker,
+            ApplicationContext context, String name, Object serviceBean) {
+        // Check the bean type instead of the implementation type in
+        // case of e.g. proxies
+        Class<?> beanType = context.getType(name);
+        if (beanType == null) {
+            throw new IllegalStateException(String.format(
+                    "Unable to determine a type for the bean with name '%s', "
+                            + "double check your bean configuration",
+                    name));
+        }
 
-                    vaadinServices.put(serviceName.toLowerCase(Locale.ENGLISH),
-                            new VaadinServiceData(serviceBean,
-                                    beanType.getMethods()));
-                });
+        String serviceName = Optional
+            .ofNullable(
+                    beanType.getAnnotation(VaadinService.class))
+            .map(VaadinService::value)
+            .filter(value -> !value.isEmpty())
+            .orElse(beanType.getSimpleName());
+        if (serviceName.isEmpty()) {
+            throw new IllegalStateException(String.format(
+                    "A bean with name '%s' and type '%s' is annotated with '%s' "
+                            + "annotation but is an anonymous class hence has no name. ",
+                    name, beanType, VaadinService.class)
+                    + String.format(
+                            "Either modify the bean declaration so that it is not an "
+                                    + "anonymous class or specify a service name in the '%s' annotation",
+                            VaadinService.class));
+        }
+        String validationError = serviceNameChecker
+                .check(serviceName);
+        if (validationError != null) {
+            throw new IllegalStateException(String.format(
+                    "Service name '%s' is invalid, reason: '%s'",
+                    serviceName, validationError));
+        }
+
+        vaadinServices.put(serviceName.toLowerCase(Locale.ENGLISH),
+                new VaadinServiceData(serviceBean,
+                        beanType.getMethods()));
     }
 
     private ObjectMapper getDefaultObjectMapper(ApplicationContext context) {
