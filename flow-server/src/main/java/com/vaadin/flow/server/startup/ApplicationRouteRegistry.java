@@ -215,7 +215,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
     /**
      * RouteRegistry wrapper class for storing the ApplicationRouteRegistry
      */
-    public static class ApplicationRouteRegistryWrapper
+    protected static class ApplicationRouteRegistryWrapper
             implements Serializable {
         private final ApplicationRouteRegistry registry;
 
