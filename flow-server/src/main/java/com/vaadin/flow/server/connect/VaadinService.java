@@ -41,15 +41,15 @@ import org.springframework.stereotype.Component;
 @Retention(RetentionPolicy.RUNTIME)
 @Component
 public @interface VaadinService {
-  /**
-   * The name of a service to use. If nothing is specified, the name of the
-   * annotated class is taken.
-   * <p>
-   * Note: custom names are not allowed to be blank, be equal to any of the
-   * ECMAScript reserved words or have whitespaces in them. See
-   * {@link VaadinServiceNameChecker} for validation implementation details.
-   *
-   * @return the name of the service to use in post requests
-   */
-  String value() default "";
+    /**
+     * The name of a service to use. If nothing is specified, the name of the
+     * annotated class is taken.
+     * <p>
+     * Note: custom names are not allowed to be blank, be equal to any of the
+     * ECMAScript reserved words or have whitespaces in them. See
+     * {@link VaadinServiceNameChecker} for validation implementation details.
+     *
+     * @return the name of the service to use in post requests
+     */
+    String value() default "";
 }

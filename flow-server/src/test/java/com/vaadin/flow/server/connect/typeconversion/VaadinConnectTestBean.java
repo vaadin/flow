@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.connect.typeconversion;
+package com.vaadin.flow.server.connect.typeconversion;
 
 import java.util.Collection;
 
@@ -21,21 +21,21 @@ import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
 
 public class VaadinConnectTestBean {
-  public String name;
-  public String address;
-  public int age;
-  public boolean isAdmin;
-  public VaadinConnectTypeConversionServices.TestEnum testEnum;
-  public Collection<String> roles;
-  private String customProperty;
+    public String name;
+    public String address;
+    public int age;
+    public boolean isAdmin;
+    public VaadinConnectTypeConversionServices.TestEnum testEnum;
+    public Collection<String> roles;
+    private String customProperty;
 
-  @JsonGetter("customProperty")
-  public String getCustomProperty() {
-    return customProperty;
-  }
+    @JsonGetter("customProperty")
+    public String getCustomProperty() {
+        return customProperty;
+    }
 
-  @JsonSetter("customProperty")
-  public void setCustomProperty(String customProperty) {
-    this.customProperty = customProperty;
-  }
+    @JsonSetter("customProperty")
+    public void setCustomProperty(String customProperty) {
+        this.customProperty = customProperty;
+    }
 }

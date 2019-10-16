@@ -26,31 +26,31 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties("vaadin.connect")
 public class VaadinConnectProperties {
 
-  @Value("${vaadin.connect.endpoint:/connect}")
-  private String vaadinConnectEndpoint;
+    @Value("${vaadin.connect.endpoint:/connect}")
+    private String vaadinConnectEndpoint;
 
-  @Value("${vaadin.connect.auth.token-signing-key:}")
-  private String vaadinConnectTokenSigningKey;
+    @Value("${vaadin.connect.auth.token-signing-key:}")
+    private String vaadinConnectTokenSigningKey;
 
-  /**
-   * Customize the endpoint for all Vaadin Connect services. See default value
-   * in the {@link VaadinConnectProperties#vaadinConnectEndpoint} field
-   * annotation.
-   *
-   * @return endpoint that should be used to access any Vaadin Connect service
-   */
-  public String getVaadinConnectEndpoint() {
-    return vaadinConnectEndpoint;
-  }
+    /**
+     * Customize the endpoint for all Vaadin Connect services. See default value
+     * in the {@link VaadinConnectProperties#vaadinConnectEndpoint} field
+     * annotation.
+     *
+     * @return endpoint that should be used to access any Vaadin Connect service
+     */
+    public String getVaadinConnectEndpoint() {
+        return vaadinConnectEndpoint;
+    }
 
-  /**
-   * Customize the application token signing key. When not given any key, the
-   * application will use a random one which is generated each time the
-   * application is run.
-   *
-   * @return token signing key
-   */
-  public String getVaadinConnectTokenSigningKey() {
-    return vaadinConnectTokenSigningKey;
-  }
+    /**
+     * Customize the application token signing key. When not given any key, the
+     * application will use a random one which is generated each time the
+     * application is run.
+     *
+     * @return token signing key
+     */
+    public String getVaadinConnectTokenSigningKey() {
+        return vaadinConnectTokenSigningKey;
+    }
 }

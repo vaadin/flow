@@ -13,11 +13,20 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.connect.typeconversion;
+package com.vaadin.flow.server.connect.typeconversion;
 
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.junit.Test;
 
-@SpringBootApplication
-public class TestApplication {
-  // Test application to provide test context for the integration tests
+public class StringConversionIT extends BaseTypeConversionIT {
+
+    @Test
+    public void should_ConvertToString_When_ReceiveAString() {
+        assertEqualExpectedValueWhenCallingMethod("addFooString",
+                "\"some-string\"", "\"some-stringfoo\"");
+        assertEqualExpectedValueWhenCallingMethod("addFooString", "\"null\"",
+                "\"nullfoo\"");
+        assertEqualExpectedValueWhenCallingMethod("addFooString", "null",
+                "\"nullfoo\"");
+    }
+
 }

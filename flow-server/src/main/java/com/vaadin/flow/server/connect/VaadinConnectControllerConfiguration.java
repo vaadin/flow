@@ -33,74 +33,79 @@ import com.vaadin.flow.server.connect.auth.VaadinConnectAccessChecker;
  */
 @Configuration
 public class VaadinConnectControllerConfiguration {
-  private final VaadinConnectProperties vaadinConnectProperties;
+    private final VaadinConnectProperties vaadinConnectProperties;
 
-  /**
-   * Initializes the connect configuration.
-   *
-   * @param vaadinConnectProperties
-   *          Vaadin Connect properties
-   */
-  public VaadinConnectControllerConfiguration(
-      VaadinConnectProperties vaadinConnectProperties) {
-    this.vaadinConnectProperties = vaadinConnectProperties;
-  }
+    /**
+     * Initializes the connect configuration.
+     *
+     * @param vaadinConnectProperties
+     *            Vaadin Connect properties
+     */
+    public VaadinConnectControllerConfiguration(
+            VaadinConnectProperties vaadinConnectProperties) {
+        this.vaadinConnectProperties = vaadinConnectProperties;
+    }
 
-  /**
-   * Registers {@link VaadinConnectController} to use
-   * {@link VaadinConnectProperties#getVaadinConnectEndpoint()} as an endpoint
-   * for all Vaadin Connect services.
-   *
-   * @return updated configuration for {@link VaadinConnectController}
-   */
-  @Bean
-  public WebMvcRegistrations webMvcRegistrationsHandlerMapping() {
-    return new WebMvcRegistrations() {
-      @Override
-      public RequestMappingHandlerMapping getRequestMappingHandlerMapping() {
-        return new RequestMappingHandlerMapping() {
+    /**
+     * Registers {@link VaadinConnectController} to use
+     * {@link VaadinConnectProperties#getVaadinConnectEndpoint()} as an endpoint
+     * for all Vaadin Connect services.
+     *
+     * @return updated configuration for {@link VaadinConnectController}
+     */
+    @Bean
+    public WebMvcRegistrations webMvcRegistrationsHandlerMapping() {
+        return new WebMvcRegistrations() {
+            @Override
+            public RequestMappingHandlerMapping getRequestMappingHandlerMapping() {
+                return new RequestMappingHandlerMapping() {
 
-          @Override
-          protected void registerHandlerMethod(Object handler, Method method,
-              RequestMappingInfo mapping) {
-            if (VaadinConnectController.class
-                .equals(method.getDeclaringClass())) {
-              PatternsRequestCondition connectServicePattern = new PatternsRequestCondition(
-                  vaadinConnectProperties.getVaadinConnectEndpoint())
-                      .combine(mapping.getPatternsCondition());
+                    @Override
+                    protected void registerHandlerMethod(Object handler,
+                            Method method, RequestMappingInfo mapping) {
+                        if (VaadinConnectController.class
+                                .equals(method.getDeclaringClass())) {
+                            PatternsRequestCondition connectServicePattern = new PatternsRequestCondition(
+                                    vaadinConnectProperties
+                                            .getVaadinConnectEndpoint())
+                                                    .combine(mapping
+                                                            .getPatternsCondition());
 
-              mapping = new RequestMappingInfo(mapping.getName(),
-                  connectServicePattern, mapping.getMethodsCondition(),
-                  mapping.getParamsCondition(), mapping.getHeadersCondition(),
-                  mapping.getConsumesCondition(),
-                  mapping.getProducesCondition(), mapping.getCustomCondition());
+                            mapping = new RequestMappingInfo(mapping.getName(),
+                                    connectServicePattern,
+                                    mapping.getMethodsCondition(),
+                                    mapping.getParamsCondition(),
+                                    mapping.getHeadersCondition(),
+                                    mapping.getConsumesCondition(),
+                                    mapping.getProducesCondition(),
+                                    mapping.getCustomCondition());
+                        }
+
+                        super.registerHandlerMethod(handler, method, mapping);
+                    }
+                };
             }
-
-            super.registerHandlerMethod(handler, method, mapping);
-          }
         };
-      }
-    };
-  }
+    }
 
-  /**
-   * Registers a service name checker responsible for validating the service
-   * names.
-   *
-   * @return the service name checker
-   */
-  @Bean
-  public VaadinServiceNameChecker serviceNameChecker() {
-    return new VaadinServiceNameChecker();
-  }
+    /**
+     * Registers a service name checker responsible for validating the service
+     * names.
+     *
+     * @return the service name checker
+     */
+    @Bean
+    public VaadinServiceNameChecker serviceNameChecker() {
+        return new VaadinServiceNameChecker();
+    }
 
-  /**
-   * Registers a default {@link VaadinConnectAccessChecker} bean instance.
-   *
-   * @return the default Vaadin Connect access checker bean
-   */
-  @Bean
-  public VaadinConnectAccessChecker accessChecker() {
-    return new VaadinConnectAccessChecker();
-  }
+    /**
+     * Registers a default {@link VaadinConnectAccessChecker} bean instance.
+     *
+     * @return the default Vaadin Connect access checker bean
+     */
+    @Bean
+    public VaadinConnectAccessChecker accessChecker() {
+        return new VaadinConnectAccessChecker();
+    }
 }
