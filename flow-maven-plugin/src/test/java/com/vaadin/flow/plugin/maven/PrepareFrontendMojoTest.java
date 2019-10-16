@@ -49,6 +49,7 @@ public class PrepareFrontendMojoTest {
     private File nodeModulesPath;
     private File flowPackagePath;
     private String webpackConfig;
+    private String openApiJsonFile;
     private String packageJson;
     private File projectBase;
     private File webpackOutputDirectory;
@@ -68,6 +69,8 @@ public class PrepareFrontendMojoTest {
         flowPackagePath = new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME);
         webpackConfig = new File(projectBase, WEBPACK_CONFIG).getAbsolutePath();
         packageJson = new File(projectBase, PACKAGE_JSON).getAbsolutePath();
+        openApiJsonFile = new File(projectBase,
+                "target/generated-resources/openapi.json").getAbsolutePath();
         webpackOutputDirectory = new File(projectBase,
                 VAADIN_SERVLET_RESOURCES);
 
@@ -84,6 +87,10 @@ public class PrepareFrontendMojoTest {
                 webpackOutputDirectory);
         ReflectionUtils.setVariableValueInObject(mojo, "frontendDirectory",
                 new File(projectBase, "frontend"));
+
+        ReflectionUtils.setVariableValueInObject(mojo, "openApiJsonFile",
+                new File(projectBase,
+                        "target/generated-resources/openapi" + ".json"));
 
         Assert.assertTrue(flowPackagePath.mkdirs());
         setProject(mojo, projectBase);
@@ -149,6 +156,24 @@ public class PrepareFrontendMojoTest {
         Assert.assertFalse(FileUtils.fileExists(webpackConfig));
         mojo.execute();
         Assert.assertTrue(FileUtils.fileExists(webpackConfig));
+    }
+
+    @Test
+    public void mavenGoal_generateOpenApiJson_when_itIsInClientSideMode()
+            throws Exception {
+        Assert.assertFalse(FileUtils.fileExists(openApiJsonFile));
+        mojo.execute();
+        Assert.assertTrue(FileUtils.fileExists(openApiJsonFile));
+    }
+
+    @Test
+    public void mavenGoal_notGenerateOpenApiJson_when_itIsNotInClientSideMode()
+            throws Exception {
+        ReflectionUtils.setVariableValueInObject(mojo, "clientSideMode",
+                "false");
+        Assert.assertFalse(FileUtils.fileExists(openApiJsonFile));
+        mojo.execute();
+        Assert.assertFalse(FileUtils.fileExists(openApiJsonFile));
     }
 
     @Test
