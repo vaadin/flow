@@ -44,8 +44,9 @@ public class RouteConfigurationTest {
         registry = ApplicationRouteRegistry
                 .getInstance(vaadinContext);
 
-        Mockito.when(servletContext.getAttribute(RouteRegistry.class.getName()))
-                .thenReturn(registry);
+        Mockito.when(vaadinContext.getAttribute(
+                ApplicationRouteRegistry.ApplicationRouteRegistryWrapper.class))
+                .thenReturn(new ApplicationRouteRegistry.ApplicationRouteRegistryWrapper(registry));
 
         vaadinService = Mockito.mock(MockService.class);
         Mockito.when(vaadinService.getRouteRegistry()).thenReturn(registry);

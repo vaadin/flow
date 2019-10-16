@@ -354,7 +354,7 @@ public class ServletDeployerTest {
                 .anyTimes();
 
         if (addRoutes) {
-            expect(contextMock.getAttribute(RouteRegistry.class.getName()))
+            expect(contextMock.getAttribute(ApplicationRouteRegistry.ApplicationRouteRegistryWrapper.class.getName()))
                     .andAnswer(() -> {
                         ApplicationRouteRegistry registry = new ApplicationRouteRegistry();
 
@@ -365,7 +365,7 @@ public class ServletDeployerTest {
                             routeConfiguration.setAnnotatedRoute(
                                     ComponentWithRoute.class);
                         });
-                        return registry;
+                        return new ApplicationRouteRegistry.ApplicationRouteRegistryWrapper(registry);
                     }).anyTimes();
         }
         if (addWebComponents) {
