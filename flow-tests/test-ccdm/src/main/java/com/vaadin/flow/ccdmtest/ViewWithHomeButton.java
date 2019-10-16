@@ -15,14 +15,18 @@
  */
 package com.vaadin.flow.ccdmtest;
 
-import com.vaadin.flow.component.Text;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.Route;
 
-@Route("")
-public class EmptyUI extends Div {
-    public EmptyUI() {
-        setId("emptyUi");
-        add(new Text("Empty view"));
+@Route(value = "view-with-home-button", layout = MainLayout.class)
+public class ViewWithHomeButton extends Div {
+    public ViewWithHomeButton() {
+        setId("viewWithHomeButton");
+        NativeButton homeButton = new NativeButton("Go home",
+                e -> UI.getCurrent().navigate(""));
+        homeButton.setId("homeButton");
+        add(homeButton);
     }
 }

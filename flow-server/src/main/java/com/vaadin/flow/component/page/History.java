@@ -185,7 +185,7 @@ public class History implements Serializable {
         // Second parameter is title which is currently ignored according to
         // https://developer.mozilla.org/en-US/docs/Web/API/History_API
         ui.getPage().executeJs("history.pushState($0, '', $1)", state,
-                location.getPathWithQueryParameters());
+                getUrlForLocation(location));
     }
 
     /**
@@ -220,8 +220,8 @@ public class History implements Serializable {
     public void replaceState(JsonValue state, Location location) {
         // Second parameter is title which is currently ignored according to
         // https://developer.mozilla.org/en-US/docs/Web/API/History_API
-        ui.getPage().executeJs("history.replaceState($0, '', $1)",
-                state, location.getPathWithQueryParameters());
+        ui.getPage().executeJs("history.replaceState($0, '', $1)", state,
+                getUrlForLocation(location));
     }
 
     /**
@@ -290,5 +290,25 @@ public class History implements Serializable {
      */
     public void go(int steps) {
         ui.getPage().executeJs("history.go($0)", steps);
+    }
+
+    /**
+     * Gets the relative URL for the given location for using with browsers’
+     * History API.
+     *
+     * @param location
+     *            the Location instance
+     * @return relative URL for sending to browsers
+     */
+    private String getUrlForLocation(Location location) {
+        String url = location.getPathWithQueryParameters();
+
+        // Browsers resolve the empty relative URL (<code>""</code>) to
+        // the current page, while in Flow the empty Location
+        // (<code>new Location("")</code>) is expected to point to the empty
+        // Route (<code>@Route("")</code>). Workaround: use the "./" prefix
+        // in the relative URL sent to the browser.
+        final String prefix = "./";
+        return url.startsWith(prefix) ? url : prefix + url;
     }
 }

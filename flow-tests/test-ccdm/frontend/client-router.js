@@ -37,6 +37,7 @@ export function loadRouter(flow) {
   navigationContainer.appendChild(createNavigationLink('Server view', 'serverview'));
   navigationContainer.appendChild(createNavigationLink('View with all events', 'view-with-all-events'));
   navigationContainer.appendChild(createNavigationLink('Prevent leaving view', 'prevent-leaving'));
+  navigationContainer.appendChild(createNavigationLink('View with home button', 'view-with-home-button'));
   routerContainer.appendChild(navigationContainer);
 
   const outlet = document.createElement('div');

@@ -207,9 +207,14 @@ public class JavaScriptBootstrapUI extends UI {
             renderViewForRoute(location);
         } else {
             // client-side routing
+            String search = queryParameters.getParameters().isEmpty()
+                    ? ""
+                    : "?" + queryParameters.getQueryString();
             getPage().executeJs(
-                    "window.dispatchEvent(new CustomEvent('vaadin-router-go', {detail: {pathname: '/"
-                            + location.getPathWithQueryParameters() + "'}}))");
+                    "window.dispatchEvent(new CustomEvent('vaadin-router-go',"
+                            + " {detail: new URL($0, window.location.href)}))",
+                    "./" + location.getPathWithQueryParameters()
+            );
         }
     }
 

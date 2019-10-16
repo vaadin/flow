@@ -89,6 +89,13 @@ public class HistoryIT extends ChromeBrowserTest {
         pushButton.click();
 
         Assert.assertEquals(baseUrl.resolve("."), getCurrentUrl());
+
+        // Replacing with empty string should go to the context path root
+        locationField.setValue("qwerty");
+        replaceButton.click();
+        locationField.clear();
+        replaceButton.click();
+        Assert.assertEquals(baseUrl.resolve("."), getCurrentUrl());
     }
 
     private URI getCurrentUrl() throws URISyntaxException {
