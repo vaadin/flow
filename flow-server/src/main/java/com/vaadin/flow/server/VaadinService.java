@@ -334,9 +334,7 @@ public abstract class VaadinService implements Serializable {
      *
      * @return the route registry to use, not <code>null</code>
      */
-    protected RouteRegistry getRouteRegistry() {
-        return ApplicationRouteRegistry.getInstance(getContext());
-    }
+    protected abstract RouteRegistry getRouteRegistry();
 
     protected abstract PwaRegistry getPwaRegistry();
 
