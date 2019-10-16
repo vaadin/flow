@@ -139,7 +139,7 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
     /**
      * Default generated path of the OpenAPI json.
      */
-    @Parameter(defaultValue = "${project.build.directory}/generated-resources/openapi.json", required = true)
+    @Parameter(defaultValue = "${project.build.directory}/generated-resources/openapi.json")
     private File openApiJsonFile;
 
     @Override

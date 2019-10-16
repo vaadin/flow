@@ -62,7 +62,6 @@ public class TaskGenerateOpenApi extends AbstractTaskConnectGenerator {
         this.sourcePaths = sourcePaths;
         this.classLoaderURLs = classLoaderURLs;
         this.output = output;
-
     }
 
     @Override
