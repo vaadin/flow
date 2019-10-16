@@ -29,7 +29,7 @@ import com.vaadin.flow.server.connect.generator.OpenApiSpecGenerator;
 /**
  * Generate OpenAPI json file for Connect Services.
  */
-public class TaskGenerateOpenAPI extends AbstractTaskConnectGenerator {
+public class TaskGenerateOpenApi extends AbstractTaskConnectGenerator {
 
     private final List<Path> sourcePaths;
     private final URL[] classLoaderURLs;
@@ -47,7 +47,8 @@ public class TaskGenerateOpenAPI extends AbstractTaskConnectGenerator {
      * @param output
      *            the output path of the generated json file.
      */
-    TaskGenerateOpenAPI(File properties, List<Path> sourcePaths,
+
+    TaskGenerateOpenApi(File properties, List<Path> sourcePaths,
             URL[] classLoaderURLs, Path output) {
         super(properties);
         this.sourcePaths = sourcePaths;
@@ -60,10 +61,14 @@ public class TaskGenerateOpenAPI extends AbstractTaskConnectGenerator {
         OpenApiSpecGenerator openApiSpecGenerator = new OpenApiSpecGenerator(
                 readApplicationProperties());
         if (classLoaderURLs == null) {
-            // when running in DevMode, we can use the current ClassLoader
+            // when triggered by DevModeHandler, we can use the current
+            // ClassLoader because they are in the same class loader with
+            // sourcePaths
             openApiSpecGenerator.generateOpenApiSpec(sourcePaths,
                     this.getClass().getClassLoader(), output);
         } else {
+            // when triggered by the maven plugin, we need to create an URL
+            // class loader from the project compiled class and its dependencies
             try (URLClassLoader classLoader = new URLClassLoader(
                     classLoaderURLs)) {
                 openApiSpecGenerator.generateOpenApiSpec(sourcePaths,

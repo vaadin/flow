@@ -498,7 +498,7 @@ public class NodeTasks implements FallibleCommand {
                     builder.frontendDirectory, builder.npmFolder);
             commands.add(taskGenerateTsConfig);
             if (builder.connectSourcePaths != null) {
-                TaskGenerateOpenAPI taskGenerateOpenAPI = new TaskGenerateOpenAPI(
+                TaskGenerateOpenApi taskGenerateOpenAPI = new TaskGenerateOpenApi(
                         builder.connectApplicationProperties,
                         builder.connectSourcePaths,
                         builder.connectClassLoaderURLs,
