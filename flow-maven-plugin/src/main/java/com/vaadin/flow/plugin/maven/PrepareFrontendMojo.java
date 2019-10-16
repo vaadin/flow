@@ -242,10 +242,10 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
             return;
         }
         try {
-            List<Path> sourcesPaths = project.getCompileSourceRoots().stream()
-                    .map(Paths::get).collect(Collectors.toList());
+            List<File> javaSourceDirs = project.getCompileSourceRoots().stream()
+                    .map(File::new).collect(Collectors.toList());
             builder.setConnectApplicationProperties(applicationProperties)
-                    .setConnectSourcePaths(sourcesPaths)
+                    .setConnectJavaSourceDirs(javaSourceDirs)
                     .setConnectClassLoaderURLs(getClassLoaderUrls())
                     .setConnectGeneratedOpenAPIJson(openApiJsonFile);
         } catch (DependencyResolutionRequiredException e) {

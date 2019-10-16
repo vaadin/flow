@@ -23,6 +23,7 @@ import java.net.URLClassLoader;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,14 +36,14 @@ import com.vaadin.flow.server.connect.generator.OpenApiSpecGenerator;
  */
 public class TaskGenerateOpenApi extends AbstractTaskConnectGenerator {
 
-    private final List<Path> sourcePaths;
+    private final List<File> sourcePaths;
     private final URL[] classLoaderURLs;
-    private final Path output;
+    private final File output;
 
     /**
      * Create a task for generating OpenAPI spec.
      * 
-     * @param sourcePaths
+     * @param javaSourceDirs
      *            source paths of the project containing
      *            {@link com.vaadin.flow.server.connect.VaadinService}
      * @param classLoaderURLs
@@ -53,13 +54,13 @@ public class TaskGenerateOpenApi extends AbstractTaskConnectGenerator {
      *            the output path of the generated json file.
      */
 
-    TaskGenerateOpenApi(File properties, List<Path> sourcePaths,
-            URL[] classLoaderURLs, Path output) {
+    TaskGenerateOpenApi(File properties, List<File> javaSourceDirs,
+            URL[] classLoaderURLs, File output) {
         super(properties);
-        Objects.requireNonNull(sourcePaths, "Source paths should not be null.");
+        Objects.requireNonNull(javaSourceDirs, "Source paths should not be null.");
         Objects.requireNonNull(output,
                 "OpenAPI output file should not be null.");
-        this.sourcePaths = sourcePaths;
+        this.sourcePaths = javaSourceDirs;
         this.classLoaderURLs = classLoaderURLs;
         this.output = output;
     }
@@ -68,12 +69,14 @@ public class TaskGenerateOpenApi extends AbstractTaskConnectGenerator {
     public void execute() throws ExecutionFailedException {
         OpenApiSpecGenerator openApiSpecGenerator = new OpenApiSpecGenerator(
                 readApplicationProperties());
+        List<Path> paths = sourcePaths.stream().map(File::toPath)
+                .collect(Collectors.toList());
         if (classLoaderURLs == null) {
             // when triggered by DevModeHandler, we can use the current
             // ClassLoader because they are in the same class loader with
             // sourcePaths
-            openApiSpecGenerator.generateOpenApiSpec(sourcePaths,
-                    this.getClass().getClassLoader(), output);
+            openApiSpecGenerator.generateOpenApiSpec(paths,
+                    this.getClass().getClassLoader(), output.toPath());
             getLogger().debug("Generate OpenAPI spec to {} using the current "
                     + "ClassLoader", output);
         } else {
@@ -82,8 +85,8 @@ public class TaskGenerateOpenApi extends AbstractTaskConnectGenerator {
             // dependencies
             try (URLClassLoader classLoader = new URLClassLoader(
                     classLoaderURLs)) {
-                openApiSpecGenerator.generateOpenApiSpec(sourcePaths,
-                        classLoader, output);
+                openApiSpecGenerator.generateOpenApiSpec(paths, classLoader,
+                        output.toPath());
                 getLogger().debug("Generate OpenAPI spec to {} using the "
                         + "collected URLClassLoader", output);
             } catch (IOException e) {

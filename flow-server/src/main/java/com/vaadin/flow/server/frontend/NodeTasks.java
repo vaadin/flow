@@ -19,7 +19,6 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.Serializable;
 import java.net.URL;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -88,7 +87,7 @@ public class NodeTasks implements FallibleCommand {
 
         private URL[] connectClassLoaderURLs;
 
-        private List<Path> connectSourcePaths;
+        private List<File> connectJavaSourceDirs;
 
         private File connectGeneratedOpenAPIFile;
 
@@ -323,12 +322,12 @@ public class NodeTasks implements FallibleCommand {
          * Set source paths that OpenAPI generator searches for connect
          * services.
          * 
-         * @param sourcePaths
+         * @param connectJavaSourceDirs
          *            list of source paths
          * @return the builder, for chaining
          */
-        public Builder setConnectSourcePaths(List<Path> sourcePaths) {
-            this.connectSourcePaths = sourcePaths;
+        public Builder setConnectJavaSourceDirs(List<File> connectJavaSourceDirs) {
+            this.connectJavaSourceDirs = connectJavaSourceDirs;
             return this;
         }
 
@@ -497,14 +496,14 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateTsConfig taskGenerateTsConfig = new TaskGenerateTsConfig(
                     builder.frontendDirectory, builder.npmFolder);
             commands.add(taskGenerateTsConfig);
-            if (builder.connectSourcePaths != null
+            if (builder.connectJavaSourceDirs != null
                     && builder.connectGeneratedOpenAPIFile != null) {
-                TaskGenerateOpenApi taskGenerateOpenAPI = new TaskGenerateOpenApi(
+                TaskGenerateOpenApi taskGenerateOpenApi = new TaskGenerateOpenApi(
                         builder.connectApplicationProperties,
-                        builder.connectSourcePaths,
+                        builder.connectJavaSourceDirs,
                         builder.connectClassLoaderURLs,
-                        builder.connectGeneratedOpenAPIFile.toPath());
-                commands.add(taskGenerateOpenAPI);
+                        builder.connectGeneratedOpenAPIFile);
+                commands.add(taskGenerateOpenApi);
             }
         }
     }
