@@ -161,9 +161,10 @@ public class FrontendDependenciesTest {
                 new FrontendDependencies(classFinder, false);
 
         List<String> modules = dependencies.getModules();
-        Assert.assertEquals(2, modules.size());
+        Assert.assertEquals(3, modules.size());
         Assert.assertTrue(modules.contains("foo.js"));
         Assert.assertTrue(modules.contains("bar.js"));
+        Assert.assertTrue(modules.contains("baz.js"));
     }
 
     @Test

@@ -36,11 +36,17 @@ public class RouteComponentWithMethodReference extends Component implements HasC
     public static class AnotherComponent extends Component {
     }
 
+    @JsModule("baz.js")
+    public static class YetAnotherComponent extends Component {
+    }
+
+    private Supplier<Component> fieldGenerator = YetAnotherComponent::new;
+
     public RouteComponentWithMethodReference() {
         List<Supplier<Component>> suppliers =
                 Collections.singletonList(AnotherComponent::new);
 
         Supplier<Component> generator = MyComponent::new;
-        add(generator.get());
+        add(generator.get(), fieldGenerator.get());
     }
 }
