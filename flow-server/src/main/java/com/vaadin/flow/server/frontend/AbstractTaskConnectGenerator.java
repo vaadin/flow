@@ -53,9 +53,8 @@ abstract class AbstractTaskConnectGenerator implements FallibleCommand {
                         applicationProperties.toString()), e);
             }
         } else {
-            getLog().debug(String.format(
-                    "Found no application properties at '%s', using default values.",
-                    applicationProperties));
+            getLog().debug(
+                    "Found no application properties, using default values.");
         }
         return config;
     }

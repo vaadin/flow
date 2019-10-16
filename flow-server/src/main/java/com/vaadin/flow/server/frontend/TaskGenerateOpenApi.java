@@ -22,6 +22,10 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Objects;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.connect.generator.OpenApiSpecGenerator;
@@ -43,7 +47,8 @@ public class TaskGenerateOpenApi extends AbstractTaskConnectGenerator {
      *            {@link com.vaadin.flow.server.connect.VaadinService}
      * @param classLoaderURLs
      *            URL of Jars/folder which should be used to resolved types in
-     *            the source paths.
+     *            the source paths. If this is <code>null</code>, the class
+     *            loader of this class will be used.
      * @param output
      *            the output path of the generated json file.
      */
@@ -51,9 +56,13 @@ public class TaskGenerateOpenApi extends AbstractTaskConnectGenerator {
     TaskGenerateOpenApi(File properties, List<Path> sourcePaths,
             URL[] classLoaderURLs, Path output) {
         super(properties);
+        Objects.requireNonNull(sourcePaths, "Source paths should not be null.");
+        Objects.requireNonNull(output,
+                "OpenAPI output file should not be null.");
         this.sourcePaths = sourcePaths;
         this.classLoaderURLs = classLoaderURLs;
         this.output = output;
+
     }
 
     @Override
@@ -66,6 +75,8 @@ public class TaskGenerateOpenApi extends AbstractTaskConnectGenerator {
             // sourcePaths
             openApiSpecGenerator.generateOpenApiSpec(sourcePaths,
                     this.getClass().getClassLoader(), output);
+            getLogger().debug("Generate OpenAPI spec to {} using the current "
+                    + "ClassLoader", output);
         } else {
             // when triggered by the maven plugin, we need to create an URL
             // class loader from the project compiled class and its dependencies
@@ -73,12 +84,18 @@ public class TaskGenerateOpenApi extends AbstractTaskConnectGenerator {
                     classLoaderURLs)) {
                 openApiSpecGenerator.generateOpenApiSpec(sourcePaths,
                         classLoader, output);
+                getLogger().debug("Generate OpenAPI spec to {} using the "
+                        + "collected URLClassLoader", output);
             } catch (IOException e) {
                 throw new UncheckedIOException(
                         "I/O error happens when closing project's URLClassLoader after generating OpenAPI spec.",
                         e);
             }
         }
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(TaskGenerateOpenApi.class);
     }
 
 }
