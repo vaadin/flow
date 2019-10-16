@@ -27,7 +27,6 @@ import java.util.stream.Stream;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
@@ -41,6 +40,7 @@ import com.vaadin.flow.server.frontend.scanner.samples.MyServiceListener;
 import com.vaadin.flow.server.frontend.scanner.samples.MyUIInitListener;
 import com.vaadin.flow.server.frontend.scanner.samples.RouteComponent;
 import com.vaadin.flow.server.frontend.scanner.samples.RouteComponentWithLayout;
+import com.vaadin.flow.server.frontend.scanner.samples.RouteComponentWithMethodReference;
 import com.vaadin.flow.theme.AbstractTheme;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -149,6 +149,22 @@ public class FrontendDependenciesTest {
         Assert.assertThat("Theme's annotations should come first",
                     dependencies.getModules(), is(expectedOrder)
                 );
+    }
+
+    // flow #6524
+    @Test
+    public void extractsAndScansClassesFromMethodReferences() {
+        Mockito.when(classFinder.getAnnotatedClasses(Route.class))
+                .thenReturn(Collections.singleton(RouteComponentWithMethodReference.class));
+
+        FrontendDependencies dependencies =
+                new FrontendDependencies(classFinder, false);
+
+        List<String> modules = dependencies.getModules();
+        Assert.assertEquals(3, modules.size());
+        Assert.assertTrue(modules.contains("foo.js"));
+        Assert.assertTrue(modules.contains("bar.js"));
+        Assert.assertTrue(modules.contains("baz.js"));
     }
 
     @Test
