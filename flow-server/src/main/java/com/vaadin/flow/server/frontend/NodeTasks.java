@@ -18,7 +18,6 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.Serializable;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -84,8 +83,6 @@ public class NodeTasks implements FallibleCommand {
         private JsonObject tokenFileData;
 
         private File tokenFile;
-
-        private URL[] connectClassLoaderURLs;
 
         private List<File> connectJavaSourceDirs;
 
@@ -332,20 +329,6 @@ public class NodeTasks implements FallibleCommand {
         }
 
         /**
-         * Set ClassLoader which is able to resolve types in the source paths.
-         * If this is null, the generator will use the current ClassLoader for
-         * resolving types when parsing the source.
-         * 
-         * @param classLoaderURLs
-         *            the class loader URLs
-         * @return the builder, for chaining
-         */
-        public Builder setConnectClassLoaderURLs(URL[] classLoaderURLs) {
-            this.connectClassLoaderURLs = classLoaderURLs;
-            return this;
-        }
-
-        /**
          * Set application properties file for Spring project.
          * 
          * @param applicationProperties
@@ -501,7 +484,7 @@ public class NodeTasks implements FallibleCommand {
                 TaskGenerateOpenApi taskGenerateOpenApi = new TaskGenerateOpenApi(
                         builder.connectApplicationProperties,
                         builder.connectJavaSourceDirs,
-                        builder.connectClassLoaderURLs,
+                        builder.classFinder.getClassLoader(),
                         builder.connectGeneratedOpenAPIFile);
                 commands.add(taskGenerateOpenApi);
             }

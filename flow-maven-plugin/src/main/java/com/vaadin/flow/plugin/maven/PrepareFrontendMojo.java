@@ -18,15 +18,11 @@ package com.vaadin.flow.plugin.maven;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
@@ -239,33 +235,11 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         if (!isClientSideMode()) {
             return;
         }
-        try {
-            List<File> javaSourceDirs = project.getCompileSourceRoots().stream()
-                    .map(File::new).collect(Collectors.toList());
-            builder.setConnectApplicationProperties(applicationProperties)
-                    .setConnectJavaSourceDirs(javaSourceDirs)
-                    .setConnectClassLoaderURLs(getClassLoaderUrls())
-                    .setConnectGeneratedOpenAPIJson(openApiJsonFile);
-        } catch (DependencyResolutionRequiredException e) {
-            throw new IllegalStateException(
-                    "All dependencies need to be resolved before running the OpenAPI spec generator. Please resolve the dependencies and try again.",
-                    e);
-        }
+        List<File> javaSourceDirs = project.getCompileSourceRoots().stream()
+                .map(File::new).collect(Collectors.toList());
+        builder.setConnectApplicationProperties(applicationProperties)
+                .setConnectJavaSourceDirs(javaSourceDirs)
+                .setConnectGeneratedOpenAPIJson(openApiJsonFile);
     }
 
-    private URL[] getClassLoaderUrls()
-            throws DependencyResolutionRequiredException {
-        List<URL> pathUrls = new ArrayList<>();
-        try {
-            for (String mavenCompilePath : project
-                    .getCompileClasspathElements()) {
-                pathUrls.add(new File(mavenCompilePath).toURI().toURL());
-            }
-            return pathUrls.toArray(new URL[pathUrls.size()]);
-        } catch (MalformedURLException e) {
-            throw new IllegalStateException(
-                    "Can't create URLs from project class paths for generating OpenAPI spec.",
-                    e);
-        }
-    }
 }

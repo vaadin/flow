@@ -89,4 +89,9 @@ public class ReflectionsClassFinder implements ClassFinder {
     public <T> Set<Class<? extends T>> getSubTypesOf(Class<T> type) {
         return reflections.getSubTypesOf(type);
     }
+
+    @Override
+    public ClassLoader getClassLoader() {
+        return classLoader;
+    }
 }
