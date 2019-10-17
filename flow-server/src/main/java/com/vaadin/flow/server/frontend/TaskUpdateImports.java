@@ -92,9 +92,28 @@ public class TaskUpdateImports extends NodeUpdater {
 
         @Override
         protected void writeImportLines(List<String> lines) {
+            lines.add(
+                    "var scripts = document.getElementsByTagName('script');\n");
+            lines.add("var index = scripts.length - 1;\n");
+            lines.add("var myScript = scripts[index];\n");
+            lines.add("var thisScript;\n");
+            lines.add(
+                    "var elements = document.getElementsByTagName('script');\n");
+            lines.add("for (var i = 0; i < elements.length; i++) {\n");
+            lines.add("    var script = elements[i];\n");
+            lines.add(
+                    "    if (script.getAttribute('type')=='module' && script.getAttribute('data-app-id') && !script['vaadin-bundle']) {\n");
+            lines.add("        thisScript = script;break;\n");
+            lines.add("     }\n");
+            lines.add("}\n");
+            lines.add("if (!thisScript) {\n");
+            lines.add(
+                    "    throw new Error('Could not find the bundle script to identify the application id');\n");
+            lines.add("}\n");
+            lines.add("thisScript['vaadin-bundle'] = true;\n");
             if (fallBackImports != null) {
                 lines.add(
-                        "window.Vaadin.Flow.loadFallback = function loadFallback(){");
+                        "window.Vaadin.Flow.clients[thisScript.getAttribute('data-app-id')].loadFallback = function loadFallback(){");
                 lines.add("   return import('./" + fallBackImports.getName()
                         + "');");
                 lines.add("}");

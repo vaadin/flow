@@ -922,7 +922,10 @@ public class UIInternals implements Serializable {
             return;
         }
         ui.getPage()
-                .addDynamicImport("return window.Vaadin.Flow.loadFallback();");
+                .addDynamicImport("var client = window.Vaadin.Flow.clients['"
+                        + getAppId()
+                        + "']; if (client.loadFallback) { return client.loadFallback(); } "
+                        + "else { return Promise.resolve(0); }");
         isFallbackChunkLoaded = true;
     }
 

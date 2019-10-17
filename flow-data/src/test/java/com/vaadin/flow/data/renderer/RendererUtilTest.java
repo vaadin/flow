@@ -133,7 +133,7 @@ public class RendererUtilTest {
                 "The javascript executions don't contain dataHost assignement",
                 expressons.remove("$0.__dataHost = $1;"));
         Assert.assertEquals(
-                "$0.foo = function(e) {Vaadin.Flow.sendEventMessage("
+                "$0.foo = function(e) {Vaadin.Flow.clients[$1].sendEventMessage("
                         + templateDataHost.getNode().getId()
                         + ", 'foo', {key: e.model ? e.model.__data.item.key : e.target.__dataHost.__data.item.key})}",
                 expressons.iterator().next());
