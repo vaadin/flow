@@ -94,24 +94,24 @@ public class TaskUpdateImports extends NodeUpdater {
         protected void writeImportLines(List<String> lines) {
             if (fallBackImports != null) {
                 lines.add(
-                        "var scripts = document.getElementsByTagName('script');\n");
-                lines.add("var index = scripts.length - 1;\n");
-                lines.add("var myScript = scripts[index];\n");
-                lines.add("var thisScript;\n");
+                        "var scripts = document.getElementsByTagName('script');");
+                lines.add("var index = scripts.length - 1;");
+                lines.add("var myScript = scripts[index];");
+                lines.add("var thisScript;");
                 lines.add(
-                        "var elements = document.getElementsByTagName('script');\n");
-                lines.add("for (var i = 0; i < elements.length; i++) {\n");
-                lines.add("    var script = elements[i];\n");
+                        "var elements = document.getElementsByTagName('script');");
+                lines.add("for (var i = 0; i < elements.length; i++) {");
+                lines.add("    var script = elements[i];");
                 lines.add(
-                        "    if (script.getAttribute('type')=='module' && script.getAttribute('data-app-id') && !script['vaadin-bundle']) {\n");
-                lines.add("        thisScript = script;break;\n");
-                lines.add("     }\n");
-                lines.add("}\n");
-                lines.add("if (!thisScript) {\n");
+                        "    if (script.getAttribute('type')=='module' && script.getAttribute('data-app-id') && !script['vaadin-bundle']) {");
+                lines.add("        thisScript = script;break;");
+                lines.add("     }");
+                lines.add("}");
+                lines.add("if (!thisScript) {");
                 lines.add(
-                        "    throw new Error('Could not find the bundle script to identify the application id');\n");
-                lines.add("}\n");
-                lines.add("thisScript['vaadin-bundle'] = true;\n");
+                        "    throw new Error('Could not find the bundle script to identify the application id');");
+                lines.add("}");
+                lines.add("thisScript['vaadin-bundle'] = true;");
                 lines.add(
                         "window.Vaadin.Flow.clients[thisScript.getAttribute('data-app-id')].loadFallback = function loadFallback(){");
                 lines.add("   return import('./" + fallBackImports.getName()
