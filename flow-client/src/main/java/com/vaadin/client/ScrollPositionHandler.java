@@ -328,8 +328,8 @@ public class ScrollPositionHandler {
             responseHandlingEndedHandler.removeHandler();
         }
 
-        if (xPositions.length() < currentHistoryIndex
-                || yPositions.length() < currentHistoryIndex) {
+        if (currentHistoryIndex >= xPositions.length()
+                || currentHistoryIndex >= yPositions.length()) {
             Console.warn("No matching scroll position found (entries X:"
                     + xPositions.length() + ", Y:" + yPositions.length()
                     + ") for opened history index (" + currentHistoryIndex
