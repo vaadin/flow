@@ -214,6 +214,10 @@ final class FrontendClassVisitor extends ClassVisitor {
     public void visit(int version, int access, String name, String signature,
             String superName, String[] interfaces) {
         addSignatureToClasses(children, superName);
+
+        for (String implementedInterface : interfaces) {
+            addSignatureToClasses(children, implementedInterface);
+        }
     }
 
     // Executed for each method defined in the class.
