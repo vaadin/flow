@@ -113,7 +113,12 @@ public class TaskUpdateImports extends NodeUpdater {
                 lines.add("}");
                 lines.add("thisScript['vaadin-bundle'] = true;");
                 lines.add(
-                        "window.Vaadin.Flow.clients[thisScript.getAttribute('data-app-id')].loadFallback = function loadFallback(){");
+                        "if (!window.Vaadin.Flow.fallbacks) { window.Vaadin.Flow.fallbacks={}; }");
+                lines.add("var fallbacks = window.Vaadin.Flow.fallbacks;");
+                lines.add(
+                        "fallbacks[thisScript.getAttribute('data-app-id')] = {}");
+                lines.add(
+                        "fallbacks[thisScript.getAttribute('data-app-id')].loadFallback = function loadFallback(){");
                 lines.add("   return import('./" + fallBackImports.getName()
                         + "');");
                 lines.add("}");

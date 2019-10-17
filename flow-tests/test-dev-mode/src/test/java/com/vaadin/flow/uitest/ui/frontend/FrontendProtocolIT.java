@@ -87,7 +87,7 @@ public class FrontendProtocolIT extends ChromeBrowserTest {
 
     private Object executeClientSideResolveUri() {
         return executeScript(
-                "return window.Vaadin.Flow.clients[window.Vaadin.Flow.getAppIds[0]].resolveUri(arguments[0]);",
+                "return window.Vaadin.Flow.clients[window.Vaadin.Flow.getAppIds()[0].replace(/-\\d+$/, '')].resolveUri(arguments[0]);",
                 "frontend://components/frontend-protocol.html");
     }
 
