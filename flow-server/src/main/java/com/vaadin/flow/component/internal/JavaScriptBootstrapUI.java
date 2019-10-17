@@ -208,8 +208,10 @@ public class JavaScriptBootstrapUI extends UI {
         } else {
             // client-side routing
             getPage().executeJs(
-                    "window.dispatchEvent(new CustomEvent('vaadin-router-go', {detail: {pathname: '/"
-                            + location.getPathWithQueryParameters() + "'}}))");
+                    "window.dispatchEvent(new CustomEvent('vaadin-router-go',"
+                            + " {detail: new URL($0, document.baseURI)}))",
+                    location.getPathWithQueryParameters()
+            );
         }
     }
 

@@ -465,4 +465,33 @@ public class IndexHtmlRequestHandlerIT extends ChromeBrowserTest {
         Assert.assertEquals("Should be able to navigate to other view",
                 "Main" + " layout\nServer view", mainLayoutContent);
     }
+
+    @Test
+    public void should_goToHomeView_When_ServerNavigatesToEmptyPath() {
+        openTestUrl("/");
+        waitForElementPresent(By.id("loadVaadinRouter"));
+        findElement(By.id("loadVaadinRouter")).click();
+        waitForElementPresent(By.id("outlet"));
+
+        findElement(By.linkText("View with home button")).click();
+        waitForElementPresent(By.id("viewWithHomeButton"));
+        findElement(By.id("homeButton")).click();
+
+        waitForElementPresent(By.id("emptyUi"));
+        String homeViewContent = findElement(By.id("emptyUi")).getText();
+        Assert.assertEquals(
+                "Should render home view when calling ui.navigate(\"\")",
+                "Empty view",
+                homeViewContent
+        );
+
+        String expectedUrl = getRootURL() + "/foo";
+        String actualUrl = getDriver().getCurrentUrl();
+        Assert.assertEquals(
+                "Should update URL to context path when calling"
+                        + " ui.navigate(\"\"),",
+                expectedUrl,
+                actualUrl
+        );
+    }
 }
