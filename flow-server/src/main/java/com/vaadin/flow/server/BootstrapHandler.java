@@ -864,11 +864,13 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 Element script = createJavaScriptElement(
                         "./" + VAADIN_MAPPING + chunks.getString(key));
                 if (key.endsWith(".es5")) {
-                    head.appendChild(script.attr("nomodule", true))
-                            .attr("data-app-id", context.getAppId());
+                    head.appendChild(
+                            script.attr("nomodule", true).attr("data-app-id",
+                                    context.getUI().getInternals().getAppId()));
                 } else {
-                    head.appendChild(script.attr("type", "module")
-                            .attr("data-app-id", context.getAppId()));
+                    head.appendChild(
+                            script.attr("type", "module").attr("data-app-id",
+                                    context.getUI().getInternals().getAppId()));
                 }
             }
         }
