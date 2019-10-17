@@ -57,7 +57,8 @@ public class TaskGenerateOpenApi extends AbstractTaskConnectGenerator {
     TaskGenerateOpenApi(File properties, List<File> javaSourceDirs,
             URL[] classLoaderURLs, File output) {
         super(properties);
-        Objects.requireNonNull(javaSourceDirs, "Source paths should not be null.");
+        Objects.requireNonNull(javaSourceDirs,
+                "Source paths should not be null.");
         Objects.requireNonNull(output,
                 "OpenAPI output file should not be null.");
         this.sourcePaths = javaSourceDirs;
