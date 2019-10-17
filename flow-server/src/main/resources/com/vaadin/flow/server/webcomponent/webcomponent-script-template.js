@@ -112,7 +112,7 @@ class _TagCamel_ extends HTMLElement {
   }
   _getClient() {
     if (_TagCamel_._getClientStrategy){
-        return _TagCamel_._getClientStrategy();
+        return _TagCamel_._getClientStrategy(this);
     }
     var clients = _TagCamel_._getClients();
     if (!clients){
