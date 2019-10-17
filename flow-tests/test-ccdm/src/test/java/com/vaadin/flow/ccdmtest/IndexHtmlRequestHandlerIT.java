@@ -143,6 +143,18 @@ public class IndexHtmlRequestHandlerIT extends ChromeBrowserTest {
         Assert.assertTrue(content.contains("Empty view"));
     }
 
+
+    @Test
+    public void should_bootstrapFlowCorrectly_When_CallingFromMultipleSegmentsPath() {
+        openTestUrl("/foo/bar/far");
+        waitForElementPresent(By.id("button3"));
+        findElement(By.id("button3")).click();
+        waitForElementPresent(By.id("result"));
+
+        String content = findElement(By.id("result")).getText();
+        Assert.assertTrue(content.contains("Empty view"));
+    }
+
     @Test
     public void should_removeFirstSlash_whenRouteStartsWithSlash() {
         openTestUrl("/");

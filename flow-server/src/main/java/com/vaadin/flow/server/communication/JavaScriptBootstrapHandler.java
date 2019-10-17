@@ -123,8 +123,6 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
                 .getPushConfiguration();
         pushConfiguration.setPushUrl(pushURL);
 
-        config.put(ApplicationConstants.SERVICE_URL, serviceUrl);
-
         // TODO(manolo) this comment is left intentionally because we
         // need to revise whether the info passed to client is valid
         // when initialising push. Right now ccdm is not doing
