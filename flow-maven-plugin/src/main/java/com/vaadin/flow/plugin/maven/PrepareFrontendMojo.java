@@ -39,12 +39,14 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
 
 import elemental.json.Json;
+import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
 
 import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFinder;
 import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.GENERATED_TOKEN;
+import static com.vaadin.flow.server.Constants.JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_CLIENT_SIDE_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
@@ -136,6 +138,12 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
     @Parameter(defaultValue = "${project.build.directory}/generated-resources/openapi.json")
     private File openApiJsonFile;
 
+    /**
+     * Java source folders for connect scanning.
+     */
+    @Parameter(property = "javaSourceFolders")
+    private List<File> javaSourceFolders;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         super.execute();
@@ -190,6 +198,7 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         buildInfo.put(NPM_TOKEN, npmFolder.getAbsolutePath());
         buildInfo.put(GENERATED_TOKEN, generatedFolder.getAbsolutePath());
         buildInfo.put(FRONTEND_TOKEN, frontendDirectory.getAbsolutePath());
+        buildInfo.put(JAVA_SOURCE_FOLDER_TOKEN, createJavaSourceFoldersJson());
         try {
             FileUtils.forceMkdir(token.getParentFile());
             FileUtils.write(token, JsonUtil.stringify(buildInfo, 2) + "\n",
@@ -235,11 +244,27 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         if (!isClientSideMode()) {
             return;
         }
-        List<File> javaSourceDirs = project.getCompileSourceRoots().stream()
-                .map(File::new).collect(Collectors.toList());
+        List<File> javaSourceDirs = getJavaSourceFolders();
         builder.setConnectApplicationProperties(applicationProperties)
                 .setConnectJavaSourceDirs(javaSourceDirs)
                 .setConnectGeneratedOpenAPIJson(openApiJsonFile);
     }
 
+    private List<File> getJavaSourceFolders() {
+        if (javaSourceFolders != null && !javaSourceFolders.isEmpty()) {
+            return javaSourceFolders;
+        }
+        return project.getCompileSourceRoots().stream().map(File::new)
+                .collect(Collectors.toList());
+    }
+
+    private JsonArray createJavaSourceFoldersJson() {
+        JsonArray javaSourceFoldersJson = Json.createArray();
+        List<File> javaSourceFoldersList = getJavaSourceFolders();
+        for (int i = 0; i < javaSourceFoldersList.size(); i++) {
+            File javaSourceFolder = javaSourceFoldersList.get(i);
+            javaSourceFoldersJson.set(i, javaSourceFolder.getAbsolutePath());
+        }
+        return javaSourceFoldersJson;
+    }
 }

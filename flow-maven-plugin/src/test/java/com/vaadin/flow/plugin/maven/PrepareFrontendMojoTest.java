@@ -8,7 +8,6 @@ import java.util.List;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.ReflectionUtils;
 import org.junit.Assert;
@@ -17,15 +16,16 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
-import org.mockito.Mockito;
 
 import elemental.json.Json;
+import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
 
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.assertContainsPackage;
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.getPackageJson;
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.setProject;
+import static com.vaadin.flow.server.Constants.JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_CLIENT_SIDE_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
@@ -62,9 +62,6 @@ public class PrepareFrontendMojoTest {
         tokenFile = new File(temporaryFolder.getRoot(),
                 VAADIN_SERVLET_RESOURCES + TOKEN_FILE);
 
-        MavenProject project = Mockito.mock(MavenProject.class);
-        Mockito.when(project.getBasedir()).thenReturn(projectBase);
-
         nodeModulesPath = new File(projectBase, NODE_MODULES);
         flowPackagePath = new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME);
         webpackConfig = new File(projectBase, WEBPACK_CONFIG).getAbsolutePath();
@@ -74,7 +71,6 @@ public class PrepareFrontendMojoTest {
         webpackOutputDirectory = new File(projectBase,
                 VAADIN_SERVLET_RESOURCES);
 
-        ReflectionUtils.setVariableValueInObject(mojo, "project", project);
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder",
                 projectBase);
         ReflectionUtils.setVariableValueInObject(mojo, "webpackTemplate",
@@ -90,7 +86,7 @@ public class PrepareFrontendMojoTest {
 
         ReflectionUtils.setVariableValueInObject(mojo, "openApiJsonFile",
                 new File(projectBase,
-                        "target/generated-resources/openapi" + ".json"));
+                        "target/generated-resources/openapi.json"));
 
         Assert.assertTrue(flowPackagePath.mkdirs());
         setProject(mojo, projectBase);
@@ -174,6 +170,43 @@ public class PrepareFrontendMojoTest {
         Assert.assertFalse(FileUtils.fileExists(openApiJsonFile));
         mojo.execute();
         Assert.assertFalse(FileUtils.fileExists(openApiJsonFile));
+    }
+
+    @Test
+    public void mavenGoal_shouldUseProvidedJavaSource_when_provided()
+            throws Exception {
+        File src = temporaryFolder.newFolder("my-src");
+        ReflectionUtils.setVariableValueInObject(mojo, "javaSourceFolders",
+                Collections.singletonList(src));
+        mojo.execute();
+
+        JsonArray array = Json.createArray();
+        array.set(0, src.getAbsolutePath());
+        String expectedArray = array.toJson();
+
+        String json = org.apache.commons.io.FileUtils
+                .readFileToString(tokenFile, "UTF-8");
+        JsonObject buildInfo = JsonUtil.parse(json);
+        Assert.assertEquals("Provided source folder should be used",
+                expectedArray,
+                buildInfo.getArray(JAVA_SOURCE_FOLDER_TOKEN).toJson());
+    }
+
+    @Test
+    public void mavenGoal_shouldUseProjectCompiledSource_when_JavaSourceFoldersAreNotProvided()
+            throws Exception {
+        mojo.execute();
+
+        JsonArray array = Json.createArray();
+        array.set(0, new File(projectBase, "src/main/java").getAbsolutePath());
+        String expectedArray = array.toJson();
+
+        String json = org.apache.commons.io.FileUtils
+                .readFileToString(tokenFile, "UTF-8");
+        JsonObject buildInfo = JsonUtil.parse(json);
+        Assert.assertEquals("Provided source folder should be used",
+                expectedArray,
+                buildInfo.getArray(JAVA_SOURCE_FOLDER_TOKEN).toJson());
     }
 
     @Test
