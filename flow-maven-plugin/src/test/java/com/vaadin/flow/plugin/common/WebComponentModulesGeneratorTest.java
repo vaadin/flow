@@ -37,6 +37,7 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.internal.ExportsWebComponent;
 import com.vaadin.flow.migration.ClassPathIntrospector;
 import com.vaadin.flow.plugin.samplecode.AbstractExporter;
 import com.vaadin.flow.plugin.samplecode.BarExporter;
@@ -131,8 +132,11 @@ public class WebComponentModulesGeneratorTest {
 
         Assert.assertThat("Generated module doesn't contain 'age' setter",
                 content,
-                CoreMatchers.containsString(
-                        "set ['age'](value) {\n  if (this['_age'] === value)\n    return;\n  this['_age'] = value;"));
+                // split due to windows env
+                CoreMatchers.allOf(
+                        CoreMatchers.containsString("set ['age'](value) {"),
+                        CoreMatchers.containsString("if (this['_age'] === value)"),
+                        CoreMatchers.containsString("this['_age'] = value;")));
 
         Assert.assertThat(
                 "Generated module doesn't contain element registration",
@@ -167,9 +171,9 @@ public class WebComponentModulesGeneratorTest {
         ClassFinder finder = mock(ClassFinder.class);
         Mockito.when(finder.loadClass(WebComponentModulesWriter.class.getName()))
                 .thenReturn((Class)WebComponentModulesWriter.class);
-        Mockito.when(finder.loadClass(WebComponentExporter.class.getName()))
-                .thenReturn((Class) WebComponentExporter.class);
-        Mockito.when(finder.getSubTypesOf(WebComponentExporter.class))
+        Mockito.when(finder.loadClass(ExportsWebComponent.class.getName()))
+                .thenReturn((Class) ExportsWebComponent.class);
+        Mockito.when(finder.getSubTypesOf(ExportsWebComponent.class))
                 .thenReturn(Stream.of(exporters).collect(Collectors.toSet()));
         return finder;
     }
