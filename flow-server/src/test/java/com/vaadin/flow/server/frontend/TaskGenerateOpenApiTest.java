@@ -60,7 +60,8 @@ public class TaskGenerateOpenApiTest {
     public void should_UseDefaultProperties_when_applicationPropertiesIsEmpty()
             throws Exception {
         taskGenerateOpenApi = new TaskGenerateOpenApi(applicationPropertiesFile,
-                Collections.singletonList(temporaryFolder.newFolder()), null,
+                Collections.singletonList(temporaryFolder.newFolder()),
+                this.getClass().getClassLoader(),
                 generatedOpenAPI);
         taskGenerateOpenApi.execute();
         OpenAPI generatedOpenAPI = getGeneratedOpenAPI();
@@ -115,7 +116,8 @@ public class TaskGenerateOpenApiTest {
                 StandardCharsets.UTF_8);
 
         taskGenerateOpenApi = new TaskGenerateOpenApi(applicationPropertiesFile,
-                Collections.singletonList(temporaryFolder.newFolder()), null,
+                Collections.singletonList(temporaryFolder.newFolder()),
+                this.getClass().getClassLoader(),
                 generatedOpenAPI);
         taskGenerateOpenApi.execute();
         OpenAPI generatedOpenAPI = getGeneratedOpenAPI();
