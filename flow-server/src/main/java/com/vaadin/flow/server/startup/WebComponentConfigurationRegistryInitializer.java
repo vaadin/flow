@@ -66,7 +66,7 @@ public class WebComponentConfigurationRegistryInitializer
                     .stream().filter(ExportsWebComponent.class::isAssignableFrom)
                     .filter(clazz -> !clazz.isInterface()
                             && !Modifier.isAbstract(clazz.getModifiers()))
-                    .map(aClass -> (Class<? extends WebComponentExporter<? extends Component>>) aClass)
+                    .map(aClass -> (Class<? extends ExportsWebComponent<? extends Component>>) aClass)
                     .collect(Collectors.toSet());
 
             Set<WebComponentConfiguration<? extends Component>> configurations =
