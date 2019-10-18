@@ -16,7 +16,6 @@
 package com.vaadin.flow.server.communication;
 
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
@@ -147,7 +146,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
                 response.setContentType(CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8);
                 generated = cache.computeIfAbsent(componentInfo.tag,
                         moduleTag -> generateNPMResponse(
-                                webComponentConfiguration.getTag()));
+                                webComponentConfiguration.getTag(), request));
             }
 
             IOUtils.write(generated, response.getOutputStream(),
@@ -216,17 +215,30 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
                 + ".nextSibling);";
     }
 
-    private String generateNPMResponse(String tagName) {
+    /**
+     * Generate the npm response for the web component.
+     *
+     * @param tagName
+     *         tag name of component
+     * @param request
+     *         current VaadinRequest
+     * @return npm response script
+     */
+    protected String generateNPMResponse(String tagName, VaadinRequest request) {
         // get the running script
         return getThisScript(tagName) + "var scriptUri = thisScript.src;"
                 + "var index = scriptUri.lastIndexOf('" + WEB_COMPONENT_PATH
                 + "');" + "var context = scriptUri.substring(0, index+"
                 + WEB_COMPONENT_PATH.length() + ");"
                 // figure out if we have already bootstrapped Vaadin client & ui
-                + "var bootstrapped = false;"
                 + "var bootstrapAddress=context+'web-component-bootstrap.js';"
                 // add the request address as a url parameter (used to get
                 // service url)
+                + bootstrapNpm();
+    }
+
+    protected String bootstrapNpm() {
+        return "var bootstrapped = false;\n"
                 + "bootstrapAddress+='?url='+bootstrapAddress;"
                 // check if a script with the bootstrap source already exits
                 + "var scripts = document.getElementsByTagName('script');"

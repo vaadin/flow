@@ -22,7 +22,6 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -207,13 +206,13 @@ public class ServletDeployer implements ServletContextListener {
         return result;
     }
 
-    private VaadinServletCreation createAppServlet(ServletContext context) {
+    private VaadinServletCreation createAppServlet(ServletContext servletContext) {
+        VaadinServletContext context = new VaadinServletContext(servletContext);
         boolean createServlet = ApplicationRouteRegistry.getInstance(context)
                 .hasNavigationTargets();
 
         createServlet = createServlet || WebComponentConfigurationRegistry
-                .getInstance(new VaadinServletContext(context))
-                .hasConfigurations();
+                .getInstance(context).hasConfigurations();
 
         if (!createServlet) {
             getLogger().info(
@@ -223,7 +222,7 @@ public class ServletDeployer implements ServletContextListener {
             return VaadinServletCreation.NO_CREATION;
         }
 
-        ServletRegistration vaadinServlet = findVaadinServlet(context);
+        ServletRegistration vaadinServlet = findVaadinServlet(servletContext);
         if (vaadinServlet != null) {
             getLogger().info(
                     "{} there is already a Vaadin servlet with the name {}",
@@ -232,7 +231,7 @@ public class ServletDeployer implements ServletContextListener {
             return VaadinServletCreation.SERVLET_EXISTS;
         }
 
-        return createServletIfNotExists(context, getClass().getName(),
+        return createServletIfNotExists(servletContext, getClass().getName(),
                 VaadinServlet.class, "/*");
     }
 

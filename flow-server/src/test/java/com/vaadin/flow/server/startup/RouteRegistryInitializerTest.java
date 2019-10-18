@@ -63,6 +63,7 @@ import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.PageConfigurator;
 import com.vaadin.flow.server.RouteRegistry;
+import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 
@@ -74,14 +75,20 @@ public class RouteRegistryInitializerTest {
     private RouteRegistryInitializer routeRegistryInitializer;
     private ApplicationRouteRegistry registry;
     private ServletContext servletContext;
+    private VaadinServletContext vaadinContext;
 
     @Before
     public void init() {
         routeRegistryInitializer = new RouteRegistryInitializer();
         registry = new TestRouteRegistry();
         servletContext = Mockito.mock(ServletContext.class);
-        Mockito.when(servletContext.getAttribute(RouteRegistry.class.getName()))
-                .thenReturn(registry);
+        vaadinContext = new VaadinServletContext(servletContext);
+        registry = ApplicationRouteRegistry
+                .getInstance(vaadinContext);
+
+        Mockito.when(vaadinContext.getAttribute(
+                ApplicationRouteRegistry.ApplicationRouteRegistryWrapper.class))
+                .thenReturn(new ApplicationRouteRegistry.ApplicationRouteRegistryWrapper(registry));
     }
 
     @Rule
