@@ -74,7 +74,7 @@ public class LoadingIndicator {
             "width: 50%;" +
             "opacity: 1;" +
             "height: 4px;" +
-            "background-color: var(--lumo-primary-color, blue);" +
+            "background-color: var(--lumo-primary-color, var(--material-primary-color, blue));" +
             "pointer-events: none;" +
             "transition: none;" +
             "animation: v-progress-start 1000ms 200ms both;}" +

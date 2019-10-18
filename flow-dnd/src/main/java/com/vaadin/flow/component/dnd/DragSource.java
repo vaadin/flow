@@ -23,6 +23,7 @@ import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dnd.internal.DndUtil;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.shared.Registration;
@@ -46,7 +47,8 @@ import com.vaadin.flow.shared.Registration;
  * @author Vaadin Ltd
  * @since 2.0
  */
-@JavaScript(DndUtil.DND_CONNECTOR)
+@JavaScript(DndUtil.DND_CONNECTOR_COMPATIBILITY)
+@JsModule(DndUtil.DND_CONNECTOR)
 public interface DragSource<T extends Component> extends HasElement {
 
     /**
@@ -180,11 +182,8 @@ public interface DragSource<T extends Component> extends HasElement {
             // The attribute is an enumerated one and not a Boolean one.
             getDraggableElement().setProperty("draggable",
                     Boolean.TRUE.toString());
-            getDraggableElement()
-                    .executeJavaScript(
-                            "window.Vaadin.Flow.dndConnector"
-                                    + ".activateDragSource($0)",
-                            getDraggableElement());
+            DndUtil.updateDragSourceActivation(this);
+
             // store & clear the component as active drag source for the UI
             Registration startListenerRegistration = addDragStartListener(
                     event -> getDragSourceComponent().getUI()
@@ -204,10 +203,7 @@ public interface DragSource<T extends Component> extends HasElement {
                     endListenerRegistration);
         } else {
             getDraggableElement().removeProperty("draggable");
-            getDraggableElement().executeJavaScript(
-                    "window.Vaadin.Flow.dndConnector"
-                            + ".deactivateDragSource($0)",
-                    getDraggableElement());
+            DndUtil.updateDragSourceActivation(this);
             // clear listeners for setting active data source
             Object startListenerRegistration = ComponentUtil.getData(
                     getDragSourceComponent(),
@@ -222,6 +218,8 @@ public interface DragSource<T extends Component> extends HasElement {
                 ((Registration) endListenerRegistration).remove();
             }
         }
+        // only onetime thing when in development mode
+        DndUtil.reportUsage();
     }
 
     /**

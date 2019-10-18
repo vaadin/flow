@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2019 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -27,9 +27,12 @@ import java.io.UncheckedIOException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.LoggerFactory;
@@ -86,6 +89,8 @@ public final class DeploymentConfigurationFactory implements Serializable {
     public static final String DEV_FOLDER_MISSING_MESSAGE = "Running project in development mode with no access to folder '%s'.%n"
             + "Build project in production mode instead, see https://vaadin.com/docs/v14/flow/production/tutorial-production-mode-basic.html";
 
+    private static Pattern JAR_REGEX = Pattern.compile("(.+\\.jar).*");
+
     private DeploymentConfigurationFactory() {
     }
 
@@ -98,7 +103,6 @@ public final class DeploymentConfigurationFactory implements Serializable {
      * @param servletConfig
      *            the config to get the rest of the properties from
      * @return {@link DeploymentConfiguration} instance
-     *
      * @throws ServletException
      *             if construction of the {@link Properties} for the parameters
      *             fails
@@ -120,7 +124,6 @@ public final class DeploymentConfigurationFactory implements Serializable {
      * @param servletConfig
      *            the config to get the rest of the properties from
      * @return {@link DeploymentConfiguration} instance
-     *
      * @throws ServletException
      *             if construction of the {@link Properties} for the parameters
      *             fails
@@ -141,7 +144,6 @@ public final class DeploymentConfigurationFactory implements Serializable {
      * @param servletConfig
      *            the config to get the rest of the properties from
      * @return {@link Properties} instance
-     *
      * @throws ServletException
      *             if construction of the {@link Properties} for the parameters
      *             fails
@@ -188,9 +190,16 @@ public final class DeploymentConfigurationFactory implements Serializable {
 
             // token file is in the class-path of the application
             if (json == null) {
-                URL resource = DeploymentConfigurationFactory.class
-                        .getClassLoader()
-                        .getResource(VAADIN_SERVLET_RESOURCES + TOKEN_FILE);
+                List<URL> resources = Collections
+                        .list(DeploymentConfiguration.class.getClassLoader()
+                                .getResources(
+                                        VAADIN_SERVLET_RESOURCES + TOKEN_FILE));
+                URL resource = null;
+                if (!resources.isEmpty()) {
+                    resource = resources.stream().filter(
+                            url -> !JAR_REGEX.matcher(url.getPath()).find())
+                            .findFirst().orElse(null);
+                }
                 if (resource != null) {
                     json = FrontendUtils.streamToString(resource.openStream());
                 }

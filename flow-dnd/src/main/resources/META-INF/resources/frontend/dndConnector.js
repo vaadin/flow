@@ -44,19 +44,19 @@ window.Vaadin.Flow.dndConnector = {
     event.stopPropagation();
   },
 
-  activateDropTarget: function (element) {
-    element.addEventListener('dragenter', this.__ondragenterListener, false);
-    element.addEventListener('dragover', this.__ondragoverListener, false);
-    element.addEventListener('dragleave', this.__ondragleaveListener, false);
-    element.addEventListener('drop', this.__ondropListener, false);
-  },
-
-  deactivateDropTarget: function (element) {
-    element.removeEventListener('dragenter', this.__ondragenterListener, false);
-    element.removeEventListener('dragover', this.__ondragoverListener, false);
-    element.removeEventListener('dragleave', this.__ondragleaveListener, false);
-    element.removeEventListener('drop', this.__ondropListener, false);
-    element.classList.remove("v-drag-over-target");
+  updateDropTarget : function(element) {
+    if (element['__active']) {
+      element.addEventListener('dragenter', this.__ondragenterListener, false);
+      element.addEventListener('dragover', this.__ondragoverListener, false);
+      element.addEventListener('dragleave', this.__ondragleaveListener, false);
+      element.addEventListener('drop', this.__ondropListener, false);
+    } else {
+      element.removeEventListener('dragenter', this.__ondragenterListener, false);
+      element.removeEventListener('dragover', this.__ondragoverListener, false);
+      element.removeEventListener('dragleave', this.__ondragleaveListener, false);
+      element.removeEventListener('drop', this.__ondropListener, false);
+      element.classList.remove("v-drag-over-target");
+    }
   },
 
   /** DRAG SOURCE METHODS: */
@@ -73,15 +73,11 @@ window.Vaadin.Flow.dndConnector = {
     event.currentTarget.classList.remove('v-dragged');
   },
 
-  activateDragSource: function (element) {
+  updateDragSource: function (element) {
     if (element['draggable']) {
       element.addEventListener('dragstart', this.__dragstartListener, false);
       element.addEventListener('dragend', this.__dragendListener, false);
-    }
-  },
-
-  deactivateDragSource: function (element) {
-    if (!element['draggable']) {
+    } else {
       element.removeEventListener('dragstart', this.__dragstartListener, false);
       element.removeEventListener('dragend', this.__dragendListener, false);
     }
