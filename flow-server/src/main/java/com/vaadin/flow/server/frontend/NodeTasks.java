@@ -20,7 +20,6 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -84,9 +83,9 @@ public class NodeTasks implements FallibleCommand {
 
         private File tokenFile;
 
-        private List<File> connectJavaSourceDirs;
+        private File connectJavaSourceFolder;
 
-        private File connectGeneratedOpenAPIFile;
+        private File connectGeneratedOpenApiFile;
 
         private File connectApplicationProperties;
 
@@ -319,12 +318,13 @@ public class NodeTasks implements FallibleCommand {
          * Set source paths that OpenAPI generator searches for connect
          * services.
          * 
-         * @param connectJavaSourceDirs
-         *            list of source paths
+         * @param connectJavaSourceFolder
+         *            java source folder
          * @return the builder, for chaining
          */
-        public Builder setConnectJavaSourceDirs(List<File> connectJavaSourceDirs) {
-            this.connectJavaSourceDirs = connectJavaSourceDirs;
+        public Builder withConnectJavaSourceFolder(
+                File connectJavaSourceFolder) {
+            this.connectJavaSourceFolder = connectJavaSourceFolder;
             return this;
         }
 
@@ -335,7 +335,7 @@ public class NodeTasks implements FallibleCommand {
          *            application properties file.
          * @return this builder, for chaining
          */
-        public Builder setConnectApplicationProperties(
+        public Builder withConnectApplicationProperties(
                 File applicationProperties) {
             this.connectApplicationProperties = applicationProperties;
             return this;
@@ -344,13 +344,13 @@ public class NodeTasks implements FallibleCommand {
         /**
          * Set output location for the generated OpenAPI file.
          * 
-         * @param generatedOpenAPIFile
+         * @param generatedOpenApiFile
          *            the generated output file.
          * @return the builder, for chaining
          */
-        public Builder setConnectGeneratedOpenAPIJson(
-                File generatedOpenAPIFile) {
-            this.connectGeneratedOpenAPIFile = generatedOpenAPIFile;
+        public Builder withConnectGeneratedOpenApiJson(
+                File generatedOpenApiFile) {
+            this.connectGeneratedOpenApiFile = generatedOpenApiFile;
             return this;
         }
 
@@ -479,13 +479,13 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateTsConfig taskGenerateTsConfig = new TaskGenerateTsConfig(
                     builder.frontendDirectory, builder.npmFolder);
             commands.add(taskGenerateTsConfig);
-            if (builder.connectJavaSourceDirs != null
-                    && builder.connectGeneratedOpenAPIFile != null) {
+            if (builder.connectJavaSourceFolder != null
+                    && builder.connectGeneratedOpenApiFile != null) {
                 TaskGenerateOpenApi taskGenerateOpenApi = new TaskGenerateOpenApi(
                         builder.connectApplicationProperties,
-                        builder.connectJavaSourceDirs,
+                        builder.connectJavaSourceFolder,
                         builder.classFinder.getClassLoader(),
-                        builder.connectGeneratedOpenAPIFile);
+                        builder.connectGeneratedOpenApiFile);
                 commands.add(taskGenerateOpenApi);
             }
         }

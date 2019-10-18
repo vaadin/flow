@@ -18,7 +18,6 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 import java.util.List;
 
 import io.swagger.v3.oas.models.OpenAPI;
@@ -60,7 +59,7 @@ public class TaskGenerateOpenApiTest {
     public void should_UseDefaultProperties_when_applicationPropertiesIsEmpty()
             throws Exception {
         taskGenerateOpenApi = new TaskGenerateOpenApi(applicationPropertiesFile,
-                Collections.singletonList(temporaryFolder.newFolder()),
+                temporaryFolder.newFolder(),
                 this.getClass().getClassLoader(),
                 generatedOpenAPI);
         taskGenerateOpenApi.execute();
@@ -116,8 +115,7 @@ public class TaskGenerateOpenApiTest {
                 StandardCharsets.UTF_8);
 
         taskGenerateOpenApi = new TaskGenerateOpenApi(applicationPropertiesFile,
-                Collections.singletonList(temporaryFolder.newFolder()),
-                this.getClass().getClassLoader(),
+                temporaryFolder.newFolder(), this.getClass().getClassLoader(),
                 generatedOpenAPI);
         taskGenerateOpenApi.execute();
         OpenAPI generatedOpenAPI = getGeneratedOpenAPI();

@@ -19,8 +19,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -39,7 +37,6 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
 
 import elemental.json.Json;
-import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
 
@@ -141,8 +138,8 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
     /**
      * Java source folders for connect scanning.
      */
-    @Parameter(property = "javaSourceFolders")
-    private List<File> javaSourceFolders;
+    @Parameter(defaultValue = "${project.basedir}/src/main/java")
+    private File javaSourceFolder;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -168,7 +165,7 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         }
 
         try {
-            NodeTasks.Builder builder = new NodeTasks.Builder(
+            new NodeTasks.Builder(
                     getClassFinder(project), npmFolder, generatedFolder,
                     frontendDirectory)
                             .withWebpack(webpackOutputDirectory,
@@ -176,9 +173,12 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
                             .enableClientSideMode(isClientSideMode())
                             .createMissingPackageJson(true)
                             .enableImportsUpdate(false)
-                            .enablePackagesUpdate(false).runNpmInstall(false);
-            generateOpenApiSpec(builder);
-            builder.build().execute();
+                            .enablePackagesUpdate(false).runNpmInstall(false)
+                            .withConnectApplicationProperties(
+                                    applicationProperties)
+                            .withConnectJavaSourceFolder(javaSourceFolder)
+                            .withConnectGeneratedOpenApiJson(openApiJsonFile)
+                            .build().execute();
         } catch (ExecutionFailedException exception) {
             throw new MojoFailureException(
                     "Could not execute prepare-frontend goal.", exception);
@@ -198,7 +198,8 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         buildInfo.put(NPM_TOKEN, npmFolder.getAbsolutePath());
         buildInfo.put(GENERATED_TOKEN, generatedFolder.getAbsolutePath());
         buildInfo.put(FRONTEND_TOKEN, frontendDirectory.getAbsolutePath());
-        buildInfo.put(JAVA_SOURCE_FOLDER_TOKEN, createJavaSourceFoldersJson());
+        buildInfo.put(JAVA_SOURCE_FOLDER_TOKEN,
+                javaSourceFolder.getAbsolutePath());
         try {
             FileUtils.forceMkdir(token.getParentFile());
             FileUtils.write(token, JsonUtil.stringify(buildInfo, 2) + "\n",
@@ -238,33 +239,5 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
     @Override
     boolean isDefaultCompatibility() {
         return false;
-    }
-
-    private void generateOpenApiSpec(NodeTasks.Builder builder) {
-        if (!isClientSideMode()) {
-            return;
-        }
-        List<File> javaSourceDirs = getJavaSourceFolders();
-        builder.setConnectApplicationProperties(applicationProperties)
-                .setConnectJavaSourceDirs(javaSourceDirs)
-                .setConnectGeneratedOpenAPIJson(openApiJsonFile);
-    }
-
-    private List<File> getJavaSourceFolders() {
-        if (javaSourceFolders != null && !javaSourceFolders.isEmpty()) {
-            return javaSourceFolders;
-        }
-        return project.getCompileSourceRoots().stream().map(File::new)
-                .collect(Collectors.toList());
-    }
-
-    private JsonArray createJavaSourceFoldersJson() {
-        JsonArray javaSourceFoldersJson = Json.createArray();
-        List<File> javaSourceFoldersList = getJavaSourceFolders();
-        for (int i = 0; i < javaSourceFoldersList.size(); i++) {
-            File javaSourceFolder = javaSourceFoldersList.get(i);
-            javaSourceFoldersJson.set(i, javaSourceFolder.getAbsolutePath());
-        }
-        return javaSourceFoldersJson;
     }
 }

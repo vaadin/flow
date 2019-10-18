@@ -54,6 +54,7 @@ public class PrepareFrontendMojoTest {
     private File projectBase;
     private File webpackOutputDirectory;
     private File tokenFile;
+    private File defaultJavaSource;
 
     @Before
     public void setup() throws Exception {
@@ -70,6 +71,7 @@ public class PrepareFrontendMojoTest {
                 "target/generated-resources/openapi.json").getAbsolutePath();
         webpackOutputDirectory = new File(projectBase,
                 VAADIN_SERVLET_RESOURCES);
+        defaultJavaSource = new File(projectBase, "src/main/java");
 
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder",
                 projectBase);
@@ -87,7 +89,10 @@ public class PrepareFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "openApiJsonFile",
                 new File(projectBase,
                         "target/generated-resources/openapi.json"));
+        ReflectionUtils.setVariableValueInObject(mojo, "javaSourceFolder",
+                defaultJavaSource);
 
+        Assert.assertTrue(defaultJavaSource.mkdirs());
         Assert.assertTrue(flowPackagePath.mkdirs());
         setProject(mojo, projectBase);
     }
@@ -170,43 +175,6 @@ public class PrepareFrontendMojoTest {
         Assert.assertFalse(FileUtils.fileExists(openApiJsonFile));
         mojo.execute();
         Assert.assertFalse(FileUtils.fileExists(openApiJsonFile));
-    }
-
-    @Test
-    public void mavenGoal_shouldUseProvidedJavaSource_when_provided()
-            throws Exception {
-        File src = temporaryFolder.newFolder("my-src");
-        ReflectionUtils.setVariableValueInObject(mojo, "javaSourceFolders",
-                Collections.singletonList(src));
-        mojo.execute();
-
-        JsonArray array = Json.createArray();
-        array.set(0, src.getAbsolutePath());
-        String expectedArray = array.toJson();
-
-        String json = org.apache.commons.io.FileUtils
-                .readFileToString(tokenFile, "UTF-8");
-        JsonObject buildInfo = JsonUtil.parse(json);
-        Assert.assertEquals("Provided source folder should be used",
-                expectedArray,
-                buildInfo.getArray(JAVA_SOURCE_FOLDER_TOKEN).toJson());
-    }
-
-    @Test
-    public void mavenGoal_shouldUseProjectCompiledSource_when_JavaSourceFoldersAreNotProvided()
-            throws Exception {
-        mojo.execute();
-
-        JsonArray array = Json.createArray();
-        array.set(0, new File(projectBase, "src/main/java").getAbsolutePath());
-        String expectedArray = array.toJson();
-
-        String json = org.apache.commons.io.FileUtils
-                .readFileToString(tokenFile, "UTF-8");
-        JsonObject buildInfo = JsonUtil.parse(json);
-        Assert.assertEquals("Provided source folder should be used",
-                expectedArray,
-                buildInfo.getArray(JAVA_SOURCE_FOLDER_TOKEN).toJson());
     }
 
     @Test

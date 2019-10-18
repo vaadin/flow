@@ -16,10 +16,8 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
-import java.nio.file.Path;
-import java.util.List;
+import java.util.Collections;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.connect.generator.OpenApiSpecGenerator;
@@ -29,32 +27,32 @@ import com.vaadin.flow.server.connect.generator.OpenApiSpecGenerator;
  */
 public class TaskGenerateOpenApi extends AbstractTaskConnectGenerator {
 
-    private final List<File> sourcePaths;
+    private final File javaSourceFolder;
     private final transient ClassLoader classLoader;
     private final File output;
 
     /**
      * Create a task for generating OpenAPI spec.
      * 
-     * @param javaSourceDirs
+     * @param javaSourceFolder
      *            source paths of the project containing
      *            {@link com.vaadin.flow.server.connect.VaadinService}
      * @param classLoader
-     *            The class loader which should be used to resolved types in
-     *            the source paths.
+     *            The class loader which should be used to resolved types in the
+     *            source paths.
      * @param output
      *            the output path of the generated json file.
      */
-    TaskGenerateOpenApi(File properties, List<File> javaSourceDirs,
+    TaskGenerateOpenApi(File properties, File javaSourceFolder,
             ClassLoader classLoader, File output) {
         super(properties);
-        Objects.requireNonNull(javaSourceDirs,
+        Objects.requireNonNull(javaSourceFolder,
                 "Source paths should not be null.");
         Objects.requireNonNull(output,
                 "OpenAPI output file should not be null.");
         Objects.requireNonNull(classLoader,
                 "ClassLoader should not be null.");
-        this.sourcePaths = javaSourceDirs;
+        this.javaSourceFolder = javaSourceFolder;
         this.classLoader = classLoader;
         this.output = output;
     }
@@ -63,9 +61,8 @@ public class TaskGenerateOpenApi extends AbstractTaskConnectGenerator {
     public void execute() throws ExecutionFailedException {
         OpenApiSpecGenerator openApiSpecGenerator = new OpenApiSpecGenerator(
                 readApplicationProperties());
-        List<Path> paths = sourcePaths.stream().map(File::toPath)
-                .collect(Collectors.toList());
-        openApiSpecGenerator.generateOpenApiSpec(paths, classLoader,
-                output.toPath());
+        openApiSpecGenerator.generateOpenApiSpec(
+                Collections.singletonList(javaSourceFolder.toPath()),
+                classLoader, output.toPath());
     }
 }

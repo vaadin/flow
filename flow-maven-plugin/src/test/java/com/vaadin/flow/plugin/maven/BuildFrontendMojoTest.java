@@ -170,10 +170,6 @@ public class BuildFrontendMojoTest {
         when(project.getBasedir()).thenReturn(baseFolder);
         when(project.getBuild()).thenReturn(buildMock);
         when(project.getRuntimeClasspathElements()).thenReturn(getClassPath());
-        File defaultJavaSource = new File(baseFolder, "src/main/java");
-        FileUtils.forceMkdir(defaultJavaSource);
-        when(project.getCompileSourceRoots()).thenReturn(
-                Collections.singletonList(defaultJavaSource.getAbsolutePath()));
         ReflectionUtils.setVariableValueInObject(mojo, "project", project);
     }
 
