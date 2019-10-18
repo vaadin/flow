@@ -63,6 +63,7 @@ import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.internal.UsageStatistics;
+import com.vaadin.flow.internal.UsageStatistics.UsageEntry;
 import com.vaadin.flow.server.BootstrapUtils.ThemeSettings;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.PushConnectionFactory;
@@ -535,7 +536,11 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             }
 
             if (!config.isProductionMode()) {
-                exportUsageStatistics(document);
+                if (config.isBowerMode()) {
+                    exportBowerUsageStatistics(document);
+                } else {
+                    exportNpmUsageStatistics(document);
+                }
             }
 
             setupPwa(document, context);
@@ -571,16 +576,11 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             }
         }
 
-        private void exportUsageStatistics(Document document) {
+        private void exportBowerUsageStatistics(Document document) {
             String registerScript = UsageStatistics.getEntries().map(entry -> {
-                String name = entry.getName();
-                String version = entry.getVersion();
+                String json = createUsageStatisticsJson(entry);
 
-                JsonObject json = Json.createObject();
-                json.put("is", name);
-                json.put("version", version);
-
-                String escapedName = Json.create(name).toJson();
+                String escapedName = Json.create(entry.getName()).toJson();
 
                 // Registers the entry in a way that is picked up as a Vaadin
                 // WebComponent by the usage stats gatherer
@@ -591,6 +591,30 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             if (!registerScript.isEmpty()) {
                 document.body().appendElement(SCRIPT_TAG).text(registerScript);
             }
+        }
+
+        private void exportNpmUsageStatistics(Document document) {
+            String entries = UsageStatistics.getEntries()
+                    .map(BootstrapPageBuilder::createUsageStatisticsJson)
+                    .collect(Collectors.joining(","));
+
+            if (!entries.isEmpty()) {
+                // Registers the entries in a way that is picked up as a Vaadin
+                // WebComponent by the usage stats gatherer
+                document.body().appendElement(SCRIPT_TAG)
+                        .text("window.Vaadin.registrations = window.Vaadin.registrations || [];\n"
+                                + "window.Vaadin.registrations.push(" + entries
+                                + ");");
+            }
+        }
+
+        private static String createUsageStatisticsJson(UsageEntry entry) {
+            JsonObject json = Json.createObject();
+
+            json.put("is", entry.getName());
+            json.put("version", entry.getVersion());
+
+            return json.toJson();
         }
 
         private void handleThemeContents(BootstrapContext context,
@@ -1103,11 +1127,12 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                         !inlineElement);
                 break;
             case JS_MODULE:
-                if (url != null && UrlUtil.isExternal(url))
+                if (url != null && UrlUtil.isExternal(url)) {
                     dependencyElement = createJavaScriptElement(url,
                             !inlineElement, "module");
-                else
+                } else {
                     dependencyElement = null;
+                }
                 break;
             case HTML_IMPORT:
                 dependencyElement = createHtmlImportElement(url);
