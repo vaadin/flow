@@ -16,6 +16,7 @@
 package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletContext;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -203,26 +204,69 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
      *         <code>null</code>
      * @return a registry instance for the given servlet context, not
      * <code>null</code>
+     * @deprecated this is deprecated in favor of {@code getInstance(VaadinContext)}
+     * and will be removed in a future release
+     */
+    @Deprecated
+    public static ApplicationRouteRegistry getInstance(ServletContext context) {
+        return getInstance(new VaadinServletContext(context));
+    }
+
+    /**
+     * RouteRegistry wrapper class for storing the ApplicationRouteRegistry
+     */
+    protected static class ApplicationRouteRegistryWrapper
+            implements Serializable {
+        private final ApplicationRouteRegistry registry;
+
+        /**
+         * Create a application route registry wrapper.
+         *
+         * @param registry
+         *         application route registry to wrap
+         */
+        public ApplicationRouteRegistryWrapper(
+                ApplicationRouteRegistry registry) {
+            this.registry = registry;
+        }
+
+        /**
+         * Get the application route registry.
+         *
+         * @return wrapped application route registry
+         */
+        public ApplicationRouteRegistry getRegistry() {
+            return registry;
+        }
+    }
+
+    /**
+     * Gets the route registry for the given Vaadin context. If the Vaadin
+     * context has no route registry, a new instance is created and assigned to
+     * the context.
+     *
+     * @param context
+     *         the vaadin context for which to get a route registry, not
+     *         <code>null</code>
+     * @return a registry instance for the given servlet context, not
+     * <code>null</code>
      */
     public static ApplicationRouteRegistry getInstance(VaadinContext context) {
         assert context != null;
 
-        Object attribute;
+        ApplicationRouteRegistryWrapper attribute;
         synchronized (context) {
-            attribute = context.getAttribute(RouteRegistry.class.getName());
+            attribute = context
+                    .getAttribute(ApplicationRouteRegistryWrapper.class);
 
             if (attribute == null) {
-                attribute = createRegistry(context);
-                context.setAttribute(RouteRegistry.class.getName(), attribute);
+                attribute = new ApplicationRouteRegistryWrapper(
+                        createRegistry(context));
+                context.setAttribute(attribute);
             }
         }
 
-        if (attribute instanceof ApplicationRouteRegistry) {
-            return (ApplicationRouteRegistry) attribute;
-        } else {
-            throw new IllegalStateException(
-                    "Unknown context attribute value: " + attribute);
-        }
+        return attribute.getRegistry();
     }
 
     @Override

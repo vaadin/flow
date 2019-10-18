@@ -55,7 +55,7 @@ public class OSGiInitApplicationRouteRegistryTest
         // In case new attributes are added to OsgiServletContext, they should
         // also be set to null here
         OSGiAccess.getInstance().getOsgiServletContext()
-                .setAttribute(RouteRegistry.class.getName(), null);
+                .setAttribute(ApplicationRouteRegistry.ApplicationRouteRegistryWrapper.class.getName(), null);
 
         registry = ApplicationRouteRegistry.getInstance(
                 new VaadinServletContext(Mockito.mock(ServletContext.class)));

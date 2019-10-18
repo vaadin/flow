@@ -12,12 +12,14 @@ import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.Command;
+import com.vaadin.flow.server.MockServletContext;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.SessionRouteRegistry;
@@ -39,13 +41,10 @@ public class RouteConfigurationTest {
 
     @Before
     public void init() {
-        servletContext = Mockito.mock(ServletContext.class);
+        servletContext = new MockServletContext();
         vaadinContext = new VaadinServletContext(servletContext);
         registry = ApplicationRouteRegistry
                 .getInstance(vaadinContext);
-
-        Mockito.when(servletContext.getAttribute(RouteRegistry.class.getName()))
-                .thenReturn(registry);
 
         vaadinService = Mockito.mock(MockService.class);
         Mockito.when(vaadinService.getRouteRegistry()).thenReturn(registry);
