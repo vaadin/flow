@@ -20,7 +20,7 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.Set;
 
-import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.internal.ExportsWebComponent;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.webcomponent.WebComponentModulesWriter;
 
@@ -72,7 +72,7 @@ public class FrontendWebComponentGenerator implements Serializable {
             final Class<?> writerClass = finder
                     .loadClass(WebComponentModulesWriter.class.getName());
             final Set<Class<?>> exporterClasses = finder
-                    .getSubTypesOf(WebComponentExporter.class.getName());
+                    .getSubTypesOf(ExportsWebComponent.class.getName());
             return WebComponentModulesWriter.DirectoryWriter
                     .generateWebComponentsToDirectory(writerClass,
                             exporterClasses, outputDirectory, false);
