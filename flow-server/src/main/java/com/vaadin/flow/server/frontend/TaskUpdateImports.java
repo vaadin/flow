@@ -95,8 +95,6 @@ public class TaskUpdateImports extends NodeUpdater {
             if (fallBackImports != null) {
                 lines.add(
                         "var scripts = document.getElementsByTagName('script');");
-                lines.add("var index = scripts.length - 1;");
-                lines.add("var myScript = scripts[index];");
                 lines.add("var thisScript;");
                 lines.add(
                         "var elements = document.getElementsByTagName('script');");
