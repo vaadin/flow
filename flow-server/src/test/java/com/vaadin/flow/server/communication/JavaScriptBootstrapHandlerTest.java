@@ -93,7 +93,9 @@ public class JavaScriptBootstrapHandlerTest {
         Assert.assertFalse(json.getObject("appConfig").hasKey("webComponentMode"));
 
         Assert.assertEquals("./", json.getObject("appConfig").getString("contextRootUrl"));
-        Assert.assertEquals("./..", json.getObject("appConfig").getString("serviceUrl"));
+        Assert.assertNull(
+                "ServiceUrl should not be set. It will be computed by flow-client",
+                json.getObject("appConfig").get("serviceUrl"));
         Assert.assertEquals("http://localhost:8888/foo/", json.getObject("appConfig").getString("requestURL"));
 
         // Using regex, because version depends on the build
