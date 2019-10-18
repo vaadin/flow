@@ -8,7 +8,6 @@ import java.util.List;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.ReflectionUtils;
 import org.junit.Assert;
@@ -17,15 +16,16 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
-import org.mockito.Mockito;
 
 import elemental.json.Json;
+import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
 
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.assertContainsPackage;
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.getPackageJson;
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.setProject;
+import static com.vaadin.flow.server.Constants.JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_CLIENT_SIDE_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
@@ -49,10 +49,12 @@ public class PrepareFrontendMojoTest {
     private File nodeModulesPath;
     private File flowPackagePath;
     private String webpackConfig;
+    private String openApiJsonFile;
     private String packageJson;
     private File projectBase;
     private File webpackOutputDirectory;
     private File tokenFile;
+    private File defaultJavaSource;
 
     @Before
     public void setup() throws Exception {
@@ -61,17 +63,16 @@ public class PrepareFrontendMojoTest {
         tokenFile = new File(temporaryFolder.getRoot(),
                 VAADIN_SERVLET_RESOURCES + TOKEN_FILE);
 
-        MavenProject project = Mockito.mock(MavenProject.class);
-        Mockito.when(project.getBasedir()).thenReturn(projectBase);
-
         nodeModulesPath = new File(projectBase, NODE_MODULES);
         flowPackagePath = new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME);
         webpackConfig = new File(projectBase, WEBPACK_CONFIG).getAbsolutePath();
         packageJson = new File(projectBase, PACKAGE_JSON).getAbsolutePath();
+        openApiJsonFile = new File(projectBase,
+                "target/generated-resources/openapi.json").getAbsolutePath();
         webpackOutputDirectory = new File(projectBase,
                 VAADIN_SERVLET_RESOURCES);
+        defaultJavaSource = new File(projectBase, "src/main/java");
 
-        ReflectionUtils.setVariableValueInObject(mojo, "project", project);
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder",
                 projectBase);
         ReflectionUtils.setVariableValueInObject(mojo, "webpackTemplate",
@@ -85,6 +86,13 @@ public class PrepareFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "frontendDirectory",
                 new File(projectBase, "frontend"));
 
+        ReflectionUtils.setVariableValueInObject(mojo, "openApiJsonFile",
+                new File(projectBase,
+                        "target/generated-resources/openapi.json"));
+        ReflectionUtils.setVariableValueInObject(mojo, "javaSourceFolder",
+                defaultJavaSource);
+
+        Assert.assertTrue(defaultJavaSource.mkdirs());
         Assert.assertTrue(flowPackagePath.mkdirs());
         setProject(mojo, projectBase);
     }
@@ -149,6 +157,24 @@ public class PrepareFrontendMojoTest {
         Assert.assertFalse(FileUtils.fileExists(webpackConfig));
         mojo.execute();
         Assert.assertTrue(FileUtils.fileExists(webpackConfig));
+    }
+
+    @Test
+    public void mavenGoal_generateOpenApiJson_when_itIsInClientSideMode()
+            throws Exception {
+        Assert.assertFalse(FileUtils.fileExists(openApiJsonFile));
+        mojo.execute();
+        Assert.assertTrue(FileUtils.fileExists(openApiJsonFile));
+    }
+
+    @Test
+    public void mavenGoal_notGenerateOpenApiJson_when_itIsNotInClientSideMode()
+            throws Exception {
+        ReflectionUtils.setVariableValueInObject(mojo, "clientSideMode",
+                "false");
+        Assert.assertFalse(FileUtils.fileExists(openApiJsonFile));
+        mojo.execute();
+        Assert.assertFalse(FileUtils.fileExists(openApiJsonFile));
     }
 
     @Test

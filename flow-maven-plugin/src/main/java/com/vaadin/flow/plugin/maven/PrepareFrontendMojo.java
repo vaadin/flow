@@ -43,6 +43,7 @@ import elemental.json.impl.JsonUtil;
 import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFinder;
 import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.GENERATED_TOKEN;
+import static com.vaadin.flow.server.Constants.JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_CLIENT_SIDE_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
@@ -122,6 +123,24 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
     @Parameter(defaultValue = "${project.basedir}/frontend")
     private File frontendDirectory;
 
+    /**
+     * Application properties file in Spring project.
+     */
+    @Parameter(defaultValue = "${project.basedir}/src/main/resources/application.properties")
+    private File applicationProperties;
+
+    /**
+     * Default generated path of the OpenAPI json.
+     */
+    @Parameter(defaultValue = "${project.build.directory}/generated-resources/openapi.json")
+    private File openApiJsonFile;
+
+    /**
+     * Java source folders for connect scanning.
+     */
+    @Parameter(defaultValue = "${project.basedir}/src/main/java")
+    private File javaSourceFolder;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         super.execute();
@@ -146,14 +165,19 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         }
 
         try {
-            new NodeTasks.Builder(getClassFinder(project), npmFolder,
-                    generatedFolder, frontendDirectory)
+            new NodeTasks.Builder(
+                    getClassFinder(project), npmFolder, generatedFolder,
+                    frontendDirectory)
                             .withWebpack(webpackOutputDirectory,
                                     webpackTemplate, webpackGeneratedTemplate)
                             .enableClientSideMode(isClientSideMode())
                             .createMissingPackageJson(true)
                             .enableImportsUpdate(false)
                             .enablePackagesUpdate(false).runNpmInstall(false)
+                            .withConnectApplicationProperties(
+                                    applicationProperties)
+                            .withConnectJavaSourceFolder(javaSourceFolder)
+                            .withConnectGeneratedOpenApiJson(openApiJsonFile)
                             .build().execute();
         } catch (ExecutionFailedException exception) {
             throw new MojoFailureException(
@@ -174,6 +198,8 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         buildInfo.put(NPM_TOKEN, npmFolder.getAbsolutePath());
         buildInfo.put(GENERATED_TOKEN, generatedFolder.getAbsolutePath());
         buildInfo.put(FRONTEND_TOKEN, frontendDirectory.getAbsolutePath());
+        buildInfo.put(JAVA_SOURCE_FOLDER_TOKEN,
+                javaSourceFolder.getAbsolutePath());
         try {
             FileUtils.forceMkdir(token.getParentFile());
             FileUtils.write(token, JsonUtil.stringify(buildInfo, 2) + "\n",

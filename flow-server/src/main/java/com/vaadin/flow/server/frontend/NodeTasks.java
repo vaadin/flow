@@ -83,6 +83,12 @@ public class NodeTasks implements FallibleCommand {
 
         private File tokenFile;
 
+        private File connectJavaSourceFolder;
+
+        private File connectGeneratedOpenApiFile;
+
+        private File connectApplicationProperties;
+
         /**
          * Directory for for npm and folders and files.
          */
@@ -309,6 +315,46 @@ public class NodeTasks implements FallibleCommand {
         }
 
         /**
+         * Set source paths that OpenAPI generator searches for connect
+         * services.
+         * 
+         * @param connectJavaSourceFolder
+         *            java source folder
+         * @return the builder, for chaining
+         */
+        public Builder withConnectJavaSourceFolder(
+                File connectJavaSourceFolder) {
+            this.connectJavaSourceFolder = connectJavaSourceFolder;
+            return this;
+        }
+
+        /**
+         * Set application properties file for Spring project.
+         * 
+         * @param applicationProperties
+         *            application properties file.
+         * @return this builder, for chaining
+         */
+        public Builder withConnectApplicationProperties(
+                File applicationProperties) {
+            this.connectApplicationProperties = applicationProperties;
+            return this;
+        }
+
+        /**
+         * Set output location for the generated OpenAPI file.
+         * 
+         * @param generatedOpenApiFile
+         *            the generated output file.
+         * @return the builder, for chaining
+         */
+        public Builder withConnectGeneratedOpenApiJson(
+                File generatedOpenApiFile) {
+            this.connectGeneratedOpenApiFile = generatedOpenApiFile;
+            return this;
+        }
+
+        /**
          * Sets frontend scanner strategy: byte code scanning strategy is used
          * if {@code byteCodeScanner} is {@code true}, full classpath scanner
          * strategy is used otherwise (by default).
@@ -433,6 +479,15 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateTsConfig taskGenerateTsConfig = new TaskGenerateTsConfig(
                     builder.frontendDirectory, builder.npmFolder);
             commands.add(taskGenerateTsConfig);
+            if (builder.connectJavaSourceFolder != null
+                    && builder.connectGeneratedOpenApiFile != null) {
+                TaskGenerateOpenApi taskGenerateOpenApi = new TaskGenerateOpenApi(
+                        builder.connectApplicationProperties,
+                        builder.connectJavaSourceFolder,
+                        builder.classFinder.getClassLoader(),
+                        builder.connectGeneratedOpenApiFile);
+                commands.add(taskGenerateOpenApi);
+            }
         }
     }
 

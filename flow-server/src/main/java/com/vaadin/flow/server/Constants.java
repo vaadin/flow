@@ -40,6 +40,7 @@ public final class Constants implements Serializable {
     public static final String NPM_TOKEN = "npmFolder";
     public static final String FRONTEND_TOKEN = "frontendFolder";
     public static final String GENERATED_TOKEN = "generatedFolder";
+    public static final String JAVA_SOURCE_FOLDER_TOKEN = "javaSourceFolder";
 
     /**
      * enable it if your project is a Polymer 2.0 one, should be removed in V15
