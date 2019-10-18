@@ -233,9 +233,6 @@ public class StreamReceiverHandler implements Serializable {
     private boolean handleMultipartFileUploadFromInputStream(VaadinSession session,
             VaadinRequest request, StreamReceiver streamReceiver,
             StateNode owner) throws IOException {
-        // Create a new file upload handler
-        ServletFileUpload upload = new ServletFileUpload();
-
         boolean success = true;
         long contentLength = request.getContentLength();
         // Parse the request

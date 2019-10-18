@@ -72,7 +72,6 @@ import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.communication.UidlRequestHandler;
 import com.vaadin.flow.server.communication.WebComponentBootstrapHandler;
 import com.vaadin.flow.server.communication.WebComponentProvider;
-import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.server.startup.BundleFilterFactory;
 import com.vaadin.flow.server.startup.FakeBrowser;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
