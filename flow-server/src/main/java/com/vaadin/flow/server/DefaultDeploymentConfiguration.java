@@ -38,8 +38,11 @@ public class DefaultDeploymentConfiguration
     private static final String SEPARATOR = "\n====================================================================";
 
     public static final String NOT_PRODUCTION_MODE_INFO = SEPARATOR
-            + "\nVaadin is running in DEBUG MODE.\nAdd productionMode=true to web.xml "
-            + "to disable debug features." + SEPARATOR;
+            + "\nVaadin is running in DEBUG MODE.\n" +
+            "In order to run your application in production mode and disable debug features, " +
+            "you should enable it by setting the servlet init parameter productionMode to true.\n" +
+            "See https://vaadin.com/docs/v14/flow/production/tutorial-production-mode-basic.html " +
+            "for more information about the production mode." + SEPARATOR;
 
     public static final String WARNING_COMPATIBILITY_MODE = SEPARATOR
             + "\nRunning in Vaadin 13 (Flow 1) compatibility mode.\n\n"
