@@ -100,7 +100,17 @@ class _TagCamel_ extends HTMLElement {
 
     poller();
   }
+  _getClient() {
+    if (_TagCamel_._getClientStrategy){
+        return _TagCamel_._getClientStrategy(this);
+    }
+    var clients = _TagCamel_._getClients();
+    if (!clients){
+        return undefined;
+    }
 
+    return Object.values(clients).find(client => client.exportedWebComponents && client.exportedWebComponents.indexOf('_TagDash_') != -1)
+  }
   disconnectedCallback() {
     this.$server.disconnected();
 
@@ -158,5 +168,12 @@ class _TagCamel_ extends HTMLElement {
 }
 
 _TagCamel_.id = 0;
+
+_TagCamel_._getClients = function(){
+    if (!window.Vaadin || !window.Vaadin.Flow || !window.Vaadin.Flow.clients) {
+        return undefined;
+    }
+    return window.Vaadin.Flow.clients;
+}
 
 customElements.define('_TagDash_', _TagCamel_);
