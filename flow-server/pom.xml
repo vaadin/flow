@@ -18,6 +18,11 @@
         <spring.version>5.1.2.RELEASE</spring.version>
         <spring.autoconfigure.version>2.1.0.RELEASE</spring.autoconfigure.version>
         <javax.annotation.api.version>1.3.2</javax.annotation.api.version>
+        <javaparser.version>3.15.1</javaparser.version>
+        <swagger.core.version>2.0.10</swagger.core.version>
+        <swagger.parser.version>2.0.15</swagger.parser.version>
+        <commons.configuration.version>2.6</commons.configuration.version>
+        <commons.lang3.version>3.9</commons.lang3.version>
     </properties>
 
     <dependencies>
@@ -121,39 +126,6 @@
             <version>1.2.0.vaadin1</version>
         </dependency>
 
-        <!-- vaadin-connect generator-->
-        <dependency>
-            <groupId>javax.annotation</groupId>
-            <artifactId>javax.annotation-api</artifactId>
-            <version>1.3.2</version>
-        </dependency>
-        <dependency>
-            <groupId>com.github.javaparser</groupId>
-            <artifactId>javaparser-symbol-solver-core</artifactId>
-            <version>3.15.1</version>
-        </dependency>
-        <dependency>
-            <groupId>io.swagger.core.v3</groupId>
-            <artifactId>swagger-core</artifactId>
-            <version>2.0.10</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-configuration2</artifactId>
-            <version>2.6</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.9</version>
-        </dependency>
-        <dependency>
-            <groupId>io.swagger.parser.v3</groupId>
-            <artifactId>swagger-parser</artifactId>
-            <version>2.0.15</version>
-            <scope>test</scope>
-        </dependency>
-
         <!-- TESTING DEPENDENCIES -->
         <dependency>
             <groupId>org.hsqldb</groupId>
@@ -231,6 +203,35 @@
             <groupId>javax.annotation</groupId>
             <artifactId>javax.annotation-api</artifactId>
             <version>${javax.annotation.api.version}</version>
+        </dependency>
+
+        <!-- vaadin-connect generator-->
+        <dependency>
+            <groupId>com.github.javaparser</groupId>
+            <artifactId>javaparser-symbol-solver-core</artifactId>
+            <version>${javaparser.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-core</artifactId>
+            <version>${swagger.core.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-configuration2</artifactId>
+            <version>${commons.configuration.version}</version>
+        </dependency>
+        <!-- Need to be revised and removed to avoid conflicts-->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${commons.lang3.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.swagger.parser.v3</groupId>
+            <artifactId>swagger-parser</artifactId>
+            <version>${swagger.parser.version}</version>
+            <scope>test</scope>
         </dependency>
         <!-- Connect Testing dependendies -->
 
