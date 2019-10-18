@@ -70,6 +70,7 @@ import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletContext;
+import com.vaadin.flow.server.connect.VaadinService;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
@@ -101,7 +102,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
         NpmPackage.class, NpmPackage.Container.class, JsModule.class,
         JsModule.Container.class, CssImport.class, CssImport.Container.class,
         JavaScript.class, JavaScript.Container.class, Theme.class,
-        NoTheme.class })
+        NoTheme.class, VaadinService.class})
 @WebListener
 public class DevModeInitializer implements ServletContainerInitializer,
         Serializable, ServletContextListener {
