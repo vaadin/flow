@@ -19,7 +19,6 @@ package com.vaadin.flow.server;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -45,7 +44,6 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
-
 import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
@@ -173,43 +171,7 @@ public final class DeploymentConfigurationFactory implements Serializable {
     }
 
     private static void readBuildInfo(Properties initParameters) {
-        String json = null;
-        try {
-            // token file location passed via init parameter property
-            String tokenLocation = initParameters.getProperty(PARAM_TOKEN_FILE);
-            if (tokenLocation != null) {
-                File tokenFile = new File(tokenLocation);
-                if (tokenFile != null && tokenFile.canRead()) {
-                    json = FileUtils.readFileToString(tokenFile,
-                            StandardCharsets.UTF_8);
-                }
-            }
-
-            // token file is in the class-path of the application
-            if (json == null) {
-                String tokenResource = VAADIN_SERVLET_RESOURCES + TOKEN_FILE;
-                List<URL> resources = Collections
-                        .list(DeploymentConfiguration.class.getClassLoader()
-                                .getResources(tokenResource));
-                URL resource = null;
-                if (!resources.isEmpty()) {
-                    // Accept resource that doesn't contain
-                    // 'jar!/META-INF/Vaadin/config/flow-build-info.json'
-                    resource = resources.stream().filter(url -> !url.getPath()
-                            .endsWith("jar!/" + tokenResource)).findFirst()
-                            .orElse(null);
-                    if (resource == null && "true".equals(initParameters
-                            .getProperty(SERVLET_PARAMETER_PRODUCTION_MODE))) {
-                        json = getProductionModeResource(resources);
-                    }
-                }
-                if (resource != null) {
-                    json = FrontendUtils.streamToString(resource.openStream());
-                }
-            }
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
+        String json = getTokenFileContents(initParameters);
 
         // Read the json and set the appropriate system properties if not
         // already set.
@@ -281,6 +243,83 @@ public final class DeploymentConfigurationFactory implements Serializable {
             throw new UncheckedIOException(e);
         }
 
+    }
+
+    private static String getTokenFileContents(Properties initParameters) {
+        String json = null;
+        try {
+            json = getResourceFromFile(initParameters);
+            if (json == null) {
+                json = getResourceFromClassloader(initParameters);
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+        return json;
+    }
+
+    private static String getResourceFromFile(Properties initParameters)
+            throws IOException {
+        String json = null;
+        // token file location passed via init parameter property
+        String tokenLocation = initParameters.getProperty(PARAM_TOKEN_FILE);
+        if (tokenLocation != null) {
+            File tokenFile = new File(tokenLocation);
+            if (tokenFile != null && tokenFile.canRead()) {
+                json = FileUtils
+                        .readFileToString(tokenFile, StandardCharsets.UTF_8);
+            }
+        }
+        return json;
+    }
+
+    private static String getResourceFromClassloader(Properties initParameters)
+            throws IOException {
+        String json = null;
+        // token file is in the class-path of the application
+        String tokenResource = VAADIN_SERVLET_RESOURCES + TOKEN_FILE;
+        List<URL> resources = Collections
+                .list(DeploymentConfiguration.class.getClassLoader()
+                        .getResources(tokenResource));
+        // Accept resource that doesn't contain
+        // 'jar!/META-INF/Vaadin/config/flow-build-info.json'
+        URL resource = resources.stream()
+                .filter(url -> !url.getPath().endsWith("jar!/" + tokenResource))
+                .findFirst().orElse(null);
+        if (resource == null && isProductionMode(initParameters)) {
+            // For no non jar build info, in production mode check jar files
+            // for production mode jar.
+            json = getProductionModeResource(resources);
+        } else if (resource != null) {
+            json = FrontendUtils.streamToString(resource.openStream());
+        }
+        return json;
+    }
+
+    private static boolean isProductionMode(Properties initParameters) {
+        String booleanString;
+        // First check system property then initParameters
+        if (System
+                .getProperty(VAADIN_PREFIX + SERVLET_PARAMETER_PRODUCTION_MODE)
+                != null) {
+            booleanString = System.getProperty(
+                    VAADIN_PREFIX + SERVLET_PARAMETER_PRODUCTION_MODE);
+        } else {
+            booleanString = initParameters
+                    .getProperty(SERVLET_PARAMETER_PRODUCTION_MODE,
+                            Boolean.FALSE.toString());
+        }
+
+        boolean parsedBoolean = Boolean.parseBoolean(booleanString);
+        if (Boolean.toString(parsedBoolean).equalsIgnoreCase(booleanString)) {
+            return parsedBoolean;
+        }
+        LoggerFactory.getLogger(DeploymentConfigurationFactory.class)
+                .debug(String
+                        .format("Property named '%s' is boolean, but contains incorrect value '%s' that is not boolean '%s'",
+                                SERVLET_PARAMETER_PRODUCTION_MODE,
+                                booleanString, parsedBoolean));
+        return false;
     }
 
     /**
