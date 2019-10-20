@@ -25,6 +25,7 @@ import java.util.Set;
 
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.FallibleCommand;
+import com.vaadin.flow.server.connect.VaadinService;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
@@ -479,8 +480,7 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateTsConfig taskGenerateTsConfig = new TaskGenerateTsConfig(
                     builder.frontendDirectory, builder.npmFolder);
             commands.add(taskGenerateTsConfig);
-            if (builder.connectJavaSourceFolder != null
-                    && builder.connectGeneratedOpenApiFile != null) {
+            if (shouldGenerateOpenApi(builder)) {
                 TaskGenerateOpenApi taskGenerateOpenApi = new TaskGenerateOpenApi(
                         builder.connectApplicationProperties,
                         builder.connectJavaSourceFolder,
@@ -489,6 +489,13 @@ public class NodeTasks implements FallibleCommand {
                 commands.add(taskGenerateOpenApi);
             }
         }
+    }
+
+    private boolean shouldGenerateOpenApi(Builder builder) {
+        return builder.connectJavaSourceFolder != null
+                && builder.connectGeneratedOpenApiFile != null
+                && !builder.classFinder.getAnnotatedClasses(VaadinService.class)
+                        .isEmpty();
     }
 
     private FrontendDependenciesScanner getFallbackScanner(Builder builder,

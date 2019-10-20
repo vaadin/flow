@@ -70,6 +70,7 @@ import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletContext;
+import com.vaadin.flow.server.connect.VaadinService;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
@@ -82,8 +83,14 @@ import com.vaadin.flow.theme.Theme;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
+import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
+import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
+import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_APPLICATION_PROPERTIES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_JAVA_SOURCE_FOLDER;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_OPENAPI_JSON_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
@@ -101,7 +108,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
         NpmPackage.class, NpmPackage.Container.class, JsModule.class,
         JsModule.Container.class, CssImport.class, CssImport.Container.class,
         JavaScript.class, JavaScript.Container.class, Theme.class,
-        NoTheme.class})
+        NoTheme.class, VaadinService.class })
 @WebListener
 public class DevModeInitializer implements ServletContainerInitializer,
         Serializable, ServletContextListener {
@@ -221,7 +228,8 @@ public class DevModeInitializer implements ServletContainerInitializer,
         String frontendFolder = config.getStringProperty(PARAM_FRONTEND_DIR,
                 System.getProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR));
 
-        Builder builder = new NodeTasks.Builder(new DevModeClassFinder(classes),
+        DevModeClassFinder devModeClassFinder = new DevModeClassFinder(classes);
+        Builder builder = new NodeTasks.Builder(devModeClassFinder,
                 new File(baseDir), new File(generatedDir),
                 new File(frontendFolder));
 
@@ -246,8 +254,25 @@ public class DevModeInitializer implements ServletContainerInitializer,
         // webpack configurations
         if (!new File(builder.npmFolder, WEBPACK_GENERATED).exists()) {
             builder.withWebpack(builder.npmFolder, FrontendUtils.WEBPACK_CONFIG,
-                    FrontendUtils.WEBPACK_GENERATED)
-                    .enableClientSideMode(config.isClientSideMode());
+                    FrontendUtils.WEBPACK_GENERATED);
+        }
+        builder.enableClientSideMode(config.isClientSideMode());
+        if (config.isClientSideMode()) {
+            String connectJavaSourceFolder = config.getStringProperty(
+                    CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
+                    DEFAULT_CONNECT_JAVA_SOURCE_FOLDER);
+            String connectApplicationProperties = config.getStringProperty(
+                    CONNECT_APPLICATION_PROPERTIES_TOKEN,
+                    DEFAULT_CONNECT_APPLICATION_PROPERTIES);
+            String connectOpenApiJsonFile = config.getStringProperty(
+                    CONNECT_OPEN_API_FILE_TOKEN,
+                    DEFAULT_CONNECT_OPENAPI_JSON_FILE);
+            builder.withConnectJavaSourceFolder(
+                    new File(connectJavaSourceFolder))
+                    .withConnectApplicationProperties(
+                            new File(connectApplicationProperties))
+                    .withConnectGeneratedOpenApiJson(
+                            new File(connectOpenApiJsonFile));
         }
 
         // If we are missing either the base or generated package json files
