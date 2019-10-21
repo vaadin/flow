@@ -57,7 +57,6 @@ function setupWatchDog(){
 
     client.on('close', function() {
         client.destroy();
-        console.debug('Watchdog connection closed. Trying to re-run watchdog.');
         setupWatchDog();
     });  
 }
