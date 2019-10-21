@@ -36,6 +36,11 @@ import org.slf4j.LoggerFactory;
 public class VaadinConnectClientGenerator {
     static final String ENDPOINT = "vaadin.connect.endpoint";
     static final String DEFAULT_ENDPOINT = "/connect";
+    
+    private static final String CLIENT_FILE_NAME = "connect-client.default";
+    
+    public static final String DEFAULT_GENERATED_CONNECT_CLIENT_NAME = CLIENT_FILE_NAME + ".ts";
+    public static final String DEFAULT_GENERATED_CONNECT_CLIENT_IMPORT_PATH = "./" + CLIENT_FILE_NAME;
 
 
   private final String endpoint;
