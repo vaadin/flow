@@ -79,10 +79,6 @@ import com.vaadin.flow.server.connect.VaadinServiceNameChecker;
  */
 public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
     
-  public static final String DEFAULT_GENERATED_CONNECT_CLIENT_IMPORT_PATH = "./connect-client.default";
-  public static final String DEFAULT_GENERATED_CONNECT_CLIENT_NAME = "connect-client.default.ts";
-    
-
   public static final String NULLABLE_SUFFIX = " | null";
   private static final String GENERATOR_NAME = "javascript-vaadin-connect";
   private static final String EXTENSION_VAADIN_CONNECT_PARAMETERS = "x-vaadin-connect-parameters";
@@ -204,7 +200,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
 
   private static String getDefaultClientPath(String path) {
     path = ObjectUtils.defaultIfNull(path,
-        DEFAULT_GENERATED_CONNECT_CLIENT_IMPORT_PATH);
+        VaadinConnectClientGenerator.DEFAULT_GENERATED_CONNECT_CLIENT_IMPORT_PATH);
     return removeTsExtension(path);
   }
 
@@ -297,7 +293,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
 
   private static boolean shouldDelete(Set<File> generatedFiles, File file) {
     return !generatedFiles.contains(file)
-        && !DEFAULT_GENERATED_CONNECT_CLIENT_NAME.equals(file.getName());
+        && !VaadinConnectClientGenerator.DEFAULT_GENERATED_CONNECT_CLIENT_NAME.equals(file.getName());
   }
 
   private static IllegalStateException getUnexpectedOpenAPIException(

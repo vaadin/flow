@@ -37,7 +37,6 @@ import com.vaadin.flow.server.connect.generator.TestUtils;
 import com.vaadin.flow.server.connect.generator.VaadinConnectClientGenerator;
 import com.vaadin.flow.server.connect.generator.VaadinConnectTsGenerator;
 
-import static com.vaadin.flow.server.connect.generator.VaadinConnectTsGenerator.DEFAULT_GENERATED_CONNECT_CLIENT_NAME;
 import static org.junit.Assert.assertEquals;
 
 public class OpenApiSpecBasedTests {
@@ -109,7 +108,7 @@ public class OpenApiSpecBasedTests {
   public void should_RemoveStaleGeneratedFiles_When_OpenAPIInputChanges() {
     Path defaultConnectClient = Paths.get(
         outputDirectory.getRoot().getAbsolutePath(),
-        DEFAULT_GENERATED_CONNECT_CLIENT_NAME);
+        VaadinConnectClientGenerator.DEFAULT_GENERATED_CONNECT_CLIENT_NAME);
     VaadinConnectClientGenerator vaadinConnectClientGenerator = new VaadinConnectClientGenerator(
         new PropertiesConfiguration());
     // First generating round

@@ -28,10 +28,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import com.vaadin.flow.server.connect.generator.VaadinConnectClientGenerator;
-
-import static com.vaadin.flow.server.connect.generator.VaadinConnectTsGenerator.DEFAULT_GENERATED_CONNECT_CLIENT_NAME;
-
 public class VaadinConnectClientGeneratorTest {
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -41,7 +37,7 @@ public class VaadinConnectClientGeneratorTest {
   @Before
   public void setUpOutputFile() {
     outputPath = Paths.get(temporaryFolder.getRoot().getAbsolutePath(),
-        DEFAULT_GENERATED_CONNECT_CLIENT_NAME);
+        VaadinConnectClientGenerator.DEFAULT_GENERATED_CONNECT_CLIENT_NAME);
   }
 
   @Test
