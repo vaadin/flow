@@ -287,6 +287,13 @@ public abstract class NodeUpdater implements FallibleCommand {
         FileUtils.forceMkdirParent(packageFile);
         String content = stringify(json, 2) + "\n";
         FileUtils.writeStringToFile(packageFile, content, UTF_8.name());
+        log().info("Fake syncing using Thread.sleep().");
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
         return content;
     }
 
