@@ -167,8 +167,9 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         }
 
         try {
-            new NodeTasks.Builder(getClassFinder(project), npmFolder,
-                    generatedFolder, frontendDirectory)
+            new NodeTasks.Builder(
+                    getClassFinder(project), npmFolder, generatedFolder,
+                    frontendDirectory)
                             .withWebpack(webpackOutputDirectory,
                                     webpackTemplate, webpackGeneratedTemplate)
                             .enableClientSideMode(isClientSideMode())
@@ -180,7 +181,6 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
                             .withConnectJavaSourceFolder(javaSourceFolder)
                             .withConnectGeneratedOpenApiJson(openApiJsonFile)
                             .build().execute();
-
         } catch (ExecutionFailedException exception) {
             throw new MojoFailureException(
                     "Could not execute prepare-frontend goal.", exception);

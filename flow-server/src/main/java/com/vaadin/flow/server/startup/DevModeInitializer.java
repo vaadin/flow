@@ -229,8 +229,7 @@ public class DevModeInitializer implements ServletContainerInitializer,
         String frontendFolder = config.getStringProperty(PARAM_FRONTEND_DIR,
                 System.getProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR));
 
-        DevModeClassFinder devModeClassFinder = new DevModeClassFinder(classes);
-        Builder builder = new NodeTasks.Builder(devModeClassFinder,
+        Builder builder = new NodeTasks.Builder(new DevModeClassFinder(classes),
                 new File(baseDir), new File(generatedDir),
                 new File(frontendFolder));
 

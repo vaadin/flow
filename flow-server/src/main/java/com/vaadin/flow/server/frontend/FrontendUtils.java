@@ -140,11 +140,22 @@ public class FrontendUtils {
      */
     public static final String INDEX_JS = "index.js";
 
+    /**
+     * Default Java source folder for OpenAPI generator.
+     */
     public static final String DEFAULT_CONNECT_JAVA_SOURCE_FOLDER = "src/main/java";
 
+    /**
+     * Default application properties file path in Connect project.
+     */
     public static final String DEFAULT_CONNECT_APPLICATION_PROPERTIES = "src/main/resources/application.properties";
+
+    /**
+     * Default generated path for OpenAPI spec file.
+     */
     public static final String DEFAULT_CONNECT_OPENAPI_JSON_FILE = TARGET
             + "generated-resources/openapi.json";
+
     /**
      * Name of the file that contains all application imports, javascript, theme
      * and style annotations which are not discovered by the current scanning
