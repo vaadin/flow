@@ -17,6 +17,7 @@
 package com.vaadin.flow.component.dnd;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Properties;
 
 import com.vaadin.flow.component.Component;
@@ -26,6 +27,7 @@ import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.WebBrowser;
 import com.vaadin.flow.shared.ui.Dependency;
 import org.junit.Assert;
 import org.junit.Before;
@@ -36,6 +38,7 @@ public abstract class AbstractDnDUnitTest {
 
     protected MockUI ui;
     protected boolean compatibilityMode;
+    protected boolean iOS;
 
     @Before
     public void setup() {
@@ -46,8 +49,13 @@ public abstract class AbstractDnDUnitTest {
                 return compatibilityMode;
             }
         };
+        WebBrowser browser = Mockito.mock(WebBrowser.class);
+        Mockito.when(browser.isIOS()).then(invocation -> iOS);
+
         VaadinSession session = Mockito.mock(VaadinSession.class);
         Mockito.when(session.getConfiguration()).thenReturn(configuration);
+        Mockito.when(session.getBrowser()).thenReturn(browser);
+
         ui = new MockUI(session);
     }
 
@@ -82,7 +90,7 @@ public abstract class AbstractDnDUnitTest {
     }
 
     @Test
-    public void testExtension_staticApi_connectorDependencyNotAddedDynamically() {
+    public void testExtension_staticApiNotIosNotCompatibilityMode_connectorDependencyAndPolyfillNotAddedDynamically() {
         ui.getInternals().getDependencyList().clearPendingSendToClient();
 
         RouterLink component = new RouterLink();
@@ -93,8 +101,36 @@ public abstract class AbstractDnDUnitTest {
         Collection<Dependency> pendingSendToClient = dependencyList
                 .getPendingSendToClient();
 
-        Assert.assertEquals("No dependency added", 0,
+        Assert.assertEquals("No dependencies should be added", 0,
                 pendingSendToClient.size());
+    }
+
+    @Test
+    public void testExtension_iOS_mobileDnDpolyfillLoaded() {
+        iOS = true;
+        ui.getInternals().getDependencyList().clearPendingSendToClient();
+
+        RouterLink component = new RouterLink();
+        ui.add(component);
+        runStaticCreateMethodForExtension(component);
+
+        DependencyList dependencyList = ui.getInternals().getDependencyList();
+        Collection<Dependency> pendingSendToClient = dependencyList
+                .getPendingSendToClient();
+
+        Assert.assertEquals("No dependency added", 2,
+                pendingSendToClient.size());
+
+        Iterator<Dependency> iterator = pendingSendToClient.iterator();
+        Dependency dependency = iterator.next();
+        Assert.assertEquals("Wrong dependency loaded",
+                "context://webjars/mobile-drag-drop/2.3.0-rc.1/index.min.js",
+                dependency.getUrl());
+        dependency = iterator.next();
+        Assert.assertEquals("Wrong dependency loaded",
+                "context://webjars/vaadin__vaadin-mobile-drag-drop/1.0.0/index.min.js",
+                dependency.getUrl());
+
     }
 
     protected abstract void runStaticCreateMethodForExtension(
