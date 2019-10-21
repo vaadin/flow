@@ -15,7 +15,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class TaskGenerateConnectClientTest {
-    
+
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
@@ -37,14 +37,17 @@ public class TaskGenerateConnectClientTest {
     @Test
     public void test() throws Exception {
         assertFalse(generatedClientFile.exists());
-        task = new TaskGenerateConnectClient(applicationPropertiesFile, generatedClientFile);
+        task = new TaskGenerateConnectClient(applicationPropertiesFile,
+                generatedClientFile);
         task.execute();
         assertTrue(generatedClientFile.exists());
-        
-        String output = FileUtils.readFileToString(generatedClientFile, "UTF-8");
-        assertTrue(output.contains("import {ConnectClient} from '@vaadin/connect';"));
-        assertTrue(output.contains("const client = new ConnectClient({endpoint: '/connect'});"));
+
+        String output = FileUtils.readFileToString(generatedClientFile,
+                "UTF-8");
+        assertTrue(output
+                .contains("import {ConnectClient} from '@vaadin/connect';"));
+        assertTrue(output.contains(
+                "const client = new ConnectClient({endpoint: '/connect'});"));
         assertTrue(output.contains("export default client;"));
     }
 }
-
