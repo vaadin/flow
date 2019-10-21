@@ -17,8 +17,9 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
+import com.vaadin.flow.server.connect.VaadinService;
+
 import elemental.json.Json;
-import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
 
@@ -218,5 +219,10 @@ public class PrepareFrontendMojoTest {
             }
             return Collections.emptyList();
         }
+    }
+
+    @VaadinService
+    public static class MyService {
+        // an empty class to generate OpenAPI spec.
     }
 }
