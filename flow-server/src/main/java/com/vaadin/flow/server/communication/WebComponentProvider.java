@@ -160,6 +160,14 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
         return true;
     }
 
+
+    /**
+     * Clear the internal tag -> bootstrap response cache.
+     */
+    protected void clearCache() {
+        cache = null;
+    }
+
     private String generateBowerResponse(
             WebComponentConfiguration<? extends Component> configuration,
             VaadinSession session, VaadinRequest request,
