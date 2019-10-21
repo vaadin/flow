@@ -236,7 +236,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         Assert.assertFalse(generatedOpenApiJson.exists());
         devModeInitializer.onStartup(classes, servletContext);
         Assert.assertFalse(
-                "Should generate OpenAPI spec if VaadinService is used.",
+                "Should not generate OpenAPI spec if VaadinService is not used.",
                 generatedOpenApiJson.exists());
     }
 
