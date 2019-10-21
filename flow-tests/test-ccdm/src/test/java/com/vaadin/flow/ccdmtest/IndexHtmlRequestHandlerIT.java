@@ -506,4 +506,26 @@ public class IndexHtmlRequestHandlerIT extends ChromeBrowserTest {
                 actualUrl
         );
     }
+
+    @Test
+    public void should_updateBrowserUrl_When_ServerNavigates() {
+        openTestUrl("/");
+        waitForElementPresent(By.id("loadVaadinRouter"));
+        findElement(By.id("loadVaadinRouter")).click();
+        waitForElementPresent(By.id("outlet"));
+
+        findElement(By.linkText("View with server view button")).click();
+        waitForElementPresent(By.id("viewWithServerViewButton"));
+        findElement(By.id("serverViewButton")).click();
+
+        waitForElementPresent(By.id("serverView"));
+        String expectedUrl = getRootURL() + "/foo/serverview";
+        String currentUrl = getDriver().getCurrentUrl();
+        Assert.assertEquals(
+                "Should update the browser url when calling"
+                        + " ui.navigate(\"serverview\")",
+                expectedUrl,
+                currentUrl
+        );
+    }
 }
