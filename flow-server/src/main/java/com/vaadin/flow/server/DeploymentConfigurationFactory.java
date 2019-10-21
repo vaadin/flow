@@ -19,7 +19,6 @@ package com.vaadin.flow.server;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -31,7 +30,6 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.LoggerFactory;
@@ -44,7 +42,6 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
-
 import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
@@ -84,8 +81,6 @@ public final class DeploymentConfigurationFactory implements Serializable {
     public static final String DEV_FOLDER_MISSING_MESSAGE =
             "Running project in development mode with no access to folder '%s'.%n"
                     + "Build project in production mode instead, see https://vaadin.com/docs/v14/flow/production/tutorial-production-mode-basic.html";
-
-    private static Pattern JAR_REGEX = Pattern.compile("(.+\\.jar).*");
 
     private DeploymentConfigurationFactory() {
     }
@@ -172,36 +167,7 @@ public final class DeploymentConfigurationFactory implements Serializable {
     }
 
     private static void readBuildInfo(Properties initParameters) {
-        String json = null;
-        try {
-            // token file location passed via init parameter property
-            String tokenLocation = initParameters.getProperty(PARAM_TOKEN_FILE);
-            if (tokenLocation != null) {
-                File tokenFile = new File(tokenLocation);
-                if (tokenFile != null && tokenFile.canRead()) {
-                    json = FileUtils.readFileToString(tokenFile, "UTF-8");
-                }
-            }
-
-            // token file is in the class-path of the application
-            if (json == null) {
-                List<URL> resources = Collections
-                        .list(DeploymentConfiguration.class.getClassLoader()
-                                .getResources(
-                                        VAADIN_SERVLET_RESOURCES + TOKEN_FILE));
-                URL resource = null;
-                if (!resources.isEmpty()) {
-                    resource = resources.stream().filter(
-                            url -> !JAR_REGEX.matcher(url.getPath()).find())
-                            .findFirst().orElse(null);
-                }
-                if (resource != null) {
-                    json = FrontendUtils.streamToString(resource.openStream());
-                }
-            }
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
+        String json = getTokenFileContents(initParameters);
 
         // Read the json and set the appropriate system properties if not
         // already set.
@@ -211,11 +177,6 @@ public final class DeploymentConfigurationFactory implements Serializable {
                 initParameters.setProperty(SERVLET_PARAMETER_PRODUCTION_MODE,
                         String.valueOf(buildInfo.getBoolean(
                                 SERVLET_PARAMETER_PRODUCTION_MODE)));
-                // Need to be sure that we remove the system property,
-                // because
-                // it has priority in the configuration getter
-                System.clearProperty(
-                        VAADIN_PREFIX + SERVLET_PARAMETER_PRODUCTION_MODE);
             }
             if (buildInfo.hasKey(SERVLET_PARAMETER_COMPATIBILITY_MODE)) {
                 initParameters.setProperty(SERVLET_PARAMETER_COMPATIBILITY_MODE,
@@ -274,6 +235,108 @@ public final class DeploymentConfigurationFactory implements Serializable {
 
     }
 
+    private static String getTokenFileContents(Properties initParameters) {
+        String json = null;
+        try {
+            json = getResourceFromFile(initParameters);
+            if (json == null) {
+                json = getResourceFromClassloader(initParameters);
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+        return json;
+    }
+
+    private static String getResourceFromFile(Properties initParameters)
+            throws IOException {
+        String json = null;
+        // token file location passed via init parameter property
+        String tokenLocation = initParameters.getProperty(PARAM_TOKEN_FILE);
+        if (tokenLocation != null) {
+            File tokenFile = new File(tokenLocation);
+            if (tokenFile != null && tokenFile.canRead()) {
+                json = FileUtils
+                        .readFileToString(tokenFile, StandardCharsets.UTF_8);
+            }
+        }
+        return json;
+    }
+
+    private static String getResourceFromClassloader(Properties initParameters)
+            throws IOException {
+        String json = null;
+        // token file is in the class-path of the application
+        String tokenResource = VAADIN_SERVLET_RESOURCES + TOKEN_FILE;
+        List<URL> resources = Collections
+                .list(DeploymentConfiguration.class.getClassLoader()
+                        .getResources(tokenResource));
+        // Accept resource that doesn't contain
+        // 'jar!/META-INF/Vaadin/config/flow-build-info.json'
+        URL resource = resources.stream()
+                .filter(url -> !url.getPath().endsWith("jar!/" + tokenResource))
+                .findFirst().orElse(null);
+        if (resource == null && isProductionMode(initParameters)) {
+            // For no non jar build info, in production mode check jar files
+            // for production mode jar.
+            json = getProductionModeResource(resources);
+        } else if (resource != null) {
+            json = FrontendUtils.streamToString(resource.openStream());
+        }
+        return json;
+    }
+
+    private static boolean isProductionMode(Properties initParameters) {
+        String booleanString;
+        // First check system property then initParameters
+        if (System
+                .getProperty(VAADIN_PREFIX + SERVLET_PARAMETER_PRODUCTION_MODE)
+                != null) {
+            booleanString = System.getProperty(
+                    VAADIN_PREFIX + SERVLET_PARAMETER_PRODUCTION_MODE);
+        } else {
+            booleanString = initParameters
+                    .getProperty(SERVLET_PARAMETER_PRODUCTION_MODE,
+                            Boolean.FALSE.toString());
+        }
+
+        boolean parsedBoolean = Boolean.parseBoolean(booleanString);
+        if (Boolean.toString(parsedBoolean).equalsIgnoreCase(booleanString)) {
+            return parsedBoolean;
+        }
+        LoggerFactory.getLogger(DeploymentConfigurationFactory.class)
+                .debug(String
+                        .format("Property named '%s' is boolean, but contains incorrect value '%s' that is not boolean '%s'",
+                                SERVLET_PARAMETER_PRODUCTION_MODE,
+                                booleanString, parsedBoolean));
+        return false;
+    }
+
+    /**
+     * Check resources for a production mode resource if all resources were
+     * from JAR files as we may be running from a JAR and add-ons are not
+     * packaged in productionMode.
+     *
+     * @param resources
+     *         flow-build-info url resource files
+     * @return production mode flow-build-info string
+     * @throws IOException
+     *         exception reading stream
+     */
+    private static String getProductionModeResource(List<URL> resources)
+            throws IOException {
+        for (URL resource : resources) {
+            String json = FrontendUtils.streamToString(resource.openStream());
+            if (json != null && !json.contains(NPM_TOKEN) && !json
+                    .contains(FRONTEND_TOKEN) && json
+                    .contains("\"productionMode\": true")) {
+                return json;
+            }
+        }
+        // No applicable resources found.
+        return null;
+    }
+
     /**
      * Verify that given folder actually exists on the system if we are not in
      * production mode.
@@ -290,7 +353,7 @@ public final class DeploymentConfigurationFactory implements Serializable {
             String folder) {
         Boolean productionMode = Boolean.parseBoolean(initParameters
                 .getProperty(SERVLET_PARAMETER_PRODUCTION_MODE, "false"));
-        if(!productionMode && !new File(folder).exists()) {
+        if (!productionMode && !new File(folder).exists()) {
             String message = String.format(DEV_FOLDER_MISSING_MESSAGE, folder);
             throw new IllegalStateException(message);
         }
