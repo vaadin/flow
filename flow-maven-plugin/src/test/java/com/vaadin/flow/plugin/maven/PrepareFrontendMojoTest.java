@@ -88,6 +88,9 @@ public class PrepareFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "openApiJsonFile",
                 new File(projectBase,
                         "target/generated-resources/openapi.json"));
+        ReflectionUtils.setVariableValueInObject(mojo, "applicationProperties",
+                new File(projectBase,
+                        "src/main/resources/application.properties"));
         ReflectionUtils.setVariableValueInObject(mojo, "javaSourceFolder",
                 defaultJavaSource);
 
