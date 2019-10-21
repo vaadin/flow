@@ -5,13 +5,13 @@ import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EventListener;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
@@ -25,11 +25,14 @@ import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
+import com.vaadin.flow.server.connect.VaadinService;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_REUSE_DEV_SERVER;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_JAVA_SOURCE_FOLDER;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_OPENAPI_JSON_FILE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -61,6 +64,11 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     @Route
     public static class RoutedWithReferenceToVisited {
         Visited b;
+    }
+
+    @VaadinService
+    public static class MyService {
+        // empty service to generate OpenAPI spec.
     }
 
     @Rule
@@ -200,6 +208,36 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         Mockito.verify(servletContext, Mockito.times(0)).setAttribute(
                 Mockito.eq(FallbackChunk.class.getName()),
                 Mockito.any(FallbackChunk.class));
+    }
+
+    @Test
+    public void should_generateOpenApi_when_VaadinServicePresents()
+            throws Exception {
+        // Create temporary src folder
+        Paths.get(baseDir, DEFAULT_CONNECT_JAVA_SOURCE_FOLDER).toFile()
+                .mkdirs();
+        File generatedOpenApiJson = Paths
+                .get(baseDir, DEFAULT_CONNECT_OPENAPI_JSON_FILE).toFile();
+        Assert.assertFalse(generatedOpenApiJson.exists());
+        DevModeInitializer devModeInitializer = new DevModeInitializer();
+        final Set<Class<?>> classes = new HashSet<>();
+        classes.add(MyService.class);
+        devModeInitializer.onStartup(classes, servletContext);
+        Assert.assertTrue(
+                "Should generate OpenAPI spec if VaadinService is used.",
+                generatedOpenApiJson.exists());
+    }
+
+    @Test
+    public void should_notGenerateOpenApi_when_VaadinServiceIsNotUsed()
+            throws Exception {
+        File generatedOpenApiJson = Paths
+                .get(baseDir, DEFAULT_CONNECT_OPENAPI_JSON_FILE).toFile();
+        Assert.assertFalse(generatedOpenApiJson.exists());
+        devModeInitializer.onStartup(classes, servletContext);
+        Assert.assertFalse(
+                "Should generate OpenAPI spec if VaadinService is used.",
+                generatedOpenApiJson.exists());
     }
 
     private void loadingJars_allFilesExist(String resourcesFolder)

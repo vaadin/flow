@@ -37,6 +37,7 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -256,17 +257,21 @@ public class DevModeInitializer implements ServletContainerInitializer,
             builder.withWebpack(builder.npmFolder, FrontendUtils.WEBPACK_CONFIG,
                     FrontendUtils.WEBPACK_GENERATED);
         }
-        builder.enableClientSideMode(config.isClientSideMode());
+
         if (config.isClientSideMode()) {
+            builder.enableClientSideMode(config.isClientSideMode());
             String connectJavaSourceFolder = config.getStringProperty(
                     CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
-                    DEFAULT_CONNECT_JAVA_SOURCE_FOLDER);
+                    Paths.get(baseDir, DEFAULT_CONNECT_JAVA_SOURCE_FOLDER)
+                            .toString());
             String connectApplicationProperties = config.getStringProperty(
                     CONNECT_APPLICATION_PROPERTIES_TOKEN,
-                    DEFAULT_CONNECT_APPLICATION_PROPERTIES);
+                    Paths.get(baseDir, DEFAULT_CONNECT_APPLICATION_PROPERTIES)
+                            .toString());
             String connectOpenApiJsonFile = config.getStringProperty(
                     CONNECT_OPEN_API_FILE_TOKEN,
-                    DEFAULT_CONNECT_OPENAPI_JSON_FILE);
+                    Paths.get(baseDir, DEFAULT_CONNECT_OPENAPI_JSON_FILE)
+                            .toString());
             builder.withConnectJavaSourceFolder(
                     new File(connectJavaSourceFolder))
                     .withConnectApplicationProperties(

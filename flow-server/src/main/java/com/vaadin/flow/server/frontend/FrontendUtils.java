@@ -140,8 +140,7 @@ public class FrontendUtils {
      */
     public static final String INDEX_JS = "index.js";
 
-    public static final String DEFAULT_CONNECT_JAVA_SOURCE_FOLDER = "src/main"
-            + "/java";
+    public static final String DEFAULT_CONNECT_JAVA_SOURCE_FOLDER = "src/main/java";
 
     public static final String DEFAULT_CONNECT_APPLICATION_PROPERTIES = "src/main/resources/application.properties";
     public static final String DEFAULT_CONNECT_OPENAPI_JSON_FILE = TARGET
