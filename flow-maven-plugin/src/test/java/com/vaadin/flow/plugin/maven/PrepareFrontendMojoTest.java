@@ -2,9 +2,6 @@ package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -55,9 +52,11 @@ public class PrepareFrontendMojoTest {
     private File webpackOutputDirectory;
     private File tokenFile;
     private File defaultJavaSource;
+    private File generatedTsFolder;
 
     @Before
     public void setup() throws Exception {
+
         projectBase = temporaryFolder.getRoot();
 
         tokenFile = new File(temporaryFolder.getRoot(),
@@ -71,7 +70,8 @@ public class PrepareFrontendMojoTest {
                 "target/generated-resources/openapi.json").getAbsolutePath();
         webpackOutputDirectory = new File(projectBase,
                 VAADIN_SERVLET_RESOURCES);
-        defaultJavaSource = new File(projectBase, "src/main/java");
+        defaultJavaSource = new File(".", "src/test/java");
+        generatedTsFolder = new File(projectBase, "frontend/generated");
 
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder",
                 projectBase);
@@ -95,7 +95,9 @@ public class PrepareFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "javaSourceFolder",
                 defaultJavaSource);
 
-        Assert.assertTrue(defaultJavaSource.mkdirs());
+        ReflectionUtils.setVariableValueInObject(mojo, "generatedTsFolder",
+                generatedTsFolder);
+
         Assert.assertTrue(flowPackagePath.mkdirs());
         setProject(mojo, projectBase);
     }
@@ -181,6 +183,19 @@ public class PrepareFrontendMojoTest {
     }
 
     @Test
+    public void mavenGoal_generateTsFiles_when_enabled()
+            throws Exception {
+        File connectClientApi = new File(generatedTsFolder, "connect-client.default.ts");
+        File serviceClientApi = new File(generatedTsFolder, "MyVaadinServices.ts");
+
+        Assert.assertFalse(connectClientApi.exists());
+        Assert.assertFalse(serviceClientApi.exists());
+        mojo.execute();
+        Assert.assertTrue(connectClientApi.exists());
+        Assert.assertTrue(serviceClientApi.exists());
+    }
+
+    @Test
     public void should_keepDependencies_when_packageJsonExists()
             throws Exception {
         FileUtils.fileWrite(packageJson,
@@ -203,22 +218,6 @@ public class PrepareFrontendMojoTest {
                 "webpack", "webpack-cli", "webpack-dev-server",
                 "webpack-babel-multi-target-plugin", "copy-webpack-plugin",
                 "html-webpack-plugin");
-    }
-
-    private List<File> gatherFiles(File root) {
-        if (root.isFile()) {
-            return Collections.singletonList(root);
-        } else {
-            File[] subdirectoryFiles = root.listFiles();
-            if (subdirectoryFiles != null) {
-                List<File> files = new ArrayList<>();
-                for (File subdirectoryFile : subdirectoryFiles) {
-                    files.addAll(gatherFiles(subdirectoryFile));
-                }
-                return files;
-            }
-            return Collections.emptyList();
-        }
     }
 
     @VaadinService

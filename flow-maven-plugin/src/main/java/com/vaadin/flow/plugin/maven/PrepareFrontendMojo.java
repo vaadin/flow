@@ -115,14 +115,14 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
      */
     @Parameter(defaultValue = "${project.build.directory}/" + FRONTEND)
     private File generatedFolder;
-
+    
     @Component
     private BuildContext buildContext; // m2eclipse integration
 
     /**
      * A directory with project's frontend source files.
      */
-    @Parameter(defaultValue = "${project.basedir}/frontend")
+    @Parameter(defaultValue = "${project.basedir}/" + FRONTEND)
     private File frontendDirectory;
 
     /**
@@ -142,6 +142,12 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
      */
     @Parameter(defaultValue = "${project.basedir}/src/main/java")
     private File javaSourceFolder;
+
+    /**
+     * The folder where flow will put TS API files for client projects.
+     */
+    @Parameter(defaultValue = "${project.basedir}/" + FRONTEND + "/generated")
+    private File generatedTsFolder;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -180,6 +186,7 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
                                     applicationProperties)
                             .withConnectJavaSourceFolder(javaSourceFolder)
                             .withConnectGeneratedOpenApiJson(openApiJsonFile)
+                            .withConnectClientTsApiFolder(generatedTsFolder)
                             .build().execute();
         } catch (ExecutionFailedException exception) {
             throw new MojoFailureException(
