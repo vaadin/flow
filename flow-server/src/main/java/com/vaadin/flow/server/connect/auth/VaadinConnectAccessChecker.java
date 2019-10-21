@@ -47,62 +47,63 @@ import java.lang.reflect.Modifier;
  * &#64;DenyAll
  * public class DemoVaadinService {
  *
- *   public void method1() {
- *   }
+ *     public void method1() {
+ *     }
  *
- *   &#64;PermitAll
- *   public void method2() {
- *   }
+ *     &#64;PermitAll
+ *     public void method2() {
+ *     }
  *
- *   &#64;RolesAllowed("ROLE_USER")
- *   public void method3() {
- *   }
+ *     &#64;RolesAllowed("ROLE_USER")
+ *     public void method3() {
+ *     }
  *
- *   &#64;AnonymousAllowed
- *   public void method4() {
- *   }
+ *     &#64;AnonymousAllowed
+ *     public void method4() {
+ *     }
  * }
  * </pre>
  *
  */
 public class VaadinConnectAccessChecker {
 
-  /**
-   * Check that the service is accessible for the current user.
-   *
-   * @param method
-   *          the vaadin service method to check ACL
-   * @return an error String with an issue description, if any validation issues
-   *         occur, {@code null} otherwise
-   */
-  public String check(Method method) {
-      // NOP, will be implemented soon
-      return null;
-  }
-
-  /**
-   * Gets the entity to check for Vaadin Connect security restrictions.
-   *
-   * @param method
-   *          the method to analyze, not {@code null}
-   * @return the entity that is responsible for security settings for the method
-   *         passed
-   * @throws IllegalArgumentException
-   *           if the method is not public
-   */
-  public AnnotatedElement getSecurityTarget(Method method) {
-    if (!Modifier.isPublic(method.getModifiers())) {
-      throw new IllegalArgumentException(String.format(
-          "The method '%s' is not public hence cannot have a security target",
-          method));
+    /**
+     * Check that the service is accessible for the current user.
+     *
+     * @param method
+     *            the vaadin service method to check ACL
+     * @return an error String with an issue description, if any validation
+     *         issues occur, {@code null} otherwise
+     */
+    public String check(Method method) {
+        // NOP, will be implemented soon
+        return null;
     }
-    return hasSecurityAnnotation(method) ? method : method.getDeclaringClass();
-  }
 
-  private boolean hasSecurityAnnotation(Method method) {
-    return method.isAnnotationPresent(AnonymousAllowed.class)
-        || method.isAnnotationPresent(PermitAll.class)
-        || method.isAnnotationPresent(DenyAll.class)
-        || method.isAnnotationPresent(RolesAllowed.class);
-  }
+    /**
+     * Gets the entity to check for Vaadin Connect security restrictions.
+     *
+     * @param method
+     *            the method to analyze, not {@code null}
+     * @return the entity that is responsible for security settings for the
+     *         method passed
+     * @throws IllegalArgumentException
+     *             if the method is not public
+     */
+    public AnnotatedElement getSecurityTarget(Method method) {
+        if (!Modifier.isPublic(method.getModifiers())) {
+            throw new IllegalArgumentException(String.format(
+                    "The method '%s' is not public hence cannot have a security target",
+                    method));
+        }
+        return hasSecurityAnnotation(method) ? method
+                : method.getDeclaringClass();
+    }
+
+    private boolean hasSecurityAnnotation(Method method) {
+        return method.isAnnotationPresent(AnonymousAllowed.class)
+                || method.isAnnotationPresent(PermitAll.class)
+                || method.isAnnotationPresent(DenyAll.class)
+                || method.isAnnotationPresent(RolesAllowed.class);
+    }
 }

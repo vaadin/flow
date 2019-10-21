@@ -28,7 +28,6 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
  * Generates the Vaadin Connect Client file, based on the application
  * properties, if provided.
@@ -36,62 +35,64 @@ import org.slf4j.LoggerFactory;
 public class VaadinConnectClientGenerator {
     static final String ENDPOINT = "vaadin.connect.endpoint";
     static final String DEFAULT_ENDPOINT = "/connect";
-    
+
     private static final String CLIENT_FILE_NAME = "connect-client.default";
-    
-    public static final String DEFAULT_GENERATED_CONNECT_CLIENT_NAME = CLIENT_FILE_NAME + ".ts";
-    public static final String DEFAULT_GENERATED_CONNECT_CLIENT_IMPORT_PATH = "./" + CLIENT_FILE_NAME;
 
+    public static final String DEFAULT_GENERATED_CONNECT_CLIENT_NAME = CLIENT_FILE_NAME
+            + ".ts";
+    public static final String DEFAULT_GENERATED_CONNECT_CLIENT_IMPORT_PATH = "./"
+            + CLIENT_FILE_NAME;
 
-  private final String endpoint;
-  
-  private static final Logger log = LoggerFactory
-          .getLogger(VaadinConnectClientGenerator.class);
+    private final String endpoint;
 
-  /**
-   * Creates the generator, getting the data needed for the generation out of
-   * the application properties.
-   *
-   * @param applicationProperties
-   *          the properties with the data required for the generation
-   */
-  public VaadinConnectClientGenerator(
-      PropertiesConfiguration applicationProperties) {
-    this.endpoint = applicationProperties.getString(ENDPOINT, DEFAULT_ENDPOINT);
-  }
+    private static final Logger log = LoggerFactory
+            .getLogger(VaadinConnectClientGenerator.class);
 
-  /**
-   * Generates the client file in the file specified.
-   *
-   * @param outputFilePath
-   *          the file to generate the default client into
-   */
-  public void generateVaadinConnectClientFile(Path outputFilePath) {
-    String generatedDefaultClientTs = getDefaultClientTsTemplate()
-        .replace("{{ENDPOINT}}", endpoint);
-    
-    try {
-        log.info("Writing output to {}", outputFilePath);
-        FileUtils.writeStringToFile(outputFilePath.toFile(),
-                generatedDefaultClientTs, StandardCharsets.UTF_8);
-    } catch (IOException e) {
-        String errorMessage = String.format(
-                "Error while writing OpenAPI json file at %s",
-                outputFilePath.toString());
-        log.error(errorMessage, outputFilePath, e);
+    /**
+     * Creates the generator, getting the data needed for the generation out of
+     * the application properties.
+     *
+     * @param applicationProperties
+     *            the properties with the data required for the generation
+     */
+    public VaadinConnectClientGenerator(
+            PropertiesConfiguration applicationProperties) {
+        this.endpoint = applicationProperties.getString(ENDPOINT,
+                DEFAULT_ENDPOINT);
     }
-  }
 
-  private String getDefaultClientTsTemplate() {
-    try (BufferedReader bufferedReader = new BufferedReader(
-        new InputStreamReader(
-            getClass().getClassLoader()
-                .getResourceAsStream("connect-client.default.ts.template"),
-            StandardCharsets.UTF_8))) {
-      return bufferedReader.lines().collect(Collectors.joining("\n"));
-    } catch (IOException e) {
-      throw new IllegalStateException(
-          "Unable to read connect-client.default.ts.template", e);
+    /**
+     * Generates the client file in the file specified.
+     *
+     * @param outputFilePath
+     *            the file to generate the default client into
+     */
+    public void generateVaadinConnectClientFile(Path outputFilePath) {
+        String generatedDefaultClientTs = getDefaultClientTsTemplate()
+                .replace("{{ENDPOINT}}", endpoint);
+
+        try {
+            log.info("Writing output to {}", outputFilePath);
+            FileUtils.writeStringToFile(outputFilePath.toFile(),
+                    generatedDefaultClientTs, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            String errorMessage = String.format(
+                    "Error while writing OpenAPI json file at %s",
+                    outputFilePath.toString());
+            log.error(errorMessage, outputFilePath, e);
+        }
     }
-  }
+
+    private String getDefaultClientTsTemplate() {
+        try (BufferedReader bufferedReader = new BufferedReader(
+                new InputStreamReader(
+                        getClass().getClassLoader().getResourceAsStream(
+                                "connect-client.default.ts.template"),
+                        StandardCharsets.UTF_8))) {
+            return bufferedReader.lines().collect(Collectors.joining("\n"));
+        } catch (IOException e) {
+            throw new IllegalStateException(
+                    "Unable to read connect-client.default.ts.template", e);
+        }
+    }
 }

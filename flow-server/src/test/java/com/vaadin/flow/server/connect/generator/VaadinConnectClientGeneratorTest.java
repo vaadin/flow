@@ -29,49 +29,48 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 public class VaadinConnectClientGeneratorTest {
-  @Rule
-  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @Rule
+    public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-  private Path outputPath;
+    private Path outputPath;
 
-  @Before
-  public void setUpOutputFile() {
-    outputPath = Paths.get(temporaryFolder.getRoot().getAbsolutePath(),
-        VaadinConnectClientGenerator.DEFAULT_GENERATED_CONNECT_CLIENT_NAME);
-  }
+    @Before
+    public void setUpOutputFile() {
+        outputPath = Paths.get(temporaryFolder.getRoot().getAbsolutePath(),
+                VaadinConnectClientGenerator.DEFAULT_GENERATED_CONNECT_CLIENT_NAME);
+    }
 
-  @Test
-  public void should_GenerateConnectClientDefault_When_NoApplicationPropertiesInput()
-      throws Exception {
-    VaadinConnectClientGenerator generator = new VaadinConnectClientGenerator(
-        new PropertiesConfiguration());
+    @Test
+    public void should_GenerateConnectClientDefault_When_NoApplicationPropertiesInput()
+            throws Exception {
+        VaadinConnectClientGenerator generator = new VaadinConnectClientGenerator(
+                new PropertiesConfiguration());
 
-    generator.generateVaadinConnectClientFile(outputPath);
+        generator.generateVaadinConnectClientFile(outputPath);
 
-    Assert.assertTrue(outputPath.toFile().exists());
-    String actualJson = StringUtils
-        .toEncodedString(Files.readAllBytes(outputPath), StandardCharsets.UTF_8)
-        .trim();
-    String expectedJson = TestUtils.readResource(
-        getClass().getResource("expected-connect-client-default.ts"));
-    Assert.assertEquals(expectedJson, actualJson);
-  }
+        Assert.assertTrue(outputPath.toFile().exists());
+        String actualJson = StringUtils.toEncodedString(
+                Files.readAllBytes(outputPath), StandardCharsets.UTF_8).trim();
+        String expectedJson = TestUtils.readResource(
+                getClass().getResource("expected-connect-client-default.ts"));
+        Assert.assertEquals(expectedJson, actualJson);
+    }
 
-  @Test
-  public void should_GenerateConnectClientDefault_When_ApplicationPropertiesInput()
-      throws Exception {
-    VaadinConnectClientGenerator generator = new VaadinConnectClientGenerator(
-        TestUtils.readProperties(getClass()
-            .getResource("application.properties.for.testing").getPath()));
+    @Test
+    public void should_GenerateConnectClientDefault_When_ApplicationPropertiesInput()
+            throws Exception {
+        VaadinConnectClientGenerator generator = new VaadinConnectClientGenerator(
+                TestUtils.readProperties(getClass()
+                        .getResource("application.properties.for.testing")
+                        .getPath()));
 
-    generator.generateVaadinConnectClientFile(outputPath);
+        generator.generateVaadinConnectClientFile(outputPath);
 
-    Assert.assertTrue(outputPath.toFile().exists());
-    String actualJson = StringUtils
-        .toEncodedString(Files.readAllBytes(outputPath), StandardCharsets.UTF_8)
-        .trim();
-    String expectedJson = TestUtils.readResource(
-        getClass().getResource("expected-connect-client-custom.ts"));
-    Assert.assertEquals(expectedJson, actualJson);
-  }
+        Assert.assertTrue(outputPath.toFile().exists());
+        String actualJson = StringUtils.toEncodedString(
+                Files.readAllBytes(outputPath), StandardCharsets.UTF_8).trim();
+        String expectedJson = TestUtils.readResource(
+                getClass().getResource("expected-connect-client-custom.ts"));
+        Assert.assertEquals(expectedJson, actualJson);
+    }
 }
