@@ -25,6 +25,7 @@ import java.util.Set;
 
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.FallibleCommand;
+import com.vaadin.flow.server.connect.generator.VaadinConnectClientGenerator;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
@@ -88,6 +89,8 @@ public class NodeTasks implements FallibleCommand {
         private File connectGeneratedOpenApiFile;
 
         private File connectApplicationProperties;
+        
+        private File connectClientTsApiFolder;
 
         /**
          * Directory for for npm and folders and files.
@@ -315,16 +318,15 @@ public class NodeTasks implements FallibleCommand {
         }
 
         /**
-         * Set source paths that OpenAPI generator searches for connect
-         * services.
+         * Set the folder where Ts files should be generated.
          * 
-         * @param connectJavaSourceFolder
-         *            java source folder
+         * @param connectClientTsApiFolder
+         *            folder for Ts files in the frontend.
          * @return the builder, for chaining
          */
-        public Builder withConnectJavaSourceFolder(
-                File connectJavaSourceFolder) {
-            this.connectJavaSourceFolder = connectJavaSourceFolder;
+        public Builder withConnectClientTsApiFolder(
+                File connectClientTsApiFolder) {
+            this.connectClientTsApiFolder = connectClientTsApiFolder;
             return this;
         }
 
@@ -351,6 +353,20 @@ public class NodeTasks implements FallibleCommand {
         public Builder withConnectGeneratedOpenApiJson(
                 File generatedOpenApiFile) {
             this.connectGeneratedOpenApiFile = generatedOpenApiFile;
+            return this;
+        }
+        
+        /**
+         * Set source paths that OpenAPI generator searches for connect
+         * services.
+         * 
+         * @param connectJavaSourceFolder
+         *            java source folder
+         * @return the builder, for chaining
+         */
+        public Builder withConnectJavaSourceFolder(
+                File connectJavaSourceFolder) {
+            this.connectJavaSourceFolder = connectJavaSourceFolder;
             return this;
         }
 
@@ -479,14 +495,30 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateTsConfig taskGenerateTsConfig = new TaskGenerateTsConfig(
                     builder.frontendDirectory, builder.npmFolder);
             commands.add(taskGenerateTsConfig);
+
             if (builder.connectJavaSourceFolder != null
                     && builder.connectGeneratedOpenApiFile != null) {
+
                 TaskGenerateOpenApi taskGenerateOpenApi = new TaskGenerateOpenApi(
                         builder.connectApplicationProperties,
                         builder.connectJavaSourceFolder,
                         builder.classFinder.getClassLoader(),
                         builder.connectGeneratedOpenApiFile);
                 commands.add(taskGenerateOpenApi);
+
+                if (builder.connectClientTsApiFolder != null) {
+                    TaskGenerateConnectTs taskGenerateConnectTs = new TaskGenerateConnectTs(
+                            builder.connectGeneratedOpenApiFile,
+                            builder.connectClientTsApiFolder);
+                    
+                    TaskGenerateConnectClient taskGenerateConnectClient = new TaskGenerateConnectClient(
+                            builder.connectApplicationProperties,
+                            new File(builder.connectClientTsApiFolder,
+                                    VaadinConnectClientGenerator.DEFAULT_GENERATED_CONNECT_CLIENT_NAME));
+
+                    commands.add(taskGenerateConnectClient);
+                    commands.add(taskGenerateConnectTs);
+                }
             }
         }
     }
