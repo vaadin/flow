@@ -466,7 +466,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
 
     @Override
     public String getSchemaType(Schema schema) {
-        if (isNullableWrapperSchema(schema)) {
+        if (isNullableWrapperSchema(schema) && schema instanceof ComposedSchema) {
             Schema wrappedSchema = ((ComposedSchema) schema).getAllOf().get(0);
             return super.getSchemaType(wrappedSchema);
         }

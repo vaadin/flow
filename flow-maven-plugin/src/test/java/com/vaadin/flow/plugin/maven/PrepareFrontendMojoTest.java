@@ -221,7 +221,11 @@ public class PrepareFrontendMojoTest {
     }
 
     @VaadinService
-    public static class MyService {
-        // an empty class to generate OpenAPI spec.
+    public class MyVaadinServices {
+        public void foo(String bar) {
+        }
+        public String bar(String baz) {
+            return baz;
+        }
     }
 }
