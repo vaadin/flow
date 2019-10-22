@@ -111,21 +111,21 @@ public class FrontendVersion implements Serializable {
         final String[] digits = version.split("[-.]", 4);
         majorVersion = Integer.parseInt(digits[0]);
         minorVersion = Integer.parseInt(digits[1]);
-        int revision;
+        int revisionNumber;
         String build = "";
         try {
-            revision = digits.length >= 3 ? Integer.parseInt(digits[2]) : 0;
+            revisionNumber = digits.length >= 3 ? Integer.parseInt(digits[2]) : 0;
             if (digits.length == 4) {
                 build = digits[3];
             }
         } catch (NumberFormatException e) {
             // 1.0-SNAPSHOT -> 1.0.0-SNAPSHOT
-            revision = 0;
+            revisionNumber = 0;
             if (digits.length >= 3) {
                 build = digits[2];
             }
         }
-        this.revision = revision;
+        this.revision = revisionNumber;
         buildIdentifier = build;
     }
 

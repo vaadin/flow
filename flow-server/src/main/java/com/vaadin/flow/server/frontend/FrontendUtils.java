@@ -187,7 +187,8 @@ public class FrontendUtils {
     public static final String PARAM_TOKEN_FILE = "vaadin.frontend.token.file";
 
     public static final String INSTALL_NODE_LOCALLY = "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.7.6:install-node-and-npm -DnodeVersion=\"v12.13.0\" ";
-    
+    public static final String DISABLE_CHECK = "%nYou can disable the version check using -D%s=true";
+
     private static final String NOT_FOUND = "%n%n======================================================================================================"
             + "%nFailed to determine '%s' tool." + "%nPlease install it either:"
             + "%n  - by following the https://nodejs.org/en/download/ guide to install it globally"
@@ -202,7 +203,7 @@ public class FrontendUtils {
             + "%n  - or by running the frontend-maven-plugin goal to install it in this project:"
             + INSTALL_NODE_LOCALLY
             + "%n" //
-            + "%nYou can disable the version check using -D%s=true" //
+            + DISABLE_CHECK //
             + "%n======================================================================================================%n";
 
     private static final String TOO_OLD = "%n%n======================================================================================================"
@@ -212,7 +213,7 @@ public class FrontendUtils {
             + "%n  - or by running the frontend-maven-plugin goal to install it in this project:"
             + INSTALL_NODE_LOCALLY
             + "%n" //
-            + "%nYou can disable the version check using -D%s=true" //
+            + DISABLE_CHECK //
             + "%n======================================================================================================%n";
 
     private static final String BAD_VERSION = "%n%n======================================================================================================"
@@ -223,7 +224,7 @@ public class FrontendUtils {
             + "%n  - or by running the frontend-maven-plugin goal to install it in this project:"
             + INSTALL_NODE_LOCALLY
             + "%n" //
-            + "%nYou can disable the version check using -D%s=true" //
+            + DISABLE_CHECK //
             + "%n======================================================================================================%n";
 
     private static final List<FrontendVersion> NPM_BLACKLISTED_VERSIONS = Arrays
