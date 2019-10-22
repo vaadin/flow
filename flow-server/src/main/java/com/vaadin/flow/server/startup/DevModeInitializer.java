@@ -37,6 +37,7 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -70,6 +71,7 @@ import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletContext;
+import com.vaadin.flow.server.connect.VaadinService;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
@@ -82,8 +84,14 @@ import com.vaadin.flow.theme.Theme;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
+import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
+import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
+import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_APPLICATION_PROPERTIES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_JAVA_SOURCE_FOLDER;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_OPENAPI_JSON_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
@@ -101,7 +109,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
         NpmPackage.class, NpmPackage.Container.class, JsModule.class,
         JsModule.Container.class, CssImport.class, CssImport.Container.class,
         JavaScript.class, JavaScript.Container.class, Theme.class,
-        NoTheme.class})
+        NoTheme.class, VaadinService.class })
 @WebListener
 public class DevModeInitializer implements ServletContainerInitializer,
         Serializable, ServletContextListener {
@@ -246,8 +254,29 @@ public class DevModeInitializer implements ServletContainerInitializer,
         // webpack configurations
         if (!new File(builder.npmFolder, WEBPACK_GENERATED).exists()) {
             builder.withWebpack(builder.npmFolder, FrontendUtils.WEBPACK_CONFIG,
-                    FrontendUtils.WEBPACK_GENERATED)
-                    .enableClientSideMode(config.isClientSideMode());
+                    FrontendUtils.WEBPACK_GENERATED);
+        }
+
+        if (config.isClientSideMode()) {
+            builder.enableClientSideMode(config.isClientSideMode());
+            String connectJavaSourceFolder = config.getStringProperty(
+                    CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
+                    Paths.get(baseDir, DEFAULT_CONNECT_JAVA_SOURCE_FOLDER)
+                            .toString());
+            String connectApplicationProperties = config.getStringProperty(
+                    CONNECT_APPLICATION_PROPERTIES_TOKEN,
+                    Paths.get(baseDir, DEFAULT_CONNECT_APPLICATION_PROPERTIES)
+                            .toString());
+            String connectOpenApiJsonFile = config.getStringProperty(
+                    CONNECT_OPEN_API_FILE_TOKEN,
+                    Paths.get(baseDir, DEFAULT_CONNECT_OPENAPI_JSON_FILE)
+                            .toString());
+            builder.withConnectJavaSourceFolder(
+                    new File(connectJavaSourceFolder))
+                    .withConnectApplicationProperties(
+                            new File(connectApplicationProperties))
+                    .withConnectGeneratedOpenApiJson(
+                            new File(connectOpenApiJsonFile));
         }
 
         // If we are missing either the base or generated package json files

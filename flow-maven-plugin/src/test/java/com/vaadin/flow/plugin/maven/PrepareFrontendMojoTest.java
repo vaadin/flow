@@ -17,15 +17,15 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
+import com.vaadin.flow.server.connect.VaadinService;
+
 import elemental.json.Json;
-import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
 
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.assertContainsPackage;
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.getPackageJson;
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.setProject;
-import static com.vaadin.flow.server.Constants.JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_CLIENT_SIDE_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
@@ -89,6 +89,9 @@ public class PrepareFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "openApiJsonFile",
                 new File(projectBase,
                         "target/generated-resources/openapi.json"));
+        ReflectionUtils.setVariableValueInObject(mojo, "applicationProperties",
+                new File(projectBase,
+                        "src/main/resources/application.properties"));
         ReflectionUtils.setVariableValueInObject(mojo, "javaSourceFolder",
                 defaultJavaSource);
 
@@ -216,5 +219,10 @@ public class PrepareFrontendMojoTest {
             }
             return Collections.emptyList();
         }
+    }
+
+    @VaadinService
+    public static class MyService {
+        // an empty class to generate OpenAPI spec.
     }
 }

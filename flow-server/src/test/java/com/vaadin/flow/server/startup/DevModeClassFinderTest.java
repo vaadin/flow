@@ -67,7 +67,8 @@ public class DevModeClassFinderTest {
             CssImport.class,
             CssImport.Container.class,
             Theme.class,
-            NoTheme.class);
+            NoTheme.class,
+            VaadinService.class);
 
         for (Class<?> clz : classes) {
             assertTrue("should be a known class " + clz.getName(), knownClasses.contains(clz));

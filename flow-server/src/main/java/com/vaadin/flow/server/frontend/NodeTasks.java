@@ -25,6 +25,7 @@ import java.util.Set;
 
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.FallibleCommand;
+import com.vaadin.flow.server.connect.VaadinService;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
@@ -398,13 +399,11 @@ public class NodeTasks implements FallibleCommand {
 
     private NodeTasks(Builder builder) {
 
-        ClassFinder classFinder = null;
+        ClassFinder classFinder = new ClassFinder.CachedClassFinder(
+                builder.classFinder);
         FrontendDependenciesScanner frontendDependencies = null;
 
         if (builder.enablePackagesUpdate || builder.enableImportsUpdate) {
-            classFinder = new ClassFinder.CachedClassFinder(
-                    builder.classFinder);
-
             if (builder.generateEmbeddableWebComponents) {
                 FrontendWebComponentGenerator generator = new FrontendWebComponentGenerator(
                         classFinder);
@@ -422,7 +421,7 @@ public class NodeTasks implements FallibleCommand {
             commands.add(packageCreator);
         }
 
-        generateClientBootstrapFiles(builder);
+        generateClientBootstrapFiles(builder, classFinder);
 
         if (builder.enablePackagesUpdate) {
             TaskUpdatePackages packageUpdater = new TaskUpdatePackages(
@@ -464,7 +463,8 @@ public class NodeTasks implements FallibleCommand {
         }
     }
 
-    private void generateClientBootstrapFiles(Builder builder) {
+    private void generateClientBootstrapFiles(Builder builder,
+            ClassFinder classFinder) {
         if (builder.clientSideMode) {
             File outputDirectory = new File(builder.npmFolder,
                     FrontendUtils.TARGET);
@@ -479,16 +479,23 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateTsConfig taskGenerateTsConfig = new TaskGenerateTsConfig(
                     builder.frontendDirectory, builder.npmFolder);
             commands.add(taskGenerateTsConfig);
-            if (builder.connectJavaSourceFolder != null
-                    && builder.connectGeneratedOpenApiFile != null) {
+            if (shouldGenerateOpenApi(builder, classFinder)) {
                 TaskGenerateOpenApi taskGenerateOpenApi = new TaskGenerateOpenApi(
                         builder.connectApplicationProperties,
                         builder.connectJavaSourceFolder,
-                        builder.classFinder.getClassLoader(),
+                        classFinder.getClassLoader(),
                         builder.connectGeneratedOpenApiFile);
                 commands.add(taskGenerateOpenApi);
             }
         }
+    }
+
+    private boolean shouldGenerateOpenApi(Builder builder,
+            ClassFinder classFinder) {
+        return builder.connectJavaSourceFolder != null
+                && builder.connectGeneratedOpenApiFile != null
+                && !classFinder.getAnnotatedClasses(VaadinService.class)
+                        .isEmpty();
     }
 
     private FrontendDependenciesScanner getFallbackScanner(Builder builder,
