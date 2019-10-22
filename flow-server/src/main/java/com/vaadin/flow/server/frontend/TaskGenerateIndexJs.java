@@ -70,8 +70,9 @@ public class TaskGenerateIndexJs extends AbstractTaskClientGenerator {
     protected String getFileContent() throws IOException {
         String indexTemplate = IOUtils
                 .toString(getClass().getResourceAsStream(INDEX_JS), UTF_8);
-        String relativizedImport = ensureValidRelativePath(outputDirectory
-                .toPath().relativize(generatedImports.toPath()).toString());
+        String relativizedImport = ensureValidRelativePath(
+                FrontendUtils.getUnixRelativePath(outputDirectory.toPath(),
+                        generatedImports.toPath()));
         return indexTemplate.replace("[to-be-generated-by-flow]",
                 relativizedImport);
     }
@@ -85,11 +86,10 @@ public class TaskGenerateIndexJs extends AbstractTaskClientGenerator {
      * @return valid import path
      */
     static String ensureValidRelativePath(String relativePath) {
-        String relativizedImport = relativePath.replaceAll("\\\\", "/");
-        if (!relativizedImport.startsWith(".")) {
-            relativizedImport = "./" + relativizedImport;
+        if (!relativePath.startsWith(".")) {
+            relativePath = "./" + relativePath;
         }
-        return relativizedImport;
+        return relativePath;
     }
 
 }

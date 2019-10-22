@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -600,6 +601,31 @@ public class FrontendUtils {
         return file.exists()
                 && FileUtils.readFileToString(file, StandardCharsets.UTF_8)
                         .contains("./webpack.generated.js");
+    }
+
+    /**
+     * Get relative path from a source path to a target path in Unix form. All
+     * the Windows' path separator will be replaced.
+     * 
+     * @param source
+     *            the source path
+     * @param target
+     *            the target path
+     * @return unix relative path from source to target
+     */
+    public static String getUnixRelativePath(Path source, Path target) {
+        return getUnixPath(source.relativize(target));
+    }
+
+    /**
+     * Get path as a String in Unix form.
+     * 
+     * @param source
+     *            path to get
+     * @return path as a String in Unix form.
+     */
+    public static String getUnixPath(Path source) {
+        return source.toString().replaceAll("\\\\", "/");
     }
 
     /**

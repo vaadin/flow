@@ -75,23 +75,19 @@ public class TaskGenerateIndexJsTest {
                 IOUtils.toString(taskGenerateIndexJs.getGeneratedFile().toURI(),
                         StandardCharsets.UTF_8));
     }
-@Test
-    public void should_notContainWindowSeparator_whenRelativizingPath() throws Exception
-    {
-        String windowSeparator = TaskGenerateIndexJs
-                .ensureValidRelativePath("frontend\\generated-flow-imports.js");
-        Assert.assertEquals("Window separator should be replaced",
-                "./frontend/generated-flow-imports.js", windowSeparator);
 
-        String unixSeparator = TaskGenerateIndexJs
-                .ensureValidRelativePath("frontend/generated-flow-imports.js");
-        Assert.assertEquals("Unix separator should be kept",
-                "./frontend/generated-flow-imports.js", unixSeparator);
-
+    @Test
+    public void should_ensureValidRelativePath_whenItHasNoRelativePrefix() {
         String customPath = TaskGenerateIndexJs.ensureValidRelativePath(
                 "../custom-frontend/generated-flow-imports.js");
         Assert.assertEquals(
                 "Should not append './' if it is already a relative path",
                 "../custom-frontend/generated-flow-imports.js", customPath);
+
+        customPath = TaskGenerateIndexJs.ensureValidRelativePath(
+                "custom-frontend/generated-flow-imports.js");
+        Assert.assertEquals(
+                "Should append './' if it doesn't start with a relative path",
+                "./custom-frontend/generated-flow-imports.js", customPath);
     }
 }

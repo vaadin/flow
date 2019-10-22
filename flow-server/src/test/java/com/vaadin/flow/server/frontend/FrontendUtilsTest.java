@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Path;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -29,6 +30,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.Mockito;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.frontend.FrontendUtils.UnknownVersionException;
@@ -214,6 +216,29 @@ public class FrontendUtilsTest {
     @Test(expected = IOException.class)
     public void parseEmptyToolVersions() throws IOException {
         FrontendUtils.parseVersion(" \n");
+    }
+
+    @Test
+    public void should_getUnixRelativePath_when_givenTwoPaths() {
+        Path sourcePath = Mockito.mock(Path.class);
+        Path relativePath = Mockito.mock(Path.class);
+        Mockito.when(sourcePath.relativize(Mockito.any()))
+                .thenReturn(relativePath);
+        Mockito.when(relativePath.toString())
+                .thenReturn("this\\is\\windows\\path");
+
+        String relativeUnixPath = FrontendUtils.getUnixRelativePath(sourcePath,
+                tmpDir.getRoot().toPath());
+        Assert.assertEquals(
+                "Should replace windows path separator with unix path separator",
+                "this/is/windows/path", relativeUnixPath);
+        Mockito.when(relativePath.toString()).thenReturn("this/is/unix/path");
+
+        relativeUnixPath = FrontendUtils.getUnixRelativePath(sourcePath,
+                tmpDir.getRoot().toPath());
+        Assert.assertEquals(
+                "Should keep the same path when it uses unix path separator",
+                "this/is/unix/path", relativeUnixPath);
     }
 
 }
