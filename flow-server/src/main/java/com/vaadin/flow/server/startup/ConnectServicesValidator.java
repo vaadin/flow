@@ -44,6 +44,16 @@ public class ConnectServicesValidator implements ServletContainerInitializer, Se
     public void onStartup(Set<Class<?>> classSet, ServletContext servletContext)
             throws ServletException {
 
+        if (classSet == null) {
+            // This case happens when initializing in a CDI environment.
+            //
+            // We cannot check anything here to give a message.
+            // Continue with the initialization, java will throw
+            // the proper exception if application tries to use
+            // a service and dependencies are not added to the project.
+            return;
+        }
+
         ClassFinder finder = new DefaultClassFinder(classSet);
         Set<Class<?>> services = finder.getAnnotatedClasses(VaadinService.class);
         if (!services.isEmpty()) {
@@ -60,7 +70,7 @@ public class ConnectServicesValidator implements ServletContainerInitializer, Se
             }
         }
     }
-    
+
     void setClassToCheck(String className) {
         classToCheck = className;
     }
