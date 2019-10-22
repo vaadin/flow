@@ -34,23 +34,23 @@ public class FrontendVersion implements Serializable {
     /**
      * Major version number. For example 6 in 6.2.0.
      */
-    private final int version_major;
+    private final int majorVersion;
 
     /**
      * Minor version number. For example 2 in 6.2.0.
      */
-    private final int version_minor;
+    private final int minorVersion;
 
     /**
      * Version revision number. For example 0 in 6.2.0.
      */
-    private final int version_revision;
+    private final int revision;
 
     /**
      * Build identifier. For example "nightly-20091123-c9963" in
      * 6.2.0.nightly-20091123-c9963.
      */
-    private final String version_build;
+    private final String buildIdentifier;
 
     /**
      * Create a version of format "major.minor.0".
@@ -92,10 +92,10 @@ public class FrontendVersion implements Serializable {
      */
     public FrontendVersion(int major, int minor, int revision, String build) {
         this.version = major + "." + minor + "." + revision;
-        version_major = major;
-        version_minor = minor;
-        version_revision = revision;
-        version_build = build;
+        majorVersion = major;
+        minorVersion = minor;
+        this.revision = revision;
+        buildIdentifier = build;
     }
 
     /**
@@ -108,13 +108,13 @@ public class FrontendVersion implements Serializable {
     public FrontendVersion(String version) {
         this.version = version;
 
-        final String[] digits = version.split("\\.", 4);
-        version_major = Integer.parseInt(digits[0]);
-        version_minor = Integer.parseInt(digits[1]);
+        final String[] digits = version.split("[-.]", 4);
+        majorVersion = Integer.parseInt(digits[0]);
+        minorVersion = Integer.parseInt(digits[1]);
         int revision;
         String build = "";
         try {
-            revision = Integer.parseInt(digits[2]);
+            revision = digits.length >= 3 ? Integer.parseInt(digits[2]) : 0;
             if (digits.length == 4) {
                 build = digits[3];
             }
@@ -125,8 +125,8 @@ public class FrontendVersion implements Serializable {
                 build = digits[2];
             }
         }
-        version_revision = revision;
-        version_build = build;
+        this.revision = revision;
+        buildIdentifier = build;
     }
 
     /**
@@ -145,7 +145,7 @@ public class FrontendVersion implements Serializable {
      * @return the major version number
      */
     public int getMajorVersion() {
-        return version_major;
+        return majorVersion;
     }
 
     /**
@@ -154,7 +154,7 @@ public class FrontendVersion implements Serializable {
      * @return the minor version number
      */
     public int getMinorVersion() {
-        return version_minor;
+        return minorVersion;
     }
 
     /**
@@ -163,7 +163,7 @@ public class FrontendVersion implements Serializable {
      * @return the revision number
      */
     public int getRevision() {
-        return version_revision;
+        return revision;
     }
 
     /**
@@ -173,16 +173,16 @@ public class FrontendVersion implements Serializable {
      * @return the version qualifier
      */
     public String getBuildIdentifier() {
-        return version_build;
+        return buildIdentifier;
     }
 
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof FrontendVersion) {
             FrontendVersion other = (FrontendVersion) obj;
-            return version_major == other.getMajorVersion()
-                    && version_minor == other.getMinorVersion()
-                    && version_revision == other.getRevision() && version_build
+            return majorVersion == other.getMajorVersion()
+                    && minorVersion == other.getMinorVersion()
+                    && revision == other.getRevision() && buildIdentifier
                     .equals(other.getBuildIdentifier());
         }
         return false;
