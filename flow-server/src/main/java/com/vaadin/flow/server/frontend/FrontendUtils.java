@@ -186,11 +186,13 @@ public class FrontendUtils {
      */
     public static final String PARAM_TOKEN_FILE = "vaadin.frontend.token.file";
 
+    public static final String INSTALL_NODE_LOCALLY = "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.7.6:install-node-and-npm -DnodeVersion=\"v12.13.0\" ";
+    
     private static final String NOT_FOUND = "%n%n======================================================================================================"
             + "%nFailed to determine '%s' tool." + "%nPlease install it either:"
             + "%n  - by following the https://nodejs.org/en/download/ guide to install it globally"
             + "%n  - or by running the frontend-maven-plugin goal to install it in this project:"
-            + "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.7.6:install-node-and-npm -DnodeVersion=\"v12.13.0\" "
+            + INSTALL_NODE_LOCALLY
             + "%n======================================================================================================%n";
 
     private static final String SHOULD_WORK = "%n%n======================================================================================================"
@@ -198,7 +200,7 @@ public class FrontendUtils {
             + "%nYou can install a new one:"
             + "%n  - by following the https://nodejs.org/en/download/ guide to install it globally"
             + "%n  - or by running the frontend-maven-plugin goal to install it in this project:"
-            + "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.7.6:install-node-and-npm -DnodeVersion=\"v12.13.0\" "
+            + INSTALL_NODE_LOCALLY
             + "%n" //
             + "%nYou can disable the version check using -D%s=true" //
             + "%n======================================================================================================%n";
@@ -208,7 +210,7 @@ public class FrontendUtils {
             + "%nPlease install a new one either:"
             + "%n  - by following the https://nodejs.org/en/download/ guide to install it globally"
             + "%n  - or by running the frontend-maven-plugin goal to install it in this project:"
-            + "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.7.6:install-node-and-npm -DnodeVersion=\"v12.13.0\" "
+            + INSTALL_NODE_LOCALLY
             + "%n" //
             + "%nYou can disable the version check using -D%s=true" //
             + "%n======================================================================================================%n";
@@ -219,7 +221,7 @@ public class FrontendUtils {
             + "%n  - by following the https://nodejs.org/en/download/ guide to install it globally"
             + "%s"
             + "%n  - or by running the frontend-maven-plugin goal to install it in this project:"
-            + "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.7.6:install-node-and-npm -DnodeVersion=\"v12.13.0\""
+            + INSTALL_NODE_LOCALLY
             + "%n" //
             + "%nYou can disable the version check using -D%s=true" //
             + "%n======================================================================================================%n";
