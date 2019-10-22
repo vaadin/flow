@@ -80,7 +80,7 @@ public class OpenApiSpecGenerator {
         log.info("Parsing java files from {}", sourcesPaths);
         OpenAPI openAPI = generator.generateOpenApi();
         try {
-            log.info("Writing output to {}", specOutputFile);
+            log.info("writing file {}", specOutputFile);
             FileUtils.writeStringToFile(specOutputFile.toFile(),
                     Json.pretty(openAPI), StandardCharsets.UTF_8);
         } catch (IOException e) {

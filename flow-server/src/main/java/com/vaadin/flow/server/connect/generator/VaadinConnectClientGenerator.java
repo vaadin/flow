@@ -28,6 +28,7 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.vaadin.flow.server.connect.generator.VaadinConnectTsGenerator.TS;
 /**
  * Generates the Vaadin Connect Client file, based on the application
  * properties, if provided.
@@ -37,11 +38,8 @@ public class VaadinConnectClientGenerator {
     static final String DEFAULT_ENDPOINT = "/connect";
 
     private static final String CLIENT_FILE_NAME = "connect-client.default";
-
-    public static final String DEFAULT_GENERATED_CONNECT_CLIENT_NAME = CLIENT_FILE_NAME
-            + ".ts";
-    public static final String DEFAULT_GENERATED_CONNECT_CLIENT_IMPORT_PATH = "./"
-            + CLIENT_FILE_NAME;
+    public static final String CONNECT_CLIENT_NAME = CLIENT_FILE_NAME + TS;
+    public static final String CONNECT_CLIENT_IMPORT_PATH = "./" + CLIENT_FILE_NAME;
 
     private final String endpoint;
 
@@ -70,14 +68,13 @@ public class VaadinConnectClientGenerator {
     public void generateVaadinConnectClientFile(Path outputFilePath) {
         String generatedDefaultClientTs = getDefaultClientTsTemplate()
                 .replace("{{ENDPOINT}}", endpoint);
-
         try {
-            log.info("Writing output to {}", outputFilePath);
+            log.info("writing file {}", outputFilePath);
             FileUtils.writeStringToFile(outputFilePath.toFile(),
                     generatedDefaultClientTs, StandardCharsets.UTF_8);
         } catch (IOException e) {
             String errorMessage = String.format(
-                    "Error while writing OpenAPI json file at %s",
+                    "Error writing file at %s",
                     outputFilePath.toString());
             log.error(errorMessage, outputFilePath, e);
         }
