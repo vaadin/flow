@@ -47,19 +47,19 @@ abstract class AbstractTaskConnectGenerator implements FallibleCommand {
                         applicationProperties.toPath(), StandardCharsets.UTF_8);
                 config.read(bufferedReader);
             } catch (IOException | ConfigurationException e) {
-                getLog().info(String.format(
+                log().info(String.format(
                         "Can't read the application"
                                 + ".properties file from %s",
                         applicationProperties.toString()), e);
             }
         } else {
-            getLog().debug(
+            log().debug(
                     "Found no application properties, using default values.");
         }
         return config;
     }
 
-    private static Logger getLog() {
+    Logger log() {
         return LoggerFactory.getLogger(AbstractTaskConnectGenerator.class);
     }
 }

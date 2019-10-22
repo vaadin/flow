@@ -79,6 +79,7 @@ import com.vaadin.flow.server.connect.VaadinServiceNameChecker;
  */
 public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
 
+    public static final String TS = ".ts";
     public static final String NULLABLE_SUFFIX = " | null";
     private static final String GENERATOR_NAME = "javascript-vaadin-connect";
     private static final String EXTENSION_VAADIN_CONNECT_PARAMETERS = "x-vaadin-connect-parameters";
@@ -104,7 +105,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         @Override
         public File writeToFile(String filename, String contents)
                 throws IOException {
-            if (filename.endsWith(".ts")) {
+            if (filename.endsWith(TS)) {
                 return super.writeToFile(filename, contents);
             }
             return null;
@@ -125,8 +126,8 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
          * apiTemplateFiles map. as with models, add multiple entries with
          * different extensions for multiple files per class
          */
-        apiTemplateFiles.put("TypeScriptApiTemplate.mustache", ".ts");
-        modelTemplateFiles.put("ModelTemplate.mustache", ".ts");
+        apiTemplateFiles.put("TypeScriptApiTemplate.mustache", TS);
+        modelTemplateFiles.put("ModelTemplate.mustache", TS);
 
         /*
          * Template Location. This is the location which templates will be read
@@ -161,10 +162,11 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
      *
      * @see <a href="https://github.com/OAI/OpenAPI-Specification">OpenAPI
      *      specification</a>
+     * @return true if any file was generated.
      */
-    public static void launch(File openApiJsonFile,
+    public static boolean launch(File openApiJsonFile,
             File generatedFrontendDirectory) {
-        launch(openApiJsonFile, generatedFrontendDirectory, null);
+        return launch(openApiJsonFile, generatedFrontendDirectory, null);
     }
 
     /**
@@ -182,8 +184,9 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
      *            is used.
      * @see <a href="https://github.com/OAI/OpenAPI-Specification">OpenAPI
      *      specification</a>
+     * @return true if any file was generated.
      */
-    public static void launch(File openApiJsonFile,
+    public static boolean launch(File openApiJsonFile,
             File generatedFrontendDirectory, String defaultClientPath) {
         CodegenConfigurator configurator = new CodegenConfigurator();
         configurator.setLang(VaadinConnectTsGenerator.class.getName());
@@ -191,11 +194,12 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         configurator.setOutputDir(generatedFrontendDirectory.toString());
         configurator.addAdditionalProperty(CLIENT_PATH_TEMPLATE_PROPERTY,
                 getDefaultClientPath(defaultClientPath));
-        generate(configurator);
+
+        return !generate(configurator).isEmpty();
     }
 
     private static String removeTsExtension(String path) {
-        if (path.endsWith(".ts")) {
+        if (path.endsWith(TS)) {
             return path.substring(0, path.length() - 3);
         }
         return path;
@@ -203,11 +207,11 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
 
     private static String getDefaultClientPath(String path) {
         path = ObjectUtils.defaultIfNull(path,
-                VaadinConnectClientGenerator.DEFAULT_GENERATED_CONNECT_CLIENT_IMPORT_PATH);
+                VaadinConnectClientGenerator.CONNECT_CLIENT_IMPORT_PATH);
         return removeTsExtension(path);
     }
 
-    private static void generate(CodegenConfigurator configurator) {
+    private static Set<File> generate(CodegenConfigurator configurator) {
         SwaggerParseResult parseResult = getParseResult(configurator);
         if (parseResult != null && parseResult.getMessages().isEmpty()) {
             OpenAPI openAPI = parseResult.getOpenAPI();
@@ -219,7 +223,12 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
             Set<File> generatedFiles = new VaadinConnectTSOnlyGenerator()
                     .opts(clientOptInput).generate().stream()
                     .filter(Objects::nonNull).collect(Collectors.toSet());
+
             cleanGeneratedFolder(configurator.getOutputDir(), generatedFiles);
+
+            return generatedFiles.stream()
+                    .filter(file -> file.getName().endsWith(TS))
+                    .collect(Collectors.toSet());
         } else {
             String error = parseResult == null ? ""
                     : StringUtils.join(parseResult.getMessages().toArray());
@@ -298,7 +307,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
 
     private static boolean shouldDelete(Set<File> generatedFiles, File file) {
         return !generatedFiles.contains(file)
-                && !VaadinConnectClientGenerator.DEFAULT_GENERATED_CONNECT_CLIENT_NAME
+                && !VaadinConnectClientGenerator.CONNECT_CLIENT_NAME
                         .equals(file.getName());
     }
 

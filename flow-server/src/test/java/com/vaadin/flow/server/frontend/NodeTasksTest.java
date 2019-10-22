@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
@@ -14,6 +15,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.connect.VaadinService;
 import com.vaadin.flow.server.frontend.NodeTasks.Builder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 
@@ -28,6 +30,11 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
 import static org.junit.Assert.assertTrue;
 
 public class NodeTasksTest {
+
+    @VaadinService
+    public static class ConnectServicesForTesting {
+    }
+
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
     String userDir;
@@ -111,7 +118,8 @@ public class NodeTasksTest {
         File json = new File(dir, "api-file.json");
 
         Builder builder = new Builder(
-                new DefaultClassFinder(this.getClass().getClassLoader()), dir)
+                new DefaultClassFinder(
+                    Collections.singleton(ConnectServicesForTesting.class)), dir)
                         .enablePackagesUpdate(false)
                         .enableImportsUpdate(false)
                         .withEmbeddableWebComponents(false)

@@ -108,7 +108,7 @@ public class OpenApiSpecBasedTests {
     public void should_RemoveStaleGeneratedFiles_When_OpenAPIInputChanges() {
         Path defaultConnectClient = Paths.get(
                 outputDirectory.getRoot().getAbsolutePath(),
-                VaadinConnectClientGenerator.DEFAULT_GENERATED_CONNECT_CLIENT_NAME);
+                VaadinConnectClientGenerator.CONNECT_CLIENT_NAME);
         VaadinConnectClientGenerator vaadinConnectClientGenerator = new VaadinConnectClientGenerator(
                 new PropertiesConfiguration());
         // First generating round

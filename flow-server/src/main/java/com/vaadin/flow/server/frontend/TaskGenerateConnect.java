@@ -18,39 +18,51 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.util.Objects;
 
+import org.apache.commons.io.FileUtils;
+
 import com.vaadin.flow.server.ExecutionFailedException;
-import com.vaadin.flow.server.FallibleCommand;
+import com.vaadin.flow.server.connect.generator.VaadinConnectClientGenerator;
 import com.vaadin.flow.server.connect.generator.VaadinConnectTsGenerator;
 
+import static com.vaadin.flow.server.connect.generator.VaadinConnectClientGenerator.CONNECT_CLIENT_NAME;
+
 /**
- * Generate the Vaadin Connect Client file.
+ * Generate the Vaadin Connect TS files for services, and the Client API file.
  */
-public class TaskGenerateConnectTs implements FallibleCommand {
+public class TaskGenerateConnect extends AbstractTaskConnectGenerator {
 
     private final File outputFolder;
     private final File openApi;
+    private final File connectClientFile;
 
     /**
      * Create a task for generating TS files based.
-     * 
+     *
+     * @param applicationProperties
+     *            application properties file.
      * @param openApi
      *            openApi json file.
      * @param output
      *            the output folder.
      */
-    TaskGenerateConnectTs(File openApi, File outputFolder) {
+    TaskGenerateConnect(File applicationProperties, File openApi, File outputFolder) {
+        super(applicationProperties);
         Objects.requireNonNull(openApi,
                 "Connect OpenAPI file should not be null.");
         Objects.requireNonNull(outputFolder,
                 "Connect output folder should not be null.");
-        
         this.openApi = openApi;
         this.outputFolder = outputFolder;
-        
+        this.connectClientFile = new File(outputFolder, CONNECT_CLIENT_NAME);
     }
 
     @Override
     public void execute() throws ExecutionFailedException {
-        VaadinConnectTsGenerator.launch(openApi, outputFolder);
+        if (VaadinConnectTsGenerator.launch(openApi, outputFolder)) {
+            new VaadinConnectClientGenerator(readApplicationProperties())
+                    .generateVaadinConnectClientFile(connectClientFile.toPath());
+        } else {
+            FileUtils.deleteQuietly(connectClientFile);
+        }
     }
 }
