@@ -438,7 +438,15 @@ public class NodeTasks implements FallibleCommand {
         }
 
         if (builder.clientSideMode) {
-            generateClientBootstrapFiles(builder, classFinder);
+            addBootstrapTasks(builder);
+
+            if (builder.connectJavaSourceFolder != null
+                    && builder.connectGeneratedOpenApiFile != null
+                    && !classFinder.getAnnotatedClasses(VaadinService.class)
+                            .isEmpty()) {
+
+                addApiTasks(builder);
+            }
         }
 
         if (builder.enablePackagesUpdate) {
@@ -478,12 +486,10 @@ public class NodeTasks implements FallibleCommand {
                             builder.npmFolder, builder.generatedFolder,
                             builder.frontendDirectory, builder.tokenFile,
                             builder.tokenFileData));
-
         }
     }
 
-    private void generateClientBootstrapFiles(Builder builder,
-            ClassFinder classFinder) {
+    private void addBootstrapTasks(Builder builder) {
         File outputDirectory = new File(builder.npmFolder,
                 FrontendUtils.TARGET);
         TaskGenerateIndexHtml taskGenerateIndexHtml = new TaskGenerateIndexHtml(
@@ -497,32 +503,23 @@ public class NodeTasks implements FallibleCommand {
         TaskGenerateTsConfig taskGenerateTsConfig = new TaskGenerateTsConfig(
                 builder.frontendDirectory, builder.npmFolder);
         commands.add(taskGenerateTsConfig);
-
-        if (shouldGenerateOpenApi(builder, classFinder)) {
-
-            TaskGenerateOpenApi taskGenerateOpenApi = new TaskGenerateOpenApi(
-                    builder.connectApplicationProperties,
-                    builder.connectJavaSourceFolder,
-                    builder.classFinder.getClassLoader(),
-                    builder.connectGeneratedOpenApiFile);
-            commands.add(taskGenerateOpenApi);
-
-            if (builder.connectClientTsApiFolder != null) {
-                TaskGenerateConnect taskGenerateConnectTs = new TaskGenerateConnect(
-                        builder.connectApplicationProperties,
-                        builder.connectGeneratedOpenApiFile,
-                        builder.connectClientTsApiFolder);
-                commands.add(taskGenerateConnectTs);
-            }
-        }
     }
 
-    private boolean shouldGenerateOpenApi(Builder builder,
-            ClassFinder classFinder) {
-        return builder.connectJavaSourceFolder != null
-                && builder.connectGeneratedOpenApiFile != null
-                && !classFinder.getAnnotatedClasses(VaadinService.class)
-                        .isEmpty();
+    void addApiTasks(Builder builder) {
+        TaskGenerateOpenApi taskGenerateOpenApi = new TaskGenerateOpenApi(
+                builder.connectApplicationProperties,
+                builder.connectJavaSourceFolder,
+                builder.classFinder.getClassLoader(),
+                builder.connectGeneratedOpenApiFile);
+        commands.add(taskGenerateOpenApi);
+
+        if (builder.connectClientTsApiFolder != null) {
+            TaskGenerateConnect taskGenerateConnectTs = new TaskGenerateConnect(
+                    builder.connectApplicationProperties,
+                    builder.connectGeneratedOpenApiFile,
+                    builder.connectClientTsApiFolder);
+            commands.add(taskGenerateConnectTs);
+        }
     }
 
     private FrontendDependenciesScanner getFallbackScanner(Builder builder,

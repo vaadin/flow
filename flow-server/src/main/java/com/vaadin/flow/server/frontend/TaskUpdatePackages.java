@@ -27,6 +27,7 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -107,6 +108,8 @@ public class TaskUpdatePackages extends NodeUpdater {
 
             // There are connect services
             if (connectClientFile.exists()) {
+                // convert to modifiable map
+                deps = new HashMap<>(deps);
                 deps.put("@vaadin/connect", "0.9.4");
             }
 

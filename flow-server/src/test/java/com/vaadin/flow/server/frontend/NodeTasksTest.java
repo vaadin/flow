@@ -114,6 +114,7 @@ public class NodeTasksTest {
     @Test
     public void should_Generate_Connect_Files() throws Exception {
         File src = new File(getClass().getClassLoader().getResource("java").getFile());
+        System.err.println(src);
         File dir = new File(userDir);
         File json = new File(dir, "api-file.json");
 

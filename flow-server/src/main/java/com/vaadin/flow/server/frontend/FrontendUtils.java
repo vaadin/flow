@@ -124,7 +124,7 @@ public class FrontendUtils {
     /**
      * The TypeScript definitions for the {@link FrontendUtils#IMPORTS_NAME} file.
      */
-    public static final String IMPORTS_D_TS_NAME = "generated-flow-imports.d.ts";    
+    public static final String IMPORTS_D_TS_NAME = "generated-flow-imports.d.ts";
 
     /**
      * File name of the index.html in clientSideMode.
@@ -156,6 +156,11 @@ public class FrontendUtils {
      */
     public static final String DEFAULT_CONNECT_OPENAPI_JSON_FILE = TARGET
             + "generated-resources/openapi.json";
+
+    /**
+     * Default generated path for generated TS files
+     */
+    public static final String DEFAULT_CONNECT_GENERATED_TS_DIR = DEFAULT_FRONTEND_DIR + "generated/";
 
     /**
      * Name of the file that contains all application imports, javascript, theme
