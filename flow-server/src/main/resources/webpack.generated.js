@@ -45,9 +45,7 @@ const net = require('net');
 
 function setupWatchDog(){
     var client = new net.Socket();
-    client.connect(watchDogPort, 'localhost', function() {
-        console.debug('Watchdog connected.');
-    });
+    client.connect(watchDogPort, 'localhost');
 
     client.on('error', function(){
         console.log("Watchdog connection error. Terminating webpack process...");
@@ -57,7 +55,6 @@ function setupWatchDog(){
 
     client.on('close', function() {
         client.destroy();
-        console.debug('Watchdog connection closed. Trying to re-run watchdog.');
         setupWatchDog();
     });  
 }
