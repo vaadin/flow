@@ -176,6 +176,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
 
     /**
      * Enable / disable bootstrap HTML fragment caching based on component tag.
+     * Calling this method has the side effect of always clearing the cache.
      *
      * @param cacheEnabled whether bootstrap fragments should be cached per tag
      */
@@ -185,13 +186,6 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
         } else {
             cache = null;
         }
-    }
-
-    /**
-     * Clear the internal tag -- bootstrap HTML fragment cache.
-     */
-    protected void clearCache() {
-        cache = null;
     }
 
     private String generateBowerResponse(
