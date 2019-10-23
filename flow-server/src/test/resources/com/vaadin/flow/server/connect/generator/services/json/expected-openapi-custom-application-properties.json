@@ -1,0 +1,642 @@
+{
+  "openapi" : "3.0.1",
+  "info" : {
+    "title" : "My super application",
+    "version" : "1.1.1"
+  },
+  "servers" : [ {
+    "url" : "https://myhost.com/myendpoint",
+    "description" : "Vaadin connect backend server"
+  } ],
+  "tags" : [ {
+    "name" : "JsonTestService",
+    "description" : "This class is used for OpenApi generator test"
+  }, {
+    "name" : "GeneratorAnonymousAllowedTestClass",
+    "description" : "This nested class is also used in the OpenApi generator test"
+  } ],
+  "paths" : {
+    "/JsonTestService/countUser" : {
+      "post" : {
+        "tags" : [ "JsonTestService" ],
+        "description" : "Get number of users",
+        "operationId" : "JsonTestService_countUser_POST",
+        "responses" : {
+          "200" : {
+            "description" : "Return number of user",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "number",
+                  "nullable" : false
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "vaadin-connect-oauth2" : [ ]
+        } ]
+      }
+    },
+    "/JsonTestService/fullFQNMethod" : {
+      "post" : {
+        "tags" : [ "JsonTestService" ],
+        "description" : "Get instant nano",
+        "operationId" : "JsonTestService_fullFQNMethod_POST",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "required" : [ "input" ],
+                "type" : "object",
+                "properties" : {
+                  "input" : {
+                    "type" : "number",
+                    "description" : "input parameter",
+                    "nullable" : true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Return current time as an Instant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "date-time",
+                  "nullable" : true
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "vaadin-connect-oauth2" : [ ]
+        } ]
+      }
+    },
+    "/JsonTestService/getAllUserRolesMap" : {
+      "post" : {
+        "tags" : [ "JsonTestService" ],
+        "description" : "Get the map of user and roles",
+        "operationId" : "JsonTestService_getAllUserRolesMap_POST",
+        "responses" : {
+          "200" : {
+            "description" : "Return map of user and roles",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "additionalProperties" : {
+                    "nullable" : true,
+                    "allOf" : [ {
+                      "$ref" : "#/components/schemas/com.vaadin.flow.server.connect.generator.services.json.JsonTestService.User"
+                    } ]
+                  },
+                  "nullable" : true
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "vaadin-connect-oauth2" : [ ]
+        } ]
+      }
+    },
+    "/JsonTestService/getAllUsers" : {
+      "post" : {
+        "tags" : [ "JsonTestService" ],
+        "description" : "Get all users",
+        "operationId" : "JsonTestService_getAllUsers_POST",
+        "responses" : {
+          "200" : {
+            "description" : "Return list of users",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "nullable" : true,
+                  "items" : {
+                    "nullable" : true,
+                    "allOf" : [ {
+                      "$ref" : "#/components/schemas/com.vaadin.flow.server.connect.generator.services.json.JsonTestService.User"
+                    } ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "vaadin-connect-oauth2" : [ ]
+        } ]
+      }
+    },
+    "/JsonTestService/getArrayInt" : {
+      "post" : {
+        "tags" : [ "JsonTestService" ],
+        "description" : "Get array int",
+        "operationId" : "JsonTestService_getArrayInt_POST",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "required" : [ "input" ],
+                "type" : "object",
+                "properties" : {
+                  "input" : {
+                    "type" : "array",
+                    "description" : "input string array",
+                    "nullable" : true,
+                    "items" : {
+                      "type" : "string",
+                      "nullable" : true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Return array of int",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "nullable" : true,
+                  "items" : {
+                    "type" : "number",
+                    "nullable" : false
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/JsonTestService/getBooleanValue" : {
+      "post" : {
+        "tags" : [ "JsonTestService" ],
+        "description" : "Get boolean value",
+        "operationId" : "JsonTestService_getBooleanValue_POST",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "required" : [ "input" ],
+                "type" : "object",
+                "properties" : {
+                  "input" : {
+                    "type" : "object",
+                    "additionalProperties" : {
+                      "nullable" : true,
+                      "allOf" : [ {
+                        "$ref" : "#/components/schemas/com.vaadin.flow.server.connect.generator.services.json.JsonTestService.User"
+                      } ]
+                    },
+                    "description" : "input map",
+                    "nullable" : true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Return boolean value",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "boolean",
+                  "nullable" : false
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "vaadin-connect-oauth2" : [ ]
+        } ]
+      }
+    },
+    "/JsonTestService/getTwoParameters" : {
+      "post" : {
+        "tags" : [ "JsonTestService" ],
+        "description" : "Two parameters input method",
+        "operationId" : "JsonTestService_getTwoParameters_POST",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "required" : [ "input", "secondInput" ],
+                "type" : "object",
+                "properties" : {
+                  "input" : {
+                    "type" : "string",
+                    "description" : "first input description",
+                    "nullable" : true
+                  },
+                  "secondInput" : {
+                    "type" : "number",
+                    "description" : "second input description",
+                    "nullable" : false
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Return boolean value",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "boolean",
+                  "nullable" : false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/JsonTestService/getUserById" : {
+      "post" : {
+        "tags" : [ "JsonTestService" ],
+        "description" : "Get user by id",
+        "operationId" : "JsonTestService_getUserById_POST",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "required" : [ "id" ],
+                "type" : "object",
+                "properties" : {
+                  "id" : {
+                    "type" : "number",
+                    "description" : "id of user",
+                    "nullable" : false
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Return user with given id",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "nullable" : true,
+                  "allOf" : [ {
+                    "$ref" : "#/components/schemas/com.vaadin.flow.server.connect.generator.services.json.JsonTestService.User"
+                  } ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/JsonTestService/inputBeanTypeDependency" : {
+      "post" : {
+        "tags" : [ "JsonTestService" ],
+        "operationId" : "JsonTestService_inputBeanTypeDependency_POST",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "required" : [ "input" ],
+                "type" : "object",
+                "properties" : {
+                  "input" : {
+                    "nullable" : true,
+                    "allOf" : [ {
+                      "$ref" : "#/components/schemas/com.fasterxml.jackson.core.Version"
+                    } ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : ""
+          }
+        },
+        "security" : [ {
+          "vaadin-connect-oauth2" : [ ]
+        } ]
+      }
+    },
+    "/JsonTestService/inputBeanTypeLocal" : {
+      "post" : {
+        "tags" : [ "JsonTestService" ],
+        "operationId" : "JsonTestService_inputBeanTypeLocal_POST",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "required" : [ "input" ],
+                "type" : "object",
+                "properties" : {
+                  "input" : {
+                    "nullable" : true,
+                    "allOf" : [ {
+                      "$ref" : "#/components/schemas/com.vaadin.flow.server.connect.generator.services.json.JsonTestService.Status"
+                    } ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : ""
+          }
+        },
+        "security" : [ {
+          "vaadin-connect-oauth2" : [ ]
+        } ]
+      }
+    },
+    "/JsonTestService/optionalParameter" : {
+      "post" : {
+        "tags" : [ "JsonTestService" ],
+        "operationId" : "JsonTestService_optionalParameter_POST",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "required" : [ "parameter", "requiredParameter" ],
+                "type" : "object",
+                "properties" : {
+                  "parameter" : {
+                    "type" : "array",
+                    "nullable" : true,
+                    "items" : {
+                      "type" : "string",
+                      "nullable" : true
+                    }
+                  },
+                  "requiredParameter" : {
+                    "type" : "string",
+                    "nullable" : true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : ""
+          }
+        },
+        "security" : [ {
+          "vaadin-connect-oauth2" : [ ]
+        } ]
+      }
+    },
+    "/JsonTestService/optionalReturn" : {
+      "post" : {
+        "tags" : [ "JsonTestService" ],
+        "operationId" : "JsonTestService_optionalReturn_POST",
+        "responses" : {
+          "200" : {
+            "description" : "",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "nullable" : true,
+                  "allOf" : [ {
+                    "$ref" : "#/components/schemas/com.vaadin.flow.server.connect.generator.services.json.JsonTestService.User"
+                  } ]
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "vaadin-connect-oauth2" : [ ]
+        } ]
+      }
+    },
+    "/JsonTestService/reservedWordInParameter" : {
+      "post" : {
+        "tags" : [ "JsonTestService" ],
+        "operationId" : "JsonTestService_reservedWordInParameter_POST",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "required" : [ "_delete" ],
+                "type" : "object",
+                "properties" : {
+                  "_delete" : {
+                    "type" : "boolean",
+                    "nullable" : false
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : ""
+          }
+        },
+        "security" : [ {
+          "vaadin-connect-oauth2" : [ ]
+        } ]
+      }
+    },
+    "/JsonTestService/updateUser" : {
+      "post" : {
+        "tags" : [ "JsonTestService" ],
+        "description" : "Update a user",
+        "operationId" : "JsonTestService_updateUser_POST",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "required" : [ "user" ],
+                "type" : "object",
+                "properties" : {
+                  "user" : {
+                    "description" : "User to be updated",
+                    "nullable" : true,
+                    "allOf" : [ {
+                      "$ref" : "#/components/schemas/com.vaadin.flow.server.connect.generator.services.json.JsonTestService.User"
+                    } ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : ""
+          }
+        },
+        "security" : [ {
+          "vaadin-connect-oauth2" : [ ]
+        } ]
+      }
+    },
+    "/customName/anonymousAllowed" : {
+      "post" : {
+        "tags" : [ "GeneratorAnonymousAllowedTestClass" ],
+        "operationId" : "customName_anonymousAllowed_POST",
+        "responses" : {
+          "200" : {
+            "description" : ""
+          }
+        }
+      }
+    },
+    "/customName/permissionAltered1" : {
+      "post" : {
+        "tags" : [ "GeneratorAnonymousAllowedTestClass" ],
+        "operationId" : "customName_permissionAltered1_POST",
+        "responses" : {
+          "200" : {
+            "description" : ""
+          }
+        },
+        "security" : [ {
+          "vaadin-connect-oauth2" : [ ]
+        } ]
+      }
+    },
+    "/customName/permissionAltered2" : {
+      "post" : {
+        "tags" : [ "GeneratorAnonymousAllowedTestClass" ],
+        "operationId" : "customName_permissionAltered2_POST",
+        "responses" : {
+          "200" : {
+            "description" : ""
+          }
+        },
+        "security" : [ {
+          "vaadin-connect-oauth2" : [ ]
+        } ]
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "com.vaadin.flow.server.connect.generator.services.json.JsonTestService.User" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "nullable" : true
+          },
+          "optionalField" : {
+            "type" : "string",
+            "nullable" : true
+          },
+          "password" : {
+            "type" : "string",
+            "nullable" : true
+          },
+          "roles" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "nullable" : true,
+              "allOf" : [ {
+                "$ref" : "#/components/schemas/com.vaadin.flow.server.connect.generator.services.json.JsonTestService.Role"
+              } ]
+            },
+            "nullable" : true
+          }
+        }
+      },
+      "com.vaadin.flow.server.connect.generator.services.json.JsonTestService.Status" : {
+        "type" : "object",
+        "properties" : {
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time",
+            "nullable" : true
+          },
+          "text" : {
+            "type" : "string",
+            "description" : "Multiple line description should work.This is very very very very very\nvery very very long.",
+            "nullable" : true
+          }
+        },
+        "description" : "Status bean. Used only in request parameters to verify that request\nparameter type descriptions are generated."
+      },
+      "com.vaadin.flow.server.connect.generator.services.json.JsonTestService.Role" : {
+        "type" : "object",
+        "properties" : {
+          "roleName" : {
+            "type" : "string",
+            "description" : "Description for roleName.",
+            "nullable" : true
+          }
+        },
+        "description" : "Role bean"
+      },
+      "com.fasterxml.jackson.core.Version" : {
+        "required" : [ "_majorVersion", "_minorVersion", "_patchLevel" ],
+        "type" : "object",
+        "properties" : {
+          "_artifactId" : {
+            "type" : "string",
+            "nullable" : true
+          },
+          "_groupId" : {
+            "type" : "string",
+            "nullable" : true
+          },
+          "_majorVersion" : {
+            "type" : "number",
+            "nullable" : false
+          },
+          "_minorVersion" : {
+            "type" : "number",
+            "nullable" : false
+          },
+          "_patchLevel" : {
+            "type" : "number",
+            "nullable" : false
+          },
+          "_snapshotInfo" : {
+            "type" : "string",
+            "nullable" : true
+          }
+        }
+      }
+    },
+    "securitySchemes" : {
+      "vaadin-connect-oauth2" : {
+        "type" : "oauth2",
+        "flows" : {
+          "password" : {
+            "tokenUrl" : "/oauth/token",
+            "scopes" : { }
+          }
+        }
+      }
+    }
+  }
+}
