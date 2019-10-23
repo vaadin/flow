@@ -158,7 +158,7 @@ public class FrontendUtils {
             + "generated-resources/openapi.json";
 
     /**
-     * Default generated path for generated TS files
+     * Default generated path for generated TS files.
      */
     public static final String DEFAULT_CONNECT_GENERATED_TS_DIR = DEFAULT_FRONTEND_DIR + "generated/";
 

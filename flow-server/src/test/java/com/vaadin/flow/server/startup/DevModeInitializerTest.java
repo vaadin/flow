@@ -213,15 +213,20 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     @Test
     public void should_generateOpenApi_when_VaadinServicePresents()
             throws Exception {
-        // Create temporary src folder
-        Paths.get(baseDir, DEFAULT_CONNECT_JAVA_SOURCE_FOLDER).toFile()
-                .mkdirs();
+
+        // Configure a folder that has .java classes with valid services
+        // Not using `src/test/java` because there are invalid service names
+        // in some tests
+        File src = new File(
+                getClass().getClassLoader().getResource("java").getFile());
+        System.setProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
+                src.getAbsolutePath());
+
         File generatedOpenApiJson = Paths
                 .get(baseDir, DEFAULT_CONNECT_OPENAPI_JSON_FILE).toFile();
+
         Assert.assertFalse(generatedOpenApiJson.exists());
         DevModeInitializer devModeInitializer = new DevModeInitializer();
-        final Set<Class<?>> classes = new HashSet<>();
-
         devModeInitializer.onStartup(classes, servletContext);
         Assert.assertTrue(
                 "Should generate OpenAPI spec if VaadinService is used.",
@@ -246,13 +251,17 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         // Configure a folder that has .java classes with valid services
         // Not using `src/test/java` because there are invalid service names
         // in some tests
-        File src = new File(getClass().getClassLoader().getResource("java").getFile());
-        System.setProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN, src.getAbsolutePath());
+        File src = new File(
+                getClass().getClassLoader().getResource("java").getFile());
+        System.setProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
+                src.getAbsolutePath());
 
         DevModeInitializer devModeInitializer = new DevModeInitializer();
 
-        File ts1 = new File(baseDir, DEFAULT_CONNECT_GENERATED_TS_DIR + "MyVaadinServices.ts");
-        File ts2 = new File(baseDir, DEFAULT_CONNECT_GENERATED_TS_DIR + VaadinConnectClientGenerator.CONNECT_CLIENT_NAME);
+        File ts1 = new File(baseDir,
+                DEFAULT_CONNECT_GENERATED_TS_DIR + "MyVaadinServices.ts");
+        File ts2 = new File(baseDir, DEFAULT_CONNECT_GENERATED_TS_DIR
+                + VaadinConnectClientGenerator.CONNECT_CLIENT_NAME);
 
         assertFalse(ts1.exists());
         assertFalse(ts2.exists());
