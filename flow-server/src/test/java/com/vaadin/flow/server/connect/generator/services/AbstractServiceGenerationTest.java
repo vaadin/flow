@@ -541,11 +541,10 @@ public abstract class AbstractServiceGenerationTest {
 
     private void assertModelClassGeneratedTs(Class<?> expectedClass) {
         String canonicalName = expectedClass.getCanonicalName();
-        String modelResourceUrl = String.format("expected-model-%s.ts",
-                canonicalName);
-        URL expectedResource = this.getClass().getResource(modelResourceUrl);
+        String expectedFileName = constructExpectedModelFileName(expectedClass);
+        URL expectedResource = this.getClass().getResource(expectedFileName);
         Assert.assertNotNull(String.format("Expected file is not found at %s",
-                modelResourceUrl), expectedResource);
+                expectedFileName), expectedResource);
         String expectedTs = TestUtils.readResource(expectedResource);
 
         Path outputFilePath = outputDirectory.getRoot().toPath().resolve(
@@ -555,5 +554,26 @@ public abstract class AbstractServiceGenerationTest {
                 "Model class '%s' has unexpected typescript produced in file '%s'",
                 expectedClass, expectedResource.getPath()), expectedTs,
                 readFile(outputFilePath));
+    }
+
+    /**
+     * Shorten the expected model file name. The format is:
+     * <code>expected-model-lastPackageSegment.DeclaringClass(IfAny).ModelClass
+     * .ts</code>. For example: The generated model of
+     * <code>com.vaadin.flow.server.connect.SomeModel</code> will be expected to
+     * be the same as file <code>expected-model-connect.SomeModel.ts</code>
+     * 
+     * @param expectedClass
+     * @return
+     */
+    private String constructExpectedModelFileName(Class<?> expectedClass) {
+        String prefix = StringUtils
+                .substringAfterLast(expectedClass.getPackage().getName(), ".");
+        Class<?> declaringClass = expectedClass.getDeclaringClass();
+        if (declaringClass != null) {
+            prefix += "." + declaringClass.getSimpleName();
+        }
+        return String.format("expected-model-%s.%s.ts", prefix,
+                expectedClass.getSimpleName());
     }
 }
