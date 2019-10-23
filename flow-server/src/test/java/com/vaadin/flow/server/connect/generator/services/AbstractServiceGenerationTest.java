@@ -44,8 +44,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.swagger.models.Swagger;
-import io.swagger.parser.SwaggerParser;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
@@ -64,6 +62,7 @@ import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
+import io.swagger.v3.parser.OpenAPIV3Parser;
 import org.apache.commons.configuration2.PropertiesConfiguration;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -481,6 +480,28 @@ public abstract class AbstractServiceGenerationTest {
     }
 
     private void verifyOpenApiJson(URL expectedOpenApiJsonResourceUrl) {
+        // Verify OpenAPI object instead of the JSON string to avoid
+        // false-positive when the content is the same but the order is
+        // different.
+        // To easily identify the difference, please use
+        // `verifyOpenApiJsonByString` method.
+        //
+        OpenAPIV3Parser parser = new OpenAPIV3Parser();
+        OpenAPI generated = parser
+                .read(openApiJsonOutput.toAbsolutePath().toString());
+        try {
+            OpenAPI expected = parser
+                    .read(new File(expectedOpenApiJsonResourceUrl.toURI()).toPath()
+                            .toAbsolutePath().toString());
+            Assert.assertEquals("The generated OpenAPI does not match",
+                    expected, generated);
+        } catch (URISyntaxException e) {
+            throw new IllegalStateException("Can't compare OpenAPI json.", e);
+        }
+
+    }
+
+    private void verifyOpenApiJsonByString(URL expectedOpenApiJsonResourceUrl) {
         assertEquals(TestUtils.readResource(expectedOpenApiJsonResourceUrl),
                 readFile(openApiJsonOutput));
     }
