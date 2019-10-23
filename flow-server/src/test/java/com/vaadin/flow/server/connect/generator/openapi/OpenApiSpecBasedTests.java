@@ -38,6 +38,8 @@ import com.vaadin.flow.server.connect.generator.VaadinConnectClientGenerator;
 import com.vaadin.flow.server.connect.generator.VaadinConnectTsGenerator;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class OpenApiSpecBasedTests {
     @Rule
@@ -51,14 +53,16 @@ public class OpenApiSpecBasedTests {
     public TemporaryFolder outputDirectory = new TemporaryFolder();
 
     @Test
-    public void should_ThrowException_When_NoOpenApiInput() {
+    public void should_NotGenerateOutput_When_NoOpenApiInput() throws Exception {
         String fileName = "whatever";
 
-        expectedException.expect(IllegalStateException.class);
-        expectedException.expectMessage(fileName);
+        File output = outputDirectory.newFolder();
 
-        VaadinConnectTsGenerator.launch(new File(fileName),
-                outputDirectory.getRoot());
+        assertTrue(output.exists());
+
+        VaadinConnectTsGenerator.launch(new File(fileName), output);
+
+        assertFalse(output.exists());
     }
 
     @Test
