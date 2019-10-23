@@ -24,7 +24,7 @@
         <swagger.parser.version>2.0.15</swagger.parser.version>
         <swagger.codegen.parser.version>3.0.2</swagger.codegen.parser.version>
         <swagger.core.version>2.0.5</swagger.core.version>
-        <swagger.codegen.version>1.0.2</swagger.codegen.version>
+        <swagger.codegen.version>3.0.2</swagger.codegen.version>
     </properties>
 
     <dependencies>
@@ -226,17 +226,17 @@
             <artifactId>commons-configuration2</artifactId>
             <version>${commons.configuration.version}</version>
         </dependency>
-        <!-- <dependency>
+        <dependency>
             <groupId>io.swagger.codegen.v3</groupId>
             <artifactId>swagger-codegen</artifactId>
-            <version>${swagger.parser.version}</version>
+            <version>${swagger.codegen.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>ch.qos.logback</groupId>
                     <artifactId>logback-classic</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency> -->
+        </dependency>
         <dependency>
             <groupId>io.swagger.parser.v3</groupId>
             <artifactId>swagger-parser</artifactId>
