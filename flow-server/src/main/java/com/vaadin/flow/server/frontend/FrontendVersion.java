@@ -22,7 +22,7 @@ import java.io.Serializable;
  *
  * @since
  */
-public class FrontendVersion implements Serializable {
+class FrontendVersion implements Serializable {
 
     /**
      * The version number of this release. For example "6.2.0". Always in the
