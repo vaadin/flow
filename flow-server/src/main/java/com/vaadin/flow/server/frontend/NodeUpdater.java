@@ -221,11 +221,11 @@ public abstract class NodeUpdater implements FallibleCommand {
         // dependency for the custom package.json placed in the generated
         // folder.
         try {
-            String customPkg = "./" + npmFolder.getAbsoluteFile().toPath()
-                    .relativize(generatedFolder.getAbsoluteFile().toPath())
-                    .toString();
+            String customPkg = "./" + FrontendUtils.getUnixRelativePath(
+                    npmFolder.getAbsoluteFile().toPath(),
+                    generatedFolder.getAbsoluteFile().toPath());
             added = addDependency(packageJson, DEPENDENCIES, DEP_NAME_FLOW_DEPS,
-                    customPkg.replaceAll("\\\\", "/")) || added;
+                    customPkg) || added;
         } catch (IllegalArgumentException iae) {
             log().error("Exception in relativization of '{}' to '{}'",
                     npmFolder.getAbsoluteFile().toPath(),

@@ -20,13 +20,14 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_JS;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_JS;
 
 public class TaskGenerateIndexJsTest {
     @Rule
@@ -59,7 +60,7 @@ public class TaskGenerateIndexJsTest {
     }
 
     @Test
-    public void should_generateIndexHtml_IndexJsNotExist() throws Exception {
+    public void should_generateIndexJs_IndexJsNotExist() throws Exception {
 
         taskGenerateIndexJs.execute();
         Assert.assertTrue(
@@ -73,5 +74,20 @@ public class TaskGenerateIndexJsTest {
                 taskGenerateIndexJs.getFileContent(),
                 IOUtils.toString(taskGenerateIndexJs.getGeneratedFile().toURI(),
                         StandardCharsets.UTF_8));
+    }
+
+    @Test
+    public void should_ensureValidRelativePath_whenItHasNoRelativePrefix() {
+        String customPath = TaskGenerateIndexJs.ensureValidRelativePath(
+                "../custom-frontend/generated-flow-imports.js");
+        Assert.assertEquals(
+                "Should not append './' if it is already a relative path",
+                "../custom-frontend/generated-flow-imports.js", customPath);
+
+        customPath = TaskGenerateIndexJs.ensureValidRelativePath(
+                "custom-frontend/generated-flow-imports.js");
+        Assert.assertEquals(
+                "Should append './' if it doesn't start with a relative path",
+                "./custom-frontend/generated-flow-imports.js", customPath);
     }
 }
