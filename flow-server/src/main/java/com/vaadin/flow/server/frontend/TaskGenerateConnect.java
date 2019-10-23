@@ -18,8 +18,6 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.util.Objects;
 
-import org.apache.commons.io.FileUtils;
-
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.connect.generator.VaadinConnectClientGenerator;
 import com.vaadin.flow.server.connect.generator.VaadinConnectTsGenerator;
@@ -61,8 +59,6 @@ public class TaskGenerateConnect extends AbstractTaskConnectGenerator {
         if (VaadinConnectTsGenerator.launch(openApi, outputFolder)) {
             new VaadinConnectClientGenerator(readApplicationProperties())
                     .generateVaadinConnectClientFile(connectClientFile.toPath());
-        } else {
-            FileUtils.deleteQuietly(connectClientFile);
         }
     }
 }
