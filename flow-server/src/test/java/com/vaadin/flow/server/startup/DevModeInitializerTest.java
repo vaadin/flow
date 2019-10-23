@@ -24,7 +24,6 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.DevModeHandler;
-import com.vaadin.flow.server.connect.VaadinService;
 import com.vaadin.flow.server.connect.generator.VaadinConnectClientGenerator;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 
@@ -70,11 +69,6 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     @Route
     public static class RoutedWithReferenceToVisited {
         Visited b;
-    }
-
-    @VaadinService
-    public static class MyService {
-        // empty service to generate OpenAPI spec.
     }
 
     @Rule
@@ -227,7 +221,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         Assert.assertFalse(generatedOpenApiJson.exists());
         DevModeInitializer devModeInitializer = new DevModeInitializer();
         final Set<Class<?>> classes = new HashSet<>();
-        classes.add(MyService.class);
+
         devModeInitializer.onStartup(classes, servletContext);
         Assert.assertTrue(
                 "Should generate OpenAPI spec if VaadinService is used.",
@@ -256,10 +250,6 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         System.setProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN, src.getAbsolutePath());
 
         DevModeInitializer devModeInitializer = new DevModeInitializer();
-
-        // Just put a class with Vaadin in the classpath so as devmode initializer
-        // run API generator
-        classes = Collections.singleton(MyService.class);
 
         File ts1 = new File(baseDir, DEFAULT_CONNECT_GENERATED_TS_DIR + "MyVaadinServices.ts");
         File ts2 = new File(baseDir, DEFAULT_CONNECT_GENERATED_TS_DIR + VaadinConnectClientGenerator.CONNECT_CLIENT_NAME);

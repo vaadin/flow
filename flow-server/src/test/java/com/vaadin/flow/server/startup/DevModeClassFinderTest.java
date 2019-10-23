@@ -36,7 +36,6 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.SessionInitListener;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinServiceInitListener;
-import com.vaadin.flow.server.connect.VaadinService;
 import com.vaadin.flow.server.startup.DevModeInitializer.DevModeClassFinder;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
@@ -67,8 +66,7 @@ public class DevModeClassFinderTest {
             CssImport.class,
             CssImport.Container.class,
             Theme.class,
-            NoTheme.class,
-            VaadinService.class);
+            NoTheme.class);
 
         for (Class<?> clz : classes) {
             assertTrue("should be a known class " + clz.getName(), knownClasses.contains(clz));

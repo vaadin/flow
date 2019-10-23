@@ -441,10 +441,7 @@ public class NodeTasks implements FallibleCommand {
             addBootstrapTasks(builder);
 
             if (builder.connectJavaSourceFolder != null
-                    && builder.connectGeneratedOpenApiFile != null
-                    && !classFinder.getAnnotatedClasses(VaadinService.class)
-                            .isEmpty()) {
-
+                    && builder.connectGeneratedOpenApiFile != null) {
                 addApiTasks(builder);
             }
         }
