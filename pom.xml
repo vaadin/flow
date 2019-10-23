@@ -27,7 +27,7 @@
         <module>flow-theme-integrations</module>
         <module>flow-dnd</module>
         <module>flow-test-util</module>
-        <module>flow-tests</module>
+        <!-- <module>flow-tests</module> -->
         <module>flow-server-production-mode</module>
         <module>flow-server-compatibility-mode</module>
         <module>flow-components-parent</module>
