@@ -43,137 +43,137 @@ import com.vaadin.flow.server.connect.VaadinConnectController;
  * information about the client side of the implementation.
  */
 public class VaadinConnectException extends RuntimeException {
-    /**
-     * A message field to be used in the exception's serialization data in
-     * {@link VaadinConnectException#getSerializationData()}.
-     */
-    public static final String ERROR_MESSAGE_FIELD = "message";
+  /**
+   * A message field to be used in the exception's serialization data in
+   * {@link VaadinConnectException#getSerializationData()}.
+   */
+  public static final String ERROR_MESSAGE_FIELD = "message";
 
-    private final transient Object detail;
+  private final transient Object detail;
 
-    /**
-     * Creates an exception which information is propagated to the client since,
-     * if thrown from a Vaadin Connect method.
-     *
-     * @param message
-     *            the message to put in the client side exception message when
-     *            an exception is thrown
-     */
-    public VaadinConnectException(String message) {
-        super(message);
-        this.detail = null;
+  /**
+   * Creates an exception which information is propagated to the client since,
+   * if thrown from a Vaadin Connect method.
+   *
+   * @param message
+   *          the message to put in the client side exception message when an
+   *          exception is thrown
+   */
+  public VaadinConnectException(String message) {
+    super(message);
+    this.detail = null;
+  }
+
+  /**
+   * Creates an exception which information is propagated to the client since,
+   * if thrown from a Vaadin Connect method.
+   *
+   * Will reuse the original exception's message when thrown.
+   *
+   * @param cause
+   *          the original exception that had caused the current one to be
+   *          thrown
+   */
+  public VaadinConnectException(Throwable cause) {
+    super(cause);
+    this.detail = null;
+  }
+
+  /**
+   * Creates an exception which information is propagated to the client since,
+   * if thrown from a Vaadin Connect method.
+   *
+   * @param message
+   *          the message to put in the client side exception message when an *
+   *          exception is thrown
+   * @param detail
+   *          a detail object that will be serialized into JSON and sent to the
+   *          client, when the exception is thrown
+   */
+  public VaadinConnectException(String message, Object detail) {
+    super(message);
+    this.detail = detail;
+  }
+
+  /**
+   * Creates an exception which information is propagated to the client since,
+   * if thrown from a Vaadin Connect method.
+   *
+   * @param message
+   *          the message to put in the client side exception message when an *
+   *          * exception is thrown
+   * @param cause
+   *          the original exception that had caused the current one to be
+   *          thrown.
+   */
+  public VaadinConnectException(String message, Throwable cause) {
+    super(message, cause);
+    this.detail = null;
+  }
+
+  /**
+   * Creates an exception which information is propagated to the client since,
+   * if thrown from a Vaadin Connect method.
+   *
+   * @param message
+   *          the message to put in the client side exception message when an *
+   *          * exception is thrown
+   * @param cause
+   *          the original exception that had caused the current one to be
+   *          thrown
+   * @param detail
+   *          a detail object that will be serialized into JSON and sent to the
+   *          client, when the exception is thrown
+   */
+  public VaadinConnectException(String message, Throwable cause,
+      Object detail) {
+    super(message, cause);
+    this.detail = detail;
+  }
+
+  /**
+   * Gets the detail of the exception, if provided by user, {@code null}
+   * otherwise.
+   *
+   * @return the detail of the exception
+   */
+  public Object getDetail() {
+    return detail;
+  }
+
+  /**
+   * Creates a map with the serialization data to be sent to the client when the
+   * exception thrown is processed by {@link VaadinConnectController}. The
+   * following data will be sent to the client:
+   * <ul>
+   * <li>exception type: either the original exception type or
+   * {@link VaadinConnectException}, if no original exception is given</li>
+   * <li>message: non-blank message either from the constructor or from the
+   * original exception. If both are blank, none provided.</li>
+   * <li>detail: detail object serialized to json, if provided in the
+   * corresponding constructor</li>
+   * </ul>
+   *
+   * @return the data to be sent to the client
+   */
+  public Map<String, Object> getSerializationData() {
+    Map<String, Object> serializationData = new HashMap<>();
+    serializationData.put("type",
+        Optional.ofNullable(getCause()).orElse(this).getClass().getName());
+
+    String message = getMessage();
+    if (message != null && !message.isEmpty()) {
+      serializationData.put(ERROR_MESSAGE_FIELD, getMessage());
+    } else {
+      Optional.ofNullable(getCause()).map(Throwable::getMessage)
+          .filter(text -> !text.isEmpty())
+          .ifPresent(originalMessage -> serializationData
+              .put(ERROR_MESSAGE_FIELD, originalMessage));
     }
 
-    /**
-     * Creates an exception which information is propagated to the client since,
-     * if thrown from a Vaadin Connect method.
-     *
-     * Will reuse the original exception's message when thrown.
-     *
-     * @param cause
-     *            the original exception that had caused the current one to be
-     *            thrown
-     */
-    public VaadinConnectException(Throwable cause) {
-        super(cause);
-        this.detail = null;
+    if (detail != null) {
+      serializationData.put("detail", detail);
     }
-
-    /**
-     * Creates an exception which information is propagated to the client since,
-     * if thrown from a Vaadin Connect method.
-     *
-     * @param message
-     *            the message to put in the client side exception message when
-     *            an * exception is thrown
-     * @param detail
-     *            a detail object that will be serialized into JSON and sent to
-     *            the client, when the exception is thrown
-     */
-    public VaadinConnectException(String message, Object detail) {
-        super(message);
-        this.detail = detail;
-    }
-
-    /**
-     * Creates an exception which information is propagated to the client since,
-     * if thrown from a Vaadin Connect method.
-     *
-     * @param message
-     *            the message to put in the client side exception message when
-     *            an * * exception is thrown
-     * @param cause
-     *            the original exception that had caused the current one to be
-     *            thrown.
-     */
-    public VaadinConnectException(String message, Throwable cause) {
-        super(message, cause);
-        this.detail = null;
-    }
-
-    /**
-     * Creates an exception which information is propagated to the client since,
-     * if thrown from a Vaadin Connect method.
-     *
-     * @param message
-     *            the message to put in the client side exception message when
-     *            an * * exception is thrown
-     * @param cause
-     *            the original exception that had caused the current one to be
-     *            thrown
-     * @param detail
-     *            a detail object that will be serialized into JSON and sent to
-     *            the client, when the exception is thrown
-     */
-    public VaadinConnectException(String message, Throwable cause,
-            Object detail) {
-        super(message, cause);
-        this.detail = detail;
-    }
-
-    /**
-     * Gets the detail of the exception, if provided by user, {@code null}
-     * otherwise.
-     *
-     * @return the detail of the exception
-     */
-    public Object getDetail() {
-        return detail;
-    }
-
-    /**
-     * Creates a map with the serialization data to be sent to the client when
-     * the exception thrown is processed by {@link VaadinConnectController}. The
-     * following data will be sent to the client:
-     * <ul>
-     * <li>exception type: either the original exception type or
-     * {@link VaadinConnectException}, if no original exception is given</li>
-     * <li>message: non-blank message either from the constructor or from the
-     * original exception. If both are blank, none provided.</li>
-     * <li>detail: detail object serialized to json, if provided in the
-     * corresponding constructor</li>
-     * </ul>
-     *
-     * @return the data to be sent to the client
-     */
-    public Map<String, Object> getSerializationData() {
-        Map<String, Object> serializationData = new HashMap<>();
-        serializationData.put("type", Optional.ofNullable(getCause())
-                .orElse(this).getClass().getName());
-
-        String message = getMessage();
-        if (message != null && !message.isEmpty()) {
-            serializationData.put(ERROR_MESSAGE_FIELD, getMessage());
-        } else {
-            Optional.ofNullable(getCause()).map(Throwable::getMessage)
-                    .filter(text -> !text.isEmpty())
-                    .ifPresent(originalMessage -> serializationData
-                            .put(ERROR_MESSAGE_FIELD, originalMessage));
-        }
-
-        if (detail != null) {
-            serializationData.put("detail", detail);
-        }
-        return serializationData;
-    }
+    return serializationData;
+  }
 }

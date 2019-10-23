@@ -93,7 +93,7 @@ public abstract class NodeUpdater implements FallibleCommand {
      */
     protected final FrontendDependenciesScanner frontDeps;
 
-    final ClassFinder finder;
+    private final ClassFinder finder;
 
     boolean modified;
 
@@ -275,7 +275,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         }
         if (!json.hasKey(pkg) || !json.getString(pkg).equals(vers)) {
             json.put(pkg, vers);
-            log().info("Added dependency \"{}\": \"{}\".", pkg, vers);
+            log().info("Added \"{}\": \"{}\" line.", pkg, vers);
             return true;
         }
         return false;
@@ -292,7 +292,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
     String writePackageFile(JsonObject json, File packageFile)
             throws IOException {
-        log().info("writing file {}.", packageFile.getAbsolutePath());
+        log().info("Updated npm {}.", packageFile.getAbsolutePath());
         FileUtils.forceMkdirParent(packageFile);
         String content = stringify(json, 2) + "\n";
         FileUtils.writeStringToFile(packageFile, content, UTF_8.name());

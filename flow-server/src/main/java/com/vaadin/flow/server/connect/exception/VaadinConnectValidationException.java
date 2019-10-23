@@ -33,121 +33,119 @@ import java.util.Objects;
  */
 public class VaadinConnectValidationException extends VaadinConnectException {
 
-    /**
-     * A validation error data.
-     */
-    public static class ValidationErrorData {
-        private final String parameterName;
-        private final String message;
-
-        /**
-         * Creates a validation error data object.
-         *
-         * @param message
-         *            validation error message, mandatory (cannot be
-         *            {@code null} or blank)
-         * @param parameterName
-         *            invalid parameter name, optional (can be {@code null} or
-         *            blank)
-         */
-        public ValidationErrorData(String message, String parameterName) {
-            if (message == null || message.isEmpty()) {
-                throw new IllegalArgumentException(
-                        "Message cannot be null or empty");
-            }
-            this.parameterName = parameterName;
-            this.message = message;
-        }
-
-        /**
-         * Creates a validation error data object.
-         *
-         * @param message
-         *            validation error message, mandatory (cannot be
-         *            {@code null} or blank)
-         */
-        public ValidationErrorData(String message) {
-            this(message, null);
-        }
-
-        /**
-         * Gets the parameter name that caused the validation error.
-         *
-         * @return the parameter name, may be {@code null}
-         */
-        public String getParameterName() {
-            return parameterName;
-        }
-
-        /**
-         * Gets the validation error message.
-         *
-         * @return the validation error message
-         */
-        public String getMessage() {
-            return message;
-        }
-    }
-
-    private final transient List<ValidationErrorData> validationErrorData;
+  /**
+   * A validation error data.
+   */
+  public static class ValidationErrorData {
+    private final String parameterName;
+    private final String message;
 
     /**
-     * Creates a validation exception from the error data.
+     * Creates a validation error data object.
      *
-     * @param data
-     *            validation error data, mandatory (cannot be {@code null})
-     */
-    public VaadinConnectValidationException(ValidationErrorData data) {
-        this(Collections.singletonList(Objects.requireNonNull(data,
-                "At least one 'validation error' is required")));
-    }
-
-    /**
-     * Creates a validation exception from a error data list.
-     *
-     * @param validationErrorData
-     *            A list of validation error data, must not be {@code null} or
-     *            empty.
-     */
-    public VaadinConnectValidationException(
-            List<ValidationErrorData> validationErrorData) {
-        this("Validation failed", validationErrorData);
-    }
-
-    /**
-     * Creates a validation exception from a error data list.
-     * 
      * @param message
-     *            General error message.
-     * @param validationErrorData
-     *            A list of validation error data, must not be {@code null} or
-     *            empty.
+     *          validation error message, mandatory (cannot be {@code null} or
+     *          blank)
+     * @param parameterName
+     *          invalid parameter name, optional (can be {@code null} or blank)
      */
-    public VaadinConnectValidationException(String message,
-            List<ValidationErrorData> validationErrorData) {
-        super(message);
-        if (validationErrorData == null || validationErrorData.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "At least one 'validation error' is required");
-        }
-        this.validationErrorData = Collections
-                .unmodifiableList(validationErrorData);
+    public ValidationErrorData(String message, String parameterName) {
+      if (message == null || message.isEmpty()) {
+        throw new IllegalArgumentException("Message cannot be null or empty");
+      }
+      this.parameterName = parameterName;
+      this.message = message;
     }
 
     /**
-     * Gets the collection of the data on the validation errors.
+     * Creates a validation error data object.
      *
-     * @return the error data
+     * @param message
+     *          validation error message, mandatory (cannot be {@code null} or
+     *          blank)
      */
-    public List<ValidationErrorData> getValidationErrorData() {
-        return validationErrorData;
+    public ValidationErrorData(String message) {
+      this(message, null);
     }
 
-    @Override
-    public Map<String, Object> getSerializationData() {
-        Map<String, Object> serializationData = new HashMap<>(
-                super.getSerializationData());
-        serializationData.put("validationErrorData", validationErrorData);
-        return serializationData;
+    /**
+     * Gets the parameter name that caused the validation error.
+     *
+     * @return the parameter name, may be {@code null}
+     */
+    public String getParameterName() {
+      return parameterName;
     }
+
+    /**
+     * Gets the validation error message.
+     *
+     * @return the validation error message
+     */
+    public String getMessage() {
+      return message;
+    }
+  }
+
+  private final transient List<ValidationErrorData> validationErrorData;
+
+  /**
+   * Creates a validation exception from the error data.
+   *
+   * @param data
+   *          validation error data, mandatory (cannot be {@code null})
+   */
+  public VaadinConnectValidationException(ValidationErrorData data) {
+    this(Collections.singletonList(Objects.requireNonNull(data,
+        "At least one 'validation error' is required")));
+  }
+
+  /**
+   * Creates a validation exception from a error data list.
+   *
+   * @param validationErrorData
+   *          A list of validation error data, must not be {@code null} or
+   *          empty.
+   */
+  public VaadinConnectValidationException(
+      List<ValidationErrorData> validationErrorData) {
+    this("Validation failed", validationErrorData);
+  }
+
+  /**
+   * Creates a validation exception from a error data list.
+   * 
+   * @param message
+   *          General error message.
+   * @param validationErrorData
+   *          A list of validation error data, must not be {@code null} or
+   *          empty.
+   */
+  public VaadinConnectValidationException(String message,
+      List<ValidationErrorData> validationErrorData) {
+    super(message);
+    if (validationErrorData == null || validationErrorData.isEmpty()) {
+      throw new IllegalArgumentException(
+          "At least one 'validation error' is required");
+    }
+    this.validationErrorData = Collections
+        .unmodifiableList(validationErrorData);
+  }
+
+  /**
+   * Gets the collection of the data on the validation errors.
+   *
+   * @return the error data
+   */
+  public List<ValidationErrorData> getValidationErrorData() {
+    return validationErrorData;
+  }
+
+  @Override
+  public Map<String, Object> getSerializationData() {
+    Map<String, Object> serializationData = new HashMap<>(
+        super.getSerializationData());
+    serializationData.put("validationErrorData", validationErrorData);
+    return serializationData;
+  }
 }

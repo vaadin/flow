@@ -1,10 +1,11 @@
 package com.vaadin.flow.component;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.jsoup.Jsoup;
 import org.junit.After;
 import org.junit.Assert;
@@ -24,7 +25,7 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.templatemodel.TemplateModel;
 import com.vaadin.tests.util.TestUtil;
 
-import static org.junit.Assert.assertEquals;
+import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class CompositeTest {

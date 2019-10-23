@@ -4,8 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
@@ -15,7 +13,6 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import com.vaadin.flow.server.ExecutionFailedException;
-import com.vaadin.flow.server.connect.VaadinService;
 import com.vaadin.flow.server.frontend.NodeTasks.Builder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 
@@ -27,13 +24,9 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
-import static org.junit.Assert.assertTrue;
 
 public class NodeTasksTest {
 
-    @VaadinService
-    public static class ConnectServicesForTesting {
-    }
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -109,37 +102,6 @@ public class NodeTasksTest {
                 "useClientSideIndexFileForBootstrapping should be true",
                 webpackGeneratedContent.contains(
                         "const useClientSideIndexFileForBootstrapping = true;"));
-    }
-
-    @Test
-    public void should_Generate_Connect_Files() throws Exception {
-        File src = new File(getClass().getClassLoader().getResource("java").getFile());
-        File dir = new File(userDir);
-        File json = new File(dir, "api-file.json");
-
-        Builder builder = new Builder(
-                new DefaultClassFinder(
-                    Collections.singleton(ConnectServicesForTesting.class)), dir)
-                        .enablePackagesUpdate(false)
-                        .enableImportsUpdate(false)
-                        .withEmbeddableWebComponents(false)
-                        .enableClientSideMode(true)
-                        .withConnectJavaSourceFolder(src)
-                        .withConnectGeneratedOpenApiJson(json)
-                        .withConnectClientTsApiFolder(new File(dir, "api"));
-
-        builder.build().execute();
-
-        Arrays.asList(
-                // enableClientSide
-                "target/index.html",
-                "target/index.js",
-                // withConnectJavaSourceFolder and withConnectGeneratedOpenApiJson
-                "api-file.json",
-                // withConnectClientTsApiFolder
-                "api/connect-client.default.ts",
-                "api/MyVaadinServices.ts")
-                .forEach(name -> assertTrue(name + " not created.", new File(dir, name).exists()));
     }
 
     private Object getFieldValue(Object obj, String name) throws Exception {

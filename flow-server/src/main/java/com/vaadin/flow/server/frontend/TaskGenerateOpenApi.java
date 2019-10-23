@@ -33,7 +33,7 @@ public class TaskGenerateOpenApi extends AbstractTaskConnectGenerator {
 
     /**
      * Create a task for generating OpenAPI spec.
-     *
+     * 
      * @param javaSourceFolder
      *            source paths of the project containing
      *            {@link com.vaadin.flow.server.connect.VaadinService}

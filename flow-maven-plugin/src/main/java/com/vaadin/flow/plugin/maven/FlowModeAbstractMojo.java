@@ -25,7 +25,6 @@ import org.apache.maven.plugins.annotations.Parameter;
 import com.vaadin.flow.server.Constants;
 
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 
 /**
  * The base class of Flow Mojos in order to compute correctly the modes.
@@ -73,12 +72,6 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
      */
     protected boolean compatibility;
 
-    /**
-     * The folder where flow will put TS API files for client projects.
-     */
-    @Parameter(defaultValue = "${project.basedir}/" + FRONTEND + "/generated")
-    protected File generatedTsFolder;
-
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         if (compatibilityMode == null) {
@@ -92,7 +85,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
 
     /**
      * Check if the plugin is running in `clientSideMode` or not. Default: true.
-     *
+     * 
      * @return true if the `clientSideMode` property is not defined or empty.
      */
     public boolean isClientSideMode() {

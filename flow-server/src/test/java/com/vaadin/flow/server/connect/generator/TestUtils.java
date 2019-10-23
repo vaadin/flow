@@ -26,29 +26,29 @@ import java.util.stream.Collectors;
 import org.apache.commons.configuration2.PropertiesConfiguration;
 
 public final class TestUtils {
-    private TestUtils() {
-    }
+  private TestUtils() {
+  }
 
-    public static PropertiesConfiguration readProperties(String filePath) {
-        PropertiesConfiguration properties = new PropertiesConfiguration();
-        try {
-            properties.read(new FileReader(filePath));
-        } catch (Exception e) {
-            throw new AssertionError(String.format(
-                    "Failed to read the properties file '%s", filePath));
-        }
-        return properties;
+  public static PropertiesConfiguration readProperties(String filePath) {
+    PropertiesConfiguration properties = new PropertiesConfiguration();
+    try {
+      properties.read(new FileReader(filePath));
+    } catch (Exception e) {
+      throw new AssertionError(
+          String.format("Failed to read the properties file '%s", filePath));
     }
+    return properties;
+  }
 
-    public static String readResource(URL resourceUrl) {
-        String text;
-        try (BufferedReader input = new BufferedReader(
-                new InputStreamReader(resourceUrl.openStream()))) {
-            text = input.lines().collect(Collectors.joining("\n"));
-        } catch (IOException e) {
-            throw new AssertionError(String.format(
-                    "Failed to read resource from '%s'", resourceUrl), e);
-        }
-        return text;
+  public static String readResource(URL resourceUrl) {
+    String text;
+    try (BufferedReader input = new BufferedReader(
+        new InputStreamReader(resourceUrl.openStream()))) {
+      text = input.lines().collect(Collectors.joining("\n"));
+    } catch (IOException e) {
+      throw new AssertionError(
+          String.format("Failed to read resource from '%s'", resourceUrl), e);
     }
+    return text;
+  }
 }

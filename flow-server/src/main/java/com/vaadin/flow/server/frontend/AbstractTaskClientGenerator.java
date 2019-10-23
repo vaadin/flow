@@ -29,14 +29,14 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Abstract class for generating client files.
- *
+ * 
  * @since 3.0
  */
 public abstract class AbstractTaskClientGenerator implements FallibleCommand {
 
     /**
      * Get file content for writing to the generated file.
-     *
+     * 
      * @return content of the file.
      * @throws IOException
      *             if IO error happens while reading file content.
@@ -45,14 +45,14 @@ public abstract class AbstractTaskClientGenerator implements FallibleCommand {
 
     /**
      * Get the generated file where content will be written.
-     *
+     * 
      * @return the generated file.
      */
     protected abstract File getGeneratedFile();
 
     /**
      * Check if it should generate the file or not.
-     *
+     * 
      * @return true if it should generate, false otherwise.
      */
     protected abstract boolean shouldGenerate();
@@ -66,12 +66,13 @@ public abstract class AbstractTaskClientGenerator implements FallibleCommand {
         File generatedFile = getGeneratedFile();
         try {
             String fileContent = getFileContent();
-            log().info("writing file '{}'", generatedFile);
-
+            log().info("Generate '{}' to '{}'", generatedFile.getName(),
+                    generatedFile.getPath());
             FileUtils.forceMkdirParent(generatedFile);
             FileUtils.writeStringToFile(generatedFile, fileContent, UTF_8);
         } catch (IOException exception) {
-            String errorMessage = String.format("Error writing '%s'", generatedFile);
+            String errorMessage = String.format("Cannot generate '%s' in '%s'",
+                    generatedFile.getName(), generatedFile.getPath());
             throw new ExecutionFailedException(errorMessage, exception);
         }
     }

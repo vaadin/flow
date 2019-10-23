@@ -60,7 +60,6 @@ public abstract class AbstractNodeUpdatePackagesTest
     private TaskCreatePackageJson packageCreator;
     private File baseDir;
     private File generatedDir;
-    private File connecClientTs;
     private File mainPackageJson;
     private File appPackageJson;
 
@@ -74,7 +73,6 @@ public abstract class AbstractNodeUpdatePackagesTest
         baseDir = temporaryFolder.getRoot();
 
         generatedDir = new File(baseDir, DEFAULT_GENERATED_DIR);
-        connecClientTs = new File(baseDir, "foo");
 
         NodeUpdateTestUtil.createStubNode(true, true,
                 baseDir.getAbsolutePath());
@@ -83,7 +81,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         ClassFinder classFinder = getClassFinder();
         packageUpdater = new TaskUpdatePackages(classFinder,
-                getScanner(classFinder), baseDir, generatedDir, false, connecClientTs);
+                getScanner(classFinder), baseDir, generatedDir, false);
         mainPackageJson = new File(baseDir, PACKAGE_JSON);
         appPackageJson = new File(generatedDir, PACKAGE_JSON);
 
@@ -240,7 +238,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
         packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
-                baseDir, generatedDir, false, connecClientTs);
+                baseDir, generatedDir, false);
 
         // Generate package json in a proper format first
         packageCreator.execute();
@@ -273,7 +271,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
         packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
-                baseDir, generatedDir, false, connecClientTs);
+                baseDir, generatedDir, false);
 
         // Generate package json in a proper format first
         packageCreator.execute();
@@ -302,7 +300,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         ClassFinder classFinder = getClassFinder();
         // create a new package updater, with forced clean up enabled
         packageUpdater = new TaskUpdatePackages(classFinder,
-                getScanner(classFinder), baseDir, generatedDir, true, connecClientTs);
+                getScanner(classFinder), baseDir, generatedDir, true);
         packageUpdater.execute();
 
         // clean up happened
@@ -355,7 +353,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
         packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
-                baseDir, generatedDir, false, connecClientTs);
+                baseDir, generatedDir, false);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -387,7 +385,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
         packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
-                baseDir, generatedDir, false, connecClientTs);
+                baseDir, generatedDir, false);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -421,7 +419,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
         packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
-                baseDir, generatedDir, false, connecClientTs);
+                baseDir, generatedDir, false);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -449,7 +447,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
         packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
-                baseDir, generatedDir, false, connecClientTs);
+                baseDir, generatedDir, false);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -480,7 +478,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
         packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
-                baseDir, generatedDir, false, connecClientTs);
+                baseDir, generatedDir, false);
 
         // Set a package Hash
         JsonObject mainJson = Json.createObject();

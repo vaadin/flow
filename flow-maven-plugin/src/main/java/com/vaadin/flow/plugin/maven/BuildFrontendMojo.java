@@ -183,9 +183,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                         .enableImportsUpdate(true)
                         .withEmbeddableWebComponents(
                                 generateEmbeddableWebComponents)
-                        .withTokenFile(getTokenFile())
-                        .withConnectClientTsApiFolder(generatedTsFolder)
-                        .build().execute();
+                        .withTokenFile(getTokenFile()).build().execute();
     }
 
     private void runWebpack() {
