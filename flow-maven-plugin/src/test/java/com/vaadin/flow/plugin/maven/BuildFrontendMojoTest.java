@@ -84,6 +84,9 @@ public class BuildFrontendMojoTest {
     private String mainPackage;
     private String appPackage;
     private String webpackConfig;
+    private File defaultJavaSource;
+    private String openApiJsonFile;
+    private File generatedTsFolder;
 
     private File tokenFile;
 
@@ -112,6 +115,12 @@ public class BuildFrontendMojoTest {
         projectFrontendResourcesDirectory = new File(npmFolder,
                 "flow_resources");
 
+        defaultJavaSource = new File(".", "src/test/java");
+        openApiJsonFile = new File(npmFolder,
+                "target/generated-resources/openapi.json").getAbsolutePath();
+        generatedTsFolder = new File(npmFolder, "frontend/generated");
+
+
         Assert.assertTrue("Failed to create a test project resources",
                 projectFrontendResourcesDirectory.mkdirs());
         Assert.assertTrue("Failed to create a test project file",
@@ -136,6 +145,17 @@ public class BuildFrontendMojoTest {
                 "false");
         ReflectionUtils.setVariableValueInObject(mojo, "optimizeBundle",
                 true);
+
+        ReflectionUtils.setVariableValueInObject(mojo, "openApiJsonFile",
+                new File(npmFolder,
+                        "target/generated-resources/openapi.json"));
+        ReflectionUtils.setVariableValueInObject(mojo, "applicationProperties",
+                new File(npmFolder,
+                        "src/main/resources/application.properties"));
+        ReflectionUtils.setVariableValueInObject(mojo, "javaSourceFolder",
+                defaultJavaSource);
+        ReflectionUtils.setVariableValueInObject(mojo, "generatedTsFolder",
+                generatedTsFolder);
 
         flowPackagPath.mkdirs();
         generatedFolder.mkdirs();
@@ -360,6 +380,37 @@ public class BuildFrontendMojoTest {
         mojo.execute();
 
         Assert.assertFalse(tokenFile.exists());
+    }
+
+    @Test
+    public void mavenGoal_generateOpenApiJson_when_itIsInClientSideMode()
+            throws Exception {
+        Assert.assertFalse(FileUtils.fileExists(openApiJsonFile));
+        mojo.execute();
+        Assert.assertTrue(FileUtils.fileExists(openApiJsonFile));
+    }
+
+    @Test
+    public void mavenGoal_notGenerateOpenApiJson_when_itIsNotInClientSideMode()
+            throws Exception {
+        ReflectionUtils.setVariableValueInObject(mojo, "clientSideMode",
+                "false");
+        Assert.assertFalse(FileUtils.fileExists(openApiJsonFile));
+        mojo.execute();
+        Assert.assertFalse(FileUtils.fileExists(openApiJsonFile));
+    }
+
+    @Test
+    public void mavenGoal_generateTsFiles_when_enabled()
+            throws Exception {
+        File connectClientApi = new File(generatedTsFolder, "connect-client.default.ts");
+        File serviceClientApi = new File(generatedTsFolder, "MyVaadinServices.ts");
+
+        Assert.assertFalse(connectClientApi.exists());
+        Assert.assertFalse(serviceClientApi.exists());
+        mojo.execute();
+        Assert.assertTrue(connectClientApi.exists());
+        Assert.assertTrue(serviceClientApi.exists());
     }
 
     static void assertContainsPackage(JsonObject dependencies,

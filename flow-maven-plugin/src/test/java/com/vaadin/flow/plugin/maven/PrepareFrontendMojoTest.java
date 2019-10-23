@@ -28,7 +28,6 @@ import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_CLIENT_SIDE_MOD
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
-
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
@@ -47,7 +46,6 @@ public class PrepareFrontendMojoTest {
     private File nodeModulesPath;
     private File flowPackagePath;
     private String webpackConfig;
-    private String openApiJsonFile;
     private String packageJson;
     private File projectBase;
     private File webpackOutputDirectory;
@@ -67,8 +65,6 @@ public class PrepareFrontendMojoTest {
         flowPackagePath = new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME);
         webpackConfig = new File(projectBase, WEBPACK_CONFIG).getAbsolutePath();
         packageJson = new File(projectBase, PACKAGE_JSON).getAbsolutePath();
-        openApiJsonFile = new File(projectBase,
-                "target/generated-resources/openapi.json").getAbsolutePath();
         webpackOutputDirectory = new File(projectBase,
                 VAADIN_SERVLET_RESOURCES);
         defaultJavaSource = new File(".", "src/test/java");
@@ -95,7 +91,6 @@ public class PrepareFrontendMojoTest {
                         "src/main/resources/application.properties"));
         ReflectionUtils.setVariableValueInObject(mojo, "javaSourceFolder",
                 defaultJavaSource);
-
         ReflectionUtils.setVariableValueInObject(mojo, "generatedTsFolder",
                 generatedTsFolder);
 
@@ -163,37 +158,6 @@ public class PrepareFrontendMojoTest {
         Assert.assertFalse(FileUtils.fileExists(webpackConfig));
         mojo.execute();
         Assert.assertTrue(FileUtils.fileExists(webpackConfig));
-    }
-
-    @Test
-    public void mavenGoal_generateOpenApiJson_when_itIsInClientSideMode()
-            throws Exception {
-        Assert.assertFalse(FileUtils.fileExists(openApiJsonFile));
-        mojo.execute();
-        Assert.assertTrue(FileUtils.fileExists(openApiJsonFile));
-    }
-
-    @Test
-    public void mavenGoal_notGenerateOpenApiJson_when_itIsNotInClientSideMode()
-            throws Exception {
-        ReflectionUtils.setVariableValueInObject(mojo, "clientSideMode",
-                "false");
-        Assert.assertFalse(FileUtils.fileExists(openApiJsonFile));
-        mojo.execute();
-        Assert.assertFalse(FileUtils.fileExists(openApiJsonFile));
-    }
-
-    @Test
-    public void mavenGoal_generateTsFiles_when_enabled()
-            throws Exception {
-        File connectClientApi = new File(generatedTsFolder, "connect-client.default.ts");
-        File serviceClientApi = new File(generatedTsFolder, "MyVaadinServices.ts");
-
-        Assert.assertFalse(connectClientApi.exists());
-        Assert.assertFalse(serviceClientApi.exists());
-        mojo.execute();
-        Assert.assertTrue(connectClientApi.exists());
-        Assert.assertTrue(serviceClientApi.exists());
     }
 
     @Test
