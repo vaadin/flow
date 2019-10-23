@@ -122,7 +122,7 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
     /**
      * A directory with project's frontend source files.
      */
-    @Parameter(defaultValue = "${project.basedir}/frontend")
+    @Parameter(defaultValue = "${project.basedir}/" + FRONTEND)
     private File frontendDirectory;
 
     /**
@@ -180,6 +180,7 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
                                     applicationProperties)
                             .withConnectJavaSourceFolder(javaSourceFolder)
                             .withConnectGeneratedOpenApiJson(openApiJsonFile)
+                            .withConnectClientTsApiFolder(generatedTsFolder)
                             .build().execute();
         } catch (ExecutionFailedException exception) {
             throw new MojoFailureException(

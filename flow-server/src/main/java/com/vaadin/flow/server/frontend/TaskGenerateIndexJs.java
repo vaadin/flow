@@ -26,7 +26,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Generate <code>index.js</code> if it is missing in frontend folder.
- * 
+ *
  * @since 3.0
  */
 public class TaskGenerateIndexJs extends AbstractTaskClientGenerator {
@@ -37,7 +37,7 @@ public class TaskGenerateIndexJs extends AbstractTaskClientGenerator {
 
     /**
      * Create a task to generate <code>index.js</code> if necessary.
-     * 
+     *
      * @param frontendDirectory
      *            frontend directory is to check if the file already exists
      *            there.

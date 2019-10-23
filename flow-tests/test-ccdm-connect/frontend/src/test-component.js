@@ -1,5 +1,6 @@
 import { PolymerElement } from '@polymer/polymer/polymer-element.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import * as connectServices from '../generated/ConnectServices';
 
 class TestComponent extends PolymerElement {
   static get template() {
@@ -15,19 +16,10 @@ class TestComponent extends PolymerElement {
   }
 
   connect(e) {
-    var service = 'connect/ConnectServices/hello';
-    var data = {name: 'Friend'};
-    
-    fetch(service, {
-      method: 'POST',
-      body: JSON.stringify(data),
-      headers:{
-        'Content-Type': 'application/json'
-      }
-    })
-    .then(res => res.json())
-    .catch(error => this.$.content.textContent = 'Error:' + error)
-    .then(response => this.$.content.textContent = response);
+    connectServices
+      .hello('Friend')
+      .then(response => this.$.content.textContent = response)
+      .catch(error => this.$.content.textContent = 'Error:' + error);
   }
 }
 customElements.define(TestComponent.is, TestComponent);

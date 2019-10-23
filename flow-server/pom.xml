@@ -19,10 +19,11 @@
         <spring.autoconfigure.version>2.1.0.RELEASE</spring.autoconfigure.version>
         <javax.annotation.api.version>1.3.2</javax.annotation.api.version>
         <javaparser.version>3.15.1</javaparser.version>
-        <swagger.core.version>2.0.10</swagger.core.version>
-        <swagger.parser.version>2.0.15</swagger.parser.version>
         <commons.configuration.version>2.6</commons.configuration.version>
-        <commons.lang3.version>3.9</commons.lang3.version>
+        <swagger.core.version>2.0.10</swagger.core.version>
+        <swagger.parser.version>3.0.2</swagger.parser.version>
+        <swagger.core.version>2.0.5</swagger.core.version>
+        <swagger.codegen.version>1.0.2</swagger.codegen.version>
     </properties>
 
     <dependencies>
@@ -224,17 +225,37 @@
             <artifactId>commons-configuration2</artifactId>
             <version>${commons.configuration.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-core</artifactId>
+            <version>${swagger.core.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.swagger.codegen.v3</groupId>
+            <artifactId>swagger-codegen</artifactId>
+            <version>${swagger.parser.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-classic</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>io.swagger.codegen.v3</groupId>
+            <artifactId>swagger-codegen-generators</artifactId>
+            <version>${swagger.codegen.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-classic</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
         <!-- Need to be revised and removed to avoid conflicts-->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>${commons.lang3.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.swagger.parser.v3</groupId>
-            <artifactId>swagger-parser</artifactId>
-            <version>${swagger.parser.version}</version>
-            <scope>test</scope>
         </dependency>
         <!-- Connect Testing dependendies -->
 
@@ -305,7 +326,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>${maven.surefire.plugin.version}</version>
                 <configuration>
                     <excludedGroups>${test.excludegroup}</excludedGroups>
                     <enableAssertions>true</enableAssertions>
