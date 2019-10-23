@@ -441,8 +441,9 @@ public class NodeTasks implements FallibleCommand {
             addBootstrapTasks(builder);
 
             if (builder.connectJavaSourceFolder != null
+                    && builder.connectJavaSourceFolder.exists()
                     && builder.connectGeneratedOpenApiFile != null) {
-                addApiTasks(builder);
+                addConnectServicesTasks(builder);
             }
         }
 
@@ -502,7 +503,7 @@ public class NodeTasks implements FallibleCommand {
         commands.add(taskGenerateTsConfig);
     }
 
-    void addApiTasks(Builder builder) {
+    private void addConnectServicesTasks(Builder builder) {
         TaskGenerateOpenApi taskGenerateOpenApi = new TaskGenerateOpenApi(
                 builder.connectApplicationProperties,
                 builder.connectJavaSourceFolder,
