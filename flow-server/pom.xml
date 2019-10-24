@@ -22,7 +22,6 @@
         <commons.configuration.version>2.6</commons.configuration.version>
         <swagger.codegen.version>3.0.2</swagger.codegen.version>
         <swagger.codegen.generators.version>1.0.2</swagger.codegen.generators.version>
-        <test>CompositeTest,CompositeTextNodeTest</test>
     </properties>
 
     <dependencies>
@@ -33,12 +32,6 @@
             <groupId>com.vaadin</groupId>
             <artifactId>flow-push</artifactId>
             <version>${project.version}</version>
-            <exclusions>
-            	<exclusion>
-            		<groupId>org.slf4j</groupId>
-            		<artifactId>slf4j-api</artifactId>
-            	</exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
@@ -46,12 +39,6 @@
             <artifactId>flow-test-generic</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
-            <exclusions>
-            	<exclusion>
-            		<groupId>org.slf4j</groupId>
-            		<artifactId>slf4j-api</artifactId>
-            	</exclusion>
-            </exclusions>
         </dependency>
 
 
@@ -61,6 +48,10 @@
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
         </dependency>
 
         <!-- Library dependencies -->
@@ -84,6 +75,10 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+        </dependency>
 
         <!-- Jsoup for BootstrapHandler, Template, ... -->
         <dependency>
@@ -101,10 +96,6 @@
                     <groupId>com.helger</groupId>
                     <artifactId>ph-commons</artifactId>
                 </exclusion>
-                <exclusion>
-                	<groupId>org.slf4j</groupId>
-                	<artifactId>slf4j-api</artifactId>
-                </exclusion>
             </exclusions>
         </dependency>
 
@@ -116,10 +107,6 @@
                 <exclusion>
                     <groupId>com.google.code.findbugs</groupId>
                     <artifactId>jsr305</artifactId>
-                </exclusion>
-                <exclusion>
-                	<groupId>org.slf4j</groupId>
-                	<artifactId>slf4j-api</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -150,12 +137,6 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
             <scope>test</scope>
-            <exclusions>
-            	<exclusion>
-            		<groupId>org.slf4j</groupId>
-            		<artifactId>slf4j-api</artifactId>
-            	</exclusion>
-            </exclusions>
         </dependency>
 
         <!-- Bean Validation implementation -->
@@ -231,69 +212,33 @@
             <groupId>com.github.javaparser</groupId>
             <artifactId>javaparser-symbol-solver-core</artifactId>
             <version>${javaparser.version}</version>
-            <exclusions>
-            	<exclusion>
-            		<groupId>com.google.guava</groupId>
-            		<artifactId>guava</artifactId>
-            	</exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-configuration2</artifactId>
             <version>${commons.configuration.version}</version>
-            <exclusions>
-            	<exclusion>
-            		<groupId>org.apache.commons</groupId>
-            		<artifactId>commons-lang3</artifactId>
-            	</exclusion>
-            </exclusions>
         </dependency>
-            <dependency>
-                <groupId>com.samskivert</groupId>
-                <artifactId>jmustache</artifactId>
-                <version>1.15</version>
-            </dependency>
+        <dependency>
+            <groupId>com.samskivert</groupId>
+            <artifactId>jmustache</artifactId>
+            <version>1.15</version>
+        </dependency>        
         <dependency>
             <groupId>io.swagger.codegen.v3</groupId>
             <artifactId>swagger-codegen</artifactId>
             <version>${swagger.codegen.version}</version>
             <exclusions>
-                <!-- <exclusion>
+                <exclusion>
                     <groupId>ch.qos.logback</groupId>
                     <artifactId>logback-classic</artifactId>
                 </exclusion>
                 <exclusion>
-                	<groupId>ch.qos.logback</groupId>
-                	<artifactId>logback-core</artifactId>
-                </exclusion>
-                <exclusion>
-                	<groupId>com.atlassian.commonmark</groupId>
-                	<artifactId>commonmark</artifactId>
-                </exclusion>
-                <exclusion>
-                	<groupId>com.google.guava</groupId>
-                	<artifactId>guava</artifactId>
-                </exclusion>
-                <exclusion>
-                	<groupId>com.github.jknack</groupId>
-                	<artifactId>handlebars</artifactId>
-                </exclusion>
-                <exclusion>
-                	<groupId>io.swagger.parser.v3</groupId>
-                	<artifactId>swagger-parser</artifactId>
-                </exclusion> -->
-                <exclusion>
                 	<groupId>com.samskivert</groupId>
                 	<artifactId>jmustache</artifactId>
-                </exclusion>
-                <!-- <exclusion>
-                	<groupId>io.swagger</groupId>
-                	<artifactId>swagger-codegen</artifactId>
-                </exclusion> -->
+                </exclusion>                
             </exclusions>
         </dependency>
-        <!-- <dependency>
+        <dependency>
             <groupId>io.swagger.codegen.v3</groupId>
             <artifactId>swagger-codegen-generators</artifactId>
             <version>${swagger.codegen.generators.version}</version>
@@ -303,8 +248,12 @@
                     <artifactId>logback-classic</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency> -->
+        </dependency>
         <!-- Need to be revised and removed to avoid conflicts-->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
         <!-- Connect Testing dependendies -->
 
         <!-- TODO: re-enable tests mocking final classes in the connect
