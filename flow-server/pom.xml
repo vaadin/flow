@@ -22,6 +22,7 @@
         <commons.configuration.version>2.6</commons.configuration.version>
         <swagger.codegen.version>3.0.2</swagger.codegen.version>
         <swagger.codegen.generators.version>1.0.2</swagger.codegen.generators.version>
+        <test>CompositeTest,CompositeTextNodeTest</test>
     </properties>
 
     <dependencies>
