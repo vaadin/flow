@@ -84,10 +84,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-        </dependency>
 
         <!-- Jsoup for BootstrapHandler, Template, ... -->
         <dependency>
@@ -293,6 +289,26 @@
                 <exclusion>
                 	<groupId>com.github.jknack</groupId>
                 	<artifactId>handlebars</artifactId>
+                </exclusion>
+                <exclusion>
+                	<groupId>io.swagger.parser.v3</groupId>
+                	<artifactId>swagger-parser-v3</artifactId>
+                </exclusion>
+                <exclusion>
+                	<groupId>commons-io</groupId>
+                	<artifactId>commons-io</artifactId>
+                </exclusion>
+                <exclusion>
+                	<groupId>io.swagger.parser.v3</groupId>
+                	<artifactId>swagger-parser</artifactId>
+                </exclusion>
+                <exclusion>
+                	<groupId>com.samskivert</groupId>
+                	<artifactId>jmustache</artifactId>
+                </exclusion>
+                <exclusion>
+                	<groupId>io.swagger</groupId>
+                	<artifactId>swagger-codegen</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
