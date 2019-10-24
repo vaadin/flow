@@ -195,6 +195,7 @@ export class Flow {
 
       // Load custom modules defined by user
       if (typeof this.config.imports === 'function') {
+        this.injectAppIdScript(this.response);
         await this.config.imports();
       }
 
@@ -212,6 +213,15 @@ export class Flow {
       }
     }
     return this.response;
+  }
+
+  private injectAppIdScript(response: AppInitResponse) {
+    const appId = response.appConfig.appId;
+    const appIdWithoutHashCode = appId.substring(0, appId.lastIndexOf('-'));
+    const scriptAppId = document.createElement('script');
+    scriptAppId.type = 'module';
+    scriptAppId.setAttribute('data-app-id', appIdWithoutHashCode);
+    document.body.append(scriptAppId);
   }
 
   // After the flow-client javascript module has been loaded, this initializes flow UI

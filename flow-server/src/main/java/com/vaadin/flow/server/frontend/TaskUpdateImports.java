@@ -71,7 +71,6 @@ public class TaskUpdateImports extends NodeUpdater {
 
     private final File frontendDirectory;
     private final FrontendDependenciesScanner fallbackScanner;
-    private final ClassFinder finder;
     private final File tokenFile;
     private final JsonObject tokenFileData;
 
@@ -348,7 +347,6 @@ public class TaskUpdateImports extends NodeUpdater {
         super(finder, frontendDepScanner, npmFolder, generatedPath);
         this.frontendDirectory = frontendDirectory;
         fallbackScanner = fallBackScannerProvider.apply(finder);
-        this.finder = finder;
         this.tokenFile = tokenFile;
         this.tokenFileData = tokenFileData;
     }

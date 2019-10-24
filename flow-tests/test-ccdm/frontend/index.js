@@ -15,7 +15,7 @@ const flow = new Flow({
 document.getElementById("button2").addEventListener('click', async e => {
     await flow.start();
     const bootstrapLoaded = !!window.Vaadin.Flow.initApplication;
-    const clientLoaded = !!window.Vaadin.Flow.resolveUri;
+    const clientLoaded = !!window.Vaadin.Flow.clients.foo.resolveUri;
     const remoteMethod = !!document.body.$server.connectClient;
     const div = document.createElement('div');
     div.id = 'div2';
