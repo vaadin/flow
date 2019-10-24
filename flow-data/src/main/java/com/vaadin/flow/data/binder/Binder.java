@@ -37,10 +37,10 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.googlecode.gentyref.GenericTypeReflector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.HasValidation;
@@ -1045,8 +1045,8 @@ public class Binder<BEAN> implements Serializable {
 
         /**
          * Removes this binding from its binder and unregisters the
-         * {@code ValueChangeListener} from any bound {@code HasValue}.
-         * It does nothing if it is called for an already unbound binding.
+         * {@code ValueChangeListener} from any bound {@code HasValue}. It does
+         * nothing if it is called for an already unbound binding.
          */
         @Override
         public void unbind() {
@@ -1055,7 +1055,7 @@ public class Binder<BEAN> implements Serializable {
                 onValueChange = null;
             }
 
-            if(binder != null) {
+            if (binder != null) {
                 binder.removeBindingInternal(this);
                 binder = null;
             }
@@ -1128,7 +1128,7 @@ public class Binder<BEAN> implements Serializable {
             valueInit = true;
             try {
                 TARGET originalValue = getter.apply(bean);
-                field.setValue(convertToFieldType(originalValue));
+                convertAndSetFieldValue(originalValue);
 
                 if (writeBackChangedValues && setter != null) {
                     doConversion().ifOk(convertedValue -> {
@@ -1201,7 +1201,31 @@ public class Binder<BEAN> implements Serializable {
 
         @Override
         public void read(BEAN bean) {
-            field.setValue(convertToFieldType(getter.apply(bean)));
+            convertAndSetFieldValue(getter.apply(bean));
+        }
+
+        private void convertAndSetFieldValue(TARGET modelValue) {
+            FIELDVALUE convertedValue = convertToFieldType(modelValue);
+            try {
+                field.setValue(convertedValue);
+            } catch (RuntimeException e) {
+                /*
+                 * Add an additional hint to the exception for the typical case
+                 * with a field that doesn't accept null values. The non-null
+                 * empty value is used as a heuristic to determine that the
+                 * field doesn't accept null rather than throwing for some other
+                 * reason.
+                 */
+                if (convertedValue == null && field.getEmptyValue() != null) {
+                    throw new IllegalStateException(String.format(
+                            "A field of type %s didn't accept a null value."
+                                    + " If null values are expected, then configure a null representation for the binding.",
+                            field.getClass().getName()), e);
+                } else {
+                    // Otherwise, let the original exception speak for itself
+                    throw e;
+                }
+            }
         }
 
         @Override
@@ -1691,16 +1715,17 @@ public class Binder<BEAN> implements Serializable {
             clearFields();
         } else {
             changedBindings.clear();
-            getBindings()
-                    .forEach(binding -> {
-                        // Some bindings may have been removed from binder
-                        // during readBean. We should skip those bindings to
-                        // avoid NPE inside initFieldValue. It happens e.g. when
-                        // we unbind a binding in valueChangeListener of another
-                        // field.
-                        if(binding.getField() != null)
-                            binding.initFieldValue(bean, false);
-                    });
+            getBindings().forEach(binding -> {
+                /*
+                 * Some bindings may have been removed from binder during
+                 * readBean. We should skip those bindings to avoid NPE inside
+                 * initFieldValue. It happens e.g. when we unbind a binding in
+                 * valueChangeListener of another field.
+                 */
+                if (binding.getField() != null) {
+                    binding.initFieldValue(bean, false);
+                }
+            });
             getValidationStatusHandler().statusChange(
                     BinderValidationStatus.createUnresolvedStatus(this));
             fireStatusChangeEvent(false);

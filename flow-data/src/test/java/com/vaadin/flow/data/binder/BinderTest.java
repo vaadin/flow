@@ -22,13 +22,17 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
+import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.UI;
@@ -59,12 +63,19 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
     private Map<HasValue<?, ?>, String> componentErrors = new HashMap<>();
 
+    @Rule
+    /*
+     * transient to avoid interfering with serialization tests that capture a
+     * test instance in a closure
+     */
+    public transient ExpectedException exceptionRule = ExpectedException.none();
+
     @Before
     public void setUp() {
         binder = new Binder<Person>() {
             @Override
             protected void handleError(HasValue<?, ?> field,
-                                       ValidationResult result) {
+                    ValidationResult result) {
                 super.handleError(field, result);
                 componentErrors.put(field, result.getErrorMessage());
             }
@@ -440,9 +451,8 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         String customNullPointerRepresentation = "foo";
         Binder<Person> binder = new Binder<>(Person.class);
         binder.forField(nameField)
-                .withConverter(value -> value,
-                        value -> value == null ? customNullPointerRepresentation
-                                : value)
+                .withConverter(value -> value, value -> value == null
+                        ? customNullPointerRepresentation : value)
                 .bind("firstName");
 
         Person person = new Person();
@@ -568,8 +578,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         textField.setValue("        ");
         String errorMessage = textField.getErrorMessage();
         assertNotNull(errorMessage);
-        assertEquals("Input is required.",
-                componentErrors.get(textField));
+        assertEquals("Input is required.", componentErrors.get(textField));
         // validation is done for all changed bindings once.
         assertEquals(2, invokes.get());
 
@@ -586,7 +595,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         Converter<String, String> stringBasicPreProcessingConverter = new Converter<String, String>() {
             @Override
             public Result<String> convertToModel(String value,
-                                                 ValueContext context) {
+                    ValueContext context) {
                 if (StringUtils.isBlank(value)) {
                     return Result.ok(null);
                 }
@@ -595,7 +604,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
             @Override
             public String convertToPresentation(String value,
-                                                ValueContext context) {
+                    ValueContext context) {
                 if (value == null) {
                     return "";
                 }
@@ -1320,5 +1329,80 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         beanSet.set(false);
 
         nameField.setValue("Foo");
+    }
+
+    @Test
+    public void nullRejetingField_nullValue_wrappedExceptionMentionsNullRepresentation() {
+        TestTextField field = createNullRejectingFieldWithEmptyValue("");
+
+        Binder<AtomicReference<Integer>> binder = createIntegerConverterBinder(
+                field);
+
+        exceptionRule.expect(IllegalStateException.class);
+        exceptionRule.expectMessage("null representation");
+        exceptionRule.expectCause(CoreMatchers.isA(NullPointerException.class));
+
+        binder.readBean(new AtomicReference<>());
+    }
+
+
+    @Test
+    public void nullRejetingField_otherRejectedValue_originalExceptionIsThrown() {
+        TestTextField field = createNullRejectingFieldWithEmptyValue("");
+
+        Binder<AtomicReference<Integer>> binder = createIntegerConverterBinder(
+                field);
+
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("42");
+
+        binder.readBean(new AtomicReference<>(Integer.valueOf(42)));
+    }
+
+    @Test
+    public void nullAcceptingField_nullValue_originalExceptionIsThrown() {
+        /*
+         * Edge case with a field that throws for null but has null as the empty
+         * value. This is most likely the case if the field doesn't explicitly
+         * reject null values but is instead somehow broken so that any value is
+         * rejected.
+         */
+        TestTextField field = createNullRejectingFieldWithEmptyValue(null);
+
+        Binder<AtomicReference<Integer>> binder = createIntegerConverterBinder(
+                field);
+
+        exceptionRule.expect(NullPointerException.class);
+
+        binder.readBean(new AtomicReference<>(null));
+    }
+
+    private TestTextField createNullRejectingFieldWithEmptyValue(
+            String emptyValue) {
+        return new TestTextField() {
+            @Override
+            public void setValue(String value) {
+                if (value == null) {
+                    throw new NullPointerException("Null value");
+                } else if ("42".equals(value)) {
+                    throw new IllegalArgumentException("42 is not allowed");
+                }
+                super.setValue(value);
+            }
+
+            @Override
+            public String getEmptyValue() {
+                return emptyValue;
+            }
+        };
+    }
+
+    private Binder<AtomicReference<Integer>> createIntegerConverterBinder(
+            TestTextField field) {
+        Binder<AtomicReference<Integer>> binder = new Binder<>();
+        binder.forField(field)
+                .withConverter(new StringToIntegerConverter("Must have number"))
+                .bind(AtomicReference::get, AtomicReference::set);
+        return binder;
     }
 }
