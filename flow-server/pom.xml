@@ -254,7 +254,7 @@
             <artifactId>swagger-codegen</artifactId>
             <version>${swagger.codegen.version}</version>
             <exclusions>
-                <exclusion>
+                <!-- <exclusion>
                     <groupId>ch.qos.logback</groupId>
                     <artifactId>logback-classic</artifactId>
                 </exclusion>
@@ -277,15 +277,15 @@
                 <exclusion>
                 	<groupId>io.swagger.parser.v3</groupId>
                 	<artifactId>swagger-parser</artifactId>
-                </exclusion>
-                <!-- <exclusion>
-                	<groupId>com.samskivert</groupId>
-                	<artifactId>jmustache</artifactId>
                 </exclusion> -->
                 <exclusion>
+                	<groupId>com.samskivert</groupId>
+                	<artifactId>jmustache</artifactId>
+                </exclusion>
+                <!-- <exclusion>
                 	<groupId>io.swagger</groupId>
                 	<artifactId>swagger-codegen</artifactId>
-                </exclusion>
+                </exclusion> -->
             </exclusions>
         </dependency>
         <!-- <dependency>
