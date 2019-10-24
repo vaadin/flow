@@ -22,11 +22,11 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.Map;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DeploymentConfigurationFactory;
 import com.vaadin.flow.server.FrontendVaadinServlet;
 import com.vaadin.flow.server.VaadinServlet;
@@ -183,7 +184,10 @@ public class ServletDeployer implements ServletContextListener {
                         context) == VaadinServletCreation.SERVLET_EXISTS
                 && hasDevelopmentMode && isCompatibilityMode) {
             createServletIfNotExists(context, "frontendFilesServlet",
-                    FrontendVaadinServlet.class, "/frontend/*");
+                    FrontendVaadinServlet.class, "/frontend/*",
+                    Collections.singletonMap(
+                            Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                            Boolean.TRUE.toString()));
         }
     }
 
@@ -202,13 +206,13 @@ public class ServletDeployer implements ServletContextListener {
         return result;
     }
 
-    private VaadinServletCreation createAppServlet(ServletContext context) {
+    private VaadinServletCreation createAppServlet(ServletContext servletContext) {
+        VaadinServletContext context = new VaadinServletContext(servletContext);
         boolean createServlet = ApplicationRouteRegistry.getInstance(context)
                 .hasNavigationTargets();
 
         createServlet = createServlet || WebComponentConfigurationRegistry
-                .getInstance(new VaadinServletContext(context))
-                .hasConfigurations();
+                .getInstance(context).hasConfigurations();
 
         if (!createServlet) {
             getLogger().info(
@@ -218,7 +222,7 @@ public class ServletDeployer implements ServletContextListener {
             return VaadinServletCreation.NO_CREATION;
         }
 
-        ServletRegistration vaadinServlet = findVaadinServlet(context);
+        ServletRegistration vaadinServlet = findVaadinServlet(servletContext);
         if (vaadinServlet != null) {
             getLogger().info(
                     "{} there is already a Vaadin servlet with the name {}",
@@ -227,13 +231,21 @@ public class ServletDeployer implements ServletContextListener {
             return VaadinServletCreation.SERVLET_EXISTS;
         }
 
-        return createServletIfNotExists(context, getClass().getName(),
+        return createServletIfNotExists(servletContext, getClass().getName(),
                 VaadinServlet.class, "/*");
     }
 
     private VaadinServletCreation createServletIfNotExists(
             ServletContext context, String name,
             Class<? extends Servlet> servletClass, String path) {
+        return createServletIfNotExists(context, name, servletClass, path,
+                null);
+    }
+
+    private VaadinServletCreation createServletIfNotExists(
+            ServletContext context, String name,
+            Class<? extends Servlet> servletClass, String path,
+            Map<String, String> initParams) {
         ServletRegistration existingServlet = findServletByPathPart(context,
                 path);
         if (existingServlet != null) {
@@ -246,6 +258,9 @@ public class ServletDeployer implements ServletContextListener {
 
         ServletRegistration.Dynamic registration = context.addServlet(name,
                 servletClass);
+        if (initParams != null) {
+            registration.setInitParameters(initParams);
+        }
         if (registration == null) {
             // Not expected to ever happen
             getLogger().info("{} there is already a servlet with the name {}",

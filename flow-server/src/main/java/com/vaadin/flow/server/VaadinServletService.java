@@ -206,7 +206,7 @@ public class VaadinServletService extends VaadinService {
     @Override
     protected RouteRegistry getRouteRegistry() {
         return ApplicationRouteRegistry
-                .getInstance(getServlet().getServletContext());
+                .getInstance(getContext());
     }
 
     @Override

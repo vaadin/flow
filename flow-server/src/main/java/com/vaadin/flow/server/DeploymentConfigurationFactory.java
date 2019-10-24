@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2019 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,7 +19,6 @@ package com.vaadin.flow.server;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -27,7 +26,9 @@ import java.io.UncheckedIOException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -104,7 +105,6 @@ public final class DeploymentConfigurationFactory implements Serializable {
      * @param servletConfig
      *            the config to get the rest of the properties from
      * @return {@link DeploymentConfiguration} instance
-     *
      * @throws ServletException
      *             if construction of the {@link Properties} for the parameters
      *             fails
@@ -126,7 +126,6 @@ public final class DeploymentConfigurationFactory implements Serializable {
      * @param servletConfig
      *            the config to get the rest of the properties from
      * @return {@link DeploymentConfiguration} instance
-     *
      * @throws ServletException
      *             if construction of the {@link Properties} for the parameters
      *             fails
@@ -147,7 +146,6 @@ public final class DeploymentConfigurationFactory implements Serializable {
      * @param servletConfig
      *            the config to get the rest of the properties from
      * @return {@link Properties} instance
-     *
      * @throws ServletException
      *             if construction of the {@link Properties} for the parameters
      *             fails
@@ -180,30 +178,7 @@ public final class DeploymentConfigurationFactory implements Serializable {
     }
 
     private static void readBuildInfo(Properties initParameters) {
-        String json = null;
-        try {
-            // token file location passed via init parameter property
-            String tokenLocation = initParameters.getProperty(PARAM_TOKEN_FILE);
-            if (tokenLocation != null) {
-                File tokenFile = new File(tokenLocation);
-                if (tokenFile != null && tokenFile.canRead()) {
-                    json = FileUtils.readFileToString(tokenFile,
-                            StandardCharsets.UTF_8);
-                }
-            }
-
-            // token file is in the class-path of the application
-            if (json == null) {
-                URL resource = DeploymentConfigurationFactory.class
-                        .getClassLoader()
-                        .getResource(VAADIN_SERVLET_RESOURCES + TOKEN_FILE);
-                if (resource != null) {
-                    json = FrontendUtils.streamToString(resource.openStream());
-                }
-            }
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
+        String json = getTokenFileContents(initParameters);
 
         // Read the json and set the appropriate system properties if not
         // already set.
@@ -213,11 +188,6 @@ public final class DeploymentConfigurationFactory implements Serializable {
                 initParameters.setProperty(SERVLET_PARAMETER_PRODUCTION_MODE,
                         String.valueOf(buildInfo.getBoolean(
                                 SERVLET_PARAMETER_PRODUCTION_MODE)));
-                // Need to be sure that we remove the system property,
-                // because
-                // it has priority in the configuration getter
-                System.clearProperty(
-                        VAADIN_PREFIX + SERVLET_PARAMETER_PRODUCTION_MODE);
             }
             if (buildInfo.hasKey(SERVLET_PARAMETER_COMPATIBILITY_MODE)) {
                 initParameters.setProperty(SERVLET_PARAMETER_COMPATIBILITY_MODE,
@@ -316,6 +286,108 @@ public final class DeploymentConfigurationFactory implements Serializable {
             throw new UncheckedIOException(e);
         }
 
+    }
+
+    private static String getTokenFileContents(Properties initParameters) {
+        String json = null;
+        try {
+            json = getResourceFromFile(initParameters);
+            if (json == null) {
+                json = getResourceFromClassloader(initParameters);
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+        return json;
+    }
+
+    private static String getResourceFromFile(Properties initParameters)
+            throws IOException {
+        String json = null;
+        // token file location passed via init parameter property
+        String tokenLocation = initParameters.getProperty(PARAM_TOKEN_FILE);
+        if (tokenLocation != null) {
+            File tokenFile = new File(tokenLocation);
+            if (tokenFile != null && tokenFile.canRead()) {
+                json = FileUtils
+                        .readFileToString(tokenFile, StandardCharsets.UTF_8);
+            }
+        }
+        return json;
+    }
+
+    private static String getResourceFromClassloader(Properties initParameters)
+            throws IOException {
+        String json = null;
+        // token file is in the class-path of the application
+        String tokenResource = VAADIN_SERVLET_RESOURCES + TOKEN_FILE;
+        List<URL> resources = Collections
+                .list(DeploymentConfiguration.class.getClassLoader()
+                        .getResources(tokenResource));
+        // Accept resource that doesn't contain
+        // 'jar!/META-INF/Vaadin/config/flow-build-info.json'
+        URL resource = resources.stream()
+                .filter(url -> !url.getPath().endsWith("jar!/" + tokenResource))
+                .findFirst().orElse(null);
+        if (resource == null && isProductionMode(initParameters)) {
+            // For no non jar build info, in production mode check jar files
+            // for production mode jar.
+            json = getProductionModeResource(resources);
+        } else if (resource != null) {
+            json = FrontendUtils.streamToString(resource.openStream());
+        }
+        return json;
+    }
+
+    private static boolean isProductionMode(Properties initParameters) {
+        String booleanString;
+        // First check system property then initParameters
+        if (System
+                .getProperty(VAADIN_PREFIX + SERVLET_PARAMETER_PRODUCTION_MODE)
+                != null) {
+            booleanString = System.getProperty(
+                    VAADIN_PREFIX + SERVLET_PARAMETER_PRODUCTION_MODE);
+        } else {
+            booleanString = initParameters
+                    .getProperty(SERVLET_PARAMETER_PRODUCTION_MODE,
+                            Boolean.FALSE.toString());
+        }
+
+        boolean parsedBoolean = Boolean.parseBoolean(booleanString);
+        if (Boolean.toString(parsedBoolean).equalsIgnoreCase(booleanString)) {
+            return parsedBoolean;
+        }
+        LoggerFactory.getLogger(DeploymentConfigurationFactory.class)
+                .debug(String
+                        .format("Property named '%s' is boolean, but contains incorrect value '%s' that is not boolean '%s'",
+                                SERVLET_PARAMETER_PRODUCTION_MODE,
+                                booleanString, parsedBoolean));
+        return false;
+    }
+
+    /**
+     * Check resources for a production mode resource if all resources were
+     * from JAR files as we may be running from a JAR and add-ons are not
+     * packaged in productionMode.
+     *
+     * @param resources
+     *         flow-build-info url resource files
+     * @return production mode flow-build-info string
+     * @throws IOException
+     *         exception reading stream
+     */
+    private static String getProductionModeResource(List<URL> resources)
+            throws IOException {
+        for (URL resource : resources) {
+            String json = FrontendUtils.streamToString(resource.openStream());
+            if (json != null && !json.contains(NPM_TOKEN) && !json
+                    .contains(FRONTEND_TOKEN) && json
+                    .contains("\"productionMode\": true")) {
+                return json;
+            }
+        }
+        // No applicable resources found.
+        return null;
     }
 
     /**

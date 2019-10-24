@@ -1095,6 +1095,7 @@ public class BootstrapHandlerTest {
                                 "<script type=\"text/javascript\" src=\"./"
                                         + VAADIN_MAPPING
                                         + "build/webcomponentsjs/webcomponents-loader.js\"></script>")));
+        System.out.println(allElements);
 
         Assert.assertTrue(
                 "index.js should be added to head for ES6 browsers. (deferred and type module)",
@@ -1102,7 +1103,9 @@ public class BootstrapHandlerTest {
                         .anyMatch(element -> element
                                 .equals("<script type=\"module\" defer src=\"./"
                                         + VAADIN_MAPPING
-                                        + "build/index-1111.cache.js\"></script>")));
+                                        + "build/index-1111.cache.js\" data-app-id=\""
+                                        + testUI.getInternals().getAppId()
+                                        + "\"></script>")));
 
         Assert.assertTrue(
                 "index.js should be added to head for ES5 browsers. (deferred and nomodule)",
@@ -1110,7 +1113,9 @@ public class BootstrapHandlerTest {
                         .anyMatch(element -> element.equals(
                                 "<script type=\"text/javascript\" defer src=\"./"
                                         + VAADIN_MAPPING
-                                        + "build/index.es5-2222.cache.js\" nomodule></script>")));
+                                        + "build/index.es5-2222.cache.js\" nomodule data-app-id=\""
+                                        + testUI.getInternals().getAppId()
+                                        + "\"></script>")));
     }
 
     @Test // 3333

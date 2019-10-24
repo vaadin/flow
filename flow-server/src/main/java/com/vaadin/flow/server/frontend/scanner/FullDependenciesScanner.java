@@ -269,7 +269,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                 themeInstance = new ThemeWrapper(theme);
             } catch (InstantiationException | IllegalAccessException e) {
                 throw new IllegalStateException("Unable to create a new '"
-                        + theme.getClass().getName() + "' theme instance", e);
+                        + theme.getName() + "' theme instance", e);
             }
         }
     }
@@ -298,7 +298,8 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                     .collect(Collectors.toSet());
             if (themes.size() > 1) {
                 throw new IllegalStateException(
-                        "Multiple Theme configuration is not supported. The list of found themes:\n"
+                        "Using multiple different Theme configurations is not "
+                                + "supported. The list of found themes:\n"
                                 + getThemesList(themes));
             }
             if (!themes.isEmpty() && !notThemeClasses.isEmpty()) {
@@ -306,7 +307,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                         + Theme.class.getSimpleName() + " ("
                         + getThemesList(themes) + ") and @"
                         + NoTheme.class.getSimpleName()
-                        + " annotations can't be used  simultaneously.");
+                        + " annotations can't be used simultaneously.");
             }
             if (!notThemeClasses.isEmpty()) {
                 return ThemeData.createNoTheme();
@@ -321,8 +322,8 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
 
     private String getThemesList(Collection<ThemeData> themes) {
         return themes
-                .stream().map(theme -> "Theme name" + theme.getName()
-                        + " and variant " + theme.getVariant())
+                .stream().map(theme -> "name = '" + theme.getName()
+                        + "' and variant = '" + theme.getVariant() + "'")
                 .collect(Collectors.joining(", "));
     }
 

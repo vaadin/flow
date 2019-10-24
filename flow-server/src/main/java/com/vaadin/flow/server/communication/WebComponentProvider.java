@@ -16,13 +16,13 @@
 package com.vaadin.flow.server.communication;
 
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -67,7 +67,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
                     + JS_EXTENSION + "|" + HTML_EXTENSION + ")$");
 
     // tag name -> generated html
-    private Map<String, String> cache;
+    private Map<String, String> cache = new HashMap<>();
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
@@ -131,23 +131,26 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
                 .getConfiguration(componentInfo.tag);
 
         if (optionalWebComponentConfiguration.isPresent()) {
-            if (cache == null) {
-                cache = new HashMap<>();
-            }
             WebComponentConfiguration<? extends Component> webComponentConfiguration = optionalWebComponentConfiguration
                     .get();
 
             String generated;
+            Supplier<String> responder;
             if (compatibilityMode) {
-                generated = cache.computeIfAbsent(componentInfo.tag,
-                        moduleTag -> generateBowerResponse(
-                                webComponentConfiguration, session, request,
-                                response));
+                responder = () ->
+                        generateBowerResponse(webComponentConfiguration,
+                                session, request, response);
             } else {
                 response.setContentType(CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8);
+                responder = () ->
+                        generateNPMResponse(webComponentConfiguration.getTag(),
+                                request);
+            }
+            if (cache == null) {
+                generated = responder.get();
+            } else {
                 generated = cache.computeIfAbsent(componentInfo.tag,
-                        moduleTag -> generateNPMResponse(
-                                webComponentConfiguration.getTag()));
+                        moduleTag -> responder.get());
             }
 
             IOUtils.write(generated, response.getOutputStream(),
@@ -159,6 +162,30 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
         }
 
         return true;
+    }
+
+    /**
+     * Whether bootstrap HTML fragment are cached based on component tag.
+     * Enabled by default.
+     *
+     * @return true iff bootstrap fragment caching is enabled
+     */
+    public boolean isCacheEnabled() {
+        return cache != null;
+    }
+
+    /**
+     * Enable / disable bootstrap HTML fragment caching based on component tag.
+     * Calling this method has the side effect of always clearing the cache.
+     *
+     * @param cacheEnabled whether bootstrap fragments should be cached per tag
+     */
+    public void setCacheEnabled(boolean cacheEnabled) {
+        if (cacheEnabled) {
+            cache = new HashMap<>();
+        } else {
+            cache = null;
+        }
     }
 
     private String generateBowerResponse(
@@ -216,17 +243,30 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
                 + ".nextSibling);";
     }
 
-    private String generateNPMResponse(String tagName) {
+    /**
+     * Generate the npm response for the web component.
+     *
+     * @param tagName
+     *         tag name of component
+     * @param request
+     *         current VaadinRequest
+     * @return npm response script
+     */
+    protected String generateNPMResponse(String tagName, VaadinRequest request) {
         // get the running script
         return getThisScript(tagName) + "var scriptUri = thisScript.src;"
                 + "var index = scriptUri.lastIndexOf('" + WEB_COMPONENT_PATH
                 + "');" + "var context = scriptUri.substring(0, index+"
                 + WEB_COMPONENT_PATH.length() + ");"
                 // figure out if we have already bootstrapped Vaadin client & ui
-                + "var bootstrapped = false;"
                 + "var bootstrapAddress=context+'web-component-bootstrap.js';"
                 // add the request address as a url parameter (used to get
                 // service url)
+                + bootstrapNpm();
+    }
+
+    protected String bootstrapNpm() {
+        return "var bootstrapped = false;\n"
                 + "bootstrapAddress+='?url='+bootstrapAddress;"
                 // check if a script with the bootstrap source already exits
                 + "var scripts = document.getElementsByTagName('script');"

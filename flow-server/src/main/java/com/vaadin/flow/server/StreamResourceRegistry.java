@@ -127,6 +127,18 @@ public class StreamResourceRegistry implements Serializable {
         return getURI(resource.getName(), resource.getId());
     }
 
+    /**
+     * Returns the URI path to the given resource in the context of this
+     * registry (relevant in portlet context).
+     *
+     * @param resource
+     *              stream resource
+     * @return resource URI
+     */
+    public URI getTargetURI(AbstractStreamResource resource) {
+        return StreamResourceRegistry.getURI(resource);
+    }
+
     private static URI getURI(String name, String id) {
         try {
             return new URI(StreamRequestHandler.generateURI(name, id));
