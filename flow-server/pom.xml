@@ -22,7 +22,7 @@
         <commons.configuration.version>2.6</commons.configuration.version>
         <swagger.codegen.version>3.0.2</swagger.codegen.version>
         <swagger.codegen.generators.version>1.0.2</swagger.codegen.generators.version>
-        <test>CompositeTest,CompositeTextNodeTest</test>
+        <test>CompositeTest,CompositeTextNodeTest,OpenApiSpecBasedTests,OpenApiSpecBasedTests</test>
     </properties>
 
     <dependencies>
@@ -229,6 +229,7 @@
             <artifactId>swagger-codegen</artifactId>
             <version>${swagger.codegen.version}</version>
             <exclusions>
+                <!-- Cause problems when running tests in flow-maven-plugin -->
                 <exclusion>
                     <groupId>ch.qos.logback</groupId>
                     <artifactId>logback-classic</artifactId>
@@ -238,40 +239,37 @@
                     <artifactId>logback-core</artifactId>
                 </exclusion>
 
-                <exclusion>
-                    <groupId>com.samskivert</groupId>
-                    <artifactId>jmustache</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>io.swagger</groupId>
-                    <artifactId>swagger-parser</artifactId>
-                </exclusion>
-
+                <!-- causes CompositeTest failures -->
                 <!-- <exclusion>
                     <groupId>io.swagger.parser.v3</groupId>
                     <artifactId>swagger-parser</artifactId>
                 </exclusion> -->
-
                 <exclusion>
                     <groupId>io.swagger.parser.v3</groupId>
                     <artifactId>swagger-parser-v2-converter</artifactId>
                 </exclusion>
 
+                <!-- not used -->
                 <!-- <exclusion>
                     <groupId>io.swagger</groupId>
                     <artifactId>swagger-codegen</artifactId>
                 </exclusion> -->
-
+                <!-- <exclusion>
+                    <groupId>com.samskivert</groupId>
+                    <artifactId>jmustache</artifactId>
+                </exclusion> -->
+                <exclusion>
+                    <groupId>io.swagger</groupId>
+                    <artifactId>swagger-parser</artifactId>
+                </exclusion>
                 <exclusion>
                     <groupId>io.swagger.parser.v3</groupId>
                     <artifactId>swagger-parser-v3</artifactId>
                 </exclusion>
-
                 <exclusion>
                     <groupId>io.swagger.core.v3</groupId>
                     <artifactId>swagger-core</artifactId>
                 </exclusion>
-
                 <exclusion>
                     <groupId>io.swagger.parser.v3</groupId>
                     <artifactId>swagger-parser-core</artifactId>
@@ -294,11 +292,7 @@
                 </exclusion>
             </exclusions>
         </dependency> -->
-        <!-- Need to be revised and removed to avoid conflicts-->
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-        </dependency>
+
         <!-- Connect Testing dependendies -->
 
         <!-- TODO: re-enable tests mocking final classes in the connect
