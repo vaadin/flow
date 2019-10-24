@@ -236,15 +236,15 @@
                 <!-- <exclusion>
                     <groupId>com.samskivert</groupId>
                     <artifactId>jmustache</artifactId>
-                </exclusion> -->
+                </exclusion>
                 <exclusion>
                 	<groupId>io.swagger</groupId>
                 	<artifactId>swagger-parser</artifactId>
-                </exclusion>
-                <!-- <exclusion>
+                </exclusion> -->
+                <exclusion>
                 	<groupId>io.swagger.parser.v3</groupId>
                 	<artifactId>swagger-parser</artifactId>
-                </exclusion> -->
+                </exclusion>
                 <!-- <exclusion>
                 	<groupId>io.swagger</groupId>
                 	<artifactId>swagger-codegen</artifactId>
