@@ -57,8 +57,20 @@ export class Flow {
   constructor(config?: FlowConfig) {
     this.flowRoot.$ = this.flowRoot.$ || {};
     this.config = config || {};
+
+    // TB checks for the existence of window.Vaadin.Flow in order
+    // to consider that TB needs to wait for `initFlow()`.
     $wnd.Vaadin = $wnd.Vaadin || {};
-    $wnd.Vaadin.Flow = $wnd.Vaadin.Flow || {};
+    if (!$wnd.Vaadin.Flow) {
+      let waiting = true;
+      $wnd.Vaadin.Flow = {
+        clients: { clientBootstrap: { isActive: () => waiting } }
+      };
+      // When first route is server-side, flow is loaded asynchronously
+      // via call to `initFlow()`, thus it waits for a while for the
+      // call to happen, otherwise first route is client-side.
+      setTimeout(() => waiting = false, 500);
+    }
 
     // Regular expression used to remove the app-context
     const elm = document.head.querySelector('base');
@@ -168,6 +180,9 @@ export class Flow {
   private async flowInit(serverSideRouting = false): Promise<AppInitResponse> {
     // Do not start flow twice
     if (!this.response) {
+      // remove constructor workaround for TB
+      delete $wnd.Vaadin.Flow.clients;
+
       // Initialize server side UI
       this.response = await this.flowInitUi(serverSideRouting);
 
