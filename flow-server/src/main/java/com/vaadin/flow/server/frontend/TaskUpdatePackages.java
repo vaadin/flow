@@ -27,6 +27,7 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -55,6 +56,7 @@ public class TaskUpdatePackages extends NodeUpdater {
     private static final String VERSION = "version";
     private static final String SHRINK_WRAP = "@vaadin/vaadin-shrinkwrap";
     private boolean forceCleanUp;
+    private final File connectClientFile;
 
     private static class RemoveFileVisitor extends SimpleFileVisitor<Path>
             implements Serializable {
@@ -88,18 +90,29 @@ public class TaskUpdatePackages extends NodeUpdater {
      * @param forceCleanUp
      *            forces the clean up process to be run. If {@code false}, clean
      *            up will be performed when platform version update is detected.
+     * @param connectClientFile
+     *            File with connect API imports.
      */
     TaskUpdatePackages(ClassFinder finder,
             FrontendDependenciesScanner frontendDependencies, File npmFolder,
-            File generatedPath, boolean forceCleanUp) {
+            File generatedPath, boolean forceCleanUp, File connectClientFile) {
         super(finder, frontendDependencies, npmFolder, generatedPath);
         this.forceCleanUp = forceCleanUp;
+        this.connectClientFile = connectClientFile;
     }
 
     @Override
     public void execute() {
         try {
             Map<String, String> deps = frontDeps.getPackages();
+
+            // There are connect services
+            if (connectClientFile.exists()) {
+                // convert to modifiable map
+                deps = new HashMap<>(deps);
+                deps.put("@vaadin/connect", "0.9.4");
+            }
+
             JsonObject packageJson = getAppPackageJson();
             if (packageJson == null) {
                 packageJson = Json.createObject();

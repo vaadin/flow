@@ -24,16 +24,16 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_JS;
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
-import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.FallibleCommand;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_JS;
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
+import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
 
@@ -73,7 +73,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
      * @param generatedFlowImports
      *            name of the JS file to update with the Flow project imports
      * @param isClientSideMode
-     *            whether the application running with clientSideBootstrapMode* 
+     *            whether the application running with clientSideBootstrapMode*
      */
     TaskUpdateWebpack(File frontendDirectory, File webpackConfigFolder,
             File webpackOutputDirectory, String webpackTemplate,
@@ -209,10 +209,11 @@ public class TaskUpdateWebpack implements FallibleCommand {
     }
 
     private String getEscapedRelativeWebpackPath(Path path) {
-        Path relativePath = path.isAbsolute()
-                ? webpackConfigPath.relativize(path)
-                : path;
-        return relativePath.toString().replaceAll("\\\\", "/");
+        if (path.isAbsolute()) {
+            return FrontendUtils.getUnixRelativePath(webpackConfigPath, path);
+        } else {
+            return FrontendUtils.getUnixPath(path);
+        }
     }
 
     private Logger log() {

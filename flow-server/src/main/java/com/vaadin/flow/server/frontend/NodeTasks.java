@@ -31,6 +31,7 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 import elemental.json.JsonObject;
 
+import static com.vaadin.flow.server.connect.generator.VaadinConnectClientGenerator.CONNECT_CLIENT_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
@@ -89,6 +90,8 @@ public class NodeTasks implements FallibleCommand {
         private File connectGeneratedOpenApiFile;
 
         private File connectApplicationProperties;
+
+        private File connectClientTsApiFolder;
 
         /**
          * Directory for for npm and folders and files.
@@ -305,7 +308,7 @@ public class NodeTasks implements FallibleCommand {
         /**
          * Enable clientSideMode which uses `frontend/index` as the entry
          * point.
-         * 
+         *
          * @param clientSideMode
          *            <code>true</code> to enable the mode, false otherwise.
          * @return the builder, for chaining
@@ -316,22 +319,21 @@ public class NodeTasks implements FallibleCommand {
         }
 
         /**
-         * Set source paths that OpenAPI generator searches for connect
-         * services.
-         * 
-         * @param connectJavaSourceFolder
-         *            java source folder
+         * Set the folder where Ts files should be generated.
+         *
+         * @param connectClientTsApiFolder
+         *            folder for Ts files in the frontend.
          * @return the builder, for chaining
          */
-        public Builder withConnectJavaSourceFolder(
-                File connectJavaSourceFolder) {
-            this.connectJavaSourceFolder = connectJavaSourceFolder;
+        public Builder withConnectClientTsApiFolder(
+                File connectClientTsApiFolder) {
+            this.connectClientTsApiFolder = connectClientTsApiFolder;
             return this;
         }
 
         /**
          * Set application properties file for Spring project.
-         * 
+         *
          * @param applicationProperties
          *            application properties file.
          * @return this builder, for chaining
@@ -344,7 +346,7 @@ public class NodeTasks implements FallibleCommand {
 
         /**
          * Set output location for the generated OpenAPI file.
-         * 
+         *
          * @param generatedOpenApiFile
          *            the generated output file.
          * @return the builder, for chaining
@@ -352,6 +354,20 @@ public class NodeTasks implements FallibleCommand {
         public Builder withConnectGeneratedOpenApiJson(
                 File generatedOpenApiFile) {
             this.connectGeneratedOpenApiFile = generatedOpenApiFile;
+            return this;
+        }
+
+        /**
+         * Set source paths that OpenAPI generator searches for connect
+         * services.
+         *
+         * @param connectJavaSourceFolder
+         *            java source folder
+         * @return the builder, for chaining
+         */
+        public Builder withConnectJavaSourceFolder(
+                File connectJavaSourceFolder) {
+            this.connectJavaSourceFolder = connectJavaSourceFolder;
             return this;
         }
 
@@ -421,12 +437,21 @@ public class NodeTasks implements FallibleCommand {
             commands.add(packageCreator);
         }
 
-        generateClientBootstrapFiles(builder, classFinder);
+        if (builder.clientSideMode) {
+            addBootstrapTasks(builder);
+
+            if (builder.connectJavaSourceFolder != null
+                    && builder.connectJavaSourceFolder.exists()
+                    && builder.connectGeneratedOpenApiFile != null) {
+                addConnectServicesTasks(builder);
+            }
+        }
 
         if (builder.enablePackagesUpdate) {
             TaskUpdatePackages packageUpdater = new TaskUpdatePackages(
                     classFinder, frontendDependencies, builder.npmFolder,
-                    builder.generatedFolder, builder.cleanNpmFiles);
+                    builder.generatedFolder, builder.cleanNpmFiles,
+                    new File(builder.connectClientTsApiFolder, CONNECT_CLIENT_NAME));
             commands.add(packageUpdater);
 
             if (builder.runNpmInstall) {
@@ -459,43 +484,40 @@ public class NodeTasks implements FallibleCommand {
                             builder.npmFolder, builder.generatedFolder,
                             builder.frontendDirectory, builder.tokenFile,
                             builder.tokenFileData));
-
         }
     }
 
-    private void generateClientBootstrapFiles(Builder builder,
-            ClassFinder classFinder) {
-        if (builder.clientSideMode) {
-            File outputDirectory = new File(builder.npmFolder,
-                    FrontendUtils.TARGET);
-            TaskGenerateIndexHtml taskGenerateIndexHtml = new TaskGenerateIndexHtml(
-                    builder.frontendDirectory, outputDirectory);
-            commands.add(taskGenerateIndexHtml);
-            TaskGenerateIndexJs taskGenerateIndexJs = new TaskGenerateIndexJs(
-                    builder.frontendDirectory,
-                    new File(builder.generatedFolder, IMPORTS_NAME),
-                    outputDirectory);
-            commands.add(taskGenerateIndexJs);
-            TaskGenerateTsConfig taskGenerateTsConfig = new TaskGenerateTsConfig(
-                    builder.frontendDirectory, builder.npmFolder);
-            commands.add(taskGenerateTsConfig);
-            if (shouldGenerateOpenApi(builder, classFinder)) {
-                TaskGenerateOpenApi taskGenerateOpenApi = new TaskGenerateOpenApi(
-                        builder.connectApplicationProperties,
-                        builder.connectJavaSourceFolder,
-                        classFinder.getClassLoader(),
-                        builder.connectGeneratedOpenApiFile);
-                commands.add(taskGenerateOpenApi);
-            }
-        }
+    private void addBootstrapTasks(Builder builder) {
+        File outputDirectory = new File(builder.npmFolder,
+                FrontendUtils.TARGET);
+        TaskGenerateIndexHtml taskGenerateIndexHtml = new TaskGenerateIndexHtml(
+                builder.frontendDirectory, outputDirectory);
+        commands.add(taskGenerateIndexHtml);
+        TaskGenerateIndexJs taskGenerateIndexJs = new TaskGenerateIndexJs(
+                builder.frontendDirectory,
+                new File(builder.generatedFolder, IMPORTS_NAME),
+                outputDirectory);
+        commands.add(taskGenerateIndexJs);
+        TaskGenerateTsConfig taskGenerateTsConfig = new TaskGenerateTsConfig(
+                builder.frontendDirectory, builder.npmFolder);
+        commands.add(taskGenerateTsConfig);
     }
 
-    private boolean shouldGenerateOpenApi(Builder builder,
-            ClassFinder classFinder) {
-        return builder.connectJavaSourceFolder != null
-                && builder.connectGeneratedOpenApiFile != null
-                && !classFinder.getAnnotatedClasses(VaadinService.class)
-                        .isEmpty();
+    private void addConnectServicesTasks(Builder builder) {
+        TaskGenerateOpenApi taskGenerateOpenApi = new TaskGenerateOpenApi(
+                builder.connectApplicationProperties,
+                builder.connectJavaSourceFolder,
+                builder.classFinder.getClassLoader(),
+                builder.connectGeneratedOpenApiFile);
+        commands.add(taskGenerateOpenApi);
+
+        if (builder.connectClientTsApiFolder != null) {
+            TaskGenerateConnect taskGenerateConnectTs = new TaskGenerateConnect(
+                    builder.connectApplicationProperties,
+                    builder.connectGeneratedOpenApiFile,
+                    builder.connectClientTsApiFolder);
+            commands.add(taskGenerateConnectTs);
+        }
     }
 
     private FrontendDependenciesScanner getFallbackScanner(Builder builder,

@@ -60,4 +60,11 @@ public class ConnectServicesValidatorTest {
         validator.onStartup(classes, servletContext);
     }
 
+    @Test
+    public void should_start_when_CDI_environment()
+            throws Exception {
+        ConnectServicesValidator validator = new ConnectServicesValidator();
+        classes = null;
+        validator.onStartup(classes, servletContext);
+    }
 }

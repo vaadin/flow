@@ -18,16 +18,15 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_JS;
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
 import org.apache.commons.io.IOUtils;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_JS;
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Generate <code>index.js</code> if it is missing in frontend folder.
- * 
+ *
  * @since 3.0
  */
 public class TaskGenerateIndexJs extends AbstractTaskClientGenerator {
@@ -38,7 +37,7 @@ public class TaskGenerateIndexJs extends AbstractTaskClientGenerator {
 
     /**
      * Create a task to generate <code>index.js</code> if necessary.
-     * 
+     *
      * @param frontendDirectory
      *            frontend directory is to check if the file already exists
      *            there.
@@ -71,9 +70,26 @@ public class TaskGenerateIndexJs extends AbstractTaskClientGenerator {
     protected String getFileContent() throws IOException {
         String indexTemplate = IOUtils
                 .toString(getClass().getResourceAsStream(INDEX_JS), UTF_8);
-        String relativizedImport = outputDirectory.toPath()
-                .relativize(generatedImports.toPath()).toFile().getPath();
+        String relativizedImport = ensureValidRelativePath(
+                FrontendUtils.getUnixRelativePath(outputDirectory.toPath(),
+                        generatedImports.toPath()));
         return indexTemplate.replace("[to-be-generated-by-flow]",
-                "./" + relativizedImport);
+                relativizedImport);
     }
+
+    /**
+     * Ensure that the given relative path is valid as an import path. NOTE:
+     * expose only for testing purpose.
+     *
+     * @param relativePath
+     *            given relative path
+     * @return valid import path
+     */
+    static String ensureValidRelativePath(String relativePath) {
+        if (!relativePath.startsWith(".")) {
+            relativePath = "./" + relativePath;
+        }
+        return relativePath;
+    }
+
 }

@@ -93,7 +93,7 @@ public abstract class NodeUpdater implements FallibleCommand {
      */
     protected final FrontendDependenciesScanner frontDeps;
 
-    private final ClassFinder finder;
+    final ClassFinder finder;
 
     boolean modified;
 
@@ -221,11 +221,11 @@ public abstract class NodeUpdater implements FallibleCommand {
         // dependency for the custom package.json placed in the generated
         // folder.
         try {
-            String customPkg = "./" + npmFolder.getAbsoluteFile().toPath()
-                    .relativize(generatedFolder.getAbsoluteFile().toPath())
-                    .toString();
+            String customPkg = "./" + FrontendUtils.getUnixRelativePath(
+                    npmFolder.getAbsoluteFile().toPath(),
+                    generatedFolder.getAbsoluteFile().toPath());
             added = addDependency(packageJson, DEPENDENCIES, DEP_NAME_FLOW_DEPS,
-                    customPkg.replaceAll("\\\\", "/")) || added;
+                    customPkg) || added;
         } catch (IllegalArgumentException iae) {
             log().error("Exception in relativization of '{}' to '{}'",
                     npmFolder.getAbsoluteFile().toPath(),
@@ -275,7 +275,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         }
         if (!json.hasKey(pkg) || !json.getString(pkg).equals(vers)) {
             json.put(pkg, vers);
-            log().info("Added \"{}\": \"{}\" line.", pkg, vers);
+            log().info("Added dependency \"{}\": \"{}\".", pkg, vers);
             return true;
         }
         return false;
@@ -292,7 +292,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
     String writePackageFile(JsonObject json, File packageFile)
             throws IOException {
-        log().info("Updated npm {}.", packageFile.getAbsolutePath());
+        log().info("writing file {}.", packageFile.getAbsolutePath());
         FileUtils.forceMkdirParent(packageFile);
         String content = stringify(json, 2) + "\n";
         FileUtils.writeStringToFile(packageFile, content, UTF_8.name());

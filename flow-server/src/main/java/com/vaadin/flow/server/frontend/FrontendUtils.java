@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -123,7 +124,7 @@ public class FrontendUtils {
     /**
      * The TypeScript definitions for the {@link FrontendUtils#IMPORTS_NAME} file.
      */
-    public static final String IMPORTS_D_TS_NAME = "generated-flow-imports.d.ts";    
+    public static final String IMPORTS_D_TS_NAME = "generated-flow-imports.d.ts";
 
     /**
      * File name of the index.html in clientSideMode.
@@ -155,6 +156,11 @@ public class FrontendUtils {
      */
     public static final String DEFAULT_CONNECT_OPENAPI_JSON_FILE = TARGET
             + "generated-resources/openapi.json";
+
+    /**
+     * Default generated path for generated TS files.
+     */
+    public static final String DEFAULT_CONNECT_GENERATED_TS_DIR = DEFAULT_FRONTEND_DIR + "generated/";
 
     /**
      * Name of the file that contains all application imports, javascript, theme
@@ -616,6 +622,31 @@ public class FrontendUtils {
         return file.exists()
                 && FileUtils.readFileToString(file, StandardCharsets.UTF_8)
                         .contains("./webpack.generated.js");
+    }
+
+    /**
+     * Get relative path from a source path to a target path in Unix form. All
+     * the Windows' path separator will be replaced.
+     *
+     * @param source
+     *            the source path
+     * @param target
+     *            the target path
+     * @return unix relative path from source to target
+     */
+    public static String getUnixRelativePath(Path source, Path target) {
+        return getUnixPath(source.relativize(target));
+    }
+
+    /**
+     * Get path as a String in Unix form.
+     *
+     * @param source
+     *            path to get
+     * @return path as a String in Unix form.
+     */
+    public static String getUnixPath(Path source) {
+        return source.toString().replaceAll("\\\\", "/");
     }
 
     /**
