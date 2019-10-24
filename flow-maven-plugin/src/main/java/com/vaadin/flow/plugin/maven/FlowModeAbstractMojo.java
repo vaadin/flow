@@ -74,6 +74,24 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
     protected boolean compatibility;
 
     /**
+     * Application properties file in Spring project.
+     */
+    @Parameter(defaultValue = "${project.basedir}/src/main/resources/application.properties")
+    protected File applicationProperties;
+
+    /**
+     * Default generated path of the OpenAPI json.
+     */
+    @Parameter(defaultValue = "${project.build.directory}/generated-resources/openapi.json")
+    protected File openApiJsonFile;
+
+    /**
+     * Java source folders for connect scanning.
+     */
+    @Parameter(defaultValue = "${project.basedir}/src/main/java")
+    protected File javaSourceFolder;
+
+    /**
      * The folder where flow will put TS API files for client projects.
      */
     @Parameter(defaultValue = "${project.basedir}/" + FRONTEND + "/generated")

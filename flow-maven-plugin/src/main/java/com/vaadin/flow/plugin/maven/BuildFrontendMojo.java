@@ -176,6 +176,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
 
         new NodeTasks.Builder(getClassFinder(project), npmFolder,
                 generatedFolder, frontendDirectory).runNpmInstall(runNpmInstall)
+                        .enableClientSideMode(isClientSideMode())
                         .enablePackagesUpdate(true)
                         .useByteCodeScanner(optimizeBundle)
                         .copyResources(jarFiles)
@@ -184,6 +185,10 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                         .withEmbeddableWebComponents(
                                 generateEmbeddableWebComponents)
                         .withTokenFile(getTokenFile())
+                        .withConnectApplicationProperties(
+                                applicationProperties)
+                        .withConnectJavaSourceFolder(javaSourceFolder)
+                        .withConnectGeneratedOpenApiJson(openApiJsonFile)
                         .withConnectClientTsApiFolder(generatedTsFolder)
                         .build().execute();
     }

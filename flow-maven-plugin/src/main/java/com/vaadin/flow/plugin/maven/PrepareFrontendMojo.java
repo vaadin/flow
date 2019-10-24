@@ -126,24 +126,6 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
     @Parameter(defaultValue = "${project.basedir}/" + FRONTEND)
     private File frontendDirectory;
 
-    /**
-     * Application properties file in Spring project.
-     */
-    @Parameter(defaultValue = "${project.basedir}/src/main/resources/application.properties")
-    private File applicationProperties;
-
-    /**
-     * Default generated path of the OpenAPI json.
-     */
-    @Parameter(defaultValue = "${project.build.directory}/generated-resources/openapi.json")
-    private File openApiJsonFile;
-
-    /**
-     * Java source folders for connect scanning.
-     */
-    @Parameter(defaultValue = "${project.basedir}/src/main/java")
-    private File javaSourceFolder;
-
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         super.execute();
@@ -177,11 +159,6 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
                             .createMissingPackageJson(true)
                             .enableImportsUpdate(false)
                             .enablePackagesUpdate(false).runNpmInstall(false)
-                            .withConnectApplicationProperties(
-                                    applicationProperties)
-                            .withConnectJavaSourceFolder(javaSourceFolder)
-                            .withConnectGeneratedOpenApiJson(openApiJsonFile)
-                            .withConnectClientTsApiFolder(generatedTsFolder)
                             .build().execute();
         } catch (ExecutionFailedException exception) {
             throw new MojoFailureException(
