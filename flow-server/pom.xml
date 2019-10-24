@@ -218,11 +218,11 @@
             <artifactId>commons-configuration2</artifactId>
             <version>${commons.configuration.version}</version>
         </dependency>
-        <dependency>
+        <!-- <dependency>
             <groupId>com.samskivert</groupId>
             <artifactId>jmustache</artifactId>
             <version>1.15</version>
-        </dependency>        
+        </dependency>         -->
         <dependency>
             <groupId>io.swagger.codegen.v3</groupId>
             <artifactId>swagger-codegen</artifactId>
