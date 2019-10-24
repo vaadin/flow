@@ -237,6 +237,26 @@
                     <groupId>com.samskivert</groupId>
                     <artifactId>jmustache</artifactId>
                 </exclusion>
+                <exclusion>
+                	<groupId>io.swagger</groupId>
+                	<artifactId>swagger-parser</artifactId>
+                </exclusion>
+                <exclusion>
+                	<groupId>io.swagger.parser.v3</groupId>
+                	<artifactId>swagger-parser-v3</artifactId>
+                </exclusion>
+                <exclusion>
+                	<groupId>io.swagger.parser.v3</groupId>
+                	<artifactId>swagger-parser</artifactId>
+                </exclusion>
+                <exclusion>
+                	<groupId>io.swagger</groupId>
+                	<artifactId>swagger-codegen</artifactId>
+                </exclusion>
+                <exclusion>
+                	<groupId>io.swagger.parser.v3</groupId>
+                	<artifactId>swagger-parser-core</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <!-- <dependency>
