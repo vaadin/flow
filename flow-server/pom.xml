@@ -219,7 +219,7 @@
             <artifactId>commons-configuration2</artifactId>
             <version>${commons.configuration.version}</version>
         </dependency>
-        <dependency>
+        <!-- <dependency>
             <groupId>io.swagger.codegen.v3</groupId>
             <artifactId>swagger-codegen</artifactId>
             <version>${swagger.codegen.version}</version>
@@ -229,8 +229,8 @@
                     <artifactId>logback-classic</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <!-- <dependency>
+        </dependency> -->
+        <dependency>
             <groupId>io.swagger.codegen.v3</groupId>
             <artifactId>swagger-codegen-generators</artifactId>
             <version>${swagger.codegen.generators.version}</version>
@@ -240,7 +240,7 @@
                     <artifactId>logback-classic</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency> -->
+        </dependency>
         <!-- Need to be revised and removed to avoid conflicts-->
         <dependency>
             <groupId>org.apache.commons</groupId>
