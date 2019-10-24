@@ -43,6 +43,7 @@ public final class Constants implements Serializable {
     public static final String CONNECT_JAVA_SOURCE_FOLDER_TOKEN = "connect.javaSourceFolder";
     public static final String CONNECT_APPLICATION_PROPERTIES_TOKEN = "connect.applicationProperties";
     public static final String CONNECT_OPEN_API_FILE_TOKEN = "connect.openApiFile";
+    public static final String CONNECT_GENERATED_TS_DIR_TOKEN = "connect.generated";
 
     /**
      * enable it if your project is a Polymer 2.0 one, should be removed in V15

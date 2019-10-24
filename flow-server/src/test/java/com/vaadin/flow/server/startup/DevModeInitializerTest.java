@@ -23,17 +23,22 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
-import com.vaadin.flow.server.connect.VaadinService;
+import com.vaadin.flow.server.connect.generator.VaadinConnectClientGenerator;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 
+import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
+import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
+import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_REUSE_DEV_SERVER;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_GENERATED_TS_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_JAVA_SOURCE_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_OPENAPI_JSON_FILE;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -66,39 +71,34 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         Visited b;
     }
 
-    @VaadinService
-    public static class MyService {
-        // empty service to generate OpenAPI spec.
-    }
-
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
     @Test
     public void loadingJars_useModernResourcesFolder_allFilesExist()
             throws IOException, ServletException {
-        loadingJars_allFilesExist(Constants.RESOURCES_FRONTEND_DEFAULT);
+        loadingJars_allFilesExist(RESOURCES_FRONTEND_DEFAULT);
     }
 
     @Test
     public void loadingJars_useObsoleteResourcesFolder_allFilesExist()
             throws IOException, ServletException {
         loadingJars_allFilesExist(
-                Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT);
+                COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT);
     }
 
     @Test
     public void loadingFsResources_useModernResourcesFolder_allFilesExist()
             throws IOException, ServletException {
         loadingFsResources_allFilesExist("/dir-with-modern-frontend/",
-                Constants.RESOURCES_FRONTEND_DEFAULT);
+                RESOURCES_FRONTEND_DEFAULT);
     }
 
     @Test
     public void loadingFsResources_useObsoleteResourcesFolder_allFilesExist()
             throws IOException, ServletException {
         loadingFsResources_allFilesExist("/dir-with-frontend-resources/",
-                Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT);
+                COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT);
     }
 
     @Test
@@ -180,7 +180,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
     @Test
     public void shouldUseByteCodeScannerIfPropertySet() throws Exception {
-        System.setProperty(Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
+        System.setProperty(SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
                 "true");
         DevModeInitializer devModeInitializer = new DevModeInitializer();
         final Set<Class<?>> classes = new HashSet<>();
@@ -213,15 +213,20 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     @Test
     public void should_generateOpenApi_when_VaadinServicePresents()
             throws Exception {
-        // Create temporary src folder
-        Paths.get(baseDir, DEFAULT_CONNECT_JAVA_SOURCE_FOLDER).toFile()
-                .mkdirs();
+
+        // Configure a folder that has .java classes with valid services
+        // Not using `src/test/java` because there are invalid service names
+        // in some tests
+        File src = new File(
+                getClass().getClassLoader().getResource("java").getFile());
+        System.setProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
+                src.getAbsolutePath());
+
         File generatedOpenApiJson = Paths
                 .get(baseDir, DEFAULT_CONNECT_OPENAPI_JSON_FILE).toFile();
+
         Assert.assertFalse(generatedOpenApiJson.exists());
         DevModeInitializer devModeInitializer = new DevModeInitializer();
-        final Set<Class<?>> classes = new HashSet<>();
-        classes.add(MyService.class);
         devModeInitializer.onStartup(classes, servletContext);
         Assert.assertTrue(
                 "Should generate OpenAPI spec if VaadinService is used.",
@@ -238,6 +243,31 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         Assert.assertFalse(
                 "Should not generate OpenAPI spec if VaadinService is not used.",
                 generatedOpenApiJson.exists());
+    }
+
+    @Test
+    public void should_generateTs_files() throws Exception {
+
+        // Configure a folder that has .java classes with valid services
+        // Not using `src/test/java` because there are invalid service names
+        // in some tests
+        File src = new File(
+                getClass().getClassLoader().getResource("java").getFile());
+        System.setProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
+                src.getAbsolutePath());
+
+        DevModeInitializer devModeInitializer = new DevModeInitializer();
+
+        File ts1 = new File(baseDir,
+                DEFAULT_CONNECT_GENERATED_TS_DIR + "MyVaadinServices.ts");
+        File ts2 = new File(baseDir, DEFAULT_CONNECT_GENERATED_TS_DIR
+                + VaadinConnectClientGenerator.CONNECT_CLIENT_NAME);
+
+        assertFalse(ts1.exists());
+        assertFalse(ts2.exists());
+        devModeInitializer.onStartup(classes, servletContext);
+        assertTrue(ts1.exists());
+        assertTrue(ts2.exists());
     }
 
     private void loadingJars_allFilesExist(String resourcesFolder)

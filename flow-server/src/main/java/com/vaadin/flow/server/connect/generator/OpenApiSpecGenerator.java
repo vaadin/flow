@@ -80,9 +80,14 @@ public class OpenApiSpecGenerator {
         log.info("Parsing java files from {}", sourcesPaths);
         OpenAPI openAPI = generator.generateOpenApi();
         try {
-            log.info("writing file {}", specOutputFile);
-            FileUtils.writeStringToFile(specOutputFile.toFile(),
-                    Json.pretty(openAPI), StandardCharsets.UTF_8);
+            if (openAPI.getPaths().size() > 0) {
+                log.info("writing file {}", specOutputFile);
+                FileUtils.writeStringToFile(specOutputFile.toFile(),
+                        Json.pretty(openAPI), StandardCharsets.UTF_8);
+            } else {
+                log.info("There are no connect services to genertate.");
+                FileUtils.deleteQuietly(specOutputFile.toFile());
+            }
         } catch (IOException e) {
             String errorMessage = String.format(
                     "Error while writing OpenAPI json file at %s",

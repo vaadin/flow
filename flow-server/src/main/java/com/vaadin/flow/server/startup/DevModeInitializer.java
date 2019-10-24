@@ -85,11 +85,13 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
+import static com.vaadin.flow.server.Constants.CONNECT_GENERATED_TS_DIR_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_APPLICATION_PROPERTIES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_GENERATED_TS_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_JAVA_SOURCE_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_OPENAPI_JSON_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
@@ -109,7 +111,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
         NpmPackage.class, NpmPackage.Container.class, JsModule.class,
         JsModule.Container.class, CssImport.class, CssImport.Container.class,
         JavaScript.class, JavaScript.Container.class, Theme.class,
-        NoTheme.class, VaadinService.class })
+        NoTheme.class })
 @WebListener
 public class DevModeInitializer implements ServletContainerInitializer,
         Serializable, ServletContextListener {
@@ -271,12 +273,19 @@ public class DevModeInitializer implements ServletContainerInitializer,
                     CONNECT_OPEN_API_FILE_TOKEN,
                     Paths.get(baseDir, DEFAULT_CONNECT_OPENAPI_JSON_FILE)
                             .toString());
+
+            String connectTsFolder = config.getStringProperty(
+                    CONNECT_GENERATED_TS_DIR_TOKEN,
+                    Paths.get(baseDir, DEFAULT_CONNECT_GENERATED_TS_DIR)
+                            .toString());
+
             builder.withConnectJavaSourceFolder(
                     new File(connectJavaSourceFolder))
                     .withConnectApplicationProperties(
                             new File(connectApplicationProperties))
                     .withConnectGeneratedOpenApiJson(
-                            new File(connectOpenApiJsonFile));
+                            new File(connectOpenApiJsonFile))
+                    .withConnectClientTsApiFolder(new File(connectTsFolder));
         }
 
         // If we are missing either the base or generated package json files

@@ -188,6 +188,13 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
      */
     public static boolean launch(File openApiJsonFile,
             File generatedFrontendDirectory, String defaultClientPath) {
+
+        // There is no openApi file, thus remove old stuff.
+        if (!openApiJsonFile.exists()) {
+            FileUtils.deleteQuietly(generatedFrontendDirectory);
+            return false;
+        }
+
         CodegenConfigurator configurator = new CodegenConfigurator();
         configurator.setLang(VaadinConnectTsGenerator.class.getName());
         configurator.setInputSpecURL(openApiJsonFile.toString());

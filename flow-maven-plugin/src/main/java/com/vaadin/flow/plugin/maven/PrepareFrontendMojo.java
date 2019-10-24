@@ -42,6 +42,7 @@ import elemental.json.impl.JsonUtil;
 
 import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFinder;
 import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
+import static com.vaadin.flow.server.Constants.CONNECT_GENERATED_TS_DIR_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
 import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
@@ -207,6 +208,9 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
                 applicationProperties.getAbsolutePath());
         buildInfo.put(CONNECT_OPEN_API_FILE_TOKEN,
                 openApiJsonFile.getAbsolutePath());
+        buildInfo.put(CONNECT_GENERATED_TS_DIR_TOKEN,
+                generatedTsFolder.getAbsolutePath());
+
         try {
             FileUtils.forceMkdir(token.getParentFile());
             FileUtils.write(token, JsonUtil.stringify(buildInfo, 2) + "\n",

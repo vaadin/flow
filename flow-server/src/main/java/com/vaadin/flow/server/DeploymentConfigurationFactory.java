@@ -31,8 +31,6 @@ import java.util.Enumeration;
 import java.util.Optional;
 import java.util.Properties;
 
-import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
-import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.LoggerFactory;
 
@@ -46,8 +44,11 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
 
-import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
+import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
+import static com.vaadin.flow.server.Constants.CONNECT_GENERATED_TS_DIR_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
+import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
+import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_CLIENT_SIDE_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
@@ -281,20 +282,21 @@ public final class DeploymentConfigurationFactory implements Serializable {
                         String.valueOf(buildInfo.getBoolean(
                                 SERVLET_PARAMETER_REUSE_DEV_SERVER)));
             }
-
             if (buildInfo.hasKey(CONNECT_JAVA_SOURCE_FOLDER_TOKEN)) {
                 initParameters.setProperty(CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
                         buildInfo.getString(CONNECT_JAVA_SOURCE_FOLDER_TOKEN));
             }
-
             if (buildInfo.hasKey(CONNECT_OPEN_API_FILE_TOKEN)) {
                 initParameters.setProperty(CONNECT_OPEN_API_FILE_TOKEN,
                         buildInfo.getString(CONNECT_OPEN_API_FILE_TOKEN));
             }
-
             if (buildInfo.hasKey(CONNECT_APPLICATION_PROPERTIES_TOKEN)) {
                 initParameters.setProperty(CONNECT_APPLICATION_PROPERTIES_TOKEN,
                         buildInfo.getString(CONNECT_APPLICATION_PROPERTIES_TOKEN));
+            }
+            if (buildInfo.hasKey(CONNECT_GENERATED_TS_DIR_TOKEN)) {
+                initParameters.setProperty(CONNECT_GENERATED_TS_DIR_TOKEN,
+                        buildInfo.getString(CONNECT_GENERATED_TS_DIR_TOKEN));
             }
 
             FallbackChunk fallbackChunk = FrontendUtils

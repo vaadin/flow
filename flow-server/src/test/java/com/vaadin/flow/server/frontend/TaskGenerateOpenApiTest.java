@@ -46,6 +46,7 @@ public class TaskGenerateOpenApiTest {
     private File applicationPropertiesFile;
     private TaskGenerateOpenApi taskGenerateOpenApi;
     private File generatedOpenAPI;
+    private File javaSource;
 
     @Before
     public void setUp() throws IOException {
@@ -53,16 +54,18 @@ public class TaskGenerateOpenApiTest {
                 .newFile("application.properties");
         generatedOpenAPI = new File(temporaryFolder.newFolder(),
                 "generated-openapi.json");
+        javaSource = new File(getClass().getClassLoader().getResource("java").getFile());
     }
 
     @Test
     public void should_UseDefaultProperties_when_applicationPropertiesIsEmpty()
             throws Exception {
         taskGenerateOpenApi = new TaskGenerateOpenApi(applicationPropertiesFile,
-                temporaryFolder.newFolder(),
+                javaSource,
                 this.getClass().getClassLoader(),
                 generatedOpenAPI);
         taskGenerateOpenApi.execute();
+
         OpenAPI generatedOpenAPI = getGeneratedOpenAPI();
         Info info = generatedOpenAPI.getInfo();
         Assert.assertEquals(
@@ -115,9 +118,11 @@ public class TaskGenerateOpenApiTest {
                 StandardCharsets.UTF_8);
 
         taskGenerateOpenApi = new TaskGenerateOpenApi(applicationPropertiesFile,
-                temporaryFolder.newFolder(), this.getClass().getClassLoader(),
+                javaSource,
+                this.getClass().getClassLoader(),
                 generatedOpenAPI);
         taskGenerateOpenApi.execute();
+
         OpenAPI generatedOpenAPI = getGeneratedOpenAPI();
         Info info = generatedOpenAPI.getInfo();
         Assert.assertEquals(
