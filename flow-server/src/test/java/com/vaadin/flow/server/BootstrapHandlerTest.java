@@ -33,6 +33,7 @@ import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
@@ -86,6 +87,7 @@ public class BootstrapHandlerTest {
     @StyleSheet(value = "lazy.css", loadMode = LoadMode.LAZY)
     @HtmlImport(value = "lazy.html", loadMode = LoadMode.LAZY)
     @JavaScript("eager.js")
+    @JsModule("/module.js")
     @StyleSheet("context://eager-relative.css")
     @StyleSheet("eager.css")
     @HtmlImport("eager.html")
@@ -1807,4 +1809,24 @@ public class BootstrapHandlerTest {
         Assert.assertTrue(
                 testUI.getReconnectDialogConfiguration().isDialogModal());
     }
+
+    @Test
+    public void absoluteJSModuleAnnotationIncludedInHead()
+            throws InvalidRouteConfigurationException {
+
+        initUI(testUI, createVaadinRequest(),
+                Collections.singleton(MyThemeTest.class));
+
+        Document page = pageBuilder.getBootstrapPage(new BootstrapContext(
+                request, null, session, testUI, this::contextRootRelativePath));
+
+        Elements allElements = page.head().getAllElements();
+
+        Assert.assertTrue(
+                "module.js should be added to head. (deferred and type module)",
+                allElements.stream().map(Object::toString)
+                        .anyMatch(element -> element
+                                .equals("<script type=\"module\" defer src=\"/module.js\"></script>")));
+    }
+
 }
