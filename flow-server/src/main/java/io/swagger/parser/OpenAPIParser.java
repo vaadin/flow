@@ -12,13 +12,13 @@ import io.swagger.v3.parser.core.models.SwaggerParseResult;
 /**
  * A copy of the original OpenAPIParser to avoid problems with flow. Using the
  * original one makes Flow CompositeTest and CompositeTextNodeTest tests fail.
- * 
+ *
  * @author manolo
  * @since 3.0
  *
  */
 public class OpenAPIParser {
-    public SwaggerParseResult readLocation(String url, List<AuthorizationValue> auth, ParseOptions options) {
+    public SwaggerParseResult readLocation(String url, List<AuthorizationValue> auth, ParseOptions options) { // NOSONAR
         SwaggerParseResult output = null;
         for(SwaggerParserExtension extension : getExtensions()) {
             output = extension.readLocation(url, auth, options);
@@ -29,7 +29,7 @@ public class OpenAPIParser {
         return output;
     }
 
-    public SwaggerParseResult readContents(String swaggerAsString, List<AuthorizationValue> auth, ParseOptions options) {
+    public SwaggerParseResult readContents(String swaggerAsString, List<AuthorizationValue> auth, ParseOptions options) { // NOSONAR
         SwaggerParseResult output = null;
 
         for(SwaggerParserExtension extension : getExtensions()) {
