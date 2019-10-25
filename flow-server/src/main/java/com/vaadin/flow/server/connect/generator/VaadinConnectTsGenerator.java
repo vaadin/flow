@@ -45,7 +45,6 @@ import io.swagger.codegen.v3.DefaultGenerator;
 import io.swagger.codegen.v3.auth.AuthParser;
 import io.swagger.codegen.v3.config.CodegenConfigurator;
 import io.swagger.codegen.v3.generators.typescript.AbstractTypeScriptClientCodegen;
-import io.swagger.parser.OpenAPIParser;
 import io.swagger.util.Json;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -336,8 +335,8 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
                     configurator.getInputSpecURL(), authorizationValues);
             ParseOptions options = new ParseOptions();
             options.setResolve(true);
-            return new OpenAPIParser().readContents(inputSpec,
-                    authorizationValues, options);
+            return null;
+                    // MCM new OpenAPIParser().readContents(inputSpec, authorizationValues, options);
         } catch (Exception e) {
             throw new IllegalStateException(
                     "Unexpected error while generating vaadin-connect TypeScript service wrappers. "
