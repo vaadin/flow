@@ -364,6 +364,8 @@ public final class DevModeHandler implements Serializable {
             // Copies response payload
             writeStream(response.getOutputStream(),
                     connection.getInputStream());
+        } else if (responseCode < 400) {
+            response.setStatus(responseCode);
         } else {
             // Copies response code
             response.sendError(responseCode);

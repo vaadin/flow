@@ -19,17 +19,17 @@ import java.io.File;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.internal.ExportsWebComponent;
 import com.vaadin.flow.migration.ClassPathIntrospector;
 import com.vaadin.flow.server.webcomponent.WebComponentModulesWriter;
 
 /**
  * Generates embeddable web component files in bower production mode, hiding the
- * * complexity caused by using a different class loader.
+ * complexity caused by using a different class loader.
  *
  * Uses {@link com.vaadin.flow.server.webcomponent.WebComponentModulesWriter} to
  * generate web component modules files from
- * {@link com.vaadin.flow.component.WebComponentExporter} implementations found
+ * {@link com.vaadin.flow.component.internal.ExportsWebComponent} implementations found
  * by {@link com.vaadin.flow.migration.ClassPathIntrospector}.
  * 
  * @author Vaadin Ltd.
@@ -41,8 +41,9 @@ public class WebComponentModulesGenerator extends ClassPathIntrospector {
     /**
      * Creates a new instances and stores the {@code introspector} to be used
      * for locating
-     * {@link com.vaadin.flow.server.webcomponent.WebComponentModulesWriter} and
-     * {@link com.vaadin.flow.component.WebComponentExporter} classes.
+     * {@link com.vaadin.flow.server.webcomponent.WebComponentModulesWriter}
+     * class and {@link com.vaadin.flow.component.internal.ExportsWebComponent}
+     * implementations.
      *
      * @param introspector
      *            {@link com.vaadin.flow.migration.ClassPathIntrospector}
@@ -56,7 +57,7 @@ public class WebComponentModulesGenerator extends ClassPathIntrospector {
      * Collects
      * {@link com.vaadin.flow.server.webcomponent.WebComponentModulesWriter}
      * class and classes that extend
-     * {@link com.vaadin.flow.component.WebComponentExporter} using {@code
+     * {@link com.vaadin.flow.component.internal.ExportsWebComponent} using {@code
      * inspector}. Generates web component modules and places the into the
      * {@code outputDirectory}.
      *
@@ -67,7 +68,7 @@ public class WebComponentModulesGenerator extends ClassPathIntrospector {
      *             if {@code inspector} cannot locate required classes
      */
     public Set<File> generateWebComponentModules(File outputDirectory) {
-        Set<Class<?>> exporterClasses = getSubtypes(WebComponentExporter.class)
+        Set<Class<?>> exporterClasses = getSubtypes(ExportsWebComponent.class)
                 .collect(Collectors.toSet());
 
         return WebComponentModulesWriter.DirectoryWriter

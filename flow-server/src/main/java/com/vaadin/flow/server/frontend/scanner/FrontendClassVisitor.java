@@ -22,6 +22,7 @@ import java.util.Set;
 import net.bytebuddy.jar.asm.AnnotationVisitor;
 import net.bytebuddy.jar.asm.ClassVisitor;
 import net.bytebuddy.jar.asm.FieldVisitor;
+import net.bytebuddy.jar.asm.Handle;
 import net.bytebuddy.jar.asm.MethodVisitor;
 import net.bytebuddy.jar.asm.Opcodes;
 import net.bytebuddy.jar.asm.Type;
@@ -94,6 +95,30 @@ final class FrontendClassVisitor extends ClassVisitor {
         public void visitLdcInsn(Object value) {
             if (value instanceof Type) {
                 addSignatureToClasses(children, value.toString());
+            }
+        }
+
+        // Visit dynamic invocations and method references. In particular, we
+        // are interested in the case Supplier<Component> s = MyComponent::new;
+        // flow #6524
+        @Override
+        public void visitInvokeDynamicInsn(String name, String descriptor, Handle bootstrapMethodHandle, Object... bootstrapMethodArguments) {
+            addSignatureToClasses(children, descriptor);
+            addSignatureToClasses(children, bootstrapMethodHandle.getOwner());
+            addSignatureToClasses(children, bootstrapMethodHandle.getDesc());
+            for (Object obj : bootstrapMethodArguments) {
+                if (obj instanceof Type) {
+                    addSignatureToClasses(children, obj.toString());
+                } else if (obj instanceof Handle) {
+                    // The owner of the Handle is the reference information
+                    addSignatureToClasses(children, ((Handle) obj).getOwner());
+                    // the descriptor for the Handle won't be scanned, as it
+                    // adds from +10% to 40%  to the execution time and does not
+                    // affect the fix in itself
+                }
+                // the case for ConstantDynamic is also skipped for
+                // performance reasons. It does not directly affect the fix
+                // and slows down the execution.
             }
         }
     }
@@ -189,6 +214,10 @@ final class FrontendClassVisitor extends ClassVisitor {
     public void visit(int version, int access, String name, String signature,
             String superName, String[] interfaces) {
         addSignatureToClasses(children, superName);
+
+        for (String implementedInterface : interfaces) {
+            addSignatureToClasses(children, implementedInterface);
+        }
     }
 
     // Executed for each method defined in the class.
@@ -198,6 +227,7 @@ final class FrontendClassVisitor extends ClassVisitor {
         addSignatureToClasses(children, descriptor);
         return methodVisitor;
     }
+
 
     // Executed for each annotation in the class.
     @Override

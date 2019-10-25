@@ -71,7 +71,6 @@ public class TaskUpdateImports extends NodeUpdater {
 
     private final File frontendDirectory;
     private final FrontendDependenciesScanner fallbackScanner;
-    private final ClassFinder finder;
     private final File tokenFile;
     private final JsonObject tokenFileData;
 
@@ -101,7 +100,33 @@ public class TaskUpdateImports extends NodeUpdater {
         @Override
         protected void writeImportLines(List<String> lines) {
             if (fallBackImports != null) {
-                addLines(lines, LOAD_FALLBACK);
+                lines.add(
+                        "var scripts = document.getElementsByTagName('script');");
+                lines.add("var thisScript;");
+                lines.add(
+                        "var elements = document.getElementsByTagName('script');");
+                lines.add("for (var i = 0; i < elements.length; i++) {");
+                lines.add("    var script = elements[i];");
+                lines.add(
+                        "    if (script.getAttribute('type')=='module' && script.getAttribute('data-app-id') && !script['vaadin-bundle']) {");
+                lines.add("        thisScript = script;break;");
+                lines.add("     }");
+                lines.add("}");
+                lines.add("if (!thisScript) {");
+                lines.add(
+                        "    throw new Error('Could not find the bundle script to identify the application id');");
+                lines.add("}");
+                lines.add("thisScript['vaadin-bundle'] = true;");
+                lines.add(
+                        "if (!window.Vaadin.Flow.fallbacks) { window.Vaadin.Flow.fallbacks={}; }");
+                lines.add("var fallbacks = window.Vaadin.Flow.fallbacks;");
+                lines.add(
+                        "fallbacks[thisScript.getAttribute('data-app-id')] = {}");
+                lines.add(
+                        "fallbacks[thisScript.getAttribute('data-app-id')].loadFallback = function loadFallback(){");
+                lines.add("   return import('./" + fallBackImports.getName()
+                        + "');");
+                lines.add("}");
             }
             try {
                 updateImportsFile(generatedFlowImports, lines);
@@ -322,7 +347,6 @@ public class TaskUpdateImports extends NodeUpdater {
         super(finder, frontendDepScanner, npmFolder, generatedPath);
         this.frontendDirectory = frontendDirectory;
         fallbackScanner = fallBackScannerProvider.apply(finder);
-        this.finder = finder;
         this.tokenFile = tokenFile;
         this.tokenFileData = tokenFileData;
     }

@@ -1,0 +1,25 @@
+{
+  "errors": [],
+  "warnings": [],
+  "version": "4.29.1",
+  "hash": "64bb80639ef116681818",
+  "time": 1148,
+  "builtAt": 1549540586721,
+  "publicPath": "",
+  "outputPath": "/Volumes/Framework/updates/skeleton-starter-flow/src/main/webapp/frontend/dist",
+  "assetsByChunkName" :{
+    "index": "build/index-1111.cache.js",
+    "index.es5": "build/index.es5-2222.cache.js"
+  },
+  "assets": [
+    {
+      "name": "0.fragment.js",
+      "size": 618382,
+      "chunks": [
+        0
+      ],
+      "chunkNames": [],
+      "emitted": true
+    }
+  ]
+}

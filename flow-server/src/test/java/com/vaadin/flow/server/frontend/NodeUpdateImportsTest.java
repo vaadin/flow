@@ -43,6 +43,7 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner.Front
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
@@ -162,7 +163,10 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         // fallback chunk load function is generated
         Assert.assertThat(mainContent, CoreMatchers.containsString(
-                "window.Vaadin.Flow.loadFallback = () => import('./generated-flow-imports-fallback.js');"));
+                "fallbacks[thisScript.getAttribute('data-app-id')].loadFallback = function loadFallback(){"));
+
+        Assert.assertThat(mainContent, CoreMatchers.containsString(
+                "return import('./generated-flow-imports-fallback.js');"));
 
         assertTrue(fallBackImportsFile.exists());
 
@@ -268,7 +272,10 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         // fallback chunk load function is generated
         Assert.assertThat(mainContent, CoreMatchers.containsString(
-                "window.Vaadin.Flow.loadFallback = () => import('./generated-flow-imports-fallback.js');"));
+                "fallbacks[thisScript.getAttribute('data-app-id')].loadFallback = function loadFallback(){"));
+
+        Assert.assertThat(mainContent, CoreMatchers.containsString(
+                "return import('./generated-flow-imports-fallback.js');"));
 
         // ============== check fallback generated imports file ============
 
@@ -333,14 +340,14 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void noFallBackScanner_fallbackIsNotImportedEvenIfTheFileExists() throws Exception {
+    public void noFallBackScanner_fallbackIsNotImportedEvenIfTheFileExists()
+            throws Exception {
         Stream<Class<?>> classes = Stream.concat(
                 Stream.of(NodeTestComponents.class.getDeclaredClasses()),
                 Stream.of(ExtraNodeTestComponents.class.getDeclaredClasses()));
         ClassFinder classFinder = new DefaultClassFinder(
                 new URLClassLoader(getClassPath()),
                 classes.toArray(Class<?>[]::new));
-
 
         // create fallback imports file:
         // it is present after generated but the user is now running
@@ -369,9 +376,8 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 Charset.defaultCharset());
 
         // fallback file is not imported in generated-flow-imports
-        Assert.assertThat(mainContent,
-                CoreMatchers.not(CoreMatchers.containsString(
-                        FrontendUtils.FALLBACK_IMPORTS_NAME)));
+        Assert.assertThat(mainContent, CoreMatchers.not(CoreMatchers
+                .containsString(FrontendUtils.FALLBACK_IMPORTS_NAME)));
     }
 
     private void assertTokenFileWithFallBack(JsonObject object)

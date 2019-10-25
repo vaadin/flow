@@ -80,14 +80,14 @@ public class FrontendProtocolIT extends ChromeBrowserTest {
         Assert.assertEquals("File loaded from property-defined path",
                 getComponentInnerText());
 
-        Assert.assertEquals(
-                getRootURL()
-                        + "/frontend/com/vaadin/flow/uitest/components/frontend-protocol.html",
+        Assert.assertEquals(getRootURL()
+                + "/frontend/com/vaadin/flow/uitest/components/frontend-protocol.html",
                 executeClientSideResolveUri());
     }
 
     private Object executeClientSideResolveUri() {
-        return executeScript("return window.Vaadin.Flow.resolveUri(arguments[0]);",
+        return executeScript(
+                "return window.Vaadin.Flow.clients[window.Vaadin.Flow.getAppIds()[0].replace(/-\\d+$/, '')].resolveUri(arguments[0]);",
                 "frontend://components/frontend-protocol.html");
     }
 

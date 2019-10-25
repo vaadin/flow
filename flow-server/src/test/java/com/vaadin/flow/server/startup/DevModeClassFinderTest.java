@@ -27,7 +27,7 @@ import java.util.stream.Stream;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.internal.ExportsWebComponent;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
@@ -56,7 +56,7 @@ public class DevModeClassFinderTest {
             Route.class,
             UIInitListener.class,
             VaadinServiceInitListener.class,
-            WebComponentExporter.class,
+            ExportsWebComponent.class,
             NpmPackage.class,
             NpmPackage.Container.class,
             JsModule.class,

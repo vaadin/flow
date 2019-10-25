@@ -30,7 +30,7 @@
         <module>flow-tests</module>
         <module>flow-server-production-mode</module>
         <module>flow-server-compatibility-mode</module>
-        <module>flow-components-parent</module>
+        <module>flow-component-demo-helpers</module>
         <module>flow-migration</module>
         <module>flow-maven-plugin</module>
         <module>flow-test-generic</module>
@@ -121,7 +121,7 @@
         <atmosphere.runtime.version>2.4.30.slf4jvaadin1</atmosphere.runtime.version>
 
         <!-- OSGi -->
-        <!-- Note: the parserVersion value is set by build-helper-maven-plugin  -->
+        <!-- Note: the parserVersion value is set by build-helper-maven-plugin -->
         <osgi.bundle.version>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}</osgi.bundle.version>
         <bnd.version>3.3.0</bnd.version>
         <osgi.core.version>6.0.0</osgi.core.version>
@@ -131,7 +131,8 @@
     </properties>
 
     <repositories>
-        <!-- The order of definitions matters. Explicitly defining central here to make sure it has the highest priority. -->
+        <!-- The order of definitions matters. Explicitly defining central 
+            here to make sure it has the highest priority. -->
         <repository>
             <id>central</id>
             <url>https://repo.maven.apache.org/maven2</url>
@@ -163,7 +164,8 @@
     </repositories>
 
     <pluginRepositories>
-        <!-- The order of definitions matters. Explicitly defining central here to make sure it has the highest priority. -->
+        <!-- The order of definitions matters. Explicitly defining central 
+            here to make sure it has the highest priority. -->
         <pluginRepository>
             <id>central</id>
             <url>https://repo.maven.apache.org/maven2</url>
@@ -246,6 +248,13 @@
                 <artifactId>polymer</artifactId>
                 <version>${polymer.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>net.bytebuddy</groupId>
+                <artifactId>byte-buddy</artifactId>
+                <version>1.10.1</version>
+            </dependency>
+
 
             <!-- Test dependencies -->
             <dependency>
@@ -520,7 +529,7 @@
                         <threadCount>2</threadCount>
                     </configuration>
                 </plugin>
-                <!--This plugin's configuration is used to store Eclipse
+                <!--This plugin's configuration is used to store Eclipse 
                     m2e settings only. It has no influence on the Maven build itself. -->
                 <plugin>
                     <groupId>org.eclipse.m2e</groupId>

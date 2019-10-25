@@ -22,7 +22,6 @@ import com.vaadin.flow.router.Route;
 @Route("com.vaadin.flow.testnpmonlyfeatures.bytecodescanning.ByteCodeScanningView")
 public class ByteCodeScanningView extends Div {
 
-    public static final String MODE_LABEL_ID = "modeLabel";
     public static final String COMPONENT_ID = "myButton";
 
     public ByteCodeScanningView() throws Exception {

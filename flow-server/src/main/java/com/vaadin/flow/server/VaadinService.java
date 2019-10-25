@@ -396,7 +396,7 @@ public abstract class VaadinService implements Serializable {
 
     private boolean hasWebComponentConfigurations() {
         WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
-                .getInstance(this.getContext());
+                .getInstance(getContext());
         return registry.hasConfigurations();
     }
 

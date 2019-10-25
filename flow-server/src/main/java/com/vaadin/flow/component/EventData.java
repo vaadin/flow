@@ -23,12 +23,14 @@ import java.lang.annotation.Target;
 
 import com.vaadin.flow.dom.DomListenerRegistration;
 
+import elemental.json.JsonValue;
+
 /**
  * Maps data from a DOM event to a {@link ComponentEvent}.
  * <p>
- * This annotation should be added to the DOM event constructor in a
- * {@link ComponentEvent}, mapped using @{@link DomEvent}. See the @
- * {@link DomEvent} documentation for more information.
+ * This annotation should be added to parameters in the DOM event constructor in
+ * a {@link ComponentEvent}, mapped using @{@link DomEvent}. See
+ * the @{@link DomEvent} documentation for more information.
  * <p>
  * The annotation {@link #value()} will be evaluated as JavaScript when the
  * event is handled in the browser. The expression is evaluated in a context
@@ -36,6 +38,10 @@ import com.vaadin.flow.dom.DomListenerRegistration;
  * registered and <code>event</code> refers to the fired event. The value of the
  * expression is passed back to the server and injected into the annotated
  * {@link ComponentEvent} constructor parameter.
+ * <p>
+ * Supported parameter types are {@link String}, {@link JsonValue},
+ * {@link Integer}, {@link Double}, {@link Boolean} and their respective
+ * primitive types.
  *
  * @see DomEvent
  * @see DomListenerRegistration#addEventData(String)

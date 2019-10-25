@@ -23,6 +23,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.Future;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,6 +95,9 @@ public class UI extends Component
         implements PollNotifier, HasComponents, RouterLayout {
 
     private static final String NULL_LISTENER = "Listener can not be 'null'";
+
+    private static final Pattern APP_ID_REPLACE_PATTERN = Pattern
+            .compile("-\\d+$");
 
     /**
      * The id of this UI, used to find the server side instance of the UI form
@@ -218,7 +222,7 @@ public class UI extends Component
 
         String appId = getSession().getService().getMainDivId(getSession(),
                 request);
-        appId = appId.substring(0, appId.indexOf('-'));
+        appId = APP_ID_REPLACE_PATTERN.matcher(appId).replaceAll("");
         getInternals().setAppId(appId);
 
         // Add any dependencies from the UI class
