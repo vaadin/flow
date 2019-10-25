@@ -22,8 +22,8 @@
         <commons.configuration.version>2.6</commons.configuration.version>
         <swagger.codegen.version>3.0.2</swagger.codegen.version>
         <swagger.codegen.generators.version>1.0.2</swagger.codegen.generators.version>
-        <!-- <test>CompositeTest,CompositeTextNodeTest,OpenApiSpecBasedTests,OpenApiSpecBasedTests</test> -->
-        <test>CompositeTest,CompositeTextNodeTest</test>
+        <test>CompositeTest,CompositeTextNodeTest,OpenApiSpecBasedTests,OpenApiSpecBasedTests</test>
+        <!-- <test>CompositeTest,CompositeTextNodeTest</test> -->
     </properties>
 
     <dependencies>
@@ -245,10 +245,6 @@
                     <groupId>io.swagger.parser.v3</groupId>
                     <artifactId>swagger-parser</artifactId>
                 </exclusion>
-                <!-- <exclusion>
-                    <groupId>io.swagger.parser.v3</groupId>
-                    <artifactId>swagger-parser-v2-converter</artifactId>
-                </exclusion> -->
 
                 <!-- not used -->
                 <!-- <exclusion>
