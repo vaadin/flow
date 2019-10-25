@@ -200,14 +200,14 @@
             <artifactId>jackson-databind</artifactId>
             <version>${jackson.version}</version>
         </dependency>
-        <!-- Needed for security annotations -->
+        <!-- connect-security annotations -->
         <dependency>
             <groupId>javax.annotation</groupId>
             <artifactId>javax.annotation-api</artifactId>
             <version>${javax.annotation.api.version}</version>
         </dependency>
 
-        <!-- vaadin-connect generator-->
+        <!-- connect generator-->
         <dependency>
             <groupId>com.github.javaparser</groupId>
             <artifactId>javaparser-symbol-solver-core</artifactId>
@@ -223,28 +223,44 @@
             <artifactId>swagger-codegen</artifactId>
             <version>${swagger.codegen.version}</version>
             <exclusions>
+                <!-- Cause problems when running tests in flow-maven-plugin -->
                 <exclusion>
                     <groupId>ch.qos.logback</groupId>
                     <artifactId>logback-classic</artifactId>
                 </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>io.swagger.codegen.v3</groupId>
-            <artifactId>swagger-codegen-generators</artifactId>
-            <version>${swagger.codegen.generators.version}</version>
-            <exclusions>
                 <exclusion>
                     <groupId>ch.qos.logback</groupId>
-                    <artifactId>logback-classic</artifactId>
+                    <artifactId>logback-core</artifactId>
+                </exclusion>
+
+                <!-- This causes failures in `CompositeTest`, we maintain
+                     our own implementation of OpenAPIParser instead -->
+                <exclusion>
+                    <groupId>io.swagger.codegen.v3</groupId>
+                    <artifactId>swagger-codegen-generators</artifactId>
+                </exclusion>
+
+                <!-- These transitive dependencies are not used -->
+                <!-- TODO: it might be other transitive dependencies that can be excluded -->
+                <exclusion>
+                    <groupId>io.swagger</groupId>
+                    <artifactId>swagger-parser</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.swagger.parser.v3</groupId>
+                    <artifactId>swagger-parser-v3</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.swagger.core.v3</groupId>
+                    <artifactId>swagger-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.swagger.parser.v3</groupId>
+                    <artifactId>swagger-parser-core</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
-        <!-- Need to be revised and removed to avoid conflicts-->
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-        </dependency>
+
         <!-- Connect Testing dependendies -->
 
         <!-- TODO: re-enable tests mocking final classes in the connect
@@ -270,6 +286,7 @@
             <version>${spring.autoconfigure.version}</version>
             <scope>test</scope>
         </dependency>
+
     </dependencies>
     <build>
         <resources>
