@@ -232,11 +232,11 @@
                     <artifactId>logback-core</artifactId>
                 </exclusion>
 
-                <!-- This causes failures in `CompositeTest`, we maintain
-                     our own implementation of OpenAPIParser instead -->
+                <!-- This causes failures in `CompositeTest`, thus we maintain
+                     our own implementation of OpenAPIParser in src -->
                 <exclusion>
-                    <groupId>io.swagger.codegen.v3</groupId>
-                    <artifactId>swagger-codegen-generators</artifactId>
+                    <groupId>io.swagger.parser.v3</groupId>
+                    <artifactId>swagger-parser</artifactId>
                 </exclusion>
 
                 <!-- These transitive dependencies are not used -->
@@ -258,6 +258,11 @@
                     <artifactId>swagger-parser-core</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>io.swagger.codegen.v3</groupId>
+            <artifactId>swagger-codegen-generators</artifactId>
+            <version>${swagger.codegen.generators.version}</version>
         </dependency>
 
         <!-- Connect Testing dependendies -->
