@@ -144,7 +144,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
                 response.setContentType(CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8);
                 responder = () ->
                         generateNPMResponse(webComponentConfiguration.getTag(),
-                                request);
+                                request, response);
             }
             if (cache == null) {
                 generated = responder.get();
@@ -252,7 +252,8 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
      *         current VaadinRequest
      * @return npm response script
      */
-    protected String generateNPMResponse(String tagName, VaadinRequest request) {
+    protected String generateNPMResponse(String tagName, VaadinRequest request,
+            VaadinResponse response) {
         // get the running script
         return getThisScript(tagName) + "var scriptUri = thisScript.src;"
                 + "var index = scriptUri.lastIndexOf('" + WEB_COMPONENT_PATH
