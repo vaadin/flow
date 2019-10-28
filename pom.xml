@@ -701,7 +701,7 @@
                 <module>flow-test-util</module>
                 <module>flow-tests</module>
                 <module>flow-server-production-mode</module>
-                <module>flow-components-parent</module>
+                <module>flow-component-demo-helpers</module>
                 <module>build-tools</module>
             </modules>
         </profile>
