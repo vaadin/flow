@@ -1,0 +1,41 @@
+import ExternalDocumentation from '../ExternalDocumentation';
+import Discriminator from './Discriminator';
+import Schema from './Schema';
+import XML from './XML';
+
+export default interface Schema {
+  ref?: string | null;
+  _default?: any | null;
+  _enum?: Array<any | null> | null;
+  additionalProperties?: any | null;
+  deprecated?: boolean | null;
+  description?: string | null;
+  discriminator?: Discriminator | null;
+  example?: any | null;
+  exclusiveMaximum?: boolean | null;
+  exclusiveMinimum?: boolean | null;
+  extensions?: { [key: string]: any | null; } | null;
+  externalDocs?: ExternalDocumentation | null;
+  format?: string | null;
+  maxItems?: number | null;
+  maxLength?: number | null;
+  maxProperties?: number | null;
+  maximum?: number | null;
+  minItems?: number | null;
+  minLength?: number | null;
+  minProperties?: number | null;
+  minimum?: number | null;
+  multipleOf?: number | null;
+  name?: string | null;
+  not?: Schema | null;
+  nullable?: boolean | null;
+  pattern?: string | null;
+  properties?: { [key: string]: Schema | null; } | null;
+  readOnly?: boolean | null;
+  required?: Array<string | null> | null;
+  title?: string | null;
+  type?: string | null;
+  uniqueItems?: boolean | null;
+  writeOnly?: boolean | null;
+  xml?: XML | null;
+}
