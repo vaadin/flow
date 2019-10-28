@@ -339,7 +339,11 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
 
     /**
      * Returns the service url needed for initialising the UI.
-     * @param request Request.
+     * 
+     * @param request
+     *            the request object
+     * @param response
+     *            the response object
      * @return Service url for the given request.
      */
     protected String getServiceUrl(VaadinRequest request,

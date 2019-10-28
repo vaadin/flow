@@ -250,6 +250,8 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
      *         tag name of component
      * @param request
      *         current VaadinRequest
+     * @param response
+     *         current VaadinResponse
      * @return npm response script
      */
     protected String generateNPMResponse(String tagName, VaadinRequest request,
