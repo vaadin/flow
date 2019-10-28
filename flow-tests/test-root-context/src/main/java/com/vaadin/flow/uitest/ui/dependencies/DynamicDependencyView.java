@@ -16,27 +16,42 @@
 package com.vaadin.flow.uitest.ui.dependencies;
 
 import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.Route;
 
 @Route("com.vaadin.flow.uitest.ui.dependencies.DynamicDependencyView")
 public class DynamicDependencyView extends Div {
+    private final Div newComponent = new Div();
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         if (attachEvent.isInitialAttach()) {
-            Div div = new Div();
-            div.setId("new-component");
-            add(div);
+            newComponent.setId("new-component");
+            add(newComponent);
 
             attachEvent.getUI().getPage()
                     .addDynamicImport("return new Promise( "
-                            + " function( resolve, regject){ "
+                            + " function( resolve, reject){ "
                             + "   var div = document.createElement(\"div\");\n"
                             + "     div.setAttribute('id','dep');\n"
                             + "     div.textContent = document.querySelector('#new-component')==null;\n"
                             + "     document.body.appendChild(div);resolve('');}"
                             + ");");
+
+            add(createLoadButton("Load non-promise dependency",
+                    "document.querySelector('#new-component').textContent = 'import has been run'"));
+            add(createLoadButton("Load throwing dependency", "null.foo"));
+            add(createLoadButton("Load dependency throwing in promise",
+                    "return new Promise(function(resolve, reject) { reject(Error('fail on purpose')); });"));
         }
+    }
+
+    private NativeButton createLoadButton(String name, String expression) {
+        return new NativeButton(name, event -> {
+            UI.getCurrent().getPage().addDynamicImport(expression);
+            newComponent.setText("Div updated from button: " + name);
+        });
     }
 }
