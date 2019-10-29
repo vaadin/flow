@@ -42,6 +42,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.HasValidation;
 import com.vaadin.flow.component.HasValue;
@@ -985,6 +986,8 @@ public class Binder<BEAN> implements Serializable {
         private Registration onValueChange;
         private boolean valueInit = false;
 
+        private Registration onInvalidChange;
+
         /**
          * Contains all converters and validators chained together in the
          * correct order.
@@ -1001,6 +1004,13 @@ public class Binder<BEAN> implements Serializable {
 
             onValueChange = getField().addValueChangeListener(
                     event -> handleFieldValueChange(event));
+
+            if (field instanceof HasElement) {
+                onInvalidChange = ((HasElement) field).getElement()
+                        .addPropertyChangeListener("invalid", e -> {
+                            binder.validate();
+                        });
+            }
 
             this.getter = getter;
             this.setter = setter;
@@ -1058,6 +1068,11 @@ public class Binder<BEAN> implements Serializable {
             if (binder != null) {
                 binder.removeBindingInternal(this);
                 binder = null;
+            }
+
+            if (onInvalidChange != null) {
+                onInvalidChange.remove();
+                onInvalidChange = null;
             }
 
             field = null;
@@ -2334,7 +2349,6 @@ public class Binder<BEAN> implements Serializable {
      */
     protected void handleValidationStatus(BindingValidationStatus<?> status) {
         HasValue<?, ?> source = status.getField();
-        clearError(source);
         if (status.isError()) {
             Optional<ValidationResult> firstError = status
                     .getValidationResults().stream()
@@ -2348,6 +2362,7 @@ public class Binder<BEAN> implements Serializable {
                         .ifPresent(result -> handleError(source, result));
             }
         } else {
+            clearError(source);
             // Show first non-error ValidationResult message.
             status.getValidationResults().stream()
                     .filter(result -> result.getErrorLevel().isPresent())
