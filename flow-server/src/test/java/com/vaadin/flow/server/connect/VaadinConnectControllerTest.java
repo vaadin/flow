@@ -60,6 +60,7 @@ public class VaadinConnectControllerTest {
     private static final Method TEST_METHOD;
     private static final Method TEST_VALIDATION_METHOD;
     private HttpServletRequest requestMock;
+
     static {
         TEST_METHOD = Stream.of(TEST_SERVICE.getClass().getDeclaredMethods())
                 .filter(method -> "testMethod".equals(method.getName()))
@@ -126,6 +127,7 @@ public class VaadinConnectControllerTest {
         requestMock = mock(HttpServletRequest.class);
         when(requestMock.getUserPrincipal()).thenReturn(mock(Principal.class));
     }
+
     @Test
     public void should_ThrowException_When_ContextHasNoBeanData() {
         String beanName = "test";
@@ -271,16 +273,7 @@ public class VaadinConnectControllerTest {
 
     @Test
     public void should_NotCallMethod_When_UserPrincipalIsNull() {
-        when(requestMock.getUserPrincipal()).thenReturn(null);
-        VaadinConnectAccessChecker accessCheckerMock = new VaadinConnectAccessChecker();
-
-        VaadinServiceNameChecker nameCheckerMock = mock(
-                VaadinServiceNameChecker.class);
-        when(nameCheckerMock.check(TEST_SERVICE_NAME)).thenReturn(null);
-
-        VaadinConnectController vaadinController = createVaadinController(
-                TEST_SERVICE, new ObjectMapper(), accessCheckerMock,
-                nameCheckerMock);
+        VaadinConnectController vaadinController = createVaadinControllerWithoutPrincipal();
         ResponseEntity<String> response = vaadinController.serveVaadinService(
                 TEST_SERVICE_NAME, TEST_METHOD.getName(),
                 createRequestParameters("{\"value\": 222}"), requestMock);
@@ -294,16 +287,7 @@ public class VaadinConnectControllerTest {
 
     @Test
     public void should_CallMethodAnonymously_When_UserPrincipalIsNullAndAnonymousAllowed() {
-        when(requestMock.getUserPrincipal()).thenReturn(null);
-        VaadinConnectAccessChecker accessCheckerMock = new VaadinConnectAccessChecker();
-
-        VaadinServiceNameChecker nameCheckerMock = mock(
-                VaadinServiceNameChecker.class);
-        when(nameCheckerMock.check(TEST_SERVICE_NAME)).thenReturn(null);
-
-        VaadinConnectController vaadinController = createVaadinController(
-                TEST_SERVICE, new ObjectMapper(), accessCheckerMock,
-                nameCheckerMock);
+        VaadinConnectController vaadinController = createVaadinControllerWithoutPrincipal();
         ResponseEntity<String> response = vaadinController.serveVaadinService(
                 TEST_SERVICE_NAME, "testAnonymousMethod",
                 createRequestParameters("{}"), requestMock);
@@ -866,6 +850,18 @@ public class VaadinConnectControllerTest {
                 .thenReturn((Class) serviceClass);
         return new VaadinConnectController(vaadinServiceMapper, accessChecker,
                 serviceNameChecker, contextMock);
+    }
+
+    private VaadinConnectController createVaadinControllerWithoutPrincipal() {
+        when(requestMock.getUserPrincipal()).thenReturn(null);
+        VaadinConnectAccessChecker accessCheckerMock = new VaadinConnectAccessChecker();
+
+        VaadinServiceNameChecker nameCheckerMock = mock(
+                VaadinServiceNameChecker.class);
+        when(nameCheckerMock.check(TEST_SERVICE_NAME)).thenReturn(null);
+
+        return createVaadinController(TEST_SERVICE, new ObjectMapper(),
+                accessCheckerMock, nameCheckerMock);
     }
 
     private Method createServiceMethodMockThatThrows(Object argument,
