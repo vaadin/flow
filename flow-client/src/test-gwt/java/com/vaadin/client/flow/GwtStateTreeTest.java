@@ -16,6 +16,7 @@
 package com.vaadin.client.flow;
 
 import com.google.gwt.core.client.JavaScriptObject;
+
 import com.vaadin.client.ClientEngineTestBase;
 import com.vaadin.client.InitialPropertiesHandler;
 import com.vaadin.client.Registry;
@@ -50,7 +51,7 @@ public class GwtStateTreeTest extends ClientEngineTestBase {
 
         @Override
         public void sendTemplateEventMessage(StateNode node, String methodName,
-                JsonArray array) {
+                JsonArray array, int promiseId) {
             this.node = node;
             this.methodName = methodName;
             args = array;
@@ -79,7 +80,7 @@ public class GwtStateTreeTest extends ClientEngineTestBase {
         StateNode node = new StateNode(0, tree);
         tree.registerNode(node);
         JsArray array = getArgArray();
-        tree.sendTemplateEventToServer(node, "foo", array);
+        tree.sendTemplateEventToServer(node, "foo", array, -1);
 
         JsonObject object = Json.createObject();
         object.put("key", "value");
@@ -104,7 +105,7 @@ public class GwtStateTreeTest extends ClientEngineTestBase {
         tree.registerNode(node);
 
         Reactive.addPostFlushListener(() -> {
-            tree.sendTemplateEventToServer(node, "click", null);
+            tree.sendTemplateEventToServer(node, "click", null, -1);
             TestServerConnector serverConnector = (TestServerConnector) registry
                     .getServerConnector();
             assertNull(
