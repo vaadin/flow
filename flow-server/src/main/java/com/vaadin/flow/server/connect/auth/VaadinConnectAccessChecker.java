@@ -19,10 +19,12 @@ package com.vaadin.flow.server.connect.auth;
 import javax.annotation.security.DenyAll;
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
+import javax.servlet.http.HttpServletRequest;
 
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.security.Principal;
 
 /**
  * Component used for checking role-based ACL in Vaadin Services.
@@ -75,9 +77,8 @@ public class VaadinConnectAccessChecker {
      * @return an error String with an issue description, if any validation
      *         issues occur, {@code null} otherwise
      */
-    public String check(Method method) {
-        // NOP, will be implemented soon
-        return null;
+    public String check(Method method, HttpServletRequest request) {
+        return verifyAnonymousUser(method, request);
     }
 
     /**
@@ -98,6 +99,15 @@ public class VaadinConnectAccessChecker {
         }
         return hasSecurityAnnotation(method) ? method
                 : method.getDeclaringClass();
+    }
+
+    private String verifyAnonymousUser(Method method,
+            HttpServletRequest request) {
+        if (getSecurityTarget(method).isAnnotationPresent(
+                AnonymousAllowed.class) || request.getUserPrincipal() != null) {
+            return null;
+        }
+        return "Anonymous access is not allowed";
     }
 
     private boolean hasSecurityAnnotation(Method method) {

@@ -7,6 +7,7 @@ class TestComponent extends PolymerElement {
     return html`
         <button id="button">Click</button>
         <button id="connect" on-click="connect">Click</button>
+        <button id="connectAnonymous" on-click="connectAnonymous">Click anonymous</button>
         <div id="content"></div>
     `;
   }
@@ -21,5 +22,12 @@ class TestComponent extends PolymerElement {
       .then(response => this.$.content.textContent = response)
       .catch(error => this.$.content.textContent = 'Error:' + error);
   }
+
+  connectAnonymous(e) {
+      connectServices
+        .helloAnonymous()
+        .then(response => this.$.content.textContent = response)
+        .catch(error => this.$.content.textContent = 'Error:' + error);
+    }
 }
 customElements.define(TestComponent.is, TestComponent);

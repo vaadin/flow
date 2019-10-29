@@ -17,6 +17,7 @@ package com.vaadin.flow.connect;
 
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.VaadinRequest;
 
 @Route(value = "")
 public class VaadinView extends Div {

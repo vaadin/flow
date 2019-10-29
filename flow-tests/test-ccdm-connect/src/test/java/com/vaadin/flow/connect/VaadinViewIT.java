@@ -65,6 +65,18 @@ public class VaadinViewIT extends ChromeBrowserTest {
         WebElement content = testComponent.$(TestBenchElement.class).id("content");
         // Wait for the server connect response
         waitUntil(ExpectedConditions.textToBePresentInElement(content,
-                "Hello, Friend!"), 25);
+                "Anonymous access is not allowed"), 25);
+    }
+
+    @Test
+    public void should_requestAnonymously_connect_service() throws Exception {
+        WebElement button = testComponent.$(TestBenchElement.class).id(
+                "connectAnonymous");
+        button.click();
+
+        WebElement content = testComponent.$(TestBenchElement.class).id("content");
+        // Wait for the server connect response
+        waitUntil(ExpectedConditions.textToBePresentInElement(content,
+                "Hello, stranger!"), 25);
     }
 }
