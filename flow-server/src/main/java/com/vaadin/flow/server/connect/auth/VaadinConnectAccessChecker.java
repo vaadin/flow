@@ -24,7 +24,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.security.Principal;
 
 /**
  * Component used for checking role-based ACL in Vaadin Services.
@@ -74,6 +73,8 @@ public class VaadinConnectAccessChecker {
      *
      * @param method
      *            the vaadin service method to check ACL
+     * @param request
+     *            the request triggers the <code>method</code> invocation
      * @return an error String with an issue description, if any validation
      *         issues occur, {@code null} otherwise
      */

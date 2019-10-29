@@ -239,6 +239,8 @@ public class VaadinConnectController {
      * @param body
      *            optional request body, that should be specified if the method
      *            called has parameters
+     * @param request
+     *            the current request which triggers the service call
      * @return execution result as a JSON string or an error message string
      */
     @PostMapping(path = "/{service}/{method}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
