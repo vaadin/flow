@@ -35,6 +35,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import com.vaadin.flow.server.connect.auth.AnonymousAllowed;
 import com.vaadin.flow.server.connect.auth.VaadinConnectAccessChecker;
 import com.vaadin.flow.server.connect.exception.VaadinConnectException;
 import com.vaadin.flow.server.connect.exception.VaadinConnectValidationException;
@@ -95,6 +96,11 @@ public class VaadinConnectControllerTest {
         public void testMethodWithMultipleParameter(int number, String text,
                 Date date) {
             // no op
+        }
+
+        @AnonymousAllowed
+        public String testAnonymousMethod() {
+            return "Hello, anonymous user!";
         }
     }
 
@@ -261,6 +267,51 @@ public class VaadinConnectControllerTest {
         assertTrue(String.format("Invalid response body: '%s'", responseBody),
                 responseBody.contains(
                         TEST_METHOD.getParameterTypes()[0].getSimpleName()));
+    }
+
+    @Test
+    public void should_NotCallMethod_When_UserPrincipalIsNull() {
+        when(requestMock.getUserPrincipal()).thenReturn(null);
+        VaadinConnectAccessChecker accessCheckerMock = new VaadinConnectAccessChecker();
+
+        VaadinServiceNameChecker nameCheckerMock = mock(
+                VaadinServiceNameChecker.class);
+        when(nameCheckerMock.check(TEST_SERVICE_NAME)).thenReturn(null);
+
+        VaadinConnectController vaadinController = createVaadinController(
+                TEST_SERVICE, new ObjectMapper(), accessCheckerMock,
+                nameCheckerMock);
+        ResponseEntity<String> response = vaadinController.serveVaadinService(
+                TEST_SERVICE_NAME, TEST_METHOD.getName(),
+                createRequestParameters("{\"value\": 222}"), requestMock);
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        String responseBody = response.getBody();
+        assertNotNull("Response body should not be null", responseBody);
+        assertTrue("Should return unauthorized error",
+                responseBody.contains("Anonymous access is not allowed"));
+    }
+
+    @Test
+    public void should_CallMethodAnonymously_When_UserPrincipalIsNullAndAnonymousAllowed() {
+        when(requestMock.getUserPrincipal()).thenReturn(null);
+        VaadinConnectAccessChecker accessCheckerMock = new VaadinConnectAccessChecker();
+
+        VaadinServiceNameChecker nameCheckerMock = mock(
+                VaadinServiceNameChecker.class);
+        when(nameCheckerMock.check(TEST_SERVICE_NAME)).thenReturn(null);
+
+        VaadinConnectController vaadinController = createVaadinController(
+                TEST_SERVICE, new ObjectMapper(), accessCheckerMock,
+                nameCheckerMock);
+        ResponseEntity<String> response = vaadinController.serveVaadinService(
+                TEST_SERVICE_NAME, "testAnonymousMethod",
+                createRequestParameters("{}"), requestMock);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        String responseBody = response.getBody();
+        assertEquals("Should return message when calling anonymously",
+                "\"Hello, anonymous user!\"", responseBody);
     }
 
     @Test
