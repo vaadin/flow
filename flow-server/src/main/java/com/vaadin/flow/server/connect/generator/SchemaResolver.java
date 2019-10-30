@@ -55,30 +55,29 @@ class SchemaResolver {
             return createArraySchema(resolvedType);
         }
         if (isNumberType(resolvedType)) {
-            return new NumberSchema().nullable(!resolvedType.isPrimitive());
+            return new NumberSchema();
         } else if (isStringType(resolvedType)) {
-            return new StringSchema().nullable(true);
+            return new StringSchema();
         } else if (isCollectionType(resolvedType)) {
             return createCollectionSchema(resolvedType.asReferenceType());
         } else if (isBooleanType(resolvedType)) {
-            return new BooleanSchema().nullable(!resolvedType.isPrimitive());
+            return new BooleanSchema();
         } else if (isMapType(resolvedType)) {
             return createMapSchema(resolvedType);
         } else if (isDateType(resolvedType)) {
-            return new DateSchema().nullable(true);
+            return new DateSchema();
         } else if (isDateTimeType(resolvedType)) {
-            return new DateTimeSchema().nullable(true);
+            return new DateTimeSchema();
         } else if (isOptionalType(resolvedType)) {
             return createOptionalSchema(resolvedType.asReferenceType());
         } else if (isUnhandledJavaType(resolvedType)) {
-            return new ObjectSchema().nullable(true);
+            return new ObjectSchema();
         }
         return createUserBeanSchema(resolvedType);
     }
 
     private Schema createArraySchema(ResolvedType type) {
         ArraySchema array = new ArraySchema();
-        array.setNullable(true);
         array.items(parseResolvedTypeToSchema(
                 type.asArrayType().getComponentType()));
         return array;
@@ -86,7 +85,6 @@ class SchemaResolver {
 
     private Schema createCollectionSchema(ResolvedReferenceType type) {
         ArraySchema array = new ArraySchema();
-        array.setNullable(true);
         List<Pair<ResolvedTypeParameterDeclaration, ResolvedType>> typeParametersMap = type
                 .getTypeParametersMap();
         if (!typeParametersMap.isEmpty()) {
@@ -103,12 +101,15 @@ class SchemaResolver {
             nestedTypeSchema.setNullable(true);
             return nestedTypeSchema;
         } else {
-            return createNullableWrapperSchema(nestedTypeSchema);
+            ComposedSchema nullableSchema = new ComposedSchema();
+            nullableSchema.setNullable(true);
+            nullableSchema.setAllOf(Collections.singletonList(nestedTypeSchema));
+            return nullableSchema;
         }
     }
 
     private Schema createMapSchema(ResolvedType type) {
-        Schema mapSchema = new MapSchema().nullable(true);
+        Schema mapSchema = new MapSchema();
         List<Pair<ResolvedTypeParameterDeclaration, ResolvedType>> typeParametersMap = type
                 .asReferenceType().getTypeParametersMap();
         if (typeParametersMap.size() == 2) {
@@ -195,16 +196,9 @@ class SchemaResolver {
             foundTypes.put(qualifiedName, resolvedType.asReferenceType());
             Schema userBean = new ObjectSchema().name(qualifiedName)
                     .$ref(getFullQualifiedNameRef(qualifiedName));
-            return createNullableWrapperSchema(userBean);
+            return userBean;
         }
-        return new ObjectSchema().nullable(true);
-    }
-
-    private Schema createNullableWrapperSchema(Schema userBean) {
-        ComposedSchema nullableSchema = new ComposedSchema();
-        nullableSchema.setNullable(true);
-        nullableSchema.setAllOf(Collections.singletonList(userBean));
-        return nullableSchema;
+        return new ObjectSchema();
     }
 
     /**
