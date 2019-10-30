@@ -987,6 +987,7 @@ public class Binder<BEAN> implements Serializable {
         private boolean valueInit = false;
 
         private Registration onInvalidChange;
+        private boolean ignoreNextInvalidChange;
 
         /**
          * Contains all converters and validators chained together in the
@@ -1008,7 +1009,16 @@ public class Binder<BEAN> implements Serializable {
             if (field instanceof HasElement) {
                 onInvalidChange = ((HasElement) field).getElement()
                         .addPropertyChangeListener("invalid", e -> {
-                            binder.validate();
+                            if (ignoreNextInvalidChange) {
+                                // Invalid was changed by the Binder itself.
+                                ignoreNextInvalidChange = false;
+                            } else {
+                                // Invalid was changed by something else, most
+                                // likely the component implementation, so the
+                                // field should be revalidated with the Binder's
+                                // Validators.
+                                binder.validate();
+                            }
                         });
             }
 
@@ -2322,7 +2332,7 @@ public class Binder<BEAN> implements Serializable {
     protected void handleError(HasValue<?, ?> field, ValidationResult result) {
         if (field instanceof HasValidation) {
             HasValidation fieldWithValidation = (HasValidation) field;
-            fieldWithValidation.setInvalid(true);
+            setInvalid(fieldWithValidation, true);
             fieldWithValidation.setErrorMessage(result.getErrorMessage());
         }
     }
@@ -2336,8 +2346,18 @@ public class Binder<BEAN> implements Serializable {
     protected void clearError(HasValue<?, ?> field) {
         if (field instanceof HasValidation) {
             HasValidation fieldWithValidation = (HasValidation) field;
-            fieldWithValidation.setInvalid(false);
+            setInvalid(fieldWithValidation, false);
         }
+    }
+
+    private void setInvalid(HasValidation field, boolean invalid) {
+        if (field.isInvalid() == invalid) {
+            return;
+        }
+        getBindings().stream().filter(binding -> binding.getField() == field)
+                .findFirst()
+                .ifPresent(binding -> binding.ignoreNextInvalidChange = true);
+        field.setInvalid(invalid);
     }
 
     /**
