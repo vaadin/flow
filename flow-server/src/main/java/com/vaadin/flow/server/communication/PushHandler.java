@@ -200,7 +200,7 @@ public class PushHandler {
                 assert VaadinSession.getCurrent() == session;
             } catch (SessionExpiredException e) {
                 sendNotificationAndDisconnect(resource,
-                        VaadinService.createSessionExpiredJSON());
+                        VaadinService.createSessionExpiredJSON(true));
                 return;
             }
 
@@ -212,7 +212,7 @@ public class PushHandler {
 
                 if (ui == null) {
                     sendNotificationAndDisconnect(resource,
-                            VaadinService.createUINotFoundJSON());
+                            VaadinService.createUINotFoundJSON(true));
                 } else {
                     callback.run(resource, ui);
                 }

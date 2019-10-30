@@ -269,6 +269,11 @@ public class JsonConstants implements Serializable {
     public static final String META_SESSION_EXPIRED = "sessionExpired";
 
     /**
+     * Key used when the message is sent asynchronously via push channel.
+     */
+    public static final String META_ASYNC = "async";
+
+    /**
      * Key holding the debounce phase for an event data map from the client.
      */
     // "for" is a reserved keyword, which means that this cannot be a valid JS
