@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.connect.typeconversion;
 
+import com.vaadin.flow.server.connect.ExplicitNullableTypeChecker;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.runner.RunWith;
@@ -50,7 +51,8 @@ public abstract class BaseTypeConversionIT {
     public void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(new VaadinConnectController(
                 null, mock(VaadinConnectAccessChecker.class),
-                mock(VaadinServiceNameChecker.class), applicationContext))
+                mock(VaadinServiceNameChecker.class),
+                mock(ExplicitNullableTypeChecker.class), applicationContext))
                 .build();
         Assert.assertNotEquals(null, applicationContext);
     }
