@@ -1,11 +1,13 @@
 package com.vaadin.flow.server.connect;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.security.Principal;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -20,6 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.type.SimpleType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -32,6 +35,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import com.vaadin.flow.server.connect.auth.AnonymousAllowed;
 import com.vaadin.flow.server.connect.auth.VaadinConnectAccessChecker;
 import com.vaadin.flow.server.connect.exception.VaadinConnectException;
 import com.vaadin.flow.server.connect.exception.VaadinConnectValidationException;
@@ -55,6 +59,7 @@ public class VaadinConnectControllerTest {
             .getSimpleName();
     private static final Method TEST_METHOD;
     private static final Method TEST_VALIDATION_METHOD;
+    private HttpServletRequest requestMock;
 
     static {
         TEST_METHOD = Stream.of(TEST_SERVICE.getClass().getDeclaredMethods())
@@ -93,6 +98,11 @@ public class VaadinConnectControllerTest {
                 Date date) {
             // no op
         }
+
+        @AnonymousAllowed
+        public String testAnonymousMethod() {
+            return "Hello, anonymous user!";
+        }
     }
 
     @VaadinService("CustomService")
@@ -112,6 +122,12 @@ public class VaadinConnectControllerTest {
     @Rule
     public final ExpectedException exception = ExpectedException.none();
 
+    @Before
+    public void setUp() {
+        requestMock = mock(HttpServletRequest.class);
+        when(requestMock.getUserPrincipal()).thenReturn(mock(Principal.class));
+    }
+
     @Test
     public void should_ThrowException_When_ContextHasNoBeanData() {
         String beanName = "test";
@@ -120,7 +136,6 @@ public class VaadinConnectControllerTest {
         when(contextMock.getType(beanName)).thenReturn(null);
         when(contextMock.getBeansWithAnnotation(VaadinService.class))
                 .thenReturn(Collections.singletonMap(beanName, null));
-
         exception.expect(IllegalStateException.class);
         exception.expectMessage(beanName);
         new VaadinConnectController(mock(ObjectMapper.class), null, null,
@@ -163,7 +178,7 @@ public class VaadinConnectControllerTest {
         assertNotEquals(missingServiceName, TEST_SERVICE_NAME);
 
         ResponseEntity<?> response = createVaadinController(TEST_SERVICE)
-                .serveVaadinService(missingServiceName, null, null);
+                .serveVaadinService(missingServiceName, null, null, requestMock);
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
@@ -175,7 +190,7 @@ public class VaadinConnectControllerTest {
 
         ResponseEntity<?> response = createVaadinController(TEST_SERVICE)
                 .serveVaadinService(TEST_SERVICE_NAME, missingServiceMethod,
-                        null);
+                        null, requestMock);
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         assertNull(response.getBody());
@@ -187,7 +202,7 @@ public class VaadinConnectControllerTest {
 
         VaadinConnectAccessChecker restrictingCheckerMock = mock(
                 VaadinConnectAccessChecker.class);
-        when(restrictingCheckerMock.check(TEST_METHOD))
+        when(restrictingCheckerMock.check(TEST_METHOD, requestMock))
                 .thenReturn(accessErrorMessage);
 
         VaadinServiceNameChecker nameCheckerMock = mock(
@@ -197,7 +212,7 @@ public class VaadinConnectControllerTest {
         ResponseEntity<String> response = createVaadinController(TEST_SERVICE,
                 new ObjectMapper(), restrictingCheckerMock, nameCheckerMock)
                         .serveVaadinService(TEST_SERVICE_NAME,
-                                TEST_METHOD.getName(), null);
+                                TEST_METHOD.getName(), null, requestMock);
 
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
         String responseBody = response.getBody();
@@ -205,15 +220,15 @@ public class VaadinConnectControllerTest {
         assertTrue(String.format("Invalid response body: '%s'", responseBody),
                 responseBody.contains(accessErrorMessage));
 
-        verify(restrictingCheckerMock, only()).check(TEST_METHOD);
-        verify(restrictingCheckerMock, times(1)).check(TEST_METHOD);
+        verify(restrictingCheckerMock, only()).check(TEST_METHOD, requestMock);
+        verify(restrictingCheckerMock, times(1)).check(TEST_METHOD, requestMock);
     }
 
     @Test
     public void should_Return400_When_LessParametersSpecified1() {
         ResponseEntity<String> response = createVaadinController(TEST_SERVICE)
                 .serveVaadinService(TEST_SERVICE_NAME, TEST_METHOD.getName(),
-                        null);
+                        null, requestMock);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         String responseBody = response.getBody();
@@ -230,7 +245,7 @@ public class VaadinConnectControllerTest {
         ResponseEntity<String> response = createVaadinController(TEST_SERVICE)
                 .serveVaadinService(TEST_SERVICE_NAME, TEST_METHOD.getName(),
                         createRequestParameters(
-                                "{\"value1\": 222, \"value2\": 333}"));
+                                "{\"value1\": 222, \"value2\": 333}"), requestMock);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         String responseBody = response.getBody();
@@ -246,7 +261,7 @@ public class VaadinConnectControllerTest {
     public void should_Return400_When_IncorrectParameterTypesAreProvided() {
         ResponseEntity<String> response = createVaadinController(TEST_SERVICE)
                 .serveVaadinService(TEST_SERVICE_NAME, TEST_METHOD.getName(),
-                        createRequestParameters("{\"value\": [222]}"));
+                        createRequestParameters("{\"value\": [222]}"), requestMock);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         String responseBody = response.getBody();
@@ -254,6 +269,33 @@ public class VaadinConnectControllerTest {
         assertTrue(String.format("Invalid response body: '%s'", responseBody),
                 responseBody.contains(
                         TEST_METHOD.getParameterTypes()[0].getSimpleName()));
+    }
+
+    @Test
+    public void should_NotCallMethod_When_UserPrincipalIsNull() {
+        VaadinConnectController vaadinController = createVaadinControllerWithoutPrincipal();
+        ResponseEntity<String> response = vaadinController.serveVaadinService(
+                TEST_SERVICE_NAME, TEST_METHOD.getName(),
+                createRequestParameters("{\"value\": 222}"), requestMock);
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        String responseBody = response.getBody();
+        assertNotNull("Response body should not be null", responseBody);
+        assertTrue("Should return unauthorized error",
+                responseBody.contains("Anonymous access is not allowed"));
+    }
+
+    @Test
+    public void should_CallMethodAnonymously_When_UserPrincipalIsNullAndAnonymousAllowed() {
+        VaadinConnectController vaadinController = createVaadinControllerWithoutPrincipal();
+        ResponseEntity<String> response = vaadinController.serveVaadinService(
+                TEST_SERVICE_NAME, "testAnonymousMethod",
+                createRequestParameters("{}"), requestMock);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        String responseBody = response.getBody();
+        assertEquals("Should return message when calling anonymously",
+                "\"Hello, anonymous user!\"", responseBody);
     }
 
     @Test
@@ -273,7 +315,7 @@ public class VaadinConnectControllerTest {
         ResponseEntity<String> response = controller.serveVaadinService(
                 TEST_SERVICE_NAME, TEST_METHOD.getName(),
                 createRequestParameters(
-                        String.format("{\"value\": %s}", inputValue)));
+                        String.format("{\"value\": %s}", inputValue)), requestMock);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         String responseBody = response.getBody();
@@ -303,7 +345,7 @@ public class VaadinConnectControllerTest {
         ResponseEntity<String> response = controller.serveVaadinService(
                 TEST_SERVICE_NAME, TEST_METHOD.getName(),
                 createRequestParameters(
-                        String.format("{\"value\": %s}", inputValue)));
+                        String.format("{\"value\": %s}", inputValue)), requestMock);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR,
                 response.getStatusCode());
@@ -334,7 +376,7 @@ public class VaadinConnectControllerTest {
         ResponseEntity<String> response = controller.serveVaadinService(
                 TEST_SERVICE_NAME, TEST_METHOD.getName(),
                 createRequestParameters(
-                        String.format("{\"value\": %s}", inputValue)));
+                        String.format("{\"value\": %s}", inputValue)), requestMock);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR,
                 response.getStatusCode());
@@ -366,7 +408,7 @@ public class VaadinConnectControllerTest {
         ResponseEntity<String> response = controller.serveVaadinService(
                 TEST_SERVICE_NAME, TEST_METHOD.getName(),
                 createRequestParameters(
-                        String.format("{\"value\": %s}", inputValue)));
+                        String.format("{\"value\": %s}", inputValue)), requestMock);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         String responseBody = response.getBody();
@@ -403,7 +445,7 @@ public class VaadinConnectControllerTest {
         ResponseEntity<String> response = controller.serveVaadinService(
                 TEST_SERVICE_NAME, TEST_METHOD.getName(),
                 createRequestParameters(
-                        String.format("{\"value\": %s}", inputValue)));
+                        String.format("{\"value\": %s}", inputValue)), requestMock);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         String responseBody = response.getBody();
@@ -439,7 +481,7 @@ public class VaadinConnectControllerTest {
         ResponseEntity<String> response = createVaadinController(TEST_SERVICE,
                 mapperMock).serveVaadinService(TEST_SERVICE_NAME,
                         TEST_METHOD.getName(),
-                        createRequestParameters("{\"value\": 222}"));
+                        createRequestParameters("{\"value\": 222}"), requestMock);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR,
                 response.getStatusCode());
@@ -478,7 +520,7 @@ public class VaadinConnectControllerTest {
         exception.expectMessage("Unexpected");
         createVaadinController(TEST_SERVICE, mapperMock).serveVaadinService(
                 TEST_SERVICE_NAME, TEST_METHOD.getName(),
-                createRequestParameters("{\"value\": 222}"));
+                createRequestParameters("{\"value\": 222}"), requestMock);
     }
 
     @Test
@@ -489,7 +531,7 @@ public class VaadinConnectControllerTest {
         ResponseEntity<String> response = createVaadinController(TEST_SERVICE)
                 .serveVaadinService(TEST_SERVICE_NAME, TEST_METHOD.getName(),
                         createRequestParameters(
-                                String.format("{\"value\": %s}", inputValue)));
+                                String.format("{\"value\": %s}", inputValue)), requestMock);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(String.format("\"%s\"", expectedOutput),
@@ -505,7 +547,7 @@ public class VaadinConnectControllerTest {
         ResponseEntity<String> response = createVaadinController(testService)
                 .serveVaadinService(testService.getClass().getSimpleName(),
                         testMethodName, createRequestParameters(String.format(
-                                "{\"value\": {\"id\": \"%s\"}}", inputId)));
+                                "{\"value\": {\"id\": \"%s\"}}", inputId)), requestMock);
         assertEquals(expectedResult, response.getBody());
     }
 
@@ -518,7 +560,7 @@ public class VaadinConnectControllerTest {
         ResponseEntity<String> response = createVaadinController(testService)
                 .serveVaadinService(testService.getClass().getSimpleName(),
                         testMethodName, createRequestParameters(
-                                String.format("{\"value\": %s}", inputId)));
+                                String.format("{\"value\": %s}", inputId)), requestMock);
         assertEquals(inputId, response.getBody());
     }
 
@@ -531,7 +573,7 @@ public class VaadinConnectControllerTest {
         ResponseEntity<String> response = createVaadinController(testService)
                 .serveVaadinService(testService.getClass().getSimpleName(),
                         testMethodName, createRequestParameters(
-                                String.format("{\"value\": %s}", inputId)));
+                                String.format("{\"value\": %s}", inputId)), requestMock);
         assertEquals(inputId, response.getBody());
     }
 
@@ -555,7 +597,7 @@ public class VaadinConnectControllerTest {
         ResponseEntity<String> response = vaadinConnectController
                 .serveVaadinService("CustomService", "testMethod",
                         createRequestParameters(
-                                String.format("{\"value\": %s}", input)));
+                                String.format("{\"value\": %s}", input)), requestMock);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(String.format("\"%s\"", expectedOutput),
                 response.getBody());
@@ -628,7 +670,7 @@ public class VaadinConnectControllerTest {
         ResponseEntity<String> response = createVaadinController(TEST_SERVICE)
                 .serveVaadinService(TEST_SERVICE_NAME, TEST_METHOD.getName(),
                         createRequestParameters(
-                                String.format("{\"value\": %s}", inputValue)));
+                                String.format("{\"value\": %s}", inputValue)), requestMock);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         ObjectNode jsonNodes = new ObjectMapper().readValue(response.getBody(),
@@ -659,7 +701,7 @@ public class VaadinConnectControllerTest {
                 TEST_SERVICE_NAME, testMethodName);
         ResponseEntity<String> response = createVaadinController(TEST_SERVICE)
                 .serveVaadinService(TEST_SERVICE_NAME, testMethodName,
-                        createRequestParameters(inputValue));
+                        createRequestParameters(inputValue), requestMock);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         ObjectNode jsonNodes = new ObjectMapper().readValue(response.getBody(),
@@ -688,7 +730,7 @@ public class VaadinConnectControllerTest {
         ResponseEntity<String> response = createVaadinController(TEST_SERVICE)
                 .serveVaadinService(TEST_SERVICE_NAME,
                         TEST_VALIDATION_METHOD.getName(),
-                        createRequestParameters("{\"parameter\": null}"));
+                        createRequestParameters("{\"parameter\": null}"), requestMock);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         ObjectNode jsonNodes = new ObjectMapper().readValue(response.getBody(),
@@ -726,7 +768,7 @@ public class VaadinConnectControllerTest {
                         TEST_VALIDATION_METHOD.getName(),
                         createRequestParameters(String.format(
                                 "{\"parameter\": {\"count\": %d}}",
-                                invalidPropertyValue)));
+                                invalidPropertyValue)), requestMock);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         ObjectNode jsonNodes = new ObjectMapper().readValue(response.getBody(),
@@ -771,7 +813,7 @@ public class VaadinConnectControllerTest {
     private <T> VaadinConnectController createVaadinController(T service) {
         VaadinConnectAccessChecker accessCheckerMock = mock(
                 VaadinConnectAccessChecker.class);
-        when(accessCheckerMock.check(TEST_METHOD)).thenReturn(null);
+        when(accessCheckerMock.check(TEST_METHOD, requestMock)).thenReturn(null);
 
         VaadinServiceNameChecker nameCheckerMock = mock(
                 VaadinServiceNameChecker.class);
@@ -785,7 +827,7 @@ public class VaadinConnectControllerTest {
             ObjectMapper vaadinServiceMapper) {
         VaadinConnectAccessChecker accessCheckerMock = mock(
                 VaadinConnectAccessChecker.class);
-        when(accessCheckerMock.check(TEST_METHOD)).thenReturn(null);
+        when(accessCheckerMock.check(TEST_METHOD, requestMock)).thenReturn(null);
 
         VaadinServiceNameChecker nameCheckerMock = mock(
                 VaadinServiceNameChecker.class);
@@ -808,6 +850,18 @@ public class VaadinConnectControllerTest {
                 .thenReturn((Class) serviceClass);
         return new VaadinConnectController(vaadinServiceMapper, accessChecker,
                 serviceNameChecker, contextMock);
+    }
+
+    private VaadinConnectController createVaadinControllerWithoutPrincipal() {
+        when(requestMock.getUserPrincipal()).thenReturn(null);
+        VaadinConnectAccessChecker accessCheckerMock = new VaadinConnectAccessChecker();
+
+        VaadinServiceNameChecker nameCheckerMock = mock(
+                VaadinServiceNameChecker.class);
+        when(nameCheckerMock.check(TEST_SERVICE_NAME)).thenReturn(null);
+
+        return createVaadinController(TEST_SERVICE, new ObjectMapper(),
+                accessCheckerMock, nameCheckerMock);
     }
 
     private Method createServiceMethodMockThatThrows(Object argument,

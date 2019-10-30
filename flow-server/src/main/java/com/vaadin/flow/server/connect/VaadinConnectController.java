@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.connect;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
@@ -238,13 +239,16 @@ public class VaadinConnectController {
      * @param body
      *            optional request body, that should be specified if the method
      *            called has parameters
+     * @param request
+     *            the current request which triggers the service call
      * @return execution result as a JSON string or an error message string
      */
     @PostMapping(path = "/{service}/{method}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<String> serveVaadinService(
             @PathVariable("service") String serviceName,
             @PathVariable("method") String methodName,
-            @RequestBody(required = false) ObjectNode body) {
+            @RequestBody(required = false) ObjectNode body,
+            HttpServletRequest request) {
         getLogger().debug("Service: {}, method: {}, request body: {}",
                 serviceName, methodName, body);
 
@@ -265,7 +269,7 @@ public class VaadinConnectController {
 
         try {
             return invokeVaadinServiceMethod(serviceName, methodName,
-                    methodToInvoke, body, vaadinServiceData);
+                    methodToInvoke, body, vaadinServiceData, request);
         } catch (JsonProcessingException e) {
             String errorMessage = String.format(
                     "Failed to serialize service '%s' method '%s' response. "
@@ -287,9 +291,9 @@ public class VaadinConnectController {
 
     private ResponseEntity<String> invokeVaadinServiceMethod(String serviceName,
             String methodName, Method methodToInvoke, ObjectNode body,
-            VaadinServiceData vaadinServiceData)
+            VaadinServiceData vaadinServiceData, HttpServletRequest request)
             throws JsonProcessingException {
-        String checkError = accessChecker.check(methodToInvoke);
+        String checkError = accessChecker.check(methodToInvoke, request);
         if (checkError != null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(createResponseErrorObject(String.format(
