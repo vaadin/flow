@@ -15,7 +15,6 @@ public abstract class AbstractTestHasValueAndValidation<C extends AbstractSingle
     }
 
     private String errorMessage = "";
-    private boolean invalid;
 
     @Override
     public void setErrorMessage(String errorMessage) {
@@ -32,11 +31,11 @@ public abstract class AbstractTestHasValueAndValidation<C extends AbstractSingle
 
     @Override
     public void setInvalid(boolean invalid) {
-        this.invalid = invalid;
+        getElement().setProperty("invalid", invalid);
     }
 
     @Override
     public boolean isInvalid() {
-        return invalid;
+        return getElement().getProperty("invalid", false);
     }
 }

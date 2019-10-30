@@ -479,6 +479,23 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     }
 
     @Test
+    public void changeInvalidManually_binderRevalidates() {
+        binder.forField(nameField)
+                .withValidator(value -> value.length() > 1, "Error from binder")
+                .bind(Person::getFirstName, Person::setFirstName);
+        binder.setBean(item);
+
+        nameField.setValue("aa");
+        nameField.setInvalid(true);
+        nameField.setErrorMessage("Other error");
+        assertValidField(nameField);
+
+        nameField.setValue("a");
+        nameField.setInvalid(false);
+        assertInvalidField("Error from binder", nameField);
+    }
+
+    @Test
     public void setRequired_withErrorMessage_fieldGetsRequiredIndicatorAndValidator() {
         TestTextField textField = new TestTextField();
         assertFalse(textField.isRequiredIndicatorVisible());
@@ -1344,7 +1361,6 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
         binder.readBean(new AtomicReference<>());
     }
-
 
     @Test
     public void nullRejetingField_otherRejectedValue_originalExceptionIsThrown() {
