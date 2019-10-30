@@ -222,9 +222,14 @@
             <artifactId>swagger-codegen</artifactId>
             <version>${swagger.codegen.version}</version>
             <exclusions>
+                <!-- Cause problems when running tests from IDE -->
                 <exclusion>
                     <groupId>ch.qos.logback</groupId>
                     <artifactId>logback-classic</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-core</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -233,9 +238,14 @@
             <artifactId>swagger-codegen-generators</artifactId>
             <version>${swagger.codegen.generators.version}</version>
             <exclusions>
+                <!-- Cause problems when running tests from IDE -->
                 <exclusion>
                     <groupId>ch.qos.logback</groupId>
                     <artifactId>logback-classic</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-core</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

@@ -35,7 +35,7 @@ import static com.vaadin.flow.server.connect.generator.VaadinConnectTsGenerator.
  */
 public class VaadinConnectClientGenerator {
     static final String ENDPOINT = "vaadin.connect.endpoint";
-    static final String DEFAULT_ENDPOINT = "/connect";
+    static final String DEFAULT_ENDPOINT = "connect";
 
     private static final String CLIENT_FILE_NAME = "connect-client.default";
     public static final String CONNECT_CLIENT_NAME = CLIENT_FILE_NAME + TS;
