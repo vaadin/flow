@@ -20,6 +20,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.webcomponent.WebComponentUI;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.server.BootstrapHandler;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ServletHelper;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -36,12 +37,16 @@ import elemental.json.JsonObject;
 import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Optional;
@@ -63,6 +68,8 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
     private static final String PATH_PREFIX = "/web-component/web-component";
     private static final Pattern PATH_PATTERN =
             Pattern.compile(".*" + PATH_PREFIX + "-(ui|bootstrap)\\.(js|html)$");
+
+    private String servletPath;
 
     private static class WebComponentBootstrapContext extends BootstrapContext {
 
@@ -124,9 +131,6 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
     protected BootstrapContext createAndInitUI(
             Class<? extends UI> uiClass, VaadinRequest request,
             VaadinResponse response, VaadinSession session) {
-        BootstrapContext context = super.createAndInitUI(WebComponentUI.class,
-                request, response, session);
-        JsonObject config = context.getApplicationParameters();
 
         if(!canHandleRequest(request)) {
             throw new IllegalStateException("Unexpected request URL '"
@@ -135,7 +139,13 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                     + PATH_PATTERN.toString());
         }
 
-        String serviceUrl = getServiceUrl(request, response);
+        servletPath = getRelativeServletPath((VaadinServletRequest) request);
+
+        final String serviceUrl = getServiceUrl(request, response);
+
+        BootstrapContext context = super.createAndInitUI(WebComponentUI.class,
+                request, response, session);
+        JsonObject config = context.getApplicationParameters();
 
         String pushURL = context.getSession().getConfiguration().getPushURL();
         if (pushURL == null) {
@@ -314,8 +324,32 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         }
     }
 
+    /**
+     * Create a new address for a resource which is calculated based on the
+     * request base path (servlet path) and the original path for the Vaadin
+     * resource.
+     * <p>
+     * If the resource is targeted to context root with VAADIN prefix, the path
+     * part before the VAADIN is chopped of since that has been calculated to be
+     * relative to our context and would target context root instead of the
+     * serving servlet.
+     * 
+     * @param basePath
+     *            full servlet path, received as part of the bootstrap request.
+     *            Needs to be the client-side path used, to get around proxies.
+     * @param path
+     *            original resource path
+     * @return new resource path, relative to basePath
+     */
     protected String modifyPath(String basePath, String path) {
-        return URI.create(basePath + path).toString();
+        int vaadinIndex = path.indexOf(Constants.VAADIN_MAPPING);
+        if (vaadinIndex > 0) {
+            String subPath = path.substring(vaadinIndex);
+            return URI.create(basePath + subPath).toString();
+        } else {
+            return URI.create(basePath + path).toString();
+
+        }
     }
 
     private static String inlineHTML(String html) {
@@ -360,5 +394,20 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 // replace http:// or https:// with // to work with https:// proxies
                 // which proxies to the same http:// url
                 .replaceFirst("^" + ".*://", "//");
+    }
+
+    private static String getRelativeServletPath(VaadinServletRequest request) {
+        String servletPath = request.getServletPath();
+        StringBuilder pathBuilder = new StringBuilder();
+        if (servletPath.startsWith("/")) {
+            pathBuilder.append(".");
+        } else if (!servletPath.startsWith(".")) {
+            pathBuilder.append("./");
+        }
+        pathBuilder.append(servletPath);
+        if (!servletPath.endsWith("/")) {
+            pathBuilder.append("/");
+        }
+        return pathBuilder.toString();
     }
 }
