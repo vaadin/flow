@@ -305,7 +305,7 @@ public class DefaultDeploymentConfiguration
     private void checkClientSideMode(boolean loggWarning) {
         clientSideMode = getBooleanProperty(
                 Constants.SERVLET_PARAMETER_CLIENT_SIDE_MODE, true);
-        if (clientSideMode && loggWarning) {
+        if (clientSideMode && loggWarning && !productionMode) {
             String frontendDir = getStringProperty(PARAM_FRONTEND_DIR, System
                     .getProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR));
             String indexHTMLMessage = getIndexHTMLMessage(frontendDir);
