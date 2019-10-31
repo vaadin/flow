@@ -3,10 +3,11 @@ const path = require("path");
 module.exports = {
   mode: "development",
   entry: {
-    tests: "./src/test/frontend/FlowTests.ts"
+    flow: "./src/test/frontend/FlowTests.ts",
+    connect: "./src/test/frontend/ConnectTests.ts"
   },
   output: {
-    filename: "[name].js",
+    filename: "[name].spec.js",
     path: path.resolve(__dirname, "target/frontend-tests")
   },
 
