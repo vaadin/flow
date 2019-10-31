@@ -1,3 +1,5 @@
+/* tslint:disable:max-classes-per-file */
+
 interface ConnectExceptionData {
   message: string;
   type: string;
@@ -61,15 +63,15 @@ const authenticateClient = async(client: ConnectClient,
                                  askForCredentials: boolean = true):
   Promise<AccessToken | null> => {
   let message;
-  const _private = privates.get(client);
-  let tokens = _private.tokens;
+  const privateClient = privates.get(client);
+  let tokens = privateClient.tokens;
 
   while (!(tokens.accessToken && tokens.accessToken.isValid())) {
 
     let stayLoggedIn = tokens.stayLoggedIn;
 
     // delete current credentials because we are going to take new ones
-    _private.tokens = new AuthTokens().save();
+    privateClient.tokens = new AuthTokens().save();
 
     const body = new URLSearchParams();
     if (tokens.refreshToken && tokens.refreshToken.isValid()) {
@@ -100,7 +102,7 @@ const authenticateClient = async(client: ConnectClient,
           'Content-Type': 'application/x-www-form-urlencoded'
         },
         body: body.toString(),
-        signal: _private.controller.signal
+        signal: privateClient.controller.signal
       });
 
       if (tokenResponse.status === 400 || tokenResponse.status === 401) {
@@ -114,7 +116,7 @@ const authenticateClient = async(client: ConnectClient,
         await assertResponseIsOk(tokenResponse);
         // Successful token response
         tokens = new AuthTokens(await tokenResponse.json());
-        _private.tokens = tokens;
+        privateClient.tokens = tokens;
         if (stayLoggedIn) {
           tokens.save();
         }
@@ -151,6 +153,7 @@ interface AuthJson {
   access_token: string;
   refresh_token: string;
 }
+
 
 /** @ignore */
 class AuthTokens {
@@ -504,11 +507,11 @@ export class ConnectClient {
    * user credentials.
    */
   async logout() {
-    const _private = privates.get(this);
-    _private.controller.abort();
+    const privateClient = privates.get(this);
+    privateClient.controller.abort();
     // controller signed as aborted cannot be reused
-    _private.controller = new AbortController();
-    _private.tokens = new AuthTokens().save();
+    privateClient.controller = new AbortController();
+    privateClient.tokens = new AuthTokens().save();
   }
 
   /**
@@ -516,7 +519,7 @@ export class ConnectClient {
    */
   get token(): AccessToken {
     const token = privates.get(this).tokens.accessToken;
-    return token && Object.assign({}, token.json);
+    return token && {...token.json};
   }
 
   /**
@@ -542,7 +545,7 @@ export class ConnectClient {
       );
     }
 
-    options = Object.assign({requireCredentials: true}, options);
+    options = {...options, requireCredentials: true};
     if (options.requireCredentials) {
       await this.login();
     }
@@ -596,7 +599,7 @@ export class ConnectClient {
     // this way makes the folding down below more concise.
     const fetchNext: MiddlewareNext =
       async(context: MiddlewareContext): Promise<Response> => {
-        return await fetch(context.request);
+        return fetch(context.request);
       };
 
     // Assemble the final middlewares array from internal
@@ -616,7 +619,7 @@ export class ConnectClient {
     );
 
     // Invoke all the folded async middlewares and return
-    return await chain(initialContext);
+    return chain(initialContext);
   }
 
   /**
@@ -628,11 +631,11 @@ export class ConnectClient {
    * @return a promise the the token that is used to access a service
    */
   async login(): Promise<AccessToken> {
-    const _private = privates.get(this);
+    const privateClient = privates.get(this);
     // memoize to re-use in case of multiple calls
-    _private.login = _private.login || authenticateClient(this);
-    const token = await _private.login;
-    delete _private.login;
+    privateClient.login = privateClient.login || authenticateClient(this);
+    const token = await privateClient.login;
+    delete privateClient.login;
     return token;
   }
 
