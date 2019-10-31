@@ -55,7 +55,7 @@ public class TaskGenerateConnectTest {
         assertTrue(output
                 .contains("import {ConnectClient} from '@vaadin/connect';"));
         assertTrue(output.contains(
-                "const client = new ConnectClient({endpoint: '/connect'});"));
+                "const client = new ConnectClient({endpoint: 'connect'});"));
         assertTrue(output.contains("export default client;"));
     }
 

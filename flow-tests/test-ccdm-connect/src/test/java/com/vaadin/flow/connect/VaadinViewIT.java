@@ -30,7 +30,7 @@ import com.vaadin.testbench.TestBenchElement;
 public class VaadinViewIT extends ChromeBrowserTest {
     @Override
     protected String getTestPath() {
-        return "/";
+        return "/foo";
     }
 
     private TestBenchElement testComponent;
@@ -70,6 +70,20 @@ public class VaadinViewIT extends ChromeBrowserTest {
 
     @Test
     public void should_requestAnonymously_connect_service() throws Exception {
+        WebElement button = testComponent.$(TestBenchElement.class).id(
+                "connectAnonymous");
+        button.click();
+
+        WebElement content = testComponent.$(TestBenchElement.class).id("content");
+        // Wait for the server connect response
+        waitUntil(ExpectedConditions.textToBePresentInElement(content,
+                "Hello, stranger!"), 25);
+    }
+
+    @Test
+    public void should_requestAnonymously_when_CallConnectServiceFromANestedUrl() throws Exception {
+        getDriver().get(getRootURL() + getTestPath() + "/more/levels/url");
+        testComponent = $("test-component").first();
         WebElement button = testComponent.$(TestBenchElement.class).id(
                 "connectAnonymous");
         button.click();
