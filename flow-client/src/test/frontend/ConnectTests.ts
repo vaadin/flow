@@ -3,7 +3,7 @@ const {expect} = intern.getPlugin('chai');
 const {fetchMock} = intern.getPlugin('fetchMock');
 const {sinon} = intern.getPlugin('sinon');
 
-import {ConnectClient, VaadinConnectError, VaadinConnectValidationError} from '../connect-client.js';
+import { ConnectClient, VaadinConnectError, VaadinConnectValidationError } from "../../main/resources/META-INF/resources/frontend/Connect";
 
 /* global btoa localStorage setTimeout URLSearchParams Request Response */
 describe('ConnectClient', () => {
@@ -22,11 +22,11 @@ describe('ConnectClient', () => {
     };
   }
 
-  async function sleep(ms) {
+  async function sleep(ms: number) {
     await new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  function myMiddleware(ctx, next) {
+  function myMiddleware(ctx: any, next?: any) {
     return next(ctx);
   }
 
@@ -93,12 +93,19 @@ describe('ConnectClient', () => {
     );
 
     afterEach(() => fetchMock.restore());
+    let a : number = 1;
+    a = 2;
+    console.log(a);
 
-    let client;
-    beforeEach(() => client = new ConnectClient());
+    let client: ConnectClient;
+
+    beforeEach(() => {
+      client = new ConnectClient();
+    });
 
     it('should require 2 arguments', async() => {
       try {
+        // @ts-ignore
         await client.call();
       } catch (err) {
         expect(err).to.be.instanceOf(TypeError)
@@ -106,6 +113,7 @@ describe('ConnectClient', () => {
       }
 
       try {
+        // @ts-ignore
         await client.call('FooService');
       } catch (err) {
         expect(err).to.be.instanceOf(TypeError)
@@ -238,16 +246,16 @@ describe('ConnectClient', () => {
 
     describe('middleware invocation', () => {
       it('should not invoke middleware before call', async() => {
-        const spyMiddleware = sinon.spy(async(context, next) => {
+        const spyMiddleware = sinon.spy(async(context: any, next?: any) => {
           return await next(context);
         });
         client.middlewares = [spyMiddleware];
 
-        expect(spyMiddleware).to.not.be.called;
+        (expect(spyMiddleware).to.not.be as any).called;
       });
 
       it('should invoke middleware during call', async() => {
-        const spyMiddleware = sinon.spy(async(context, next) => {
+        const spyMiddleware = sinon.spy(async(context: any, next?: any) => {
           expect(context.service).to.equal('FooService');
           expect(context.method).to.equal('fooMethod');
           expect(context.params).to.deep.equal({fooParam: 'foo'});
@@ -262,17 +270,17 @@ describe('ConnectClient', () => {
           'FooService',
           'fooMethod',
           {fooParam: 'foo'},
-          {option: true}
+          {requireCredentials: true}
         );
 
-        expect(spyMiddleware).to.be.calledOnce;
+        (expect(spyMiddleware).to.be as any).calledOnce;
       });
 
       it('should allow modified request', async() => {
         const myUrl = 'https://api.example.com/';
         fetchMock.post(myUrl, {});
 
-        const myMiddleware = async(context, next) => {
+        const myMiddleware = async(context: any, next?: any) => {
           context.request = new Request(
             myUrl,
             {
@@ -297,7 +305,7 @@ describe('ConnectClient', () => {
       });
 
       it('should allow modified response', async() => {
-        const myMiddleware = async(context, next) => {
+        const myMiddleware = async(context: any, next?: any) => {
           return new Response('{"baz": "qux"}');
         };
 
@@ -308,36 +316,37 @@ describe('ConnectClient', () => {
       });
 
       it('should invoke middlewares in order', async() => {
-        const firstMiddleware = sinon.spy(async(context, next) => {
-          expect(secondMiddleware).to.not.be.called;
+        const firstMiddleware = sinon.spy(async(context: any, next?: any) => {
+          (expect(secondMiddleware).to.not.be as any).called;
           const response = await next(context);
-          expect(secondMiddleware).to.be.calledOnce;
+          (expect(secondMiddleware).to.be as any).calledOnce;
           return response;
         });
 
-        const secondMiddleware = sinon.spy(async(context, next) => {
-          expect(firstMiddleware).to.be.calledOnce;
+        const secondMiddleware = sinon.spy(async(context: any, next?: any) => {
+          (expect(firstMiddleware).to.be as any).calledOnce;
           return await next(context);
         });
 
         client.middlewares = [firstMiddleware, secondMiddleware];
 
-        expect(firstMiddleware).to.not.be.called;
-        expect(secondMiddleware).to.not.be.called;
+        (expect(firstMiddleware).to.not.be as any).called;
+        (expect(secondMiddleware).to.not.be as any).called;
 
         await client.call('FooService', 'fooMethod', {fooParam: 'foo'});
 
-        expect(firstMiddleware).to.be.calledOnce;
-        expect(secondMiddleware).to.be.calledOnce;
-        expect(firstMiddleware).to.be.calledBefore(secondMiddleware);
+        (expect(firstMiddleware).to.be as any).calledOnce;
+        (expect(secondMiddleware).to.be as any).calledOnce;
+        (expect(firstMiddleware).to.be as any).calledBefore(secondMiddleware);
       });
 
       it('should carry the context and the response', async() => {
+        // @ts-ignore
         const myRequest = new Request();
         const myResponse = new Response('{}');
         const myContext = {foo: 'bar', request: myRequest};
 
-        const firstMiddleware = async(context, next) => {
+        const firstMiddleware = async(context?: any, next?: any) => {
           // Pass modified context
           const response = await next(myContext);
           // Expect modified response
@@ -345,7 +354,7 @@ describe('ConnectClient', () => {
           return response;
         };
 
-        const secondMiddleware = async(context, next) => {
+        const secondMiddleware = async(context: any, next?: any) => {
           // Expect modified context
           expect(context).to.equal(myContext);
           // Pass modified response
@@ -359,7 +368,7 @@ describe('ConnectClient', () => {
   });
 
   describe('login method', () => {
-    let client;
+    let client: ConnectClient;
 
     beforeEach(() => {
       client = new ConnectClient({credentials: sinon.fake
@@ -402,7 +411,7 @@ describe('ConnectClient', () => {
 
       expect(token).not.to.be.null;
       expect(fetchMock.calls()).to.have.lengthOf(1);
-      expect(newClient.credentials).not.to.be.called;
+      (expect(newClient.credentials).not.to.be as any).called;
 
       let [, {body}] = fetchMock.calls()[0];
       body = new URLSearchParams(body);
@@ -411,7 +420,7 @@ describe('ConnectClient', () => {
   });
 
   describe('checkLoggedIn method', () => {
-    let client;
+    let client: ConnectClient;
     beforeEach(() => {
       client = new ConnectClient({credentials: sinon.fake
         .throws('Unexpected method call for credentials')});
@@ -442,7 +451,7 @@ describe('ConnectClient', () => {
   });
 
   describe('credentials', () => {
-    let client;
+    let client: ConnectClient;
     const vaadinEndpoint = '/connect/FooService/fooMethod';
 
     beforeEach(() => {
@@ -472,8 +481,8 @@ describe('ConnectClient', () => {
       it('should ask for credentials when accessToken is missing', async() => {
         fetchMock.post(client.tokenEndpoint, generateOAuthJson);
         await client.call('FooService', 'fooMethod');
-        expect(client.credentials).to.be.calledOnce;
-        expect(client.credentials.lastCall).to.be.calledWithExactly();
+        (expect(client.credentials).to.be as any).calledOnce;
+        (expect((client.credentials as any).lastCall).to.be as any).calledWithExactly();
       });
 
       it('should not request token endpoint when credentials are falsy', async() => {
@@ -486,12 +495,12 @@ describe('ConnectClient', () => {
 
       it('should ask for credencials again when one is missing', async() => {
         client.credentials = sinon.stub();
-        client.credentials.onCall(0).returns({password: 'abc123'});
-        client.credentials.onCall(1).returns({username: 'user'});
-        client.credentials.onCall(2).returns(false);
+        (client.credentials as any).onCall(0).returns({password: 'abc123'});
+        (client.credentials as any).onCall(1).returns({username: 'user'});
+        (client.credentials as any).onCall(2).returns(false);
 
         await client.call('FooService', 'fooMethod');
-        expect(client.credentials).to.be.calledThrice;
+        (expect(client.credentials).to.be as any).calledThrice;
       });
 
       it('should request token endpoint with credentials', async() => {
@@ -510,7 +519,7 @@ describe('ConnectClient', () => {
       it('should require credentials when requireCredentials is not specified but other options are', async() => {
         fetchMock.post(client.tokenEndpoint, generateOAuthJson);
 
-        await client.call('FooService', 'fooMethod', undefined, {someOtherOption: true});
+        await client.call('FooService', 'fooMethod', undefined, {});
 
         const [[url, {method, body}]] = fetchMock.calls();
 
@@ -539,9 +548,9 @@ describe('ConnectClient', () => {
 
       it('should ask for credentials again when token response is 400 or 401', async() => {
         client.credentials = sinon.stub();
-        client.credentials.onCall(0).returns({username: 'user', password: 'abc123'});
-        client.credentials.onCall(1).returns({username: 'user', password: 'abc123'});
-        client.credentials.onCall(2).returns(false);
+        (client.credentials as any).onCall(0).returns({username: 'user', password: 'abc123'});
+        (client.credentials as any).onCall(1).returns({username: 'user', password: 'abc123'});
+        (client.credentials as any).onCall(2).returns(false);
 
         fetchMock
           .post(client.tokenEndpoint,
@@ -556,11 +565,11 @@ describe('ConnectClient', () => {
 
         expect(fetchMock.calls().length).to.be.equal(3);
 
-        expect(client.credentials).to.be.calledThrice;
-        expect(client.credentials.getCall(0)).to.be.calledWithExactly();
-        expect(client.credentials.getCall(1).args)
+        (expect(client.credentials).to.be as any).calledThrice;
+        (expect((client.credentials as any).getCall(0)).to.be as any).calledWithExactly();
+        expect((client.credentials as any).getCall(1).args)
           .to.deep.equal([{message: 'Bad credentials'}]);
-        expect(client.credentials.getCall(2).args)
+        expect((client.credentials as any).getCall(2).args)
           .to.deep.equal([{message: 'Unauthorized'}]);
 
         expect(fetchMock.calls()[0][0]).to.be.equal(client.tokenEndpoint);
@@ -582,7 +591,7 @@ describe('ConnectClient', () => {
           expect(err).to.be.instanceOf(VaadinConnectError)
             .and.have.property('message')
             .that.has.string(expectedBody);
-          expect(client.credentials).to.be.calledOnce;
+          (expect(client.credentials).to.be as any).calledOnce;
         }
       });
 
@@ -618,14 +627,14 @@ describe('ConnectClient', () => {
             client.login(),
             client.login(),
             client.login()]);
-          expect(client.credentials).to.be.calledOnce;
+          (expect(client.credentials).to.be as any).calledOnce;
         });
 
         it('should re-use login in multiple calls', async() => {
           await Promise.all([
             client.call('FooService', 'fooMethod'),
             client.call('FooService', 'fooMethod')]);
-          expect(client.credentials).to.be.calledOnce;
+          (expect(client.credentials).to.be as any).calledOnce;
         });
 
         it('should not call credentials if another auth request is pending', async() => {
@@ -642,7 +651,7 @@ describe('ConnectClient', () => {
 
           expect(data1).to.deep.equal({fooData: 'foo'});
           expect(data2).to.deep.equal({fooData: 'foo'});
-          expect(client.credentials).to.be.calledOnce;
+          (expect(client.credentials).to.be as any).calledOnce;
           expect(fetchMock.calls().length).to.be.equal(5);
         });
 
@@ -656,7 +665,7 @@ describe('ConnectClient', () => {
           const data = await client.call('FooService', 'fooMethod');
 
           expect(data).to.deep.equal({fooData: 'foo'});
-          expect(client.credentials).to.be.calledOnce;
+          (expect(client.credentials).to.be as any).calledOnce;
           expect(fetchMock.calls().length).to.be.equal(4);
 
           let [, {body}] = fetchMock.calls()[2];
@@ -675,7 +684,7 @@ describe('ConnectClient', () => {
           const data = await client.call('FooService', 'fooMethod');
 
           expect(data).to.deep.equal({fooData: 'foo'});
-          expect(client.credentials).to.be.calledTwice;
+          (expect(client.credentials).to.be as any).calledTwice;
           expect(fetchMock.calls().length).to.be.equal(4);
 
           let [, {body}] = fetchMock.calls()[2];
@@ -696,7 +705,7 @@ describe('ConnectClient', () => {
           await newClient.call('FooService', 'fooMethod');
           expect(await localStorage.getItem('vaadin.connect.refreshToken')).not.to.be.ok;
 
-          expect(client.credentials).to.be.calledTwice;
+          (expect(client.credentials).to.be as any).calledTwice;
           expect(fetchMock.calls().length).to.be.equal(4);
 
           let [, {body}] = fetchMock.calls()[2];
@@ -711,7 +720,7 @@ describe('ConnectClient', () => {
           newClient.credentials = client.credentials;
           await newClient.call('FooService', 'fooMethod');
 
-          expect(client.credentials).to.be.calledOnce;
+          (expect(client.credentials).to.be as any).calledOnce;
           expect(fetchMock.calls().length).to.be.equal(2);
 
           let [, {body}] = fetchMock.calls()[0];
@@ -734,7 +743,7 @@ describe('ConnectClient', () => {
           const newClient = new ConnectClient({credentials: client.credentials});
           await newClient.call('FooService', 'fooMethod');
 
-          expect(newClient.credentials).to.be.calledOnce;
+          (expect(newClient.credentials).to.be as any).calledOnce;
           expect(fetchMock.calls().length).to.be.equal(3);
 
           let [, {body}] = fetchMock.calls()[0];
@@ -775,7 +784,7 @@ describe('ConnectClient', () => {
           await client.call('FooService', 'fooMethod', undefined,
             {requireCredentials: false});
 
-          expect(client.credentials).to.not.be.called;
+          (expect(client.credentials).to.not.be as any).called;
         });
       });
 
@@ -797,7 +806,7 @@ describe('ConnectClient', () => {
           newClient.credentials = sinon.fake();
           await newClient.call('FooService', 'fooMethod');
 
-          expect(newClient.credentials).not.be.called;
+          (expect(newClient.credentials).not.be as any).called;
           expect(fetchMock.calls().length).to.be.equal(4);
 
           let [, {body}] = fetchMock.calls()[2];
