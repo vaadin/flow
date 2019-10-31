@@ -103,10 +103,28 @@ public class DndUtil {
         component.getElement().getNode().runWhenAttached(ui -> {
             if (ComponentUtil.getData(ui, DND_CONNECTOR_COMPATIBILITY) == null
                     && ui.getSession().getConfiguration()
-                    .isCompatibilityMode()) {
+                            .isCompatibilityMode()) {
                 ui.getPage().addJavaScript(DND_CONNECTOR_COMPATIBILITY,
                         LoadMode.EAGER);
                 ComponentUtil.setData(ui, DND_CONNECTOR_COMPATIBILITY, true);
+            }
+        });
+    }
+
+    /**
+     * Adds the mobile dnd polyfills when a iOS device is used. Calling this is
+     * NOOP for non-iOS devices. The polyfills are only loaded once per page.
+     * 
+     * @param component
+     *            the component using dnd
+     */
+    public static void addMobileDndPolyfillIfNeeded(Component component) {
+        component.getElement().getNode().runWhenAttached(ui -> {
+            if (ui.getSession().getBrowser().isIOS()) {
+                ui.getPage().addJavaScript(
+                        "context://webjars/mobile-drag-drop/2.3.0-rc.1/index.min.js");
+                ui.getPage().addJavaScript(
+                        "context://webjars/vaadin__vaadin-mobile-drag-drop/1.0.0/index.min.js");
             }
         });
     }

@@ -41,7 +41,6 @@ import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
-
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
@@ -187,11 +186,14 @@ public class FrontendUtils {
      */
     public static final String PARAM_TOKEN_FILE = "vaadin.frontend.token.file";
 
+    public static final String INSTALL_NODE_LOCALLY = "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.7.6:install-node-and-npm -DnodeVersion=\"v12.13.0\" ";
+    public static final String DISABLE_CHECK = "%nYou can disable the version check using -D%s=true";
+
     private static final String NOT_FOUND = "%n%n======================================================================================================"
             + "%nFailed to determine '%s' tool." + "%nPlease install it either:"
             + "%n  - by following the https://nodejs.org/en/download/ guide to install it globally"
             + "%n  - or by running the frontend-maven-plugin goal to install it in this project:"
-            + "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.7.6:install-node-and-npm -DnodeVersion=\"v10.16.0\" "
+            + INSTALL_NODE_LOCALLY
             + "%n======================================================================================================%n";
 
     private static final String SHOULD_WORK = "%n%n======================================================================================================"
@@ -199,9 +201,9 @@ public class FrontendUtils {
             + "%nYou can install a new one:"
             + "%n  - by following the https://nodejs.org/en/download/ guide to install it globally"
             + "%n  - or by running the frontend-maven-plugin goal to install it in this project:"
-            + "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.7.6:install-node-and-npm -DnodeVersion=\"v10.16.0\" "
+            + INSTALL_NODE_LOCALLY
             + "%n" //
-            + "%nYou can disable the version check using -D%s=true" //
+            + DISABLE_CHECK //
             + "%n======================================================================================================%n";
 
     private static final String TOO_OLD = "%n%n======================================================================================================"
@@ -209,10 +211,40 @@ public class FrontendUtils {
             + "%nPlease install a new one either:"
             + "%n  - by following the https://nodejs.org/en/download/ guide to install it globally"
             + "%n  - or by running the frontend-maven-plugin goal to install it in this project:"
-            + "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.7.6:install-node-and-npm -DnodeVersion=\"v11.6.0\" "
+            + INSTALL_NODE_LOCALLY
             + "%n" //
-            + "%nYou can disable the version check using -D%s=true" //
+            + DISABLE_CHECK //
             + "%n======================================================================================================%n";
+
+    private static final String BAD_VERSION = "%n%n======================================================================================================"
+            + "%nYour installed '%s' version (%s) is known to have problems." //
+            + "%nPlease update to a new one either:"
+            + "%n  - by following the https://nodejs.org/en/download/ guide to install it globally"
+            + "%s"
+            + "%n  - or by running the frontend-maven-plugin goal to install it in this project:"
+            + INSTALL_NODE_LOCALLY
+            + "%n" //
+            + DISABLE_CHECK //
+            + "%n======================================================================================================%n";
+
+    private static final List<FrontendVersion> NPM_BLACKLISTED_VERSIONS = Arrays
+            .asList(new FrontendVersion("6.11.0"),
+                    new FrontendVersion("6.11.1"),
+                    new FrontendVersion("6.11.2"));
+
+    private static final FrontendVersion SUPPORTED_NODE_VERSION = new FrontendVersion(
+            Constants.SUPPORTED_NODE_MAJOR_VERSION,
+            Constants.SUPPORTED_NODE_MINOR_VERSION);
+    private static final FrontendVersion SHOULD_WORK_NODE_VERSION = new FrontendVersion(
+            Constants.SHOULD_WORK_NODE_MAJOR_VERSION,
+            Constants.SHOULD_WORK_NODE_MINOR_VERSION);
+
+    private static final FrontendVersion SUPPORTED_NPM_VERSION = new FrontendVersion(
+            Constants.SUPPORTED_NPM_MAJOR_VERSION,
+            Constants.SUPPORTED_NPM_MINOR_VERSION);
+    private static final FrontendVersion SHOULD_WORK_NPM_VERSION = new FrontendVersion(
+            Constants.SHOULD_WORK_NPM_MAJOR_VERSION,
+            Constants.SHOULD_WORK_NPM_MINOR_VERSION);
 
     private static FrontendToolsLocator frontendToolsLocator = new FrontendToolsLocator();
 
@@ -546,12 +578,9 @@ public class FrontendUtils {
             List<String> nodeVersionCommand = new ArrayList<>();
             nodeVersionCommand.add(FrontendUtils.getNodeExecutable(baseDir));
             nodeVersionCommand.add("--version");
-            String[] nodeVersion = getVersion("node", nodeVersionCommand);
-            validateToolVersion("node", nodeVersion,
-                    Constants.SUPPORTED_NODE_MAJOR_VERSION,
-                    Constants.SUPPORTED_NODE_MINOR_VERSION,
-                    Constants.SHOULD_WORK_NODE_MAJOR_VERSION,
-                    Constants.SHOULD_WORK_NODE_MINOR_VERSION);
+            FrontendVersion nodeVersion = getVersion("node", nodeVersionCommand);
+            validateToolVersion("node", nodeVersion, SUPPORTED_NODE_VERSION,
+                    SHOULD_WORK_NODE_VERSION);
         } catch (UnknownVersionException e) {
             getLogger().warn("Error checking if node is new enough", e);
         }
@@ -560,16 +589,45 @@ public class FrontendUtils {
             List<String> npmVersionCommand = new ArrayList<>();
             npmVersionCommand.addAll(FrontendUtils.getNpmExecutable(baseDir));
             npmVersionCommand.add("--version");
-            String[] npmVersion = getVersion("npm", npmVersionCommand);
-            validateToolVersion("npm", npmVersion,
-                    Constants.SUPPORTED_NPM_MAJOR_VERSION,
-                    Constants.SUPPORTED_NPM_MINOR_VERSION,
-                    Constants.SHOULD_WORK_NPM_MAJOR_VERSION,
-                    Constants.SHOULD_WORK_NPM_MINOR_VERSION);
+            FrontendVersion npmVersion = getVersion("npm", npmVersionCommand);
+            validateToolVersion("npm", npmVersion, SUPPORTED_NPM_VERSION,
+                    SHOULD_WORK_NPM_VERSION);
+            checkForFaultyNpmVersion(npmVersion);
         } catch (UnknownVersionException e) {
             getLogger().warn("Error checking if npm is new enough", e);
         }
 
+    }
+
+    static void checkForFaultyNpmVersion(FrontendVersion npmVersion) {
+        if (NPM_BLACKLISTED_VERSIONS.contains(npmVersion)) {
+            String badNpmVersion = buildBadVersionString("npm", npmVersion.getFullVersion(),
+                    "by updating your global npm installation with `npm install -g npm@latest`");
+            throw new IllegalStateException(badNpmVersion);
+        }
+    }
+
+    private static String buildTooOldString(String tool, String version,
+            int supportedMajor, int supportedMinor) {
+        return String
+                .format(TOO_OLD, tool, version, supportedMajor, supportedMinor,
+                        PARAM_IGNORE_VERSION_CHECKS);
+    }
+
+    private static String buildShouldWorkString(String tool, String version,
+            int supportedMajor, int supportedMinor) {
+        return String.format(SHOULD_WORK, tool, version, supportedMajor,
+                supportedMinor, PARAM_IGNORE_VERSION_CHECKS);
+    }
+
+    private static String buildBadVersionString(String tool, String version,
+            String... extraUpdateInstructions) {
+        StringBuilder extraInstructions = new StringBuilder();
+        for (String instruction : extraUpdateInstructions) {
+            extraInstructions.append("%n  - or ").append(instruction);
+        }
+        return String.format(BAD_VERSION, tool, version,
+                extraInstructions.toString(), PARAM_IGNORE_VERSION_CHECKS);
     }
 
     /**
@@ -638,44 +696,35 @@ public class FrontendUtils {
         return new CssImportData(value, id, include, themeFor);
     }
 
-    static void validateToolVersion(String tool, String[] toolVersion,
-            int supportedMajor, int supportedMinor, int shouldWorkMajor,
-            int shouldWorkMinor) throws UnknownVersionException {
+    static void validateToolVersion(String tool, FrontendVersion toolVersion,
+            FrontendVersion supported, FrontendVersion shouldWork) {
         if ("true".equalsIgnoreCase(
                 System.getProperty(PARAM_IGNORE_VERSION_CHECKS))) {
             return;
         }
 
-        if (isVersionAtLeast(tool, toolVersion, supportedMajor,
-                supportedMinor)) {
+        if (isVersionAtLeast(toolVersion, supported)) {
             return;
         }
-        if (isVersionAtLeast(tool, toolVersion, shouldWorkMajor,
-                shouldWorkMinor)) {
-            getLogger().warn(String.format(SHOULD_WORK, tool,
-                    String.join(".", toolVersion), supportedMajor,
-                    supportedMinor, PARAM_IGNORE_VERSION_CHECKS));
+        if (isVersionAtLeast(toolVersion, shouldWork)) {
+            getLogger().warn(buildShouldWorkString(tool,
+                    toolVersion.getFullVersion(), supported.getMajorVersion(),
+                    supported.getMinorVersion()));
             return;
         }
 
-        throw new IllegalStateException(String.format(TOO_OLD, tool,
-                String.join(".", toolVersion), supportedMajor, supportedMinor,
-                PARAM_IGNORE_VERSION_CHECKS));
+        throw new IllegalStateException(
+                buildTooOldString(tool, toolVersion.getFullVersion(),
+                        supported.getMajorVersion(),
+                        supported.getMinorVersion()));
     }
 
-    static boolean isVersionAtLeast(String tool, String[] toolVersion,
-            int requiredMajor, int requiredMinor)
-            throws UnknownVersionException {
-        try {
-            int major = Integer.parseInt(toolVersion[0]);
-            int minor = Integer.parseInt(toolVersion[1]);
-            return (major > requiredMajor
-                    || (major == requiredMajor && minor >= requiredMinor));
-        } catch (NumberFormatException e) {
-            throw new UnknownVersionException(tool, "Reported version "
-                    + String.join(".", toolVersion) + " could not be parsed",
-                    e);
-        }
+    static boolean isVersionAtLeast(FrontendVersion toolVersion,
+            FrontendVersion required) {
+            int major = toolVersion.getMajorVersion();
+            int minor = toolVersion.getMinorVersion();
+            return (major > required.getMajorVersion()
+                    || (major == required.getMajorVersion() && minor >= required.getMinorVersion()));
     }
 
     /**
@@ -714,7 +763,7 @@ public class FrontendUtils {
         }
     }
 
-    private static String[] getVersion(String tool, List<String> versionCommand)
+    private static FrontendVersion getVersion(String tool, List<String> versionCommand)
             throws UnknownVersionException {
         try {
             Process process = FrontendUtils.createProcessBuilder(versionCommand)
@@ -725,7 +774,7 @@ public class FrontendUtils {
                         "Using command " + String.join(" ", versionCommand));
             }
             String output = streamToString(process.getInputStream());
-            return parseVersion(output);
+            return new FrontendVersion(parseVersionString(output));
         } catch (InterruptedException | IOException e) {
             throw new UnknownVersionException(tool,
                     "Using command " + String.join(" ", versionCommand), e);
@@ -736,17 +785,17 @@ public class FrontendUtils {
      * Parse the version number of node/npm from the given output.
      *
      * @param output
-     *            The output, typically produced by <code>tool --version</code>
-     * @return the parsed version as an array with 3 elements
+     *         The output, typically produced by <code>tool --version</code>
+     * @return the parsed version as an array with 3-4 elements
      * @throws IOException
-     *             if parsing fails
+     *         if parsing fails
      */
-    static String[] parseVersion(String output) throws IOException {
+    static String parseVersionString(String output) throws IOException {
         Optional<String> lastOuput = Stream.of(output.split("\n"))
                 .filter(line -> !line.matches("^[ ]*$"))
                 .reduce((first, second) -> second);
         return lastOuput
-                .map(line -> line.replaceFirst("^v", "").split("\\.", 3))
+                .map(line -> line.replaceFirst("^v", ""))
                 .orElseThrow(() -> new IOException("No output"));
     }
 

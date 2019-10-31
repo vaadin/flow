@@ -18,7 +18,7 @@ package com.vaadin.flow.plugin.common;
 
 import java.io.File;
 import java.net.URL;
-import java.util.List;
+import java.util.stream.Stream;
 
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.project.MavenProject;
@@ -34,6 +34,12 @@ import com.vaadin.flow.utils.FlowFileUtils;
  */
 public class FlowPluginFrontendUtils {
 
+    /**
+     * Additionally include compile-time-only dependencies matching the pattern.
+     */
+    private static final String INCLUDE_FROM_COMPILE_DEPS_REGEX =
+            ".*(/|\\\\)(portlet-api|javax\\.servlet-api)-.+jar$";
+
     private FlowPluginFrontendUtils() {
     }
 
@@ -46,15 +52,18 @@ public class FlowPluginFrontendUtils {
      * @return a <code>ClassFinder</code> instance.
      */
     public static ClassFinder getClassFinder(MavenProject project) {
-        final List<String> runtimeClasspathElements;
+        final Stream<String> classpathElements;
         try {
-            runtimeClasspathElements = project.getRuntimeClasspathElements();
+            classpathElements = Stream.concat(
+                    project.getRuntimeClasspathElements().stream(),
+                    project.getCompileClasspathElements().stream()
+                        .filter(s -> s.matches(INCLUDE_FROM_COMPILE_DEPS_REGEX)));
         } catch (DependencyResolutionRequiredException e) {
             throw new IllegalStateException(String.format(
                     "Failed to retrieve runtime classpath elements from project '%s'",
                     project), e);
         }
-        URL[] urls = runtimeClasspathElements.stream().map(File::new)
+        URL[] urls = classpathElements.distinct().map(File::new)
                 .map(FlowFileUtils::convertToUrl).toArray(URL[]::new);
 
         return new ReflectionsClassFinder(urls);

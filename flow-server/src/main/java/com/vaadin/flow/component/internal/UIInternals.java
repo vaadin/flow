@@ -921,8 +921,10 @@ public class UIInternals implements Serializable {
         if (isFallbackChunkLoaded) {
             return;
         }
-        ui.getPage()
-                .addDynamicImport("return window.Vaadin.Flow.loadFallback();");
+        ui.getPage().addDynamicImport(
+                "var fallback = window.Vaadin.Flow.fallbacks['" + getAppId()
+                        + "']; if (fallback.loadFallback) { return fallback.loadFallback(); } "
+                        + "else { return Promise.resolve(0); }");
         isFallbackChunkLoaded = true;
     }
 

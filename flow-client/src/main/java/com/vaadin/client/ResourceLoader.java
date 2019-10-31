@@ -771,13 +771,14 @@ public class ResourceLoader {
     /*-{
           try {
             var promise = promiseSupplier.@java.util.function.Supplier::get(*)();
-            if ( !(promise instanceof Promise )){
+            if ( !(promise instanceof $wnd.Promise )){
                 throw new Error('The expression "'+expression+'" result is not a Promise.');
             }
             promise.then( function(result) { onSuccess.@java.lang.Runnable::run(*)(); } ,
-                          function(error) { onError.@java.lang.Runnable::run(*)(); } );
+                          function(error) { console.error(error); onError.@java.lang.Runnable::run(*)(); } );
           }
           catch(error) {
+               console.error(error);
                onError.@java.lang.Runnable::run(*)();
           }
     }-*/;

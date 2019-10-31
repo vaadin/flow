@@ -17,6 +17,7 @@
 package com.vaadin.flow.internal.nodefeature;
 
 import java.io.Serializable;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -123,7 +124,15 @@ public class ElementAttributeMap extends NodeMap {
      *            the value
      */
     public void setResource(String attribute, AbstractStreamResource resource) {
-        set(attribute, StreamResourceRegistry.getURI(resource).toASCIIString());
+        final URI targetUri;
+        if (VaadinSession.getCurrent() != null) {
+            final StreamResourceRegistry resourceRegistry =
+                    VaadinSession.getCurrent().getResourceRegistry();
+            targetUri = resourceRegistry.getTargetURI(resource);
+        } else {
+            targetUri = StreamResourceRegistry.getURI(resource);
+        }
+        set(attribute, targetUri.toASCIIString());
         if (getNode().isAttached()) {
             registerResource(attribute, resource);
         } else {

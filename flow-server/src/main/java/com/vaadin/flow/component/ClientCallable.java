@@ -25,7 +25,9 @@ import com.vaadin.flow.dom.DisabledUpdateMode;
 
 /**
  * Publishes the annotated method so it can be invoked from the client side
- * using the notation <code>this.$server.method()</code> in template methods.
+ * using the notation <code>this.$server.method()</code>. The method will return
+ * a Promise which will be resolved with either the return value from the server
+ * or a generic rejection if the server-side method throws an exception.
  *
  * @author Vaadin Ltd
  * @since 1.0

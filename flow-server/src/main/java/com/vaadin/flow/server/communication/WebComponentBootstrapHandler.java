@@ -128,16 +128,14 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 request, response, session);
         JsonObject config = context.getApplicationParameters();
 
-        String requestURL = getRequestUrl(request);
-
         if(!canHandleRequest(request)) {
             throw new IllegalStateException("Unexpected request URL '"
-                    + requestURL + "' in the bootstrap handler for web "
+                    + getRequestUrl(request) + "' in the bootstrap handler for web "
                     + "component UI which should handle path "
                     + PATH_PATTERN.toString());
         }
 
-        String serviceUrl = getServiceUrl(request);
+        String serviceUrl = getServiceUrl(request, response);
 
         String pushURL = context.getSession().getConfiguration().getPushURL();
         if (pushURL == null) {
@@ -190,7 +188,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
             ServletHelper.setResponseNoCacheHeaders(response::setHeader,
                     response::setDateHeader);
 
-            String serviceUrl = getServiceUrl(request);
+            String serviceUrl = getServiceUrl(request, response);
 
             Document document = getPageBuilder().getBootstrapPage(context);
             writeBootstrapPage(response, document.head(), serviceUrl);
@@ -298,7 +296,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
      * @throws IOException
      *         if {@code writer} is unable to write
      */
-    private static void transferAttribute(
+    private void transferAttribute(
             Writer writer, String elementRef, Element element,
             String basePath) throws IOException {
         for (Attribute attribute : element.attributes()) {
@@ -308,12 +306,16 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
             } else {
                 String path = attribute.getValue();
                 if ("src".equals(attribute.getKey())) {
-                    path = URI.create(basePath + path).toString();
+                    path = modifyPath(basePath, path);
                 }
                 writer.append("'").append(path).append("'");
             }
             writer.append(");");
         }
+    }
+
+    protected String modifyPath(String basePath, String path) {
+        return URI.create(basePath + path).toString();
     }
 
     private static String inlineHTML(String html) {
@@ -337,10 +339,15 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
 
     /**
      * Returns the service url needed for initialising the UI.
-     * @param request Request.
+     * 
+     * @param request
+     *            the request object
+     * @param response
+     *            the response object
      * @return Service url for the given request.
      */
-    protected String getServiceUrl(VaadinRequest request) {
+    protected String getServiceUrl(VaadinRequest request,
+            VaadinResponse response) {
         // get service url from 'url' parameter
         String url = request.getParameter(REQ_PARAM_URL);
         // if 'url' parameter was not available, use request url

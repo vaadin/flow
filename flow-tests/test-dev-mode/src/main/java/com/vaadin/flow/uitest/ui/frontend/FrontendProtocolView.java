@@ -15,12 +15,12 @@
  */
 package com.vaadin.flow.uitest.ui.frontend;
 
-import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 /**
  * Wrapper view for the {@link FrontendProtocolTemplate} component. This class

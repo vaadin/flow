@@ -51,8 +51,21 @@ public class StreamRequestHandler implements RequestHandler {
      */
     static final String DYN_RES_PREFIX = "VAADIN/dynamic/resource/";
 
-    private StreamResourceHandler resourceHandler = new StreamResourceHandler();
-    private StreamReceiverHandler receiverHandler = new StreamReceiverHandler();
+    private final StreamResourceHandler resourceHandler =
+            new StreamResourceHandler();
+    private final StreamReceiverHandler receiverHandler;
+
+    /**
+     * Create a new stream request handler with the default
+     * StreamReceiverHandler.
+     */
+    public StreamRequestHandler() {
+        this(new StreamReceiverHandler());
+    }
+
+    protected StreamRequestHandler(StreamReceiverHandler receiverHandler) {
+        this.receiverHandler = receiverHandler;
+    }
 
     @Override
     public boolean handleRequest(VaadinSession session, VaadinRequest request,

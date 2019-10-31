@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.router.internal;
 
+import javax.servlet.ServletContext;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,8 +24,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
-import javax.servlet.ServletContext;
-
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,12 +56,11 @@ import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.ServiceException;
+import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.MockUI;
-
-import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class NavigationStateRendererTest {
@@ -70,8 +69,8 @@ public class NavigationStateRendererTest {
 
     @Before
     public void init() {
-        RouteRegistry registry = ApplicationRouteRegistry
-                .getInstance(Mockito.mock(ServletContext.class));
+        RouteRegistry registry = ApplicationRouteRegistry.getInstance(
+                new VaadinServletContext(Mockito.mock(ServletContext.class)));
         router = new Router(registry);
     }
 

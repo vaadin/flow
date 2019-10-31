@@ -22,14 +22,9 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.util.Collections;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.server.MockVaadinServletService;
-import com.vaadin.flow.server.VaadinService;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Before;
@@ -40,11 +35,13 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.server.frontend.FrontendUtils.UnknownVersionException;
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.VaadinService;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.checkForFaultyNpmVersion;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubNode;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
@@ -124,51 +121,41 @@ public class FrontendUtilsTest {
     }
 
     @Test
-    public void parseValidVersions() throws UnknownVersionException {
-        assertFalse(FrontendUtils.isVersionAtLeast("test",
-                new String[] { "6", "0", "0" }, 10, 0));
-        assertFalse(FrontendUtils.isVersionAtLeast("test",
-                new String[] { "6", "0", "0" }, 6, 1));
-        assertTrue(FrontendUtils.isVersionAtLeast("test",
-                new String[] { "10", "0", "0" }, 10, 0));
-        assertTrue(FrontendUtils.isVersionAtLeast("test",
-                new String[] { "10", "0", "2" }, 10, 0));
-        assertTrue(FrontendUtils.isVersionAtLeast("test",
-                new String[] { "10", "2", "0" }, 10, 0));
-    }
+    public void parseValidVersions() {
+        FrontendVersion sixPointO = new FrontendVersion(6, 0);
 
-    @Test(expected = UnknownVersionException.class)
-    public void parseInvalidMajorVersion() throws UnknownVersionException {
-        FrontendUtils.isVersionAtLeast("test", new String[] { "6", "0b2", "0" },
-                10, 0);
-    }
-
-    @Test(expected = UnknownVersionException.class)
-    public void parseInvalidMinorVersion() throws UnknownVersionException {
-        FrontendUtils.isVersionAtLeast("test", new String[] { "6", "0b2", "0" },
-                10, 0);
+        FrontendVersion requiredVersionTen = new FrontendVersion(10, 0);
+        assertFalse(
+                FrontendUtils.isVersionAtLeast(sixPointO, requiredVersionTen));
+        assertFalse(FrontendUtils
+                .isVersionAtLeast(sixPointO, new FrontendVersion(6, 1)));
+        assertTrue(FrontendUtils.isVersionAtLeast(new FrontendVersion("10.0.0"),
+                requiredVersionTen));
+        assertTrue(FrontendUtils.isVersionAtLeast(new FrontendVersion("10.0.2"),
+                requiredVersionTen));
+        assertTrue(FrontendUtils.isVersionAtLeast(new FrontendVersion("10.2.0"),
+                requiredVersionTen));
     }
 
     @Test
-    public void validateLargerThan_passesForNewVersion()
-            throws UnknownVersionException {
-        FrontendUtils.validateToolVersion("test",
-                new String[] { "10", "0", "2" }, 10, 0, 10, 0);
-        FrontendUtils.validateToolVersion("test",
-                new String[] { "10", "1", "2" }, 10, 0, 10, 0);
-        FrontendUtils.validateToolVersion("test",
-                new String[] { "11", "0", "2" }, 10, 0, 10, 0);
+    public void validateLargerThan_passesForNewVersion() {
+        FrontendUtils.validateToolVersion("test", new FrontendVersion("10.0.2"),
+                new FrontendVersion(10, 0), new FrontendVersion(10, 0));
+        FrontendUtils.validateToolVersion("test", new FrontendVersion("10.1.2"),
+                new FrontendVersion(10, 0), new FrontendVersion(10, 0));
+        FrontendUtils.validateToolVersion("test", new FrontendVersion("11.0.2"),
+                new FrontendVersion(10, 0), new FrontendVersion(10, 0));
     }
 
     @Test
     public void validateLargerThan_logsForSlightlyOldVersion()
-            throws UnknownVersionException, UnsupportedEncodingException {
+            throws UnsupportedEncodingException {
         PrintStream orgErr = System.err;
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         System.setErr(new PrintStream(out));
         try {
             FrontendUtils.validateToolVersion("test",
-                    new String[] { "9", "0", "0" }, 10, 0, 8, 0);
+                    new FrontendVersion(9,0, 0), new FrontendVersion(10, 0),new FrontendVersion( 8, 0));
             String logged = out.toString("utf-8")
                     // fix for windows
                     .replace("\r", "");
@@ -180,11 +167,10 @@ public class FrontendUtilsTest {
     }
 
     @Test
-    public void validateLargerThan_throwsForOldVersion()
-            throws UnknownVersionException, UnsupportedEncodingException {
+    public void validateLargerThan_throwsForOldVersion() {
         try {
             FrontendUtils.validateToolVersion("test",
-                    new String[] { "7", "5", "0" }, 10, 0, 8, 0);
+                    new FrontendVersion(7,5,0), new FrontendVersion(10, 0),new FrontendVersion(8, 0));
             Assert.fail("No exception was thrown for old version");
         } catch (IllegalStateException e) {
             Assert.assertTrue(e.getMessage().contains(
@@ -192,20 +178,12 @@ public class FrontendUtilsTest {
         }
     }
 
-    @Test(expected = UnknownVersionException.class)
-    public void validateLargerThan_invalidVersionThrows()
-            throws UnknownVersionException {
-        FrontendUtils.validateToolVersion("test",
-                new String[] { "a", "b", "c" }, 10, 2, 10, 2);
-    }
-
     @Test
-    public void validateLargerThan_ignoredWithProperty()
-            throws UnknownVersionException {
+    public void validateLargerThan_ignoredWithProperty() {
         try {
             System.setProperty("vaadin.ignoreVersionChecks", "true");
-            FrontendUtils.validateToolVersion("test",
-                    new String[] { "a", "b", "c" }, 10, 2, 10, 2);
+            FrontendUtils.validateToolVersion("test", new FrontendVersion(0, 0),
+                    new FrontendVersion(10, 2), new FrontendVersion(10, 2));
         } finally {
             System.clearProperty("vaadin.ignoreVersionChecks");
         }
@@ -213,19 +191,36 @@ public class FrontendUtilsTest {
 
     @Test
     public void parseValidToolVersions() throws IOException {
-        Assert.assertArrayEquals(new String[] { "10", "11", "12" },
-                FrontendUtils.parseVersion("v10.11.12"));
-        Assert.assertArrayEquals(new String[] { "8", "0", "0" },
-                FrontendUtils.parseVersion("v8.0.0"));
-        Assert.assertArrayEquals(new String[] { "8", "0", "0" },
-                FrontendUtils.parseVersion("8.0.0"));
-        Assert.assertArrayEquals(new String[] { "6", "9", "0" }, FrontendUtils
-                .parseVersion("Aktive Codepage: 1252\n" + "6.9.0\n" + ""));
+        Assert.assertEquals("10.11.12",
+                FrontendUtils.parseVersionString("v10.11.12"));
+        Assert.assertEquals("8.0.0",
+                FrontendUtils.parseVersionString("v8.0.0"));
+        Assert.assertEquals("8.0.0",
+                FrontendUtils.parseVersionString("8.0.0"));
+        Assert.assertEquals("6.9.0", FrontendUtils
+                .parseVersionString("Aktive Codepage: 1252\n" + "6.9.0\n" + ""));
     }
 
     @Test(expected = IOException.class)
     public void parseEmptyToolVersions() throws IOException {
-        FrontendUtils.parseVersion(" \n");
+        FrontendUtils.parseVersionString(" \n");
+    }
+
+    @Test
+    public void knownFaultyNpmVersionThrowsException() {
+        assertFaultyNpmVersion(new FrontendVersion(6,11,0));
+        assertFaultyNpmVersion(new FrontendVersion(6,11,1));
+        assertFaultyNpmVersion(new FrontendVersion(6,11,2));
+    }
+
+    private void assertFaultyNpmVersion(FrontendVersion version) {
+        try {
+            checkForFaultyNpmVersion(version);
+            Assert.fail("No exception was thrown for bad npm version");
+        } catch (IllegalStateException e) {
+            Assert.assertTrue("Faulty version "+version.getFullVersion()+" returned wrong exception message", e.getMessage().contains(
+                    "Your installed 'npm' version ("+version.getFullVersion()+") is known to have problems."));
+        }
     }
 
     @Test
