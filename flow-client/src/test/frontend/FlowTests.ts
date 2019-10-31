@@ -111,7 +111,7 @@ suite("Flow", () => {
 
   test("should initialize window.Flow object", () => {
     assert.isUndefined($wnd.Vaadin);
-    const flow = new Flow({imports: () => {}});
+    new Flow({imports: () => {}});
 
     assert.isDefined($wnd.Vaadin);
     assert.isDefined($wnd.Vaadin.Flow);

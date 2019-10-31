@@ -23,6 +23,15 @@ const throwConnectException = (errorJson: ConnectExceptionData) => {
   }
 };
 
+// when in tests, body is not set correctly by calling `new Request`
+export const createRequest = (input: RequestInfo, init?: RequestInit) => {
+  const request = new Request(input, init);
+  if (init && init.body && !request.body) {
+    (request as any).body = init.body;
+  }
+  return request;
+};
+
 /**
  * Throws a TypeError if the response is not 200 OK.
  * @param response The response to assert.
@@ -545,7 +554,7 @@ export class ConnectClient {
       );
     }
 
-    options = {...options, requireCredentials: true};
+    options = {...{requireCredentials: true}, ...options};
     if (options.requireCredentials) {
       await this.login();
     }
@@ -560,15 +569,12 @@ export class ConnectClient {
       headers['Authorization'] = `Bearer ${accessToken.token}`;
     }
 
-    // Construct a Request instance from arguments
-    const request = new Request(
-      `${this.endpoint}/${service}/${method}`,
-      {
-        method: 'POST',
-        headers,
-        body: params !== undefined ? JSON.stringify(params) : undefined
-      }
-    );
+    const request = createRequest(
+       `${this.endpoint}/${service}/${method}`, {
+         method: 'POST',
+         headers,
+         body: params !== undefined ? JSON.stringify(params) : undefined
+        });
 
     // The middleware `context`, includes the call arguments and the request
     // constructed from them
