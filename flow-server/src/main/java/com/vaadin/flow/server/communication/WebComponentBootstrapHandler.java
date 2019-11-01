@@ -65,8 +65,6 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
     private static final Pattern PATH_PATTERN =
             Pattern.compile(".*" + PATH_PREFIX + "-(ui|bootstrap)\\.(js|html)$");
 
-    private String servletPath;
-
     private static class WebComponentBootstrapContext extends BootstrapContext {
 
         private WebComponentBootstrapContext(VaadinRequest request,
@@ -134,8 +132,6 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                     + "component UI which should handle path "
                     + PATH_PATTERN.toString());
         }
-
-        servletPath = getRelativeServletPath((VaadinServletRequest) request);
 
         final String serviceUrl = getServiceUrl(request, response);
 
@@ -390,20 +386,5 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 // replace http:// or https:// with // to work with https:// proxies
                 // which proxies to the same http:// url
                 .replaceFirst("^" + ".*://", "//");
-    }
-
-    private static String getRelativeServletPath(VaadinServletRequest request) {
-        String servletPath = request.getServletPath();
-        StringBuilder pathBuilder = new StringBuilder();
-        if (servletPath.startsWith("/")) {
-            pathBuilder.append(".");
-        } else if (!servletPath.startsWith(".")) {
-            pathBuilder.append("./");
-        }
-        pathBuilder.append(servletPath);
-        if (!servletPath.endsWith("/")) {
-            pathBuilder.append("/");
-        }
-        return pathBuilder.toString();
     }
 }
