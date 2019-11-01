@@ -117,13 +117,30 @@ public abstract class AbstractNodeStateProvider
 
     @Override
     public void removeChild(StateNode node, Element child) {
+        if (child.isVirtualChild() && node.hasFeature(VirtualChildrenList.class)) {
+            removeVirtualChild(node,child);
+            return;
+        }
         ElementChildrenList childrenFeature = getChildrenFeature(node);
         int pos = childrenFeature.indexOf(child.getNode());
         if (pos == -1) {
-            throw new IllegalArgumentException("Not in the list");
+            throw new IllegalArgumentException("Trying to detach an element from parent that does not have it.");
         }
         childrenFeature.remove(pos);
+    }
 
+    /*
+     * Removing virtual children is needed to make it possible to detach
+     * exported Flow web components, which are attached as virtual children.
+     */
+    private void removeVirtualChild(StateNode node, Element child) {
+        VirtualChildrenList childrenList = node.getFeature(VirtualChildrenList.class);
+        int index = childrenList.indexOf(child.getNode());
+        if (index == -1) {
+            throw new IllegalArgumentException("Trying to detach a virtual child element from parent that does not have it.");
+        }
+        childrenList.remove(index);
+        return;
     }
 
     @Override

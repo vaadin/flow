@@ -272,6 +272,24 @@ public class EventUtilTest {
     }
 
     @Test
+    public void removingVirtualChildrenIsPossible() {
+        Element parent = new Element("root");
+        Element child1 = new Element("main");
+        Element child2 = new Element("menu");
+        parent.appendVirtualChild(child1, child2);
+
+        child1.removeFromParent();
+
+        Assert.assertNull(child1.getParent());
+        Assert.assertFalse(child1.isVirtualChild());
+
+        parent.removeChild(child2);
+
+        Assert.assertNull(child2.getParent());
+        Assert.assertFalse(child2.isVirtualChild());
+    }
+
+    @Test
     public void getImplementingComponents() throws Exception {
         Element node = new Element("root");
         node.appendChild(new Element("main"), new Element("menu"));
