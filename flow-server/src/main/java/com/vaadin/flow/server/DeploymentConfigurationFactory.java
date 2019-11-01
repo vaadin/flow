@@ -16,8 +16,6 @@
 
 package com.vaadin.flow.server;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
@@ -95,18 +93,14 @@ public final class DeploymentConfigurationFactory implements Serializable {
      *
      * @param systemPropertyBaseClass
      *            the class to look for properties defined with annotations
-     * @param servletConfig
+     * @param vaadinConfig
      *            the config to get the rest of the properties from
      * @return {@link DeploymentConfiguration} instance
-     * @throws ServletException
-     *             if construction of the {@link Properties} for the parameters
-     *             fails
      */
     public static DeploymentConfiguration createDeploymentConfiguration(
-            Class<?> systemPropertyBaseClass, ServletConfig servletConfig)
-            throws ServletException {
+            Class<?> systemPropertyBaseClass, VaadinConfig vaadinConfig) {
         return new DefaultDeploymentConfiguration(systemPropertyBaseClass,
-                createInitParameters(systemPropertyBaseClass, servletConfig));
+                createInitParameters(systemPropertyBaseClass, vaadinConfig));
     }
 
     /**
@@ -116,18 +110,14 @@ public final class DeploymentConfigurationFactory implements Serializable {
      *
      * @param systemPropertyBaseClass
      *            the class to look for properties defined with annotations
-     * @param servletConfig
+     * @param vaadinConfig
      *            the config to get the rest of the properties from
      * @return {@link DeploymentConfiguration} instance
-     * @throws ServletException
-     *             if construction of the {@link Properties} for the parameters
-     *             fails
      */
     public static DeploymentConfiguration createPropertyDeploymentConfiguration(
-            Class<?> systemPropertyBaseClass, ServletConfig servletConfig)
-            throws ServletException {
+            Class<?> systemPropertyBaseClass, VaadinConfig vaadinConfig) {
         return new PropertyDeploymentConfiguration(systemPropertyBaseClass,
-                createInitParameters(systemPropertyBaseClass, servletConfig));
+                createInitParameters(systemPropertyBaseClass, vaadinConfig));
     }
 
     /**
@@ -135,23 +125,19 @@ public final class DeploymentConfigurationFactory implements Serializable {
      * in current application.
      *
      * @param systemPropertyBaseClass
-     *            the class to look for properties defined with annotations
-     * @param servletConfig
-     *            the config to get the rest of the properties from
+     *         the class to look for properties defined with annotations
+     * @param vaadinConfig
+     *         the config to get the rest of the properties from
      * @return {@link Properties} instance
-     * @throws ServletException
-     *             if construction of the {@link Properties} for the parameters
-     *             fails
      */
     protected static Properties createInitParameters(
-            Class<?> systemPropertyBaseClass, ServletConfig servletConfig)
-            throws ServletException {
+            Class<?> systemPropertyBaseClass, VaadinConfig vaadinConfig) {
         Properties initParameters = new Properties();
         readUiFromEnclosingClass(systemPropertyBaseClass, initParameters);
         readConfigurationAnnotation(systemPropertyBaseClass, initParameters);
 
         // Read default parameters from server.xml
-        final ServletContext context = servletConfig.getServletContext();
+        final VaadinContext context = vaadinConfig.getVaadinContext();
         for (final Enumeration<String> e = context.getInitParameterNames(); e
                 .hasMoreElements();) {
             final String name = e.nextElement();
@@ -159,11 +145,11 @@ public final class DeploymentConfigurationFactory implements Serializable {
         }
 
         // Override with application config from web.xml
-        for (final Enumeration<String> e = servletConfig
-                .getInitParameterNames(); e.hasMoreElements();) {
+        for (final Enumeration<String> e = vaadinConfig
+                .getInitParameterNames(); e.hasMoreElements(); ) {
             final String name = e.nextElement();
-            initParameters.setProperty(name,
-                    servletConfig.getInitParameter(name));
+            initParameters
+                    .setProperty(name, vaadinConfig.getInitParameter(name));
         }
 
         readBuildInfo(initParameters);
@@ -426,8 +412,7 @@ public final class DeploymentConfigurationFactory implements Serializable {
     }
 
     private static void readConfigurationAnnotation(
-            Class<?> systemPropertyBaseClass, Properties initParameters)
-            throws ServletException {
+            Class<?> systemPropertyBaseClass, Properties initParameters) {
         Optional<VaadinServletConfiguration> optionalConfigAnnotation = AnnotationReader
                 .getAnnotationFor(systemPropertyBaseClass,
                         VaadinServletConfiguration.class);
@@ -459,12 +444,26 @@ public final class DeploymentConfigurationFactory implements Serializable {
                 initParameters.setProperty(name.value(), stringValue);
             } catch (Exception e) {
                 // This should never happen
-                throw new ServletException(
+                throw new RuntimeServletException(
                         "Could not read @VaadinServletConfiguration value "
-                                + method.getName(),
-                        e);
+                                + method.getName(), e);
             }
         }
 
+    }
+
+    public static class RuntimeServletException extends RuntimeException {
+
+        /**
+         * RuntimeServletException for exception that should never happen.
+         *
+         * @param message
+         *         Exception message
+         * @param exception
+         *         cause of exception
+         */
+        public RuntimeServletException(String message, Exception exception) {
+            super(message, exception);
+        }
     }
 }

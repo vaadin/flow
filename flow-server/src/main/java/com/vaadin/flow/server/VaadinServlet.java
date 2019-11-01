@@ -143,13 +143,13 @@ public class VaadinServlet extends HttpServlet {
      *
      * @throws ServletException
      *             if construction of the {@link Properties} for
-     *             {@link DeploymentConfigurationFactory#createInitParameters(Class, ServletConfig)}
+     *             {@link DeploymentConfigurationFactory#createInitParameters(Class, VaadinConfig)}
      *             fails
      */
     protected DeploymentConfiguration createDeploymentConfiguration()
             throws ServletException {
         return createDeploymentConfiguration(DeploymentConfigurationFactory
-                .createInitParameters(getClass(), getServletConfig()));
+                .createInitParameters(getClass(), new VaadinServletConfig(getServletConfig())));
     }
 
     /**

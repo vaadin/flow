@@ -100,7 +100,7 @@ public class DeploymentConfigurationFactoryTest {
 
         DeploymentConfiguration config = DeploymentConfigurationFactory
                 .createDeploymentConfiguration(servlet,
-                        createServletConfigMock(servletConfigParams,
+                        createVaadinConfigMock(servletConfigParams,
                                 Collections.singletonMap(PARAM_TOKEN_FILE,
                                         tokenFile.getPath())));
 
@@ -123,7 +123,7 @@ public class DeploymentConfigurationFactoryTest {
                 defaultServletParams);
 
         DeploymentConfiguration config = DeploymentConfigurationFactory
-                .createDeploymentConfiguration(servlet, createServletConfigMock(
+                .createDeploymentConfiguration(servlet, createVaadinConfigMock(
                         servletConfigParams, emptyMap()));
 
         Class<?> notUiClass = servlet.getEnclosingClass();
@@ -143,7 +143,7 @@ public class DeploymentConfigurationFactoryTest {
                 defaultServletParams);
 
         DeploymentConfiguration config = DeploymentConfigurationFactory
-                .createDeploymentConfiguration(servlet, createServletConfigMock(
+                .createDeploymentConfiguration(servlet, createVaadinConfigMock(
                         servletConfigParams, emptyMap()));
 
         assertTrue(String.format(
@@ -170,7 +170,7 @@ public class DeploymentConfigurationFactoryTest {
                 Integer.toString(overridingHeartbeatIntervalValue));
 
         DeploymentConfiguration config = DeploymentConfigurationFactory
-                .createDeploymentConfiguration(servlet, createServletConfigMock(
+                .createDeploymentConfiguration(servlet, createVaadinConfigMock(
                         servletConfigParams, emptyMap()));
 
         assertEquals(
@@ -198,7 +198,7 @@ public class DeploymentConfigurationFactoryTest {
                 Integer.toString(overridingHeartbeatIntervalValue));
 
         DeploymentConfiguration config = DeploymentConfigurationFactory
-                .createDeploymentConfiguration(servlet, createServletConfigMock(
+                .createDeploymentConfiguration(servlet, createVaadinConfigMock(
                         emptyMap(), servletContextParams));
 
         assertEquals(
@@ -235,7 +235,7 @@ public class DeploymentConfigurationFactoryTest {
                 Integer.toString(servletContextHeartbeatIntervalValue));
 
         DeploymentConfiguration config = DeploymentConfigurationFactory
-                .createDeploymentConfiguration(servlet, createServletConfigMock(
+                .createDeploymentConfiguration(servlet, createVaadinConfigMock(
                         servletConfigParams, servletContextParams));
 
         assertEquals(
@@ -266,7 +266,7 @@ public class DeploymentConfigurationFactoryTest {
 
         DeploymentConfigurationFactory.createDeploymentConfiguration(
                 VaadinServlet.class,
-                createServletConfigMock(Collections.singletonMap(
+                createVaadinConfigMock(Collections.singletonMap(
                         Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
                         Boolean.FALSE.toString()), emptyMap()));
     }
@@ -285,7 +285,7 @@ public class DeploymentConfigurationFactoryTest {
         FileUtils.writeLines(webPack, Arrays.asList("./webpack.generated.js"));
 
         DeploymentConfigurationFactory.createDeploymentConfiguration(
-                VaadinServlet.class, createServletConfigMock(map, emptyMap()));
+                VaadinServlet.class, createVaadinConfigMock(map, emptyMap()));
     }
 
     @Test
@@ -309,7 +309,7 @@ public class DeploymentConfigurationFactoryTest {
         webPack.createNewFile();
 
         DeploymentConfigurationFactory.createDeploymentConfiguration(
-                VaadinServlet.class, createServletConfigMock(map, emptyMap()));
+                VaadinServlet.class, createVaadinConfigMock(map, emptyMap()));
     }
 
     @Test
@@ -431,7 +431,7 @@ public class DeploymentConfigurationFactoryTest {
                 .thenReturn(tokenFile.getPath());
 
         Properties properties = DeploymentConfigurationFactory
-                .createInitParameters(Object.class, config);
+                .createInitParameters(Object.class, new VaadinServletConfig(config));
 
         Object object = properties
                 .get(DeploymentConfigurationFactory.FALLBACK_CHUNK);
@@ -454,7 +454,13 @@ public class DeploymentConfigurationFactoryTest {
     private DeploymentConfiguration createConfig(Map<String, String> map)
             throws Exception {
         return DeploymentConfigurationFactory.createDeploymentConfiguration(
-                VaadinServlet.class, createServletConfigMock(map, emptyMap()));
+                VaadinServlet.class, createVaadinConfigMock(map, emptyMap()));
+    }
+
+    private VaadinConfig createVaadinConfigMock(
+            Map<String, String> servletConfigParameters,
+            Map<String, String> servletContextParameters) throws Exception {
+        return new VaadinServletConfig(createServletConfigMock(servletConfigParameters,servletContextParameters));
     }
 
     private ServletConfig createServletConfigMock(
