@@ -13,21 +13,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.webcomponent;
 
 import javax.servlet.annotation.WebServlet;
-import java.io.PrintWriter;
-import java.util.function.Consumer;
 
-import com.vaadin.flow.webcomponent.servlets.AbstractPlainServlet;
+import com.vaadin.flow.server.VaadinServlet;
 
-// npm mode is able to survive a root-mapped servlet, while compatibility
-// mode is not
-@WebServlet(urlPatterns = { "/*", "/items/*" }, asyncSupported = true)
-public class NpmProdPlainServlet extends AbstractPlainServlet {
-    @Override
-    protected Consumer<PrintWriter> getImportsWriter() {
-        return this::writeNpmImports;
-    }
+@WebServlet(urlPatterns = { "/frontend/*", "/VAADIN/*" }, asyncSupported = true)
+public class CompatibilityDevServlet extends VaadinServlet {
 }
