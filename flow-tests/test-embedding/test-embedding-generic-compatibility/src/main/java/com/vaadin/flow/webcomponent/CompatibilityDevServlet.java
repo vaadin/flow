@@ -13,12 +13,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.webcomponent.servlets;
+package com.vaadin.flow.webcomponent;
 
 import javax.servlet.annotation.WebServlet;
 
 import com.vaadin.flow.server.VaadinServlet;
 
-@WebServlet(urlPatterns = { "/vaadin/*"}, asyncSupported = true)
-public class WebComponentVaadinServlet extends VaadinServlet {
+@WebServlet(urlPatterns = { "/frontend/*", "/VAADIN/*" }, asyncSupported = true)
+public class CompatibilityDevServlet extends VaadinServlet {
 }
