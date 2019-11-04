@@ -126,6 +126,7 @@ public class VaadinConnectControllerTest {
     public void setUp() {
         requestMock = mock(HttpServletRequest.class);
         when(requestMock.getUserPrincipal()).thenReturn(mock(Principal.class));
+        when(requestMock.getHeader("X-Requested-With")).thenReturn("Vaadin CCDM");
     }
 
     @Test
@@ -297,6 +298,24 @@ public class VaadinConnectControllerTest {
         assertEquals("Should return message when calling anonymously",
                 "\"Hello, anonymous user!\"", responseBody);
     }
+
+
+    @Test
+    public void should_NotCallMethod_When_a_CSRF_request() {
+        when(requestMock.getHeader("X-Requested-With")).thenReturn(null);
+
+        VaadinConnectController vaadinController = createVaadinControllerWithoutPrincipal();
+        ResponseEntity<String> response = vaadinController.serveVaadinService(
+                TEST_SERVICE_NAME, "testAnonymousMethod",
+                createRequestParameters("{}"), requestMock);
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        String responseBody = response.getBody();
+        assertNotNull("Response body should not be null", responseBody);
+        assertTrue("Should return unauthorized error",
+                responseBody.contains("CSRF detected"));
+    }
+
 
     @Test
     @Ignore("requires mockito version with plugin for final classes")

@@ -79,7 +79,11 @@ public class VaadinConnectAccessChecker {
      *         issues occur, {@code null} otherwise
      */
     public String check(Method method, HttpServletRequest request) {
-        return verifyAnonymousUser(method, request);
+        String error = verifyCsrf(request);
+        if (error == null) {
+            error = verifyAnonymousUser(method, request);
+        }
+        return error;
     }
 
     /**
@@ -100,6 +104,13 @@ public class VaadinConnectAccessChecker {
         }
         return hasSecurityAnnotation(method) ? method
                 : method.getDeclaringClass();
+    }
+
+    private String verifyCsrf(HttpServletRequest request) {
+        if ("Vaadin CCDM".equals(request.getHeader("X-Requested-With"))) {
+            return null;
+        }
+        return "CSRF detected";
     }
 
     private String verifyAnonymousUser(Method method,
