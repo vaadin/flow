@@ -452,6 +452,9 @@ public final class DeploymentConfigurationFactory implements Serializable {
 
     }
 
+    /**
+     * Servlet exception for configuration read exception.
+     */
     public static class RuntimeServletException extends RuntimeException {
 
         /**
