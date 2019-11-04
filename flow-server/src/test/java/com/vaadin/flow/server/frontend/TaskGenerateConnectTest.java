@@ -53,7 +53,7 @@ public class TaskGenerateConnectTest {
 
         String output = FileUtils.readFileToString(client, "UTF-8");
         assertTrue(output
-                .contains("import {ConnectClient} from '@vaadin/connect';"));
+                .contains("import {ConnectClient} from '@vaadin/flow-frontend/Connect';"));
         assertTrue(output.contains(
                 "const client = new ConnectClient({endpoint: 'connect'});"));
         assertTrue(output.contains("export default client;"));

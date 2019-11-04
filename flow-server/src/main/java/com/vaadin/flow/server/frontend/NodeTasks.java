@@ -30,7 +30,6 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 import elemental.json.JsonObject;
 
-import static com.vaadin.flow.server.connect.generator.VaadinConnectClientGenerator.CONNECT_CLIENT_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
@@ -449,8 +448,7 @@ public class NodeTasks implements FallibleCommand {
         if (builder.enablePackagesUpdate) {
             TaskUpdatePackages packageUpdater = new TaskUpdatePackages(
                     classFinder, frontendDependencies, builder.npmFolder,
-                    builder.generatedFolder, builder.cleanNpmFiles,
-                    new File(builder.connectClientTsApiFolder, CONNECT_CLIENT_NAME));
+                    builder.generatedFolder, builder.cleanNpmFiles);
             commands.add(packageUpdater);
 
             if (builder.runNpmInstall) {
