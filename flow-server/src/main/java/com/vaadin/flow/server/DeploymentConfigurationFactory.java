@@ -16,11 +16,11 @@
 
 package com.vaadin.flow.server;
 
-import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -96,9 +96,11 @@ public final class DeploymentConfigurationFactory implements Serializable {
      * @param vaadinConfig
      *            the config to get the rest of the properties from
      * @return {@link DeploymentConfiguration} instance
+     * @throws VaadinConfigurationException thrown if property construction fails
      */
     public static DeploymentConfiguration createDeploymentConfiguration(
-            Class<?> systemPropertyBaseClass, VaadinConfig vaadinConfig) {
+            Class<?> systemPropertyBaseClass, VaadinConfig vaadinConfig)
+            throws VaadinConfigurationException {
         return new DefaultDeploymentConfiguration(systemPropertyBaseClass,
                 createInitParameters(systemPropertyBaseClass, vaadinConfig));
     }
@@ -113,9 +115,11 @@ public final class DeploymentConfigurationFactory implements Serializable {
      * @param vaadinConfig
      *            the config to get the rest of the properties from
      * @return {@link DeploymentConfiguration} instance
+     * @throws VaadinConfigurationException thrown if property construction fails
      */
     public static DeploymentConfiguration createPropertyDeploymentConfiguration(
-            Class<?> systemPropertyBaseClass, VaadinConfig vaadinConfig) {
+            Class<?> systemPropertyBaseClass, VaadinConfig vaadinConfig)
+            throws VaadinConfigurationException {
         return new PropertyDeploymentConfiguration(systemPropertyBaseClass,
                 createInitParameters(systemPropertyBaseClass, vaadinConfig));
     }
@@ -129,9 +133,11 @@ public final class DeploymentConfigurationFactory implements Serializable {
      * @param vaadinConfig
      *         the config to get the rest of the properties from
      * @return {@link Properties} instance
+     * @throws VaadinConfigurationException thrown if property construction fails
      */
     protected static Properties createInitParameters(
-            Class<?> systemPropertyBaseClass, VaadinConfig vaadinConfig) {
+            Class<?> systemPropertyBaseClass, VaadinConfig vaadinConfig)
+            throws VaadinConfigurationException {
         Properties initParameters = new Properties();
         readUiFromEnclosingClass(systemPropertyBaseClass, initParameters);
         readConfigurationAnnotation(systemPropertyBaseClass, initParameters);
@@ -411,8 +417,21 @@ public final class DeploymentConfigurationFactory implements Serializable {
         }
     }
 
+    /**
+     * Read the VaadinServletConfiguration annotation for initialization name
+     * value pairs and add them to the intial properties object.
+     *
+     * @param systemPropertyBaseClass
+     *         base class for constructing the configuration
+     * @param initParameters
+     *         current initParameters object
+     * @throws VaadinConfigurationException
+     *         exception thrown for failure in invoking method on configuration
+     *         annotation
+     */
     private static void readConfigurationAnnotation(
-            Class<?> systemPropertyBaseClass, Properties initParameters) {
+            Class<?> systemPropertyBaseClass, Properties initParameters)
+            throws VaadinConfigurationException {
         Optional<VaadinServletConfiguration> optionalConfigAnnotation = AnnotationReader
                 .getAnnotationFor(systemPropertyBaseClass,
                         VaadinServletConfiguration.class);
@@ -442,31 +461,12 @@ public final class DeploymentConfigurationFactory implements Serializable {
                 }
 
                 initParameters.setProperty(name.value(), stringValue);
-            } catch (Exception e) {
+            } catch (IllegalAccessException | InvocationTargetException e) {
                 // This should never happen
-                throw new RuntimeServletException(
+                throw new VaadinConfigurationException(
                         "Could not read @VaadinServletConfiguration value "
                                 + method.getName(), e);
             }
-        }
-
-    }
-
-    /**
-     * Servlet exception for configuration read exception.
-     */
-    public static class RuntimeServletException extends RuntimeException {
-
-        /**
-         * RuntimeServletException for exception that should never happen.
-         *
-         * @param message
-         *         Exception message
-         * @param exception
-         *         cause of exception
-         */
-        public RuntimeServletException(String message, Exception exception) {
-            super(message, exception);
         }
     }
 }

@@ -92,7 +92,7 @@ public class VaadinServletContextTest {
     }
 
     @Test
-    public void testGetPropertyNames_returnsExpectedProperties() {
+    public void getPropertyNames_returnsExpectedProperties() {
         List<String> list = Collections.list(context.getInitParameterNames());
         Assert.assertEquals(
                 "Context should return only keys defined in ServletContext",

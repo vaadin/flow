@@ -53,7 +53,7 @@ public class VaadinServletConfigTest {
     }
 
     @Test
-    public void testGetPropertyNames_returnsExpectedProperties() {
+    public void getPropertyNames_returnsExpectedProperties() {
         List<String> list = Collections.list(config.getInitParameterNames());
         Assert.assertEquals(
                 "Context should return only keys defined in ServletContext",
@@ -67,7 +67,7 @@ public class VaadinServletConfigTest {
 
 
     @Test
-    public void testVaadinContextThroughConfig_setAndGetAttribute() {
+    public void vaadinContextThroughConfig_setAndGetAttribute() {
         String value = "my-attribute";
         config.getVaadinContext().setAttribute(value);
         String result = config.getVaadinContext().getAttribute(String.class);

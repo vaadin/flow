@@ -407,7 +407,7 @@ public class DeploymentConfigurationFactoryTest {
 
     @Test
     public void createInitParameters_fallbackChunkObjectIsInInitParams()
-            throws ServletException, IOException {
+            throws VaadinConfigurationException, IOException {
         ServletContext context = Mockito.mock(ServletContext.class);
         ServletConfig config = Mockito.mock(ServletConfig.class);
         Mockito.when(config.getServletContext()).thenReturn(context);

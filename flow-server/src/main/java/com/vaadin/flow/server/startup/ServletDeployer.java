@@ -20,7 +20,6 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
-import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,6 +36,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DeploymentConfigurationFactory;
 import com.vaadin.flow.server.FrontendVaadinServlet;
+import com.vaadin.flow.server.VaadinConfigurationException;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletConfig;
 import com.vaadin.flow.server.VaadinServletConfiguration;
@@ -144,7 +144,7 @@ public class ServletDeployer implements ServletContextListener {
                 return DeploymentConfigurationFactory
                         .createPropertyDeploymentConfiguration(servletClass,
                                 new VaadinServletConfig(servletConfig));
-            } catch (DeploymentConfigurationFactory.RuntimeServletException e) {
+            } catch (VaadinConfigurationException e) {
                 throw new IllegalStateException(String.format(
                         "Failed to get deployment configuration data for servlet with name '%s' and class '%s'",
                         registration.getName(), servletClass), e);
