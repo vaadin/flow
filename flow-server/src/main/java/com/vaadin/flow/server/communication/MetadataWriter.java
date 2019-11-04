@@ -65,7 +65,8 @@ public class MetadataWriter implements Serializable {
         }
 
         VaadinSessionState state = ui.getSession().getState();
-        if (state != null && state.compareTo(VaadinSessionState.CLOSING) >= 0) {
+        if ((state != null && state.compareTo(VaadinSessionState.CLOSING) >= 0)
+                || ui.isClosing()) {
             meta.put(JsonConstants.META_SESSION_EXPIRED, true);
         }
 
