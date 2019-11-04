@@ -20,6 +20,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 
+import com.vaadin.flow.server.VaadinSessionState;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -111,4 +112,14 @@ public class MetadataWriterTest {
                 "{\"async\":true,\"timedRedirect\":{\"interval\":15,\"url\":\"\"}}",
                 meta.toJson());
     }
+
+    @Test
+    public void writeSessionExpiredTag() throws Exception {
+        Mockito.when(session.getState()).thenReturn(VaadinSessionState.CLOSING);
+
+        JsonObject meta = new MetadataWriter().createMetadata(ui, false, false,
+                messages);
+        Assert.assertEquals("{\"sessionExpired\":true}", meta.toJson());
+    }
+
 }
