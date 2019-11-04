@@ -144,18 +144,18 @@ public final class DeploymentConfigurationFactory implements Serializable {
 
         // Read default parameters from server.xml
         final VaadinContext context = vaadinConfig.getVaadinContext();
-        for (final Enumeration<String> e = context.getInitParameterNames(); e
+        for (final Enumeration<String> e = context.getContextParameterNames(); e
                 .hasMoreElements();) {
             final String name = e.nextElement();
-            initParameters.setProperty(name, context.getInitParameter(name));
+            initParameters.setProperty(name, context.getContextParameter(name));
         }
 
         // Override with application config from web.xml
         for (final Enumeration<String> e = vaadinConfig
-                .getInitParameterNames(); e.hasMoreElements(); ) {
+                .getConfigParameterNames(); e.hasMoreElements(); ) {
             final String name = e.nextElement();
             initParameters
-                    .setProperty(name, vaadinConfig.getInitParameter(name));
+                    .setProperty(name, vaadinConfig.getConfigParameter(name));
         }
 
         readBuildInfo(initParameters);

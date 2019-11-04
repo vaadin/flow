@@ -77,26 +77,22 @@ public interface VaadinContext extends Serializable {
     void removeAttribute(Class<?> clazz);
 
     /**
-     * Returns the names of the context's initialization parameters as an
-     * <code>Enumeration</code> of <code>String</code> objects, or an
-     * empty <code>Enumeration</code> if the context has no initialization
-     * parameters.
+     * Returns the names of the initialization parameters as an
+     * <code>Enumeration</code>, or an empty <code>Enumeration</code> if there
+     * are o initialization parameters.
      *
-     * @return an <code>Enumeration</code> of <code>String</code>
-     * objects containing the names of the context's
-     * initialization parameters
+     * @return initialization parameters as a <code>Enumeration</code>
      */
-    Enumeration<String> getInitParameterNames();
+    Enumeration<String> getContextParameterNames();
 
     /**
-     * Returns a <code>String</code> containing the value of the named
-     * initialization parameter, or <code>null</code> if the
-     * parameter does not exist.
+     * Returns the value for the requested parameter, or <code>null</code> if
+     * the parameter does not exist.
      *
+     * @param name
+     *         name of the parameter whose value is requested
      * @return parameter value as <code>String</code> or <code>null</code> for
      * no parameter
-     * @param    name    a <code>String</code> containing the name of the
-     * parameter whose value is requested
      */
-    String getInitParameter(String name);
+    String getContextParameter(String name);
 }

@@ -17,6 +17,7 @@ package com.vaadin.flow.server;
 
 import javax.servlet.ServletConfig;
 import java.util.Enumeration;
+import java.util.Objects;
 
 /**
  * {@link VaadinConfig} implementation for Servlets.
@@ -31,9 +32,10 @@ public class VaadinServletConfig implements VaadinConfig {
      * Vaadin servlet configuration wrapper constructor.
      *
      * @param config
-     *         servlet configuration object
+     *         servlet configuration object, not <code>null</code>
      */
     public VaadinServletConfig(ServletConfig config) {
+        Objects.requireNonNull(config, "VaadinServletConfig requires the ServletConfig object");
         this.config = config;
     }
 
@@ -58,13 +60,13 @@ public class VaadinServletConfig implements VaadinConfig {
     }
 
     @Override
-    public Enumeration<String> getInitParameterNames() {
+    public Enumeration<String> getConfigParameterNames() {
         ensureServletConfig();
         return config.getInitParameterNames();
     }
 
     @Override
-    public String getInitParameter(String name) {
+    public String getConfigParameter(String name) {
         ensureServletConfig();
         return config.getInitParameter(name);
     }

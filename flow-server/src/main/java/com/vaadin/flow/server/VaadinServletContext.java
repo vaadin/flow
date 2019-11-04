@@ -82,13 +82,13 @@ public class VaadinServletContext implements VaadinContext {
     }
 
     @Override
-    public Enumeration<String> getInitParameterNames() {
+    public Enumeration<String> getContextParameterNames() {
         ensureServletContext();
         return context.getInitParameterNames();
     }
 
     @Override
-    public String getInitParameter(String name) {
+    public String getContextParameter(String name) {
         ensureServletContext();
         return context.getInitParameter(name);
     }
