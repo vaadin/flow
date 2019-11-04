@@ -569,6 +569,8 @@ export class ConnectClient {
       headers['Authorization'] = `Bearer ${accessToken.token}`;
     }
 
+    headers['X-Requested-With'] = 'Vaadin CCDM';
+
     const request = createRequest(
        `${this.endpoint}/${service}/${method}`, {
          method: 'POST',
