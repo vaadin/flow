@@ -352,6 +352,20 @@ public class UidlWriterTest {
         }
     }
 
+    @Test
+    public void resynchronizationRequested_responseFieldContainsResynchronize()
+            throws Exception {
+        UI ui = initializeUIForDependenciesTest(new TestUI());
+        ui.getInternals().setClientResync(true);
+        UidlWriter uidlWriter = new UidlWriter();
+
+        JsonObject response = uidlWriter.createUidl(ui, false);
+        assertTrue("Response contains resynchronize field",
+                response.hasKey(ApplicationConstants.RESYNCHRONIZE_ID));
+        assertTrue("Response resynchronize field is set to true",
+               response.getBoolean(ApplicationConstants.RESYNCHRONIZE_ID));
+    }
+
     private void assertInlineDependencies(List<JsonObject> inlineDependencies,
             String expectedPrefix) {
         assertThat("Should have an inline dependency", inlineDependencies,

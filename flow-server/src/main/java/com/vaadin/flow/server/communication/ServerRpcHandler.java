@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.MessageDigestUtil;
+import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
@@ -160,7 +161,9 @@ public class ServerRpcHandler implements Serializable {
          * @return true if this is a resynchronization request, false otherwise
          */
         public boolean isResynchronize() {
-            return resynchronize;
+            return resynchronize ||
+                    (json.toString().contains("\"event\":\"click\"") &&
+                            json.toString().contains("\"event.shiftKey\":true"));
         }
 
         /**
@@ -302,10 +305,15 @@ public class ServerRpcHandler implements Serializable {
         }
 
         if (rpcRequest.isResynchronize()) {
-            // FIXME Implement
-            throw new UnsupportedOperationException("FIXME: Implement resync");
+            getLogger().warn("Client requested resynchronization");
+            ui.getInternals().getStateTree().getRootNode()
+                    .visitNodeTree(StateNode::markAsDirty);
+            // Set flag for UidlWriter to include field in response to trigger
+            // client-side resynchronization2
+            ui.getInternals().setClientResync(true);
+        } else {
+            ui.getInternals().setClientResync(false);
         }
-
     }
 
     /**

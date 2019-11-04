@@ -209,6 +209,8 @@ public class UIInternals implements Serializable {
 
     private boolean isFallbackChunkLoaded;
 
+    private boolean clientResync = false;
+
     /**
      * Creates a new instance for the given UI.
      *
@@ -1147,5 +1149,26 @@ public class UIInternals implements Serializable {
      */
     public void setExtendedClientDetails(ExtendedClientDetails details) {
         this.extendedClientDetails = details;
+    }
+
+    /**
+     * Set whether the client should be asked to resynchronize in the next UIDL
+     * request response.
+     *
+     * @param clientResync
+     *            true iff the client should resynchronize
+     */
+    public void setClientResync( boolean clientResync ) {
+        this.clientResync = clientResync;
+    }
+
+    /**
+     * Returns whether the client should resynchronize in the next UIDL request
+     * response.
+     *
+     * @return true iff the client should resynchronize
+     */
+    public boolean getClientResync() {
+        return clientResync;
     }
 }

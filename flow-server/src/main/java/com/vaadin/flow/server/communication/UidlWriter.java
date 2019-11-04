@@ -163,6 +163,9 @@ public class UidlWriter implements Serializable {
                 ? uiInternals.getServerSyncId() : -1;
 
         response.put(ApplicationConstants.SERVER_SYNC_ID, syncId);
+        if (uiInternals.getClientResync()) {
+            response.put(ApplicationConstants.RESYNCHRONIZE_ID, true);
+        }
         int nextClientToServerMessageId = uiInternals
                 .getLastProcessedClientToServerId() + 1;
         response.put(ApplicationConstants.CLIENT_TO_SERVER_ID,
