@@ -54,7 +54,7 @@ import {{~#importAs}} {{importAs}}{{/importAs}}{{~^importAs}} {{className}}{{/im
  */{{/vendorExtensions.x-vaadin-connect-show-tsdoc}}
 export function {{vendorExtensions.x-vaadin-connect-method-name}}({{!
   }}{{#each bodyParam.vendorExtensions.x-vaadin-connect-parameters}}
-  {{name}}: {{{getClassNameFromImports type ../../imports}}}{{#if @last}}{{! Append new line if it's the last param.}}
+  {{name}}{{^required}}?{{/required}}: {{{getClassNameFromImports type ../../imports}}}{{#if @last}}{{! Append new line if it's the last param.}}
 {{else}},{{! Used the `~` after if to remove extra empty line by the each loop}}{{/if~}}
 {{/each}}): Promise<{{!
 }}{{#responses}}{{#dataType}}{{{getClassNameFromImports dataType ../../../imports}}}{{/dataType}}{{^dataType}}void{{/dataType}}{{/responses}}{{!
