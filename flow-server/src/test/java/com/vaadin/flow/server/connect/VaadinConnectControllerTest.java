@@ -1,6 +1,7 @@
 package com.vaadin.flow.server.connect;
 
 import javax.annotation.security.DenyAll;
+import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.Min;
@@ -101,11 +102,13 @@ public class VaadinConnectControllerTest {
             // no op
         }
 
+        @AnonymousAllowed
         public String testAnonymousMethod() {
             return "Hello, anonymous user!";
         }
 
-        @RolesAllowed("FOO_ROLE")
+        @PermitAll
+        @RolesAllowed({"FOO_ROLE", "BAR_ROLE"})
         public String testRoleAllowed() {
             return "Hello, user in role!";
         }
@@ -113,6 +116,12 @@ public class VaadinConnectControllerTest {
         @DenyAll
         @AnonymousAllowed
         public void denyAll() {
+        }
+
+        @RolesAllowed("FOO_ROLE")
+        @AnonymousAllowed
+        public String anonymousOverrides() {
+            return "Hello, no user!";
         }
     }
 
@@ -338,7 +347,7 @@ public class VaadinConnectControllerTest {
                 createRequestParameters("{}"), requestMock);
 
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-        assertTrue(response.getBody().contains("User is not in allowed roles [FOO_ROLE]"));
+        assertTrue(response.getBody().contains("User is not in allowed roles [FOO_ROLE, BAR_ROLE]"));
     }
 
     @Test
@@ -355,6 +364,20 @@ public class VaadinConnectControllerTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
 
         assertEquals("\"Hello, user in role!\"", response.getBody());
+    }
+
+
+    @Test
+    public void should_CallMethodAnonymously_When_AnonymousOverridesRoles() {
+        VaadinConnectController vaadinController = createVaadinController(
+                TEST_SERVICE, new VaadinConnectAccessChecker());
+
+        ResponseEntity<String> response = vaadinController.serveVaadinService(
+                TEST_SERVICE_NAME, "anonymousOverrides",
+                createRequestParameters("{}"), requestMock);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("\"Hello, no user!\"", response.getBody());
     }
 
     @Test
