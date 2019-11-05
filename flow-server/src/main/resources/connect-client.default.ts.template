@@ -1,3 +1,7 @@
 import {ConnectClient} from '@vaadin/flow-frontend/Connect';
-const client = new ConnectClient({endpoint: '{{ENDPOINT}}'});
-export default client;
+
+export const client = new ConnectClient({endpoint: '{{ENDPOINT}}'});
+
+export const nullIfUndefined = function(obj: any) {
+  return obj === undefined ? null : obj;
+}

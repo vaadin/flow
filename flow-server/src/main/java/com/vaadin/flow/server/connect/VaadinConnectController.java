@@ -313,20 +313,12 @@ public class VaadinConnectController {
 
         Map<String, JsonNode> requestParameters = getRequestParameters(body);
         Parameter[] javaParameters = methodToInvoke.getParameters();
-        long optionalParameters = Arrays.stream(methodToInvoke.getParameters())
-                .filter(parameter -> parameter
-                        .isAnnotationPresent(Nullable.class)
-                        || parameter.getType().isAssignableFrom(Optional.class))
-                .count();
-        if (javaParameters.length != requestParameters.size()
-                && (javaParameters.length
-                        - optionalParameters) != requestParameters.size()) {
+        if (javaParameters.length != requestParameters.size()) {
             return ResponseEntity.badRequest()
                     .body(createResponseErrorObject(String.format(
                             "Incorrect number of parameters for service '%s' method '%s', "
-                                    + "expected: %s (or %s), got: " + "%s",
+                                    + "expected: %s, got: %s",
                             serviceName, methodName, javaParameters.length,
-                            javaParameters.length - optionalParameters,
                             requestParameters.size())));
         }
 
@@ -454,16 +446,11 @@ public class VaadinConnectController {
         for (int i = 0; i < javaParameters.length; i++) {
             Type expectedType = javaParameters[i].getParameterizedType();
             try {
-                JsonNode value;
-                if (i >= parameterNames.length) {
-                    value = NullNode.getInstance();
-                } else {
-                    value = requestParameters.get(parameterNames[i]);
-                }
                 Object parameter = vaadinServiceMapper
                         .readerFor(vaadinServiceMapper.getTypeFactory()
                                 .constructType(expectedType))
-                        .readValue(value);
+                        .readValue(requestParameters.get(parameterNames[i]));
+
                 serviceParameters[i] = parameter;
                 String implicitNullError = this.explicitNullableTypeChecker.checkValueForType(
                         parameter,
