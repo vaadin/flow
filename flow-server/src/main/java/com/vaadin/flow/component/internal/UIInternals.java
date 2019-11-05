@@ -209,8 +209,6 @@ public class UIInternals implements Serializable {
 
     private boolean isFallbackChunkLoaded;
 
-    private boolean clientResync = false;
-
     /**
      * Creates a new instance for the given UI.
      *
