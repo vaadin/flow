@@ -81,12 +81,16 @@ public class VaadinConnectAccessChecker {
      *         issues occur, {@code null} otherwise
      */
     public String check(Method method, HttpServletRequest request) {
+
+        // DenyAll overrides everything
         String error = verifyDennyAll(method);
+
         if (error == null) {
-            error = verifyAnonymousUser(method, request);
-        }
-        if (error == null) {
-            error = verifyUserInRole(method, request);
+            // AnonymousAllowed overrides RolesAllowed
+            error = verifyAnonymousAllowed(method, request);
+            if (error != null && request.getUserPrincipal() != null) {
+                error = verifyRolesAllowed(method, request);
+            }
         }
         return error;
     }
@@ -111,16 +115,15 @@ public class VaadinConnectAccessChecker {
                 : method.getDeclaringClass();
     }
 
-    private String verifyAnonymousUser(Method method,
+    private String verifyAnonymousAllowed(Method method,
             HttpServletRequest request) {
-        if (getSecurityTarget(method).isAnnotationPresent(
-                AnonymousAllowed.class) || request.getUserPrincipal() != null) {
+        if (getSecurityTarget(method).isAnnotationPresent(AnonymousAllowed.class)) {
             return null;
         }
         return "Anonymous access is not allowed";
     }
 
-    private String verifyUserInRole(Method method, HttpServletRequest request) {
+    private String verifyRolesAllowed(Method method, HttpServletRequest request) {
         AnnotatedElement elm = getSecurityTarget(method);
         if (elm.isAnnotationPresent(RolesAllowed.class)) {
             List<String> roles = Arrays.asList(elm.getAnnotation(RolesAllowed.class).value());
