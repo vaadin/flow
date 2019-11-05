@@ -98,8 +98,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
             // Refresh on client side
             writeRefresh(response);
             return true;
-        } catch (ResynchronizationRequiredException e) {
-            getLogger().warn("Writing resynchronization request to client");
+        } catch (ResynchronizationRequiredException e) { // NOSONAR
             // Resync on the client side
             writeUidl(uI, stringWriter, true);
         } finally {
