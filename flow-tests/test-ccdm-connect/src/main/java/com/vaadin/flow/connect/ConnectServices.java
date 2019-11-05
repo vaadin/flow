@@ -1,6 +1,11 @@
 package com.vaadin.flow.connect;
 
+import javax.annotation.Nullable;
+
+import java.util.Optional;
+
 import com.vaadin.flow.server.connect.VaadinService;
+import com.vaadin.flow.server.connect.auth.AnonymousAllowed;
 
 /**
  * Simple Vaadin Connect Service definition.
@@ -8,8 +13,29 @@ import com.vaadin.flow.server.connect.VaadinService;
 @VaadinService
 public class ConnectServices {
     
-    public String hello(String name) {
-        return "Hello, " + name + "!";
+    public String hello(String name, @Nullable String title) {
+        return "Hello, " + (title != null ? title + " " : "") + name + "!";
+    }
+
+    public String echoCounter(@Nullable String first, @Nullable String second,
+            Optional<String> third, Optional<String> fourth) {
+        String result = "";
+        if (first != null) {
+            result += "1. " + first + "\n";
+        }
+
+        if (second != null) {
+            result += "2. " + second + "\n";
+        }
+
+        if (third.isPresent()) {
+            result += "3. " + third.get() + "\n";
+        }
+
+        if (fourth.isPresent()) {
+            result += "4. " + fourth.get() + "\n";
+        }
+        return result;
     }
 
     @AnonymousAllowed
