@@ -81,7 +81,10 @@ public class VaadinConnectAccessChecker {
      *         issues occur, {@code null} otherwise
      */
     public String check(Method method, HttpServletRequest request) {
-        String error = verifyAnonymousUser(method, request);
+        String error = verifyDennyAll(method);
+        if (error == null) {
+            error = verifyAnonymousUser(method, request);
+        }
         if (error == null) {
             error = verifyUserInRole(method, request);
         }
@@ -129,6 +132,14 @@ public class VaadinConnectAccessChecker {
             return "User is not in allowed roles " + roles;
         }
         return null;
+    }
+
+    private String verifyDennyAll(Method method) {
+        getSecurityTarget(method);
+        if (!getSecurityTarget(method).isAnnotationPresent(DenyAll.class)) {
+            return null;
+        }
+        return "Service access denied";
     }
 
     private boolean hasSecurityAnnotation(Method method) {
