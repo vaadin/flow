@@ -183,6 +183,39 @@ public class RouterLink extends Component
         updateHref(url);
     }
 
+    /**
+     * Set the navigation target for this link.
+     *
+     * @param navigationTarget
+     *         navigation target
+     */
+    public void setRoute(Class<? extends Component> navigationTarget) {
+        validateRouteParameters(getRouter(), navigationTarget);
+        String url = RouteConfiguration.forRegistry(getRouter().getRegistry())
+                .getUrl(navigationTarget);
+        updateHref(url);
+    }
+
+    /**
+     * Set the navigation target for this link.
+     *
+     * @param navigationTarget
+     *         navigation target
+     * @param parameter
+     *         url parameter for navigation target
+     * @param <T>
+     *         url parameter type
+     * @param <C>
+     *         navigation target type
+     */
+    public <T, C extends Component & HasUrlParameter<T>> void setRoute(
+            Class<? extends C> navigationTarget, T parameter) {
+        validateRouteParameters(getRouter(), navigationTarget);
+        String url = RouteConfiguration.forRegistry(getRouter().getRegistry())
+                .getUrl(navigationTarget, parameter);
+        updateHref(url);
+    }
+
     private void validateRouteParameters(Router router,
             Class<? extends Component> navigationTarget) {
         if (router == null) {
