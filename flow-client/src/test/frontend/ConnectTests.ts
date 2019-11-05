@@ -151,7 +151,16 @@ describe('ConnectClient', () => {
       const headers = fetchMock.lastOptions().headers;
       expect(headers).to.deep.include({
         'accept': 'application/json',
-        'content-type': 'application/json'
+        'content-type': 'application/json'        
+      });
+    });
+
+    it('should set header for preventing CSRF', async() => {
+      await client.call('FooService', 'fooMethod');
+
+      const headers = fetchMock.lastOptions().headers;
+      expect(headers).to.deep.include({
+        'x-requested-with': 'Vaadin CCDM'
       });
     });
 
