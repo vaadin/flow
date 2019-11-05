@@ -210,6 +210,19 @@ public class ServerRpcHandler implements Serializable {
     }
 
     /**
+     * Exception thrown then the client side resynchronization is required.
+     */
+    public static class ResynchronizationRequiredException
+            extends RuntimeException {
+        public ResynchronizationRequiredException() {
+            /**
+             * Default constructor for the exception.
+             */
+            super();
+        }
+    }
+
+    /**
      * Reads JSON containing zero or more serialized RPC calls (including legacy
      * variable changes) and executes the calls.
      *
@@ -303,14 +316,16 @@ public class ServerRpcHandler implements Serializable {
         }
 
         if (rpcRequest.isResynchronize()) {
-            getLogger().warn("Client requested resynchronization");
+            getLogger().warn("Resynchronizing UI by client's request. Under "
+                    + "normal operations this should not happen and may "
+                    + "indicate a bug in Vaadin platform. If you see this "
+                    + "message regularly please open a bug report at "
+                    + "https://github.com/vaadin/flow/issues");
             ui.getInternals().getStateTree().getRootNode()
                     .visitNodeTree(StateNode::markAsDirty);
-            // Set flag for UidlWriter to include field in response to trigger
-            // client-side resynchronization2
-            ui.getInternals().setClientResync(true);
-        } else {
-            ui.getInternals().setClientResync(false);
+            // Signal by exception instead of return value to keep the method
+            // signature for source and binary compatibility
+            throw new ResynchronizationRequiredException();
         }
     }
 

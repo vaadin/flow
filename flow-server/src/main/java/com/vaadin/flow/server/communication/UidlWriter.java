@@ -142,9 +142,11 @@ public class UidlWriter implements Serializable {
      * @param async
      *            True if this message is sent by the server asynchronously,
      *            false if it is a response to a client message.
+     * @param resync
+     *            True iff the client should be asked to resynchronize.
      * @return JSON object containing the UIDL response
      */
-    public JsonObject createUidl(UI ui, boolean async) {
+    public JsonObject createUidl(UI ui, boolean async, boolean resync) {
         JsonObject response = Json.createObject();
 
         UIInternals uiInternals = ui.getInternals();
@@ -163,7 +165,7 @@ public class UidlWriter implements Serializable {
                 ? uiInternals.getServerSyncId() : -1;
 
         response.put(ApplicationConstants.SERVER_SYNC_ID, syncId);
-        if (uiInternals.getClientResync()) {
+        if (resync) {
             response.put(ApplicationConstants.RESYNCHRONIZE_ID, true);
         }
         int nextClientToServerMessageId = uiInternals
@@ -207,6 +209,20 @@ public class UidlWriter implements Serializable {
         }
         uiInternals.incrementServerId();
         return response;
+    }
+
+    /**
+     * Creates a JSON object containing all pending changes to the given UI.
+     *
+     * @param ui
+     *            The {@link UI} whose changes to write
+     * @param async
+     *            True if this message is sent by the server asynchronously,
+     *            false if it is a response to a client message.
+     * @return JSON object containing the UIDL response
+     */
+    public JsonObject createUidl(UI ui, boolean async) {
+        return createUidl(ui, async, false);
     }
 
     private static void populateDependencies(JsonObject response,

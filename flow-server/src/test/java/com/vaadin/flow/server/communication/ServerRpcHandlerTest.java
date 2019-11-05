@@ -5,7 +5,9 @@ import java.io.StringReader;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
@@ -26,6 +28,9 @@ public class ServerRpcHandlerTest {
     final private String csrfToken = "";
 
     private ServerRpcHandler serverRpcHandler;
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     @Before
     public void setup() {
@@ -54,7 +59,7 @@ public class ServerRpcHandlerTest {
     }
 
     @Test
-    public void handleRpc_resynchronizeSet_setsUiInternalsAndMarksTreeDirty()
+    public void handleRpc_resynchronize_shouldResynchronizeClientAndMarksTreeDirty()
             throws IOException,
             ServerRpcHandler.InvalidUIDLSecurityKeyException {
         // given
@@ -62,12 +67,12 @@ public class ServerRpcHandlerTest {
                 + "\", \"rpc\":[], \"resynchronize\": true, \"clientId\":1}");
         uiTree.collectChanges(c -> { // clean tree
         });
+        thrown.expect(ServerRpcHandler.ResynchronizationRequiredException.class);
 
         // when
         serverRpcHandler.handleRpc(ui, reader, request);
 
         // then
         Assert.assertTrue(uiTree.hasDirtyNodes());
-        Mockito.verify(uiInternals).setClientResync(true);
     }
 }

@@ -356,10 +356,9 @@ public class UidlWriterTest {
     public void resynchronizationRequested_responseFieldContainsResynchronize()
             throws Exception {
         UI ui = initializeUIForDependenciesTest(new TestUI());
-        ui.getInternals().setClientResync(true);
         UidlWriter uidlWriter = new UidlWriter();
 
-        JsonObject response = uidlWriter.createUidl(ui, false);
+        JsonObject response = uidlWriter.createUidl(ui, false, true);
         assertTrue("Response contains resynchronize field",
                 response.hasKey(ApplicationConstants.RESYNCHRONIZE_ID));
         assertTrue("Response resynchronize field is set to true",
