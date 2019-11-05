@@ -23,7 +23,7 @@ public class DataSerializableTest extends ClassesSerializableTest {
      * to the dataprovider itself that is already referenced by the outer component
      */
     @Test
-    public void testSelfReferenceSerialization() throws Throwable {
+    public void selfReferenceSerialization() throws Throwable {
         Outer outer = new Outer();
         Outer out = serializeAndDeserialize(outer);
         assertNotNull(out);
