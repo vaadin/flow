@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -122,7 +123,7 @@ abstract class AbstractUpdateImports implements Runnable, Serializable {
      *
      * @return the set of JS files
      */
-    protected abstract List<String> getScripts();
+    protected abstract Set<String> getScripts();
 
     /**
      * Get a resource from the classpath.
@@ -166,7 +167,7 @@ abstract class AbstractUpdateImports implements Runnable, Serializable {
      *
      * @return generated modules
      */
-    protected abstract List<String> getGeneratedModules();
+    protected abstract Collection<String> getGeneratedModules();
 
     /**
      * Get logger for this instance.
@@ -175,9 +176,10 @@ abstract class AbstractUpdateImports implements Runnable, Serializable {
      */
     protected abstract Logger getLogger();
 
-    List<String> resolveModules(List<String> modules, boolean isJsModule) {
+    List<String> resolveModules(Collection<String> modules,
+            boolean isJsModule) {
         return modules.stream()
-                .map(module -> resolveResource(module, isJsModule))
+                .map(module -> resolveResource(module, isJsModule)).sorted()
                 .collect(Collectors.toList());
     }
 
@@ -272,7 +274,7 @@ abstract class AbstractUpdateImports implements Runnable, Serializable {
     }
 
     private void collectModules(List<String> lines) {
-        List<String> modules = new ArrayList<>();
+        Set<String> modules = new LinkedHashSet<>();
         modules.addAll(resolveModules(getModules(), true));
         modules.addAll(resolveModules(getScripts(), false));
 
@@ -295,16 +297,10 @@ abstract class AbstractUpdateImports implements Runnable, Serializable {
         lines.addAll(internals);
     }
 
-    private Collection<String> getModuleLines(List<String> modules) {
-        return getUniqueEs6ImportPaths(modules).stream()
-                .map(path -> String.format(IMPORT_TEMPLATE, path)).distinct()
-                .collect(Collectors.toList());
-    }
-
-    private Collection<String> getUniqueEs6ImportPaths(List<String> modules) {
+    private Set<String> getUniqueEs6ImportPaths(Collection<String> modules) {
         Set<String> npmNotFound = new HashSet<>();
         Set<String> resourceNotFound = new HashSet<>();
-        List<String> es6ImportPaths = new ArrayList<>();
+        Set<String> es6ImportPaths = new LinkedHashSet<>();
         AbstractTheme theme = getTheme();
         Set<String> visited = new HashSet<>();
 
@@ -369,6 +365,12 @@ abstract class AbstractUpdateImports implements Runnable, Serializable {
         }
 
         return es6ImportPaths;
+    }
+
+    private Collection<String> getModuleLines(Set<String> modules) {
+        return getUniqueEs6ImportPaths(modules).stream()
+                .map(path -> String.format(IMPORT_TEMPLATE, path))
+                .collect(Collectors.toList());
     }
 
     private boolean frontendFileExists(String jsImport) {

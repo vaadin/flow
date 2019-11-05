@@ -27,7 +27,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.CoreMatchers;
@@ -102,14 +101,12 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
         @Override
         protected List<String> getModules() {
-            return scanner.getModules().stream().distinct().sorted()
-                    .collect(Collectors.toList());
+            return scanner.getModules();
         }
 
         @Override
-        protected List<String> getScripts() {
-            return scanner.getScripts().stream().sorted()
-                    .collect(Collectors.toList());
+        protected Set<String> getScripts() {
+            return scanner.getScripts();
         }
 
         @Override
@@ -118,7 +115,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         }
 
         @Override
-        protected List<String> getGeneratedModules() {
+        protected Collection<String> getGeneratedModules() {
             return Arrays.asList("generated-modules-foo",
                     "generated-modules-bar");
         }
@@ -407,7 +404,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void jsModulesOrderIsPreservedAndJavaScriptAfterJsModules() throws Exception {
+    public void jsModulesOrderIsPreservedAnsAfterJsModules() throws Exception {
         updater.run();
 
         assertImportOrder("jsmodule/g.js", "javascript/a.js", "javascript/b.js",

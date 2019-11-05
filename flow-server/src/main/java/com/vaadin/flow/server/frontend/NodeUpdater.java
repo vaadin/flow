@@ -21,6 +21,7 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -36,6 +37,7 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
@@ -117,10 +119,10 @@ public abstract class NodeUpdater implements FallibleCommand {
         this.generatedFolder = generatedPath;
     }
 
-    static List<String> getGeneratedModules(File directory,
-            Collection<String> excludes) {
+    static Set<String> getGeneratedModules(File directory,
+            Set<String> excludes) {
         if (!directory.exists()) {
-            return Collections.emptyList();
+            return Collections.emptySet();
         }
 
         final Function<String, String> unixPath = str -> str.replace("\\", "/");
@@ -135,9 +137,17 @@ public abstract class NodeUpdater implements FallibleCommand {
                     }
                     return excludes.stream().noneMatch(
                             postfix -> path.endsWith(unixPath.apply(postfix)));
-                }).map(file -> GENERATED_PREFIX + unixPath
+                })
+                .map(file -> GENERATED_PREFIX + unixPath
                         .apply(baseDir.relativize(file.toURI()).getPath()))
-                .distinct().sorted().collect(Collectors.toList());
+                .collect(Collectors.toSet());
+    }
+
+    List<String> resolveModules(Collection<String> modules,
+            boolean isJsModule) {
+        return modules.stream()
+                .map(module -> resolveResource(module, isJsModule))
+                .collect(Collectors.toList());
     }
 
     protected String resolveResource(String importPath, boolean isJsModule) {
