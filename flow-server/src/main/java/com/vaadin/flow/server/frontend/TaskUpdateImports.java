@@ -23,12 +23,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -47,7 +47,6 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
-
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 
 /**
@@ -153,12 +152,14 @@ public class TaskUpdateImports extends NodeUpdater {
 
         @Override
         protected List<String> getModules() {
-            return frontDeps.getModules();
+            return frontDeps.getModules().stream().distinct().sorted()
+                    .collect(Collectors.toList());
         }
 
         @Override
-        protected Set<String> getScripts() {
-            return frontDeps.getScripts();
+        protected List<String> getScripts() {
+            return frontDeps.getScripts().stream().sorted()
+                    .collect(Collectors.toList());
         }
 
         @Override
@@ -167,10 +168,10 @@ public class TaskUpdateImports extends NodeUpdater {
         }
 
         @Override
-        protected Collection<String> getGeneratedModules() {
-            final Set<String> exclude = new HashSet<>(
-                    Arrays.asList(generatedFlowImports.getName(),
-                            FrontendUtils.FALLBACK_IMPORTS_NAME));
+        protected List<String> getGeneratedModules() {
+            final List<String> exclude = Arrays
+                    .asList(generatedFlowImports.getName(),
+                            FrontendUtils.FALLBACK_IMPORTS_NAME);
             return NodeUpdater.getGeneratedModules(generatedFolder, exclude);
         }
 
@@ -227,18 +228,20 @@ public class TaskUpdateImports extends NodeUpdater {
 
         @Override
         protected List<String> getModules() {
-            LinkedHashSet<String> set = new LinkedHashSet<>(
+            List<String> modules = new ArrayList<>(
                     fallbackScanner.getModules());
-            set.removeAll(frontDeps.getModules());
-            return new ArrayList<String>(set);
+            modules.removeAll(frontDeps.getModules());
+            return modules.stream().distinct().sorted()
+                    .collect(Collectors.toList());
         }
 
         @Override
-        protected Set<String> getScripts() {
-            LinkedHashSet<String> set = new LinkedHashSet<>(
+        protected List<String> getScripts() {
+            List<String> scripts = new ArrayList<>(
                     fallbackScanner.getScripts());
-            set.removeAll(frontDeps.getScripts());
-            return set;
+            scripts.removeAll(frontDeps.getScripts());
+            return scripts.stream().distinct().sorted()
+                    .collect(Collectors.toList());
         }
 
         @Override
@@ -247,7 +250,7 @@ public class TaskUpdateImports extends NodeUpdater {
         }
 
         @Override
-        protected Collection<String> getGeneratedModules() {
+        protected List<String> getGeneratedModules() {
             return Collections.emptyList();
         }
 
@@ -424,7 +427,7 @@ public class TaskUpdateImports extends NodeUpdater {
     private JsonArray makeFallbackModules(AbstractUpdateImports updater) {
         JsonArray array = Json.createArray();
         List<String> modules = updater.getModules();
-        Set<String> scripts = updater.getScripts();
+        List<String> scripts = updater.getScripts();
 
         Iterator<String> modulesIterator = modules.iterator();
         Iterator<String> scriptsIterator = scripts.iterator();

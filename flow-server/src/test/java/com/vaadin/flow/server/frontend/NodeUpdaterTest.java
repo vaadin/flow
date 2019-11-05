@@ -18,8 +18,7 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.Set;
+import java.util.Collection;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -101,7 +100,7 @@ public class NodeUpdaterTest {
         fileB.createNewFile();
         fileC.createNewFile();
         
-        Set<String> modules = NodeUpdater.getGeneratedModules(generated, Stream
+        Collection<String> modules = NodeUpdater.getGeneratedModules(generated, Stream
                 .of("a.js", "/b.js").collect(Collectors.toSet()));
 
         Assert.assertEquals(1, modules.size());
