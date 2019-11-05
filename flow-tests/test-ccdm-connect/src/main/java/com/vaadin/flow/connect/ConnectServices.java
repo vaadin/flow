@@ -17,23 +17,24 @@ public class ConnectServices {
         return "Hello, " + (title != null ? title + " " : "") + name + "!";
     }
 
-    public String echoCounter(@Nullable String first, @Nullable String second,
+    public String echoWithOptional(@Nullable String first,
+            @Nullable String second,
             Optional<String> third, Optional<String> fourth) {
         String result = "";
         if (first != null) {
-            result += "1. " + first + "\n";
+            result += "1. " + first + " ";
         }
 
         if (second != null) {
-            result += "2. " + second + "\n";
+            result += "2. " + second + " ";
         }
 
         if (third.isPresent()) {
-            result += "3. " + third.get() + "\n";
+            result += "3. " + third.get() + " ";
         }
 
         if (fourth.isPresent()) {
-            result += "4. " + fourth.get() + "\n";
+            result += "4. " + fourth.get();
         }
         return result;
     }

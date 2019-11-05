@@ -93,4 +93,16 @@ public class VaadinViewIT extends ChromeBrowserTest {
         waitUntil(ExpectedConditions.textToBePresentInElement(content,
                 "Hello, stranger!"), 25);
     }
+
+    @Test
+    public void should_useSendNull_when_paramterIsUndefined() {
+        WebElement button = testComponent.$(TestBenchElement.class).id(
+                "echoWithOptional");
+        button.click();
+
+        WebElement content = testComponent.$(TestBenchElement.class).id("content");
+        // Wait for the server connect response
+        waitUntil(ExpectedConditions.textToBePresentInElement(content,
+                "1. one 3. three 4. four"), 25);
+    }
 }

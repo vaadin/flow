@@ -622,8 +622,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
     }
 
     private void printDebugMessage(Object data, String message) {
-        // if (isDebugConnectMavenPlugin()) {
-        if (true) {
+         if (isDebugConnectMavenPlugin()) {
             getLogger().info(message);
             Json.prettyPrint(data);
         }

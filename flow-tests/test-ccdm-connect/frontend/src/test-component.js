@@ -8,7 +8,7 @@ class TestComponent extends PolymerElement {
         <button id="button">Click</button>
         <button id="connect" on-click="connect">Click</button>
         <button id="connectAnonymous" on-click="connectAnonymous">Click anonymous</button>
-        <button id="echo" on-click="echo">Echo</button>
+        <button id="echoWithOptional" on-click="echoWithOptional">Echo with optional</button>
         <div id="content"></div>
     `;
   }
@@ -31,9 +31,9 @@ class TestComponent extends PolymerElement {
         .catch(error => this.$.content.textContent = 'Error:' + error);
     }
 
-  echo(e) {
+  echoWithOptional(e) {
     connectServices
-      .echoCounter('one', undefined, 'three', 'four')
+      .echoWithOptional('one', undefined, 'three', 'four')
       .then(response => this.$.content.textContent = response)
       .catch(error => this.$.content.textContent = 'Error:' + error);
   }
