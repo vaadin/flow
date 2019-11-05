@@ -141,9 +141,9 @@ public class UidlWriter implements Serializable {
      *            The {@link UI} whose changes to write
      * @param async
      *            True if this message is sent by the server asynchronously,
-     *            false if it is a response to a client message.
+     *            false if it is a response to a client message
      * @param resync
-     *            True iff the client should be asked to resynchronize.
+     *            True iff the client should be asked to resynchronize
      * @return JSON object containing the UIDL response
      */
     public JsonObject createUidl(UI ui, boolean async, boolean resync) {

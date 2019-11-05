@@ -214,10 +214,11 @@ public class ServerRpcHandler implements Serializable {
      */
     public static class ResynchronizationRequiredException
             extends RuntimeException {
+
+        /**
+         * Default constructor for the exception.
+         */
         public ResynchronizationRequiredException() {
-            /**
-             * Default constructor for the exception.
-             */
             super();
         }
     }
