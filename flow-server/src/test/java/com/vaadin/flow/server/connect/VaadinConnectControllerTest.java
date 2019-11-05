@@ -1,5 +1,6 @@
 package com.vaadin.flow.server.connect;
 
+import javax.annotation.security.DenyAll;
 import javax.annotation.security.RolesAllowed;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.Min;
@@ -100,7 +101,6 @@ public class VaadinConnectControllerTest {
             // no op
         }
 
-        @AnonymousAllowed
         public String testAnonymousMethod() {
             return "Hello, anonymous user!";
         }
@@ -108,6 +108,11 @@ public class VaadinConnectControllerTest {
         @RolesAllowed("FOO_ROLE")
         public String testRoleAllowed() {
             return "Hello, user in role!";
+        }
+
+        @DenyAll
+        @AnonymousAllowed
+        public void denyAll() {
         }
     }
 
@@ -350,6 +355,17 @@ public class VaadinConnectControllerTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
 
         assertEquals("\"Hello, user in role!\"", response.getBody());
+    }
+
+    @Test
+    public void should_NotCallMethod_When_DenyAll() {
+        VaadinConnectController vaadinController = createVaadinControllerWithoutPrincipal();
+        ResponseEntity<String> response = vaadinController.serveVaadinService(
+                TEST_SERVICE_NAME, "denyAll",
+                createRequestParameters("{}"), requestMock);
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertTrue(response.getBody().contains("Service access denied"));
     }
 
     @Test
@@ -913,7 +929,7 @@ public class VaadinConnectControllerTest {
 
     private VaadinConnectController createVaadinControllerWithoutPrincipal() {
         when(requestMock.getUserPrincipal()).thenReturn(null);
-        return createVaadinController(null, new VaadinConnectAccessChecker());
+        return createVaadinController(TEST_SERVICE, new VaadinConnectAccessChecker());
     }
 
     private Method createServiceMethodMockThatThrows(Object argument,

@@ -83,6 +83,9 @@ public class VaadinConnectAccessChecker {
     public String check(Method method, HttpServletRequest request) {
         String error = verifyCsrf(request);
         if (error == null) {
+            error = verifyDennyAll(method);
+        }
+        if (error == null) {
             error = verifyAnonymousUser(method, request);
         }
         if (error == null) {
@@ -139,6 +142,14 @@ public class VaadinConnectAccessChecker {
             return "User is not in allowed roles " + roles;
         }
         return null;
+    }
+
+    private String verifyDennyAll(Method method) {
+        getSecurityTarget(method);
+        if (!getSecurityTarget(method).isAnnotationPresent(DenyAll.class)) {
+            return null;
+        }
+        return "Service access denied";
     }
 
     private boolean hasSecurityAnnotation(Method method) {
