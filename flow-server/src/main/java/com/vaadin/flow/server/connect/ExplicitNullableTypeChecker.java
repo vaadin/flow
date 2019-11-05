@@ -16,6 +16,9 @@
 
 package com.vaadin.flow.server.connect;
 
+import javax.annotation.Nullable;
+
+import java.lang.reflect.Parameter;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Optional;
@@ -38,7 +41,8 @@ public class ExplicitNullableTypeChecker {
      *          type does not explicitly allow null, or null meaning
      *          the value is OK.
      */
-    public String checkValueForType(Object value, Type expectedType) {
+    public String checkValueForType(Object value, Type expectedType,
+            Parameter parameter) {
         if (expectedType instanceof ParameterizedType) {
             Class<?> clazz = (Class<?>) ((ParameterizedType) expectedType).getRawType();
             if (Optional.class.isAssignableFrom(clazz)) {
@@ -54,6 +58,11 @@ public class ExplicitNullableTypeChecker {
         }
 
         if (value != null) {
+            return null;
+        }
+
+        if (parameter != null
+                && parameter.isAnnotationPresent(Nullable.class)) {
             return null;
         }
 

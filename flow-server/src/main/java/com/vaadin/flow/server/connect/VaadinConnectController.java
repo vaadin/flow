@@ -16,6 +16,7 @@
 package com.vaadin.flow.server.connect;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.annotation.Nullable;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
@@ -26,6 +27,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -44,6 +46,7 @@ import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -162,7 +165,7 @@ public class VaadinConnectController {
         this.explicitNullableTypeChecker = explicitNullableTypeChecker;
 
         context.getBeansWithAnnotation(VaadinService.class)
-            .forEach((name, serviceBean) -> 
+            .forEach((name, serviceBean) ->
                 validateServiceBean(serviceNameChecker, context, name, serviceBean));
     }
 
@@ -310,12 +313,20 @@ public class VaadinConnectController {
 
         Map<String, JsonNode> requestParameters = getRequestParameters(body);
         Parameter[] javaParameters = methodToInvoke.getParameters();
-        if (javaParameters.length != requestParameters.size()) {
+        long optionalParameters = Arrays.stream(methodToInvoke.getParameters())
+                .filter(parameter -> parameter
+                        .isAnnotationPresent(Nullable.class)
+                        || parameter.getType().isAssignableFrom(Optional.class))
+                .count();
+        if (javaParameters.length != requestParameters.size()
+                && (javaParameters.length
+                        - optionalParameters) != requestParameters.size()) {
             return ResponseEntity.badRequest()
                     .body(createResponseErrorObject(String.format(
                             "Incorrect number of parameters for service '%s' method '%s', "
-                                    + "expected: %s, got: %s",
+                                    + "expected: %s (or %s), got: " + "%s",
                             serviceName, methodName, javaParameters.length,
+                            javaParameters.length - optionalParameters,
                             requestParameters.size())));
         }
 
@@ -371,10 +382,9 @@ public class VaadinConnectController {
             return handleMethodExecutionError(serviceName, methodName, e);
         }
 
-        String implicitNullError = this.explicitNullableTypeChecker.checkValueForType(
-                returnValue,
-                methodToInvoke.getGenericReturnType()
-        );
+        String implicitNullError = this.explicitNullableTypeChecker
+                .checkValueForType(returnValue,
+                        methodToInvoke.getGenericReturnType(), null);
         if (implicitNullError != null) {
             throw new VaadinConnectException(
                     String.format(
@@ -444,15 +454,21 @@ public class VaadinConnectController {
         for (int i = 0; i < javaParameters.length; i++) {
             Type expectedType = javaParameters[i].getParameterizedType();
             try {
+                JsonNode value;
+                if (i >= parameterNames.length) {
+                    value = NullNode.getInstance();
+                } else {
+                    value = requestParameters.get(parameterNames[i]);
+                }
                 Object parameter = vaadinServiceMapper
                         .readerFor(vaadinServiceMapper.getTypeFactory()
                                 .constructType(expectedType))
-                        .readValue(requestParameters.get(parameterNames[i]));
-
+                        .readValue(value);
                 serviceParameters[i] = parameter;
                 String implicitNullError = this.explicitNullableTypeChecker.checkValueForType(
                         parameter,
-                        expectedType
+                        expectedType,
+                        javaParameters[i]
                 );
                 if (implicitNullError != null) {
                     throw new VaadinConnectValidationException(
