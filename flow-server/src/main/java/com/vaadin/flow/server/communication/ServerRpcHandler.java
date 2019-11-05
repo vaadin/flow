@@ -161,9 +161,7 @@ public class ServerRpcHandler implements Serializable {
          * @return true if this is a resynchronization request, false otherwise
          */
         public boolean isResynchronize() {
-            return resynchronize ||
-                    (json.toString().contains("\"event\":\"click\"") &&
-                            json.toString().contains("\"event.shiftKey\":true"));
+            return resynchronize;
         }
 
         /**
