@@ -208,11 +208,10 @@ public final class Constants implements Serializable {
 
     /**
      * Boolean parameter for enabling/disabling bytecode scanning in dev mode.
-     * If enabled, entry points are scanned for reachable frontend resources.
-     * If disabled, all classes on the classpath are scanned.
+     * If enabled, entry points are scanned for reachable frontend resources. If
+     * disabled, all classes on the classpath are scanned.
      */
     public static final String SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE = "devmode.optimizeBundle";
-
 
     /**
      * The path used in the vaadin servlet for handling static resources.
@@ -246,6 +245,12 @@ public final class Constants implements Serializable {
      */
     public static final String VAADIN_BUILD_FILES_PATH = VAADIN_MAPPING
             + VAADIN_BUILD;
+
+    /**
+     * String parameter for specifying static rsources mapping used for
+     * portlets.
+     */
+    public static final String PORTLET_PARAMETER_STATIC_RESOURCES_MAPPING = "portlet.static.resources.mapping";
 
     /**
      * Default path for local frontend resources packaged for jar add-ons.
