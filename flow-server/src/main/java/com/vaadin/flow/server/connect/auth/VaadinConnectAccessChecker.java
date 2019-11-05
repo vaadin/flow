@@ -24,6 +24,8 @@ import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Component used for checking role-based ACL in Vaadin Services.
@@ -79,7 +81,11 @@ public class VaadinConnectAccessChecker {
      *         issues occur, {@code null} otherwise
      */
     public String check(Method method, HttpServletRequest request) {
-        return verifyAnonymousUser(method, request);
+        String error = verifyAnonymousUser(method, request);
+        if (error == null) {
+            error = verifyUserInRole(method, request);
+        }
+        return error;
     }
 
     /**
@@ -109,6 +115,20 @@ public class VaadinConnectAccessChecker {
             return null;
         }
         return "Anonymous access is not allowed";
+    }
+
+    private String verifyUserInRole(Method method, HttpServletRequest request) {
+        AnnotatedElement elm = getSecurityTarget(method);
+        if (elm.isAnnotationPresent(RolesAllowed.class)) {
+            List<String> roles = Arrays.asList(elm.getAnnotation(RolesAllowed.class).value());
+            for (String role: roles) {
+                if (request.isUserInRole(role)) {
+                    return null;
+                }
+            }
+            return "User is not in allowed roles " + roles;
+        }
+        return null;
     }
 
     private boolean hasSecurityAnnotation(Method method) {
