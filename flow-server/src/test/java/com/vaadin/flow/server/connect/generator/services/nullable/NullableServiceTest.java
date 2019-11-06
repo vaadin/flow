@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server.connect.generator.services.notnull;
+package com.vaadin.flow.server.connect.generator.services.nullable;
 
 import java.util.Collections;
 
@@ -21,10 +21,10 @@ import org.junit.Test;
 
 import com.vaadin.flow.server.connect.generator.services.AbstractServiceGenerationTest;
 
-public class NotNullServiceTest extends AbstractServiceGenerationTest {
+public class NullableServiceTest extends AbstractServiceGenerationTest {
 
-    public NotNullServiceTest() {
-        super(Collections.singletonList(NotNullService.class));
+    public NullableServiceTest() {
+        super(Collections.singletonList(NullableService.class));
     }
 
     @Test

@@ -1,3 +1,3 @@
 export default interface ParameterType {
-  foo?: string | null;
+  foo: string;
 }

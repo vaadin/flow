@@ -2,37 +2,37 @@
 import client from './connect-client.default';
 
 export function echoDate(
-  date: string | null
-): Promise<string | null> {
+  date: string
+): Promise<string> {
   return client.call('DateTimeService', 'echoDate', {date});
 }
 
 export function echoInstant(
-  instant: string | null
-): Promise<string | null> {
+  instant: string
+): Promise<string> {
   return client.call('DateTimeService', 'echoInstant', {instant});
 }
 
 export function echoListLocalDateTime(
-  localDateTimeList: Array<string | null> | null
-): Promise<Array<string | null> | null> {
+  localDateTimeList: Array<string>
+): Promise<Array<string>> {
   return client.call('DateTimeService', 'echoListLocalDateTime', {localDateTimeList});
 }
 
 export function echoLocalDate(
-  localDate: string | null
-): Promise<string | null> {
+  localDate: string
+): Promise<string> {
   return client.call('DateTimeService', 'echoLocalDate', {localDate});
 }
 
 export function echoLocalDateTime(
-  localDateTime: string | null
-): Promise<string | null> {
+  localDateTime: string
+): Promise<string> {
   return client.call('DateTimeService', 'echoLocalDateTime', {localDateTime});
 }
 
 export function echoMapInstant(
-  mapInstant: { [key: string]: string | null; } | null
-): Promise<{ [key: string]: string | null; } | null> {
+  mapInstant: { [key: string]: string; }
+): Promise<{ [key: string]: string; }> {
   return client.call('DateTimeService', 'echoMapInstant', {mapInstant});
 }

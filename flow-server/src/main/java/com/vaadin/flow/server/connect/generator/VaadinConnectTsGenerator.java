@@ -80,7 +80,7 @@ import com.vaadin.flow.server.connect.VaadinServiceNameChecker;
 public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
 
     public static final String TS = ".ts";
-    public static final String NULLABLE_SUFFIX = " | null";
+    public static final String OPTIONAL_SUFFIX = " | undefined";
     private static final String GENERATOR_NAME = "javascript-vaadin-connect";
     private static final String EXTENSION_VAADIN_CONNECT_PARAMETERS = "x-vaadin-connect-parameters";
     private static final String EXTENSION_VAADIN_CONNECT_SHOW_TSDOC = "x-vaadin-connect-show-tsdoc";
@@ -806,8 +806,12 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
     private List<ParameterInformation> getParamsList(Schema requestSchema) {
         Map<String, Schema> properties = requestSchema.getProperties();
         List<ParameterInformation> paramsList = new ArrayList<>();
+        List<String> requiredParams = requestSchema.getRequired() != null
+                ? requestSchema.getRequired()
+                : Collections.emptyList();
         for (Map.Entry<String, Schema> entry : properties.entrySet()) {
             String name = entry.getKey();
+            boolean isRequired = requiredParams.contains(name);
             name = isReservedWord(name) ? escapeReservedWord(name) : name;
             String type = getTypeDeclaration(entry.getValue());
             String description = entry.getValue().getDescription();
@@ -816,7 +820,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
                         requestSchema);
             }
             ParameterInformation parameterInformation = new ParameterInformation(
-                    name, type, description);
+                    name, isRequired, type, description);
             paramsList.add(parameterInformation);
         }
         return paramsList;
@@ -835,35 +839,35 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
 
     @Override
     public String getTypeDeclaration(Schema schema) {
-        String nullableSuffix = "";
+        String optionalSuffix = "";
         if (BooleanUtils.isTrue(schema.getNullable())) {
-            nullableSuffix = NULLABLE_SUFFIX;
+            optionalSuffix = OPTIONAL_SUFFIX;
         }
         if (schema instanceof ArraySchema) {
             ArraySchema arraySchema = (ArraySchema) schema;
             Schema inner = arraySchema.getItems();
             return String.format("Array<%s>%s", this.getTypeDeclaration(inner),
-                    nullableSuffix);
+                    optionalSuffix);
         } else if (StringUtils.isNotBlank(schema.get$ref())) {
-            return getSimpleRef(schema.get$ref()) + nullableSuffix;
+            return getSimpleRef(schema.get$ref()) + optionalSuffix;
         } else if (schema.getAdditionalProperties() != null) {
             Schema inner = (Schema) schema.getAdditionalProperties();
             return String.format("{ [key: string]: %s; }%s",
-                    getTypeDeclaration(inner), nullableSuffix);
+                    getTypeDeclaration(inner), optionalSuffix);
         } else if (schema instanceof ComposedSchema) {
             return getTypeDeclarationFromComposedSchema((ComposedSchema) schema,
-                    nullableSuffix);
+                    optionalSuffix);
         } else {
-            return super.getTypeDeclaration(schema) + nullableSuffix;
+            return super.getTypeDeclaration(schema) + optionalSuffix;
         }
     }
 
     private String getTypeDeclarationFromComposedSchema(
-            ComposedSchema composedSchema, String nullableSuffix) {
+            ComposedSchema composedSchema, String optionalSuffix) {
         if (composedSchema.getAllOf() != null
                 && composedSchema.getAllOf().size() == 1) {
             return getTypeDeclaration(composedSchema.getAllOf().get(0))
-                    + nullableSuffix;
+                    + optionalSuffix;
         } else {
             String unknownComposedSchema = Json.pretty(composedSchema);
             getLogger().debug("Unknown ComposedSchema: {}",
@@ -937,11 +941,14 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
      */
     private static class ParameterInformation {
         private final String name;
+        private final boolean isRequired;
         private final String type;
         private final String description;
 
-        ParameterInformation(String name, String type, String description) {
+        ParameterInformation(String name, boolean isRequired, String type,
+                String description) {
             this.name = name;
+            this.isRequired = isRequired;
             this.type = type;
             this.description = description;
         }
@@ -976,6 +983,10 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         @Override
         public int hashCode() {
             return Objects.hash(name, type, description);
+        }
+
+        public boolean isRequired() {
+            return isRequired;
         }
     }
 }

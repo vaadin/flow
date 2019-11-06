@@ -7,7 +7,7 @@ import Account from './com/vaadin/flow/server/connect/generator/services/modelpa
  *
  * Return list of user name
  */
-export function getListOfUserName(): Promise<Array<string | null> | null> {
+export function getListOfUserName(): Promise<Array<string>> {
   return client.call('ModelPackageService', 'getListOfUserName');
 }
 
@@ -18,7 +18,7 @@ export function getListOfUserName(): Promise<Array<string | null> | null> {
  * Return a collection
  */
 export function getSameModelPackage(
-  name: string | null
-): Promise<Account | null> {
+  name: string
+): Promise<Account> {
   return client.call('ModelPackageService', 'getSameModelPackage', {name});
 }

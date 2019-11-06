@@ -9,7 +9,7 @@
 import client from './connect-client.default';
 
 export function firstMethod(
-  value: boolean
+  value?: boolean
 ): Promise<void> {
   return client.call('FooBarService', 'firstMethod', {value}, {requireCredentials: false});
 }
