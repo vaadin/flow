@@ -16,13 +16,14 @@
 
 package com.vaadin.flow.server.connect.generator.services;
 
+import javax.annotation.Nullable;
 import javax.annotation.security.DenyAll;
-
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Parameter;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -64,9 +65,13 @@ import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import org.apache.commons.configuration2.PropertiesConfiguration;
-import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
@@ -79,11 +84,6 @@ import com.vaadin.flow.server.connect.generator.OpenApiObjectGenerator;
 import com.vaadin.flow.server.connect.generator.OpenApiSpecGenerator;
 import com.vaadin.flow.server.connect.generator.TestUtils;
 import com.vaadin.flow.server.connect.generator.VaadinConnectTsGenerator;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 public abstract class AbstractServiceGenerationTest {
     private static final List<Class<?>> JSON_NUMBER_CLASSES = Arrays.asList(
@@ -268,7 +268,8 @@ public abstract class AbstractServiceGenerationTest {
             Schema requestSchema = extractSchema(
                     actualOperation.getRequestBody().getContent());
             assertRequestSchema(requestSchema,
-                    expectedServiceMethod.getParameterTypes());
+                    expectedServiceMethod.getParameterTypes(),
+                    expectedServiceMethod.getParameters());
         } else {
             assertNull(String.format(
                     "No request body should be present in path schema for service method with no parameters, method: '%s'",
@@ -306,18 +307,28 @@ public abstract class AbstractServiceGenerationTest {
     }
 
     private void assertRequestSchema(Schema requestSchema,
-            Class<?>... parameterTypes) {
+            Class<?>[] parameterTypes, Parameter[] parameters) {
         Map<String, Schema> properties = requestSchema.getProperties();
         assertEquals(
                 "Request schema should have the same amount of properties as the corresponding service method parameters number",
                 parameterTypes.length, properties.size());
         int index = 0;
-        for (Schema propertySchema : properties.values()) {
-            assertSchema(propertySchema, parameterTypes[index]);
+        for (Map.Entry<String, Schema> stringSchemaEntry : properties
+                .entrySet()) {
+            assertSchema(stringSchemaEntry.getValue(), parameterTypes[index]);
+            if (parameters[index].isAnnotationPresent(Nullable.class) ||
+                    Optional.class
+                            .isAssignableFrom(parameters[index].getType())) {
+                if (stringSchemaEntry.getValue().getRequired() != null) {
+                    boolean isRequired = stringSchemaEntry.getValue()
+                            .getRequired().contains(stringSchemaEntry.getKey());
+                    assertFalse("@Nullable or Optional request parameter " +
+                            "should not be required", isRequired);
+                }
+
+            }
             index++;
         }
-
-        verifyThatAllPropertiesAreRequired(requestSchema, properties);
     }
 
     private Schema extractSchema(Content content) {
@@ -450,23 +461,6 @@ public abstract class AbstractServiceGenerationTest {
         }
         assertEquals(expectedFieldsCount, properties.size());
 
-        verifyThatAllPropertiesAreRequired(schema, properties);
-    }
-
-    private void verifyThatAllPropertiesAreRequired(Schema schema,
-            Map<String, Schema> properties) {
-        if (properties.isEmpty()) {
-            assertNull(schema.getRequired());
-        } else {
-            for (Map.Entry<String, Schema> propertySchema : properties
-                    .entrySet()) {
-                if (BooleanUtils
-                        .isNotTrue(propertySchema.getValue().getNullable())) {
-                    assertTrue(schema.getRequired()
-                            .contains(propertySchema.getKey()));
-                }
-            }
-        }
     }
 
     private void verifySchemaReferences() {

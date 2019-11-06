@@ -878,9 +878,11 @@ public class VaadinConnectControllerTest {
         VaadinServiceNameChecker nameCheckerMock = mock(
                 VaadinServiceNameChecker.class);
         when(nameCheckerMock.check(TEST_SERVICE_NAME)).thenReturn(null);
-
+        ExplicitNullableTypeChecker explicitNullableTypeCheckerMock = mock(
+                ExplicitNullableTypeChecker.class
+        );
         return createVaadinController(TEST_SERVICE, new ObjectMapper(),
-                accessCheckerMock, nameCheckerMock);
+                accessCheckerMock, nameCheckerMock, explicitNullableTypeCheckerMock);
     }
 
     private Method createServiceMethodMockThatThrows(Object argument,

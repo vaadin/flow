@@ -6,12 +6,12 @@
  */
 
 // @ts-ignore
-import client from './connect-client.default';
+import * as connect from './connect-client.default';
 import ComplexRequest from './ComplexRequest';
 import ComplexResponse from './ComplexResponse';
 
 export function complexEntitiesTest(
-  request: ComplexRequest
+  request?: ComplexRequest
 ): Promise<ComplexResponse> {
-  return client.call('GeneratorTestClass', 'complexEntitiesTest', {request});
+  return connect.client.call('GeneratorTestClass', 'complexEntitiesTest', {request: connect.nullIfUndefined(request)});
 }

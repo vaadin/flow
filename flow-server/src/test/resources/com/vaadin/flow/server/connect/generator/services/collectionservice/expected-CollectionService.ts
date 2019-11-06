@@ -1,5 +1,5 @@
 // @ts-ignore
-import client from './connect-client.default';
+import * as connect from './connect-client.default';
 import Collection from './com/vaadin/flow/server/connect/generator/services/collectionservice/CollectionService/Collection';
 
 /**
@@ -9,9 +9,9 @@ import Collection from './com/vaadin/flow/server/connect/generator/services/coll
  * Return a collection
  */
 export function getCollectionByAuthor(
-  name: string | null
-): Promise<Collection | null> {
-  return client.call('CollectionService', 'getCollectionByAuthor', {name});
+  name: string
+): Promise<Collection> {
+  return connect.client.call('CollectionService', 'getCollectionByAuthor', {name});
 }
 
 /**
@@ -19,6 +19,6 @@ export function getCollectionByAuthor(
  *
  * Return list of user name
  */
-export function getListOfUserName(): Promise<Array<string | null> | null> {
-  return client.call('CollectionService', 'getListOfUserName');
+export function getListOfUserName(): Promise<Array<string>> {
+  return connect.client.call('CollectionService', 'getListOfUserName');
 }

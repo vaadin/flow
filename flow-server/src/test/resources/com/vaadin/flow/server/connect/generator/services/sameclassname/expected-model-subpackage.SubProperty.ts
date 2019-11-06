@@ -1,3 +1,3 @@
 export default interface SubProperty {
-  barbar?: string | null;
+  barbar: string;
 }

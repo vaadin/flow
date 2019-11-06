@@ -3,10 +3,10 @@
  * parameter type descriptions are generated.
  */
 export default interface Status {
-  createdAt?: string | null;
+  createdAt: string;
   /**
    * Multiple line description should work.This is very very very very very
    * very very very long.
    */
-  text?: string | null;
+  text: string;
 }

@@ -1,13 +1,13 @@
 // @ts-ignore
-import client from './connect-client.default';
+import * as connect from './connect-client.default';
 import Account from './com/vaadin/flow/server/connect/generator/services/model/ModelService/Account';
 import Group from './com/vaadin/flow/server/connect/generator/services/model/ModelService/Group';
 import ModelFromDifferentPackage from './com/vaadin/flow/server/connect/generator/services/model/subpackage/ModelFromDifferentPackage';
 
 export function getAccountByGroups(
-  groups: Array<Group | null> | null
-): Promise<Account | null> {
-  return client.call('ModelService', 'getAccountByGroups', {groups});
+  groups: Array<Group>
+): Promise<Account> {
+  return connect.client.call('ModelService', 'getAccountByGroups', {groups});
 }
 
 /**
@@ -17,17 +17,17 @@ export function getAccountByGroups(
  * Return the account with given userName
  */
 export function getAccountByUserName(
-  userName: string | null
-): Promise<Account | null> {
-  return client.call('ModelService', 'getAccountByUserName', {userName});
+  userName: string
+): Promise<Account> {
+  return connect.client.call('ModelService', 'getAccountByUserName', {userName});
 }
 
-export function getArrayOfAccount(): Promise<Array<Account | null> | null> {
-  return client.call('ModelService', 'getArrayOfAccount');
+export function getArrayOfAccount(): Promise<Array<Account>> {
+  return connect.client.call('ModelService', 'getArrayOfAccount');
 }
 
-export function getMapGroups(): Promise<{ [key: string]: Group | null; } | null> {
-  return client.call('ModelService', 'getMapGroups');
+export function getMapGroups(): Promise<{ [key: string]: Group; }> {
+  return connect.client.call('ModelService', 'getMapGroups');
 }
 
 /**
@@ -35,6 +35,6 @@ export function getMapGroups(): Promise<{ [key: string]: Group | null; } | null>
  *
  *
  */
-export function getModelFromDifferentPackage(): Promise<ModelFromDifferentPackage | null> {
-  return client.call('ModelService', 'getModelFromDifferentPackage');
+export function getModelFromDifferentPackage(): Promise<ModelFromDifferentPackage> {
+  return connect.client.call('ModelService', 'getModelFromDifferentPackage');
 }

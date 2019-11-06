@@ -6,10 +6,10 @@
  */
 
 // @ts-ignore
-import client from './connect-client.default';
+import * as connect from './connect-client.default';
 
 export function firstMethod(
-  value: boolean
+  value?: boolean
 ): Promise<void> {
-  return client.call('FooBarService', 'firstMethod', {value}, {requireCredentials: false});
+  return connect.client.call('FooBarService', 'firstMethod', {value: connect.nullIfUndefined(value)}, {requireCredentials: false});
 }
