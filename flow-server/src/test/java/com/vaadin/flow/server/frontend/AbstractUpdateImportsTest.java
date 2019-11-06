@@ -62,7 +62,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DI
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -444,6 +443,12 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         // - Generated webcompoents
         // - JsModules (internal e.g. in frontend/)
         List<String> expectedImports = new ArrayList<>();
+        expectedImports.addAll(Arrays.asList(
+                "export const addCssBlock = function(block, before = false) {",
+                " const tpl = document.createElement('template');",
+                " tpl.innerHTML = block;",
+                " document.head[before ? 'insertBefore' : 'appendChild'](tpl.content, document.head.firstChild);",
+                "};"));
         expectedImports.addAll(updater.getThemeLines());
 
         getAnntotationsAsStream(JsModule.class, testClasses).map(JsModule::value).map(this::updateToImport).sorted().forEach(expectedImports::add);
