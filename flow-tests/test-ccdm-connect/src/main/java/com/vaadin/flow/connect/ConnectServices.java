@@ -17,6 +17,7 @@ public class ConnectServices {
         return "Hello, " + (title != null ? title + " " : "") + name + "!";
     }
 
+    @AnonymousAllowed
     public String echoWithOptional(@Nullable String first,
             @Nullable String second,
             Optional<String> third, Optional<String> fourth) {

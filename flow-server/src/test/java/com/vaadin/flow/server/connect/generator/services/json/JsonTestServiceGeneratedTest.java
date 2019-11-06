@@ -41,7 +41,7 @@ public class JsonTestServiceGeneratedTest
 
   @Test
   public void should_GenerateOpenApi_When_NoApplicationPropertiesInput() {
-    String expectedImport = String.format("import * as connect from '%s';",
+    String expectedImport = String.format("import client from '%s';",
         VaadinConnectClientGenerator.CONNECT_CLIENT_IMPORT_PATH);
     verifyGenerationFully(null,
         getClass().getResource("expected-openapi.json"));
@@ -63,7 +63,7 @@ public class JsonTestServiceGeneratedTest
   @Test
   public void should_GenerateJsClassWithCustomClientPath_When_CustomClientPathGiven() {
     String customConnectClientPath = "../my-connect-client.js";
-    String expectedImport = String.format("import * as connect from '%s';",
+    String expectedImport = String.format("import client from '%s';",
         customConnectClientPath);
 
     new OpenApiSpecGenerator(new PropertiesConfiguration()).generateOpenApiSpec(

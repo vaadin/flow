@@ -569,11 +569,21 @@ export class ConnectClient {
       headers['Authorization'] = `Bearer ${accessToken.token}`;
     }
 
+    // helper to keep the undefined value in object after JSON.stringify
+    const nullForUndefined = (obj: any): any => {
+      for (const property in obj) {
+        if (obj[property] === undefined) {
+          obj[property] = null;
+        }
+      }
+      return obj;
+    }
+
     const request = createRequest(
        `${this.endpoint}/${service}/${method}`, {
          method: 'POST',
          headers,
-         body: params !== undefined ? JSON.stringify(params) : undefined
+         body: params !== undefined ? JSON.stringify(nullForUndefined(params)) : undefined
         });
 
     // The middleware `context`, includes the call arguments and the request

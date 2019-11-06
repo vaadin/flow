@@ -1,5 +1,5 @@
 // @ts-ignore
-import * as connect from './connect-client.default';
+import client from './connect-client.default';
 import Account from './com/vaadin/flow/server/connect/generator/services/modelpackage/ModelPackageService/Account';
 
 /**
@@ -8,7 +8,7 @@ import Account from './com/vaadin/flow/server/connect/generator/services/modelpa
  * Return list of user name
  */
 export function getListOfUserName(): Promise<Array<string>> {
-  return connect.client.call('ModelPackageService', 'getListOfUserName');
+  return client.call('ModelPackageService', 'getListOfUserName');
 }
 
 /**
@@ -20,5 +20,5 @@ export function getListOfUserName(): Promise<Array<string>> {
 export function getSameModelPackage(
   name: string
 ): Promise<Account> {
-  return connect.client.call('ModelPackageService', 'getSameModelPackage', {name});
+  return client.call('ModelPackageService', 'getSameModelPackage', {name});
 }

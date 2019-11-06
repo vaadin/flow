@@ -6,7 +6,7 @@
  */
 
 // @ts-ignore
-import * as connect from './connect-client.default';
+import client from './connect-client.default';
 import Version from './com/fasterxml/jackson/core/Version';
 import Status from './com/vaadin/flow/server/connect/generator/services/json/JsonTestService/Status';
 import User from './com/vaadin/flow/server/connect/generator/services/json/JsonTestService/User';
@@ -17,7 +17,7 @@ import User from './com/vaadin/flow/server/connect/generator/services/json/JsonT
  * Return number of user
  */
 export function countUser(): Promise<number> {
-  return connect.client.call('JsonTestService', 'countUser');
+  return client.call('JsonTestService', 'countUser');
 }
 
 /**
@@ -29,7 +29,7 @@ export function countUser(): Promise<number> {
 export function fullFQNMethod(
   input: number
 ): Promise<string> {
-  return connect.client.call('JsonTestService', 'fullFQNMethod', {input});
+  return client.call('JsonTestService', 'fullFQNMethod', {input});
 }
 
 /**
@@ -38,7 +38,7 @@ export function fullFQNMethod(
  * Return map of user and roles
  */
 export function getAllUserRolesMap(): Promise<{ [key: string]: User; }> {
-  return connect.client.call('JsonTestService', 'getAllUserRolesMap');
+  return client.call('JsonTestService', 'getAllUserRolesMap');
 }
 
 /**
@@ -47,7 +47,7 @@ export function getAllUserRolesMap(): Promise<{ [key: string]: User; }> {
  * Return list of users
  */
 export function getAllUsers(): Promise<Array<User>> {
-  return connect.client.call('JsonTestService', 'getAllUsers');
+  return client.call('JsonTestService', 'getAllUsers');
 }
 
 /**
@@ -59,7 +59,7 @@ export function getAllUsers(): Promise<Array<User>> {
 export function getArrayInt(
   input: Array<string>
 ): Promise<Array<number>> {
-  return connect.client.call('JsonTestService', 'getArrayInt', {input}, {requireCredentials: false});
+  return client.call('JsonTestService', 'getArrayInt', {input}, {requireCredentials: false});
 }
 
 /**
@@ -71,7 +71,7 @@ export function getArrayInt(
 export function getBooleanValue(
   input: { [key: string]: User; }
 ): Promise<boolean> {
-  return connect.client.call('JsonTestService', 'getBooleanValue', {input});
+  return client.call('JsonTestService', 'getBooleanValue', {input});
 }
 
 /**
@@ -85,7 +85,7 @@ export function getTwoParameters(
   input: string,
   secondInput: number
 ): Promise<boolean> {
-  return connect.client.call('JsonTestService', 'getTwoParameters', {input, secondInput}, {requireCredentials: false});
+  return client.call('JsonTestService', 'getTwoParameters', {input, secondInput}, {requireCredentials: false});
 }
 
 /**
@@ -97,36 +97,36 @@ export function getTwoParameters(
 export function getUserById(
   id: number
 ): Promise<User> {
-  return connect.client.call('JsonTestService', 'getUserById', {id}, {requireCredentials: false});
+  return client.call('JsonTestService', 'getUserById', {id}, {requireCredentials: false});
 }
 
 export function inputBeanTypeDependency(
   input: Version
 ): Promise<void> {
-  return connect.client.call('JsonTestService', 'inputBeanTypeDependency', {input});
+  return client.call('JsonTestService', 'inputBeanTypeDependency', {input});
 }
 
 export function inputBeanTypeLocal(
   input: Status
 ): Promise<void> {
-  return connect.client.call('JsonTestService', 'inputBeanTypeLocal', {input});
+  return client.call('JsonTestService', 'inputBeanTypeLocal', {input});
 }
 
 export function optionalParameter(
   parameter?: Array<string>,
   requiredParameter: string
 ): Promise<void> {
-  return connect.client.call('JsonTestService', 'optionalParameter', {parameter: connect.nullIfUndefined(parameter), requiredParameter});
+  return client.call('JsonTestService', 'optionalParameter', {parameter, requiredParameter});
 }
 
 export function optionalReturn(): Promise<User | undefined> {
-  return connect.client.call('JsonTestService', 'optionalReturn');
+  return client.call('JsonTestService', 'optionalReturn');
 }
 
 export function reservedWordInParameter(
   _delete: boolean
 ): Promise<void> {
-  return connect.client.call('JsonTestService', 'reservedWordInParameter', {_delete});
+  return client.call('JsonTestService', 'reservedWordInParameter', {_delete});
 }
 
 /**
@@ -138,5 +138,5 @@ export function reservedWordInParameter(
 export function updateUser(
   user: User
 ): Promise<void> {
-  return connect.client.call('JsonTestService', 'updateUser', {user});
+  return client.call('JsonTestService', 'updateUser', {user});
 }
