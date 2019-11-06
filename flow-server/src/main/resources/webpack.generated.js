@@ -160,13 +160,6 @@ module.exports = {
             'last 1 Chrome major versions'
           ],
           esModule: true
-        },
-        'es5': { // IE11
-          browsers: [
-            'ie 11'
-          ],
-          tagAssetsWithKey: true, // append a suffix to the file name
-          noModule: true
         }
       }
     }),
