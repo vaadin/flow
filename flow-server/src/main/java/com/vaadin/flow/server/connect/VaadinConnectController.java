@@ -16,7 +16,6 @@
 package com.vaadin.flow.server.connect;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.annotation.Nullable;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
@@ -27,7 +26,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -46,7 +44,6 @@ import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -376,7 +373,7 @@ public class VaadinConnectController {
 
         String implicitNullError = this.explicitNullableTypeChecker
                 .checkValueForType(returnValue,
-                        methodToInvoke.getGenericReturnType(), null);
+                        methodToInvoke.getGenericReturnType());
         if (implicitNullError != null) {
             throw new VaadinConnectException(
                     String.format(

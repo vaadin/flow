@@ -447,12 +447,11 @@ public class OpenApiObjectGenerator {
                 && schema.getAdditionalProperties() != null) {
             map.putAll(collectUsedTypesFromSchema(
                     (Schema) schema.getAdditionalProperties()));
-        } else if (schema instanceof ComposedSchema) {
-            if (((ComposedSchema) schema).getAllOf() != null) {
+        } else if (schema instanceof ComposedSchema
+                && ((ComposedSchema) schema).getAllOf() != null) {
                 for (Schema child : ((ComposedSchema) schema).getAllOf()) {
                     map.putAll(collectUsedTypesFromSchema(child));
                 }
-            }
         }
         if (schema.getProperties() != null) {
             schema.getProperties().values().forEach(
