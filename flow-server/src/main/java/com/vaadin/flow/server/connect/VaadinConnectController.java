@@ -452,16 +452,6 @@ public class VaadinConnectController {
                         .readValue(requestParameters.get(parameterNames[i]));
 
                 serviceParameters[i] = parameter;
-                String implicitNullError = this.explicitNullableTypeChecker.checkValueForType(
-                        parameter,
-                        expectedType,
-                        javaParameters[i]
-                );
-                if (implicitNullError != null) {
-                    throw new VaadinConnectValidationException(
-                            new ValidationErrorData(implicitNullError, parameterNames[i])
-                    );
-                }
 
                 if (parameter != null) {
                     constraintViolations.addAll(validator.validate(parameter));
