@@ -319,7 +319,6 @@ public class VaadinConnectControllerTest {
                 "\"Hello, anonymous user!\"", responseBody);
     }
 
-
     @Test
     public void should_NotCallMethod_When_a_CSRF_request() {
         when(requestMock.getHeader("X-Requested-With")).thenReturn(null);
@@ -333,9 +332,8 @@ public class VaadinConnectControllerTest {
         String responseBody = response.getBody();
         assertNotNull("Response body should not be null", responseBody);
         assertTrue("Should return unauthorized error",
-                responseBody.contains("CSRF detected"));
+                responseBody.contains("Anonymous access is not allowed"));
     }
-
 
     @Test
     public void should_NotCallMethodAnonymously_When_UserPrincipalIsNotInRole() {
@@ -347,7 +345,7 @@ public class VaadinConnectControllerTest {
                 createRequestParameters("{}"), requestMock);
 
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-        assertTrue(response.getBody().contains("User is not in allowed roles [FOO_ROLE, BAR_ROLE]"));
+        assertTrue(response.getBody().contains("Unauthorized access to vaadin service"));
     }
 
     @Test
@@ -388,7 +386,7 @@ public class VaadinConnectControllerTest {
                 createRequestParameters("{}"), requestMock);
 
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-        assertTrue(response.getBody().contains("Service access denied"));
+        assertTrue(response.getBody().contains("Anonymous access is not allowed"));
     }
 
     @Test
