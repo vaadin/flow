@@ -68,7 +68,6 @@ import org.apache.commons.configuration2.PropertiesConfiguration;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -316,16 +315,16 @@ public abstract class AbstractServiceGenerationTest {
         for (Map.Entry<String, Schema> stringSchemaEntry : properties
                 .entrySet()) {
             assertSchema(stringSchemaEntry.getValue(), parameterTypes[index]);
+            List requiredList = requestSchema.getRequired();
             if (parameters[index].isAnnotationPresent(Nullable.class) ||
-                    Optional.class
-                            .isAssignableFrom(parameters[index].getType())) {
-                if (stringSchemaEntry.getValue().getRequired() != null) {
-                    boolean isRequired = stringSchemaEntry.getValue()
-                            .getRequired().contains(stringSchemaEntry.getKey());
-                    assertFalse("@Nullable or Optional request parameter " +
-                            "should not be required", isRequired);
-                }
+                    Optional.class.isAssignableFrom(parameters[index].getType())) {
+                boolean notRequired = requiredList != null ||
+                        !requiredList.contains(stringSchemaEntry.getKey());
+                assertTrue("@Nullable or Optional request parameter " +
+                        "should not be required", notRequired);
 
+            } else {
+                assertTrue(requiredList.contains(stringSchemaEntry.getKey()));
             }
             index++;
         }
@@ -421,7 +420,6 @@ public abstract class AbstractServiceGenerationTest {
     private boolean assertSpecificJavaClassSchema(Schema actualSchema,
             Class<?> expectedSchemaClass) {
         if (expectedSchemaClass == Optional.class) {
-            assertTrue(actualSchema.getNullable());
             if (actualSchema instanceof ComposedSchema) {
                 assertEquals(1,
                         ((ComposedSchema) actualSchema).getAllOf().size());
@@ -458,6 +456,17 @@ public abstract class AbstractServiceGenerationTest {
             assertNotNull(String.format("Property schema is not found %s",
                     expectedSchemaField.getName()), propertySchema);
             assertSchema(propertySchema, expectedSchemaField.getType());
+            if (Optional.class
+                    .isAssignableFrom(expectedSchemaField.getType()) ||
+                    expectedSchemaField.isAnnotationPresent(Nullable.class)) {
+                boolean notRequired = schema.getRequired() == null ||
+                        !schema.getRequired()
+                                .contains(expectedSchemaField.getName());
+                assertTrue(notRequired);
+            } else {
+                assertTrue(schema.getRequired()
+                        .contains(expectedSchemaField.getName()));
+            }
         }
         assertEquals(expectedFieldsCount, properties.size());
 
