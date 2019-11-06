@@ -11,7 +11,7 @@ import ComplexRequest from './ComplexRequest';
 import ComplexResponse from './ComplexResponse';
 
 export function complexEntitiesTest(
-  request: ComplexRequest
+  request?: ComplexRequest
 ): Promise<ComplexResponse> {
   return client.call('GeneratorTestClass', 'complexEntitiesTest', {request});
 }

@@ -1,5 +1,5 @@
 export default interface Collection {
-  author?: string | null;
-  collectionName?: string | null;
-  type?: string | null;
+  author: string;
+  collectionName: string;
+  type: string;
 }

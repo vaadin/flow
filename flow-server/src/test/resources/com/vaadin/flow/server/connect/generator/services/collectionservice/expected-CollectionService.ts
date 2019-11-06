@@ -9,8 +9,8 @@ import Collection from './com/vaadin/flow/server/connect/generator/services/coll
  * Return a collection
  */
 export function getCollectionByAuthor(
-  name: string | null
-): Promise<Collection | null> {
+  name: string
+): Promise<Collection> {
   return client.call('CollectionService', 'getCollectionByAuthor', {name});
 }
 
@@ -19,6 +19,6 @@ export function getCollectionByAuthor(
  *
  * Return list of user name
  */
-export function getListOfUserName(): Promise<Array<string | null> | null> {
+export function getListOfUserName(): Promise<Array<string>> {
   return client.call('CollectionService', 'getListOfUserName');
 }

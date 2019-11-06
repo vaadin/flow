@@ -5,8 +5,8 @@ import Group from './com/vaadin/flow/server/connect/generator/services/model/Mod
 import ModelFromDifferentPackage from './com/vaadin/flow/server/connect/generator/services/model/subpackage/ModelFromDifferentPackage';
 
 export function getAccountByGroups(
-  groups: Array<Group | null> | null
-): Promise<Account | null> {
+  groups: Array<Group>
+): Promise<Account> {
   return client.call('ModelService', 'getAccountByGroups', {groups});
 }
 
@@ -17,16 +17,16 @@ export function getAccountByGroups(
  * Return the account with given userName
  */
 export function getAccountByUserName(
-  userName: string | null
-): Promise<Account | null> {
+  userName: string
+): Promise<Account> {
   return client.call('ModelService', 'getAccountByUserName', {userName});
 }
 
-export function getArrayOfAccount(): Promise<Array<Account | null> | null> {
+export function getArrayOfAccount(): Promise<Array<Account>> {
   return client.call('ModelService', 'getArrayOfAccount');
 }
 
-export function getMapGroups(): Promise<{ [key: string]: Group | null; } | null> {
+export function getMapGroups(): Promise<{ [key: string]: Group; }> {
   return client.call('ModelService', 'getMapGroups');
 }
 
@@ -35,6 +35,6 @@ export function getMapGroups(): Promise<{ [key: string]: Group | null; } | null>
  *
  *
  */
-export function getModelFromDifferentPackage(): Promise<ModelFromDifferentPackage | null> {
+export function getModelFromDifferentPackage(): Promise<ModelFromDifferentPackage> {
   return client.call('ModelService', 'getModelFromDifferentPackage');
 }

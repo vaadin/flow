@@ -13,9 +13,9 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server.connect.generator.services.notnull;
+package com.vaadin.flow.server.connect.generator.services.nullable;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nullable;
 
 import java.util.Collections;
 import java.util.List;
@@ -25,38 +25,39 @@ import java.util.Optional;
 import com.vaadin.flow.server.connect.VaadinService;
 
 @VaadinService
-public class NotNullService {
-    @NotNull
-    public String getNonNullString(@NotNull String input) {
+public class NullableService {
+
+    public String getNullableString(@Nullable String input) {
         return "";
     }
 
-    public NonNullModel echoNonNullMode(@NotNull NonNullModel[] nonNullModels) {
-        return new NonNullModel();
+    @Nullable
+    public NullableModel echoNonNullMode(NullableModel[] nullableModels) {
+        return new NullableModel();
     }
 
-    public Map<String, NonNullModel> echoMap(boolean shouldBeNotNull) {
+    public Map<String, NullableModel> echoMap(boolean shouldBeNotNull) {
         return Collections.emptyMap();
     }
 
-    @NotNull
-    public NotNullService.ReturnType getNotNullReturnType() {
+    @Nullable
+    public NullableService.ReturnType getNotNullReturnType() {
         return new ReturnType();
     }
 
     public void sendParameterType(
-            @NotNull NotNullService.ParameterType parameterType) {
+            @Nullable NullableService.ParameterType parameterType) {
 
     }
 
-    public static class NonNullModel {
+    public static class NullableModel {
         String foo;
-        @NotNull
         String bar;
         int shouldBeNotNullByDefault;
         Optional<Integer> nullableInteger;
+        @Nullable
         List<Map<String, String>> listOfMapNullable;
-        @NotNull
+        @Nullable
         List<Map<String, String>> listOfMapNullableNotNull;
     }
 

@@ -911,17 +911,17 @@ public class VaadinConnectControllerTest {
     }
 
     private <T> VaadinConnectController createVaadinController(T service) {
-        return createVaadinController(service, null, null, null);
+        return createVaadinController(service, null, null, null, null);
     }
 
     private <T> VaadinConnectController createVaadinController(T service,
             ObjectMapper vaadinServiceMapper) {
-        return createVaadinController(service, vaadinServiceMapper, null, null);
+        return createVaadinController(service, vaadinServiceMapper, null, null, null);
     }
 
     private <T> VaadinConnectController createVaadinController(T service,
             VaadinConnectAccessChecker accessChecker) {
-        return createVaadinController(service, null, accessChecker, null);
+        return createVaadinController(service, null, accessChecker, null, null);
     }
 
     private <T> VaadinConnectController createVaadinController(T service,

@@ -4,7 +4,7 @@ import ChildModel from './com/vaadin/flow/server/connect/generator/services/inhe
 import ParentModel from './com/vaadin/flow/server/connect/generator/services/inheritedmodel/InheritedModelService/ParentModel';
 
 export function getParentModel(
-  child: ChildModel | null
-): Promise<ParentModel | null> {
+  child: ChildModel
+): Promise<ParentModel> {
   return client.call('InheritedModelService', 'getParentModel', {child});
 }

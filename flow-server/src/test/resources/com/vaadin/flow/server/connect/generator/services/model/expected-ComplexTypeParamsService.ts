@@ -4,8 +4,8 @@ import Account from './com/vaadin/flow/server/connect/generator/services/model/M
 import Group from './com/vaadin/flow/server/connect/generator/services/model/ModelService/Group';
 
 export function getComplexTypeParams(
-  accounts: Array<Account | null> | null,
-  groups: { [key: string]: Group | null; } | null
+  accounts: Array<Account>,
+  groups: { [key: string]: Group; }
 ): Promise<void> {
   return client.call('ComplexTypeParamsService', 'getComplexTypeParams', {accounts, groups});
 }

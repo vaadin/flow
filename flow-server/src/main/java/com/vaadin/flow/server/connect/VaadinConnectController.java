@@ -162,7 +162,7 @@ public class VaadinConnectController {
         this.explicitNullableTypeChecker = explicitNullableTypeChecker;
 
         context.getBeansWithAnnotation(VaadinService.class)
-            .forEach((name, serviceBean) -> 
+            .forEach((name, serviceBean) ->
                 validateServiceBean(serviceNameChecker, context, name, serviceBean));
     }
 
@@ -371,10 +371,9 @@ public class VaadinConnectController {
             return handleMethodExecutionError(serviceName, methodName, e);
         }
 
-        String implicitNullError = this.explicitNullableTypeChecker.checkValueForType(
-                returnValue,
-                methodToInvoke.getGenericReturnType()
-        );
+        String implicitNullError = this.explicitNullableTypeChecker
+                .checkValueForType(returnValue,
+                        methodToInvoke.getGenericReturnType());
         if (implicitNullError != null) {
             throw new VaadinConnectException(
                     String.format(
@@ -450,15 +449,6 @@ public class VaadinConnectController {
                         .readValue(requestParameters.get(parameterNames[i]));
 
                 serviceParameters[i] = parameter;
-                String implicitNullError = this.explicitNullableTypeChecker.checkValueForType(
-                        parameter,
-                        expectedType
-                );
-                if (implicitNullError != null) {
-                    throw new VaadinConnectValidationException(
-                            new ValidationErrorData(implicitNullError, parameterNames[i])
-                    );
-                }
 
                 if (parameter != null) {
                     constraintViolations.addAll(validator.validate(parameter));
