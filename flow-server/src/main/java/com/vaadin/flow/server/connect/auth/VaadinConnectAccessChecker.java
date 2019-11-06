@@ -24,8 +24,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Component used for checking role-based ACL in Vaadin Services.
@@ -75,25 +73,15 @@ public class VaadinConnectAccessChecker {
      *
      * @param method
      *            the vaadin service method to check ACL
-     * @param request
-     *            the request triggers the <code>method</code> invocation
      * @return an error String with an issue description, if any validation
      *         issues occur, {@code null} otherwise
      */
     public String check(Method method, HttpServletRequest request) {
-        String error = verifyCsrf(request);
-        if (error == null) {
-            // DenyAll overrides everything
-            error = verifyDennyAll(method);
+        if (request.getUserPrincipal() != null) {
+            return verifyAuthenticatedUser(method, request);
+        } else {
+            return verifyAnonymousUser(method, request);
         }
-        if (error == null) {
-            // AnonymousAllowed overrides RolesAllowed
-            error = verifyAnonymousAllowed(method, request);
-            if (error != null && request.getUserPrincipal() != null) {
-                error = verifyRolesAllowed(method, request);
-            }
-        }
-        return error;
     }
 
     /**
@@ -116,41 +104,52 @@ public class VaadinConnectAccessChecker {
                 : method.getDeclaringClass();
     }
 
-    private String verifyCsrf(HttpServletRequest request) {
-        if ("Vaadin CCDM".equals(request.getHeader("X-Requested-With"))) {
-            return null;
-        }
-        return "CSRF detected";
-    }
-
-    private String verifyAnonymousAllowed(Method method,
+    private String verifyAnonymousUser(Method method,
             HttpServletRequest request) {
-        if (getSecurityTarget(method).isAnnotationPresent(AnonymousAllowed.class)) {
-            return null;
-        }
-        return "Anonymous access is not allowed";
-    }
-
-    private String verifyRolesAllowed(Method method, HttpServletRequest request) {
-        AnnotatedElement elm = getSecurityTarget(method);
-        if (elm.isAnnotationPresent(RolesAllowed.class)) {
-            List<String> roles = Arrays.asList(elm.getAnnotation(RolesAllowed.class).value());
-            for (String role: roles) {
-                if (request.isUserInRole(role)) {
-                    return null;
-                }
-            }
-            return "User is not in allowed roles " + roles;
+        if (!getSecurityTarget(method)
+                .isAnnotationPresent(AnonymousAllowed.class)
+                || cannotAccessMethod(method, request)) {
+            return "Anonymous access is not allowed";
         }
         return null;
     }
 
-    private String verifyDennyAll(Method method) {
-        getSecurityTarget(method);
-        if (!getSecurityTarget(method).isAnnotationPresent(DenyAll.class)) {
-            return null;
+    private String verifyAuthenticatedUser(Method method,
+            HttpServletRequest request) {
+        if (cannotAccessMethod(method, request)) {
+            return "Unauthorized access to vaadin service";
         }
-        return "Service access denied";
+        return null;
+    }
+
+    private boolean cannotAccessMethod(Method method,
+            HttpServletRequest request) {
+        return entityForbidden(getSecurityTarget(method), request);
+    }
+
+    private boolean entityForbidden(AnnotatedElement entity,
+            HttpServletRequest request) {
+        return !"Vaadin CCDM".equals(request.getHeader("X-Requested-With"))
+                || entity.isAnnotationPresent(DenyAll.class)
+                || (!entity.isAnnotationPresent(AnonymousAllowed.class)
+                        && !roleAllowed(
+                                entity.getAnnotation(RolesAllowed.class),
+                                request));
+    }
+
+    private boolean roleAllowed(RolesAllowed rolesAllowed,
+            HttpServletRequest request) {
+        if (rolesAllowed == null) {
+            return true;
+        }
+
+        for (String role : rolesAllowed.value()) {
+            if (request.isUserInRole(role)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private boolean hasSecurityAnnotation(Method method) {
