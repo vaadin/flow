@@ -73,17 +73,17 @@ public class VaadinConnectAccessChecker {
      *
      * @param method
      *            the vaadin service method to check ACL
-     * @param request
-     *            the request triggers the <code>method</code> invocation
      * @return an error String with an issue description, if any validation
      *         issues occur, {@code null} otherwise
+     * @param request
+     *            the request that triggers the <code>method</code> invocation
      */
     public String check(Method method, HttpServletRequest request) {
-        String error = verifyCsrf(request);
-        if (error == null) {
-            error = verifyAnonymousUser(method, request);
+        if (request.getUserPrincipal() != null) {
+            return verifyAuthenticatedUser(method, request);
+        } else {
+            return verifyAnonymousUser(method, request);
         }
-        return error;
     }
 
     /**
@@ -106,20 +106,55 @@ public class VaadinConnectAccessChecker {
                 : method.getDeclaringClass();
     }
 
-    private String verifyCsrf(HttpServletRequest request) {
-        if ("Vaadin CCDM".equals(request.getHeader("X-Requested-With"))) {
-            return null;
-        }
-        return "CSRF detected";
-    }
-
     private String verifyAnonymousUser(Method method,
             HttpServletRequest request) {
-        if (getSecurityTarget(method).isAnnotationPresent(
-                AnonymousAllowed.class) || request.getUserPrincipal() != null) {
-            return null;
+        if (!getSecurityTarget(method)
+                .isAnnotationPresent(AnonymousAllowed.class)
+                || cannotAccessMethod(method, request)) {
+            return "Anonymous access is not allowed";
         }
-        return "Anonymous access is not allowed";
+        return null;
+    }
+
+    private String verifyAuthenticatedUser(Method method,
+            HttpServletRequest request) {
+        if (cannotAccessMethod(method, request)) {
+            return "Unauthorized access to vaadin service";
+        }
+        return null;
+    }
+
+    private boolean cannotAccessMethod(Method method,
+            HttpServletRequest request) {
+        return requestForbidden(request)
+                || entityForbidden(getSecurityTarget(method), request);
+    }
+
+    private boolean requestForbidden(HttpServletRequest request) {
+        return !"Vaadin CCDM".equals(request.getHeader("X-Requested-With"));
+    }
+
+    private boolean entityForbidden(AnnotatedElement entity,
+            HttpServletRequest request) {
+        return entity.isAnnotationPresent(DenyAll.class) || (!entity
+                .isAnnotationPresent(AnonymousAllowed.class)
+                && !roleAllowed(entity.getAnnotation(RolesAllowed.class),
+                        request));
+    }
+
+    private boolean roleAllowed(RolesAllowed rolesAllowed,
+            HttpServletRequest request) {
+        if (rolesAllowed == null) {
+            return true;
+        }
+
+        for (String role : rolesAllowed.value()) {
+            if (request.isUserInRole(role)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private boolean hasSecurityAnnotation(Method method) {
