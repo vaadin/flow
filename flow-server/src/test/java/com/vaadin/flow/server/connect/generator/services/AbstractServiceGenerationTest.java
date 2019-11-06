@@ -318,7 +318,7 @@ public abstract class AbstractServiceGenerationTest {
             List requiredList = requestSchema.getRequired();
             if (parameters[index].isAnnotationPresent(Nullable.class) ||
                     Optional.class.isAssignableFrom(parameters[index].getType())) {
-                boolean notRequired = requiredList != null ||
+                boolean notRequired = requiredList == null ||
                         !requiredList.contains(stringSchemaEntry.getKey());
                 assertTrue("@Nullable or Optional request parameter " +
                         "should not be required", notRequired);
