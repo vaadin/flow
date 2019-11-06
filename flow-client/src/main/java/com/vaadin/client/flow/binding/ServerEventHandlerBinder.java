@@ -52,7 +52,7 @@ public class ServerEventHandlerBinder {
     public static EventRemover bindServerEventHandlerNames(Element element,
             StateNode node) {
         return bindServerEventHandlerNames(() -> ServerEventObject.get(element),
-                node, NodeFeatures.CLIENT_DELEGATE_HANDLERS);
+                node, NodeFeatures.CLIENT_DELEGATE_HANDLERS, true);
     }
 
     /**
@@ -67,11 +67,15 @@ public class ServerEventHandlerBinder {
      *            the state node containing the feature
      * @param featureId
      *            the feature id which contains event handler methods
+     * @param returnValue
+     *            <code>true</code> if the handler should return a promise that
+     *            will reflect the server-side result; <code>false</code> to not
+     *            return any value
      * @return a handle which can be used to remove the listener for the feature
      */
     public static EventRemover bindServerEventHandlerNames(
             Supplier<ServerEventObject> objectProvider, StateNode node,
-            int featureId) {
+            int featureId, boolean returnValue) {
         NodeList serverEventHandlerNamesList = node.getList(featureId);
 
         if (serverEventHandlerNamesList.length() > 0) {
@@ -80,7 +84,7 @@ public class ServerEventHandlerBinder {
             for (int i = 0; i < serverEventHandlerNamesList.length(); i++) {
                 String serverEventHandlerName = (String) serverEventHandlerNamesList
                         .get(i);
-                object.defineMethod(serverEventHandlerName, node);
+                object.defineMethod(serverEventHandlerName, node, returnValue);
             }
         }
 
@@ -94,7 +98,8 @@ public class ServerEventHandlerBinder {
 
             JsArray<?> add = e.getAdd();
             for (int i = 0; i < add.length(); i++) {
-                serverObject.defineMethod((String) add.get(i), node);
+                serverObject.defineMethod((String) add.get(i), node,
+                        returnValue);
             }
         });
     }

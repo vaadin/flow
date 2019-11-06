@@ -324,6 +324,9 @@ public class TestBenchHelpers extends ParallelTest {
      * @return log entries from the browser
      */
     protected List<LogEntry> getLogEntries(Level level) {
+        // https://github.com/vaadin/testbench/issues/1233
+        getCommandExecutor().waitForVaadin();
+
         return driver.manage().logs().get(LogType.BROWSER).getAll().stream()
                 .filter(logEntry -> logEntry.getLevel().intValue() >= level
                         .intValue())

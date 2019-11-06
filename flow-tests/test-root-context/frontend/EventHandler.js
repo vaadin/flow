@@ -12,6 +12,8 @@ class EventHandler extends PolymerElement {
        <button on-click="sendData" id="send">Send event data to the server</button>
        <button on-click="overriddenClick" id="overridden">Client and server event</button>
        <button on-click="clientHandler" id="client">Delegate via the $server</button>
+       <button on-click="clientHandlerError" id="clientError">Delegate via the $server and throw</button>
+       <span id="status">[[status]]</span>
     `;
   }
 
@@ -20,10 +22,25 @@ class EventHandler extends PolymerElement {
     event.result = "ClientSide handler";
   }
 
-  clientHandler() {
-    const msg = "foo";
-    const enabled = true;
-    this.$server.handleClientCall(msg, enabled);
+  async clientHandler() {
+      this.status = "Waiting"
+  	
+      const msg = "foo";
+      const enabled = true;
+      let result = await this.$server.handleClientCall(msg, enabled);
+      this.status = result;
   }
+  
+  async clientHandlerError() {
+      this.status = "Waiting"
+          
+      const msg = "foo";
+      const enabled = false;
+      try {
+          await this.$server.handleClientCall(msg, enabled);
+      } catch (error) {
+      	  this.status = error;
+      }
+  } 
 }
 customElements.define(EventHandler.is, EventHandler);

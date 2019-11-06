@@ -78,7 +78,7 @@ public class JsonCodecTest {
                 JsonCodec.encodeWithoutTypeInfo(value);
 
                 Assert.fail("Should throw for " + value.getClass());
-            } catch (IllegalArgumentException expected) {
+            } catch (AssertionError expected) {
             }
         }
     }
@@ -134,7 +134,7 @@ public class JsonCodecTest {
                 JsonCodec.encodeWithTypeInfo(value);
 
                 Assert.fail("Should throw for " + value.getClass());
-            } catch (IllegalArgumentException expected) {
+            } catch (AssertionError expected) {
             }
         }
     }

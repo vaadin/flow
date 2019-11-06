@@ -15,11 +15,27 @@
  */
 package com.vaadin.flow.server.communication;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.lang.annotation.Annotation;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.regex.Pattern;
+
+import org.jsoup.nodes.Attribute;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.webcomponent.WebComponentUI;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.server.BootstrapHandler;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ServletHelper;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -33,21 +49,6 @@ import com.vaadin.flow.theme.ThemeDefinition;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
-import org.jsoup.nodes.Attribute;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.lang.annotation.Annotation;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.regex.Pattern;
-
 import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -124,9 +125,6 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
     protected BootstrapContext createAndInitUI(
             Class<? extends UI> uiClass, VaadinRequest request,
             VaadinResponse response, VaadinSession session) {
-        BootstrapContext context = super.createAndInitUI(WebComponentUI.class,
-                request, response, session);
-        JsonObject config = context.getApplicationParameters();
 
         if(!canHandleRequest(request)) {
             throw new IllegalStateException("Unexpected request URL '"
@@ -135,7 +133,11 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                     + PATH_PATTERN.toString());
         }
 
-        String serviceUrl = getServiceUrl(request);
+        final String serviceUrl = getServiceUrl(request, response);
+
+        BootstrapContext context = super.createAndInitUI(WebComponentUI.class,
+                request, response, session);
+        JsonObject config = context.getApplicationParameters();
 
         String pushURL = context.getSession().getConfiguration().getPushURL();
         if (pushURL == null) {
@@ -188,7 +190,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
             ServletHelper.setResponseNoCacheHeaders(response::setHeader,
                     response::setDateHeader);
 
-            String serviceUrl = getServiceUrl(request);
+            String serviceUrl = getServiceUrl(request, response);
 
             Document document = getPageBuilder().getBootstrapPage(context);
             writeBootstrapPage(response, document.head(), serviceUrl);
@@ -314,8 +316,32 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         }
     }
 
+    /**
+     * Create a new address for a resource which is calculated based on the
+     * request base path (servlet path) and the original path for the Vaadin
+     * resource.
+     * <p>
+     * If the resource is targeted to context root with VAADIN prefix, the path
+     * part before the VAADIN is chopped of since that has been calculated to be
+     * relative to our context and would target context root instead of the
+     * serving servlet.
+     * 
+     * @param basePath
+     *            full servlet path, received as part of the bootstrap request.
+     *            Needs to be the client-side path used, to get around proxies.
+     * @param path
+     *            original resource path
+     * @return new resource path, relative to basePath
+     */
     protected String modifyPath(String basePath, String path) {
-        return URI.create(basePath + path).toString();
+        int vaadinIndex = path.indexOf(Constants.VAADIN_MAPPING);
+        if (vaadinIndex > 0) {
+            String subPath = path.substring(vaadinIndex);
+            return URI.create(basePath + subPath).toString();
+        } else {
+            return URI.create(basePath + path).toString();
+
+        }
     }
 
     private static String inlineHTML(String html) {
@@ -339,10 +365,15 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
 
     /**
      * Returns the service url needed for initialising the UI.
-     * @param request Request.
+     * 
+     * @param request
+     *            the request object
+     * @param response
+     *            the response object
      * @return Service url for the given request.
      */
-    protected String getServiceUrl(VaadinRequest request) {
+    protected String getServiceUrl(VaadinRequest request,
+            VaadinResponse response) {
         // get service url from 'url' parameter
         String url = request.getParameter(REQ_PARAM_URL);
         // if 'url' parameter was not available, use request url
