@@ -179,7 +179,7 @@ abstract class AbstractUpdateImports implements Runnable, Serializable {
     List<String> resolveModules(Collection<String> modules,
             boolean isJsModule) {
         return modules.stream()
-                .map(module -> resolveResource(module, isJsModule))
+                .map(module -> resolveResource(module, isJsModule)).sorted()
                 .collect(Collectors.toList());
     }
 
