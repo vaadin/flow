@@ -64,7 +64,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         binder = new Binder<Person>() {
             @Override
             protected void handleError(HasValue<?, ?> field,
-                                       ValidationResult result) {
+                    ValidationResult result) {
                 super.handleError(field, result);
                 componentErrors.put(field, result.getErrorMessage());
             }
@@ -108,6 +108,23 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         binder.setBean(null);
         assertEquals("Name field not empty", "", nameField.getValue());
         assertEquals("Age field not empty", "", ageField.getValue());
+    }
+
+    @Test
+    public void removeInvalidBinding_validateDoesNotThrow() {
+        binder.forField(nameField).bind(Person::getFirstName,
+                Person::setFirstName);
+        Binding<Person, Integer> ageBinding = binder.forField(ageField)
+                .withConverter(new StringToIntegerConverter(""))
+                .bind(Person::getAge, Person::setAge);
+        binder.withValidator(bean -> true, "");
+        binder.setBean(item);
+
+        ageField.setValue("foo");
+
+        binder.removeBinding(ageBinding);
+
+        binder.validate();
     }
 
     @Test
@@ -568,8 +585,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         textField.setValue("        ");
         String errorMessage = textField.getErrorMessage();
         assertNotNull(errorMessage);
-        assertEquals("Input is required.",
-                componentErrors.get(textField));
+        assertEquals("Input is required.", componentErrors.get(textField));
         // validation is done for all changed bindings once.
         assertEquals(2, invokes.get());
 
@@ -586,7 +602,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         Converter<String, String> stringBasicPreProcessingConverter = new Converter<String, String>() {
             @Override
             public Result<String> convertToModel(String value,
-                                                 ValueContext context) {
+                    ValueContext context) {
                 if (StringUtils.isBlank(value)) {
                     return Result.ok(null);
                 }
@@ -595,7 +611,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
             @Override
             public String convertToPresentation(String value,
-                                                ValueContext context) {
+                    ValueContext context) {
                 if (value == null) {
                     return "";
                 }
