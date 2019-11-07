@@ -375,14 +375,9 @@ public class VaadinConnectController {
                 .checkValueForType(returnValue,
                         methodToInvoke.getGenericReturnType());
         if (implicitNullError != null) {
-            throw new VaadinConnectException(
-                    String.format(
-                            "Unexpected return value in service '%s' method '%s'. %s",
-                            serviceName,
-                            methodName,
-                            implicitNullError
-                    )
-            );
+            throw new VaadinConnectException(String.format(
+                    "Unexpected return value in service '%s' method '%s'. %s",
+                    serviceName, methodName, implicitNullError));
         }
 
         Set<ConstraintViolation<Object>> returnValueConstraintViolations = validator

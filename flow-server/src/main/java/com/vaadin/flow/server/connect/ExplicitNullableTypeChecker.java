@@ -25,28 +25,27 @@ import java.util.Optional;
  * parameter and return types.
  */
 public class ExplicitNullableTypeChecker {
+
     /**
-     * Validates the given value for the given expected method parameter
-     * or return value type.
+     * Validates the given value for the given expected method parameter or
+     * return value type.
      *
      * @param value
-     *          the value to validate
+     *            the value to validate
      * @param expectedType
-     *          the declared type expected for the value
-     * @return
-     *          error message when the value is null while the expected
-     *          type does not explicitly allow null, or null meaning
-     *          the value is OK.
+     *            the declared type expected for the value
+     * @return error message when the value is null while the expected type does
+     *         not explicitly allow null, or null meaning the value is OK.
      */
     public String checkValueForType(Object value, Type expectedType) {
         if (expectedType instanceof ParameterizedType) {
-            Class<?> clazz = (Class<?>) ((ParameterizedType) expectedType).getRawType();
+            Class<?> clazz = (Class<?>) ((ParameterizedType) expectedType)
+                    .getRawType();
             if (Optional.class.isAssignableFrom(clazz)) {
                 if (value == null) {
                     return String.format(
                             "Got null value for type '%s', consider Optional.empty",
-                            expectedType.getTypeName()
-                    );
+                            expectedType.getTypeName());
                 } else {
                     return null;
                 }
@@ -71,7 +70,6 @@ public class ExplicitNullableTypeChecker {
         return String.format(
                 "Got null value for type '%s', which is neither Optional"
                         + " nor void",
-                expectedType.getTypeName()
-        );
+                expectedType.getTypeName());
     }
 }
