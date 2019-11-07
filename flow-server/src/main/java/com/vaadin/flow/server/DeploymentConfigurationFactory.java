@@ -332,17 +332,21 @@ public final class DeploymentConfigurationFactory implements Serializable {
                 .getResource(FrontendUtils.WEBPACK_GENERATED);
         // If jar!/ exists 2 times for webpack.generated.json then we are
         // running from a jar
-        if (webpackGenerated.getPath().split("jar!/", -1).length - 1 >= 2) {
+        if (countInstances(webpackGenerated.getPath(), "jar!/") >= 2) {
             for (URL resource : resources) {
-                // As we are running from a war we can accept a info with a
-                // single jar in the path
-                if (resource.getPath().split("jar!/", -1).length - 1 == 1) {
+                // As we now know that we are running from a jar we can accept a
+                // build info with a single jar in the path
+                if (countInstances(resource.getPath(), "jar!/") == 1) {
                     return FrontendUtils.streamToString(resource.openStream());
                 }
             }
         }
         // No applicable resources found.
         return null;
+    }
+
+    private static int countInstances(String input, String value) {
+        return input.split(value, -1).length - 1;
     }
 
     /**
