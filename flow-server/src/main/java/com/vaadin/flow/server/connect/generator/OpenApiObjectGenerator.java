@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.server.connect.generator;
 
+import javax.annotation.Nullable;
 import javax.annotation.security.DenyAll;
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
-import javax.validation.constraints.NotNull;
 
 import java.lang.reflect.Modifier;
 import java.nio.file.Path;
@@ -378,6 +378,9 @@ public class OpenApiObjectGenerator {
                 .filter(stringSchemaEntry -> BooleanUtils
                         .isNotTrue(stringSchemaEntry.getValue().getNullable()))
                 .map(Map.Entry::getKey).collect(Collectors.toList());
+        // Nullable is represented in requiredList instead.
+        properties.values()
+                .forEach(propertySchema -> propertySchema.nullable(null));
         schema.setRequired(requiredList);
         return schema;
     }
@@ -406,8 +409,11 @@ public class OpenApiObjectGenerator {
                 Schema propertySchema = parseTypeToSchema(
                         variableDeclarator.getType(),
                         fieldDescription.orElse(""));
-                if (field.isAnnotationPresent(NotNull.class)) {
-                    propertySchema.setNullable(false);
+                if (field.isAnnotationPresent(Nullable.class)
+                        || BooleanUtils.isTrue(propertySchema.getNullable())) {
+                    // Temporarily set nullable to indicate this property is
+                    // not required
+                    propertySchema.setNullable(true);
                 }
                 properties.put(variableDeclarator.getNameAsString(),
                         propertySchema);
@@ -441,10 +447,11 @@ public class OpenApiObjectGenerator {
                 && schema.getAdditionalProperties() != null) {
             map.putAll(collectUsedTypesFromSchema(
                     (Schema) schema.getAdditionalProperties()));
-        } else if (schema instanceof ComposedSchema) {
-            for (Schema child : ((ComposedSchema) schema).getAllOf()) {
-                map.putAll(collectUsedTypesFromSchema(child));
-            }
+        } else if (schema instanceof ComposedSchema
+                && ((ComposedSchema) schema).getAllOf() != null) {
+                for (Schema child : ((ComposedSchema) schema).getAllOf()) {
+                    map.putAll(collectUsedTypesFromSchema(child));
+                }
         }
         if (schema.getProperties() != null) {
             schema.getProperties().values().forEach(
@@ -575,9 +582,6 @@ public class OpenApiObjectGenerator {
         MediaType mediaItem = new MediaType();
         Type methodReturnType = methodDeclaration.getType();
         Schema schema = parseTypeToSchema(methodReturnType, "");
-        if (methodDeclaration.isAnnotationPresent(NotNull.class)) {
-            schema.setNullable(false);
-        }
         usedTypes.putAll(collectUsedTypesFromSchema(schema));
         mediaItem.schema(schema);
         return mediaItem;
@@ -600,12 +604,10 @@ public class OpenApiObjectGenerator {
         MediaType requestBodyObject = new MediaType();
         requestBodyContent.addMediaType("application/json", requestBodyObject);
         Schema requestSchema = new ObjectSchema();
+        requestSchema.setRequired(new ArrayList<>());
         requestBodyObject.schema(requestSchema);
         methodDeclaration.getParameters().forEach(parameter -> {
             Schema paramSchema = parseTypeToSchema(parameter.getType(), "");
-            if (parameter.isAnnotationPresent(NotNull.class)) {
-                paramSchema.setNullable(false);
-            }
             usedTypes.putAll(collectUsedTypesFromSchema(paramSchema));
             String name = (isReservedWord(parameter.getNameAsString()) ? "_"
                     : "").concat(parameter.getNameAsString());
@@ -614,7 +616,11 @@ public class OpenApiObjectGenerator {
                         paramsDescription.remove(parameter.getNameAsString()));
             }
             requestSchema.addProperties(name, paramSchema);
-            requestSchema.addRequiredItem(name);
+            if (BooleanUtils.isNotTrue(paramSchema.getNullable())
+                    && !parameter.isAnnotationPresent(Nullable.class)) {
+                requestSchema.addRequiredItem(name);
+            }
+            paramSchema.setNullable(null);
         });
         if (!paramsDescription.isEmpty()) {
             requestSchema.addExtension(
@@ -629,9 +635,6 @@ public class OpenApiObjectGenerator {
             Schema schema = parseResolvedTypeToSchema(javaType.resolve());
             if (StringUtils.isNotBlank(description)) {
                 schema.setDescription(description);
-            }
-            if (javaType.isPrimitiveType()) {
-                schema.setNullable(false);
             }
             return schema;
         } catch (Exception e) {
@@ -702,23 +705,20 @@ public class OpenApiObjectGenerator {
             ResolvedReferenceType resolvedType) {
         Schema schema = new ObjectSchema()
                 .name(resolvedType.getQualifiedName());
-        Map<String, Boolean> fieldNotNullMap = getFieldWithNotNullMap(
+        Map<String, Boolean> fieldsOptionalMap = getFieldsAndOptionalMap(
                 resolvedType);
-        Set<ResolvedFieldDeclaration> declaredFields = resolvedType
+        Set<ResolvedFieldDeclaration> serializableFields = resolvedType
                 .getDeclaredFields().stream()
-                .filter(resolvedFieldDeclaration -> fieldNotNullMap
+                .filter(resolvedFieldDeclaration -> fieldsOptionalMap
                         .containsKey(resolvedFieldDeclaration.getName()))
                 .collect(Collectors.toSet());
         // Make sure the order is consistent in properties map
         schema.setProperties(new TreeMap<>());
-        for (ResolvedFieldDeclaration resolvedFieldDeclaration : declaredFields) {
+        for (ResolvedFieldDeclaration resolvedFieldDeclaration : serializableFields) {
             String name = resolvedFieldDeclaration.getName();
             Schema type = parseResolvedTypeToSchema(
                     resolvedFieldDeclaration.getType());
-            if (fieldNotNullMap.get(name)) {
-                type.setNullable(false);
-            }
-            if (BooleanUtils.isNotTrue(type.getNullable())) {
+            if (!fieldsOptionalMap.get(name)) {
                 schema.addRequiredItem(name);
             }
             schema.addProperties(name, type);
@@ -735,7 +735,7 @@ public class OpenApiObjectGenerator {
      *            type of the class to get fields information
      * @return set of fields' name that we should generate.
      */
-    private Map<String, Boolean> getFieldWithNotNullMap(
+    private Map<String, Boolean> getFieldsAndOptionalMap(
             ResolvedReferenceType resolvedType) {
         if (!resolvedType.getTypeDeclaration().isClass()
                 || resolvedType.getTypeDeclaration().isAnonymousClass()) {
@@ -751,7 +751,8 @@ public class OpenApiObjectGenerator {
                         && !Modifier.isTransient(modifiers)
                         && !field.isAnnotationPresent(JsonIgnore.class);
             }).forEach(field -> validFields.put(field.getName(),
-                    field.isAnnotationPresent(NotNull.class)));
+                    field.isAnnotationPresent(Nullable.class)
+                            || field.getType().equals(Optional.class)));
         } catch (ClassNotFoundException e) {
 
             String message = String.format(

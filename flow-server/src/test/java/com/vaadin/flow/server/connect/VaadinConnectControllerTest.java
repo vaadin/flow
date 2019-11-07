@@ -49,6 +49,7 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.only;
@@ -139,6 +140,19 @@ public class VaadinConnectControllerTest {
         }
     }
 
+    @VaadinService
+    public static class NullCheckerTestClass {
+        public static final String OK_RESPONSE = "ok";
+
+        public String testOkMethod() {
+            return OK_RESPONSE;
+        }
+
+        public String testNullMethod() {
+            return null;
+        }
+    }
+
     @Rule
     public final ExpectedException exception = ExpectedException.none();
 
@@ -160,7 +174,7 @@ public class VaadinConnectControllerTest {
         exception.expect(IllegalStateException.class);
         exception.expectMessage(beanName);
         new VaadinConnectController(mock(ObjectMapper.class), null, null,
-                contextMock);
+                null, contextMock);
     }
 
     @Test
@@ -190,7 +204,7 @@ public class VaadinConnectControllerTest {
         exception.expectMessage(expectedCheckerMessage);
 
         createVaadinController(serviceWithIllegalName, mock(ObjectMapper.class),
-                null, nameChecker);
+                null, nameChecker, null);
     }
 
     @Test
@@ -230,8 +244,12 @@ public class VaadinConnectControllerTest {
                 VaadinServiceNameChecker.class);
         when(nameCheckerMock.check(TEST_SERVICE_NAME)).thenReturn(null);
 
+        ExplicitNullableTypeChecker explicitNullableTypeCheckerMock = mock(
+                ExplicitNullableTypeChecker.class);
+
         ResponseEntity<String> response = createVaadinController(TEST_SERVICE,
-                new ObjectMapper(), restrictingCheckerMock, nameCheckerMock)
+                new ObjectMapper(), restrictingCheckerMock, nameCheckerMock,
+                explicitNullableTypeCheckerMock)
                         .serveVaadinService(TEST_SERVICE_NAME,
                                 TEST_METHOD.getName(), null, requestMock);
 
@@ -684,7 +702,8 @@ public class VaadinConnectControllerTest {
 
         VaadinConnectController vaadinConnectController = new VaadinConnectController(
                 new ObjectMapper(), mock(VaadinConnectAccessChecker.class),
-                mock(VaadinServiceNameChecker.class), contextMock);
+                mock(VaadinServiceNameChecker.class),
+                mock(ExplicitNullableTypeChecker.class), contextMock);
         ResponseEntity<String> response = vaadinConnectController
                 .serveVaadinService("CustomService", "testMethod",
                         createRequestParameters(
@@ -707,7 +726,8 @@ public class VaadinConnectControllerTest {
                 .thenReturn(Collections.emptyMap());
         new VaadinConnectController(null,
                 mock(VaadinConnectAccessChecker.class),
-                mock(VaadinServiceNameChecker.class), contextMock);
+                mock(VaadinServiceNameChecker.class),
+                mock(ExplicitNullableTypeChecker.class), contextMock);
 
         verify(contextMock, times(1)).getBean(ObjectMapper.class);
         verify(mockDefaultObjectMapper, times(1)).setVisibility(
@@ -729,7 +749,8 @@ public class VaadinConnectControllerTest {
                         JsonAutoDetect.Visibility.PUBLIC_ONLY));
         new VaadinConnectController(null,
                 mock(VaadinConnectAccessChecker.class),
-                mock(VaadinServiceNameChecker.class), contextMock);
+                mock(VaadinServiceNameChecker.class),
+                mock(ExplicitNullableTypeChecker.class), contextMock);
 
         verify(contextMock, times(1)).getBean(ObjectMapper.class);
         verify(mockDefaultObjectMapper, times(0)).setVisibility(
@@ -748,7 +769,8 @@ public class VaadinConnectControllerTest {
 
         new VaadinConnectController(null,
                 mock(VaadinConnectAccessChecker.class),
-                mock(VaadinServiceNameChecker.class), contextMock);
+                mock(VaadinServiceNameChecker.class),
+                mock(ExplicitNullableTypeChecker.class), contextMock);
     }
 
     @Test
@@ -883,6 +905,64 @@ public class VaadinConnectControllerTest {
                 TEST_VALIDATION_METHOD.getParameterTypes()[0].toString()));
     }
 
+    @Test
+    public void should_Invoke_ExplicitNullableTypeChecker() {
+        ExplicitNullableTypeChecker explicitNullableTypeChecker = mock(
+                ExplicitNullableTypeChecker.class);
+
+        when(explicitNullableTypeChecker.checkValueForType(
+                NullCheckerTestClass.OK_RESPONSE, String.class))
+                        .thenReturn(null);
+
+        ResponseEntity<String> response = createVaadinController(
+                new NullCheckerTestClass(), null, null, null,
+                explicitNullableTypeChecker).serveVaadinService(
+                        NullCheckerTestClass.class.getSimpleName(),
+                        "testOkMethod", createRequestParameters("{}"),
+                        requestMock);
+
+        verify(explicitNullableTypeChecker).checkValueForType(
+                NullCheckerTestClass.OK_RESPONSE, String.class);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("\"" + NullCheckerTestClass.OK_RESPONSE + "\"",
+                response.getBody());
+    }
+
+    @Test
+    public void should_ReturnException_When_ExplicitNullableTypeChecker_ReturnsError()
+            throws IOException {
+        final String errorMessage = "Got null";
+
+        ExplicitNullableTypeChecker explicitNullableTypeChecker = mock(
+                ExplicitNullableTypeChecker.class);
+
+        when(explicitNullableTypeChecker.checkValueForType(null, String.class))
+                .thenReturn(errorMessage);
+
+        ResponseEntity<String> response = createVaadinController(
+                new NullCheckerTestClass(), null, null, null,
+                explicitNullableTypeChecker).serveVaadinService(
+                        NullCheckerTestClass.class.getSimpleName(),
+                        "testNullMethod", createRequestParameters("{}"),
+                        requestMock);
+
+        verify(explicitNullableTypeChecker).checkValueForType(null,
+                String.class);
+
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        ObjectNode jsonNodes = new ObjectMapper().readValue(response.getBody(),
+                ObjectNode.class);
+
+        assertEquals(VaadinConnectException.class.getName(),
+                jsonNodes.get("type").asText());
+        final String message = jsonNodes.get("message").asText();
+        assertTrue(message.contains("Unexpected return value"));
+        assertTrue(message.contains(NullCheckerTestClass.class.getSimpleName()));
+        assertTrue(message.contains("testNullMethod"));
+        assertTrue(message.contains(errorMessage));
+    }
+
     private void assertServiceInfoPresent(String responseBody) {
         assertTrue(String.format(
                 "Response body '%s' should have service information in it",
@@ -902,24 +982,24 @@ public class VaadinConnectControllerTest {
     }
 
     private <T> VaadinConnectController createVaadinController(T service) {
-        return createVaadinController(service, null, null, null);
+        return createVaadinController(service, null, null, null, null);
     }
 
     private <T> VaadinConnectController createVaadinController(T service,
             ObjectMapper vaadinServiceMapper) {
-        return createVaadinController(service, vaadinServiceMapper, null, null);
+        return createVaadinController(service, vaadinServiceMapper, null, null, null);
     }
 
     private <T> VaadinConnectController createVaadinController(T service,
             VaadinConnectAccessChecker accessChecker) {
-        return createVaadinController(service, null, accessChecker, null);
+        return createVaadinController(service, null, accessChecker, null, null);
     }
 
     private <T> VaadinConnectController createVaadinController(T service,
             ObjectMapper vaadinServiceMapper,
             VaadinConnectAccessChecker accessChecker,
-            VaadinServiceNameChecker serviceNameChecker) {
-
+            VaadinServiceNameChecker serviceNameChecker,
+            ExplicitNullableTypeChecker explicitNullableTypeChecker) {
         Class<?> serviceClass = service.getClass();
 
         ApplicationContext contextMock = mock(ApplicationContext.class);
@@ -944,8 +1024,15 @@ public class VaadinConnectControllerTest {
             when(serviceNameChecker.check(TEST_SERVICE_NAME)).thenReturn(null);
         }
 
+        if (explicitNullableTypeChecker == null) {
+            explicitNullableTypeChecker = mock(
+                    ExplicitNullableTypeChecker.class);
+            when(explicitNullableTypeChecker.checkValueForType(any(), any()))
+                    .thenReturn(null);
+        }
+
         return new VaadinConnectController(vaadinServiceMapper, accessChecker,
-                serviceNameChecker, contextMock);
+                serviceNameChecker, explicitNullableTypeChecker, contextMock);
     }
 
     private VaadinConnectController createVaadinControllerWithoutPrincipal() {

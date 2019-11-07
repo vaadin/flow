@@ -19,7 +19,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
-
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -90,7 +89,8 @@ public class VaadinConnectController {
      * A qualifier to override the request and response default json mapper.
      *
      * @see #VaadinConnectController(ObjectMapper, VaadinConnectAccessChecker,
-     *      VaadinServiceNameChecker, ApplicationContext)
+     *      VaadinServiceNameChecker, ExplicitNullableTypeChecker,
+     *      ApplicationContext)
      */
     public static final String VAADIN_SERVICE_MAPPER_BEAN_QUALIFIER = "vaadinServiceMapper";
 
@@ -100,6 +100,7 @@ public class VaadinConnectController {
     private final VaadinConnectAccessChecker accessChecker;
     private final Validator validator = Validation
             .buildDefaultValidatorFactory().getValidator();
+    private final ExplicitNullableTypeChecker explicitNullableTypeChecker;
 
     static class VaadinServiceData {
         private final Object vaadinServiceObject;
@@ -140,6 +141,9 @@ public class VaadinConnectController {
      * @param serviceNameChecker
      *            the service name checker to verify custom Vaadin Connect
      *            service names
+     * @param explicitNullableTypeChecker
+     *            the method parameter and return value type checker to verify
+     *            that null values are explicit
      * @param context
      *            Spring context to extract beans annotated with
      *            {@link VaadinService} from
@@ -148,14 +152,16 @@ public class VaadinConnectController {
             @Autowired(required = false) @Qualifier(VAADIN_SERVICE_MAPPER_BEAN_QUALIFIER) ObjectMapper vaadinServiceMapper,
             VaadinConnectAccessChecker accessChecker,
             VaadinServiceNameChecker serviceNameChecker,
+            ExplicitNullableTypeChecker explicitNullableTypeChecker,
             ApplicationContext context) {
         this.vaadinServiceMapper = vaadinServiceMapper != null
                 ? vaadinServiceMapper
                 : getDefaultObjectMapper(context);
         this.accessChecker = accessChecker;
+        this.explicitNullableTypeChecker = explicitNullableTypeChecker;
 
         context.getBeansWithAnnotation(VaadinService.class)
-            .forEach((name, serviceBean) -> 
+            .forEach((name, serviceBean) ->
                 validateServiceBean(serviceNameChecker, context, name, serviceBean));
     }
 
@@ -364,6 +370,21 @@ public class VaadinConnectController {
             return handleMethodExecutionError(serviceName, methodName, e);
         }
 
+        String implicitNullError = this.explicitNullableTypeChecker
+                .checkValueForType(returnValue,
+                        methodToInvoke.getGenericReturnType());
+        if (implicitNullError != null) {
+            VaadinConnectException returnValueException = new VaadinConnectException(
+                    String.format(
+                    "Unexpected return value in service '%s' method '%s'. %s",
+                    serviceName, methodName, implicitNullError));
+
+            getLogger().error(returnValueException.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(vaadinServiceMapper.writeValueAsString(
+                            returnValueException.getSerializationData()));
+        }
+
         Set<ConstraintViolation<Object>> returnValueConstraintViolations = validator
                 .forExecutables()
                 .validateReturnValue(vaadinServiceData.getServiceObject(),
@@ -428,6 +449,7 @@ public class VaadinConnectController {
                         .readValue(requestParameters.get(parameterNames[i]));
 
                 serviceParameters[i] = parameter;
+
                 if (parameter != null) {
                     constraintViolations.addAll(validator.validate(parameter));
                 }

@@ -108,4 +108,14 @@ public class VaadinConnectControllerConfiguration {
     public VaadinConnectAccessChecker accessChecker() {
         return new VaadinConnectAccessChecker();
     }
+
+    /**
+     * Registers a {@link ExplicitNullableTypeChecker} bean instance.
+     *
+     * @return the explicit nullable type checker
+     */
+    @Bean
+    public ExplicitNullableTypeChecker typeChecker() {
+        return new ExplicitNullableTypeChecker();
+    }
 }

@@ -8,6 +8,7 @@ class TestComponent extends PolymerElement {
         <button id="button">Click</button>
         <button id="connect" on-click="connect">Click</button>
         <button id="connectAnonymous" on-click="connectAnonymous">Click anonymous</button>
+        <button id="echoWithOptional" on-click="echoWithOptional">Echo with optional</button>
         <div id="content"></div>
     `;
   }
@@ -29,5 +30,28 @@ class TestComponent extends PolymerElement {
         .then(response => this.$.content.textContent = response)
         .catch(error => this.$.content.textContent = 'Error:' + error);
     }
+
+  echoWithOptional(e) {
+    connectServices
+      .echoWithOptional('one', undefined, 'three', 'four')
+      .then(response => this.$.content.textContent = response)
+      .catch(error => this.$.content.textContent = 'Error:' + error);
+  }
+
+  async takeNull(e) {
+    await connectServices.takeNull(null);
+  }
+
+  async giveNull(e) {
+    await connectServices.giveNull();
+  }
+
+  async takeOptionalNull(e) {
+    await connectServices.takeOptionalNull(null);
+  }
+
+  async giveOptionalNull(e) {
+    await connectServices.giveOptionalNull();
+  }
 }
 customElements.define(TestComponent.is, TestComponent);

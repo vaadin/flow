@@ -1,3 +1,3 @@
 export default interface SameClassNameModel {
-  foo?: string | null;
+  foo: string;
 }
