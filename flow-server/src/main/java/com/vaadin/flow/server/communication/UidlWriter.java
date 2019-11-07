@@ -80,6 +80,8 @@ import elemental.json.JsonValue;
 public class UidlWriter implements Serializable {
     private static final String COULD_NOT_READ_URL_CONTENTS_ERROR_MESSAGE = "Could not read url %s contents";
 
+    private boolean resynchronize = false;
+
     /**
      * Provides context information for the resolve operations.
      */
@@ -146,7 +148,22 @@ public class UidlWriter implements Serializable {
      *            True iff the client should be asked to resynchronize
      * @return JSON object containing the UIDL response
      */
-    public JsonObject createUidl(UI ui, boolean async, boolean resync) {
+    JsonObject createUidl(UI ui, boolean async, boolean resync) {
+        this.resynchronize = resync;
+        return createUidl(ui, async);
+    }
+
+    /**
+     * Creates a JSON object containing all pending changes to the given UI.
+     *
+     * @param ui
+     *            The {@link UI} whose changes to write
+     * @param async
+     *            True if this message is sent by the server asynchronously,
+     *            false if it is a response to a client message.
+     * @return JSON object containing the UIDL response
+     */
+    public JsonObject createUidl(UI ui, boolean async) {
         JsonObject response = Json.createObject();
 
         UIInternals uiInternals = ui.getInternals();
@@ -165,7 +182,7 @@ public class UidlWriter implements Serializable {
                 ? uiInternals.getServerSyncId() : -1;
 
         response.put(ApplicationConstants.SERVER_SYNC_ID, syncId);
-        if (resync) {
+        if (resynchronize) {
             response.put(ApplicationConstants.RESYNCHRONIZE_ID, true);
         }
         int nextClientToServerMessageId = uiInternals
@@ -209,20 +226,6 @@ public class UidlWriter implements Serializable {
         }
         uiInternals.incrementServerId();
         return response;
-    }
-
-    /**
-     * Creates a JSON object containing all pending changes to the given UI.
-     *
-     * @param ui
-     *            The {@link UI} whose changes to write
-     * @param async
-     *            True if this message is sent by the server asynchronously,
-     *            false if it is a response to a client message.
-     * @return JSON object containing the UIDL response
-     */
-    public JsonObject createUidl(UI ui, boolean async) {
-        return createUidl(ui, async, false);
     }
 
     private static void populateDependencies(JsonObject response,
