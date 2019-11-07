@@ -27,6 +27,7 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.SessionInitListener;
 import com.vaadin.flow.server.UIInitListener;
@@ -48,8 +49,9 @@ public class DevModeClassFinderTest {
         Assert.assertTrue(classes.contains(WebComponentExporter.class));
         Assert.assertTrue(classes.contains(UIInitListener.class));
         Assert.assertTrue(classes.contains(VaadinServiceInitListener.class));
+        Assert.assertTrue(classes.contains(HasErrorParameter.class));
 
-        Assert.assertEquals(6, classes.size());
+        Assert.assertEquals(7, classes.size());
     }
 
     @Test
