@@ -18,6 +18,7 @@ package com.vaadin.flow.server.connect;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.Arrays;
 import java.util.Optional;
 
 /**
@@ -25,7 +26,6 @@ import java.util.Optional;
  * parameter and return types.
  */
 public class ExplicitNullableTypeChecker {
-
     /**
      * Validates the given value for the given expected method parameter or
      * return value type.
@@ -38,21 +38,21 @@ public class ExplicitNullableTypeChecker {
      *         not explicitly allow null, or null meaning the value is OK.
      */
     public String checkValueForType(Object value, Type expectedType) {
+        Class<?> clazz;
         if (expectedType instanceof ParameterizedType) {
-            Class<?> clazz = (Class<?>) ((ParameterizedType) expectedType)
-                    .getRawType();
-            if (Optional.class.isAssignableFrom(clazz)) {
-                if (value == null) {
-                    return String.format(
-                            "Got null value for type '%s', consider Optional.empty",
-                            expectedType.getTypeName());
-                } else {
-                    return null;
-                }
-            }
+            clazz = (Class<?>) ((ParameterizedType) expectedType).getRawType();
+        } else {
+            clazz = (Class<?>) expectedType;
         }
 
         if (value != null) {
+            if (Iterable.class.isAssignableFrom(clazz)) {
+                return checkIterable((Iterable) value, expectedType);
+            } else if (clazz.isArray() && value instanceof Object[]) {
+                return checkIterable(Arrays.asList((Object[]) value),
+                        expectedType);
+            }
+
             return null;
         }
 
@@ -61,15 +61,43 @@ public class ExplicitNullableTypeChecker {
             return null;
         }
 
-        if (expectedType instanceof Class<?>
-                && Void.class.isAssignableFrom((Class<?>) expectedType)) {
+        if (Void.class.isAssignableFrom(clazz)) {
             // Corner case: explicit Void parameter
             return null;
+        }
+
+        if (Optional.class.isAssignableFrom(clazz)) {
+            return String.format(
+                    "Got null value for type '%s', consider Optional.empty",
+                    expectedType.getTypeName());
         }
 
         return String.format(
                 "Got null value for type '%s', which is neither Optional"
                         + " nor void",
                 expectedType.getTypeName());
+    }
+
+    private String checkIterable(Iterable value, Type expectedType) {
+        Type itemType = Object.class;
+        String iterableDescription = "iterable";
+        if (expectedType instanceof ParameterizedType) {
+            itemType = ((ParameterizedType) expectedType)
+                    .getActualTypeArguments()[0];
+            iterableDescription = "collection";
+        } else if (expectedType instanceof Class<?>) {
+            itemType = ((Class<?>) expectedType).getComponentType();
+            iterableDescription = "array";
+        }
+
+        for (Object item : value) {
+            String error = checkValueForType(item, itemType);
+            if (error != null) {
+                return String.format("Unexpected null item in %s type '%s'. %s",
+                        iterableDescription, expectedType, error);
+            }
+        }
+
+        return null;
     }
 }

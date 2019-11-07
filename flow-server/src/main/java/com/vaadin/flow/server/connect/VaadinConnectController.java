@@ -19,7 +19,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
-
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -375,9 +374,15 @@ public class VaadinConnectController {
                 .checkValueForType(returnValue,
                         methodToInvoke.getGenericReturnType());
         if (implicitNullError != null) {
-            throw new VaadinConnectException(String.format(
+            VaadinConnectException returnValueException = new VaadinConnectException(
+                    String.format(
                     "Unexpected return value in service '%s' method '%s'. %s",
                     serviceName, methodName, implicitNullError));
+
+            getLogger().error(returnValueException.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(vaadinServiceMapper.writeValueAsString(
+                            returnValueException.getSerializationData()));
         }
 
         Set<ConstraintViolation<Object>> returnValueConstraintViolations = validator
