@@ -30,6 +30,7 @@ import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.SessionInitListener;
 import com.vaadin.flow.server.UIInitListener;
@@ -61,8 +62,9 @@ public class DevModeClassFinderTest {
         Assert.assertTrue(classes.contains(CssImport.Container.class));
         Assert.assertTrue(classes.contains(Theme.class));
         Assert.assertTrue(classes.contains(NoTheme.class));
+        Assert.assertTrue(classes.contains(HasErrorParameter.class));
 
-        Assert.assertEquals(14, classes.size());
+        Assert.assertEquals(15, classes.size());
     }
 
     @Test
