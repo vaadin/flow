@@ -41,6 +41,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinServiceInitListener;
@@ -285,6 +286,11 @@ public class FrontendDependencies implements Serializable {
                 finder.loadClass(VaadinServiceInitListener.class.getName()))) {
             collectEndpoints(initListener);
         }
+
+        for (Class<?> errorParameters : finder.getSubTypesOf(
+                finder.loadClass(HasErrorParameter.class.getName()))) {
+            collectEndpoints(errorParameters);
+        }
     }
 
     private void collectEndpoints(Class<?> entry) throws IOException {
@@ -301,9 +307,8 @@ public class FrontendDependencies implements Serializable {
      * If no theme is found and the application has endpoints, it uses lumo if
      * found in the class-path
      */
-    private void computeApplicationTheme()
-            throws ClassNotFoundException, InstantiationException,
-            IllegalAccessException, IOException {
+    private void computeApplicationTheme() throws ClassNotFoundException,
+            InstantiationException, IllegalAccessException, IOException {
 
         // Re-visit theme related classes, because they might be skipped
         // when they where already added to the visited list during other
