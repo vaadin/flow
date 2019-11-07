@@ -62,147 +62,6 @@ const assertResponseIsOk = async(response: Response): Promise<void> => {
 };
 
 /**
- * Authenticate a Vaadin Connect client
- * @param client the connect client instance
- * @param askForCredentials if no valid tokens are found, ask for credentials,
- * `true` by default
- * @ignore
- */
-const authenticateClient = async(client: ConnectClient,
-                                 askForCredentials: boolean = true):
-  Promise<AccessToken | null> => {
-  let message;
-  const privateClient = privates.get(client);
-  let tokens = privateClient.tokens;
-
-  while (!(tokens.accessToken && tokens.accessToken.isValid())) {
-
-    let stayLoggedIn = tokens.stayLoggedIn;
-
-    // delete current credentials because we are going to take new ones
-    privateClient.tokens = new AuthTokens().save();
-
-    const body = new URLSearchParams();
-    if (tokens.refreshToken && tokens.refreshToken.isValid()) {
-      body.append('grant_type', 'refresh_token');
-      body.append('refresh_token', tokens.refreshToken.token);
-    } else if (askForCredentials && client.credentials) {
-      const creds = message !== undefined
-        ? await client.credentials({message})
-        : await client.credentials();
-      if (!creds) {
-        // No credentials returned, skip the token request
-        break;
-      }
-      if (creds.username && creds.password) {
-        body.append('grant_type', 'password');
-        body.append('username', creds.username);
-        body.append('password', creds.password);
-        stayLoggedIn = creds.stayLoggedIn;
-      }
-    } else {
-      break;
-    }
-
-    if (body.has('grant_type')) {
-      const tokenResponse = await fetch(client.tokenEndpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: body.toString(),
-        signal: privateClient.controller.signal
-      });
-
-      if (tokenResponse.status === 400 || tokenResponse.status === 401) {
-        const invalidResponse = await tokenResponse.json();
-        if (invalidResponse.error === 'invalid_token') {
-          tokens = new AuthTokens();
-        }
-        // Wrong credentials response, loop to ask again with the message
-        message = invalidResponse.error_description;
-      } else {
-        await assertResponseIsOk(tokenResponse);
-        // Successful token response
-        tokens = new AuthTokens(await tokenResponse.json());
-        privateClient.tokens = tokens;
-        if (stayLoggedIn) {
-          tokens.save();
-        }
-        break;
-      }
-    }
-  }
-  return tokens.accessToken;
-};
-
-/** @ignore */
-const privates = new WeakMap();
-
-/** @ignore */
-const refreshTokenKey = 'vaadin.connect.refreshToken';
-
-/** @ignore */
-class Token {
-  token: string;
-  json: any;
-
-  constructor(token: string) {
-    this.token = token;
-    this.json = JSON.parse(atob(token.split('.')[1]));
-  }
-
-  isValid(): boolean {
-    return this.json.exp > Date.now() / 1000;
-  }
-}
-
-/** @ignore */
-interface AuthJson {
-  access_token: string;
-  refresh_token: string;
-}
-
-
-/** @ignore */
-class AuthTokens {
-  accessToken?: Token;
-  refreshToken?: Token;
-  stayLoggedIn?: boolean;
-
-  constructor(authJson?: AuthJson) {
-    if (authJson) {
-      this.accessToken = new Token(authJson.access_token);
-      this.refreshToken = new Token(authJson.refresh_token);
-    }
-  }
-
-  save() {
-    if (this.refreshToken) {
-      localStorage.setItem(refreshTokenKey, this.refreshToken.token);
-      this.stayLoggedIn = true;
-    } else {
-      localStorage.removeItem(refreshTokenKey);
-    }
-    return this;
-  }
-
-  restore() {
-    const token = localStorage.getItem(refreshTokenKey);
-    if (token) {
-      try {
-        this.refreshToken = new Token(token);
-        this.stayLoggedIn = true;
-      } catch (e) {
-        // stored token is corrupted, remove it
-        this.save();
-      }
-    }
-    return this;
-  }
-}
-
-/**
  * An exception that gets thrown when the Vaadin Connect backend responds
  * with not ok status.
  */
@@ -284,50 +143,6 @@ export class ValidationErrorData {
 }
 
 /**
- * The Access Token structure returned by the authentication server.
- */
-export interface AccessToken {
-  /**
-   * The user used in credentials.
-   */
-  user_name: string;
-
-  /**
-   * The expiration time in Unix time format.
-   */
-  exp: number;
-
-  /**
-   * The list of the roles that the token meets.
-   */
-  authorities: string[];
-}
-
-/**
- * An object to provide user credentials for authorization grants.
- */
-export interface Credentials {
-  username: string;
-  password: string;
-  stayLoggedIn?: boolean;
-}
-
-export interface CredentialsCallbackOptions {
-  /**
-   * When credentials are asked again, contains
-   * the error description from last token response.
-   */
-  message?: string;
-}
-
-/**
- * An async callback function providing credentials for authorization.
- * @param options
- */
-export type CredentialsCallback = (options?: CredentialsCallbackOptions) =>
-  Promise<Credentials | undefined> | Credentials | undefined;
-
-/**
  * The `ConnectClient` constructor options.
  */
 export interface ConnectClientOptions {
@@ -335,16 +150,6 @@ export interface ConnectClientOptions {
    * The `endpoint` property value.
    */
   endpoint?: string;
-
-  /**
-   * The `tokenEndpoint` property value.
-   */
-  tokenEndpoint?: string;
-
-  /**
-   * The `credentials` property value.
-   */
-  credentials?: CredentialsCallback;
 
   /**
    * The `middlewares` property value.
@@ -428,54 +233,12 @@ export type Middleware = (context: MiddlewareContext, next: MiddlewareNext) =>
  *
  * The default endpoint is '/connect'.
  *
- * ### Authorization
- *
- * The Connect client does OAuth 2 access token requests using
- * the `tokenEndpoint` constructor option.
- *
- * Supports the password credentials grant, which uses a username/password
- * pair provided by the `credentials` async callback constructor option:
- *
- * ```js
- * new ConnectClient({
- *   credentials: async() => {
- *     return {username: 'user', password: 'abc123'};
- *   }
- * });
- * ```
- *
- * The default token endpoint is '/oauth/token'.
- *
- * By default, the client requires authorization for calls, therefore
- * the `credentials` callback is called before a non-authorized client
- * is about to make a call. You can omit the authorization requirement using
- * the `requireCredentials: false` call option:
- *
- * ```js
- * const params = {};
- * await client.call('MyVaadinService', 'myMethod', params, {
- *   requireCredentials: false
- * });
- * ```
  */
 export class ConnectClient {
   /**
    * The Vaadin Connect backend endpoint
    */
   endpoint: string = '/connect';
-
-  /**
-   * The Vaadin Connect OAuth 2 token endpoint.
-   */
-  tokenEndpoint: string = '/oauth/token';
-
-  /**
-   * Called when the client needs a username/password pair to authorize through
-   * the token endpoint. When undefined or returns a falsy value,
-   * the authorization is skipped, the requests made by the `call` method
-   * would not include the authorization header.
-   */
-  credentials?: CredentialsCallback;
 
   /**
    * The array of middlewares that are invoked during a call.
@@ -490,45 +253,9 @@ export class ConnectClient {
       this.endpoint = options.endpoint;
     }
 
-    if (options.tokenEndpoint) {
-      this.tokenEndpoint = options.tokenEndpoint;
-    }
-
-    if (options.credentials) {
-      this.credentials = options.credentials;
-    }
-
     if (options.middlewares) {
       this.middlewares = options.middlewares;
     }
-
-    privates.set(this, {
-      controller: new AbortController(),
-      tokens: new AuthTokens().restore()
-    });
-  }
-
-  /**
-   * Remove current accessToken and refreshToken, and cancel any authentication
-   * request that might be in progress.
-   *
-   * After calling `logout()`, any new service call will ask for
-   * user credentials.
-   */
-  async logout() {
-    const privateClient = privates.get(this);
-    privateClient.controller.abort();
-    // controller signed as aborted cannot be reused
-    privateClient.controller = new AbortController();
-    privateClient.tokens = new AuthTokens().save();
-  }
-
-  /**
-   * The access token returned by the authorization server.
-   */
-  get token(): AccessToken {
-    const token = privates.get(this).tokens.accessToken;
-    return token && {...token.json};
   }
 
   /**
@@ -554,20 +281,10 @@ export class ConnectClient {
       );
     }
 
-    options = {...{requireCredentials: true}, ...options};
-    if (options.requireCredentials) {
-      await this.login();
-    }
-
-    const accessToken = privates.get(this).tokens.accessToken;
     const headers: Record<string, string> = {
       'Accept': 'application/json',
       'Content-Type': 'application/json'
     };
-    if (accessToken) {
-      // tslint:disable-next-line:no-string-literal
-      headers['Authorization'] = `Bearer ${accessToken.token}`;
-    }
 
     headers['X-Requested-With'] = 'Vaadin CCDM';
 
@@ -628,34 +345,5 @@ export class ConnectClient {
 
     // Invoke all the folded async middlewares and return
     return chain(initialContext);
-  }
-
-  /**
-   * Makes a HTTP request to the {@link ConnectClient#tokenEndpoint} URL
-   * to login and get the accessToken if the tokens {@link ConnectClient#token}
-   * is not available or invalid. The {@link ConnectClient#credentials}
-   * will be called if the `refreshToken` is invalid.
-   *
-   * @return a promise the the token that is used to access a service
-   */
-  async login(): Promise<AccessToken> {
-    const privateClient = privates.get(this);
-    // memoize to re-use in case of multiple calls
-    privateClient.login = privateClient.login || authenticateClient(this);
-    const token = await privateClient.login;
-    delete privateClient.login;
-    return token;
-  }
-
-  /**
-   * Checks if the user is logged in.
-   * If there saved tokens, tries to log in the user,
-   * not asking for the credentials.
-   *
-   * @return {@code true} if the log in successful, {@code false} otherwise
-   */
-  async checkLoggedIn(): Promise<boolean> {
-    return authenticateClient(this, false)
-      .then(token => token !== null);
   }
 }
