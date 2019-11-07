@@ -35,7 +35,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.dependency.Uses;
@@ -1021,7 +1020,6 @@ public class ComponentTest {
     }
 
     @Tag("div")
-    @HtmlImport("html.html")
     @JavaScript("js.js")
     @StyleSheet("css.css")
     public static class ComponentWithDependencies extends Component {
@@ -1037,7 +1035,6 @@ public class ComponentTest {
 
     @Tag("span")
     @Uses(UsesComponentWithDependencies.class)
-    @HtmlImport("usesuses.html")
     public static class UsesUsesComponentWithDependencies extends Component {
 
     }
@@ -1056,84 +1053,10 @@ public class ComponentTest {
 
     }
 
-    @Test
-    public void usesComponent() {
-        UI ui = UI.getCurrent();
-        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
 
-        ui.getInternals()
-                .addComponentDependencies(UsesComponentWithDependencies.class);
-
-        Map<String, Dependency> pendingDependencies = getDependenciesMap(
-                ui.getInternals().getDependencyList().getPendingSendToClient());
-        Assert.assertEquals(4, pendingDependencies.size());
-
-        assertDependency(Dependency.Type.HTML_IMPORT, "html.html",
-                pendingDependencies);
-        assertDependency(Dependency.Type.JAVASCRIPT, "uses.js",
-                pendingDependencies);
-        assertDependency(Dependency.Type.JAVASCRIPT, "js.js",
-                pendingDependencies);
-        assertDependency(Dependency.Type.STYLESHEET, "css.css",
-                pendingDependencies);
-    }
-
-    @Test
-    public void usesChain() {
-        UIInternals internals = UI.getCurrent().getInternals();
-        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
-
-        internals.addComponentDependencies(
-                UsesUsesComponentWithDependencies.class);
-
-        Map<String, Dependency> pendingDependencies = getDependenciesMap(
-                internals.getDependencyList().getPendingSendToClient());
-        Assert.assertEquals(5, pendingDependencies.size());
-
-        assertDependency(Dependency.Type.HTML_IMPORT, "usesuses.html",
-                pendingDependencies);
-        assertDependency(Dependency.Type.HTML_IMPORT, "html.html",
-                pendingDependencies);
-        assertDependency(Dependency.Type.JAVASCRIPT, "uses.js",
-                pendingDependencies);
-        assertDependency(Dependency.Type.JAVASCRIPT, "js.js",
-                pendingDependencies);
-        assertDependency(Dependency.Type.STYLESHEET, "css.css",
-                pendingDependencies);
-    }
-
-    @Test
-    public void circularDependencies() {
-        UIInternals internals = new MockUI().getInternals();
-        DependencyList dependencyList = internals.getDependencyList();
-        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
-
-        internals.addComponentDependencies(CircularDependencies1.class);
-        Map<String, Dependency> pendingDependencies = getDependenciesMap(
-                dependencyList.getPendingSendToClient());
-        Assert.assertEquals(2, pendingDependencies.size());
-
-        assertDependency(Dependency.Type.JAVASCRIPT, "dep1.js",
-                pendingDependencies);
-        assertDependency(Dependency.Type.JAVASCRIPT, "dep2.js",
-                pendingDependencies);
-
-        internals = new MockUI().getInternals();
-        dependencyList = internals.getDependencyList();
-        internals.addComponentDependencies(CircularDependencies2.class);
-        pendingDependencies = getDependenciesMap(
-                dependencyList.getPendingSendToClient());
-        Assert.assertEquals(2, pendingDependencies.size());
-        assertDependency(Dependency.Type.JAVASCRIPT, "dep2.js",
-                pendingDependencies);
-        assertDependency(Dependency.Type.JAVASCRIPT, "dep1.js",
-                pendingDependencies);
-
-    }
 
     @Test
     public void inNpmModeNoJsDependenciesAreAdded() {
-        mocks.getDeploymentConfiguration().setCompatibilityMode(false);
         UIInternals internals = new MockUI().getInternals();
         DependencyList dependencyList = internals.getDependencyList();
 

@@ -1,7 +1,15 @@
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletRegistration;
+import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_REUSE_DEV_SERVER;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_JAVA_SOURCE_FOLDER;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
+import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubNode;
+import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubWebpackServer;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -15,6 +23,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.servlet.ServletContext;
+import javax.servlet.ServletRegistration;
+
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -24,18 +35,6 @@ import org.mockito.Mockito;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.DevModeHandlerTest;
 import com.vaadin.flow.server.frontend.FrontendUtils;
-
-import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
-import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_REUSE_DEV_SERVER;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_JAVA_SOURCE_FOLDER;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
-import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubNode;
-import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubWebpackServer;
 
 /**
  * Base class for DevModeInitializer tests. It is an independent class so as it
@@ -97,16 +96,11 @@ public class DevModeInitializerTestBase {
         webpackFile.createNewFile();
         FileUtils.forceMkdir(new File(baseDir, DEFAULT_CONNECT_JAVA_SOURCE_FOLDER));
 
-        // Default is Bower Mode, change to Npm Mode
-        System.setProperty("vaadin." + SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                "false");
-
         devModeInitializer = new DevModeInitializer();
     }
 
     @After
     public void teardown() throws Exception, SecurityException {
-        System.clearProperty("vaadin." + SERVLET_PARAMETER_COMPATIBILITY_MODE);
         System.clearProperty("vaadin." + SERVLET_PARAMETER_PRODUCTION_MODE);
         System.clearProperty("vaadin." + SERVLET_PARAMETER_REUSE_DEV_SERVER);
         System.clearProperty("vaadin." + SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE);

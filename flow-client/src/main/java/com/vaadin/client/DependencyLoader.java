@@ -234,12 +234,6 @@ public class DependencyLoader {
                 return resourceLoader::inlineStyleSheet;
             }
             return resourceLoader::loadStylesheet;
-        case HTML_IMPORT:
-            if (inline) {
-                return resourceLoader::inlineHtml;
-            }
-            return (scriptUrl, resourceLoadListener) -> resourceLoader
-                    .loadHtml(scriptUrl, resourceLoadListener, false);
         case JAVASCRIPT:
             if (inline) {
                 return resourceLoader::inlineScript;
@@ -261,13 +255,4 @@ public class DependencyLoader {
         }
     }
 
-    /**
-     * Prevents eager dependencies from being considered as loaded until
-     * <code>HTMLImports.whenReady</code> has been run.
-     */
-    public void requireHtmlImportsReady() {
-        startEagerDependencyLoading();
-        registry.getResourceLoader().runWhenHtmlImportsReady(
-                DependencyLoader::endEagerDependencyLoading);
-    }
 }

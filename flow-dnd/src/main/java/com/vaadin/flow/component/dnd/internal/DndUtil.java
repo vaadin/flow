@@ -88,30 +88,6 @@ public class DndUtil {
     }
 
     /**
-     * Includes the dnd connector when the component is attached to a UI.
-     * <p>
-     * This is only for the case when the project is in compatibility mode and
-     * the static methods in {@link com.vaadin.flow.component.dnd.DragSource
-     * DragSource} and {@link com.vaadin.flow.component.dnd.DropTarget
-     * DropTarget} are used, because otherwise the connector is not loaded.
-     * 
-     * @param component
-     *            the component that should be attached and uses dnd connector
-     */
-    public static void addDndConnectorWhenComponentAttached(
-            Component component) {
-        component.getElement().getNode().runWhenAttached(ui -> {
-            if (ComponentUtil.getData(ui, DND_CONNECTOR_COMPATIBILITY) == null
-                    && ui.getSession().getConfiguration()
-                            .isCompatibilityMode()) {
-                ui.getPage().addJavaScript(DND_CONNECTOR_COMPATIBILITY,
-                        LoadMode.EAGER);
-                ComponentUtil.setData(ui, DND_CONNECTOR_COMPATIBILITY, true);
-            }
-        });
-    }
-
-    /**
      * Adds the mobile dnd polyfills when a iOS device is used. Calling this is
      * NOOP for non-iOS devices. The polyfills are only loaded once per page.
      * 

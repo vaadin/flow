@@ -46,18 +46,6 @@ public final class Constants implements Serializable {
     public static final String CONNECT_GENERATED_TS_DIR_TOKEN = "connect.generated";
 
     /**
-     * enable it if your project is a Polymer 2.0 one, should be removed in V15
-     *
-     * @deprecated the parameter is renamed to
-     *             {@link #SERVLET_PARAMETER_COMPATIBILITY_MODE}
-     */
-    @Deprecated
-    public static final String SERVLET_PARAMETER_BOWER_MODE = "bowerMode";
-    /**
-     * enable it if your project is a Polymer 2.0 one, should be removed in V15
-     */
-    public static final String SERVLET_PARAMETER_COMPATIBILITY_MODE = "compatibilityMode";
-    /**
      * Enable it if your project is using client-side bootstrapping (CCDM).
      */
     public static final String SERVLET_PARAMETER_CLIENT_SIDE_MODE = "clientSideMode";
@@ -120,12 +108,6 @@ public final class Constants implements Serializable {
      */
     public static final String FRONTEND_URL_DEV_DEFAULT = ApplicationConstants.CONTEXT_PROTOCOL_PREFIX
             + "frontend/";
-
-    /**
-     * Configuration name for the parameter that determines if Flow should use
-     * webJars or not.
-     */
-    public static final String DISABLE_WEBJARS = "disable.webjars";
 
     /**
      * Configuration name for the parameter that determines if Flow should use

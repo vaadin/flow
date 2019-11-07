@@ -223,15 +223,7 @@ public class VaadinServletService extends VaadinService {
 
         String frontendRootUrl;
         DeploymentConfiguration config = getDeploymentConfiguration();
-        if (config.isCompatibilityMode()) {
-            if (browser.isEs6Supported()) {
-                frontendRootUrl = config.getEs6FrontendPrefix();
-            } else {
-                frontendRootUrl = config.getEs5FrontendPrefix();
-            }
-        } else {
-            frontendRootUrl = config.getNpmFrontendPrefix();
-        }
+        frontendRootUrl = config.getNpmFrontendPrefix();
 
         return contextResolver.resolveVaadinUri(url, frontendRootUrl);
     }
@@ -340,13 +332,7 @@ public class VaadinServletService extends VaadinService {
         ServletContext servletContext = getServlet().getServletContext();
         try {
             URL url = servletContext.getResource(path);
-            if (url != null) {
-                return url;
-            }
-            Optional<String> webJarPath = getWebJarPath(path);
-            if (webJarPath.isPresent()) {
-                return servletContext.getResource(webJarPath.get());
-            }
+            return url;
         } catch (MalformedURLException e) {
             getLogger().warn("Error finding resource for '{}'", path, e);
         }
@@ -367,27 +353,7 @@ public class VaadinServletService extends VaadinService {
             String path) {
         ServletContext servletContext = getServlet().getServletContext();
         InputStream stream = servletContext.getResourceAsStream(path);
-        if (stream != null) {
-            return stream;
-        }
-        Optional<String> webJarPath = getWebJarPath(path);
-        if (webJarPath.isPresent()) {
-            return servletContext.getResourceAsStream(webJarPath.get());
-        }
-        return null;
-    }
-
-    /**
-     * Finds a resource for the given path inside a webjar.
-     *
-     * @param path
-     *            the resource path
-     * @return the path to the resource inside a webjar or <code>null</code> if
-     *         the resource was not found in a webjar
-     */
-    private Optional<String> getWebJarPath(String path) {
-        return getServlet().getWebJarServer()
-                .flatMap(server -> server.getWebJarResourcePath(path));
+        return stream;
     }
 
     @Override

@@ -17,7 +17,6 @@ package com.vaadin.flow.component.polymertemplate;
 
 import org.jsoup.nodes.Element;
 
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.server.VaadinService;
 
 /**
@@ -38,7 +37,7 @@ public interface TemplateParser {
     /**
      * Wrapper for the parsing result.
      * <p>
-     * The data contains {@link HtmlImport} uri where the template is declared
+     * The data contains a uri where the template is declared
      * and its content as an {@link Element} instance.
      *
      * @author Vaadin Ltd

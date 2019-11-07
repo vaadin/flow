@@ -39,12 +39,6 @@ public class I18NProviderTest {
 
     private static Properties DEFAULT_PARAMS = new Properties();
 
-    {
-        DEFAULT_PARAMS.setProperty(
-                Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                Boolean.TRUE.toString());
-    }
-
     @Test
     public void no_property_defined_should_leave_with_default_locale()
             throws ServletException, ServiceException {

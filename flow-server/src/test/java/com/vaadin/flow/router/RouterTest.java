@@ -48,7 +48,6 @@ import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -1140,7 +1139,6 @@ public class RouterTest extends RoutingTestBase {
     public static class SubLayout extends Component {
     }
 
-    @HtmlImport("frontend://bower_components/vaadin-lumo-styles/color.html")
     public static class MyTheme implements AbstractTheme {
 
         @Override
@@ -2445,25 +2443,6 @@ public class RouterTest extends RoutingTestBase {
                 FooBarNavigationTarget.events.size());
     }
 
-    @Test // 3384
-    public void theme_is_gotten_from_the_super_class()
-            throws InvalidRouteConfigurationException, Exception {
-
-        // Feature enabled only for bower mode
-        Mockito.when(configuration.isCompatibilityMode()).thenReturn(true);
-
-        setNavigationTargets(ExtendingView.class);
-
-        router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
-
-        Field theme = UIInternals.class.getDeclaredField("theme");
-        theme.setAccessible(true);
-        Object themeObject = theme.get(ui.getInternals());
-
-        Assert.assertEquals(MyTheme.class, themeObject.getClass());
-    }
-    
-    
     @Test
     public void theme_is_not_gotten_from_the_super_class_when_in_npm_mode()
             throws InvalidRouteConfigurationException, Exception {

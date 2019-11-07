@@ -234,7 +234,6 @@ public final class DevModeHandler implements Serializable {
     public static DevModeHandler start(int runningPort,
             DeploymentConfiguration configuration, File npmFolder) {
         if (configuration.isProductionMode()
-                || configuration.isCompatibilityMode()
                 || !configuration.enableDevServer()) {
             return null;
         }

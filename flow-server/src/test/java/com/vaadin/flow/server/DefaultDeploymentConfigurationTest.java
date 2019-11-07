@@ -36,12 +36,6 @@ public class DefaultDeploymentConfigurationTest {
 
     private static Properties DEFAULT_PARAMS = new Properties();
 
-    {
-        DEFAULT_PARAMS.setProperty(
-                Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                Boolean.TRUE.toString());
-    }
-
     @Test
     public void testGetSystemPropertyForDefaultPackage()
             throws ClassNotFoundException {

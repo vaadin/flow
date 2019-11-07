@@ -75,11 +75,6 @@ import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
  * @see VaadinServletConfiguration#disableAutomaticServletRegistration()
  */
 public class ServletDeployer implements ServletContextListener {
-    private static final String SKIPPING_AUTOMATIC_SERVLET_REGISTRATION_BECAUSE = "Skipping automatic servlet registration because";
-
-    private enum VaadinServletCreation {
-        NO_CREATION, SERVLET_EXISTS, SERVLET_CREATED;
-    }
 
     /**
      * Default ServletConfig implementation.
@@ -159,35 +154,11 @@ public class ServletDeployer implements ServletContextListener {
 
         boolean enableServlets = true;
         boolean hasDevelopmentMode = servletConfigurations.isEmpty();
-        boolean isCompatibilityMode = false;
         for (DeploymentConfiguration configuration : servletConfigurations) {
             enableServlets = enableServlets
                     && !configuration.disableAutomaticServletRegistration();
             boolean devMode = !configuration.useCompiledFrontendResources();
             hasDevelopmentMode = hasDevelopmentMode || devMode;
-            if (devMode) {
-                isCompatibilityMode = isCompatibilityMode
-                        || configuration.isCompatibilityMode();
-            }
-        }
-
-        /*
-         * The default servlet is created using root mapping, in that case no
-         * need to register extra servlet. We should register frontend servlet
-         * only if there is a registered servlet.
-         *
-         * Also we don't need a frontend servlet at all in non compatibility
-         * mode.
-         */
-        if (enableServlets
-                && createAppServlet(
-                        context) == VaadinServletCreation.SERVLET_EXISTS
-                && hasDevelopmentMode && isCompatibilityMode) {
-            createServletIfNotExists(context, "frontendFilesServlet",
-                    FrontendVaadinServlet.class, "/frontend/*",
-                    Collections.singletonMap(
-                            Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                            Boolean.TRUE.toString()));
         }
     }
 
@@ -204,96 +175,6 @@ public class ServletDeployer implements ServletContextListener {
                                     context, registration, servletClass)));
         }
         return result;
-    }
-
-    private VaadinServletCreation createAppServlet(ServletContext servletContext) {
-        VaadinServletContext context = new VaadinServletContext(servletContext);
-        boolean createServlet = ApplicationRouteRegistry.getInstance(context)
-                .hasNavigationTargets();
-
-        createServlet = createServlet || WebComponentConfigurationRegistry
-                .getInstance(context).hasConfigurations();
-
-        if (!createServlet) {
-            getLogger().info(
-                    "{} there are no navigation targets registered to the "
-                            + "route registry and there are no web component exporters",
-                    SKIPPING_AUTOMATIC_SERVLET_REGISTRATION_BECAUSE);
-            return VaadinServletCreation.NO_CREATION;
-        }
-
-        ServletRegistration vaadinServlet = findVaadinServlet(servletContext);
-        if (vaadinServlet != null) {
-            getLogger().info(
-                    "{} there is already a Vaadin servlet with the name {}",
-                    SKIPPING_AUTOMATIC_SERVLET_REGISTRATION_BECAUSE,
-                    vaadinServlet.getName());
-            return VaadinServletCreation.SERVLET_EXISTS;
-        }
-
-        return createServletIfNotExists(servletContext, getClass().getName(),
-                VaadinServlet.class, "/*");
-    }
-
-    private VaadinServletCreation createServletIfNotExists(
-            ServletContext context, String name,
-            Class<? extends Servlet> servletClass, String path) {
-        return createServletIfNotExists(context, name, servletClass, path,
-                null);
-    }
-
-    private VaadinServletCreation createServletIfNotExists(
-            ServletContext context, String name,
-            Class<? extends Servlet> servletClass, String path,
-            Map<String, String> initParams) {
-        ServletRegistration existingServlet = findServletByPathPart(context,
-                path);
-        if (existingServlet != null) {
-            getLogger().info(
-                    "{} there is already a {} servlet with the name {} for path {} given",
-                    SKIPPING_AUTOMATIC_SERVLET_REGISTRATION_BECAUSE,
-                    existingServlet, existingServlet.getName(), path);
-            return VaadinServletCreation.SERVLET_EXISTS;
-        }
-
-        ServletRegistration.Dynamic registration = context.addServlet(name,
-                servletClass);
-        if (initParams != null) {
-            registration.setInitParameters(initParams);
-        }
-        if (registration == null) {
-            // Not expected to ever happen
-            getLogger().info("{} there is already a servlet with the name {}",
-                    SKIPPING_AUTOMATIC_SERVLET_REGISTRATION_BECAUSE, name);
-            return VaadinServletCreation.NO_CREATION;
-        }
-
-        getLogger().info(
-                "Automatically deploying Vaadin servlet with name {} to {}",
-                name, path);
-
-        registration.setAsyncSupported(true);
-        registration.addMapping(path);
-        return VaadinServletCreation.SERVLET_CREATED;
-    }
-
-    private ServletRegistration findServletByPathPart(ServletContext context,
-            String path) {
-        return context.getServletRegistrations().values().stream().filter(
-                registration -> registration.getMappings().contains(path))
-                .findAny().orElse(null);
-    }
-
-    private ServletRegistration findVaadinServlet(ServletContext context) {
-        return context.getServletRegistrations().values().stream()
-                .filter(registration -> isVaadinServlet(
-                        context.getClassLoader(), registration.getClassName()))
-                .findAny().orElse(null);
-    }
-
-    private boolean isVaadinServlet(ClassLoader classLoader, String className) {
-        return loadClass(classLoader, className)
-                .map(VaadinServlet.class::isAssignableFrom).orElse(false);
     }
 
     private Optional<Class<?>> loadClass(ClassLoader classLoader,

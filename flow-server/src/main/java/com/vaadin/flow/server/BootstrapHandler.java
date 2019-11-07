@@ -403,15 +403,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 VaadinSession session) {
             servletPathToContextRoot = contextRootRelatiePath;
             DeploymentConfiguration config = session.getConfiguration();
-            if (config.isCompatibilityMode()) {
-                if (session.getBrowser().isEs6Supported()) {
-                    frontendRootUrl = config.getEs6FrontendPrefix();
-                } else {
-                    frontendRootUrl = config.getEs5FrontendPrefix();
-                }
-            } else {
-                frontendRootUrl = config.getNpmFrontendPrefix();
-            }
+            frontendRootUrl = config.getNpmFrontendPrefix();
             assert frontendRootUrl.endsWith("/");
             assert servletPathToContextRoot.endsWith("/");
         }
@@ -530,22 +522,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     initialPageSettings -> handleInitialPageSettings(context,
                             head, initialPageSettings));
 
-            if (config.isCompatibilityMode()) {
-                /* Append any theme elements to initial page. */
-                handleThemeContents(context, document);
-            }
 
             if (!config.isProductionMode()) {
-                if (config.isBowerMode()) {
-                    exportBowerUsageStatistics(document);
-                } else {
-                    exportNpmUsageStatistics(document);
-                }
+                exportNpmUsageStatistics(document);
             }
 
             setupPwa(document, context);
 
-            if (!config.isCompatibilityMode() && !config.isProductionMode()) {
+            if (!config.isProductionMode()) {
                 checkWebpackStatus(document);
             }
 
@@ -576,23 +560,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             }
         }
 
-        private void exportBowerUsageStatistics(Document document) {
-            String registerScript = UsageStatistics.getEntries().map(entry -> {
-                String json = createUsageStatisticsJson(entry);
-
-                String escapedName = Json.create(entry.getName()).toJson();
-
-                // Registers the entry in a way that is picked up as a Vaadin
-                // WebComponent by the usage stats gatherer
-                return String.format("window.Vaadin[%s]=%s;", escapedName,
-                        json);
-            }).collect(Collectors.joining("\n"));
-
-            if (!registerScript.isEmpty()) {
-                document.body().appendElement(SCRIPT_TAG).text(registerScript);
-            }
-        }
-
         private void exportNpmUsageStatistics(Document document) {
             String entries = UsageStatistics.getEntries()
                     .map(BootstrapPageBuilder::createUsageStatisticsJson)
@@ -615,39 +582,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             json.put("version", entry.getVersion());
 
             return json.toJson();
-        }
-
-        private void handleThemeContents(BootstrapContext context,
-                Document document) {
-            ThemeSettings themeSettings = BootstrapUtils
-                    .getThemeSettings(context);
-
-            if (themeSettings == null) {
-                // no theme configured for the application
-                return;
-            }
-
-            List<JsonObject> themeContents = themeSettings.getHeadContents();
-            if (themeContents != null) {
-                themeContents.stream()
-                        .map(dependency -> createDependencyElement(context,
-                                dependency))
-                        .forEach(element -> insertElements(element,
-                                document.head()::appendChild));
-            }
-
-            JsonObject themeContent = themeSettings.getHeadInjectedContent();
-            if (themeContent != null) {
-                Element dependency = createDependencyElement(context,
-                        themeContent);
-                insertElements(dependency, document.head()::appendChild);
-            }
-
-            if (themeSettings.getHtmlAttributes() != null) {
-                Element html = document.body().parent();
-                assert "html".equalsIgnoreCase(html.tagName());
-                themeSettings.getHtmlAttributes().forEach(html::attr);
-            }
         }
 
         private Element createDependencyElement(BootstrapContext context,
@@ -820,12 +754,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 Element dependencyElement = createDependencyElement(uriResolver,
                         loadMode, dependencyJson, dependencyType);
 
-                if (loadMode == LoadMode.INLINE
-                        && dependencyType == Dependency.Type.HTML_IMPORT) {
-                    dependenciesToInlineInBody.add(dependencyElement);
-                } else {
-                    head.appendChild(dependencyElement);
-                }
+                head.appendChild(dependencyElement);
             }
             return dependenciesToInlineInBody;
         }
@@ -848,19 +777,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             VaadinService service = context.getSession().getService();
             DeploymentConfiguration conf = service.getDeploymentConfiguration();
 
-            if (conf.isCompatibilityMode()) {
-                inlineEs6Collections(head, context);
-                appendWebComponentsPolyfills(head, context);
-            } else {
-                conf.getPolyfills().forEach(
-                        polyfill -> head.appendChild(createJavaScriptElement(
-                                "./" + VAADIN_MAPPING + polyfill, false)));
-                try {
-                    appendNpmBundle(head, service, context);
-                } catch (IOException e) {
-                    throw new BootstrapException(
-                            "Unable to read webpack stats file.", e);
-                }
+            conf.getPolyfills().forEach(
+                    polyfill -> head.appendChild(createJavaScriptElement(
+                            "./" + VAADIN_MAPPING + polyfill, false)));
+            try {
+                appendNpmBundle(head, service, context);
+            } catch (IOException e) {
+                throw new BootstrapException(
+                        "Unable to read webpack stats file.", e);
             }
 
             if (context.getPushMode().isEnabled()) {
@@ -923,14 +847,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             }
             return context.getUriResolver()
                     .resolveVaadinUri("context://" + getClientEngine());
-        }
-
-        private void inlineEs6Collections(Element head,
-                BootstrapContext context) {
-            if (!context.getSession().getBrowser().isEs6Supported()) {
-                head.appendChild(
-                        createInlineJavaScriptElement(ES6_COLLECTIONS));
-            }
         }
 
         private void setupCss(Element head, BootstrapContext context) {
@@ -1042,43 +958,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             }
         }
 
-        private void appendWebComponentsPolyfills(Element head,
-                BootstrapContext context) {
-            VaadinSession session = context.getSession();
-            DeploymentConfiguration config = session.getConfiguration();
-
-            String es5AdapterUrl = "frontend://bower_components/webcomponentsjs/custom-elements-es5-adapter.js";
-            VaadinService service = session.getService();
-            if (!service.isResourceAvailable(POLYFILLS_JS, session.getBrowser(),
-                    null)) {
-                // No webcomponents polyfill, load nothing
-                return;
-            }
-
-            boolean loadEs5Adapter = config
-                    .getBooleanProperty(Constants.LOAD_ES5_ADAPTERS, true);
-            if (loadEs5Adapter && !session.getBrowser().isEs6Supported()) {
-                // This adapter is required since lots of our current customers
-                // use polymer-cli to transpile sources,
-                // this tool adds babel-helpers dependency into each file, see:
-                // https://github.com/Polymer/polymer-cli/blob/master/src/build/build.ts#L64
-                // and
-                // https://github.com/Polymer/polymer-cli/blob/master/src/build/optimize-streams.ts#L119
-                head.appendChild(
-                        createInlineJavaScriptElement(BABEL_HELPERS_JS));
-
-                if (session.getBrowser().isEs5AdapterNeeded()) {
-                    head.appendChild(
-                            createJavaScriptElement(context.getUriResolver()
-                                    .resolveVaadinUri(es5AdapterUrl), false));
-                }
-            }
-
-            String resolvedUrl = context.getUriResolver()
-                    .resolveVaadinUri(POLYFILLS_JS);
-            head.appendChild(createJavaScriptElement(resolvedUrl, false));
-
-        }
 
         private Element createInlineJavaScriptElement(
                 String javaScriptContents) {
@@ -1135,9 +1014,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     dependencyElement = null;
                 }
                 break;
-            case HTML_IMPORT:
-                dependencyElement = createHtmlImportElement(url);
-                break;
             default:
                 throw new IllegalStateException(
                         "Unsupported dependency type: " + type);
@@ -1150,18 +1026,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             }
 
             return dependencyElement;
-        }
-
-        private Element createHtmlImportElement(String url) {
-            final Element htmlImportElement;
-            if (url != null) {
-                htmlImportElement = new Element(Tag.valueOf("link"), "")
-                        .attr("rel", "import").attr("href", url);
-            } else {
-                htmlImportElement = new Element(Tag.valueOf("span"), "")
-                        .attr("hidden", true);
-            }
-            return htmlImportElement;
         }
 
         private Element createStylesheetElement(String url) {

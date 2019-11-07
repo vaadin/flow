@@ -307,18 +307,6 @@ public class MessageHandler {
 
         handleDependencies(valueMap.cast());
 
-        if (!initialMessageHandled) {
-            /*
-             * When handling the initial JSON message, dependencies are embedded
-             * in the HTML document instead of being injected by
-             * DependencyLoader. We must still explicitly wait for all HTML
-             * imports from the HTML document to be loaded. It's not necessary
-             * to explicitly wait for JavaScript dependencies since the browser
-             * already takes care of that for us.
-             */
-            registry.getDependencyLoader().requireHtmlImportsReady();
-        }
-
         /*
          * Hook for e.g. TestBench to get details about server performance
          */

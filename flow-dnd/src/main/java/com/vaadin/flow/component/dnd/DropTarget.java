@@ -81,7 +81,6 @@ public interface DropTarget<T extends Component> extends HasElement {
      * @see #create(Component)
      */
     static <T extends Component> DropTarget<T> configure(T component) {
-        DndUtil.addDndConnectorWhenComponentAttached(component);
         return new DropTarget<T>() {
             @Override
             public T getDropTargetComponent() {

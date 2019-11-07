@@ -48,14 +48,6 @@ public class DependencyLoaderTest {
 
         List<String> loadingStyles = new ArrayList<>();
         List<String> loadingScripts = new ArrayList<>();
-        List<String> loadingHtml = new ArrayList<>();
-
-        @Override
-        public void loadHtml(String htmlUrl,
-                ResourceLoadListener resourceLoadListener, boolean async) {
-            loadingHtml.add(htmlUrl);
-            resourceLoadListener.onLoad(new ResourceLoadEvent(this, htmlUrl));
-        }
 
         @Override
         public void loadScript(String scriptUrl,
@@ -78,14 +70,6 @@ public class DependencyLoaderTest {
             loadingStyles.add(stylesheetUrl);
             resourceLoadListener
                     .onLoad(new ResourceLoadEvent(this, stylesheetUrl));
-        }
-
-        @Override
-        public void inlineHtml(String htmlContents,
-                ResourceLoadListener resourceLoadListener) {
-            loadingHtml.add(htmlContents);
-            resourceLoadListener
-                    .onLoad(new ResourceLoadEvent(this, htmlContents));
         }
 
         @Override
@@ -143,17 +127,6 @@ public class DependencyLoaderTest {
     }
 
     @Test
-    public void loadHtml() {
-        String TEST_URL = "http://foo.bar/baz.html";
-        new DependencyLoader(registry).loadDependencies(createDependenciesMap(
-                new Dependency(Dependency.Type.HTML_IMPORT, TEST_URL,
-                        LoadMode.EAGER).toJson()));
-
-        assertEquals(Collections.singletonList(TEST_URL),
-                mockResourceLoader.loadingHtml);
-    }
-
-    @Test
     public void loadMultiple() {
         String TEST_JS_URL = "http://foo.bar/baz.js";
         String TEST_JS_URL2 = "/my.js";
@@ -175,24 +148,24 @@ public class DependencyLoaderTest {
 
     @Test
     public void loadFrontendDependency() {
-        String TEST_URL = "frontend://my-component.html";
+        String TEST_URL = "frontend://my-component.js";
 
         registry.getApplicationConfiguration()
                 .setFrontendRootUrl("http://someplace.com/es6/");
 
         new DependencyLoader(registry).loadDependencies(createDependenciesMap(
-                new Dependency(Dependency.Type.HTML_IMPORT, TEST_URL,
+                new Dependency(Dependency.Type.JAVASCRIPT, TEST_URL,
                         LoadMode.EAGER).toJson()));
 
         assertEquals(
                 Collections.singletonList(
-                        "http://someplace.com/es6/my-component.html"),
-                mockResourceLoader.loadingHtml);
+                        "http://someplace.com/es6/my-component.js"),
+                mockResourceLoader.loadingScripts);
     }
 
     @Test
     public void loadFrontendDependencyWithContext() {
-        String TEST_URL = "frontend://my-component.html";
+        String TEST_URL = "frontend://my-component.js";
 
         ApplicationConfiguration config = registry
                 .getApplicationConfiguration();
@@ -200,13 +173,13 @@ public class DependencyLoaderTest {
         config.setContextRootUrl("http://someplace.com/");
 
         new DependencyLoader(registry).loadDependencies(createDependenciesMap(
-                new Dependency(Dependency.Type.HTML_IMPORT, TEST_URL,
+                new Dependency(Dependency.Type.JAVASCRIPT, TEST_URL,
                         LoadMode.EAGER).toJson()));
 
         assertEquals(
                 Collections.singletonList(
-                        "http://someplace.com/es6/my-component.html"),
-                mockResourceLoader.loadingHtml);
+                        "http://someplace.com/es6/my-component.js"),
+                mockResourceLoader.loadingScripts);
     }
 
     @Test
@@ -226,10 +199,6 @@ public class DependencyLoaderTest {
                 new Dependency(Dependency.Type.STYLESHEET, cssUrl1,
                         LoadMode.EAGER).toJson(),
                 new Dependency(Dependency.Type.STYLESHEET, cssUrl2,
-                        LoadMode.EAGER).toJson(),
-                new Dependency(Dependency.Type.HTML_IMPORT, htmlUrl1,
-                        LoadMode.EAGER).toJson(),
-                new Dependency(Dependency.Type.HTML_IMPORT, htmlUrl2,
                         LoadMode.EAGER).toJson()));
 
         assertEquals(
@@ -241,11 +210,6 @@ public class DependencyLoaderTest {
                 "cssUrl1 should come before cssUrl2, because it was added earlier",
                 Arrays.asList(cssUrl1, cssUrl2),
                 mockResourceLoader.loadingStyles);
-
-        assertEquals(
-                "htmlUrl1 should come before htmlUrl2, because it was added earlier",
-                Arrays.asList(htmlUrl1, htmlUrl2),
-                mockResourceLoader.loadingHtml);
     }
 
     @Test
@@ -263,11 +227,7 @@ public class DependencyLoaderTest {
                 createInlineDependency(Dependency.Type.STYLESHEET,
                         cssContents1),
                 createInlineDependency(Dependency.Type.STYLESHEET,
-                        cssContents2),
-                createInlineDependency(Dependency.Type.HTML_IMPORT,
-                        htmlContents1),
-                createInlineDependency(Dependency.Type.HTML_IMPORT,
-                        htmlContents2)));
+                        cssContents2)));
 
         assertEquals(
                 "jsContents1 should come before jsContents2, because it was added earlier",
@@ -278,11 +238,6 @@ public class DependencyLoaderTest {
                 "cssContents1 should come before cssContents2, because it was added earlier",
                 Arrays.asList(cssContents1, cssContents2),
                 mockResourceLoader.loadingStyles);
-
-        assertEquals(
-                "htmlContents1 should come before htmlContents2, because it was added earlier",
-                Arrays.asList(htmlContents1, htmlContents2),
-                mockResourceLoader.loadingHtml);
     }
 
     private JsMap<LoadMode, JsonArray> createDependenciesMap(

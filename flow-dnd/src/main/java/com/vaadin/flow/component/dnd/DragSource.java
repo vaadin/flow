@@ -87,7 +87,6 @@ public interface DragSource<T extends Component> extends HasElement {
      * @see #configure(Component, boolean)
      */
     static <T extends Component> DragSource<T> configure(T component) {
-        DndUtil.addDndConnectorWhenComponentAttached(component);
         return new DragSource<T>() {
             @Override
             public T getDragSourceComponent() {

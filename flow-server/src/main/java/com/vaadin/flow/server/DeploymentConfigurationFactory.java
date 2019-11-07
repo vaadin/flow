@@ -16,9 +16,23 @@
 
 package com.vaadin.flow.server;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
+import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
+import static com.vaadin.flow.server.Constants.CONNECT_GENERATED_TS_DIR_TOKEN;
+import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
+import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
+import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
+import static com.vaadin.flow.server.Constants.NPM_TOKEN;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_CLIENT_SIDE_MODE;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_INITIAL_UIDL;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_REUSE_DEV_SERVER;
+import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
+import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
+import static com.vaadin.flow.server.frontend.FrontendUtils.PROJECT_BASEDIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -32,6 +46,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+
 import org.apache.commons.io.FileUtils;
 import org.slf4j.LoggerFactory;
 
@@ -44,24 +62,6 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
-
-import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
-import static com.vaadin.flow.server.Constants.CONNECT_GENERATED_TS_DIR_TOKEN;
-import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
-import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
-import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
-import static com.vaadin.flow.server.Constants.NPM_TOKEN;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_CLIENT_SIDE_MODE;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_INITIAL_UIDL;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_REUSE_DEV_SERVER;
-import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
-import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
-import static com.vaadin.flow.server.frontend.FrontendUtils.PROJECT_BASEDIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
 /**
  * Creates {@link DeploymentConfiguration} filled with all parameters specified
@@ -188,15 +188,6 @@ public final class DeploymentConfigurationFactory implements Serializable {
                 initParameters.setProperty(SERVLET_PARAMETER_PRODUCTION_MODE,
                         String.valueOf(buildInfo.getBoolean(
                                 SERVLET_PARAMETER_PRODUCTION_MODE)));
-            }
-            if (buildInfo.hasKey(SERVLET_PARAMETER_COMPATIBILITY_MODE)) {
-                initParameters.setProperty(SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                        String.valueOf(buildInfo.getBoolean(
-                                SERVLET_PARAMETER_COMPATIBILITY_MODE)));
-                // Need to be sure that we remove the system property,
-                // because it has priority in the configuration getter
-                System.clearProperty(
-                        VAADIN_PREFIX + SERVLET_PARAMETER_COMPATIBILITY_MODE);
             }
             if (buildInfo.hasKey(SERVLET_PARAMETER_CLIENT_SIDE_MODE)) {
                 initParameters.setProperty(

@@ -361,14 +361,10 @@ public class DevModeHandlerTest {
         Mockito.doAnswer(invocation -> ctx).when(cfg).getServletContext();
 
         List<String> paramNames = new ArrayList<>();
-        paramNames.add(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE);
         paramNames.add(FrontendUtils.PARAM_TOKEN_FILE);
 
         Mockito.doAnswer(invocation -> Collections.enumeration(paramNames))
                 .when(cfg).getInitParameterNames();
-        Mockito.doAnswer(invocation -> Boolean.FALSE.toString()).when(cfg)
-                .getInitParameter(
-                        Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE);
 
         File tokenFile = new File(temporaryFolder.getRoot(),
                 "flow-build-info.json");

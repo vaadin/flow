@@ -16,28 +16,26 @@
 
 package com.vaadin.flow.plugin.common;
 
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
 import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
-
-import com.vaadin.flow.server.frontend.scanner.ClassFinder;
-import com.vaadin.flow.server.scanner.ReflectionsClassFinder;
 
 import org.apache.maven.plugins.annotations.Mojo;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.plugin.TestUtils;
-
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.server.scanner.ReflectionsClassFinder;
 
 /**
  * @author Vaadin Ltd
@@ -62,7 +60,7 @@ public class AnnotationValuesExtractorTest {
         expectedException.expectMessage("");
 
         extractor.extractAnnotationValues(
-                Collections.singletonMap(HtmlImport.class, "doomed to fail"));
+                Collections.singletonMap(JavaScript.class, "doomed to fail"));
     }
 
     @Test
@@ -107,7 +105,7 @@ public class AnnotationValuesExtractorTest {
     @Test
     public void extractAnnotationValues_repeatedAnnotation() {
         Map<Class<? extends Annotation>, String> input = Collections
-                .singletonMap(HtmlImport.class, "value");
+                .singletonMap(JavaScript.class, "value");
 
         Map<Class<? extends Annotation>, Set<String>> result = extractor
                 .extractAnnotationValues(input);

@@ -85,14 +85,6 @@ public class UnsupportedBrowserHandler extends SynchronizedRequestHandler {
                 return true; // request handled
             }
         }
-        // check for trying to run ie11 in development mode
-        if (browser.isIE() && !session.getConfiguration().isProductionMode() && session.getConfiguration().isCompatibilityMode()) {
-            // bypass if cookie set
-            if (cookie == null || !cookie.contains(FORCE_LOAD_COOKIE)) {
-                writeIE11InDevelopmentModePage(response);
-                return true;
-            }
-        }
 
         return false; // pass to next handler
     }
@@ -137,37 +129,4 @@ public class UnsupportedBrowserHandler extends SynchronizedRequestHandler {
         page.close();
     }
 
-    /**
-     * Writes a page that explains that Production Mode is required for Internet Explorer 11 to work.
-     *
-     * @param response the response object to write response to
-     * @throws IOException if an IO error occurred
-     */
-    private void writeIE11InDevelopmentModePage(VaadinResponse response) throws IOException {
-        Writer page = response.getWriter();
-
-        // @formatter:off
-        page.write(
-                "<html>"
-                        + UNSUPPORTED_PAGE_HEAD_CONTENT
-                        + "<body style=\"width:34em;\"><h1>Internet Explorer 11 requires Vaadin Flow to be run in production mode.</h1>"
-                        + "<p>To test your app with IE11, you need make a production build and run the app in production mode.</p>"
-                        + "<p>The production build is made with e.g. a Maven profile that adds the <code>flow-server-production-mode</code> "
-                        + "dependency and executes the following goals for the <code>com.vaadin:vaadin-maven-plugin</code>"
-                        + "<ul><li><code>copy-production-files</code></li>"
-                        + "<li><code>package-for-production</code></li></ul></p>"
-                        + "<p>The production mode can be enabled by setting the <code>vaadin.productionMode=true</code> "
-                        + "property for the deployment configuration using an application or a system property.<p>"
-                        + "<p>You can find more information about the production mode from "
-                        + "<a href=\"https://vaadin.com/docs/flow/production/tutorial-production-mode-basic.html\">documentation</a>.</p>"
-                        + "<p><sub><a onclick=\"document.cookie='"
-                        + FORCE_LOAD_COOKIE
-                        + "';window.location.reload();return false;\" href=\"#\">Continue anyway<br>" +
-                        "(eg. if you've setup ES5 transpilation of frontend resources without running Flow in production mode)</sub></p>"
-                        + "</body>\n"
-                        + "</html>");
-        // @formatter:on
-
-        page.close();
-    }
 }

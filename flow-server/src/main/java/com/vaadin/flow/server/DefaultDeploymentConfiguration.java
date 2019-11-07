@@ -50,12 +50,6 @@ public class DefaultDeploymentConfiguration
             "See https://vaadin.com/docs/v14/flow/production/tutorial-production-mode-basic.html " +
             "for more information about the production mode." + SEPARATOR;
 
-    public static final String WARNING_COMPATIBILITY_MODE = SEPARATOR
-            + "\nRunning in Vaadin 13 (Flow 1) compatibility mode.\n\n"
-            + "This mode uses webjars/Bower for client side dependency management and HTML imports for dependency loading.\n\n"
-            + "The default mode in Vaadin 14+ (Flow 2+) is based on npm for dependency management and JavaScript modules for dependency inclusion.\n\n"
-            + "See http://vaadin.com/docs for more information." + SEPARATOR;
-
     public static final String WARNING_XSRF_PROTECTION_DISABLED = SEPARATOR
             + "\nWARNING: Cross-site request forgery protection is disabled!"
             + SEPARATOR;
@@ -94,7 +88,6 @@ public class DefaultDeploymentConfiguration
     public static final boolean DEFAULT_SEND_URLS_AS_PARAMETERS = true;
 
     private boolean productionMode;
-    private boolean compatibilityMode;
     private boolean clientSideMode;
     private boolean xsrfProtectionEnabled;
     private int heartbeatInterval;
@@ -125,7 +118,6 @@ public class DefaultDeploymentConfiguration
         boolean log = loggWarning.getAndSet(false);
 
         checkProductionMode(log);
-        checkCompatibilityMode(log);
         checkClientSideMode(log);
         checkRequestTiming();
         checkXsrfProtection(log);
@@ -146,16 +138,6 @@ public class DefaultDeploymentConfiguration
     @Override
     public boolean isProductionMode() {
         return productionMode;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * The default is false.
-     */
-    @Override
-    public boolean isBowerMode() {
-        return compatibilityMode;
     }
 
     /**
@@ -261,41 +243,6 @@ public class DefaultDeploymentConfiguration
                 Constants.SERVLET_PARAMETER_PRODUCTION_MODE, false);
         if (!productionMode && loggWarning) {
             getLogger().warn(NOT_PRODUCTION_MODE_INFO);
-        }
-    }
-
-    /**
-     * Log a warning if Vaadin is running in compatibility mode. Throw
-     * {@link IllegalStateException} if the mode could not be determined from
-     * parameters.
-     */
-    private void checkCompatibilityMode(boolean loggWarning) {
-        boolean explicitlySet = false;
-        if (getStringProperty(Constants.SERVLET_PARAMETER_BOWER_MODE,
-                null) != null) {
-            compatibilityMode = getBooleanProperty(
-                    Constants.SERVLET_PARAMETER_BOWER_MODE, false);
-            explicitlySet = true;
-        } else if (getStringProperty(
-                Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE, null) != null) {
-            compatibilityMode = getBooleanProperty(
-                    Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE, false);
-            explicitlySet = true;
-        }
-
-        @SuppressWarnings("unchecked")
-        Consumer<CompatibilityModeStatus> consumer = (Consumer<CompatibilityModeStatus>) getInitParameters()
-                .get(DeploymentConfigurationFactory.DEV_MODE_ENABLE_STRATEGY);
-        if (consumer != null) {
-            if (explicitlySet && !compatibilityMode) {
-                consumer.accept(CompatibilityModeStatus.EXPLICITLY_SET_FALSE);
-            } else if (!explicitlySet) {
-                consumer.accept(CompatibilityModeStatus.UNDEFINED);
-            }
-        }
-
-        if (compatibilityMode && loggWarning) {
-            getLogger().warn(WARNING_COMPATIBILITY_MODE);
         }
     }
 

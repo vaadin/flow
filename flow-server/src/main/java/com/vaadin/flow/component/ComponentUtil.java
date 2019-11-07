@@ -24,7 +24,6 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component.MapToExistingElement;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.dependency.Uses;
@@ -469,8 +468,7 @@ public class ComponentUtil {
 
     /**
      * Gets the dependencies for the given class, defined using annotations (
-     * {@link HtmlImport}, {@link JavaScript}, {@link StyleSheet} and
-     * {@link Uses}).
+     * {@link JavaScript}, {@link StyleSheet} and {@link Uses}).
      *
      * @param service
      *            the service to use for resolving dependencies

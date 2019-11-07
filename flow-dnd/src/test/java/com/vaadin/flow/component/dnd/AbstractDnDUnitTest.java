@@ -37,18 +37,12 @@ import org.mockito.Mockito;
 public abstract class AbstractDnDUnitTest {
 
     protected MockUI ui;
-    protected boolean compatibilityMode;
     protected boolean iOS;
 
     @Before
     public void setup() {
         DefaultDeploymentConfiguration configuration = new DefaultDeploymentConfiguration(
-                VaadinServlet.class, new Properties()) {
-            @Override
-            public boolean isCompatibilityMode() {
-                return compatibilityMode;
-            }
-        };
+                VaadinServlet.class, new Properties());
         WebBrowser browser = Mockito.mock(WebBrowser.class);
         Mockito.when(browser.isIOS()).then(invocation -> iOS);
 
@@ -66,27 +60,6 @@ public abstract class AbstractDnDUnitTest {
         Assert.assertTrue("No usage statistics for generic dnd reported",
                 UsageStatistics.getEntries().anyMatch(
                         entry -> entry.getName().contains("generic-dnd")));
-    }
-
-    @Test
-    public void testExtension_staticApiInCompatibilityMode_connectorDependencyAddedDynamically() {
-        compatibilityMode = true;
-        ui.getInternals().getDependencyList().clearPendingSendToClient();
-
-        RouterLink component = new RouterLink();
-        ui.add(component);
-        runStaticCreateMethodForExtension(component);
-
-        DependencyList dependencyList = ui.getInternals().getDependencyList();
-        Collection<Dependency> pendingSendToClient = dependencyList
-                .getPendingSendToClient();
-
-        Assert.assertEquals("No dependency added", 1,
-                pendingSendToClient.size());
-
-        Dependency dependency = pendingSendToClient.iterator().next();
-        Assert.assertEquals("Wrong dependency loaded",
-                "frontend://dndConnector.js", dependency.getUrl());
     }
 
     @Test

@@ -28,7 +28,6 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 @Route(value = "com.vaadin.flow.uitest.ui.dependencies.AnnotatedFrontendInlineView", layout = ViewTestLayout.class)
 @Tag("frontend-inline")
 @JavaScript(value = "components/frontend-inline.js", loadMode = LoadMode.INLINE)
-@HtmlImport(value = "components/frontend-inline.html", loadMode = LoadMode.INLINE)
 @StyleSheet(value = "components/frontend-inline.css", loadMode = LoadMode.INLINE)
 public class AnnotatedFrontendInlineView
         extends PolymerTemplate<TemplateModel> {

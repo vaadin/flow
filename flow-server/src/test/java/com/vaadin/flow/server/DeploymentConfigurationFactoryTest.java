@@ -82,8 +82,6 @@ public class DeploymentConfigurationFactoryTest {
         FileUtils.writeLines(tokenFile, Arrays.asList("{", "}"));
         contextMock = mock(ServletContext.class);
 
-        defaultServletParams.put(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                Boolean.FALSE.toString());
         defaultServletParams.put(PARAM_TOKEN_FILE, tokenFile.getPath());
     }
 
@@ -266,9 +264,7 @@ public class DeploymentConfigurationFactoryTest {
 
         DeploymentConfigurationFactory.createDeploymentConfiguration(
                 VaadinServlet.class,
-                createServletConfigMock(Collections.singletonMap(
-                        Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                        Boolean.FALSE.toString()), emptyMap()));
+                createServletConfigMock(emptyMap(), emptyMap()));
     }
 
     @Test
@@ -277,8 +273,6 @@ public class DeploymentConfigurationFactoryTest {
         Map<String, String> map = new HashMap<>();
         map.put(FrontendUtils.PROJECT_BASEDIR,
                 temporaryFolder.getRoot().getAbsolutePath());
-        map.put(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                Boolean.FALSE.toString());
 
         File webPack = new File(temporaryFolder.getRoot().getAbsolutePath(),
                 FrontendUtils.WEBPACK_CONFIG);
@@ -301,8 +295,6 @@ public class DeploymentConfigurationFactoryTest {
         Map<String, String> map = new HashMap<>();
         map.put(FrontendUtils.PROJECT_BASEDIR,
                 temporaryFolder.getRoot().getAbsolutePath());
-        map.put(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                Boolean.FALSE.toString());
 
         File webPack = new File(temporaryFolder.getRoot().getAbsolutePath(),
                 FrontendUtils.WEBPACK_CONFIG);
@@ -320,7 +312,6 @@ public class DeploymentConfigurationFactoryTest {
 
         DeploymentConfiguration config = createConfig(Collections
                 .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
-        assertFalse(config.isCompatibilityMode());
         assertTrue(config.isProductionMode());
     }
 

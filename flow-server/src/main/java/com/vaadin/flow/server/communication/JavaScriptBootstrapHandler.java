@@ -86,8 +86,7 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
-        return !request.getService().getDeploymentConfiguration().isCompatibilityMode()
-                && ServletHelper.isRequestType(request, RequestType.INIT);
+        return ServletHelper.isRequestType(request, RequestType.INIT);
     }
 
     protected String getRequestUrl(VaadinRequest request) {

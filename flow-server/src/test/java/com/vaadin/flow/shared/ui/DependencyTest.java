@@ -32,7 +32,7 @@ public class DependencyTest {
 
     @Test
     public void checkJsonSerialization_3ArgsCTor() {
-        Dependency dependency = new Dependency(Dependency.Type.HTML_IMPORT,
+        Dependency dependency = new Dependency(Dependency.Type.JS_MODULE,
                 "url", LoadMode.INLINE);
 
         assertDependency(dependency);

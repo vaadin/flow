@@ -135,36 +135,9 @@ public class ServletDeployerTest {
     }
 
     @Test
-    public void registeredServlets_noRoutes_noWebComponents_compatibilityMode_servletsAreNotRegistered()
-            throws Exception {
-        assertservletsAreNotRegistered_registeredServlets_noRoutes_noWebComponents(
-                true);
-    }
-
-    @Test
     public void registeredServlets_noRoutes_noWebComponents_servletsAreNotRegistered()
             throws Exception {
-        assertservletsAreNotRegistered_registeredServlets_noRoutes_noWebComponents(
-                false);
-    }
-
-    @Test
-    public void mainServletIsNotRegisteredWhenVaadinServletIsPresent_frontendServletIsRegistered()
-            throws Exception {
-        dynamicMockCheck = registration -> EasyMock
-                .expect(registration.setInitParameters(Collections.singletonMap(
-                        Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                        Boolean.TRUE.toString())))
-                .andReturn(null).once();
-        deployer.contextInitialized(getContextEvent(true, true,
-                getServletRegistration("testServlet", TestVaadinServlet.class,
-                        singletonList("/test/*"),
-                        Collections.singletonMap(
-                                Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                                "true"))));
-
-        assertMappingsCount(1, 1);
-        assertMappingIsRegistered("frontendFilesServlet", "/frontend/*");
+        assertservletsAreNotRegistered_registeredServlets_noRoutes_noWebComponents();
     }
 
     @Test
@@ -190,93 +163,6 @@ public class ServletDeployerTest {
         assertMappingIsRegistered(ServletDeployer.class.getName(), "/*");
     }
 
-    @Test
-    public void frontendServletIsRegisteredWhenAtLeastOneServletHasDevelopmentAndCompatibilityMode()
-            throws Exception {
-        Map<String, String> productionMode = new HashMap<>();
-        productionMode.put(Constants.SERVLET_PARAMETER_PRODUCTION_MODE, "true");
-        productionMode.put(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                "true");
-
-        Map<String, String> devMode = new HashMap<>();
-        devMode.put(Constants.SERVLET_PARAMETER_PRODUCTION_MODE, "false");
-        devMode.put(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE, "true");
-
-        dynamicMockCheck = registration -> EasyMock
-                .expect(registration.setInitParameters(Collections.singletonMap(
-                        Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                        Boolean.TRUE.toString())))
-                .andReturn(null).once();
-
-        deployer.contextInitialized(getContextEvent(true, true,
-                getServletRegistration("testServlet1", TestVaadinServlet.class,
-                        singletonList("/test1/*"), productionMode),
-                getServletRegistration("testServlet2", TestVaadinServlet.class,
-                        singletonList("/test2/*"), devMode)));
-
-        assertMappingsCount(1, 1);
-        assertMappingIsRegistered("frontendFilesServlet", "/frontend/*");
-    }
-
-    @Test
-    public void frontendServletIsNotRegisteredWhenNoServletsHaveDevelopmentAndCompatibilityMode()
-            throws Exception {
-        Map<String, String> params = new HashMap<>();
-        params.put(Constants.SERVLET_PARAMETER_PRODUCTION_MODE, "false");
-        params.put(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE, "false");
-        deployer.contextInitialized(getContextEvent(
-                true, true,
-                getServletRegistration("testServlet1", TestVaadinServlet.class,
-                        singletonList("/test1/*"),
-                        singletonMap(
-                                Constants.SERVLET_PARAMETER_PRODUCTION_MODE,
-                                "true")),
-                getServletRegistration("testServlet2", TestVaadinServlet.class,
-                        singletonList("/test2/*"), params)));
-
-        assertMappingsCount(0, 0);
-    }
-
-    @Test
-    public void frontendServletIsRegisteredInProductionModeIfOriginalFrontendResourcesAreUsed()
-            throws Exception {
-        Map<String, String> params = new HashMap<>();
-        params.put(Constants.SERVLET_PARAMETER_PRODUCTION_MODE, "true");
-        params.put(Constants.USE_ORIGINAL_FRONTEND_RESOURCES, "true");
-        params.put(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE, "true");
-
-        dynamicMockCheck = registration -> EasyMock
-                .expect(registration.setInitParameters(Collections.singletonMap(
-                        Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                        Boolean.TRUE.toString())))
-                .andReturn(null).once();
-        deployer.contextInitialized(
-                getContextEvent(true, true, getServletRegistration("test",
-                        TestVaadinServlet.class, emptyList(), params)));
-
-        assertMappingsCount(1, 1);
-        assertMappingIsRegistered("frontendFilesServlet", "/frontend/*");
-    }
-
-    @Test
-    public void servletIsNotRegisteredWhenAnotherHasTheSamePathMapping_mainServlet()
-            throws Exception {
-        dynamicMockCheck = registration -> EasyMock
-                .expect(registration.setInitParameters(Collections.singletonMap(
-                        Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                        Boolean.TRUE.toString())))
-                .andReturn(null).once();
-
-        deployer.contextInitialized(getContextEvent(true, true,
-                getServletRegistration("test", TestServlet.class,
-                        singletonList("/*"),
-                        Collections.singletonMap(
-                                Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                                "true"))));
-
-        assertMappingsCount(1, 1);
-        assertMappingIsRegistered("frontendFilesServlet", "/frontend/*");
-    }
 
     @Test
     public void servletIsNotRegisteredWhenAnotherHasTheSamePathMapping_frontendServlet()
@@ -417,14 +303,11 @@ public class ServletDeployerTest {
         return registrationMock;
     }
 
-    private void assertservletsAreNotRegistered_registeredServlets_noRoutes_noWebComponents(
-            boolean compatibilityMode) throws Exception {
+    private void assertservletsAreNotRegistered_registeredServlets_noRoutes_noWebComponents()
+            throws Exception {
         deployer.contextInitialized(getContextEvent(false, false,
                 getServletRegistration("testServlet", TestServlet.class,
-                        singletonList("/test/*"),
-                        singletonMap(
-                                Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                                Boolean.toString(compatibilityMode)))));
+                        singletonList("/test/*"), Collections.emptyMap())));
 
         assertMappingsCount(0, 0);
     }
