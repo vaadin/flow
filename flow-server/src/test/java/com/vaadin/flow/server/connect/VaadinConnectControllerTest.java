@@ -140,6 +140,19 @@ public class VaadinConnectControllerTest {
         }
     }
 
+    @VaadinService
+    public static class NullCheckerTestClass {
+        public static final String OK_RESPONSE = "ok";
+
+        public String testOkMethod() {
+            return OK_RESPONSE;
+        }
+
+        public String testNullMethod() {
+            return null;
+        }
+    }
+
     @Rule
     public final ExpectedException exception = ExpectedException.none();
 
@@ -890,6 +903,64 @@ public class VaadinConnectControllerTest {
                 .contains(Integer.toString(invalidPropertyValue)));
         assertTrue(validationErrorMessage.contains(
                 TEST_VALIDATION_METHOD.getParameterTypes()[0].toString()));
+    }
+
+    @Test
+    public void should_Invoke_ExplicitNullableTypeChecker() {
+        ExplicitNullableTypeChecker explicitNullableTypeChecker = mock(
+                ExplicitNullableTypeChecker.class);
+
+        when(explicitNullableTypeChecker.checkValueForType(
+                NullCheckerTestClass.OK_RESPONSE, String.class))
+                        .thenReturn(null);
+
+        ResponseEntity<String> response = createVaadinController(
+                new NullCheckerTestClass(), null, null, null,
+                explicitNullableTypeChecker).serveVaadinService(
+                        NullCheckerTestClass.class.getSimpleName(),
+                        "testOkMethod", createRequestParameters("{}"),
+                        requestMock);
+
+        verify(explicitNullableTypeChecker).checkValueForType(
+                NullCheckerTestClass.OK_RESPONSE, String.class);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("\"" + NullCheckerTestClass.OK_RESPONSE + "\"",
+                response.getBody());
+    }
+
+    @Test
+    public void should_ReturnException_When_ExplicitNullableTypeChecker_ReturnsError()
+            throws IOException {
+        final String errorMessage = "Got null";
+
+        ExplicitNullableTypeChecker explicitNullableTypeChecker = mock(
+                ExplicitNullableTypeChecker.class);
+
+        when(explicitNullableTypeChecker.checkValueForType(null, String.class))
+                .thenReturn(errorMessage);
+
+        ResponseEntity<String> response = createVaadinController(
+                new NullCheckerTestClass(), null, null, null,
+                explicitNullableTypeChecker).serveVaadinService(
+                        NullCheckerTestClass.class.getSimpleName(),
+                        "testNullMethod", createRequestParameters("{}"),
+                        requestMock);
+
+        verify(explicitNullableTypeChecker).checkValueForType(null,
+                String.class);
+
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        ObjectNode jsonNodes = new ObjectMapper().readValue(response.getBody(),
+                ObjectNode.class);
+
+        assertEquals(VaadinConnectException.class.getName(),
+                jsonNodes.get("type").asText());
+        final String message = jsonNodes.get("message").asText();
+        assertTrue(message.contains("Unexpected return value"));
+        assertTrue(message.contains(NullCheckerTestClass.class.getSimpleName()));
+        assertTrue(message.contains("testNullMethod"));
+        assertTrue(message.contains(errorMessage));
     }
 
     private void assertServiceInfoPresent(String responseBody) {

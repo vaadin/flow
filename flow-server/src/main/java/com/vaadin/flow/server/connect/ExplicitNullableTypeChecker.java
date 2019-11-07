@@ -16,8 +16,8 @@
 
 package com.vaadin.flow.server.connect;
 
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.Collection;
 import java.util.Optional;
 
 /**
@@ -25,6 +25,7 @@ import java.util.Optional;
  * parameter and return types.
  */
 public class ExplicitNullableTypeChecker {
+    ExplicitNullableTypeChecker recursiveInstance = this;
 
     /**
      * Validates the given value for the given expected method parameter or
@@ -38,21 +39,16 @@ public class ExplicitNullableTypeChecker {
      *         not explicitly allow null, or null meaning the value is OK.
      */
     public String checkValueForType(Object value, Type expectedType) {
-        if (expectedType instanceof ParameterizedType) {
-            Class<?> clazz = (Class<?>) ((ParameterizedType) expectedType)
-                    .getRawType();
-            if (Optional.class.isAssignableFrom(clazz)) {
-                if (value == null) {
-                    return String.format(
-                            "Got null value for type '%s', consider Optional.empty",
-                            expectedType.getTypeName());
-                } else {
-                    return null;
-                }
-            }
-        }
+        Class<?> clazz = (Class<?>) expectedType;
 
         if (value != null) {
+            if (Collection.class.isAssignableFrom(clazz)
+                    && checkCollection((Collection) value, clazz) != null) {
+                return String.format(
+                        "Unexpected null item in collection type '%s'",
+                        expectedType.getTypeName());
+            }
+
             return null;
         }
 
@@ -61,15 +57,33 @@ public class ExplicitNullableTypeChecker {
             return null;
         }
 
-        if (expectedType instanceof Class<?>
-                && Void.class.isAssignableFrom((Class<?>) expectedType)) {
+        if (Void.class.isAssignableFrom(clazz)) {
             // Corner case: explicit Void parameter
             return null;
+        }
+
+        if (Optional.class.isAssignableFrom(clazz)) {
+            return String.format(
+                    "Got null value for type '%s', consider Optional.empty",
+                    expectedType.getTypeName());
         }
 
         return String.format(
                 "Got null value for type '%s', which is neither Optional"
                         + " nor void",
                 expectedType.getTypeName());
+    }
+
+    private String checkCollection(Collection value, Class<?> clazz) {
+        for (Type type : clazz.getTypeParameters()[0].getBounds()) {
+            for (Object item : value) {
+                String error = recursiveInstance.checkValueForType(item, type);
+                if (error != null) {
+                    return error;
+                }
+            }
+        }
+
+        return null;
     }
 }
