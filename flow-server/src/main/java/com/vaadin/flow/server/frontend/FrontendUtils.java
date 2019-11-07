@@ -578,7 +578,8 @@ public class FrontendUtils {
             List<String> nodeVersionCommand = new ArrayList<>();
             nodeVersionCommand.add(FrontendUtils.getNodeExecutable(baseDir));
             nodeVersionCommand.add("--version");
-            FrontendVersion nodeVersion = getVersion("node", nodeVersionCommand);
+            FrontendVersion nodeVersion = getVersion("node",
+                    nodeVersionCommand, null);
             validateToolVersion("node", nodeVersion, SUPPORTED_NODE_VERSION,
                     SHOULD_WORK_NODE_VERSION);
         } catch (UnknownVersionException e) {
@@ -586,10 +587,10 @@ public class FrontendUtils {
         }
 
         try {
-            List<String> npmVersionCommand = new ArrayList<>();
-            npmVersionCommand.addAll(FrontendUtils.getNpmExecutable(baseDir));
+            List<String> npmVersionCommand = new ArrayList<>(FrontendUtils.getNpmExecutable(baseDir));
             npmVersionCommand.add("--version");
-            FrontendVersion npmVersion = getVersion("npm", npmVersionCommand);
+            FrontendVersion npmVersion = getVersion("npm", npmVersionCommand,
+                    Collections.singletonMap("NO_UPDATE_NOTIFIER", "1"));
             validateToolVersion("npm", npmVersion, SUPPORTED_NPM_VERSION,
                     SHOULD_WORK_NPM_VERSION);
             checkForFaultyNpmVersion(npmVersion);
@@ -763,11 +764,18 @@ public class FrontendUtils {
         }
     }
 
-    private static FrontendVersion getVersion(String tool, List<String> versionCommand)
+    private static FrontendVersion getVersion(String tool,
+            List<String> versionCommand, Map<String, String> environment)
             throws UnknownVersionException {
         try {
-            Process process = FrontendUtils.createProcessBuilder(versionCommand)
-                    .start();
+            ProcessBuilder processBuilder =
+                    FrontendUtils.createProcessBuilder(versionCommand);
+
+            if (environment != null && !environment.isEmpty()) {
+                processBuilder.environment().putAll(environment);
+            }
+
+            Process process = processBuilder.start();
             int exitCode = process.waitFor();
             if (exitCode != 0) {
                 throw new UnknownVersionException(tool,
