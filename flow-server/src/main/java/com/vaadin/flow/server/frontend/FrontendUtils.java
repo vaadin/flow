@@ -306,15 +306,19 @@ public class FrontendUtils {
         // not work because it's a shell or windows script that looks for node
         // and will fail. Thus we look for the `mpn-cli` node script instead
         File file = new File(baseDir, "node/node_modules/npm/bin/npm-cli.js");
+        List<String> returnCommand = new ArrayList<>();
         if (file.canRead()) {
             // We return a two element list with node binary and npm-cli script
-            return Arrays.asList(getNodeExecutable(baseDir),
-                    file.getAbsolutePath());
+            returnCommand.add(getNodeExecutable(baseDir));
+            returnCommand.add(file.getAbsolutePath());
+        } else {
+            // Otherwise look for regulan `npm`
+            String command = isWindows() ? "npm.cmd" : "npm";
+            returnCommand.add(
+                    getExecutable(baseDir, command, null).getAbsolutePath());
         }
-        // Otherwise look for regulan `npm`
-        String command = isWindows() ? "npm.cmd" : "npm";
-        return Arrays.asList(
-                getExecutable(baseDir, command, null).getAbsolutePath(), "--no-update-notifier");
+        returnCommand.add("--no-update-notifier");
+        return returnCommand;
     }
 
     /**
