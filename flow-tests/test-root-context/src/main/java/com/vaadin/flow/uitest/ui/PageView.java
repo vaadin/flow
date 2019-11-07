@@ -1,6 +1,7 @@
 package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.IFrame;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.Route;
@@ -57,8 +58,16 @@ public class PageView extends AbstractDivView {
         openButton.setText("Open url in a new tab");
         openButton.addClickListener(e -> getPage().open(url));
 
+        IFrame frame = new IFrame();
+        frame.setId("newWindow");
+        frame.setName("newWindow");
+        Div openButton2 = new Div();
+        openButton2.setId("openInIFrame");
+        openButton2.setText("Open url in an IFrame");
+        openButton2.addClickListener(e -> getPage().open(url, "newWindow"));
+
         add(input, updateButton, overrideButton, reloadButton,
-                setLocationButton, openButton);
+                setLocationButton, openButton, openButton2, frame);
     }
 
 }
