@@ -29,7 +29,6 @@ import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_REUSE_DEV_SERVER;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubNode;
@@ -56,7 +55,7 @@ public class DevModeInitializerTestBase {
     public final TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     @Before
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public void setup() throws Exception {
         temporaryFolder.create();
         baseDir = temporaryFolder.getRoot().getPath();
@@ -65,7 +64,8 @@ public class DevModeInitializerTestBase {
         createStubWebpackServer("Compiled", 0, baseDir);
 
         servletContext = Mockito.mock(ServletContext.class);
-        ServletRegistration registration = Mockito.mock(ServletRegistration.class);
+        ServletRegistration registration = Mockito
+                .mock(ServletRegistration.class);
 
         initParams = new HashMap<>();
         initParams.put(FrontendUtils.PROJECT_BASEDIR, baseDir);
@@ -106,7 +106,6 @@ public class DevModeInitializerTestBase {
         System.clearProperty("vaadin." + SERVLET_PARAMETER_COMPATIBILITY_MODE);
         System.clearProperty("vaadin." + SERVLET_PARAMETER_PRODUCTION_MODE);
         System.clearProperty("vaadin." + SERVLET_PARAMETER_REUSE_DEV_SERVER);
-        System.clearProperty("vaadin." + SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE);
 
         webpackFile.delete();
         mainPackageFile.delete();
@@ -125,7 +124,6 @@ public class DevModeInitializerTestBase {
     public void runDestroy() throws Exception {
         devModeInitializer.contextDestroyed(null);
     }
-
 
     static List<URL> getClasspathURLs() {
         return Arrays.stream(

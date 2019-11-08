@@ -207,15 +207,21 @@ public abstract class NodeUpdater implements FallibleCommand {
         return packageJson;
     }
 
-    boolean updateMainDefaultDependencies(JsonObject packageJson) {
+    boolean updateMainDefaultDependencies(JsonObject packageJson,
+            String polymerVersion) {
         boolean added = false;
         added = addDependency(packageJson, null, DEP_NAME_KEY, DEP_NAME_DEFAULT)
                 || added;
         added = addDependency(packageJson, null, DEP_LICENSE_KEY,
                 DEP_LICENSE_DEFAULT) || added;
 
+        String polymerDepVersion = polymerVersion;
+        if (polymerDepVersion == null) {
+            polymerDepVersion = "3.2.0";
+        }
+
         added = addDependency(packageJson, DEPENDENCIES, "@polymer/polymer",
-                "3.2.0") || added;
+                polymerDepVersion) || added;
         added = addDependency(packageJson, DEPENDENCIES,
                 "@webcomponents/webcomponentsjs", "^2.2.10") || added;
         // dependency for the custom package.json placed in the generated
