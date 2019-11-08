@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
+
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -371,8 +372,7 @@ public class VaadinConnectController {
         }
 
         String implicitNullError = this.explicitNullableTypeChecker
-                .checkValueForType(returnValue,
-                        methodToInvoke.getGenericReturnType());
+                .checkValueForReturnType(returnValue, methodToInvoke);
         if (implicitNullError != null) {
             VaadinConnectException returnValueException = new VaadinConnectException(
                     String.format(
