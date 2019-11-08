@@ -184,6 +184,7 @@ public class UidlWriter implements Serializable {
         response.put(ApplicationConstants.SERVER_SYNC_ID, syncId);
         if (resynchronize) {
             response.put(ApplicationConstants.RESYNCHRONIZE_ID, true);
+            resynchronize = false;
         }
         int nextClientToServerMessageId = uiInternals
                 .getLastProcessedClientToServerId() + 1;
