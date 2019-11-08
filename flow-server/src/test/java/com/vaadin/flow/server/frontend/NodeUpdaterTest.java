@@ -122,7 +122,7 @@ public class NodeUpdaterTest {
     }
 
     @Test
-    public void updateMainDefaultDependencies_polymerVersionIsProvided_useDefault() {
+    public void updateMainDefaultDependencies_polymerVersionIsProvided_useProvided() {
         JsonObject object = Json.createObject();
         nodeUpdater.updateMainDefaultDependencies(object, "foo");
 
