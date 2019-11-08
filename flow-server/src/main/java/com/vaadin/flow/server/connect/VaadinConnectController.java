@@ -19,7 +19,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
-
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -103,30 +102,6 @@ public class VaadinConnectController {
             .buildDefaultValidatorFactory().getValidator();
     private final ExplicitNullableTypeChecker explicitNullableTypeChecker;
 
-    static class VaadinServiceData {
-        private final Object vaadinServiceObject;
-        final Map<String, Method> methods = new HashMap<>();
-
-        private VaadinServiceData(Object vaadinServiceObject,
-                Method... serviceMethods) {
-            this.vaadinServiceObject = vaadinServiceObject;
-            Stream.of(serviceMethods)
-                    .filter(method -> method.getDeclaringClass() != Object.class
-                            && !method.isBridge())
-                    .forEach(method -> methods.put(
-                            method.getName().toLowerCase(Locale.ENGLISH),
-                            method));
-        }
-
-        private Optional<Method> getMethod(String methodName) {
-            return Optional.ofNullable(methods.get(methodName));
-        }
-
-        private Object getServiceObject() {
-            return vaadinServiceObject;
-        }
-    }
-
     /**
      * A constructor used to initialize the controller.
      *
@@ -161,9 +136,13 @@ public class VaadinConnectController {
         this.accessChecker = accessChecker;
         this.explicitNullableTypeChecker = explicitNullableTypeChecker;
 
-        context.getBeansWithAnnotation(VaadinService.class)
-            .forEach((name, serviceBean) ->
-                validateServiceBean(serviceNameChecker, context, name, serviceBean));
+        context.getBeansWithAnnotation(VaadinService.class).forEach(
+                (name, serviceBean) -> validateServiceBean(serviceNameChecker,
+                        context, name, serviceBean));
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(VaadinConnectController.class);
     }
 
     void validateServiceBean(VaadinServiceNameChecker serviceNameChecker,
@@ -179,11 +158,9 @@ public class VaadinConnectController {
         }
 
         String serviceName = Optional
-            .ofNullable(
-                    beanType.getAnnotation(VaadinService.class))
-            .map(VaadinService::value)
-            .filter(value -> !value.isEmpty())
-            .orElse(beanType.getSimpleName());
+                .ofNullable(beanType.getAnnotation(VaadinService.class))
+                .map(VaadinService::value).filter(value -> !value.isEmpty())
+                .orElse(beanType.getSimpleName());
         if (serviceName.isEmpty()) {
             throw new IllegalStateException(String.format(
                     "A bean with name '%s' and type '%s' is annotated with '%s' "
@@ -194,17 +171,15 @@ public class VaadinConnectController {
                                     + "anonymous class or specify a service name in the '%s' annotation",
                             VaadinService.class));
         }
-        String validationError = serviceNameChecker
-                .check(serviceName);
+        String validationError = serviceNameChecker.check(serviceName);
         if (validationError != null) {
-            throw new IllegalStateException(String.format(
-                    "Service name '%s' is invalid, reason: '%s'",
-                    serviceName, validationError));
+            throw new IllegalStateException(
+                    String.format("Service name '%s' is invalid, reason: '%s'",
+                            serviceName, validationError));
         }
 
         vaadinServices.put(serviceName.toLowerCase(Locale.ENGLISH),
-                new VaadinServiceData(serviceBean,
-                        beanType.getMethods()));
+                new VaadinServiceData(serviceBean, beanType.getMethods()));
     }
 
     private ObjectMapper getDefaultObjectMapper(ApplicationContext context) {
@@ -376,8 +351,8 @@ public class VaadinConnectController {
         if (implicitNullError != null) {
             VaadinConnectException returnValueException = new VaadinConnectException(
                     String.format(
-                    "Unexpected return value in service '%s' method '%s'. %s",
-                    serviceName, methodName, implicitNullError));
+                            "Unexpected return value in service '%s' method '%s'. %s",
+                            serviceName, methodName, implicitNullError));
 
             getLogger().error(returnValueException.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -531,7 +506,27 @@ public class VaadinConnectController {
         return parametersData;
     }
 
-    private static Logger getLogger() {
-        return LoggerFactory.getLogger(VaadinConnectController.class);
+    static class VaadinServiceData {
+        final Map<String, Method> methods = new HashMap<>();
+        private final Object vaadinServiceObject;
+
+        private VaadinServiceData(Object vaadinServiceObject,
+                Method... serviceMethods) {
+            this.vaadinServiceObject = vaadinServiceObject;
+            Stream.of(serviceMethods)
+                    .filter(method -> method.getDeclaringClass() != Object.class
+                            && !method.isBridge())
+                    .forEach(method -> methods.put(
+                            method.getName().toLowerCase(Locale.ENGLISH),
+                            method));
+        }
+
+        private Optional<Method> getMethod(String methodName) {
+            return Optional.ofNullable(methods.get(methodName));
+        }
+
+        private Object getServiceObject() {
+            return vaadinServiceObject;
+        }
     }
 }

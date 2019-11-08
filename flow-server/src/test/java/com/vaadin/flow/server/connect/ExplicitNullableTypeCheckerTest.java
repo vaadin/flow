@@ -17,7 +17,6 @@
 package com.vaadin.flow.server.connect;
 
 import javax.annotation.Nullable;
-
 import java.lang.reflect.Type;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -28,11 +27,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
@@ -240,17 +240,21 @@ public class ExplicitNullableTypeCheckerTest {
     }
 
     @Test
-    @Ignore("implementation pending")
     public void should_ReturnNull_When_GivenNonNull_BeanProperties() {
-        Assert.assertNull(explicitNullableTypeChecker
-                .checkValueForType(new Bean("foo"), Bean.class));
+        final Bean bean = new Bean();
+        bean.setTitle("foo");
+
+        Assert.assertNull(explicitNullableTypeChecker.checkValueForType(bean,
+                Bean.class));
     }
 
     @Test
-    @Ignore("implementation pending")
     public void should_ReturnError_When_GivenNull_BeanProperty() {
-        String error = explicitNullableTypeChecker
-                .checkValueForType(new Bean(null), Bean.class);
+        // Property 'title' is null
+        Bean bean = new Bean();
+
+        String error = explicitNullableTypeChecker.checkValueForType(bean,
+                Bean.class);
 
         Assert.assertNotNull(error);
         Assert.assertTrue(error.contains("null"));
@@ -258,10 +262,28 @@ public class ExplicitNullableTypeCheckerTest {
     }
 
     @Test
+    public void should_Recursively_Check_BeanProperties() {
+        ExplicitNullableTypeChecker checker = spy(explicitNullableTypeChecker);
+
+        final Bean bean = new Bean();
+        bean.setTitle("foo");
+        bean.description = "bar";
+
+        checker.checkValueForType(bean, Bean.class);
+        // The first interaction is the obvious
+        verify(checker).checkValueForType(bean, Bean.class);
+
+        verify(checker).checkValueForType("foo", String.class);
+        // Should not check non-bean properties
+        verify(checker, never()).checkValueForType("bar", String.class);
+    }
+
+    @Test
     public void should_ReturnNull_When_AnnotatedNullable()
             throws NoSuchMethodException {
-        String error = explicitNullableTypeChecker.checkValueForAnnotatedElement(null,
-                getClass().getMethod("stringNullable"));
+        String error = explicitNullableTypeChecker
+                .checkValueForAnnotatedElement(null,
+                        getClass().getMethod("stringNullable"));
 
         Assert.assertNull("Nullable return type should allow null value",
                 error);
@@ -282,8 +304,7 @@ public class ExplicitNullableTypeCheckerTest {
                 .checkValueForAnnotatedElement(notNullValue,
                         getClass().getMethod("stringNotNullable"));
 
-        Assert.assertNull("Should allow not null value",
-                error);
+        Assert.assertNull("Should allow not null value", error);
 
         verify(explicitNullableTypeChecker).checkValueForType(notNullValue,
                 String.class);
@@ -316,15 +337,23 @@ public class ExplicitNullableTypeCheckerTest {
         return "";
     }
 
-    private class Bean {
+    static private class Bean {
+        static String staticProperty;
+        @JsonIgnore
+        public String ignoreProperty;
+        public String description;
+        transient String transientProperty;
         private String title;
 
-        public Bean(String title) {
-            this.title = title;
+        public Bean() {
         }
 
         public String getTitle() {
             return title;
+        }
+
+        public void setTitle(String title) {
+            this.title = title;
         }
     }
 }
