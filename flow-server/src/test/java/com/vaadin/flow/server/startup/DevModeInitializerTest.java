@@ -5,12 +5,15 @@ import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EventListener;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
@@ -25,6 +28,9 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.frontend.FallbackChunk;
+
+import elemental.json.Json;
+import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
@@ -171,7 +177,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
     @Test
     public void shouldUseByteCodeScannerIfPropertySet() throws Exception {
-        System.setProperty(Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
+        initParams.put(Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
                 "true");
         DevModeInitializer devModeInitializer = new DevModeInitializer();
         final Set<Class<?>> classes = new HashSet<>();
@@ -185,7 +191,23 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
                 Mockito.eq(FallbackChunk.class.getName()), arg.capture());
         FallbackChunk fallbackChunk = arg.getValue();
         Assert.assertFalse(fallbackChunk.getModules().contains("foo"));
+
         Assert.assertTrue(fallbackChunk.getModules().contains("bar"));
+    }
+
+    @Test
+    public void initDevModeHandler_usePolymerVersion() throws Exception {
+        DevModeInitializer devModeInitializer = new DevModeInitializer();
+        initParams.put(Constants.SERVLET_PARAMETER_DEVMODE_POLYMER_VERSION,
+                "3.3.0");
+        devModeInitializer.onStartup(Collections.emptySet(), servletContext);
+
+        String packageJson = Files
+                .readAllLines(mainPackageFile.toPath(), StandardCharsets.UTF_8)
+                .stream().collect(Collectors.joining());
+        JsonObject json = Json.parse(packageJson);
+        JsonObject deps = json.get("dependencies");
+        Assert.assertEquals("3.3.0", deps.getString("@polymer/polymer"));
     }
 
     @Test

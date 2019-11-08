@@ -127,6 +127,9 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
             + Constants.LOCAL_FRONTEND_RESOURCES_PATH)
     protected File frontendResourcesDirectory;
 
+    @Parameter
+    private String polymerVersion;
+
     /**
      * Whether to use byte code scanner strategy to discover frontend
      * components.
@@ -183,7 +186,8 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                         .enableImportsUpdate(true)
                         .withEmbeddableWebComponents(
                                 generateEmbeddableWebComponents)
-                        .withTokenFile(getTokenFile()).build().execute();
+                        .withTokenFile(getTokenFile())
+                        .withPolymerVersion(polymerVersion).build().execute();
     }
 
     private void runWebpack() {
