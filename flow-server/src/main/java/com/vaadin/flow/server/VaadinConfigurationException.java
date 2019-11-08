@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2019 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -13,12 +13,23 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.webcomponent.servlets;
+package com.vaadin.flow.server;
 
-import javax.servlet.annotation.WebServlet;
+/**
+ * Exception thrown for failures in the generation of a deployment configuration
+ * object.
+ */
+public class VaadinConfigurationException extends Exception {
 
-import com.vaadin.flow.server.VaadinServlet;
-
-@WebServlet(urlPatterns = { "/vaadin/*"}, asyncSupported = true)
-public class WebComponentVaadinServlet extends VaadinServlet {
+    /**
+     * Exception constructor.
+     *
+     * @param message
+     *         exception message
+     * @param exception
+     *         exception cause
+     */
+    public VaadinConfigurationException(String message, Exception exception) {
+        super(message, exception);
+    }
 }
