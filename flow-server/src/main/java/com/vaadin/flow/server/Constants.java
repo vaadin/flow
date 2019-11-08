@@ -208,11 +208,15 @@ public final class Constants implements Serializable {
 
     /**
      * Boolean parameter for enabling/disabling bytecode scanning in dev mode.
-     * If enabled, entry points are scanned for reachable frontend resources.
-     * If disabled, all classes on the classpath are scanned.
+     * If enabled, entry points are scanned for reachable frontend resources. If
+     * disabled, all classes on the classpath are scanned.
      */
     public static final String SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE = "devmode.optimizeBundle";
 
+    /**
+     * Configuration parameter name for polymer version.
+     */
+    public static final String SERVLET_PARAMETER_DEVMODE_POLYMER_VERSION = "devmode.polymer.version";
 
     /**
      * The path used in the vaadin servlet for handling static resources.
