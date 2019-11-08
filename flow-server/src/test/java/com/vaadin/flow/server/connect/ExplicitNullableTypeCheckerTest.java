@@ -239,14 +239,12 @@ public class ExplicitNullableTypeCheckerTest {
     }
 
     @Test
-    @Ignore("implementation pending")
     public void should_ReturnNull_When_GivenNonNull_BeanProperties() {
         Assert.assertNull(explicitNullableTypeChecker
                 .checkValueForType(new Bean("foo"), Bean.class));
     }
 
     @Test
-    @Ignore("implementation pending")
     public void should_ReturnError_When_GivenNull_BeanProperty() {
         String error = explicitNullableTypeChecker
                 .checkValueForType(new Bean(null), Bean.class);

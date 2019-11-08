@@ -16,6 +16,11 @@
 
 package com.vaadin.flow.server.connect;
 
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Arrays;
@@ -51,6 +56,10 @@ public class ExplicitNullableTypeChecker {
             } else if (clazz.isArray() && value instanceof Object[]) {
                 return checkIterable(Arrays.asList((Object[]) value),
                         expectedType);
+            }
+            if (expectedType instanceof Class<?>
+                    && !clazz.getName().startsWith("java.")) {
+                return checkBeanFields(value, expectedType);
             }
 
             return null;
@@ -96,6 +105,34 @@ public class ExplicitNullableTypeChecker {
                 return String.format("Unexpected null item in %s type '%s'. %s",
                         iterableDescription, expectedType, error);
             }
+        }
+
+        return null;
+    }
+
+    private String checkBeanFields(Object value, Type expectedType) {
+        Class<?> clazz = (Class<?>) expectedType;
+        try {
+            for (PropertyDescriptor propertyDescriptor : Introspector
+                    .getBeanInfo(clazz).getPropertyDescriptors()) {
+                Method readMethod = propertyDescriptor.getReadMethod();
+                Type propertyType = readMethod.getGenericReturnType();
+                Object propertyValue = readMethod.invoke(value);
+                String error = checkValueForType(propertyValue, propertyType);
+                if (error != null) {
+                    return String.format(
+                            "Unexpected null value in Java "
+                                    + "Bean type '%s' property '%s'. %s",
+                            expectedType.getTypeName(),
+                            propertyDescriptor.getName(), error);
+                }
+            }
+        } catch (IntrospectionException e) {
+            return e.toString();
+        } catch (InvocationTargetException e) {
+            return e.toString();
+        } catch (IllegalAccessException e) {
+            return e.toString();
         }
 
         return null;
