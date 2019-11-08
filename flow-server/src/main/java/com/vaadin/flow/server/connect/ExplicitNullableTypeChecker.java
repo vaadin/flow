@@ -17,19 +17,33 @@
 package com.vaadin.flow.server.connect;
 
 import javax.annotation.Nullable;
-
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A checker for TypeScript null compatibility in Vaadin Connect service methods
  * parameter and return types.
  */
 public class ExplicitNullableTypeChecker {
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(VaadinConnectController.class);
+    }
 
     /**
      * Validates the given value for the given expected method return value
@@ -80,6 +94,10 @@ public class ExplicitNullableTypeChecker {
                 return checkIterable(Arrays.asList((Object[]) value),
                         expectedType);
             }
+            if (expectedType instanceof Class<?>
+                    && !clazz.getName().startsWith("java.")) {
+                return checkBeanFields(value, expectedType);
+            }
 
             return null;
         }
@@ -124,6 +142,56 @@ public class ExplicitNullableTypeChecker {
                 return String.format("Unexpected null item in %s type '%s'. %s",
                         iterableDescription, expectedType, error);
             }
+        }
+
+        return null;
+    }
+
+    private String checkBeanFields(Object value, Type expectedType) {
+        Class<?> clazz = (Class<?>) expectedType;
+        try {
+            for (PropertyDescriptor propertyDescriptor : Introspector
+                    .getBeanInfo(clazz).getPropertyDescriptors()) {
+                String name = propertyDescriptor.getName();
+
+                Method readMethod = propertyDescriptor.getReadMethod();
+                if (readMethod == null) {
+                    continue;
+                }
+
+                Type propertyType = readMethod.getGenericReturnType();
+                Object propertyValue = readMethod.invoke(value);
+
+                Class<?> declaringClass = readMethod.getDeclaringClass();
+                final Set<String> declaredFieldNames = Arrays
+                        .stream(declaringClass.getDeclaredFields())
+                        .map((Field field) -> field.getName())
+                        .collect(Collectors.toSet());
+                if (!declaredFieldNames.contains(name)) {
+                    continue;
+                }
+
+                Field field = declaringClass.getDeclaredField(name);
+                if (Modifier.isStatic(field.getModifiers())
+                        || Modifier.isTransient(field.getModifiers())
+                        || field.isAnnotationPresent(JsonIgnore.class)
+                        || field.isAnnotationPresent(Nullable.class)) {
+                    continue;
+                }
+
+                String error = checkValueForType(propertyValue, propertyType);
+                if (error != null) {
+                    return String.format(
+                            "Unexpected null value in Java "
+                                    + "Bean type '%s' property '%s'. %s",
+                            expectedType.getTypeName(),
+                            propertyDescriptor.getName(), error);
+                }
+            }
+        } catch (IntrospectionException | InvocationTargetException
+                | IllegalAccessException | NoSuchFieldException e) {
+            getLogger().error(e.getMessage());
+            return e.toString();
         }
 
         return null;
