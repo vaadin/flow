@@ -582,6 +582,9 @@ public class OpenApiObjectGenerator {
         MediaType mediaItem = new MediaType();
         Type methodReturnType = methodDeclaration.getType();
         Schema schema = parseTypeToSchema(methodReturnType, "");
+        if (methodDeclaration.isAnnotationPresent(Nullable.class)) {
+            schema = schemaResolver.createNullableWrapper(schema);
+        }
         usedTypes.putAll(collectUsedTypesFromSchema(schema));
         mediaItem.schema(schema);
         return mediaItem;

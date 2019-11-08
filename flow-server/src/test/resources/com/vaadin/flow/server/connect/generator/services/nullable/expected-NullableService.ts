@@ -12,11 +12,11 @@ export function echoMap(
 
 export function echoNonNullMode(
   nullableModels: Array<NullableModel>
-): Promise<NullableModel> {
+): Promise<NullableModel | undefined> {
   return client.call('NullableService', 'echoNonNullMode', {nullableModels});
 }
 
-export function getNotNullReturnType(): Promise<ReturnType> {
+export function getNotNullReturnType(): Promise<ReturnType | undefined> {
   return client.call('NullableService', 'getNotNullReturnType');
 }
 
@@ -30,4 +30,8 @@ export function sendParameterType(
   parameterType?: ParameterType
 ): Promise<void> {
   return client.call('NullableService', 'sendParameterType', {parameterType});
+}
+
+export function stringNullable(): Promise<string | undefined> {
+  return client.call('NullableService', 'stringNullable');
 }
