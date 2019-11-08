@@ -273,15 +273,19 @@ public class FrontendUtils {
         // not work because it's a shell or windows script that looks for node
         // and will fail. Thus we look for the `mpn-cli` node script instead
         File file = new File(baseDir, "node/node_modules/npm/bin/npm-cli.js");
+        List<String> returnCommand = new ArrayList<>();
         if (file.canRead()) {
             // We return a two element list with node binary and npm-cli script
-            return Arrays.asList(getNodeExecutable(baseDir),
-                    file.getAbsolutePath());
+            returnCommand.add(getNodeExecutable(baseDir));
+            returnCommand.add(file.getAbsolutePath());
+        } else {
+            // Otherwise look for regulan `npm`
+            String command = isWindows() ? "npm.cmd" : "npm";
+            returnCommand.add(
+                    getExecutable(baseDir, command, null).getAbsolutePath());
         }
-        // Otherwise look for regulan `npm`
-        String command = isWindows() ? "npm.cmd" : "npm";
-        return Arrays.asList(
-                getExecutable(baseDir, command, null).getAbsolutePath());
+        returnCommand.add("--no-update-notifier");
+        return returnCommand;
     }
 
     /**
@@ -545,7 +549,8 @@ public class FrontendUtils {
             List<String> nodeVersionCommand = new ArrayList<>();
             nodeVersionCommand.add(FrontendUtils.getNodeExecutable(baseDir));
             nodeVersionCommand.add("--version");
-            FrontendVersion nodeVersion = getVersion("node", nodeVersionCommand);
+            FrontendVersion nodeVersion = getVersion("node",
+                    nodeVersionCommand);
             validateToolVersion("node", nodeVersion, SUPPORTED_NODE_VERSION,
                     SHOULD_WORK_NODE_VERSION);
         } catch (UnknownVersionException e) {
@@ -553,8 +558,8 @@ public class FrontendUtils {
         }
 
         try {
-            List<String> npmVersionCommand = new ArrayList<>();
-            npmVersionCommand.addAll(FrontendUtils.getNpmExecutable(baseDir));
+            List<String> npmVersionCommand = new ArrayList<>(
+                    FrontendUtils.getNpmExecutable(baseDir));
             npmVersionCommand.add("--version");
             FrontendVersion npmVersion = getVersion("npm", npmVersionCommand);
             validateToolVersion("npm", npmVersion, SUPPORTED_NPM_VERSION,
@@ -682,8 +687,8 @@ public class FrontendUtils {
         }
     }
 
-    private static FrontendVersion getVersion(String tool, List<String> versionCommand)
-            throws UnknownVersionException {
+    private static FrontendVersion getVersion(String tool,
+            List<String> versionCommand) throws UnknownVersionException {
         try {
             Process process = FrontendUtils.createProcessBuilder(versionCommand)
                     .start();
