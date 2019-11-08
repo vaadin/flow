@@ -47,10 +47,6 @@ public class NodeTasks implements FallibleCommand {
     /**
      * Build a <code>NodeExecutor</code> instance.
      */
-    /**
-     * @author Vaadin Ltd
-     *
-     */
     public static class Builder implements Serializable {
 
         private final ClassFinder classFinder;
