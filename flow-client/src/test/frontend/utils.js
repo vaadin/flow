@@ -6,41 +6,6 @@ if (intern.environment === 'node') {
     const {fetch, Request, Response, Headers} = require('node-fetch');
     Object.assign(global, {fetch, Request, Response, Headers});
   }
-
-  if (!global.URLSearchParams) {
-    global.URLSearchParams = require('url').URLSearchParams;
-  }
-
-  if (!global.AbortController) {
-    global.AbortController = require('abort-controller').AbortController;
-  }
-
-  if (!global.btoa) {
-    /* global Buffer */
-    global.btoa = str => Buffer.from(str).toString('base64');
-    global.atob = str => Buffer.from(str, 'base64').toString('ascii');
-  }
-
-  if (!global.localStorage) {
-    class LocalStorage {
-      constructor() {
-        this.clear();
-      }
-      getItem(key) {
-        return this._store[key];
-      }
-      setItem(key, value) {
-        this._store[key] = value;
-      }
-      removeItem(key) {
-        delete this._store[key];
-      }
-      clear() {
-        this._store = {};
-      }
-    }
-    global.localStorage = new LocalStorage();
-  }
 }
 
 intern.registerPlugin('sinon', async() => {
