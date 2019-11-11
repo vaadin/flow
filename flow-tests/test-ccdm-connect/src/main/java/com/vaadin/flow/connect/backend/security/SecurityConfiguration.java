@@ -105,7 +105,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .permitAll()
 
                 // Allow all requests by logged in users.
-                .anyRequest().hasAnyAuthority(Role.getAllRoles())
+//                .anyRequest().hasAnyAuthority(Role.getAllRoles())
 
                 // Configure the login page.
                 .and().formLogin().loginPage(LOGIN_URL).permitAll()

@@ -82,9 +82,8 @@
             <artifactId>spring-security-config</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.vaadin.artur</groupId>
-            <artifactId>spring-data-provider</artifactId>
-            <version>2.0.1</version>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
         </dependency>
     </dependencies>
 

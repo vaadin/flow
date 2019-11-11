@@ -65,7 +65,7 @@ public class DataGenerator {
         return user;
     }
 
-    private Logger getLogger() {
+    private static Logger getLogger() {
         return LoggerFactory.getLogger(DataGenerator.class);
     }
 }
