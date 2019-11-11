@@ -44,7 +44,7 @@ public class TextNodeMap extends NodeValue<String> {
      * Sets the text of this node.
      *
      * @param text
-     *            the text, not null
+     *            the text, not <code>null</code>
      */
     public void setText(String text) {
         assert text != null;
