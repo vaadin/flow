@@ -6,10 +6,12 @@ import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
 
 import com.vaadin.flow.component.html.testbench.InputTextElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import org.openqa.selenium.WebElement;
 
 public class PageIT extends ChromeBrowserTest {
 
@@ -88,6 +90,18 @@ public class PageIT extends ChromeBrowserTest {
         Assert.assertThat(
                 getDriver().switchTo().window(tabs.get(1)).getCurrentUrl(),
                 Matchers.endsWith(BaseHrefView.class.getName())
+        );
+    }
+
+    @Test
+    public void testOpenUrlInIFrame() throws InterruptedException {
+        open();
+
+        findElement(By.id("openInIFrame")).click();
+        String iFrameHref = (String) ((JavascriptExecutor) driver).executeScript(
+                "return document.getElementById('newWindow').contentWindow.location.href;");
+
+        Assert.assertThat(iFrameHref, Matchers.endsWith(BaseHrefView.class.getName())
         );
     }
 }
