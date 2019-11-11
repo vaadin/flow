@@ -45,7 +45,7 @@ public class DataGenerator {
     private User createBaker(UserRepository userRepository,
             PasswordEncoder passwordEncoder) {
         return userRepository.save(createUser("user@vaadin.com", "Heidi",
-                "Carter", passwordEncoder.encode("baker"), Role.USER));
+                "Carter", passwordEncoder.encode("user"), Role.USER));
     }
 
     private User createAdmin(UserRepository userRepository,
