@@ -97,6 +97,10 @@ class SchemaResolver {
     private Schema createOptionalSchema(ResolvedReferenceType type) {
         ResolvedType typeInOptional = type.getTypeParametersMap().get(0).b;
         Schema nestedTypeSchema = parseResolvedTypeToSchema(typeInOptional);
+        return createNullableWrapper(nestedTypeSchema);
+    }
+
+    Schema createNullableWrapper(Schema nestedTypeSchema) {
         if (nestedTypeSchema.get$ref() == null) {
             nestedTypeSchema.setNullable(true);
             return nestedTypeSchema;

@@ -50,7 +50,13 @@ public class NullableService {
 
     }
 
+    @Nullable
+    public String stringNullable() {
+        return "";
+    }
+
     public static class NullableModel {
+
         String foo;
         String bar;
         int shouldBeNotNullByDefault;

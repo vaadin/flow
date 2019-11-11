@@ -16,11 +16,12 @@
 
 package com.vaadin.flow.server.connect;
 
+import javax.annotation.Nullable;
+
 import java.lang.reflect.Type;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -256,6 +257,38 @@ public class ExplicitNullableTypeCheckerTest {
         Assert.assertTrue(error.contains("Bean"));
     }
 
+    @Test
+    public void should_ReturnNull_When_AnnotatedNullable()
+            throws NoSuchMethodException {
+        String error = explicitNullableTypeChecker.checkValueForAnnotatedElement(null,
+                getClass().getMethod("stringNullable"));
+
+        Assert.assertNull("Nullable return type should allow null value",
+                error);
+
+        error = explicitNullableTypeChecker.checkValueForAnnotatedElement(
+                "Not null value", getClass().getMethod("stringNullable"));
+
+        Assert.assertNull("Nullable return type should allow null value",
+                error);
+    }
+
+    @Test
+    public void should_InvokeCheckValueForType_When_NotAnnotatedNullable()
+            throws NoSuchMethodException {
+        explicitNullableTypeChecker = spy(explicitNullableTypeChecker);
+        String notNullValue = "someValue";
+        String error = explicitNullableTypeChecker
+                .checkValueForAnnotatedElement(notNullValue,
+                        getClass().getMethod("stringNotNullable"));
+
+        Assert.assertNull("Should allow not null value",
+                error);
+
+        verify(explicitNullableTypeChecker).checkValueForType(notNullValue,
+                String.class);
+    }
+
     public List<String> parametrizedListMethod(String... args) {
         final List<String> list = new ArrayList<String>();
         for (String arg : args) {
@@ -266,6 +299,21 @@ public class ExplicitNullableTypeCheckerTest {
 
     public String[] arrayMethod(String... args) {
         return args;
+    }
+
+    /**
+     * Method for testing
+     */
+    @Nullable
+    public String stringNullable() {
+        return "";
+    }
+
+    /**
+     * Method for testing
+     */
+    public String stringNotNullable() {
+        return "";
     }
 
     private class Bean {
