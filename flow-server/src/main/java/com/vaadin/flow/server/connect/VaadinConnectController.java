@@ -372,7 +372,7 @@ public class VaadinConnectController {
         }
 
         String implicitNullError = this.explicitNullableTypeChecker
-                .checkValueForReturnType(returnValue, methodToInvoke);
+                .checkValueForAnnotatedElement(returnValue, methodToInvoke);
         if (implicitNullError != null) {
             VaadinConnectException returnValueException = new VaadinConnectException(
                     String.format(

@@ -260,13 +260,13 @@ public class ExplicitNullableTypeCheckerTest {
     @Test
     public void should_ReturnNull_When_AnnotatedNullable()
             throws NoSuchMethodException {
-        String error = explicitNullableTypeChecker.checkValueForReturnType(null,
+        String error = explicitNullableTypeChecker.checkValueForAnnotatedElement(null,
                 getClass().getMethod("stringNullable"));
 
         Assert.assertNull("Nullable return type should allow null value",
                 error);
 
-        error = explicitNullableTypeChecker.checkValueForReturnType(
+        error = explicitNullableTypeChecker.checkValueForAnnotatedElement(
                 "Not null value", getClass().getMethod("stringNullable"));
 
         Assert.assertNull("Nullable return type should allow null value",

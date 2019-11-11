@@ -18,6 +18,7 @@ package com.vaadin.flow.server.connect;
 
 import javax.annotation.Nullable;
 
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -36,16 +37,21 @@ public class ExplicitNullableTypeChecker {
      *
      * @param value
      *            the value to validate
-     * @param method
-     *            the method to be checked return type
+     * @param annotatedElement
+     *            the entity to be type checked
      * @return error message when the value is null while the expected type does
      *         not explicitly allow null, or null meaning the value is OK.
      */
-    public String checkValueForReturnType(Object value, Method method) {
-        if (method.isAnnotationPresent(Nullable.class)) {
+    public String checkValueForAnnotatedElement(Object value,
+            AnnotatedElement annotatedElement) {
+        if (annotatedElement.isAnnotationPresent(Nullable.class)) {
             return null;
         }
-        return checkValueForType(value, method.getGenericReturnType());
+        if (annotatedElement instanceof Method) {
+            return checkValueForType(value,
+                    ((Method) annotatedElement).getGenericReturnType());
+        }
+        return null;
     }
 
     /**
