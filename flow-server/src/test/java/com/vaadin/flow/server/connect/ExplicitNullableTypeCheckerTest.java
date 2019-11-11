@@ -273,6 +273,22 @@ public class ExplicitNullableTypeCheckerTest {
                 error);
     }
 
+    @Test
+    public void should_InvokeCheckValueForType_When_NotAnnotatedNullable()
+            throws NoSuchMethodException {
+        explicitNullableTypeChecker = spy(explicitNullableTypeChecker);
+        String notNullValue = "someValue";
+        String error = explicitNullableTypeChecker
+                .checkValueForAnnotatedElement(notNullValue,
+                        getClass().getMethod("stringNotNullable"));
+
+        Assert.assertNull("Should allow not null value",
+                error);
+
+        verify(explicitNullableTypeChecker).checkValueForType(notNullValue,
+                String.class);
+    }
+
     public List<String> parametrizedListMethod(String... args) {
         final List<String> list = new ArrayList<String>();
         for (String arg : args) {
@@ -290,6 +306,13 @@ public class ExplicitNullableTypeCheckerTest {
      */
     @Nullable
     public String stringNullable() {
+        return "";
+    }
+
+    /**
+     * Method for testing
+     */
+    public String stringNotNullable() {
         return "";
     }
 
