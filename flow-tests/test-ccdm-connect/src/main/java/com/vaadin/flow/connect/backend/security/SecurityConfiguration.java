@@ -30,7 +30,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 
-import com.vaadin.flow.connect.backend.entity.Role;
 import com.vaadin.flow.connect.backend.entity.User;
 import com.vaadin.flow.connect.backend.repository.UserRepository;
 
@@ -104,9 +103,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .requestMatchers(SecurityUtils::isFrameworkInternalRequest)
                 .permitAll()
 
-                // Allow all requests by logged in users.
-//                .anyRequest().hasAnyAuthority(Role.getAllRoles())
-
+                // set servletAPI role prefix to be empty, otherwise, roles in
+                // servletAPI are prefixed with 'ROLE_'
+                .and().servletApi().rolePrefix("")
                 // Configure the login page.
                 .and().formLogin().loginPage(LOGIN_URL).permitAll()
                 .loginProcessingUrl(LOGIN_PROCESSING_URL)

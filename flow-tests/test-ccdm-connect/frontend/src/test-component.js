@@ -9,6 +9,7 @@ class TestComponent extends PolymerElement {
         <button id="connect" on-click="connect">Click</button>
         <button id="connectAnonymous" on-click="connectAnonymous">Click anonymous</button>
         <button id="echoWithOptional" on-click="echoWithOptional">Echo with optional</button>
+        <button id="echoAdmin" on-click="echoAdmin">Echo only admin</button>
         <div id="content"></div>
     `;
   }
@@ -34,6 +35,13 @@ class TestComponent extends PolymerElement {
   echoWithOptional(e) {
     connectServices
       .echoWithOptional('one', undefined, 'three', 'four')
+      .then(response => this.$.content.textContent = response)
+      .catch(error => this.$.content.textContent = 'Error:' + error);
+  }
+
+  echoAdmin(e) {
+    connectServices
+      .helloAdmin()
       .then(response => this.$.content.textContent = response)
       .catch(error => this.$.content.textContent = 'Error:' + error);
   }
