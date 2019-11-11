@@ -18,15 +18,26 @@
 package com.vaadin.flow;
 
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.shared.ui.Transport;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.SessionExpiredLogoutView")
+@Push(transport = Transport.LONG_POLLING)
 public class SessionExpiredLogoutView extends Div {
 
     public SessionExpiredLogoutView() {
-        Span s = new Span("You got here!");
-        add(s);
+        NativeButton btn = new NativeButton("Logout!");
+        btn.addClickListener(evt -> getUI().ifPresent(ui -> {
+
+            String url = "com.vaadin.flow.SessionExpiredView";
+            ui.getPage()
+                    .executeJs(String.format("window.location.href='%s'", url));
+            ui.getSession().close();
+        }));
+        add(btn);
     }
 }

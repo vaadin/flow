@@ -20,10 +20,12 @@ package com.vaadin.flow;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.html.testbench.LabelElement;
 import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -35,25 +37,7 @@ import org.openqa.selenium.logging.LoggingPreferences;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
-public class SessionExpiredIT extends ChromeBrowserTest {
-
-//    WebDriver driverLocal;
-//
-//    @Override
-//    public void setup() throws Exception {
-//
-//        LoggingPreferences logPrefs = new LoggingPreferences();
-//        logPrefs.enable(LogType.BROWSER, Level.ALL);
-//        DesiredCapabilities caps = DesiredCapabilities.chrome();
-//        caps.setCapability(CapabilityType.LOGGING_PREFS, logPrefs);
-//
-//        ChromeOptions options = new ChromeOptions();
-//
-//
-//        driverLocal = new ChromeDriver(options);
-//
-//        setDriver(driverLocal);
-//    }
+public class SessionExpiredLogoutIT extends ChromeBrowserTest {
 
     @Test
     public void changeOnClient() throws InterruptedException {
@@ -61,17 +45,18 @@ public class SessionExpiredIT extends ChromeBrowserTest {
 
         $(NativeButtonElement.class).first().click();
 
-        System.out.println("getTestPath(): " + getTestPath());
-
-        System.out.println("Label text: " + $(LabelElement.class).first().getText());
-
-        getCommandExecutor().waitForVaadin();
+        String sessionExpiredText = $(LabelElement.class).first().getText();
+        Assert.assertEquals("Missing session expired label", "Session expired!",
+                sessionExpiredText);
 
         analyzeLog();
     }
 
     public void analyzeLog() {
-        List<LogEntry> logEntries = getLogEntries(Level.FINE);
+
+        // TODO make sure there are no errors.
+
+        List<LogEntry> logEntries = getLogEntries(Level.ALL);
         System.out.println("logEntries: " + logEntries.size());
         logEntries.forEach(entry -> {
             System.out.println(new Date(entry.getTimestamp()) + " " + entry.getLevel() + " " + entry.getMessage());
