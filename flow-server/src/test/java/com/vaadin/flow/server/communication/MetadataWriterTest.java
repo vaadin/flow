@@ -62,7 +62,6 @@ public class MetadataWriterTest {
     @Test
     public void writeRepaintTag() throws Exception {
         assertMetadataOutput(true, false, "{\"repaintAll\":true}");
-        assertMetadataOutput(true, false, "{\"repaintAll\":true}");
     }
 
     @Test
