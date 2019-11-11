@@ -322,7 +322,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
      *            original resource path
      * @return new resource path, relative to basePath
      */
-    protected String modifyPath(String basePath, String path) {
+    private String modifyPath(String basePath, String path) {
         int vaadinIndex = path.indexOf(Constants.VAADIN_MAPPING);
         if (vaadinIndex > 0) {
             String subPath = path.substring(vaadinIndex);
