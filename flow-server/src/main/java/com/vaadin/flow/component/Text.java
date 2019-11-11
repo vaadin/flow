@@ -29,7 +29,7 @@ public class Text extends Component implements HasText {
      * Creates an instance using the given text.
      *
      * @param text
-     *            the text to show
+     *            the text to show, not <code>null</code>
      */
     public Text(String text) {
         super(Element.createText(text));
