@@ -42,7 +42,7 @@ public class BasicTextElementStateProvider
      * Creates a compatible text state node using the given text.
      *
      * @param text
-     *            the text to use
+     *            the text to use, not <code>null</code>
      * @return a initialized and compatible state node
      */
     public static StateNode createStateNode(String text) {
