@@ -13,12 +13,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.webcomponent.servlets;
+package com.vaadin.flow.component.html.testbench;
 
-import javax.servlet.annotation.WebServlet;
+import com.vaadin.testbench.TestBenchElement;
+import com.vaadin.testbench.elementsbase.Element;
 
-import com.vaadin.flow.server.VaadinServlet;
+/**
+ * A TestBench element representing a <code>&lt;pre&gt;</code> element.
+ *
+ */
+@Element("pre")
+public class PreElement extends TestBenchElement {
 
-@WebServlet(urlPatterns = { "/vaadin/*"}, asyncSupported = true)
-public class WebComponentVaadinServlet extends VaadinServlet {
 }

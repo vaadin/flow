@@ -16,13 +16,11 @@
 
 package com.vaadin.flow.server;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -95,18 +93,16 @@ public final class DeploymentConfigurationFactory implements Serializable {
      *
      * @param systemPropertyBaseClass
      *            the class to look for properties defined with annotations
-     * @param servletConfig
+     * @param vaadinConfig
      *            the config to get the rest of the properties from
      * @return {@link DeploymentConfiguration} instance
-     * @throws ServletException
-     *             if construction of the {@link Properties} for the parameters
-     *             fails
+     * @throws VaadinConfigurationException thrown if property construction fails
      */
     public static DeploymentConfiguration createDeploymentConfiguration(
-            Class<?> systemPropertyBaseClass, ServletConfig servletConfig)
-            throws ServletException {
+            Class<?> systemPropertyBaseClass, VaadinConfig vaadinConfig)
+            throws VaadinConfigurationException {
         return new DefaultDeploymentConfiguration(systemPropertyBaseClass,
-                createInitParameters(systemPropertyBaseClass, servletConfig));
+                createInitParameters(systemPropertyBaseClass, vaadinConfig));
     }
 
     /**
@@ -116,18 +112,16 @@ public final class DeploymentConfigurationFactory implements Serializable {
      *
      * @param systemPropertyBaseClass
      *            the class to look for properties defined with annotations
-     * @param servletConfig
+     * @param vaadinConfig
      *            the config to get the rest of the properties from
      * @return {@link DeploymentConfiguration} instance
-     * @throws ServletException
-     *             if construction of the {@link Properties} for the parameters
-     *             fails
+     * @throws VaadinConfigurationException thrown if property construction fails
      */
     public static DeploymentConfiguration createPropertyDeploymentConfiguration(
-            Class<?> systemPropertyBaseClass, ServletConfig servletConfig)
-            throws ServletException {
+            Class<?> systemPropertyBaseClass, VaadinConfig vaadinConfig)
+            throws VaadinConfigurationException {
         return new PropertyDeploymentConfiguration(systemPropertyBaseClass,
-                createInitParameters(systemPropertyBaseClass, servletConfig));
+                createInitParameters(systemPropertyBaseClass, vaadinConfig));
     }
 
     /**
@@ -135,35 +129,33 @@ public final class DeploymentConfigurationFactory implements Serializable {
      * in current application.
      *
      * @param systemPropertyBaseClass
-     *            the class to look for properties defined with annotations
-     * @param servletConfig
-     *            the config to get the rest of the properties from
+     *         the class to look for properties defined with annotations
+     * @param vaadinConfig
+     *         the config to get the rest of the properties from
      * @return {@link Properties} instance
-     * @throws ServletException
-     *             if construction of the {@link Properties} for the parameters
-     *             fails
+     * @throws VaadinConfigurationException thrown if property construction fails
      */
     protected static Properties createInitParameters(
-            Class<?> systemPropertyBaseClass, ServletConfig servletConfig)
-            throws ServletException {
+            Class<?> systemPropertyBaseClass, VaadinConfig vaadinConfig)
+            throws VaadinConfigurationException {
         Properties initParameters = new Properties();
         readUiFromEnclosingClass(systemPropertyBaseClass, initParameters);
         readConfigurationAnnotation(systemPropertyBaseClass, initParameters);
 
         // Read default parameters from server.xml
-        final ServletContext context = servletConfig.getServletContext();
-        for (final Enumeration<String> e = context.getInitParameterNames(); e
+        final VaadinContext context = vaadinConfig.getVaadinContext();
+        for (final Enumeration<String> e = context.getContextParameterNames(); e
                 .hasMoreElements();) {
             final String name = e.nextElement();
-            initParameters.setProperty(name, context.getInitParameter(name));
+            initParameters.setProperty(name, context.getContextParameter(name));
         }
 
         // Override with application config from web.xml
-        for (final Enumeration<String> e = servletConfig
-                .getInitParameterNames(); e.hasMoreElements();) {
+        for (final Enumeration<String> e = vaadinConfig
+                .getConfigParameterNames(); e.hasMoreElements(); ) {
             final String name = e.nextElement();
-            initParameters.setProperty(name,
-                    servletConfig.getInitParameter(name));
+            initParameters
+                    .setProperty(name, vaadinConfig.getConfigParameter(name));
         }
 
         readBuildInfo(initParameters);
@@ -250,7 +242,7 @@ public final class DeploymentConfigurationFactory implements Serializable {
         try {
             json = getResourceFromFile(initParameters);
             if (json == null) {
-                json = getResourceFromClassloader(initParameters);
+                json = getResourceFromClassloader();
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -273,7 +265,7 @@ public final class DeploymentConfigurationFactory implements Serializable {
         return json;
     }
 
-    private static String getResourceFromClassloader(Properties initParameters)
+    private static String getResourceFromClassloader()
             throws IOException {
         String json = null;
         // token file is in the class-path of the application
@@ -286,10 +278,11 @@ public final class DeploymentConfigurationFactory implements Serializable {
         URL resource = resources.stream()
                 .filter(url -> !url.getPath().endsWith("jar!/" + tokenResource))
                 .findFirst().orElse(null);
-        if (resource == null && isProductionMode(initParameters)) {
-            // For no non jar build info, in production mode check jar files
-            // for production mode jar.
-            json = getProductionModeResource(resources);
+        if (resource == null && !resources.isEmpty()) {
+            // For no non jar build info, in production mode check for
+            // webpack.generated.json if it's in a jar in a jar then accept
+            // single jar flow-build-info.
+            json = getPossibleJarResource(resources);
         } else if (resource != null) {
             json = FrontendUtils.streamToString(resource.openStream());
         }
@@ -323,28 +316,37 @@ public final class DeploymentConfigurationFactory implements Serializable {
     }
 
     /**
-     * Check resources for a production mode resource if all resources were
-     * from JAR files as we may be running from a JAR and add-ons are not
-     * packaged in productionMode.
+     * Check if the webpack.generated.js resources is inside 2 jars
+     * (flow-server.jar and application.jar) if this is the case then we can
+     * accept a build info file from inside  jar with a single jar in the path.
      *
      * @param resources
      *         flow-build-info url resource files
-     * @return production mode flow-build-info string
+     * @return flow-build-info json string or <code>null</code> if no applicable files found
      * @throws IOException
      *         exception reading stream
      */
-    private static String getProductionModeResource(List<URL> resources)
+    private static String getPossibleJarResource(List<URL> resources)
             throws IOException {
-        for (URL resource : resources) {
-            String json = FrontendUtils.streamToString(resource.openStream());
-            if (json != null && !json.contains(NPM_TOKEN) && !json
-                    .contains(FRONTEND_TOKEN) && json
-                    .contains("\"productionMode\": true")) {
-                return json;
+        URL webpackGenerated = DeploymentConfiguration.class.getClassLoader()
+                .getResource(FrontendUtils.WEBPACK_GENERATED);
+        // If jar!/ exists 2 times for webpack.generated.json then we are
+        // running from a jar
+        if (countInstances(webpackGenerated.getPath(), "jar!/") >= 2) {
+            for (URL resource : resources) {
+                // As we now know that we are running from a jar we can accept a
+                // build info with a single jar in the path
+                if (countInstances(resource.getPath(), "jar!/") == 1) {
+                    return FrontendUtils.streamToString(resource.openStream());
+                }
             }
         }
         // No applicable resources found.
         return null;
+    }
+
+    private static int countInstances(String input, String value) {
+        return input.split(value, -1).length - 1;
     }
 
     /**
@@ -425,9 +427,21 @@ public final class DeploymentConfigurationFactory implements Serializable {
         }
     }
 
+    /**
+     * Read the VaadinServletConfiguration annotation for initialization name
+     * value pairs and add them to the intial properties object.
+     *
+     * @param systemPropertyBaseClass
+     *         base class for constructing the configuration
+     * @param initParameters
+     *         current initParameters object
+     * @throws VaadinConfigurationException
+     *         exception thrown for failure in invoking method on configuration
+     *         annotation
+     */
     private static void readConfigurationAnnotation(
             Class<?> systemPropertyBaseClass, Properties initParameters)
-            throws ServletException {
+            throws VaadinConfigurationException {
         Optional<VaadinServletConfiguration> optionalConfigAnnotation = AnnotationReader
                 .getAnnotationFor(systemPropertyBaseClass,
                         VaadinServletConfiguration.class);
@@ -457,14 +471,12 @@ public final class DeploymentConfigurationFactory implements Serializable {
                 }
 
                 initParameters.setProperty(name.value(), stringValue);
-            } catch (Exception e) {
+            } catch (IllegalAccessException | InvocationTargetException e) {
                 // This should never happen
-                throw new ServletException(
+                throw new VaadinConfigurationException(
                         "Could not read @VaadinServletConfiguration value "
-                                + method.getName(),
-                        e);
+                                + method.getName(), e);
             }
         }
-
     }
 }

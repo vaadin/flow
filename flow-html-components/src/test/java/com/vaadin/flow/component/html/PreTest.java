@@ -13,12 +13,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.webcomponent.servlets;
+package com.vaadin.flow.component.html;
 
-import javax.servlet.annotation.WebServlet;
+public class PreTest extends ComponentTest {
+    // Actual test methods in super class
 
-import com.vaadin.flow.server.VaadinServlet;
+    @Override
+    protected void addProperties() {
+        // Component defines no new properties
+    }
 
-@WebServlet(urlPatterns = { "/vaadin/*"}, asyncSupported = true)
-public class WebComponentVaadinServlet extends VaadinServlet {
 }

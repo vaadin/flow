@@ -83,6 +83,8 @@ public class NodeTasks implements FallibleCommand {
 
         private File tokenFile;
 
+        private String polymerVersion;
+
         /**
          * Directory for for npm and folders and files.
          */
@@ -328,6 +330,18 @@ public class NodeTasks implements FallibleCommand {
             this.tokenFile = tokenFile;
             return this;
         }
+
+        /**
+         * Sets the polymer version to use.
+         *
+         * @param version
+         *            a polymer version
+         * @return the builder, for chaining
+         */
+        public Builder withPolymerVersion(String version) {
+            this.polymerVersion = version;
+            return this;
+        }
     }
 
     private final Collection<FallibleCommand> commands = new ArrayList<>();
@@ -354,7 +368,8 @@ public class NodeTasks implements FallibleCommand {
 
         if (builder.createMissingPackageJson) {
             TaskCreatePackageJson packageCreator = new TaskCreatePackageJson(
-                    builder.npmFolder, builder.generatedFolder);
+                    builder.npmFolder, builder.generatedFolder,
+                    builder.polymerVersion);
             commands.add(packageCreator);
         }
 

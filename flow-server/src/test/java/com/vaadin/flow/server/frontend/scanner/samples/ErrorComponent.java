@@ -13,21 +13,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package com.vaadin.flow.server.frontend.scanner.samples;
 
-package com.vaadin.flow.webcomponent;
+import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.ErrorParameter;
+import com.vaadin.flow.router.HasErrorParameter;
 
-import javax.servlet.annotation.WebServlet;
-import java.io.PrintWriter;
-import java.util.function.Consumer;
+@JsModule("./src/bar.js")
+@JavaScript("./src/baz.js")
+public class ErrorComponent implements HasErrorParameter<NullPointerException> {
 
-import com.vaadin.flow.webcomponent.servlets.AbstractPlainServlet;
-
-// npm mode is able to survive a root-mapped servlet, while compatibility
-// mode is not
-@WebServlet(urlPatterns = { "/*", "/items/*" }, asyncSupported = true)
-public class NpmProdPlainServlet extends AbstractPlainServlet {
     @Override
-    protected Consumer<PrintWriter> getImportsWriter() {
-        return this::writeNpmImports;
+    public int setErrorParameter(BeforeEnterEvent event,
+            ErrorParameter<NullPointerException> parameter) {
+        return 0;
     }
+
 }
