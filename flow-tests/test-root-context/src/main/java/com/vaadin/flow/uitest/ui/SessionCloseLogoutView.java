@@ -15,21 +15,26 @@
  *
  */
 
-package com.vaadin.flow;
+package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.NativeButton;
-import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.ui.Transport;
-import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
-@Route(value = "com.vaadin.flow.SessionExpiredView")
-public class SessionExpiredView extends Div {
+@Route(value = "com.vaadin.flow.uitest.ui.SessionCloseLogoutView")
+@Push(transport = Transport.LONG_POLLING)
+public class SessionCloseLogoutView extends Div {
 
-    public SessionExpiredView() {
-        add(new Label("Session expired!"));
+    public SessionCloseLogoutView() {
+        NativeButton btn = new NativeButton("Logout!");
+        btn.addClickListener(evt -> getUI().ifPresent(ui -> {
+
+            ui.getPage().executeJs(String.format("window.location.href='%s'",
+                    BaseHrefView.class.getName()));
+            ui.getSession().close();
+        }));
+        add(btn);
     }
 }

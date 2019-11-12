@@ -15,12 +15,8 @@
  */
 package com.vaadin.flow.server.communication;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import java.io.IOException;
 
-import com.vaadin.flow.server.VaadinSessionState;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,10 +25,13 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.SystemMessages;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.VaadinSessionState;
 import com.vaadin.flow.server.WrappedSession;
-import com.vaadin.flow.server.communication.MetadataWriter;
 
 import elemental.json.JsonObject;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class MetadataWriterTest {
 
@@ -100,18 +99,22 @@ public class MetadataWriterTest {
     }
 
     @Test
-    public void writeSessionExpiredTag() throws Exception {
+    public void writeSessionExpiredTag_sessionIsOpen() throws Exception {
         Mockito.when(session.getState()).thenReturn(VaadinSessionState.OPEN);
         assertMetadataOutput(false, false, "{}");
+    }
 
-        Mockito.when(ui.isClosing()).thenReturn(true);
-        assertMetadataOutput(false, false, "{\"sessionExpired\":true}");
-
-        Mockito.when(ui.isClosing()).thenReturn(false);
-
+    @Test
+    public void writeSessionExpiredTag_sessionIsClosing() throws Exception {
         Mockito.when(session.getState()).thenReturn(VaadinSessionState.CLOSING);
         assertMetadataOutput(false, false, "{\"sessionExpired\":true}");
 
+        Mockito.when(session.getState()).thenReturn(VaadinSessionState.CLOSED);
+        assertMetadataOutput(false, false, "{\"sessionExpired\":true}");
+    }
+
+    @Test
+    public void writeSessionExpiredTag_sessionIsClosed() throws Exception {
         Mockito.when(session.getState()).thenReturn(VaadinSessionState.CLOSED);
         assertMetadataOutput(false, false, "{\"sessionExpired\":true}");
     }

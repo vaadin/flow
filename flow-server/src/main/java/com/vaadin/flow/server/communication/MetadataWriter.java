@@ -20,9 +20,9 @@ import java.io.Serializable;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.SystemMessages;
-
 import com.vaadin.flow.server.VaadinSessionState;
 import com.vaadin.flow.shared.JsonConstants;
+
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
@@ -65,8 +65,7 @@ public class MetadataWriter implements Serializable {
         }
 
         VaadinSessionState state = ui.getSession().getState();
-        if ((state != null && state.compareTo(VaadinSessionState.CLOSING) >= 0)
-                || ui.isClosing()) {
+        if (state != null && state.compareTo(VaadinSessionState.CLOSING) >= 0) {
             meta.put(JsonConstants.META_SESSION_EXPIRED, true);
         }
 
