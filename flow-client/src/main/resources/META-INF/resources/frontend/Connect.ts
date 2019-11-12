@@ -25,11 +25,7 @@ const throwConnectException = (errorJson: ConnectExceptionData) => {
 
 // when in tests, body is not set correctly by calling `new Request`
 export const createRequest = (input: RequestInfo, init?: RequestInit) => {
-  const request = new Request(input, init);
-  if (init && init.body && !request.body) {
-    (request as any).body = init.body;
-  }
-  return request;
+  return {input: input, init: init};
 };
 
 /**
@@ -192,7 +188,7 @@ export interface MiddlewareContext {
   /**
    * The Fetch API Request object reflecting the other properties.
    */
-  request: Request;
+  request: any;
 }
 
 /**
@@ -333,7 +329,8 @@ export class ConnectClient {
     // this way makes the folding down below more concise.
     const fetchNext: MiddlewareNext =
       async(context: MiddlewareContext): Promise<Response> => {
-        return fetch(context.request);
+const      req = new Request(context.request.input, context.request.init);
+        return fetch(req);
       };
 
     // Assemble the final middlewares array from internal

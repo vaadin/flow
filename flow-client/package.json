@@ -16,7 +16,7 @@
     "client": "npm run _cp_to_src && npm run _wrap_fnc && npm run _cp_to_tgt",
     "webpack": "webpack --config=webpack.tests.config.js",
     "build": "npm run client && tsc",
-    "compile": "npm run build && npm run lint",
+    "compile": "npm run build",
     "test": "npm run build && npm run webpack && intern",
     "debug": "npm run build && npm run webpack && intern serveOnly"
   },
