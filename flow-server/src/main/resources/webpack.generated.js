@@ -94,13 +94,13 @@ module.exports = {
     contentBase: [mavenOutputFolderForFlowBundledFiles, 'src/main/webapp'],
     after: function(app, server) {
       app.get(`/stats.json`, function(req, res) {
-        res.json(stats.toJson());
+        res.json(stats);
       });
       app.get(`/stats.hash`, function(req, res) {
-        res.json(stats.toJson().hash.toString());
+        res.json(stats.hash.toString());
       });
       app.get(`/assetsByChunkName`, function(req, res) {
-        res.json(stats.toJson().assetsByChunkName);
+        res.json(stats.assetsByChunkName);
       });
       app.get(`/stop`, function(req, res) {
         // eslint-disable-next-line no-console
@@ -158,14 +158,72 @@ module.exports = {
     // Generates the stats file for flow `@Id` binding.
     function (compiler) {
       compiler.hooks.afterEmit.tapAsync("FlowIdPlugin", (compilation, done) => {
+        let statsJson = compilation.getStats().toJson();
+
         if (!devMode) {
+
+          let modules = [];
+          statsJson.modules.forEach(function (module) {
+            let moduleTarget = /generated-flow-imports.js\?babel-target=es6( \+ \d+ modules)?$/;
+            if (moduleTarget.test(module.name) && module.modules) {
+              let slimModules = [];
+              module.modules.forEach(function (module) {
+                const slimModule = {
+                  name: module.name,
+                  source: module.source
+                };
+                slimModules.push(slimModule);
+              });
+              const slimModule = {
+                id: module.id,
+                name: module.name,
+                source: module.source,
+                modules: slimModules
+              };
+              modules.push(slimModule);
+            }
+          });
+          let customStats = {
+            hash: statsJson.hash,
+            assetsByChunkName: statsJson.assetsByChunkName,
+            modules: modules
+          };
           // eslint-disable-next-line no-console
-          console.log("         Emitted " + statsFile)
-          fs.writeFile(statsFile, JSON.stringify(compilation.getStats().toJson(), null, 1), done);
+          console.log("         Emitted " + statsFile);
+
+          fs.writeFile(statsFile, JSON.stringify(customStats, null, 1), done);
         } else {
           // eslint-disable-next-line no-console
           console.log("         Serving the 'stats.json' file dynamically.");
-          stats = compilation.getStats();
+
+          const chunks = [];
+          statsJson.chunks.forEach(function (chunk) {
+            if (chunk.id === "bundle") {
+              const modules = [];
+              chunk.modules.forEach(function (module) {
+                const slimModule = {
+                  id: module.id,
+                  name: module.name,
+                  source: module.source,
+                };
+                modules.push(slimModule);
+              });
+              const slimChunk = {
+                id: chunk.id,
+                names: chunk.names,
+                files: chunk.files,
+                hash: chunk.hash,
+                modules: modules
+              }
+              chunks.push(slimChunk);
+            }
+          });
+          let customStats = {
+            hash: statsJson.hash,
+            assetsByChunkName: statsJson.assetsByChunkName,
+            chunks: chunks
+          };
+          stats = customStats;
           done();
         }
       });
