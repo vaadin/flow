@@ -28,14 +28,14 @@ class LoginView extends PolymerElement {
 
   async connectedCallback() {
     super.connectedCallback();
-    await this.__checkLoggedIn();
+    await this.checkLoggedIn();
   }
 
   static get is() {
     return 'login-view';
   }
 
-  async __checkLoggedIn() {
+  private async checkLoggedIn() {
     this.isUserLoggedIn = await connectServices.isUserLoggedIn();
     if (this.isUserLoggedIn) {
       this.currentUserName = await connectServices.getCurrentUserName();

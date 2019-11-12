@@ -23,31 +23,35 @@ import com.vaadin.flow.connect.backend.repository.UserRepository;
 @Primary
 public class UserDetailsServiceImpl implements UserDetailsService {
 
-	private final UserRepository userRepository;
+    private final UserRepository userRepository;
 
-	@Autowired
-	public UserDetailsServiceImpl(UserRepository userRepository) {
-		this.userRepository = userRepository;
-	}
+    @Autowired
+    public UserDetailsServiceImpl(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
-	/**
-	 *
-	 * Recovers the {@link User} from the database using the e-mail address supplied
-	 * in the login screen. If the user is found, returns a
-	 * {@link org.springframework.security.core.userdetails.User}.
-	 *
-	 * @param username User's e-mail address
-	 * 
-	 */
-	@Override
-	public UserDetails loadUserByUsername(String username) throws
-                UsernameNotFoundException {
-		User user = userRepository.findByEmailIgnoreCase(username);
-		if (null == user) {
-			throw new UsernameNotFoundException("No user present with username: " + username);
-		} else {
-			return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPasswordHash(),
-					Collections.singletonList(new SimpleGrantedAuthority(user.getRole())));
-		}
-	}
+    /**
+     *
+     * Recovers the {@link User} from the database using the e-mail address
+     * supplied in the login screen. If the user is found, returns a
+     * {@link org.springframework.security.core.userdetails.User}.
+     *
+     * @param username
+     *            User's e-mail address
+     * 
+     */
+    @Override
+    public UserDetails loadUserByUsername(String username)
+            throws UsernameNotFoundException {
+        User user = userRepository.findByEmailIgnoreCase(username);
+        if (null == user) {
+            throw new UsernameNotFoundException(
+                    "No user present with username: " + username);
+        } else {
+            return new org.springframework.security.core.userdetails.User(
+                    user.getEmail(), user.getPasswordHash(),
+                    Collections.singletonList(
+                            new SimpleGrantedAuthority(user.getRole())));
+        }
+    }
 }
