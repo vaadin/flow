@@ -109,14 +109,7 @@ public class VaadinViewIT extends ChromeBrowserTest {
 
     @Test
     public void should_notAbleToRequestAdminOnly_when_NotLoggedIn() {
-        WebElement button = testComponent.$(TestBenchElement.class)
-                .id("helloAdmin");
-        button.click();
-
-        WebElement content = testComponent.$(TestBenchElement.class).id("content");
-        // Wait for the server connect response
-        waitUntil(ExpectedConditions.textToBePresentInElement(content,
-                "Anonymous access is not allowed"), 25);
+        verifyCallingAdminService("Anonymous access is not allowed");
     }
 
     @Test
