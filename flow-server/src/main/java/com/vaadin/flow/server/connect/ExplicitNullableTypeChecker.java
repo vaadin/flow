@@ -28,6 +28,7 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -93,13 +94,14 @@ public class ExplicitNullableTypeChecker {
             } else if (clazz.isArray() && value instanceof Object[]) {
                 return checkIterable(Arrays.asList((Object[]) value),
                         expectedType);
-            }
-            if (expectedType instanceof Class<?>
+            } else if (Map.class.isAssignableFrom(clazz)) {
+                return checkMapValues((Map<?, ?>) value, expectedType);
+            } else if (expectedType instanceof Class<?>
                     && !clazz.getName().startsWith("java.")) {
                 return checkBeanFields(value, expectedType);
+            } else {
+                return null;
             }
-
-            return null;
         }
 
         if (expectedType.equals(Void.TYPE)) {
@@ -147,7 +149,28 @@ public class ExplicitNullableTypeChecker {
         return null;
     }
 
-    private boolean isPropertySubjectForChecking(Class<?> clazz,
+    private String checkMapValues(Map<?, ?> value, Type expectedType) {
+        Type valueType = Object.class;
+
+        if (expectedType instanceof ParameterizedType) {
+            valueType = ((ParameterizedType) expectedType)
+                    .getActualTypeArguments()[1];
+        }
+
+        for (Map.Entry<?, ?> e : value.entrySet()) {
+            String error = checkValueForType(e.getValue(), valueType);
+            if (error != null) {
+                return String.format(
+                        "Unexpected null value for key '%s' of "
+                                + "map type '%s'. %s",
+                        e.getKey(), expectedType, error);
+            }
+        }
+
+        return null;
+    }
+
+    private boolean isPropertySubjectForChecking(
             PropertyDescriptor propertyDescriptor) {
         try {
             String name = propertyDescriptor.getName();
@@ -170,7 +193,8 @@ public class ExplicitNullableTypeChecker {
                     && !field.isAnnotationPresent(JsonIgnore.class)
                     && !field.isAnnotationPresent(Nullable.class);
         } catch (NoSuchFieldException e) {
-            getLogger().error(String.valueOf(e));
+            getLogger().error("Unexpected missing declared field in Java Bean",
+                    e);
             return false;
         }
     }
@@ -180,7 +204,7 @@ public class ExplicitNullableTypeChecker {
         try {
             for (PropertyDescriptor propertyDescriptor : Introspector
                     .getBeanInfo(clazz).getPropertyDescriptors()) {
-                if (!isPropertySubjectForChecking(clazz, propertyDescriptor)) {
+                if (!isPropertySubjectForChecking(propertyDescriptor)) {
                     continue;
                 }
 
@@ -199,7 +223,8 @@ public class ExplicitNullableTypeChecker {
             }
         } catch (IntrospectionException | InvocationTargetException
                 | IllegalAccessException e) {
-            getLogger().error(String.valueOf(e));
+            getLogger().error(
+                    "Cannot check for null property values in Java Bean", e);
             return e.toString();
         }
 

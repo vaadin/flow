@@ -39,6 +39,7 @@ import static org.mockito.Mockito.verify;
 public class ExplicitNullableTypeCheckerTest {
     private ExplicitNullableTypeChecker explicitNullableTypeChecker;
     private Type stringListType;
+    private Type stringToDateMapType;
     private Type stringArrayType;
 
     @Before
@@ -47,6 +48,10 @@ public class ExplicitNullableTypeCheckerTest {
 
         stringListType = getClass()
                 .getMethod("parametrizedListMethod", String[].class)
+                .getGenericReturnType();
+
+        stringToDateMapType = getClass()
+                .getMethod("parametrizedMapMethod", Date[].class)
                 .getGenericReturnType();
 
         stringArrayType = getClass().getMethod("arrayMethod", String[].class)
@@ -195,7 +200,7 @@ public class ExplicitNullableTypeCheckerTest {
     }
 
     @Test
-    public void should_Recursively_Check_Collection_Items() {
+    public void should_Recursively_Check_List_Items() {
         ExplicitNullableTypeChecker checker = spy(explicitNullableTypeChecker);
 
         List<String> list = parametrizedListMethod("foo", "bar");
@@ -209,13 +214,13 @@ public class ExplicitNullableTypeCheckerTest {
     }
 
     @Test
-    public void should_ReturnNull_When_GivenNonNullItems_InCollectionType() {
+    public void should_ReturnNull_When_GivenNonNullItems_InListType() {
         Assert.assertNull(explicitNullableTypeChecker
                 .checkValueForType(Arrays.asList("", ""), stringListType));
     }
 
     @Test
-    public void should_ReturnError_When_GivenNullItem_InCollectionType() {
+    public void should_ReturnError_When_GivenNullItem_InListType() {
         String error = explicitNullableTypeChecker
                 .checkValueForType(Arrays.asList("", null, ""), stringListType);
 
@@ -223,6 +228,41 @@ public class ExplicitNullableTypeCheckerTest {
         Assert.assertTrue(error.contains("null"));
         Assert.assertTrue(error.contains("List"));
         Assert.assertTrue(error.contains("String"));
+    }
+
+    @Test
+    public void should_Recursively_Check_Map_Values() {
+        ExplicitNullableTypeChecker checker = spy(explicitNullableTypeChecker);
+
+        Date dateOne = new Date();
+        Date dateTwo = new Date();
+        Map<String, Date> map = parametrizedMapMethod(dateOne, dateTwo);
+
+        checker.checkValueForType(map, stringToDateMapType);
+        // The first interaction is the obvious
+        verify(checker).checkValueForType(map, stringToDateMapType);
+
+        verify(checker).checkValueForType(dateOne, Date.class);
+        verify(checker).checkValueForType(dateTwo, Date.class);
+    }
+
+    @Test
+    public void should_ReturnNull_When_GivenNonNullValues_InMapType() {
+        Assert.assertNull(explicitNullableTypeChecker.checkValueForType(
+                parametrizedMapMethod(new Date(), new Date()),
+                stringToDateMapType));
+    }
+
+    @Test
+    public void should_ReturnError_When_GivenNullValues_InMapType() {
+        String error = explicitNullableTypeChecker.checkValueForType(
+                parametrizedMapMethod(new Date(), null), stringToDateMapType);
+
+        Assert.assertNotNull(error);
+        Assert.assertTrue(error.contains("null value"));
+        Assert.assertTrue(error.contains("key 'null'"));
+        Assert.assertTrue(error.contains("Map"));
+        Assert.assertTrue(error.contains("Date"));
     }
 
     @Test
@@ -316,6 +356,14 @@ public class ExplicitNullableTypeCheckerTest {
             list.add(arg);
         }
         return list;
+    }
+
+    public Map<String, Date> parametrizedMapMethod(Date... args) {
+        final Map<String, Date> map = new HashMap<String, Date>();
+        for (Date arg : args) {
+            map.put(String.valueOf(arg), arg);
+        }
+        return map;
     }
 
     public String[] arrayMethod(String... args) {
