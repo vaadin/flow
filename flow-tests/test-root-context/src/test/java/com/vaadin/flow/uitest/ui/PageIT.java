@@ -11,7 +11,6 @@ import org.openqa.selenium.Keys;
 
 import com.vaadin.flow.component.html.testbench.InputTextElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import org.openqa.selenium.WebElement;
 
 public class PageIT extends ChromeBrowserTest {
 
@@ -86,11 +85,11 @@ public class PageIT extends ChromeBrowserTest {
         open();
 
         findElement(By.id("open")).click();
-        ArrayList<String> tabs = new ArrayList<>(getDriver().getWindowHandles());
+        ArrayList<String> tabs = new ArrayList<>(
+                getDriver().getWindowHandles());
         Assert.assertThat(
                 getDriver().switchTo().window(tabs.get(1)).getCurrentUrl(),
-                Matchers.endsWith(BaseHrefView.class.getName())
-        );
+                Matchers.endsWith(BaseHrefView.class.getName()));
     }
 
     @Test
@@ -98,10 +97,15 @@ public class PageIT extends ChromeBrowserTest {
         open();
 
         findElement(By.id("openInIFrame")).click();
-        String iFrameHref = (String) ((JavascriptExecutor) driver).executeScript(
-                "return document.getElementById('newWindow').contentWindow.location.href;");
 
-        Assert.assertThat(iFrameHref, Matchers.endsWith(BaseHrefView.class.getName())
-        );
+        waitUntil(driver -> !getIframeUrl().equals("about:blank"));
+
+        Assert.assertThat(getIframeUrl(),
+                Matchers.endsWith(BaseHrefView.class.getName()));
+    }
+
+    private String getIframeUrl() {
+        return (String) ((JavascriptExecutor) driver).executeScript(
+                "return document.getElementById('newWindow').contentWindow.location.href;");
     }
 }
