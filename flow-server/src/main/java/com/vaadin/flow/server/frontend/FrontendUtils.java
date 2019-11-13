@@ -18,6 +18,8 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
+import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
 
@@ -437,6 +440,10 @@ public class FrontendUtils {
             content = getStatsFromWebpack();
         }
 
+        if(config.isStatsExternal()) {
+            content = getStatsFromExternalUrl(config.getExternalStatsUrl());
+        }
+
         if (content == null) {
             content = getStatsFromClassPath(service);
         }
@@ -475,6 +482,34 @@ public class FrontendUtils {
         return handler.prepareConnection("/stats.json", "GET").getInputStream();
     }
 
+    private static InputStream getStatsFromExternalUrl(
+            String externalStatsUrl) {
+        String url;
+        // If url is relative try to get host from request
+        // else fallback on 127.0.0.1:8080
+        if (externalStatsUrl.startsWith("/")) {
+            VaadinRequest request = VaadinRequest.getCurrent();
+            String host = request.getHeader("host");
+            if(host == null) {
+                host = "http://127.0.0.1:8080";
+            }
+            url = host + externalStatsUrl;
+        } else {
+            url = externalStatsUrl;
+        }
+        try {
+            URL uri = new URL(url);
+            HttpURLConnection connection = (HttpURLConnection) uri
+                    .openConnection();
+            connection.setRequestMethod("GET");
+            connection.setReadTimeout(120000);
+            connection.setConnectTimeout(120000);
+            return connection.getInputStream();
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
     private static InputStream getStatsFromClassPath(VaadinService service) {
         String stats = service.getDeploymentConfiguration()
                 .getStringProperty(SERVLET_PARAMETER_STATISTICS_JSON,
@@ -511,14 +546,19 @@ public class FrontendUtils {
                     handler.prepareConnection("/assetsByChunkName", "GET")
                             .getInputStream());
         }
-
-        String stats = config
-                .getStringProperty(SERVLET_PARAMETER_STATISTICS_JSON,
-                        VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT)
-                // Remove absolute
-                .replaceFirst("^/", "");
-        InputStream resourceAsStream = service.getClassLoader()
-                .getResourceAsStream(stats);
+        InputStream resourceAsStream;
+        if (config.isStatsExternal()) {
+            resourceAsStream = getStatsFromExternalUrl(
+                    config.getExternalStatsUrl());
+        } else {
+            String stats = config
+                    .getStringProperty(SERVLET_PARAMETER_STATISTICS_JSON,
+                            VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT)
+                    // Remove absolute
+                    .replaceFirst("^/", "");
+            resourceAsStream = service.getClassLoader()
+                    .getResourceAsStream(stats);
+        }
         try (Scanner scan = new Scanner(resourceAsStream,
                 StandardCharsets.UTF_8.name())) {
             StringBuilder assets = new StringBuilder();
