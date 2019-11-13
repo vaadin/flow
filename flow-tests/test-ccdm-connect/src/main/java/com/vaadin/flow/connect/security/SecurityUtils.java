@@ -13,12 +13,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.connect.backend.security;
+package com.vaadin.flow.connect.security;
 
 import javax.servlet.http.HttpServletRequest;
 
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -91,4 +92,11 @@ public final class SecurityUtils {
                         r -> r.getIdentifier().equals(parameterValue));
     }
 
+    static boolean isConnectRequest(HttpServletRequest request,
+            String connectEndpoint) {
+        String connectEndpointPrefix = StringUtils.appendIfMissing(
+                request.getContextPath() + "/" + connectEndpoint, "/");
+        return StringUtils.startsWith(request.getRequestURI(),
+                connectEndpointPrefix);
+    }
 }

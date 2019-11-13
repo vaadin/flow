@@ -5,8 +5,7 @@ import javax.annotation.security.RolesAllowed;
 
 import java.util.Optional;
 
-import com.vaadin.flow.connect.backend.entity.Role;
-import com.vaadin.flow.connect.backend.security.SecurityUtils;
+import com.vaadin.flow.connect.security.SecurityUtils;
 import com.vaadin.flow.server.connect.VaadinService;
 import com.vaadin.flow.server.connect.auth.AnonymousAllowed;
 
@@ -48,7 +47,7 @@ public class ConnectServices {
         return "Hello, stranger!";
     }
 
-    @RolesAllowed(Role.ADMIN)
+    @RolesAllowed("ADMIN")
     public String helloAdmin() {
         return "Hello, admin!";
     }
