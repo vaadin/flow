@@ -13,8 +13,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.connect.security;
+package com.vaadin.flow.connect;
 
+import javax.servlet.http.HttpServletRequest;
+
+import java.util.stream.Stream;
+
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,6 +29,9 @@ import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
+
+import com.vaadin.flow.server.ServletHelper;
+import com.vaadin.flow.shared.ApplicationConstants;
 
 @EnableWebSecurity
 @Configuration
@@ -54,12 +62,13 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         http.csrf()
                 // Not using Spring CSRF here for Connect requests and
                 // framework requests
-                .ignoringRequestMatchers(request -> SecurityUtils
-                        .isConnectRequest(request, vaadinConnectEndpoint)
-                        || SecurityUtils.isFrameworkInternalRequest(request))
+                .ignoringRequestMatchers(request -> isConnectRequest(request,
+                        vaadinConnectEndpoint)
+                        || isFrameworkInternalRequest(request))
                 .and().authorizeRequests()
                 // Allow all flow internal requests.
-                .requestMatchers(SecurityUtils::isFrameworkInternalRequest)
+                .requestMatchers(
+                        SecurityConfiguration::isFrameworkInternalRequest)
                 .permitAll()
                 // using default spring login form
                 .and().formLogin().and().httpBasic();
@@ -73,5 +82,31 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         web.ignoring().antMatchers(
                 // Vaadin Flow static resources
                 "/VAADIN/**");
+    }
+
+    /**
+     * Tests if the request is an internal framework request. The test consists
+     * of checking if the request parameter is present and if its value is
+     * consistent with any of the request types know.
+     *
+     * @param request
+     *            {@link HttpServletRequest}
+     * @return true if is an internal framework request. False otherwise.
+     */
+    private static boolean isFrameworkInternalRequest(
+            HttpServletRequest request) {
+        final String parameterValue = request
+                .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER);
+        return parameterValue != null
+                && Stream.of(ServletHelper.RequestType.values()).anyMatch(
+                        r -> r.getIdentifier().equals(parameterValue));
+    }
+
+    private static boolean isConnectRequest(HttpServletRequest request,
+            String connectEndpoint) {
+        String connectEndpointPrefix = StringUtils.appendIfMissing(
+                request.getContextPath() + "/" + connectEndpoint, "/");
+        return StringUtils.startsWith(request.getRequestURI(),
+                connectEndpointPrefix);
     }
 }
