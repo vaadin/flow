@@ -39,7 +39,7 @@ public class VaadinViewIT extends ChromeBrowserTest {
     public void setup() throws Exception {
         super.setup();
         open();
-        testComponent = $("div").id("outlet").$("test-component").first();
+        testComponent = $("test-component").first();
     }
 
     /**
@@ -83,7 +83,7 @@ public class VaadinViewIT extends ChromeBrowserTest {
     @Test
     public void should_requestAnonymously_when_CallConnectServiceFromANestedUrl() throws Exception {
         getDriver().get(getRootURL() + getTestPath() + "/more/levels/url");
-        testComponent = $("div").id("outlet").$("test-component").first();
+        testComponent = $("test-component").first();
         WebElement button = testComponent.$(TestBenchElement.class).id(
                 "connectAnonymous");
         button.click();
@@ -114,7 +114,7 @@ public class VaadinViewIT extends ChromeBrowserTest {
 
     @Test
     public void should_RequestAdminOnly_when_LoggedInAsAdmin() {
-        login("admin@vaadin.com", "admin");
+        login("admin", "admin");
 
         // Verify admin calls
         verifyCallingAdminService("Hello, admin!");
@@ -128,7 +128,7 @@ public class VaadinViewIT extends ChromeBrowserTest {
 
     @Test
     public void should_NotRequestAdminOnly_when_LoggedInAsUser() {
-        login("user@vaadin.com", "user");
+        login("user", "user");
 
         // Verify admin calls
         verifyCallingAdminService("Unauthorized access to vaadin service");
@@ -144,13 +144,13 @@ public class VaadinViewIT extends ChromeBrowserTest {
         String testUrl = getTestURL(getRootURL(), getTestPath() + "/login",
                 new String[0]);
         getDriver().get(testUrl);
-        TestBenchElement outlet = $("div").id("outlet");
-        TestBenchElement loginView = outlet.$("login-view").first();
-        loginView.$(TestBenchElement.class).id("username").sendKeys(username);
-        loginView.$(TestBenchElement.class).id("password").sendKeys(password);
-        loginView.$(TestBenchElement.class).id("submit").click();
+        TestBenchElement container = $("div")
+                .attributeContains("class", "container").first();
+        container.$(TestBenchElement.class).id("username").sendKeys(username);
+        container.$(TestBenchElement.class).id("password").sendKeys(password);
+        container.$("button").first().click();
         // Wait for the server connect response
-        testComponent = $("div").id("outlet").$("test-component").first();
+        testComponent = $("test-component").first();
     }
 
     private void verifyCallingAdminService(String expectedMessage) {
