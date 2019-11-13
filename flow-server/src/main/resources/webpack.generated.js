@@ -159,17 +159,9 @@ module.exports = {
     function (compiler) {
       compiler.hooks.afterEmit.tapAsync("FlowIdPlugin", (compilation, done) => {
         let statsJson = compilation.getStats().toJson();
-        // Get bundles as accepted keys (except any es5 bunlde)
-        let acceptedKeys = Object.keys(statsJson.assetsByChunkName).filter(key => !/es5$/.test(key));
-
-        // If there exists a namedChunkGroups in stats chunk names should be changed to named keys
-        if(statsJson.namedChunkGroups) {
-          let namedChunks = [];
-          acceptedKeys.forEach(key => {
-            statsJson.namedChunkGroups[key].chunks.forEach(chunk => namedChunks.push(chunk));
-          });
-          acceptedKeys = namedChunks;
-        }
+        // Get bundles as accepted keys (except any es5 bundle)
+        let acceptedKeys = statsJson.assets.filter(asset => asset.chunks.length > 0 && !asset.chunkNames.toString().includes("es5"))
+          .map(asset => asset.chunks).reduce((acc, val) => acc.concat(val), []);
 
         // Collect all modules for the given keys
         const modules = collectModules(statsJson, acceptedKeys);
@@ -260,11 +252,11 @@ function collectModules(statsJson, acceptedChunks) {
     statsJson.modules.forEach(function (module) {
       // Add module if module chunks contain an accepted chunk and the module is generated-flow-imports.js module
       if (module.chunks.filter(key => acceptedChunks.includes(key)).length > 0
-          && module.name.includes("generated-flow-imports.js")) {
+          && (module.name.includes("generated-flow-imports.js") || module.name.includes("generated-flow-imports-fallback.js"))) {
         let subModules = [];
         // Create sub modules only if they are available
         if (module.modules) {
-          module.modules.forEach(function (module) {
+          module.modules.filter(module => !module.name.includes("es5")).forEach(function (module) {
             const subModule = {
               name: module.name,
               source: module.source
