@@ -120,10 +120,9 @@ public abstract class AbstractNodeStateProvider
         ElementChildrenList childrenFeature = getChildrenFeature(node);
         int pos = childrenFeature.indexOf(child.getNode());
         if (pos == -1) {
-            throw new IllegalArgumentException("Not in the list");
+            throw new IllegalArgumentException("Trying to detach an element from parent that does not have it.");
         }
         childrenFeature.remove(pos);
-
     }
 
     @Override
