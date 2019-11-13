@@ -24,7 +24,6 @@ import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @EnableWebSecurity
 @Configuration
@@ -36,11 +35,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(AuthenticationManagerBuilder auth)
             throws Exception {
-        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-        auth.inMemoryAuthentication().passwordEncoder(passwordEncoder)
-                .withUser("user").password(passwordEncoder.encode("user"))
+        auth.inMemoryAuthentication().withUser("user").password("{noop}user")
                 .roles("USER").and().withUser("admin")
-                .password(passwordEncoder.encode("admin")).roles("ADMIN");
+                .password("{noop}admin").roles("ADMIN", "USER");
     }
 
     @Bean
