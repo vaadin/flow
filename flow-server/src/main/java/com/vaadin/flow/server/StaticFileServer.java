@@ -201,7 +201,7 @@ public class StaticFileServer implements StaticFileHandler {
             return false;
         }
         // Check that we target VAADIN/build and do not have '/../', '\..\',
-        // %5C..%5C, or %5F..%5F
+        // %5C..%5C, or %2F..%2F
         if (!filenameWithPath.startsWith("/" + VAADIN_BUILD_FILES_PATH)
                 || DIRECTORY_TRAVERSAL_HACK_REGEX.matcher(filenameWithPath)
                         .find()) {
