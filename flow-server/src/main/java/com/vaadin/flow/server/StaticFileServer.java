@@ -51,6 +51,10 @@ public class StaticFileServer implements StaticFileHandler {
             + "fixIncorrectWebjarPaths";
     private static final Pattern INCORRECT_WEBJAR_PATH_REGEX = Pattern
             .compile("^/frontend[-\\w/]*/webjars/");
+    private static final Pattern DIRECTORY_TRAVERSAL_HACK_REGEX = Pattern
+            .compile("(/|\\\\|%5C|%2F)..(/|\\\\|%5C|%2F)",
+                    Pattern.CASE_INSENSITIVE);
+
     private final ResponseWriter responseWriter;
     private final VaadinServletService servletService;
     private DeploymentConfiguration deploymentConfiguration;
@@ -196,12 +200,11 @@ public class StaticFileServer implements StaticFileHandler {
                     filenameWithPath);
             return false;
         }
-        // Check that we target VAADIN/build and do not have '/../', '\..\' or
-        // %5C..%5C
-        String regex = "(/|\\\\|%5C)..(/|\\\\|%5C)";
+        // Check that we target VAADIN/build and do not have '/../', '\..\',
+        // %5C..%5C, or %5F..%5F
         if (!filenameWithPath.startsWith("/" + VAADIN_BUILD_FILES_PATH)
-                || Pattern.compile(regex, Pattern.CASE_INSENSITIVE)
-                        .matcher(filenameWithPath).find()) {
+                || DIRECTORY_TRAVERSAL_HACK_REGEX.matcher(filenameWithPath)
+                        .find()) {
             getLogger().info("Blocked attempt to access file: {}",
                     filenameWithPath);
             return false;
