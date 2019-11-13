@@ -45,21 +45,5 @@ class TestComponent extends PolymerElement {
       .then(response => this.$.content.textContent = response)
       .catch(error => this.$.content.textContent = 'Error:' + error);
   }
-
-  async takeNull(e) {
-    await connectServices.takeNull(null);
-  }
-
-  async giveNull(e) {
-    await connectServices.giveNull();
-  }
-
-  async takeOptionalNull(e) {
-    await connectServices.takeOptionalNull(null);
-  }
-
-  async giveOptionalNull(e) {
-    await connectServices.giveOptionalNull();
-  }
 }
 customElements.define(TestComponent.is, TestComponent);
