@@ -23,15 +23,6 @@ const throwConnectException = (errorJson: ConnectExceptionData) => {
   }
 };
 
-// when in tests, body is not set correctly by calling `new Request`
-export const createRequest = (input: RequestInfo, init?: RequestInit) => {
-  const request = new Request(input, init);
-  if (init && init.body && !request.body) {
-    (request as any).body = init.body;
-  }
-  return request;
-};
-
 /**
  * Throws a TypeError if the response is not 200 OK.
  * @param response The response to assert.
@@ -297,7 +288,7 @@ export class ConnectClient {
       return obj;
     }
 
-    const request = createRequest(
+    const request = new Request(
        `${this.endpoint}/${service}/${method}`, {
          method: 'POST',
          headers,
