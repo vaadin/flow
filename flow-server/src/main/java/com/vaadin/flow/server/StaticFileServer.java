@@ -105,6 +105,13 @@ public class StaticFileServer implements StaticFileHandler {
             HttpServletResponse response) throws IOException {
 
         String filenameWithPath = getRequestFilename(request);
+        if (!isPathSafe(filenameWithPath)) {
+            getLogger().info("Blocked attempt to access file: {}",
+                    filenameWithPath);
+            response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+            return true;
+        }
+
         URL resourceUrl = null;
         if (filenameWithPath.startsWith("/" + VAADIN_BUILD_FILES_PATH)
                 && isAllowedVAADINBuildUrl(filenameWithPath)) {
@@ -181,6 +188,12 @@ public class StaticFileServer implements StaticFileHandler {
                 .replaceAll("/webjars/");
     }
 
+    private boolean isPathSafe(String path) {
+        // Check that the path does not have '/../', '\..\', %5C..%5C, or
+        // %2F..%2F
+        return !DIRECTORY_TRAVERSAL_HACK_REGEX.matcher(path).find();
+    }
+
     /**
      * Check if it is ok to serve the requested file from the classpath.
      * <p>
@@ -200,13 +213,8 @@ public class StaticFileServer implements StaticFileHandler {
                     filenameWithPath);
             return false;
         }
-        // Check that we target VAADIN/build and do not have '/../', '\..\',
-        // %5C..%5C, or %2F..%2F
-        if (!filenameWithPath.startsWith("/" + VAADIN_BUILD_FILES_PATH)
-                || DIRECTORY_TRAVERSAL_HACK_REGEX.matcher(filenameWithPath)
-                        .find()) {
-            getLogger().info("Blocked attempt to access file: {}",
-                    filenameWithPath);
+        // Check that we target VAADIN/build
+        if (!filenameWithPath.startsWith("/" + VAADIN_BUILD_FILES_PATH)) {
             return false;
         }
 
