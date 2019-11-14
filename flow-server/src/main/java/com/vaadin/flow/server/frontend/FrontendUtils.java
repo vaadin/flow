@@ -518,13 +518,14 @@ public class FrontendUtils {
                         DateTimeFormatter.RFC_1123_DATE_TIME).toLocalDateTime();
                 Stats statistics = context.getAttribute(Stats.class);
                 if (statistics == null || modified
-                        .isAfter(statistics.modified)) {
+                        .isAfter(statistics.getLastModified())) {
                     statistics = new Stats(
                             streamToString(connection.getInputStream()),
-                            modified);
+                            lastModified);
                     context.setAttribute(statistics);
                 }
-                return new ByteArrayInputStream(statistics.stats.getBytes());
+                return new ByteArrayInputStream(statistics.statsJson.getBytes(
+                        StandardCharsets.UTF_8));
             }
             return connection.getInputStream();
         } catch (IOException e) {
@@ -872,21 +873,36 @@ public class FrontendUtils {
         return LoggerFactory.getLogger(FrontendUtils.class);
     }
 
-    public static class Stats implements Serializable {
-        private final LocalDateTime modified;
-        private final String stats;
+    /**
+     * Container class for caching the external stats.json contents.
+     */
+    private static class Stats implements Serializable {
+        private final String lastModified;
+        protected final String statsJson;
 
-        public Stats(String stats, LocalDateTime modified) {
-            this.stats = stats;
-            this.modified = modified;
+        /**
+         * Create a new container for stats.json caching.
+         *
+         * @param statsJson
+         *         the gotten stats.json as a string
+         * @param lastModified
+         *         last modification timestamp for stats.json in RFC-1123
+         *         date-time format, such as 'Tue, 3 Jun 2008 11:05:30 GMT'
+         */
+        public Stats(String statsJson, String lastModified) {
+            this.statsJson = statsJson;
+            this.lastModified = lastModified;
         }
 
-        public LocalDateTime getModified() {
-            return modified;
-        }
-
-        public String getStats() {
-            return stats;
+        /**
+         * Return last modified timestamp for contained stats.json.
+         *
+         * @return timestamp as LocalDateTime
+         */
+        public LocalDateTime getLastModified() {
+            return ZonedDateTime
+                    .parse(lastModified, DateTimeFormatter.RFC_1123_DATE_TIME)
+                    .toLocalDateTime();
         }
     }
 }
