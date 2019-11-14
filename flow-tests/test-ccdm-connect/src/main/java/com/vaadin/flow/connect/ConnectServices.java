@@ -1,6 +1,7 @@
 package com.vaadin.flow.connect;
 
 import javax.annotation.Nullable;
+import javax.annotation.security.RolesAllowed;
 
 import java.util.Optional;
 
@@ -43,5 +44,10 @@ public class ConnectServices {
     @AnonymousAllowed
     public String helloAnonymous() {
         return "Hello, stranger!";
+    }
+
+    @RolesAllowed("ADMIN")
+    public String helloAdmin() {
+        return "Hello, admin!";
     }
 }

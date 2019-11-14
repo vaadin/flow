@@ -100,9 +100,86 @@ public class VaadinViewIT extends ChromeBrowserTest {
                 "echoWithOptional");
         button.click();
 
-        WebElement content = testComponent.$(TestBenchElement.class).id("content");
+        WebElement content = testComponent.$(TestBenchElement.class)
+                .id("content");
         // Wait for the server connect response
         waitUntil(ExpectedConditions.textToBePresentInElement(content,
                 "1. one 3. three 4. four"), 25);
+    }
+
+    @Test
+    public void should_notAbleToRequestAdminOnly_when_NotLoggedIn() {
+        verifyCallingAdminService("Anonymous access is not allowed");
+    }
+
+    @Test
+    public void should_RequestAdminOnly_when_LoggedInAsAdmin() {
+        login("admin", "admin");
+
+        // Verify admin calls
+        verifyCallingAdminService("Hello, admin!");
+
+        // Verify logged in user calls
+        verifyCallingAuthorizedService();
+
+        // Verify anonymous calls when logged in
+        verifyCallingAnonymousService();
+    }
+
+    @Test
+    public void should_NotRequestAdminOnly_when_LoggedInAsUser() {
+        login("user", "user");
+
+        // Verify admin calls
+        verifyCallingAdminService("Unauthorized access to vaadin service");
+
+        // Verify logged in user calls
+        verifyCallingAuthorizedService();
+
+        // Verify anonymous calls when logged in
+        verifyCallingAnonymousService();
+    }
+
+    private void login(String username, String password) {
+        String testUrl = getTestURL(getRootURL(), getTestPath() + "/login",
+                new String[0]);
+        getDriver().get(testUrl);
+        TestBenchElement container = $("div")
+                .attributeContains("class", "container").first();
+        container.$(TestBenchElement.class).id("username").sendKeys(username);
+        container.$(TestBenchElement.class).id("password").sendKeys(password);
+        container.$("button").first().click();
+        // Wait for the server connect response
+        testComponent = $("test-component").first();
+    }
+
+    private void verifyCallingAdminService(String expectedMessage) {
+        WebElement button = testComponent.$(TestBenchElement.class)
+                .id("helloAdmin");
+        button.click();
+        WebElement content = testComponent.$(TestBenchElement.class)
+                .id("content");
+        waitUntil(ExpectedConditions.textToBePresentInElement(content,
+                expectedMessage), 25);
+    }
+
+    private void verifyCallingAuthorizedService() {
+        WebElement content;
+        WebElement connect = testComponent.$(TestBenchElement.class)
+                .id("connect");
+        connect.click();
+        content = testComponent.$(TestBenchElement.class).id("content");
+        waitUntil(ExpectedConditions.textToBePresentInElement(content,
+                "Hello, Friend!"), 25);
+    }
+
+    private void verifyCallingAnonymousService() {
+        WebElement content;
+        WebElement connectAnonymous = testComponent.$(TestBenchElement.class)
+                .id("connectAnonymous");
+        connectAnonymous.click();
+        content = testComponent.$(TestBenchElement.class).id("content");
+        waitUntil(ExpectedConditions.textToBePresentInElement(content,
+                "Hello, stranger!"), 25);
     }
 }
