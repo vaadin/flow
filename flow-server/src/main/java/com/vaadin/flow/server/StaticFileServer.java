@@ -19,8 +19,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
@@ -52,8 +55,7 @@ public class StaticFileServer implements StaticFileHandler {
     private static final Pattern INCORRECT_WEBJAR_PATH_REGEX = Pattern
             .compile("^/frontend[-\\w/]*/webjars/");
     private static final Pattern DIRECTORY_TRAVERSAL_HACK_REGEX = Pattern
-            .compile("(/|\\\\|%5C|%2F)\\.\\.(/|\\\\|%5C|%2F)",
-                    Pattern.CASE_INSENSITIVE);
+            .compile("(/|\\\\)\\.\\.(/|\\\\)", Pattern.CASE_INSENSITIVE);
 
     private final ResponseWriter responseWriter;
     private final VaadinServletService servletService;
@@ -191,6 +193,12 @@ public class StaticFileServer implements StaticFileHandler {
     private boolean isPathSafe(String path) {
         // Check that the path does not have '/../', '\..\', %5C..%5C, or
         // %2F..%2F
+        try {
+            path = URLDecoder.decode(path, StandardCharsets.UTF_8.name());
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException("An error occurred during decoding URL.",
+                    e);
+        }
         return !DIRECTORY_TRAVERSAL_HACK_REGEX.matcher(path).find();
     }
 
