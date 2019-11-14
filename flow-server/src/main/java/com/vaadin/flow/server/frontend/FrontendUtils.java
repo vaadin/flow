@@ -15,12 +15,17 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -38,6 +43,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
@@ -440,8 +446,9 @@ public class FrontendUtils {
             content = getStatsFromWebpack();
         }
 
-        if(config.isStatsExternal()) {
-            content = getStatsFromExternalUrl(config.getExternalStatsUrl());
+        if (config.isStatsExternal()) {
+            content = getStatsFromExternalUrl(config.getExternalStatsUrl(),
+                    service.getContext());
         }
 
         if (content == null) {
@@ -482,15 +489,15 @@ public class FrontendUtils {
         return handler.prepareConnection("/stats.json", "GET").getInputStream();
     }
 
-    private static InputStream getStatsFromExternalUrl(
-            String externalStatsUrl) {
+    private static InputStream getStatsFromExternalUrl(String externalStatsUrl,
+            VaadinContext context) {
         String url;
         // If url is relative try to get host from request
         // else fallback on 127.0.0.1:8080
         if (externalStatsUrl.startsWith("/")) {
             VaadinRequest request = VaadinRequest.getCurrent();
             String host = request.getHeader("host");
-            if(host == null) {
+            if (host == null) {
                 host = "http://127.0.0.1:8080";
             }
             url = host + externalStatsUrl;
@@ -502,9 +509,23 @@ public class FrontendUtils {
             HttpURLConnection connection = (HttpURLConnection) uri
                     .openConnection();
             connection.setRequestMethod("GET");
-            connection.setReadTimeout(120000);
-            connection.setConnectTimeout(120000);
-            
+            // one minute timeout should be enough
+            connection.setReadTimeout(60000);
+            connection.setConnectTimeout(60000);
+            String lastModified = connection.getHeaderField("last-modified");
+            if (lastModified != null) {
+                LocalDateTime modified = ZonedDateTime.parse(lastModified,
+                        DateTimeFormatter.RFC_1123_DATE_TIME).toLocalDateTime();
+                Stats statistics = context.getAttribute(Stats.class);
+                if (statistics == null || modified
+                        .isAfter(statistics.modified)) {
+                    statistics = new Stats(
+                            streamToString(connection.getInputStream()),
+                            modified);
+                    context.setAttribute(statistics);
+                }
+                return new ByteArrayInputStream(statistics.stats.getBytes());
+            }
             return connection.getInputStream();
         } catch (IOException e) {
             getLogger().error("Failed to retrieve stats.json from the url {}.",
@@ -552,7 +573,7 @@ public class FrontendUtils {
         InputStream resourceAsStream;
         if (config.isStatsExternal()) {
             resourceAsStream = getStatsFromExternalUrl(
-                    config.getExternalStatsUrl());
+                    config.getExternalStatsUrl(), service.getContext());
         } else {
             String stats = config
                     .getStringProperty(SERVLET_PARAMETER_STATISTICS_JSON,
@@ -849,5 +870,23 @@ public class FrontendUtils {
 
     private static Logger getLogger() {
         return LoggerFactory.getLogger(FrontendUtils.class);
+    }
+
+    public static class Stats implements Serializable {
+        private final LocalDateTime modified;
+        private final String stats;
+
+        public Stats(String stats, LocalDateTime modified) {
+            this.stats = stats;
+            this.modified = modified;
+        }
+
+        public LocalDateTime getModified() {
+            return modified;
+        }
+
+        public String getStats() {
+            return stats;
+        }
     }
 }
