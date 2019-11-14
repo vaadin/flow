@@ -19,7 +19,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import java.util.stream.Stream;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -59,19 +58,13 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
      */
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.csrf()
-                // Not using Spring CSRF here for Connect requests and
-                // framework requests
-                .ignoringRequestMatchers(request -> isConnectRequest(request,
-                        vaadinConnectEndpoint)
-                        || isFrameworkInternalRequest(request))
-                .and().authorizeRequests()
+        http.csrf().disable().authorizeRequests()
                 // Allow all flow internal requests.
                 .requestMatchers(
                         SecurityConfiguration::isFrameworkInternalRequest)
                 .permitAll()
                 // using default spring login form
-                .and().formLogin().and().httpBasic();
+                .and().formLogin();
     }
 
     /**
@@ -102,11 +95,4 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                         r -> r.getIdentifier().equals(parameterValue));
     }
 
-    private static boolean isConnectRequest(HttpServletRequest request,
-            String connectEndpoint) {
-        String connectEndpointPrefix = StringUtils.appendIfMissing(
-                request.getContextPath() + "/" + connectEndpoint, "/");
-        return StringUtils.startsWith(request.getRequestURI(),
-                connectEndpointPrefix);
-    }
 }
