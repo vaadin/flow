@@ -299,7 +299,6 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     protected final void giveUp() {
         reconnectionCause = null;
 
-        // NOTE: Need more info from Leif.
         if (registry.getRequestResponseTracker().hasActiveRequest()) {
             endRequest();
         }
@@ -475,8 +474,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
         // future requests
 
         UILifecycle uiLifecycle = registry.getUILifecycle();
-        
-        // NOTE: Need more info from Leif.
+
         if (uiLifecycle.getState() != UIState.TERMINATED) {
             uiLifecycle.setState(UIState.TERMINATED);
         }

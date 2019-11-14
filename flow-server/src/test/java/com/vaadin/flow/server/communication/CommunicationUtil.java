@@ -27,12 +27,11 @@ import java.util.stream.Collectors;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.mockito.internal.verification.VerificationModeFactory;
-import org.mockito.verification.VerificationMode;
 
-public class CommunicationUtil {
+class CommunicationUtil {
 
-    public static String getStringWhenWriteBytesOffsetLength(
-            OutputStream outputStream) throws IOException {
+    static String getStringWhenWriteBytesOffsetLength(OutputStream outputStream)
+            throws IOException {
         ArgumentCaptor<byte[]> contentArg = ArgumentCaptor
                 .forClass(byte[].class);
         ArgumentCaptor<Integer> offsetArg = ArgumentCaptor.forClass(int.class);
@@ -53,7 +52,7 @@ public class CommunicationUtil {
         }).collect(Collectors.joining());
     }
 
-    public static String getStringWhenWriteString(OutputStream outputStream)
+    static String getStringWhenWriteString(OutputStream outputStream)
             throws IOException {
         ArgumentCaptor<byte[]> contentArg = ArgumentCaptor
                 .forClass(byte[].class);
@@ -65,15 +64,14 @@ public class CommunicationUtil {
                 .map(bytes -> new String(bytes)).collect(Collectors.joining());
     }
 
-    public static String getStringWhenWriteString(PrintWriter printWriter)
-            throws IOException {
+    static String getStringWhenWriteString(PrintWriter printWriter) {
         ArgumentCaptor<String> contentArg = ArgumentCaptor
                 .forClass(String.class);
 
         Mockito.verify(printWriter, VerificationModeFactory.atLeastOnce())
                 .write(contentArg.capture());
 
-        return contentArg.getAllValues().stream().collect(Collectors.joining());
+        return String.join("", contentArg.getAllValues());
     }
 
 }

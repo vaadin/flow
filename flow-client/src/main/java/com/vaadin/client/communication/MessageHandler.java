@@ -15,11 +15,10 @@
  */
 package com.vaadin.client.communication;
 
-import java.util.Objects;
-
 import com.google.gwt.core.client.Duration;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.Timer;
+
 import com.vaadin.client.Command;
 import com.vaadin.client.Console;
 import com.vaadin.client.DependencyLoader;
@@ -196,7 +195,8 @@ public class MessageHandler {
             ValueMap meta = json.getValueMap("meta");
 
             // Log the error only if session didn't expire.
-            if (meta == null || !meta.containsKey(JsonConstants.META_SESSION_EXPIRED)) {
+            if (meta == null
+                    || !meta.containsKey(JsonConstants.META_SESSION_EXPIRED)) {
                 Console.error("Response didn't contain a server id. "
                         + "Please verify that the server is up-to-date and that the response data has not been modified in transmission.");
             }
