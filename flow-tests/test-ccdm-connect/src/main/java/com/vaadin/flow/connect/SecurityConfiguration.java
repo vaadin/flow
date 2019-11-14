@@ -71,7 +71,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                         SecurityConfiguration::isFrameworkInternalRequest)
                 .permitAll()
                 // using default spring login form
-                .and().formLogin().and().httpBasic();
+                .and().formLogin();
     }
 
     /**
