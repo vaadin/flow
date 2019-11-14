@@ -401,7 +401,7 @@ public interface DeploymentConfiguration extends Serializable {
     }
 
     /**
-     * Get if the stats.json file should be gotten from an external service or
+     * Get if the stats.json file should be retrieved from an external service or
      * through the classpath.
      *
      * @return true if stats.json is served from an external location
@@ -411,7 +411,7 @@ public interface DeploymentConfiguration extends Serializable {
     }
 
     /**
-     * Get the url from where stats.json should be gotten from.
+     * Get the url from where stats.json should be retrieved from.
      * If not given this will default to '/vaadin-static/VAADIN/config/stats.json'
      *
      * @return external stats.json location

@@ -504,10 +504,13 @@ public class FrontendUtils {
             connection.setRequestMethod("GET");
             connection.setReadTimeout(120000);
             connection.setConnectTimeout(120000);
+            
             return connection.getInputStream();
         } catch (IOException e) {
-            return null;
+            getLogger().error("Failed to retrieve stats.json from the url {}.",
+                    url, e);
         }
+        return null;
     }
 
     private static InputStream getStatsFromClassPath(VaadinService service) {
