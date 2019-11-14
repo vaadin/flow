@@ -42,6 +42,10 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
+import static com.vaadin.flow.server.Constants.EXTERNAL_STATS_FILE;
+import static com.vaadin.flow.server.Constants.EXTERNAL_STATS_FILE_TOKEN;
+import static com.vaadin.flow.server.Constants.EXTERNAL_STATS_URL;
+import static com.vaadin.flow.server.Constants.EXTERNAL_STATS_URL_TOKEN;
 import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
@@ -169,6 +173,24 @@ public final class DeploymentConfigurationFactory implements Serializable {
         // already set.
         if (json != null) {
             JsonObject buildInfo = JsonUtil.parse(json);
+            if (buildInfo.hasKey(EXTERNAL_STATS_FILE_TOKEN) || buildInfo
+                    .hasKey(EXTERNAL_STATS_URL_TOKEN)) {
+                // If external stats file is flagged then we should always run in
+                // npm production mode.
+                initParameters.setProperty(SERVLET_PARAMETER_PRODUCTION_MODE,
+                        Boolean.toString(true));
+                initParameters.setProperty(SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                        Boolean.toString(false));
+                initParameters.setProperty(SERVLET_PARAMETER_ENABLE_DEV_SERVER,
+                        Boolean.toString(false));
+                initParameters.setProperty(EXTERNAL_STATS_FILE,
+                        Boolean.toString(true));
+                if (buildInfo.hasKey(EXTERNAL_STATS_URL_TOKEN)) {
+                    initParameters.setProperty(EXTERNAL_STATS_URL,
+                            buildInfo.getString(EXTERNAL_STATS_URL_TOKEN));
+                }
+                return;
+            }
             if (buildInfo.hasKey(SERVLET_PARAMETER_PRODUCTION_MODE)) {
                 initParameters.setProperty(SERVLET_PARAMETER_PRODUCTION_MODE,
                         String.valueOf(buildInfo.getBoolean(
