@@ -24,7 +24,6 @@ import java.util.Objects;
 import java.util.Set;
 
 import com.vaadin.flow.server.ExecutionFailedException;
-import com.vaadin.flow.server.FallibleCommand;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
