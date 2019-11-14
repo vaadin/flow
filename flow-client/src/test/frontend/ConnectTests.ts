@@ -3,7 +3,7 @@ const {expect} = intern.getPlugin('chai');
 const {fetchMock} = intern.getPlugin('fetchMock');
 const {sinon} = intern.getPlugin('sinon');
 
-import { ConnectClient, VaadinConnectError, VaadinConnectValidationError, createRequest } from "../../main/resources/META-INF/resources/frontend/Connect";
+import { ConnectClient, VaadinConnectError, VaadinConnectValidationError } from "../../main/resources/META-INF/resources/frontend/Connect";
 
 // `connectClient.call` adds the host and context to the service request.
 // we need to add this origin when configuring fetch-mock
@@ -226,9 +226,9 @@ describe('ConnectClient', () => {
     it('should pass 3rd argument as JSON request body', async() => {
       await client.call('FooService', 'fooMethod', {fooParam: 'foo'});
 
-      const requestBody = fetchMock.lastCall().request.body;
-      expect(requestBody).to.exist;
-      expect(JSON.parse(requestBody.toString())).to.deep.equal({fooParam: 'foo'});
+      const request = fetchMock.lastCall().request;
+      expect(request).to.exist;
+      expect(await request.json()).to.deep.equal({fooParam: 'foo'});
     });
 
     describe('middleware invocation', () => {
@@ -268,7 +268,7 @@ describe('ConnectClient', () => {
         fetchMock.post(myUrl, {});
 
         const myMiddleware = async(context: any, next?: any) => {
-          context.request = createRequest(
+          context.request = new Request(
             myUrl,
             {
               method: 'POST',
@@ -287,8 +287,7 @@ describe('ConnectClient', () => {
         const request = fetchMock.lastCall().request;
         expect(request.url).to.equal(myUrl);
         expect(request.headers.get('X-Foo')).to.equal('Bar');
-        expect(request.body).to.exist;
-        // expect(request.body.toString()).to.equal('{"baz": "qux"}');
+        expect(await request.text()).to.equal('{"baz": "qux"}');
       });
 
       it('should allow modified response', async() => {
