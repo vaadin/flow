@@ -52,7 +52,7 @@ public class StaticFileServer implements StaticFileHandler {
     private static final Pattern INCORRECT_WEBJAR_PATH_REGEX = Pattern
             .compile("^/frontend[-\\w/]*/webjars/");
     private static final Pattern DIRECTORY_TRAVERSAL_HACK_REGEX = Pattern
-            .compile("(/|\\\\|%5C|%2F)..(/|\\\\|%5C|%2F)",
+            .compile("(/|\\\\|%5C|%2F)\\.\\.(/|\\\\|%5C|%2F)",
                     Pattern.CASE_INSENSITIVE);
 
     private final ResponseWriter responseWriter;
