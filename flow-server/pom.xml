@@ -249,11 +249,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <!-- Need to be revised and removed to avoid conflicts-->
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-        </dependency>
+
         <!-- Connect Testing dependendies -->
 
         <!-- TODO: re-enable tests mocking final classes in the connect
