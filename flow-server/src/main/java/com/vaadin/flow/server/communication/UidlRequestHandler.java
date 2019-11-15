@@ -78,7 +78,8 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         if (uI == null) {
             // This should not happen but it will if the UI has been closed. We
             // really don't want to see it in the server logs though
-            commitJsonResponse(response, VaadinService.createUINotFoundJSON());
+            commitJsonResponse(response,
+                    VaadinService.createUINotFoundJSON(false));
             return true;
         }
 
@@ -144,7 +145,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         VaadinService service = request.getService();
         service.writeUncachedStringResponse(response,
                 JsonConstants.JSON_CONTENT_TYPE,
-                VaadinService.createSessionExpiredJSON());
+                VaadinService.createSessionExpiredJSON(false));
 
         return true;
     }
