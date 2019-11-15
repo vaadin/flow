@@ -25,7 +25,6 @@ import io.swagger.v3.core.util.Json;
 import io.swagger.v3.oas.models.OpenAPI;
 import org.apache.commons.configuration2.PropertiesConfiguration;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -117,7 +116,7 @@ public class OpenApiSpecGenerator {
             PropertiesConfiguration applicationProperties) {
         String endpoint = applicationProperties.getString(ENDPOINT,
                 DEFAULT_ENDPOINT);
-        String server = StringUtils.removeEnd(
+        String server = GeneratorUtils.removeEnd(
                 applicationProperties.getString(SERVER, DEFAULT_SERVER), "/");
         String serverDescription = applicationProperties
                 .getString(SERVER_DESCRIPTION, DEFAULT_SERVER_DESCRIPTION);

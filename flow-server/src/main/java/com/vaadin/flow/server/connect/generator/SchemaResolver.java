@@ -43,7 +43,6 @@ import io.swagger.v3.oas.models.media.NumberSchema;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
-import org.apache.commons.lang3.StringUtils;
 
 class SchemaResolver {
 
@@ -217,8 +216,8 @@ class SchemaResolver {
     }
 
     String getSimpleRef(String ref) {
-        if (StringUtils.contains(ref, SCHEMA_REF_PREFIX)) {
-            return StringUtils.substringAfter(ref, SCHEMA_REF_PREFIX);
+        if (GeneratorUtils.contains(ref, SCHEMA_REF_PREFIX)) {
+            return GeneratorUtils.substringAfter(ref, SCHEMA_REF_PREFIX);
         }
         return ref;
     }
