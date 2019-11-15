@@ -560,6 +560,8 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
             if (tag.getName().equals(classname)) {
                 objs.put(VAADIN_CONNECT_CLASS_DESCRIPTION,
                         tag.getDescription());
+                objs.put("vaadinFilePath",
+                        tag.getExtensions().get("x-vaadin-file-path"));
                 break;
             }
         }
