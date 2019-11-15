@@ -64,9 +64,6 @@ import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.AbstractFileFilter;
 import org.apache.commons.io.filefilter.TrueFileFilter;
-import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -213,7 +210,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
     }
 
     private static String getDefaultClientPath(String path) {
-        path = ObjectUtils.defaultIfNull(path,
+        path = GeneratorUtils.defaultIfNull(path,
                 VaadinConnectClientGenerator.CONNECT_CLIENT_IMPORT_PATH);
         return removeTsExtension(path);
     }
@@ -238,12 +235,13 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
                     .collect(Collectors.toSet());
         } else {
             String error = parseResult == null ? ""
-                    : StringUtils.join(parseResult.getMessages().toArray());
+                    : String.join("", parseResult.getMessages());
             cleanGeneratedFolder(configurator.getOutputDir(),
                     Collections.emptySet());
             throw getUnexpectedOpenAPIException(configurator.getInputSpecURL(),
                     error);
         }
+        
     }
 
     private static void cleanGeneratedFolder(String outputDir,
@@ -409,13 +407,13 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
 
     @Override
     public String toModelFilename(String name) {
-        if (!StringUtils.contains(name, ".")) {
+        if (!GeneratorUtils.contains(name, ".")) {
             return super.toModelFilename(name);
         }
-        String packageName = StringUtils.substringBeforeLast(name, ".");
+        String packageName = GeneratorUtils.substringBeforeLast(name, ".");
         packageName = packageName.replaceAll("\\.", "/");
 
-        String modelName = StringUtils.substringAfterLast(name, ".");
+        String modelName = GeneratorUtils.substringAfterLast(name, ".");
         modelName = super.toModelFilename(modelName);
 
         return packageName + "/" + modelName;
@@ -500,14 +498,14 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
     private String getSimpleNameFromImports(String dataType,
             List<Map<String, String>> imports) {
         for (Map<String, String> anImport : imports) {
-            if (StringUtils.equals(dataType, anImport.get(IMPORT))) {
-                return StringUtils.firstNonBlank(anImport.get("importAs"),
+            if (GeneratorUtils.equals(dataType, anImport.get(IMPORT))) {
+                return GeneratorUtils.firstNonBlank(anImport.get("importAs"),
                         anImport.get("className"));
             }
         }
-        if (StringUtils.contains(dataType, "<")
-                || StringUtils.contains(dataType, "{")
-                || StringUtils.contains(dataType, "|")) {
+        if (GeneratorUtils.contains(dataType, "<")
+                || GeneratorUtils.contains(dataType, "{")
+                || GeneratorUtils.contains(dataType, "|")) {
             return getSimpleNameFromComplexType(dataType, imports);
         }
         return getSimpleNameFromQualifiedName(dataType);
@@ -527,14 +525,14 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
     }
 
     private String getSimpleNameFromQualifiedName(String qualifiedName) {
-        if (StringUtils.contains(qualifiedName, ".")) {
-            return StringUtils.substringAfterLast(qualifiedName, ".");
+        if (GeneratorUtils.contains(qualifiedName, ".")) {
+            return GeneratorUtils.substringAfterLast(qualifiedName, ".");
         }
         return qualifiedName;
     }
 
     private String convertQualifiedNameToModelPath(String qualifiedName) {
-        return "./" + StringUtils.replaceChars(qualifiedName, '.', '/');
+        return "./" + GeneratorUtils.replaceChars(qualifiedName, '.', '/');
     }
 
     private void validateOperationTags(String path, String httpMethod,
@@ -586,7 +584,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
 
     @Override
     protected void addImport(CodegenModel m, String type) {
-        if (!StringUtils.equals(m.getName(), type)) {
+        if (!GeneratorUtils.equals(m.getName(), type)) {
             super.addImport(m, type);
         }
     }
@@ -639,7 +637,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         String modelFilePath = convertQualifiedNameToModelPath(
                 qualifiedNameForRelative);
         // Remove the class name, only consider the parent folder
-        modelFilePath = StringUtils.substringBeforeLast(modelFilePath, "/");
+        modelFilePath = GeneratorUtils.substringBeforeLast(modelFilePath, "/");
         adjustImportInformation(imports, modelFilePath);
     }
 
@@ -657,7 +655,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         Set<String> usedNames = new HashSet<>();
         // Make sure the import list are always in the same orders in when
         // generating different times.
-        imports.sort((o1, o2) -> StringUtils.compare((String) o1.get(IMPORT),
+        imports.sort((o1, o2) -> GeneratorUtils.compare((String) o1.get(IMPORT),
                 (String) o2.get(IMPORT)));
         for (Map<String, Object> anImport : imports) {
             String importQualifiedName = (String) anImport.get(IMPORT);
@@ -686,18 +684,19 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
     private String relativePathToNodeImport(String relativePath) {
         // on Windows Node imports should still use Unix-style path separator
         relativePath = relativePath.replace("\\", "/");
-        return StringUtils.prependIfMissing(relativePath, "./", ".", "/");
+        // prepend with `./` if the string does not start with `./`, `.` or `/`
+        return relativePath.replaceFirst("^(?!(\\./|\\.|/))", "./");
     }
 
     private String getUniqueNameFromQualifiedName(Set<String> usedNames,
             String qualifiedName) {
-        String[] packageSegments = StringUtils.split(qualifiedName, '.');
+        String[] packageSegments = qualifiedName == null ? null : qualifiedName.split("\\.");
         StringBuilder classNameBuilder = new StringBuilder();
         String newClassName = "";
         if (packageSegments != null && packageSegments.length > 1) {
             for (int i = packageSegments.length - 1; i >= 0; i--) {
                 classNameBuilder.insert(0,
-                        StringUtils.capitalize(packageSegments[i]));
+                        GeneratorUtils.capitalize(packageSegments[i]));
                 newClassName = classNameBuilder.toString();
                 if (!usedNames.contains(newClassName)) {
                     return newClassName;
@@ -716,7 +715,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
 
     private void setShouldShowTsDoc(List<CodegenOperation> operations) {
         for (CodegenOperation coop : operations) {
-            boolean hasDescription = StringUtils.isNotBlank(coop.getNotes());
+            boolean hasDescription = GeneratorUtils.isNotBlank(coop.getNotes());
             boolean hasParameter = hasParameterDescription(coop);
             boolean hasResponseDescription = hasResponseDescription(coop);
             if (hasDescription || hasParameter || hasResponseDescription) {
@@ -728,7 +727,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
 
     private boolean hasResponseDescription(CodegenOperation coop) {
         for (CodegenResponse response : coop.getResponses()) {
-            if (StringUtils.isNotBlank(response.getMessage())) {
+            if (GeneratorUtils.isNotBlank(response.getMessage())) {
                 return true;
             }
         }
@@ -741,7 +740,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
                     .getVendorExtensions()
                     .get(EXTENSION_VAADIN_CONNECT_PARAMETERS);
             if (parametersList != null && parametersList.stream()
-                    .anyMatch(parameterInformation -> StringUtils.isNotBlank(
+                    .anyMatch(parameterInformation -> GeneratorUtils.isNotBlank(
                             parameterInformation.getDescription()))) {
                 return true;
             }
@@ -781,7 +780,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
 
     private Set<String> collectImportsFromSchema(Schema schema) {
         Set<String> imports = new HashSet<>();
-        if (StringUtils.isNotBlank(schema.get$ref())) {
+        if (GeneratorUtils.isNotBlank(schema.get$ref())) {
             imports.add(getSimpleRef(schema.get$ref()));
         }
         if (schema instanceof ArraySchema) {
@@ -815,7 +814,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
             name = isReservedWord(name) ? escapeReservedWord(name) : name;
             String type = getTypeDeclaration(entry.getValue());
             String description = entry.getValue().getDescription();
-            if (StringUtils.isBlank(description)) {
+            if (GeneratorUtils.isBlank(description)) {
                 description = getDescriptionFromParameterExtension(name,
                         requestSchema);
             }
@@ -840,7 +839,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
     @Override
     public String getTypeDeclaration(Schema schema) {
         String optionalSuffix = "";
-        if (BooleanUtils.isTrue(schema.getNullable())) {
+        if (GeneratorUtils.isTrue(schema.getNullable())) {
             optionalSuffix = OPTIONAL_SUFFIX;
         }
         if (schema instanceof ArraySchema) {
@@ -848,7 +847,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
             Schema inner = arraySchema.getItems();
             return String.format("Array<%s>%s", this.getTypeDeclaration(inner),
                     optionalSuffix);
-        } else if (StringUtils.isNotBlank(schema.get$ref())) {
+        } else if (GeneratorUtils.isNotBlank(schema.get$ref())) {
             return getSimpleRef(schema.get$ref()) + optionalSuffix;
         } else if (schema.getAdditionalProperties() != null) {
             Schema inner = (Schema) schema.getAdditionalProperties();
