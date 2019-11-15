@@ -1,8 +1,8 @@
 package com.vaadin.flow.uitest.servlet;
 
-import java.util.stream.Stream;
-
 import javax.servlet.annotation.WebServlet;
+
+import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Div;
@@ -13,6 +13,7 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
@@ -185,7 +186,11 @@ public class RouterTestServlet extends VaadinServlet {
 
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
-            VaadinSession.getCurrent().getSession().invalidate();
+            Location location = event.getUI().getInternals()
+                    .getActiveViewLocation();
+            if (!location.getPath().isEmpty()) {
+                VaadinSession.getCurrent().getSession().invalidate();
+            }
         }
     }
 
