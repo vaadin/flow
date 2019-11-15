@@ -73,7 +73,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
      * @param generatedFlowImports
      *            name of the JS file to update with the Flow project imports
      * @param isClientSideMode
-     *            whether the application running with clientSideBootstrapMode* 
+     *            whether the application running with clientSideBootstrapMode*
      */
     TaskUpdateWebpack(File frontendDirectory, File webpackConfigFolder,
             File webpackOutputDirectory, String webpackTemplate,
@@ -217,7 +217,6 @@ public class TaskUpdateWebpack implements FallibleCommand {
     }
 
     private Logger log() {
-        // Using short prefix so as npm output is more readable
-        return LoggerFactory.getLogger("dev-updater");
+        return LoggerFactory.getLogger(this.getClass());
     }
 }

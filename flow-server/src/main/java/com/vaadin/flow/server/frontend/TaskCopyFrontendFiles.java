@@ -91,7 +91,7 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
                 resourceLocations.size(), ms);
     }
 
-    private static Logger log() {
-        return LoggerFactory.getLogger("dev-updater");
+    private Logger log() {
+        return LoggerFactory.getLogger(this.getClass());
     }
 }
