@@ -89,13 +89,16 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 import io.swagger.v3.oas.models.tags.Tag;
 import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.connect.VaadinService;
 import com.vaadin.flow.server.connect.VaadinServiceNameChecker;
 import com.vaadin.flow.server.connect.auth.AnonymousAllowed;
+
+import static com.vaadin.flow.server.connect.generator.GeneratorUtils.firstNonBlank;
+import static com.vaadin.flow.server.connect.generator.GeneratorUtils.isBlank;
+import static com.vaadin.flow.server.connect.generator.GeneratorUtils.isNotBlank;
 
 /**
  * Java parser class which scans for all {@link VaadinService} classes and
@@ -314,7 +317,7 @@ public class OpenApiObjectGenerator {
                 .map(SingleMemberAnnotationExpr::getMemberValue)
                 .map(Expression::asStringLiteralExpr)
                 .map(LiteralStringValueExpr::getValue)
-                .filter(StringUtils::isNotBlank)
+                .filter(GeneratorUtils::isNotBlank)
                 .orElse(classDeclaration.getNameAsString());
 
         String validationError = serviceNameChecker.check(serviceName);
@@ -375,8 +378,8 @@ public class OpenApiObjectGenerator {
                 typeDeclaration);
         schema.properties(properties);
         List<String> requiredList = properties.entrySet().stream()
-                .filter(stringSchemaEntry -> BooleanUtils
-                        .isNotTrue(stringSchemaEntry.getValue().getNullable()))
+                .filter(stringSchemaEntry -> Boolean.FALSE
+                        .equals(stringSchemaEntry.getValue().getNullable()))
                 .map(Map.Entry::getKey).collect(Collectors.toList());
         // Nullable is represented in requiredList instead.
         properties.values()
@@ -410,7 +413,7 @@ public class OpenApiObjectGenerator {
                         variableDeclarator.getType(),
                         fieldDescription.orElse(""));
                 if (field.isAnnotationPresent(Nullable.class)
-                        || BooleanUtils.isTrue(propertySchema.getNullable())) {
+                        || Boolean.TRUE.equals(propertySchema.getNullable())) {
                     // Temporarily set nullable to indicate this property is
                     // not required
                     propertySchema.setNullable(true);
@@ -425,9 +428,8 @@ public class OpenApiObjectGenerator {
     private Map<String, ResolvedReferenceType> collectUsedTypesFromSchema(
             Schema schema) {
         Map<String, ResolvedReferenceType> map = new HashMap<>();
-        if (StringUtils.isNotBlank(schema.getName())
-                || StringUtils.isNotBlank(schema.get$ref())) {
-            String name = StringUtils.firstNonBlank(schema.getName(),
+        if (isNotBlank(schema.getName()) || isNotBlank(schema.get$ref())) {
+            String name = firstNonBlank(schema.getName(),
                     schemaResolver.getSimpleRef(schema.get$ref()));
             ResolvedReferenceType resolvedReferenceType = schemaResolver
                     .getFoundTypeByQualifiedName(name);
@@ -614,12 +616,14 @@ public class OpenApiObjectGenerator {
             usedTypes.putAll(collectUsedTypesFromSchema(paramSchema));
             String name = (isReservedWord(parameter.getNameAsString()) ? "_"
                     : "").concat(parameter.getNameAsString());
-            if (StringUtils.isBlank(paramSchema.get$ref())) {
+
+            if (isBlank(paramSchema.get$ref())) {
                 paramSchema.description(
                         paramsDescription.remove(parameter.getNameAsString()));
             }
             requestSchema.addProperties(name, paramSchema);
-            if (BooleanUtils.isNotTrue(paramSchema.getNullable())
+            parameter.isAnnotationPresent(Nullable.class);
+            if (Boolean.FALSE.equals(paramSchema.getNullable())
                     && !parameter.isAnnotationPresent(Nullable.class)) {
                 requestSchema.addRequiredItem(name);
             }
@@ -636,7 +640,7 @@ public class OpenApiObjectGenerator {
     private Schema parseTypeToSchema(Type javaType, String description) {
         try {
             Schema schema = parseResolvedTypeToSchema(javaType.resolve());
-            if (StringUtils.isNotBlank(description)) {
+            if (isNotBlank(description)) {
                 schema.setDescription(description);
             }
             return schema;
@@ -801,13 +805,11 @@ public class OpenApiObjectGenerator {
                 .getTypeDeclaration();
         String packageName = typeDeclaration.getPackageName();
         String canonicalName = typeDeclaration.getQualifiedName();
-        if (StringUtils.isBlank(packageName)) {
-            return StringUtils.replaceChars(canonicalName, '.', '$');
+        if (isBlank(packageName)) {
+            return canonicalName.replace('.', '$');
         } else {
-            String name = StringUtils.substringAfterLast(canonicalName,
-                    packageName + ".");
-            return String.format("%s.%s", packageName,
-                    StringUtils.replaceChars(name, '.', '$'));
+            String name = canonicalName.replaceAll(".*" + packageName + "\\.", "");
+            return String.format("%s.%s", packageName, name.replace(".", "$"));
         }
     }
 }

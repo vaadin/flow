@@ -64,13 +64,15 @@ import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.AbstractFileFilter;
 import org.apache.commons.io.filefilter.TrueFileFilter;
-import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.connect.VaadinServiceNameChecker;
+
+import static com.vaadin.flow.server.connect.generator.GeneratorUtils.capitalize;
+import static com.vaadin.flow.server.connect.generator.GeneratorUtils.firstNonBlank;
+import static com.vaadin.flow.server.connect.generator.GeneratorUtils.isBlank;
+import static com.vaadin.flow.server.connect.generator.GeneratorUtils.isNotBlank;
 
 /**
  * Vaadin connect JavaScript generator implementation for swagger-codegen. Some
@@ -213,8 +215,8 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
     }
 
     private static String getDefaultClientPath(String path) {
-        path = ObjectUtils.defaultIfNull(path,
-                VaadinConnectClientGenerator.CONNECT_CLIENT_IMPORT_PATH);
+        path = path != null ? path
+                : VaadinConnectClientGenerator.CONNECT_CLIENT_IMPORT_PATH;
         return removeTsExtension(path);
     }
 
@@ -238,7 +240,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
                     .collect(Collectors.toSet());
         } else {
             String error = parseResult == null ? ""
-                    : StringUtils.join(parseResult.getMessages().toArray());
+                    : String.join("", parseResult.getMessages());
             cleanGeneratedFolder(configurator.getOutputDir(),
                     Collections.emptySet());
             throw getUnexpectedOpenAPIException(configurator.getInputSpecURL(),
@@ -409,13 +411,14 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
 
     @Override
     public String toModelFilename(String name) {
-        if (!StringUtils.contains(name, ".")) {
+        assert name != null;
+        if (name.contains(".")) {
             return super.toModelFilename(name);
         }
-        String packageName = StringUtils.substringBeforeLast(name, ".");
-        packageName = packageName.replaceAll("\\.", "/");
+        String packageName = name.replaceFirst("\\..*?$", "");
+        packageName = packageName.replace('.', '/');
 
-        String modelName = StringUtils.substringAfterLast(name, ".");
+        String modelName = name.replaceAll(".*\\.", "");
         modelName = super.toModelFilename(modelName);
 
         return packageName + "/" + modelName;
@@ -500,14 +503,12 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
     private String getSimpleNameFromImports(String dataType,
             List<Map<String, String>> imports) {
         for (Map<String, String> anImport : imports) {
-            if (StringUtils.equals(dataType, anImport.get(IMPORT))) {
-                return StringUtils.firstNonBlank(anImport.get("importAs"),
+            if (dataType != null && dataType.equals(anImport.get(IMPORT))) {
+                return firstNonBlank(anImport.get("importAs"),
                         anImport.get("className"));
             }
         }
-        if (StringUtils.contains(dataType, "<")
-                || StringUtils.contains(dataType, "{")
-                || StringUtils.contains(dataType, "|")) {
+        if (dataType.matches(".*[<{|].*")) {
             return getSimpleNameFromComplexType(dataType, imports);
         }
         return getSimpleNameFromQualifiedName(dataType);
@@ -527,14 +528,14 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
     }
 
     private String getSimpleNameFromQualifiedName(String qualifiedName) {
-        if (StringUtils.contains(qualifiedName, ".")) {
-            return StringUtils.substringAfterLast(qualifiedName, ".");
+        if (qualifiedName.contains(".")) {
+            return qualifiedName.replaceAll(".*\\.", "");
         }
         return qualifiedName;
     }
 
     private String convertQualifiedNameToModelPath(String qualifiedName) {
-        return "./" + StringUtils.replaceChars(qualifiedName, '.', '/');
+        return "./" + qualifiedName.replace('.', '/');
     }
 
     private void validateOperationTags(String path, String httpMethod,
@@ -586,7 +587,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
 
     @Override
     protected void addImport(CodegenModel m, String type) {
-        if (!StringUtils.equals(m.getName(), type)) {
+        if (m != null && !m.getName().equals(type)) {
             super.addImport(m, type);
         }
     }
@@ -639,7 +640,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         String modelFilePath = convertQualifiedNameToModelPath(
                 qualifiedNameForRelative);
         // Remove the class name, only consider the parent folder
-        modelFilePath = StringUtils.substringBeforeLast(modelFilePath, "/");
+        modelFilePath = modelFilePath.replaceFirst("/.*?$", "");
         adjustImportInformation(imports, modelFilePath);
     }
 
@@ -657,8 +658,8 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         Set<String> usedNames = new HashSet<>();
         // Make sure the import list are always in the same orders in when
         // generating different times.
-        imports.sort((o1, o2) -> StringUtils.compare((String) o1.get(IMPORT),
-                (String) o2.get(IMPORT)));
+        imports.sort((o1, o2) -> String.valueOf(o1.get(IMPORT))
+                .compareTo(String.valueOf(o2.get(IMPORT))));
         for (Map<String, Object> anImport : imports) {
             String importQualifiedName = (String) anImport.get(IMPORT);
             String className = getSimpleNameFromQualifiedName(
@@ -686,18 +687,18 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
     private String relativePathToNodeImport(String relativePath) {
         // on Windows Node imports should still use Unix-style path separator
         relativePath = relativePath.replace("\\", "/");
-        return StringUtils.prependIfMissing(relativePath, "./", ".", "/");
+        // prepend with `./` if the string does not start with `./`, `.` or `/`
+        return relativePath.replaceFirst("^(?!(\\./|\\.|/))", "./");
     }
 
     private String getUniqueNameFromQualifiedName(Set<String> usedNames,
             String qualifiedName) {
-        String[] packageSegments = StringUtils.split(qualifiedName, '.');
+        String[] packageSegments = qualifiedName == null ? null : qualifiedName.split(".");
         StringBuilder classNameBuilder = new StringBuilder();
         String newClassName = "";
         if (packageSegments != null && packageSegments.length > 1) {
             for (int i = packageSegments.length - 1; i >= 0; i--) {
-                classNameBuilder.insert(0,
-                        StringUtils.capitalize(packageSegments[i]));
+                classNameBuilder.insert(0, capitalize(packageSegments[i]));
                 newClassName = classNameBuilder.toString();
                 if (!usedNames.contains(newClassName)) {
                     return newClassName;
@@ -716,7 +717,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
 
     private void setShouldShowTsDoc(List<CodegenOperation> operations) {
         for (CodegenOperation coop : operations) {
-            boolean hasDescription = StringUtils.isNotBlank(coop.getNotes());
+            boolean hasDescription = isNotBlank(coop.getNotes());
             boolean hasParameter = hasParameterDescription(coop);
             boolean hasResponseDescription = hasResponseDescription(coop);
             if (hasDescription || hasParameter || hasResponseDescription) {
@@ -728,7 +729,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
 
     private boolean hasResponseDescription(CodegenOperation coop) {
         for (CodegenResponse response : coop.getResponses()) {
-            if (StringUtils.isNotBlank(response.getMessage())) {
+            if (isNotBlank(response.getMessage())) {
                 return true;
             }
         }
@@ -741,7 +742,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
                     .getVendorExtensions()
                     .get(EXTENSION_VAADIN_CONNECT_PARAMETERS);
             if (parametersList != null && parametersList.stream()
-                    .anyMatch(parameterInformation -> StringUtils.isNotBlank(
+                    .anyMatch(parameterInformation -> isNotBlank(
                             parameterInformation.getDescription()))) {
                 return true;
             }
@@ -781,7 +782,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
 
     private Set<String> collectImportsFromSchema(Schema schema) {
         Set<String> imports = new HashSet<>();
-        if (StringUtils.isNotBlank(schema.get$ref())) {
+        if (isNotBlank(schema.get$ref())) {
             imports.add(getSimpleRef(schema.get$ref()));
         }
         if (schema instanceof ArraySchema) {
@@ -815,7 +816,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
             name = isReservedWord(name) ? escapeReservedWord(name) : name;
             String type = getTypeDeclaration(entry.getValue());
             String description = entry.getValue().getDescription();
-            if (StringUtils.isBlank(description)) {
+            if (isBlank(description)) {
                 description = getDescriptionFromParameterExtension(name,
                         requestSchema);
             }
@@ -840,7 +841,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
     @Override
     public String getTypeDeclaration(Schema schema) {
         String optionalSuffix = "";
-        if (BooleanUtils.isTrue(schema.getNullable())) {
+        if (Boolean.TRUE.equals(schema.getNullable())) {
             optionalSuffix = OPTIONAL_SUFFIX;
         }
         if (schema instanceof ArraySchema) {
@@ -848,7 +849,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
             Schema inner = arraySchema.getItems();
             return String.format("Array<%s>%s", this.getTypeDeclaration(inner),
                     optionalSuffix);
-        } else if (StringUtils.isNotBlank(schema.get$ref())) {
+        } else if (isNotBlank(schema.get$ref())) {
             return getSimpleRef(schema.get$ref()) + optionalSuffix;
         } else if (schema.getAdditionalProperties() != null) {
             Schema inner = (Schema) schema.getAdditionalProperties();

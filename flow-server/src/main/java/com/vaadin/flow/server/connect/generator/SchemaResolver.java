@@ -43,7 +43,6 @@ import io.swagger.v3.oas.models.media.NumberSchema;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
-import org.apache.commons.lang3.StringUtils;
 
 class SchemaResolver {
 
@@ -217,10 +216,10 @@ class SchemaResolver {
     }
 
     String getSimpleRef(String ref) {
-        if (StringUtils.contains(ref, SCHEMA_REF_PREFIX)) {
-            return StringUtils.substringAfter(ref, SCHEMA_REF_PREFIX);
+        if (ref == null) {
+            return null;
         }
-        return ref;
+        return ref.replaceFirst(".*" + SCHEMA_REF_PREFIX, "");
     }
 
     void addFoundTypes(String qualifiedName, ResolvedReferenceType type) {
