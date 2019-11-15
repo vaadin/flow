@@ -54,7 +54,7 @@ public class StaticFileServer implements StaticFileHandler {
             + "fixIncorrectWebjarPaths";
     private static final Pattern INCORRECT_WEBJAR_PATH_REGEX = Pattern
             .compile("^/frontend[-\\w/]*/webjars/");
-    private static final Pattern DIRECTORY_TRAVERSAL_HACK_REGEX = Pattern
+    private static final Pattern PARENT_DIRECTORY_REGEX = Pattern
             .compile("(/|\\\\)\\.\\.(/|\\\\)", Pattern.CASE_INSENSITIVE);
 
     private final ResponseWriter responseWriter;
@@ -115,8 +115,7 @@ public class StaticFileServer implements StaticFileHandler {
         }
 
         URL resourceUrl = null;
-        if (filenameWithPath.startsWith("/" + VAADIN_BUILD_FILES_PATH)
-                && isAllowedVAADINBuildUrl(filenameWithPath)) {
+        if (isAllowedVAADINBuildUrl(filenameWithPath)) {
             resourceUrl = servletService.getClassLoader()
                     .getResource("META-INF" + filenameWithPath);
         }
@@ -199,7 +198,7 @@ public class StaticFileServer implements StaticFileHandler {
             throw new RuntimeException("An error occurred during decoding URL.",
                     e);
         }
-        return !DIRECTORY_TRAVERSAL_HACK_REGEX.matcher(path).find();
+        return !PARENT_DIRECTORY_REGEX.matcher(path).find();
     }
 
     /**
@@ -221,12 +220,9 @@ public class StaticFileServer implements StaticFileHandler {
                     filenameWithPath);
             return false;
         }
-        // Check that we target VAADIN/build
-        if (!filenameWithPath.startsWith("/" + VAADIN_BUILD_FILES_PATH)) {
-            return false;
-        }
 
-        return true;
+        // Check that we target VAADIN/build
+        return filenameWithPath.startsWith("/" + VAADIN_BUILD_FILES_PATH);
     }
 
     /**
