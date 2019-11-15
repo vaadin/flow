@@ -3,15 +3,16 @@ package com.vaadin.flow.server;
 import javax.servlet.http.HttpServletRequest;
 
 import java.io.IOException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.Collections;
+import java.util.Enumeration;
 
-import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.mockito.stubbing.Answer;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.PushConfiguration;
@@ -29,14 +30,11 @@ import com.vaadin.flow.server.communication.PushConnectionFactory;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Transport;
 
-import static java.util.Collections.enumeration;
-import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class BootstrapHandlerPushConfigurationTest {
 
@@ -119,9 +117,6 @@ public class BootstrapHandlerPushConfigurationTest {
     @Test
     public void uiInitialization_customPushConnectionFactoryIsApplied()
             throws Exception {
-        String version = System.getProperty("java.version");
-        Assume.assumeThat(version, CoreMatchers.startsWith("1.8"));
-
         ClassLoader classLoader = service.getClassLoader();
         ClassLoader mockClassLoader = mockClassloaderForServiceLoader(
                 classLoader, "PushConnectionFactory_serviceLoader_single.txt");
@@ -137,9 +132,6 @@ public class BootstrapHandlerPushConfigurationTest {
     @Test
     public void uiInitialization_shouldFailIfMultiplePushConnectionFactoryAreAvailable()
             throws Exception {
-        String version = System.getProperty("java.version");
-        Assume.assumeThat(version, CoreMatchers.startsWith("1.8"));
-
         ClassLoader classLoader = service.getClassLoader();
         ClassLoader mockClassLoader = mockClassloaderForServiceLoader(
                 classLoader,
@@ -161,14 +153,19 @@ public class BootstrapHandlerPushConfigurationTest {
 
     private ClassLoader mockClassloaderForServiceLoader(ClassLoader classLoader,
             String s) throws IOException {
-        Answer<?> delegateToReal = i -> i.getMethod().invoke(classLoader,
-                i.getArguments());
-        ClassLoader mockClassLoader = mock(ClassLoader.class, delegateToReal);
-        when(mockClassLoader.getResources(
-                "META-INF/services/com.vaadin.flow.server.communication.PushConnectionFactory"))
-                        .thenReturn(enumeration(
-                                singletonList(getClass().getResource(s))));
-        return mockClassLoader;
+        URLClassLoader loader = new URLClassLoader(new URL[0], classLoader) {
+            @Override
+            public Enumeration<URL> findResources(String name)
+                    throws IOException {
+                if (name.equals(
+                        "META-INF/services/com.vaadin.flow.server.communication.PushConnectionFactory")) {
+                    return Collections.enumeration(Collections
+                            .singletonList(getClass().getResource(s)));
+                }
+                return super.findResources(name);
+            }
+        };
+        return loader;
     }
 
     private void assertPushConfigurationForComponent(
