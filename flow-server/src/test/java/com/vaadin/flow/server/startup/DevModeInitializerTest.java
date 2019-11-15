@@ -34,8 +34,8 @@ import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_M
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_REUSE_DEV_SERVER;
+import static com.vaadin.flow.server.DevModeHandler.getDevModeHandler;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_GENERATED_TS_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_JAVA_SOURCE_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_OPENAPI_JSON_FILE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -119,6 +119,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     @Test
     public void should_Not_Run_Updaters_when_NoMainPackageFile()
             throws Exception {
+        assertNull(getDevModeHandler());
         mainPackageFile.delete();
         assertNull(getDevModeHandler());
     }

@@ -21,8 +21,6 @@ import org.junit.Before;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.server.DevModeHandler;
-import com.vaadin.flow.server.DevModeHandlerTest;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
@@ -31,11 +29,13 @@ import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_M
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_REUSE_DEV_SERVER;
+import static com.vaadin.flow.server.DevModeHandler.getDevModeHandler;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_JAVA_SOURCE_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubNode;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubWebpackServer;
+import static org.junit.Assert.assertNull;
 
 /**
  * Base class for DevModeInitializer tests. It is an independent class so as it
@@ -60,11 +60,13 @@ public class DevModeInitializerTestBase {
     @Before
     @SuppressWarnings({"unchecked", "rawtypes"})
     public void setup() throws Exception {
+        assertNull(getDevModeHandler());
+
         temporaryFolder.create();
         baseDir = temporaryFolder.getRoot().getPath();
 
         createStubNode(false, true, baseDir);
-        createStubWebpackServer("Compiled", 0, baseDir);
+        createStubWebpackServer("Compiled", 500, baseDir);
 
         servletContext = Mockito.mock(ServletContext.class);
         ServletRegistration registration = Mockito.mock(ServletRegistration.class);
@@ -116,10 +118,9 @@ public class DevModeInitializerTestBase {
         mainPackageFile.delete();
         appPackageFile.delete();
         temporaryFolder.delete();
-        if (DevModeHandler.getDevModeHandler() != null) {
-            DevModeHandler.getDevModeHandler().removeRunningDevServerPort();
+        if (getDevModeHandler() != null) {
+            getDevModeHandler().stop();
         }
-        DevModeHandlerTest.removeDevModeHandlerInstance();
     }
 
     public void runOnStartup() throws Exception {
@@ -143,7 +144,4 @@ public class DevModeInitializerTestBase {
                 }).collect(Collectors.toList());
     }
 
-    public DevModeHandler getDevModeHandler() {
-        return DevModeHandler.getDevModeHandler();
-    }
 }
