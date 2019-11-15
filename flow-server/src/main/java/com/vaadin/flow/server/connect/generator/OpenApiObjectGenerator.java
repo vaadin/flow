@@ -681,7 +681,6 @@ public class OpenApiObjectGenerator {
         List<Schema> results = new ArrayList<>();
 
         Schema schema = createSingleSchemaFromResolvedType(resolvedType);
-
         String qualifiedName = resolvedType.getQualifiedName();
         generatedSchema.add(qualifiedName);
 
