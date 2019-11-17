@@ -133,6 +133,9 @@ public final class DevModeHandler implements Serializable {
                     port));
         }
 
+        long start = System.nanoTime();
+        getLogger().info("Starting webpack-dev-server");
+
         watchDog = new DevServerWatchDog();
 
         // Look for a free port
@@ -156,7 +159,6 @@ public final class DevModeHandler implements Serializable {
                         "-d --inline=false --progress --colors")
                 .split(" +")));
 
-        getLogger().info("Starting webpack-dev-server");
 
         console(GREEN, START);
         console(YELLOW, WordUtils
@@ -198,6 +200,9 @@ public final class DevModeHandler implements Serializable {
                         SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT,
                         DEFAULT_TIMEOUT_FOR_PATTERN)));
             }
+
+            long ms = (System.nanoTime() - start) / 1000000;
+            getLogger().info("Started webpack-dev-server. Time: {}ms", ms);
 
             if (!webpackProcess.isAlive()) {
                 throw new IllegalStateException("Webpack exited prematurely");
@@ -452,9 +457,9 @@ public final class DevModeHandler implements Serializable {
 
     private void readLinesLoop(Pattern success, Pattern failure,
             InputStreamReader reader) throws IOException {
-        StringBuffer line = new StringBuffer();
-        for (int c; (c = reader.read()) >= 0;) {
-            char ch = (char) c;
+        StringBuilder line = new StringBuilder();
+        for (int i; (i = reader.read()) >= 0;) {
+            char ch = (char) i;
             console("%c", ch);
             line.append(ch);
             if (ch == '\n') {
@@ -636,7 +641,9 @@ public final class DevModeHandler implements Serializable {
         removeRunningDevServerPort();
     }
 
-    private static void console(String color, Object s) {
-        System.out.print(format(color, s));
+    @SuppressWarnings("squid:S106")
+    private static void console(String format, Object s) {
+        // intentionally send to console instead to log
+        System.out.print(format(format, s));
     }
 }
