@@ -66,7 +66,7 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
         // - resourceInFolder.js
         File dir = TestUtils.getTestFolder(fsDir);
 
-        TaskCopyFrontendFiles task = new TaskCopyFrontendFiles(npmFolder,
+        TaskCopyFrontendFiles task = new TaskCopyFrontendFiles(targetFolder,
                 jars(jar, dir));
 
         task.execute();

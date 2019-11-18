@@ -24,8 +24,10 @@ import org.apache.maven.plugins.annotations.Parameter;
 
 import com.vaadin.flow.server.Constants;
 
-import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.Constants.*;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
+import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 
 /**
  * The base class of Flow Mojos in order to compute correctly the modes.
@@ -34,6 +36,33 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
  */
 public abstract class FlowModeAbstractMojo extends AbstractMojo {
     static final String VAADIN_COMPATIBILITY_MODE = "vaadin.compatibilityMode";
+
+    /**
+     * The folder where `package.json` file is located. Default is project root
+     * dir.
+     */
+    @Parameter(defaultValue = "${project.basedir}")
+    public File npmFolder;
+
+    /**
+     * The folder where flow will put generated files that will be used by
+     * webpack.
+     */
+    @Parameter(defaultValue = "${project.build.directory}/" + FRONTEND)
+    public File generatedFolder;
+
+    /**
+     * A directory with project's frontend source files.
+     */
+    @Parameter(defaultValue = "${project.basedir}/" + FRONTEND)
+    public File frontendDirectory;
+
+
+    /**
+     * A directory with project's frontend source files.
+     */
+    @Parameter(defaultValue = "${project.basedir}/" + NODE_MODULES + FLOW_NPM_PACKAGE_NAME)
+    public File frontendDepsDirectory;
 
     /**
      * Whether or not we are running in compatibility mode.

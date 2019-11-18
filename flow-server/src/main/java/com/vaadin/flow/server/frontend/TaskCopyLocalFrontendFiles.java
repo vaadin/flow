@@ -24,9 +24,6 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
-
 /**
  * Copies JavaScript files from the given local frontend folder.
  *
@@ -45,10 +42,9 @@ public class TaskCopyLocalFrontendFiles implements FallibleCommand {
      * @param npmFolder
      *            target directory for the discovered files
      */
-    TaskCopyLocalFrontendFiles(File npmFolder,
+    TaskCopyLocalFrontendFiles(File targetDirectory,
             File frontendResourcesDirectory) {
-        this.targetDirectory = new File(npmFolder,
-                NODE_MODULES + FLOW_NPM_PACKAGE_NAME);
+        this.targetDirectory = targetDirectory;
         this.frontendResourcesDirectory = frontendResourcesDirectory;
     }
 

@@ -88,6 +88,7 @@ public class BuildFrontendMojoTest {
     private String openApiJsonFile;
     private File generatedTsFolder;
 
+
     private File tokenFile;
 
     private final BuildFrontendMojo mojo = new BuildFrontendMojo();
@@ -156,6 +157,8 @@ public class BuildFrontendMojoTest {
                 defaultJavaSource);
         ReflectionUtils.setVariableValueInObject(mojo, "generatedTsFolder",
                 generatedTsFolder);
+        ReflectionUtils.setVariableValueInObject(mojo, "frontendDepsDirectory",
+                flowPackagPath);
 
         flowPackagPath.mkdirs();
         generatedFolder.mkdirs();

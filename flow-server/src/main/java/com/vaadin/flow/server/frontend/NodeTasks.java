@@ -68,11 +68,11 @@ public class NodeTasks implements FallibleCommand {
 
         private Set<File> jarFiles = null;
 
-        private boolean copyResources = false;
-
         private boolean generateEmbeddableWebComponents = true;
 
         private boolean cleanNpmFiles = false;
+
+        private File frontendDepsTargetDirectory = null;
 
         private File frontendResourcesDirectory = null;
 
@@ -133,8 +133,9 @@ public class NodeTasks implements FallibleCommand {
         public Builder(ClassFinder classFinder, File npmFolder,
                 File generatedPath) {
             this(classFinder, npmFolder, generatedPath,
-                    new File(npmFolder, System.getProperty(PARAM_FRONTEND_DIR,
-                            DEFAULT_FRONTEND_DIR)));
+                    new File(npmFolder,
+                            System.getProperty(PARAM_FRONTEND_DIR,
+                                    DEFAULT_FRONTEND_DIR)));
         }
 
         /**
@@ -259,10 +260,13 @@ public class NodeTasks implements FallibleCommand {
          *
          * @return the builder
          */
-        public Builder copyResources(Set<File> jars) {
+        public Builder copyResources(File frontendDepsDirectory, Set<File> jars) {
             Objects.requireNonNull(jars, "Parameter 'jars' must not be null!");
+            this.frontendDepsTargetDirectory = frontendDepsDirectory
+                    .isAbsolute() ? frontendDepsDirectory
+                            : new File(npmFolder,
+                                    frontendDepsDirectory.getPath());
             this.jarFiles = jars;
-            this.copyResources = true;
             return this;
         }
 
@@ -470,14 +474,17 @@ public class NodeTasks implements FallibleCommand {
             }
         }
 
-        if (builder.copyResources) {
-            commands.add(new TaskCopyFrontendFiles(builder.npmFolder,
-                    builder.jarFiles));
-        }
 
-        if (builder.frontendResourcesDirectory != null) {
-            commands.add(new TaskCopyLocalFrontendFiles(builder.npmFolder,
-                    builder.frontendResourcesDirectory));
+
+        if (builder.jarFiles != null) {
+            commands.add(new TaskCopyFrontendFiles(
+                    builder.frontendDepsTargetDirectory, builder.jarFiles));
+
+            if (builder.frontendResourcesDirectory != null) {
+                commands.add(new TaskCopyLocalFrontendFiles(
+                        builder.frontendDepsTargetDirectory,
+                        builder.frontendResourcesDirectory));
+            }
         }
 
         if (builder.webpackTemplate != null
