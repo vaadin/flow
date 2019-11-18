@@ -31,6 +31,9 @@ import org.junit.rules.TemporaryFolder;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
+
 public class FrontendResourcesAreCopiedAfterCleaningTest {
 
     @Rule
@@ -76,10 +79,11 @@ public class FrontendResourcesAreCopiedAfterCleaningTest {
                         .getClassLoader());
         NodeTasks.Builder builder = new NodeTasks.Builder(classFinder,
                 npmFolder);
+        File depsFolder = new File(npmFolder, NODE_MODULES + FLOW_NPM_PACKAGE_NAME);
         builder.withEmbeddableWebComponents(false).enableImportsUpdate(false)
                 .createMissingPackageJson(true).enableImportsUpdate(true)
                 .runNpmInstall(false).enablePackagesUpdate(true)
-                .copyResources(Collections.singleton(testJar)).build()
+                .copyResources(depsFolder, Collections.singleton(testJar)).build()
                 .execute();
     }
 
