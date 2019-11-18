@@ -18,6 +18,7 @@ package com.vaadin.flow.server.connect.generator.services;
 
 import javax.annotation.Nullable;
 import javax.annotation.security.DenyAll;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -42,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -64,13 +66,8 @@ import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
 import io.swagger.v3.parser.OpenAPIV3Parser;
-import org.apache.commons.configuration2.PropertiesConfiguration;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
@@ -83,6 +80,11 @@ import com.vaadin.flow.server.connect.generator.OpenApiObjectGenerator;
 import com.vaadin.flow.server.connect.generator.OpenApiSpecGenerator;
 import com.vaadin.flow.server.connect.generator.TestUtils;
 import com.vaadin.flow.server.connect.generator.VaadinConnectTsGenerator;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public abstract class AbstractServiceGenerationTest {
     private static final List<Class<?>> JSON_NUMBER_CLASSES = Arrays.asList(
@@ -153,8 +155,8 @@ public abstract class AbstractServiceGenerationTest {
 
     private void generateAndVerify(URL customApplicationProperties,
             URL expectedOpenApiJsonResourceUrl) {
-        PropertiesConfiguration applicationProperties = customApplicationProperties == null
-                ? new PropertiesConfiguration()
+        Properties applicationProperties = customApplicationProperties == null
+                ? new Properties()
                 : TestUtils
                         .readProperties(customApplicationProperties.getPath());
         new OpenApiSpecGenerator(applicationProperties).generateOpenApiSpec(
@@ -565,7 +567,7 @@ public abstract class AbstractServiceGenerationTest {
      * .ts</code>. For example: The generated model of
      * <code>com.vaadin.flow.server.connect.SomeModel</code> will be expected to
      * be the same as file <code>expected-model-connect.SomeModel.ts</code>
-     * 
+     *
      * @param expectedClass
      * @return
      */

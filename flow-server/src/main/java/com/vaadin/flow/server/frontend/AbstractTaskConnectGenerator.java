@@ -20,9 +20,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Properties;
 
-import org.apache.commons.configuration2.PropertiesConfiguration;
-import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,15 +37,16 @@ abstract class AbstractTaskConnectGenerator implements FallibleCommand {
         this.applicationProperties = applicationProperties;
     }
 
-    protected PropertiesConfiguration readApplicationProperties() {
-        PropertiesConfiguration config = new PropertiesConfiguration();
+    protected Properties readApplicationProperties() {
+        Properties config = new Properties();
 
         if (applicationProperties != null && applicationProperties.exists()) {
+            BufferedReader bufferedReader;
             try {
-                BufferedReader bufferedReader = Files.newBufferedReader(
+                bufferedReader = Files.newBufferedReader(
                         applicationProperties.toPath(), StandardCharsets.UTF_8);
-                config.read(bufferedReader);
-            } catch (IOException | ConfigurationException e) {
+                config.load(bufferedReader);
+            } catch (IOException e) {
                 log().info(String.format(
                         "Can't read the application"
                                 + ".properties file from %s",
