@@ -84,6 +84,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
     private static final String EXTENSION_VAADIN_CONNECT_METHOD_NAME = "x-vaadin-connect-method-name";
     private static final String EXTENSION_VAADIN_CONNECT_SERVICE_NAME = "x-vaadin-connect-service-name";
     private static final String VAADIN_CONNECT_CLASS_DESCRIPTION = "vaadinConnectClassDescription";
+    private static final String VAADIN_FILE_PATH = "vaadinFilePath";
     private static final String CLIENT_PATH_TEMPLATE_PROPERTY = "vaadinConnectDefaultClientPath";
     private static final Pattern PATH_REGEX = Pattern
             .compile("^/([^/{}\n\t]+)/([^/{}\n\t]+)$");
@@ -560,8 +561,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
             if (tag.getName().equals(classname)) {
                 objs.put(VAADIN_CONNECT_CLASS_DESCRIPTION,
                         tag.getDescription());
-                objs.put("vaadinFilePath",
-                        tag.getExtensions().get("x-vaadin-file-path"));
+                setVaadinFilePath(objs, tag);
                 break;
             }
         }
@@ -582,6 +582,14 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
 
         printDebugMessage(postProcessOperations, "=== All operations data ===");
         return postProcessOperations;
+    }
+
+    private void setVaadinFilePath(Map<String, Object> objs, Tag tag) {
+        if (tag.getExtensions() != null && tag.getExtensions().get(
+                OpenApiObjectGenerator.EXTENSION_VAADIN_FILE_PATH) != null) {
+            objs.put(VAADIN_FILE_PATH, tag.getExtensions()
+                    .get(OpenApiObjectGenerator.EXTENSION_VAADIN_FILE_PATH));
+        }
     }
 
     @Override

@@ -55,6 +55,7 @@ import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
 import com.github.javaparser.ast.nodeTypes.NodeWithSimpleName;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
+import com.github.javaparser.javadoc.Javadoc;
 import com.github.javaparser.javadoc.JavadocBlockTag;
 import com.github.javaparser.resolution.declarations.ResolvedFieldDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedReferenceTypeDeclaration;
@@ -101,10 +102,10 @@ import com.vaadin.flow.server.connect.auth.AnonymousAllowed;
  */
 public class OpenApiObjectGenerator {
     public static final String EXTENSION_VAADIN_CONNECT_PARAMETERS_DESCRIPTION = "x-vaadin-parameters-description";
+    public static final String EXTENSION_VAADIN_FILE_PATH = "x-vaadin-file-path";
 
     private static final String VAADIN_CONNECT_OAUTH2_SECURITY_SCHEME = "vaadin-connect-oauth2";
     private static final String VAADIN_CONNECT_OAUTH2_TOKEN_URL = "/oauth/token";
-    private static final String EXTENSION_VAADIN_FILE_PATH = "x-vaadin-file-path";
 
     private List<Path> javaSourcePaths = new ArrayList<>();
     private OpenApiConfiguration configuration;
@@ -199,8 +200,10 @@ public class OpenApiObjectGenerator {
             List<Schema> schemas = createSchemasFromQualifiedNameAndType(
                     entry.getKey(), entry.getValue());
             schemas.forEach(schema -> {
-                schema.addExtension("x-vaadin-file-path",
-                        qualifiedNameToPath.get(schema.getName()));
+                if (qualifiedNameToPath.get(schema.getName()) != null) {
+                    schema.addExtension(EXTENSION_VAADIN_FILE_PATH,
+                            qualifiedNameToPath.get(schema.getName()));
+                }
                 openApiModel.getComponents().addSchemas(schema.getName(),
                         schema);
             });
@@ -243,6 +246,8 @@ public class OpenApiObjectGenerator {
                             .getFullyQualifiedName().orElse(simpleClassName)));
             openApiModel.addTagsItem(tag);
         }
+        // Keep the order consistent
+        openApiModel.getTags().sort(Comparator.comparing(Tag::getName));
     }
 
     private OpenAPI createBasicModel() {
@@ -313,9 +318,13 @@ public class OpenApiObjectGenerator {
             nonServiceMap.put(classDeclaration.resolve().getQualifiedName(),
                     classDeclaration);
         } else {
-            classDeclaration.getJavadoc().ifPresent(javadoc -> servicesJavadoc
-                    .put(classDeclaration, javadoc.getDescription().toText()));
-
+            Optional<Javadoc> javadoc = classDeclaration.getJavadoc();
+            if (javadoc.isPresent()) {
+                servicesJavadoc.put(classDeclaration,
+                        javadoc.get().getDescription().toText());
+            } else {
+                servicesJavadoc.put(classDeclaration, "");
+            }
             pathItems.putAll(createPathItems(
                     getServiceName(classDeclaration, serviceAnnotation.get()),
                     classDeclaration));
@@ -504,10 +513,6 @@ public class OpenApiObjectGenerator {
             if (methodDeclaration.getParameters().isNonEmpty()) {
                 post.setRequestBody(createRequestBody(methodDeclaration));
             }
-            post.addExtension(EXTENSION_VAADIN_FILE_PATH,
-                    qualifiedNameToPath
-                            .get(typeDeclaration.getFullyQualifiedName().orElse(
-                                    typeDeclaration.getNameAsString())));
 
             ApiResponses responses = createApiResponses(methodDeclaration);
             post.setResponses(responses);
