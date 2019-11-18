@@ -21,9 +21,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
-import org.apache.commons.configuration2.PropertiesConfiguration;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,8 +54,8 @@ public class VaadinConnectClientGenerator {
      *            the properties with the data required for the generation
      */
     public VaadinConnectClientGenerator(
-            PropertiesConfiguration applicationProperties) {
-        this.serviceEndpoint = applicationProperties.getString(ENDPOINT,
+            Properties applicationProperties) {
+        this.serviceEndpoint = (String)applicationProperties.getOrDefault(ENDPOINT,
                 DEFAULT_ENDPOINT);
     }
 

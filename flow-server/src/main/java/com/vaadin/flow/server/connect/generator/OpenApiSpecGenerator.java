@@ -20,10 +20,10 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.Properties;
 
 import io.swagger.v3.core.util.Json;
 import io.swagger.v3.oas.models.OpenAPI;
-import org.apache.commons.configuration2.PropertiesConfiguration;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,7 +59,7 @@ public class OpenApiSpecGenerator {
      * @param applicationProperties
      *            the properties with the data required for the generation
      */
-    public OpenApiSpecGenerator(PropertiesConfiguration applicationProperties) {
+    public OpenApiSpecGenerator(Properties applicationProperties) {
         generator = new OpenApiObjectGenerator();
         generator.setOpenApiConfiguration(
                 extractOpenApiConfiguration(applicationProperties));
@@ -113,17 +113,18 @@ public class OpenApiSpecGenerator {
     }
 
     private OpenApiConfiguration extractOpenApiConfiguration(
-            PropertiesConfiguration applicationProperties) {
-        String endpoint = applicationProperties.getString(ENDPOINT,
+            Properties applicationProperties) {
+        String endpoint = (String) applicationProperties.getOrDefault(ENDPOINT,
                 DEFAULT_ENDPOINT);
-        String server = GeneratorUtils.removeEnd(
-                applicationProperties.getString(SERVER, DEFAULT_SERVER), "/");
-        String serverDescription = applicationProperties
-                .getString(SERVER_DESCRIPTION, DEFAULT_SERVER_DESCRIPTION);
-        String applicationTitle = applicationProperties
-                .getString(APPLICATION_TITLE, DEFAULT_APPLICATION_TITLE);
-        String applicationApiVersion = applicationProperties.getString(
-                APPLICATION_API_VERSION, DEFAULT_APPLICATION_API_VERSION);
+        String server = GeneratorUtils.removeEnd((String) applicationProperties
+                .getOrDefault(SERVER, DEFAULT_SERVER), "/");
+        String serverDescription = (String) applicationProperties
+                .getOrDefault(SERVER_DESCRIPTION, DEFAULT_SERVER_DESCRIPTION);
+        String applicationTitle = (String) applicationProperties
+                .getOrDefault(APPLICATION_TITLE, DEFAULT_APPLICATION_TITLE);
+        String applicationApiVersion = (String) applicationProperties
+                .getOrDefault(APPLICATION_API_VERSION,
+                        DEFAULT_APPLICATION_API_VERSION);
         return new OpenApiConfiguration(applicationTitle, applicationApiVersion,
                 server + endpoint, serverDescription);
     }

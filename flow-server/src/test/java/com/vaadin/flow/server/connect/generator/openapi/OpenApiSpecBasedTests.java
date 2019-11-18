@@ -23,8 +23,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Properties;
 
-import org.apache.commons.configuration2.PropertiesConfiguration;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -114,7 +114,7 @@ public class OpenApiSpecBasedTests {
                 outputDirectory.getRoot().getAbsolutePath(),
                 VaadinConnectClientGenerator.CONNECT_CLIENT_NAME);
         VaadinConnectClientGenerator vaadinConnectClientGenerator = new VaadinConnectClientGenerator(
-                new PropertiesConfiguration());
+                new Properties());
         // First generating round
         vaadinConnectClientGenerator
                 .generateVaadinConnectClientFile(defaultConnectClient);

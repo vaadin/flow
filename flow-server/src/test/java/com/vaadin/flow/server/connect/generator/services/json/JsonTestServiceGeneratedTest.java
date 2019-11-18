@@ -19,18 +19,18 @@ package com.vaadin.flow.server.connect.generator.services.json;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Properties;
 
 import com.fasterxml.jackson.core.Version;
-import org.apache.commons.configuration2.PropertiesConfiguration;
 import org.junit.Test;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import com.vaadin.flow.server.connect.generator.OpenApiSpecGenerator;
 import com.vaadin.flow.server.connect.generator.VaadinConnectClientGenerator;
 import com.vaadin.flow.server.connect.generator.VaadinConnectTsGenerator;
 import com.vaadin.flow.server.connect.generator.services.AbstractServiceGenerationTest;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class JsonTestServiceGeneratedTest
     extends AbstractServiceGenerationTest {
@@ -66,7 +66,7 @@ public class JsonTestServiceGeneratedTest
     String expectedImport = String.format("import client from '%s';",
         customConnectClientPath);
 
-    new OpenApiSpecGenerator(new PropertiesConfiguration()).generateOpenApiSpec(
+    new OpenApiSpecGenerator(new Properties()).generateOpenApiSpec(
         Collections
             .singletonList(java.nio.file.Paths.get("src/test/java", getClass()
                 .getPackage().getName().replace('.', File.separatorChar))),
