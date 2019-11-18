@@ -238,7 +238,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         added = addDependency(packageJson, DEV_DEPENDENCIES,
                 "webpack-dev-server", "3.3.0") || added;
         added = addDependency(packageJson, DEV_DEPENDENCIES,
-                "webpack-babel-multi-target-plugin", "2.1.0") || added;
+                "webpack-babel-multi-target-plugin", "2.3.1") || added;
         added = addDependency(packageJson, DEV_DEPENDENCIES,
                 "copy-webpack-plugin", "5.0.3") || added;
         added = addDependency(packageJson, DEV_DEPENDENCIES,
