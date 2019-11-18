@@ -69,6 +69,8 @@ import com.vaadin.flow.server.DeploymentConfigurationFactory;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.RouteRegistry;
+import com.vaadin.flow.server.VaadinConfigurationException;
+import com.vaadin.flow.server.VaadinServletConfig;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.startup.AbstractRouteRegistryInitializer;
 import com.vaadin.flow.server.startup.AnnotationValidator;
@@ -757,8 +759,8 @@ public class VaadinServletContextInitializer
                         context, registration, appContext);
                 return DeploymentConfigurationFactory
                         .createPropertyDeploymentConfiguration(servletClass,
-                                servletConfig);
-            } catch (ServletException e) {
+                                new VaadinServletConfig(servletConfig));
+            } catch (VaadinConfigurationException e) {
                 throw new IllegalStateException(String.format(
                         "Failed to get deployment configuration data for servlet with name '%s' and class '%s'",
                         registration.getServletName(), servletClass), e);
