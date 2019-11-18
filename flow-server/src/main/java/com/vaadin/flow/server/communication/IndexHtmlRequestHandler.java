@@ -64,6 +64,9 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             session.setAttribute(SERVER_ROUTING, Boolean.TRUE);
         }
 
+        configureStyles(indexDocument);
+        showWebpacErrors(indexDocument);
+
         response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
 
         request.getService().modifyIndexHtmlResponse(
@@ -104,6 +107,12 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 .includeInitialUidl(request)) {
             ui.getRouter().initializeUI(ui, request);
         }
+    }
+
+    private void configureStyles(Document document) {
+        Element styles = document.createElement("style");
+        document.head().appendChild(styles);
+        setupErrorDialogs(styles);
     }
 
     private static void prependBaseHref(VaadinRequest request,
