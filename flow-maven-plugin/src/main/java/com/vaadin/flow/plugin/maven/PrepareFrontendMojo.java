@@ -52,7 +52,6 @@ import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_CLIENT_SIDE_MOD
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_INITIAL_UIDL;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
 /**
@@ -88,13 +87,6 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
     private MavenProject project;
 
     /**
-     * The folder where `package.json` file is located. Default is project root
-     * dir.
-     */
-    @Parameter(defaultValue = "${project.basedir}")
-    private File npmFolder;
-
-    /**
      * Copy the `webapp.config.js` from the specified URL if missing. Default is
      * the template provided by this plugin. Set it to empty string to disable
      * the feature.
@@ -110,21 +102,8 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
     @Parameter(defaultValue = FrontendUtils.WEBPACK_GENERATED)
     private String webpackGeneratedTemplate;
 
-    /**
-     * The folder where flow will put generated files that will be used by
-     * webpack.
-     */
-    @Parameter(defaultValue = "${project.build.directory}/" + FRONTEND)
-    private File generatedFolder;
-
     @Component
     private BuildContext buildContext; // m2eclipse integration
-
-    /**
-     * A directory with project's frontend source files.
-     */
-    @Parameter(defaultValue = "${project.basedir}/" + FRONTEND)
-    private File frontendDirectory;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
