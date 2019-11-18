@@ -413,13 +413,19 @@ public class DevModeHandlerTest {
         if (port == 0) {
             port = DevModeHandler.getFreePort();
         }
-        httpServer = HttpServer.create(new InetSocketAddress(port), 0);
+        httpServer = createStubWebpackTcpListener(port, status, response);
+        return port;
+    }
+
+    public static HttpServer createStubWebpackTcpListener(int port, int status, String response)
+            throws Exception {
+        HttpServer httpServer = HttpServer.create(new InetSocketAddress(port), 0);
         httpServer.createContext("/", exchange -> {
             exchange.sendResponseHeaders(status, response.length());
             exchange.getResponseBody().write(response.getBytes());
             exchange.close();
         });
         httpServer.start();
-        return port;
+        return httpServer;
     }
 }
