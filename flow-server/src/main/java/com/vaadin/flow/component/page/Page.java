@@ -270,9 +270,8 @@ public class Page implements Serializable {
      * Adds the given external JavaScript module to the page and ensures that it
      * is loaded successfully.
      * <p>
-     * If the JavaScript modules are local or do not need to be added
-     * dynamically, you should use the {@link JsModule @JsModule} annotation
-     * instead.
+     * If the JavaScript modules do not need to be added dynamically, you should
+     * use the {@link JsModule @JsModule} annotation instead.
      *
      * @param url
      *            the URL to load the JavaScript module from, not
@@ -286,9 +285,8 @@ public class Page implements Serializable {
      * Adds the given external JavaScript module to the page and ensures that it
      * is loaded successfully.
      * <p>
-     * If the JavaScript modules are local or do not need to be added
-     * dynamically, you should use the {@link JsModule @JsModule} annotation
-     * instead.
+     * If the JavaScript modules do not need to be added dynamically, you should
+     * use the {@link JsModule @JsModule} annotation instead.
      *
      * @param url
      *            the URL to load the JavaScript module from, not
@@ -303,12 +301,7 @@ public class Page implements Serializable {
      */
     @Deprecated
     public void addJsModule(String url, LoadMode loadMode) {
-        if (UrlUtil.isExternal(url)) {
-            addDependency(new Dependency(Type.JS_MODULE, url, loadMode));
-        } else {
-            throw new IllegalArgumentException(
-                    "Use addJsModule only with an external url. Please add local js modules using @JsModule annotation.");
-        }
+        addDependency(new Dependency(Type.JS_MODULE, url, loadMode));
     }
 
     /**
