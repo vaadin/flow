@@ -1,3 +1,9 @@
+/**
+ * This module has been generated from ModelPackageService.java
+ * All changes to this file are overridden. Please consider to make changes in the corresponding Java file.
+ * @module ModelPackageService
+ */
+
 // @ts-ignore
 import client from './connect-client.default';
 import Account from './com/vaadin/flow/server/connect/generator/services/modelpackage/ModelPackageService/Account';

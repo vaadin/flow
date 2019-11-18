@@ -1,3 +1,9 @@
+/**
+ * This module has been generated from DenyAllService.java
+ * All changes to this file are overridden. Please consider to make changes in the corresponding Java file.
+ * @module DenyAllService
+ */
+
 // @ts-ignore
 import client from './connect-client.default';
 
