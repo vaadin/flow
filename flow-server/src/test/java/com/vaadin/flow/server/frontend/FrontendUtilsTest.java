@@ -113,12 +113,15 @@ public class FrontendUtilsTest {
                 containsString("node"));
         assertThat(FrontendUtils.getNodeExecutable(baseDir),
                 not(containsString(DEFAULT_NODE)));
-        assertThat(FrontendUtils.getNpmExecutable(baseDir)
-                .get(0), containsString("npm"));
         assertThat(FrontendUtils.getNodeExecutable(baseDir),
                 not(containsString(NPM_CLI_STRING)));
-        assertEquals(1, FrontendUtils
+
+        assertEquals(2, FrontendUtils
                 .getNpmExecutable(baseDir).size());
+        assertThat(FrontendUtils.getNpmExecutable(baseDir)
+                .get(0), containsString("npm"));
+        assertThat(FrontendUtils.getNpmExecutable(baseDir)
+                .get(1), containsString("--no-update-notifier"));
     }
 
     @Test

@@ -77,7 +77,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         NodeUpdateTestUtil.createStubNode(true, true,
                 baseDir.getAbsolutePath());
 
-        packageCreator = new TaskCreatePackageJson(baseDir, generatedDir);
+        packageCreator = new TaskCreatePackageJson(baseDir, generatedDir, null);
 
         ClassFinder classFinder = getClassFinder();
         packageUpdater = new TaskUpdatePackages(classFinder,

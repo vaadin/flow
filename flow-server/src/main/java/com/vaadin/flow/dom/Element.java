@@ -220,7 +220,7 @@ public class Element extends Node<Element> {
      * Creates a text node with the given text.
      *
      * @param text
-     *            the text in the node
+     *            the text in the node, not <code>null</code>
      * @return an element representing the text node
      */
     public static Element createText(String text) {
@@ -1669,9 +1669,10 @@ public class Element extends Node<Element> {
     // When updating JavaDocs here, keep in sync with Page.executeJavaScript
     /**
      * Asynchronously runs the given JavaScript expression in the browser in the
-     * context of this element. It is possible to get access to the return value
-     * of the execution by registering a handler with the returned pending
-     * result. If no handler is registered, the return value will be ignored.
+     * context of this element. The returned
+     * <code>PendingJavaScriptResult</code> can be used to retrieve any
+     * <code>return</code> value from the JavaScript expression. If no return
+     * value handler is registered, the return value will be ignored.
      * <p>
      * This element will be available to the expression as <code>this</code>.
      * The given parameters will be available as variables named

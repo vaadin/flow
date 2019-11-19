@@ -20,6 +20,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -50,7 +51,6 @@ import com.vaadin.flow.shared.JsonConstants;
 public class VaadinServlet extends HttpServlet {
     private VaadinServletService servletService;
     private StaticFileHandler staticFileHandler;
-    private DevModeHandler devmodeHandler;
     private WebJarServer webJarServer;
 
     /**
@@ -81,7 +81,6 @@ public class VaadinServlet extends HttpServlet {
         if (deploymentConfiguration.areWebJarsEnabled()) {
             webJarServer = new WebJarServer(deploymentConfiguration);
         }
-        devmodeHandler = DevModeHandler.getDevModeHandler();
 
         // Sets current service even though there are no request and response
         servletService.setCurrentInstances(null, null);
@@ -140,16 +139,17 @@ public class VaadinServlet extends HttpServlet {
      * frameworks.
      *
      * @return the created deployment configuration
-     *
-     * @throws ServletException
-     *             if construction of the {@link Properties} for
-     *             {@link DeploymentConfigurationFactory#createInitParameters(Class, ServletConfig)}
-     *             fails
      */
     protected DeploymentConfiguration createDeploymentConfiguration()
             throws ServletException {
-        return createDeploymentConfiguration(DeploymentConfigurationFactory
-                .createInitParameters(getClass(), getServletConfig()));
+        try {
+            return createDeploymentConfiguration(DeploymentConfigurationFactory
+                    .createInitParameters(getClass(),
+                            new VaadinServletConfig(getServletConfig())));
+        } catch (VaadinConfigurationException e) {
+            throw new ServletException(
+                    "Failed to construct DeploymentConfiguration.", e);
+        }
     }
 
     /**
@@ -274,9 +274,10 @@ public class VaadinServlet extends HttpServlet {
      */
     protected boolean serveStaticOrWebJarRequest(HttpServletRequest request,
             HttpServletResponse response) throws IOException {
+        DevModeHandler handler = DevModeHandler.getDevModeHandler();
 
-        if (devmodeHandler != null && devmodeHandler.isDevModeRequest(request)
-                && devmodeHandler.serveDevModeRequest(request, response)) {
+        if (handler != null && handler.isDevModeRequest(request)
+                && handler.serveDevModeRequest(request, response)) {
             return true;
         }
 

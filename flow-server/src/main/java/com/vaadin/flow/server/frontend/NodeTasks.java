@@ -24,7 +24,6 @@ import java.util.Objects;
 import java.util.Set;
 
 import com.vaadin.flow.server.ExecutionFailedException;
-import com.vaadin.flow.server.FallibleCommand;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
@@ -90,6 +89,8 @@ public class NodeTasks implements FallibleCommand {
         private File connectApplicationProperties;
 
         private File connectClientTsApiFolder;
+
+        private String polymerVersion;
 
         /**
          * Directory for for npm and folders and files.
@@ -407,6 +408,18 @@ public class NodeTasks implements FallibleCommand {
             this.tokenFile = tokenFile;
             return this;
         }
+
+        /**
+         * Sets the polymer version to use.
+         *
+         * @param version
+         *            a polymer version
+         * @return the builder, for chaining
+         */
+        public Builder withPolymerVersion(String version) {
+            this.polymerVersion = version;
+            return this;
+        }
     }
 
     private final Collection<FallibleCommand> commands = new ArrayList<>();
@@ -431,7 +444,8 @@ public class NodeTasks implements FallibleCommand {
 
         if (builder.createMissingPackageJson) {
             TaskCreatePackageJson packageCreator = new TaskCreatePackageJson(
-                    builder.npmFolder, builder.generatedFolder);
+                    builder.npmFolder, builder.generatedFolder,
+                    builder.polymerVersion);
             commands.add(packageCreator);
         }
 

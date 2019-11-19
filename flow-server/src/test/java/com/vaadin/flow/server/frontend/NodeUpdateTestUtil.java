@@ -45,6 +45,11 @@ public class NodeUpdateTestUtil {
                 NodeTestComponents.class.getDeclaredClasses());
     }
 
+    static ClassFinder getClassFinder(Class<?>... classes) throws MalformedURLException {
+        return new DefaultClassFinder(new URLClassLoader(getClassPath()),
+                classes);
+    }
+
     static URL[] getClassPath() throws MalformedURLException {
         // Add folder with test classes
         List<URL> classPaths = new ArrayList<>();
