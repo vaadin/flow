@@ -766,7 +766,7 @@ public class FrontendUtils {
     /**
      * Get relative path from a source path to a target path in Unix form. All
      * the Windows' path separator will be replaced.
-     * 
+     *
      * @param source
      *            the source path
      * @param target
@@ -779,7 +779,7 @@ public class FrontendUtils {
 
     /**
      * Get path as a String in Unix form.
-     * 
+     *
      * @param source
      *            path to get
      * @return path as a String in Unix form.

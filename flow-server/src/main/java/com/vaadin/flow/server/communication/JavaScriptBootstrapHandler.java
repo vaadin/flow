@@ -153,12 +153,14 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
 
     @Override
     protected BootstrapContext createBootstrapContext(VaadinRequest request,
-                                                      VaadinResponse response, UI ui, Function<VaadinRequest, String> callback) {
+            VaadinResponse response, UI ui,
+            Function<VaadinRequest, String> callback) {
         return new JavaScriptBootstrapContext(request, response, ui, callback);
     }
 
     @Override
-    public boolean synchronizedHandleRequest(VaadinSession session, VaadinRequest request, VaadinResponse response) throws IOException {
+    public boolean synchronizedHandleRequest(VaadinSession session,
+            VaadinRequest request, VaadinResponse response) throws IOException {
 
         ServletHelper.setResponseNoCacheHeaders(response::setHeader,
                 response::setDateHeader);
@@ -166,7 +168,6 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
         writeResponse(response, getInitialJson(request, response, session));
         return true;
     }
-
 
     /**
      * Gets the service URL as a URL relative to the request URI.
