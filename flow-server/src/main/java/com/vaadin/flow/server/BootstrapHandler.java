@@ -1599,8 +1599,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 document.body()
                         .appendChild(new Element(Tag.valueOf("div"), "")
                                 .attr("class", "v-system-error")
-                                .html("<h3>Webpack Error</h3><pre>"
-                                        + errorMsg + "</pre>"));
+                                .html("<h3>Webpack Error</h3><pre>" + errorMsg
+                                        // Make error lines more prominent
+                                        .replaceAll("(ERROR.+?\n)", "<b>$1</b>")
+                                        + "</pre>"));
             }
         }
     }
@@ -1622,8 +1624,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 "max-height: calc(100vh - 4em);" +
                 "overflow: auto;" +
                 "} .v-system-error {" +
-                "color: red;" +
+                "color: indianred;" +
                 "pointer-events: auto;" +
+                "} .v-system-error h3, .v-system-error b {" +
+                "color: red;" +
                 "}");
      // @formatter:on
     }
