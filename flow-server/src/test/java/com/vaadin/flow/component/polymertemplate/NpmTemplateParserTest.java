@@ -110,31 +110,6 @@ public class NpmTemplateParserTest {
     }
 
     @Test
-    public void should_FindCorrectDataInBeverageStats() {
-        Mockito.when(configuration.getStringProperty(Mockito.anyString(),
-                Mockito.anyString()))
-                .thenReturn(VAADIN_SERVLET_RESOURCES
-                        + "config/stats-beverage.json");
-
-        TemplateParser instance = NpmTemplateParser.getInstance();
-        TemplateParser.TemplateData templateContent = instance
-                .getTemplateContent(ReviewList.class, "likeable-element",
-                        service);
-
-        Assert.assertEquals("Parent element ID not the expected one.",
-                "likeable-element",
-                templateContent.getTemplateElement().parent().id());
-
-        Assert.assertEquals("Expected template element to have 2 children", 2,
-                templateContent.getTemplateElement().childNodeSize());
-
-        Assert.assertEquals(
-                "Template element should have contained a div element with the id 'search'",
-                "vaadin-text-field", templateContent.getTemplateElement()
-                        .getElementById("search").tag().toString());
-    }
-
-    @Test
     public void shouldnt_UseStats_when_LocalFileTemplateExists() {
         TemplateParser instance = NpmTemplateParser.getInstance();
         TemplateParser.TemplateData templateContent = instance
