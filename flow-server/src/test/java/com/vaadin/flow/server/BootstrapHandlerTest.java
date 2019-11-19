@@ -1095,7 +1095,6 @@ public class BootstrapHandlerTest {
                                 "<script type=\"text/javascript\" src=\"./"
                                         + VAADIN_MAPPING
                                         + "build/webcomponentsjs/webcomponents-loader.js\"></script>")));
-        System.out.println(allElements);
 
         Assert.assertTrue(
                 "index.js should be added to head for ES6 browsers. (deferred and type module)",
