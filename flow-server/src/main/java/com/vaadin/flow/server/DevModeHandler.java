@@ -19,7 +19,6 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,10 +36,10 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.text.WordUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,9 +53,9 @@ import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.getNodeExecutable;
 import static com.vaadin.flow.server.frontend.FrontendUtils.validateNodeAndNpmVersion;
+import static java.lang.String.format;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
-
 /**
  * Handles getting resources from <code>webpack-dev-server</code>.
  * <p>
@@ -79,11 +78,13 @@ public final class DevModeHandler implements Serializable {
     // `Failed` in the last line
     private static final String DEFAULT_OUTPUT_PATTERN = ": Compiled.";
     private static final String DEFAULT_ERROR_PATTERN = ": Failed to compile.";
-    private static final String FAILED_MSG = "\n------------------ Frontend compilation failed. -----------------";
-    private static final String SUCCEED_MSG = "\n----------------- Frontend compiled successfully. -----------------";
-    private static final String YELLOW = "\u001b[38;5;111m{}\u001b[0m";
-    private static final String RED = "\u001b[38;5;196m{}\u001b[0m";
-    private static final String GREEN = "\u001b[38;5;35m{}\u001b[0m";
+    private static final String FAILED_MSG = "\n------------------ Frontend compilation failed. ------------------\n\n";
+    private static final String SUCCEED_MSG = "\n----------------- Frontend compiled successfully. -----------------\n\n";
+    private static final String START = "\n------------------ Starting Frontend compilation. ------------------\n\n";
+    private static final String END = "\n------------------------- Webpack stopped  -------------------------\n";
+    private static final String YELLOW = "\u001b[38;5;111m%s\u001b[0m";
+    private static final String RED = "\u001b[38;5;196m%s\u001b[0m";
+    private static final String GREEN = "\u001b[38;5;35m%s\u001b[0m";
 
     // If after this time in millisecs, the pattern was not found, we unlock the
     // process and continue. It might happen if webpack changes their output
@@ -108,6 +109,8 @@ public final class DevModeHandler implements Serializable {
     private final boolean reuseDevServer;
     private transient DevServerWatchDog watchDog;
 
+    private StringBuilder cumulativeOutput = new StringBuilder();
+
     private DevModeHandler(DeploymentConfiguration config, int runningPort,
             File npmFolder, File webpack, File webpackConfig) {
 
@@ -125,10 +128,13 @@ public final class DevModeHandler implements Serializable {
                 watchDog = null;
                 return;
             }
-            throw new IllegalStateException(String.format(
+            throw new IllegalStateException(format(
                     "webpack-dev-server port '%d' is defined but it's not working properly",
                     port));
         }
+
+        long start = System.nanoTime();
+        getLogger().info("Starting webpack-dev-server");
 
         watchDog = new DevServerWatchDog();
 
@@ -150,14 +156,15 @@ public final class DevModeHandler implements Serializable {
         command.add("--watchDogPort=" + watchDog.getWatchDogPort());
         command.addAll(Arrays.asList(config
                 .getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS,
-                        "-d --inline=false")
+                        "-d --inline=false --progress --colors")
                 .split(" +")));
 
-        if (getLogger().isInfoEnabled()) {
-            getLogger().info(
-                    "Starting webpack-dev-server, port: {} dir: {}\n   {}",
-                    port, npmFolder, String.join(" ", command));
-        }
+
+        console(GREEN, START);
+        console(YELLOW, WordUtils
+                        .wrap(String.join(" ", command)
+                                .replace(npmFolder.getAbsolutePath(), "."), 50)
+                        .replace("\n", " \\ \n    ") + "\n\n");
 
         processBuilder.command(command);
         try {
@@ -193,6 +200,9 @@ public final class DevModeHandler implements Serializable {
                         SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT,
                         DEFAULT_TIMEOUT_FOR_PATTERN)));
             }
+
+            long ms = (System.nanoTime() - start) / 1000000;
+            getLogger().info("Started webpack-dev-server. Time: {}ms", ms);
 
             if (!webpackProcess.isAlive()) {
                 throw new IllegalStateException("Webpack exited prematurely");
@@ -423,12 +433,17 @@ public final class DevModeHandler implements Serializable {
     private void logStream(InputStream input, Pattern success,
             Pattern failure) {
         Thread thread = new Thread(() -> {
-            BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(input, StandardCharsets.UTF_8));
+            InputStreamReader reader = new InputStreamReader(input,
+                    StandardCharsets.UTF_8);
             try {
                 readLinesLoop(success, failure, reader);
             } catch (IOException e) {
-                getLogger().error("Exception when reading webpack output.", e);
+                if ("Stream closed".equals(e.getMessage())) {
+                    console(GREEN, END);
+                    getLogger().debug("Exception when reading webpack output.", e);
+                } else {
+                    getLogger().error("Exception when reading webpack output.", e);
+                }
             }
 
             // Process closed stream, means that it exited, notify
@@ -441,40 +456,49 @@ public final class DevModeHandler implements Serializable {
     }
 
     private void readLinesLoop(Pattern success, Pattern failure,
-            BufferedReader reader) throws IOException {
-        StringBuilder output = new StringBuilder();
-        Consumer<String> info = s -> getLogger().info(GREEN, s);
-        Consumer<String> error = s -> getLogger().error(RED, s);
-        Consumer<String> warn = s -> getLogger().warn(YELLOW, s);
-        Consumer<String> log = info;
-        for (String line; ((line = reader.readLine()) != null);) {
-            String cleanLine = line
-                    // remove color escape codes for console
-                    .replaceAll("\u001b\\[[;\\d]*m", "")
-                    // remove babel query string which is confusing
-                    .replaceAll("\\?babel-target=[\\w\\d]+", "");
-
-            // write each line read to logger, but selecting its correct level
-            log = line.contains("WARNING") ? warn
-                    : line.contains("ERROR") ? error : log;
-            log.accept(cleanLine);
-
-            // save output so as it can be used to alert user in browser.
-            output.append(cleanLine).append('\n');
-
-            boolean succeed = success.matcher(line).find();
-            boolean failed = failure.matcher(line).find();
-            // We found the success or failure pattern in stream
-            if (succeed || failed) {
-                log.accept(succeed ? SUCCEED_MSG : FAILED_MSG);
-                // save output in case of failure
-                failedOutput = failed ? output.toString() : null;
-                // reset output and logger for the next compilation
-                output = new StringBuilder();
-                log = info;
-                // Notify DevModeHandler to continue
-                doNotify();
+            InputStreamReader reader) throws IOException {
+        StringBuilder line = new StringBuilder();
+        for (int i; (i = reader.read()) >= 0;) {
+            char ch = (char) i;
+            console("%c", ch);
+            line.append(ch);
+            if (ch == '\n') {
+                processLine(line.toString(), success, failure);
+                line.setLength(0);
             }
+        }
+    }
+
+    private void processLine(String line, Pattern success, Pattern failure) {
+        // skip progress lines
+        if (line.contains("\b")) {
+            return;
+        }
+
+        // remove color escape codes for console
+        String cleanLine = line
+                .replaceAll("(\u001b\\[[;\\d]*m|[\b\r]+)", "");
+
+        // save output so as it can be used to alert user in browser.
+        cumulativeOutput.append(cleanLine);
+
+        boolean succeed = success.matcher(line).find();
+        boolean failed = failure.matcher(line).find();
+        // We found the success or failure pattern in stream
+        if (succeed || failed) {
+            if (succeed) {
+                console(GREEN, SUCCEED_MSG);
+            } else {
+                console(RED, FAILED_MSG);
+            }
+            // save output in case of failure
+            failedOutput = failed ? cumulativeOutput.toString() : null;
+            
+            // reset cumulative buffer for the next compilation
+            cumulativeOutput = new StringBuilder();
+
+            // Notify DevModeHandler to continue
+            doNotify();
         }
     }
 
@@ -488,8 +512,7 @@ public final class DevModeHandler implements Serializable {
     }
 
     private static Logger getLogger() {
-        // Using an short prefix so as webpack output is more readable
-        return LoggerFactory.getLogger("dev-webpack");
+        return LoggerFactory.getLogger(DevModeHandler.class);
     }
 
     /**
@@ -616,5 +639,11 @@ public final class DevModeHandler implements Serializable {
 
         atomicHandler.set(null);
         removeRunningDevServerPort();
+    }
+
+    @SuppressWarnings("squid:S106")
+    private static void console(String format, Object s) {
+        // intentionally send to console instead to log
+        System.out.print(format(format, s));
     }
 }

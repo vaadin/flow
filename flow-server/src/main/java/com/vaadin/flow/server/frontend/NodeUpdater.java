@@ -300,7 +300,6 @@ public abstract class NodeUpdater implements FallibleCommand {
     }
 
     Logger log() {
-        // Using short prefix so as npm output is more readable
-        return LoggerFactory.getLogger("dev-updater");
+        return LoggerFactory.getLogger(this.getClass());
     }
 }

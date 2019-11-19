@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -207,14 +209,15 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
         String nodePath = FrontendUtils
                 .getNodeExecutable(npmFolder.getAbsolutePath());
 
+        List<String> command = Arrays.asList(nodePath,
+                webpackExecutable.getAbsolutePath(), "--progress");
+        ProcessBuilder builder = FrontendUtils.createProcessBuilder(command)
+                .directory(project.getBasedir()).inheritIO();
+        getLog().info("Running webpack ...");
+
         Process webpackLaunch = null;
         try {
-            getLog().info("Running webpack ...");
-            webpackLaunch = new ProcessBuilder(nodePath,
-                    webpackExecutable.getAbsolutePath())
-                            .directory(project.getBasedir())
-                            .redirectOutput(ProcessBuilder.Redirect.INHERIT)
-                            .start();
+            webpackLaunch = builder.start();
             int errorCode = webpackLaunch.waitFor();
             if (errorCode != 0) {
                 readDetailsAndThrowException(webpackLaunch);
