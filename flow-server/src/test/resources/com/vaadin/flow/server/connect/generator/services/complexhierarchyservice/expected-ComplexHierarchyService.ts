@@ -1,6 +1,6 @@
 /**
- * This module has been generated from ComplexHierarchyService.java
- * All changes to this file are overridden. Please consider to make changes in the corresponding Java file.
+ * This module is generated from ComplexHierarchyService.java
+ * All changes to this file are overridden. Please consider to make changes in the corresponding Java file if necessary.
  * @module ComplexHierarchyService
  */
 

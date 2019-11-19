@@ -1,8 +1,8 @@
 /**
  * This nested class is also used in the OpenApi generator test
  *
- * This module has been generated from GeneratorAnonymousAllowedTestClass.java
- * All changes to this file are overridden. Please consider to make changes in the corresponding Java file.
+ * This module is generated from GeneratorAnonymousAllowedTestClass.java
+ * All changes to this file are overridden. Please consider to make changes in the corresponding Java file if necessary.
  * @module GeneratorAnonymousAllowedTestClass
  */
 
