@@ -15,12 +15,14 @@
  */
 package com.vaadin.flow.component.polymertemplate;
 
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,6 +32,7 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonType;
+
 import static elemental.json.JsonType.ARRAY;
 import static elemental.json.JsonType.OBJECT;
 import static elemental.json.JsonType.STRING;
@@ -79,12 +82,18 @@ public final class BundleParser {
      * end character with <code>;}</code> e.g. <code>';}</code>
      */
     private static final Pattern TEMPLATE_PATTERN = Pattern.compile(
-            "get[\\s]*template\\(\\)[\\s]*\\{[\\s]*return[\\s]*html([\\`|\\'|\\\"])([\\s\\S]*)\\1;[\\s]*\\}");
+            "get[\\s]*template\\(\\)[\\s]*\\{[\\s]*return[\\s]*html([\\`\\'\\\"])([\\s\\S]*)\\1;[\\s]*\\}");
+
+    private static final Pattern NO_TEMPLATE_PATTERN = Pattern.compile(
+            "innerHTML[\\s]*=[\\s]*([\\`\\'\\\"])([\\s]*<dom-module\\s+[\\s\\S]*)\\1;");
 
     private static final Pattern HASH_PATTERN = Pattern
             .compile("\"hash\"\\s*:\\s*\"([^\"]+)\"\\s*,");
 
     private static final String TEMPLATE_TAG_NAME = "template";
+
+    private static final Pattern COMMENTS_PATTERN = Pattern
+            .compile("(?:/\\*(?:[^*]|(?:\\*+[^*/]))*\\*+/)|(?://.*)");
 
     private BundleParser() {
     }
@@ -151,20 +160,30 @@ public final class BundleParser {
      * @return template element or {code null} if not found
      */
     public static Element parseTemplateElement(String fileName, String source) {
-        Document templateDocument;
-        Matcher matcher = TEMPLATE_PATTERN.matcher(source);
+        Document templateDocument = null;
+        String content = removeComments(source);
+        Matcher templateMatcher = TEMPLATE_PATTERN.matcher(content);
+        Matcher noTemplateMatcher = NO_TEMPLATE_PATTERN.matcher(content);
 
         // GroupCount should be 2 as the first group contains `|'|" depending
         // on what was in template return html' and the second is the
         // template contents.
-        if (matcher.find() && matcher.groupCount() == 2) {
-            String group = matcher.group(2);
-            LOGGER.trace("Found template content was {}", group);
+        if (templateMatcher.find() && templateMatcher.groupCount() == 2) {
+            String group = templateMatcher.group(2);
+            LOGGER.trace("Found regular Polymer 3 template content was {}",
+                    group);
 
             templateDocument = Jsoup.parse(group);
             LOGGER.trace("The parsed template document was {}",
                     templateDocument);
         } else {
+            Element template = tryParsePolymer2(templateDocument,
+                    noTemplateMatcher);
+            if (template != null) {
+                return template;
+            }
+        }
+        if (templateDocument == null) {
             LOGGER.warn("No template data found in {} sources.", fileName);
 
             templateDocument = new Document("");
@@ -173,11 +192,40 @@ public final class BundleParser {
         }
 
         Element template = templateDocument.createElement(TEMPLATE_TAG_NAME);
+        Element body = templateDocument.body();
         templateDocument.body().children().stream()
-                .filter(node -> !node.equals(templateDocument.body()))
+                .filter(node -> !node.equals(body))
                 .forEach(template::appendChild);
 
         return template;
+    }
+
+    private static Element tryParsePolymer2(Document templateDocument,
+            Matcher noTemplateMatcher) {
+        while (noTemplateMatcher.find()
+                && noTemplateMatcher.groupCount() == 2) {
+            String group = noTemplateMatcher.group(2);
+            LOGGER.trace(
+                    "Found Polymer 2 style insertion as a Polymer 3 template content {}",
+                    group);
+
+            templateDocument = Jsoup.parse(group);
+            LOGGER.trace("The parsed template document was {}",
+                    templateDocument);
+            Optional<Element> domModule = JsoupUtils
+                    .getDomModule(templateDocument, null);
+            if (!domModule.isPresent()) {
+                continue;
+            }
+            JsoupUtils.removeCommentsRecursively(domModule.get());
+            Elements templates = domModule.get()
+                    .getElementsByTag(TEMPLATE_TAG_NAME);
+            if (templates.isEmpty()) {
+                continue;
+            }
+            return templates.get(0);
+        }
+        return null;
     }
 
     // From the statistics json recursively go through all chunks and modules to
@@ -211,10 +259,11 @@ public final class BundleParser {
                     .replaceFirst("^frontend://", ".");
 
             // For polymer templates inside add-ons we will not find the sources
-            // using ./ as the actual path contains "node_modules/@vaadin/flow-frontend/" instead of "./"
+            // using ./ as the actual path contains
+            // "node_modules/@vaadin/flow-frontend/" instead of "./"
             if (name.contains(FrontendUtils.FLOW_NPM_PACKAGE_NAME)) {
-                alternativeFileName = alternativeFileName
-                        .replaceFirst("\\./", "");
+                alternativeFileName = alternativeFileName.replaceFirst("\\./",
+                        "");
             }
 
             // Remove query-string used by webpack modules like babel (e.g
@@ -246,5 +295,19 @@ public final class BundleParser {
         boolean validKey = o != null && o.hasKey(k)
                 && o.get(k).getType().equals(t);
         return validKey && (!t.equals(STRING) || !o.getString(k).isEmpty());
+    }
+
+    /**
+     * Removes comments (block comments and line comments) from the JS code.
+     * <p>
+     * Note that this is not really a correct way to do this: this will remove
+     * comments also if they are inside strings. But this is not important here
+     * in this class since we care only about import statements where this is
+     * fine.
+     *
+     * @return the code with removed comments
+     */
+    private static String removeComments(String content) {
+        return COMMENTS_PATTERN.matcher(content).replaceAll("");
     }
 }
