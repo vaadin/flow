@@ -25,16 +25,31 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 
 public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+    private File npmFolder;
+    private File generatedFolder;
+    private File targetFolder;
+
+    @Before
+    public void setup() throws IOException {
+        // creating non-existing folder to make sure the execute() creates
+        // the folder if missing
+        npmFolder = new File(temporaryFolder.newFolder(), "child/");
+        targetFolder = new File(npmFolder, "frontend");
+        generatedFolder = new File(npmFolder, NODE_MODULES + FLOW_NPM_PACKAGE_NAME);
+    }
 
     @Test
     public void should_collectJsAndCssFilesFromJars_obsoleteResourceFolder()
@@ -50,13 +65,17 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
                 "dir-with-modern-frontend");
     }
 
+    @Test
+    public void should_createPackageJson() {
+        TaskCreatePackageJson task = new TaskCreatePackageJson(npmFolder, generatedFolder, targetFolder, "latest");
+        task.execute();
+        Assert.assertTrue(new File(npmFolder, PACKAGE_JSON).exists());
+        Assert.assertTrue(new File(generatedFolder, PACKAGE_JSON).exists());
+        Assert.assertTrue(new File(targetFolder, PACKAGE_JSON).exists());
+    }
+
     private void should_collectJsAndCssFilesFromJars(String jarFile,
             String fsDir) throws IOException {
-        // creating non-existing folder to make sure the execute() creates
-        // the folder if missing
-        File npmFolder = new File(temporaryFolder.newFolder(), "child/");
-        File targetFolder = new File(npmFolder,
-                NODE_MODULES + FLOW_NPM_PACKAGE_NAME);
 
         // contains:
         // - ExampleConnector.js
@@ -72,6 +91,7 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
         task.execute();
 
         List<String> files = TestUtils.listFilesRecursively(targetFolder);
+        System.err.println(files);
         Assert.assertEquals(3, files.size());
 
         Assert.assertTrue("Js resource should have been copied from jar file",

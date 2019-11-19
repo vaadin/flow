@@ -344,7 +344,7 @@ public class TaskUpdateImports extends NodeUpdater {
             SerializableFunction<ClassFinder, FrontendDependenciesScanner> fallBackScannerProvider,
             File npmFolder, File generatedPath, File frontendDirectory,
             File tokenFile, JsonObject tokenFileData) {
-        super(finder, frontendDepScanner, npmFolder, generatedPath);
+        super(finder, frontendDepScanner, npmFolder, generatedPath, null);
         this.frontendDirectory = frontendDirectory;
         fallbackScanner = fallBackScannerProvider.apply(finder);
         this.tokenFile = tokenFile;

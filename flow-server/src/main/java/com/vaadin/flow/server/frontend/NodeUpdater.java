@@ -67,6 +67,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     private static final String DEP_NAME_KEY = "name";
     private static final String DEP_NAME_DEFAULT = "no-name";
     protected static final String DEP_NAME_FLOW_DEPS = "@vaadin/flow-deps";
+    protected static final String DEP_NAME_FLOW_JARS = "@vaadin/flow-frontend";
     private static final String DEP_VERSION_KEY = "version";
     private static final String DEP_VERSION_DEFAULT = "1.0.0";
 
@@ -85,6 +86,12 @@ public abstract class NodeUpdater implements FallibleCommand {
      * Base directory for flow generated files.
      */
     protected final File generatedFolder;
+
+
+    /**
+     * Base directory for flow dependencies coming from jars.
+     */
+    protected final File frontendDepsFolder;
 
     /**
      * The {@link FrontendDependencies} object representing the application
@@ -107,15 +114,18 @@ public abstract class NodeUpdater implements FallibleCommand {
      *            folder with the `package.json` file
      * @param generatedPath
      *            folder where flow generated files will be placed.
+     * @param frontendDepsFolder
+     *            folder where flow dependencies will be copied to.
      */
     protected NodeUpdater(ClassFinder finder,
             FrontendDependenciesScanner frontendDependencies, File npmFolder,
-            File generatedPath) {
+            File generatedPath, File frontendDepsFolder) {
         this.frontDeps = frontendDependencies;
         this.finder = finder;
         this.npmFolder = npmFolder;
         this.nodeModulesFolder = new File(npmFolder, NODE_MODULES);
         this.generatedFolder = generatedPath;
+        this.frontendDepsFolder = frontendDepsFolder;
     }
 
     static Set<String> getGeneratedModules(File directory,
@@ -196,6 +206,10 @@ public abstract class NodeUpdater implements FallibleCommand {
         return getPackageJson(new File(generatedFolder, PACKAGE_JSON));
     }
 
+    JsonObject getDepsPackageJson() throws IOException {
+        return getPackageJson(new File(frontendDepsFolder, PACKAGE_JSON));
+    }
+
     JsonObject getPackageJson(File packageFile) throws IOException {
         JsonObject packageJson = null;
         if (packageFile.exists()) {
@@ -270,6 +284,12 @@ public abstract class NodeUpdater implements FallibleCommand {
         addDependency(packageJson, null, DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT);
     }
 
+    void updateJarDependencies(JsonObject packageJson) {
+        addDependency(packageJson, null, DEP_NAME_KEY, DEP_NAME_FLOW_JARS);
+        addDependency(packageJson, null, DEP_VERSION_KEY, DEP_VERSION_DEFAULT);
+        addDependency(packageJson, null, DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT);
+    }
+
     boolean addDependency(JsonObject json, String key, String pkg,
             String vers) {
         if (key != null) {
@@ -293,6 +313,11 @@ public abstract class NodeUpdater implements FallibleCommand {
     String writeAppPackageFile(JsonObject packageJson) throws IOException {
         return writePackageFile(packageJson,
                 new File(generatedFolder, PACKAGE_JSON));
+    }
+
+    String writeDepsPackageFile(JsonObject packageJson) throws IOException {
+        return writePackageFile(packageJson,
+                new File(frontendDepsFolder, PACKAGE_JSON));
     }
 
     String writePackageFile(JsonObject json, File packageFile)

@@ -58,7 +58,7 @@ public class NodeUpdaterTest {
         finder = Mockito.mock(ClassFinder.class);
         nodeUpdater = new NodeUpdater(finder,
                 Mockito.mock(FrontendDependencies.class), npmFolder,
-                new File("")) {
+                new File(""), null) {
 
             @Override
             public void execute() {

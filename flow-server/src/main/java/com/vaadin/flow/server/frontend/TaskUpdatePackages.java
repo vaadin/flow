@@ -92,7 +92,7 @@ public class TaskUpdatePackages extends NodeUpdater {
     TaskUpdatePackages(ClassFinder finder,
             FrontendDependenciesScanner frontendDependencies, File npmFolder,
             File generatedPath, boolean forceCleanUp) {
-        super(finder, frontendDependencies, npmFolder, generatedPath);
+        super(finder, frontendDependencies, npmFolder, generatedPath, null);
         this.forceCleanUp = forceCleanUp;
     }
 
