@@ -86,6 +86,9 @@ import com.vaadin.flow.server.connect.generator.OpenApiObjectGenerator;
 import com.vaadin.flow.server.connect.generator.OpenApiSpecGenerator;
 import com.vaadin.flow.server.connect.generator.TestUtils;
 import com.vaadin.flow.server.connect.generator.VaadinConnectTsGenerator;
+import com.vaadin.flow.server.connect.generator.services.complexhierarchymodel.GrandParentModel;
+import com.vaadin.flow.server.connect.generator.services.complexhierarchymodel.Model;
+import com.vaadin.flow.server.connect.generator.services.complexhierarchymodel.ParentModel;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -99,6 +102,12 @@ public abstract class AbstractServiceGenerationTest {
     private static final Pattern JAVA_PATH_REFERENCE_REGEX = Pattern
             .compile("( \\* @see \\{@link file:\\/\\/(.*)\\}\n)");
 
+    /**
+     * Classes in this list are simulated as classes from different jars so that
+     * it doesn't have absolute link to the original java file.
+     */
+    private static final List<Class> DENY_LIST_CHECKING_ABSOLUTE_PATH = Arrays
+            .asList(Model.class, ParentModel.class, GrandParentModel.class);
     @Rule
     public TemporaryFolder outputDirectory = new TemporaryFolder();
 
@@ -656,7 +665,8 @@ public abstract class AbstractServiceGenerationTest {
                 expectedClass, expectedResource.getPath());
         String actualContent = readFile(outputFilePath);
         if (!expectedClass.getPackage().getName()
-                .startsWith("com.vaadin.flow.server")) {
+                .startsWith("com.vaadin.flow.server")
+                || DENY_LIST_CHECKING_ABSOLUTE_PATH.contains(expectedClass)) {
             // the class comes from jars
             Assert.assertEquals(errorMessage, expectedTs, actualContent);
             return;
