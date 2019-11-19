@@ -41,8 +41,8 @@ public class TaskCreatePackageJson extends NodeUpdater {
      * @param generatedPath
      *            folder where flow generated files will be placed.
      */
-    TaskCreatePackageJson(File npmFolder, File generatedPath) {
-        super(null, null, npmFolder, generatedPath);
+    TaskCreatePackageJson(File npmFolder, File generatedPath, File frontendDepsFolder) {
+        super(null, null, npmFolder, generatedPath, frontendDepsFolder);
     }
 
     @Override
@@ -64,12 +64,21 @@ public class TaskCreatePackageJson extends NodeUpdater {
                 }
                 writeMainPackageFile(mainContent);
             }
-            JsonObject customContent = getAppPackageJson();
-            if (customContent == null) {
-                customContent = Json.createObject();
-                updateAppDefaultDependencies(customContent);
-                writeAppPackageFile(customContent);
+            JsonObject appContent = getAppPackageJson();
+            if (appContent == null) {
+                appContent = Json.createObject();
+                updateAppDefaultDependencies(appContent);
+                writeAppPackageFile(appContent);
                 modified = true;
+            }
+            if (frontendDepsFolder != null) {
+                JsonObject depsContent = getDepsPackageJson();
+                if (depsContent == null) {
+                    depsContent = Json.createObject();
+                    updateJarDependencies(depsContent);
+                    writeDepsPackageFile(depsContent);
+                    modified = true;
+                }
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
