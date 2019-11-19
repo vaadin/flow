@@ -237,20 +237,33 @@ public abstract class NodeUpdater implements FallibleCommand {
                 polymerDepVersion) || added;
         added = addDependency(packageJson, DEPENDENCIES,
                 "@webcomponents/webcomponentsjs", "^2.2.10") || added;
-        // dependency for the custom package.json placed in the generated
-        // folder.
         try {
+            // dependency for the custom package.json placed in the generated
+            // folder.
             String customPkg = "./" + FrontendUtils.getUnixRelativePath(
                     npmFolder.getAbsoluteFile().toPath(),
                     generatedFolder.getAbsoluteFile().toPath());
             added = addDependency(packageJson, DEPENDENCIES, DEP_NAME_FLOW_DEPS,
                     customPkg) || added;
+
+            // dependency for the package.json in the folder where frontend
+            // dependencies are copied
+            if (frontendDepsFolder != null
+                    // Skip if deps are copied directly to `node_modules` folder
+                    && !frontendDepsFolder.toString().contains(NODE_MODULES)) {
+                String depsPkg = "./" + FrontendUtils.getUnixRelativePath(
+                        npmFolder.getAbsoluteFile().toPath(),
+                        frontendDepsFolder.getAbsoluteFile().toPath());
+                added = addDependency(packageJson, DEPENDENCIES, DEP_NAME_FLOW_JARS,
+                        depsPkg) || added;
+            }
         } catch (IllegalArgumentException iae) {
             log().error("Exception in relativization of '{}' to '{}'",
                     npmFolder.getAbsoluteFile().toPath(),
                     generatedFolder.getAbsoluteFile().toPath());
             throw iae;
         }
+
         added = addDevDependency(packageJson, "webpack", "4.30.0", added);
         added = addDevDependency(packageJson, "webpack-cli", "3.3.0", added);
         added = addDevDependency(packageJson, "webpack-dev-server", "3.3.0",

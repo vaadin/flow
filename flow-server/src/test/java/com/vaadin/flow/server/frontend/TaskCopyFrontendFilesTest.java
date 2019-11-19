@@ -30,9 +30,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 
 public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
     @Rule
@@ -40,15 +40,15 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
 
     private File npmFolder;
     private File generatedFolder;
-    private File targetFolder;
+    private File frontendDepsFolder;
 
     @Before
     public void setup() throws IOException {
         // creating non-existing folder to make sure the execute() creates
         // the folder if missing
         npmFolder = new File(temporaryFolder.newFolder(), "child/");
-        targetFolder = new File(npmFolder, "frontend");
-        generatedFolder = new File(npmFolder, NODE_MODULES + FLOW_NPM_PACKAGE_NAME);
+        generatedFolder = new File(npmFolder, "target/frontend");
+        frontendDepsFolder = new File(npmFolder, "target/frontend-deps");
     }
 
     @Test
@@ -66,12 +66,15 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void should_createPackageJson() {
-        TaskCreatePackageJson task = new TaskCreatePackageJson(npmFolder, generatedFolder, targetFolder, "latest");
+    public void should_createPackageJson() throws IOException {
+        TaskCreatePackageJson task = new TaskCreatePackageJson(npmFolder, generatedFolder, frontendDepsFolder, "latest");
         task.execute();
         Assert.assertTrue(new File(npmFolder, PACKAGE_JSON).exists());
         Assert.assertTrue(new File(generatedFolder, PACKAGE_JSON).exists());
-        Assert.assertTrue(new File(targetFolder, PACKAGE_JSON).exists());
+        Assert.assertTrue(new File(frontendDepsFolder, PACKAGE_JSON).exists());
+        JsonObject deps = task.getMainPackageJson().getObject("dependencies");
+        Assert.assertTrue(deps.hasKey("@vaadin/flow-deps"));
+        Assert.assertTrue(deps.hasKey("@vaadin/flow-frontend"));
     }
 
     private void should_collectJsAndCssFilesFromJars(String jarFile,
@@ -85,12 +88,12 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
         // - resourceInFolder.js
         File dir = TestUtils.getTestFolder(fsDir);
 
-        TaskCopyFrontendFiles task = new TaskCopyFrontendFiles(targetFolder,
+        TaskCopyFrontendFiles task = new TaskCopyFrontendFiles(frontendDepsFolder,
                 jars(jar, dir));
 
         task.execute();
 
-        List<String> files = TestUtils.listFilesRecursively(targetFolder);
+        List<String> files = TestUtils.listFilesRecursively(frontendDepsFolder);
         System.err.println(files);
         Assert.assertEquals(3, files.size());
 
