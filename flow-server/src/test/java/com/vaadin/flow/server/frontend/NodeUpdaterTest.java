@@ -37,6 +37,7 @@ import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 
 public class NodeUpdaterTest {
 
@@ -139,9 +140,9 @@ public class NodeUpdaterTest {
     private void resolveResource_happyPath(String resourceFolder) {
         Mockito.when(finder.getResource(resourceFolder + "/foo"))
                 .thenReturn(url);
-        Assert.assertEquals(FrontendUtils.FLOW_NPM_PACKAGE_NAME + "foo",
+        Assert.assertEquals(FLOW_NPM_PACKAGE_NAME + "foo",
                 nodeUpdater.resolveResource("foo", true));
-        Assert.assertEquals(FrontendUtils.FLOW_NPM_PACKAGE_NAME + "foo",
+        Assert.assertEquals(FLOW_NPM_PACKAGE_NAME + "foo",
                 nodeUpdater.resolveResource("foo", false));
     }
 

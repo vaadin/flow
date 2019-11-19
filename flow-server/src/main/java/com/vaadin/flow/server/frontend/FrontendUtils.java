@@ -112,6 +112,12 @@ public class FrontendUtils {
      */
     public static final String FLOW_NPM_PACKAGE_NAME = "@vaadin/flow-frontend/";
 
+
+    /**
+     * Default folder for copying front-end resources present in the classpath jars.
+     */
+    public static final String FLOW_NPM_DEPS_FOLDER = NODE_MODULES + FLOW_NPM_PACKAGE_NAME;
+
     /**
      * Default target folder for the java project.
      */
