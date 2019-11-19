@@ -45,9 +45,9 @@ import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8;
 import static java.nio.charset.StandardCharsets.UTF_8;
-
 
 /**
  * Bootstrap handler for WebComponent requests.
@@ -58,15 +58,16 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class WebComponentBootstrapHandler extends BootstrapHandler {
     private static final String REQ_PARAM_URL = "url";
     private static final String PATH_PREFIX = "/web-component/web-component";
-    private static final Pattern PATH_PATTERN =
-            Pattern.compile(".*" + PATH_PREFIX + "-(ui|bootstrap)\\.(js|html)$");
+    private static final Pattern PATH_PATTERN = Pattern
+            .compile(".*" + PATH_PREFIX + "-(ui|bootstrap)\\.(js|html)$");
 
     private static class WebComponentBootstrapContext extends BootstrapContext {
 
         private WebComponentBootstrapContext(VaadinRequest request,
-                                             VaadinResponse response, UI ui,
-                                             Function<VaadinRequest, String> callback) {
-            super(request, response, ui.getInternals().getSession(), ui, callback);
+                VaadinResponse response, UI ui,
+                Function<VaadinRequest, String> callback) {
+            super(request, response, ui.getInternals().getSession(), ui,
+                    callback);
         }
 
         @Override
@@ -79,7 +80,8 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
 
         @Override
         protected Optional<ThemeDefinition> getTheme() {
-            Optional<Theme> optionalTheme = getPageConfigurationAnnotation(Theme.class);
+            Optional<Theme> optionalTheme = getPageConfigurationAnnotation(
+                    Theme.class);
             return optionalTheme.map(ThemeDefinition::new);
         }
     }
@@ -93,7 +95,9 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
 
     /**
      * Creates a new bootstrap handler, allowing to use custom page builder.
-     * @param pageBuilder Page builder to use.
+     *
+     * @param pageBuilder
+     *            Page builder to use.
      */
     protected WebComponentBootstrapHandler(PageBuilder pageBuilder) {
         super(pageBuilder);
@@ -109,24 +113,28 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
     }
 
     /**
-     * Returns the request's base url to use in constructing and initialising ui.
-     * @param request Request to the url for.
+     * Returns the request's base url to use in constructing and initialising
+     * ui.
+     *
+     * @param request
+     *            Request to the url for.
      * @return Request's url.
      */
     protected String getRequestUrl(VaadinRequest request) {
-        return ((VaadinServletRequest)request).getRequestURL().toString();
+        return ((VaadinServletRequest) request).getRequestURL().toString();
     }
 
     @Override
-    protected BootstrapContext createAndInitUI(
-            Class<? extends UI> uiClass, VaadinRequest request,
-            VaadinResponse response, VaadinSession session) {
+    protected BootstrapContext createAndInitUI(Class<? extends UI> uiClass,
+            VaadinRequest request, VaadinResponse response,
+            VaadinSession session) {
 
-        if(!canHandleRequest(request)) {
-            throw new IllegalStateException("Unexpected request URL '"
-                    + getRequestUrl(request) + "' in the bootstrap handler for web "
-                    + "component UI which should handle path "
-                    + PATH_PATTERN.toString());
+        if (!canHandleRequest(request)) {
+            throw new IllegalStateException(
+                    "Unexpected request URL '" + getRequestUrl(request)
+                            + "' in the bootstrap handler for web "
+                            + "component UI which should handle path "
+                            + PATH_PATTERN.toString());
         }
 
         final String serviceUrl = getServiceUrl(request);
@@ -160,21 +168,24 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
 
     @Override
     protected BootstrapContext createBootstrapContext(VaadinRequest request,
-                                                      VaadinResponse response, UI ui, Function<VaadinRequest, String> callback) {
-        return new WebComponentBootstrapContext(request, response, ui, callback);
+            VaadinResponse response, UI ui,
+            Function<VaadinRequest, String> callback) {
+        return new WebComponentBootstrapContext(request, response, ui,
+                callback);
     }
 
-
     @Override
-    public boolean synchronizedHandleRequest(VaadinSession session, VaadinRequest request, VaadinResponse response) throws IOException {
-        if (session.getService().getDeploymentConfiguration().isCompatibilityMode()) {
+    public boolean synchronizedHandleRequest(VaadinSession session,
+            VaadinRequest request, VaadinResponse response) throws IOException {
+        if (session.getService().getDeploymentConfiguration()
+                .isCompatibilityMode()) {
             return super.synchronizedHandleRequest(session, request, response);
         } else {
             // Find UI class
             Class<? extends UI> uiClass = getUIClass(request);
 
-            BootstrapContext context = createAndInitUI(uiClass, request, response,
-                    session);
+            BootstrapContext context = createAndInitUI(uiClass, request,
+                    response, session);
 
             ServletHelper.setResponseNoCacheHeaders(response::setHeader,
                     response::setDateHeader);
@@ -193,19 +204,20 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
      * JavaScript. Drops {@code <base>} element.
      *
      * @param response
-     *         {@link com.vaadin.flow.server.VaadinResponse} into which the
-     *         script is written
+     *            {@link com.vaadin.flow.server.VaadinResponse} into which the
+     *            script is written
      * @param head
-     *         head element of Vaadin Bootstrap page. The child elements are
-     *         copied into the embedding page's head using JavaScript.
+     *            head element of Vaadin Bootstrap page. The child elements are
+     *            copied into the embedding page's head using JavaScript.
      * @param serviceUrl
-     *         base path to use for the head elements' URLs
+     *            base path to use for the head elements' URLs
      * @throws IOException
-     *         if writing fails
+     *             if writing fails
      */
-    private void writeBootstrapPage(
-            VaadinResponse response, Element head, String serviceUrl) throws IOException {
-        writeBootstrapPage(CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8, response, head, serviceUrl);
+    private void writeBootstrapPage(VaadinResponse response, Element head,
+            String serviceUrl) throws IOException {
+        writeBootstrapPage(CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8, response, head,
+                serviceUrl);
     }
 
     /**
@@ -214,30 +226,32 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
      * JavaScript. Drops {@code <base>} element.
      *
      * @param contentType
-     *          Content type of the response.
+     *            Content type of the response.
      * @param response
-     *         {@link com.vaadin.flow.server.VaadinResponse} into which the
-     *         script is written
+     *            {@link com.vaadin.flow.server.VaadinResponse} into which the
+     *            script is written
      * @param head
-     *         head element of Vaadin Bootstrap page. The child elements are
-     *         copied into the embedding page's head using JavaScript.
+     *            head element of Vaadin Bootstrap page. The child elements are
+     *            copied into the embedding page's head using JavaScript.
      * @param serviceUrl
-     *         base path to use for the head elements' URLs
+     *            base path to use for the head elements' URLs
      * @throws IOException
-     *         if writing fails
+     *             if writing fails
      */
-    protected void writeBootstrapPage(String contentType, VaadinResponse response, Element head, String serviceUrl) throws IOException {
+    protected void writeBootstrapPage(String contentType,
+            VaadinResponse response, Element head, String serviceUrl)
+            throws IOException {
         /*
-            The elements found in the head are reconstructed using JavaScript and
-            document.createElement(...). Since innerHTML and related methods
-            do not execute <script> blocks, the contents cannot be copied as
-            pure string into the head. The each element is created separately
-            and then attributes are copied and innerHTML set, if the element
-            has innerHTML. The innerHTMLs are in-lined for easier copying.
-        */
+         * The elements found in the head are reconstructed using JavaScript and
+         * document.createElement(...). Since innerHTML and related methods do
+         * not execute <script> blocks, the contents cannot be copied as pure
+         * string into the head. The each element is created separately and then
+         * attributes are copied and innerHTML set, if the element has
+         * innerHTML. The innerHTMLs are in-lined for easier copying.
+         */
         response.setContentType(contentType);
         try (BufferedWriter writer = new BufferedWriter(
-            new OutputStreamWriter(response.getOutputStream(), UTF_8))) {
+                new OutputStreamWriter(response.getOutputStream(), UTF_8))) {
             String varName = "headElem"; // generated head element
             writer.append("var ").append(varName).append("=null;");
             for (Element element : head.children()) {
@@ -245,26 +259,31 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                     continue;
                 }
                 writer.append(varName).append("=");
-                writer.append("document.createElement('").append(element.tagName()).append("');");
+                writer.append("document.createElement('")
+                        .append(element.tagName()).append("');");
                 transferAttribute(writer, varName, element, serviceUrl);
                 // set cleaned html as innerHTML for the element
                 String elementHtml = element.html();
                 if (elementHtml != null && elementHtml.length() > 0) {
                     writer.append(varName).append(".innerHTML=\"")
-                        .append(inlineHTML(elementHtml)).append("\";");
+                            .append(inlineHTML(elementHtml)).append("\";");
                 }
-                writer.append("document.head.appendChild(").append(varName).append(");");
+                writer.append("document.head.appendChild(").append(varName)
+                        .append(");");
             }
         }
     }
 
     private static boolean elementShouldNotBeTransferred(Element element) {
         // we skip base href adjustment, since we are in a 3rd party
-        // context
-        if ("base".equals(element.tagName())) {
+        // context, also "meta" and "style" affects the page globally and should
+        // be skipped
+        if ("base".equals(element.tagName()) || "meta".equals(element.tagName())
+                || "style".equals(element.tagName())) {
             return true;
         } else {
-            // embedding context should not provide polyfill, it is left to the end-user
+            // embedding context should not provide polyfill, it is left to the
+            // end-user
             return "script".equals(element.tagName())
                     && element.attr("src").contains("webcomponents-loader.js");
         }
@@ -277,21 +296,21 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
      * {@code basePath}.
      *
      * @param writer
-     *         response writer
+     *            response writer
      * @param elementRef
-     *         variable name of the element in javascript
+     *            variable name of the element in javascript
      * @param element
-     *         jsoup element from which to copy the attributes
+     *            jsoup element from which to copy the attributes
      * @param basePath
-     *         base path of {@code src} attributes (service url's path)
+     *            base path of {@code src} attributes (service url's path)
      * @throws IOException
-     *         if {@code writer} is unable to write
+     *             if {@code writer} is unable to write
      */
-    private void transferAttribute(
-            Writer writer, String elementRef, Element element,
-            String basePath) throws IOException {
+    private void transferAttribute(Writer writer, String elementRef,
+            Element element, String basePath) throws IOException {
         for (Attribute attribute : element.attributes()) {
-            writer.append(elementRef).append(".setAttribute('").append(attribute.getKey()).append("',");
+            writer.append(elementRef).append(".setAttribute('")
+                    .append(attribute.getKey()).append("',");
             if (attribute.getValue() == null) {
                 writer.append("''");
             } else {
@@ -346,9 +365,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 .replace("//<![CDATA[", "/*<![CDATA[*/")
                 .replace("//]]>", "/*]]>*/")
                 // get rid of all the unnecessary white-space
-                .replaceAll("\\s{2,}", "")
-                .replace("\t", "")
-                .replace("\n", "")
+                .replaceAll("\\s{2,}", "").replace("\t", "").replace("\n", "")
                 .replace("\r", "");
     }
 
@@ -367,7 +384,8 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         return url
                 // +1 is to keep the trailing slash
                 .substring(0, url.indexOf(PATH_PREFIX) + 1)
-                // replace http:// or https:// with // to work with https:// proxies
+                // replace http:// or https:// with // to work with https://
+                // proxies
                 // which proxies to the same http:// url
                 .replaceFirst("^" + ".*://", "//");
     }
