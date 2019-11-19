@@ -576,7 +576,7 @@ public abstract class AbstractServiceGenerationTest {
         List<Tag> expectedTagsWithoutFilePath = mapTagNameWithPath(expected,
                 expectedFilePath);
         expected.setTags(expectedTagsWithoutFilePath);
-        
+
         for (Map.Entry<String, String> generatedEntrySet : generatedFilePath
                 .entrySet()) {
             String value = generatedEntrySet.getValue();
