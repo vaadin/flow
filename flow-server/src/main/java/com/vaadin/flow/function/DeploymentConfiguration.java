@@ -399,4 +399,25 @@ public interface DeploymentConfiguration extends Serializable {
         return getBooleanProperty(Constants.SERVLET_PARAMETER_REUSE_DEV_SERVER,
                 true);
     }
+
+    /**
+     * Get if the stats.json file should be retrieved from an external service or
+     * through the classpath.
+     *
+     * @return true if stats.json is served from an external location
+     */
+    default boolean isStatsExternal() {
+        return getBooleanProperty(Constants.EXTERNAL_STATS_FILE, false);
+    }
+
+    /**
+     * Get the url from where stats.json should be retrieved from.
+     * If not given this will default to '/vaadin-static/VAADIN/config/stats.json'
+     *
+     * @return external stats.json location
+     */
+    default String getExternalStatsUrl() {
+        return getStringProperty(Constants.EXTERNAL_STATS_URL,
+                Constants.DEFAULT_EXTERNAL_STATS_URL);
+    }
 }

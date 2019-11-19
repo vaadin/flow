@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.vaadin.flow.server.ExecutionFailedException;
-import com.vaadin.flow.server.FallibleCommand;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 

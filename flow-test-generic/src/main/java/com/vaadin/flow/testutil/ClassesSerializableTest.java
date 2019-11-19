@@ -55,7 +55,7 @@ import static org.junit.Assert.fail;
  * tries to serialize every single class (except ones from whitelist) in the
  * classpath. Subclasses may adjust the whitelist by overriding
  * {@link #getExcludedPatterns()}, {@link #getBasePackages()},
- * {@link  #getJarPattern()}
+ * {@link #getJarPattern()}
  *
  * @since 1.0
  */
@@ -167,8 +167,23 @@ public abstract class ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.component\\.internal\\.HtmlImportParser",
                 "com\\.vaadin\\.flow\\.server\\.webcomponent\\.WebComponentGenerator",
                 "com\\.vaadin\\.flow\\.server\\.communication\\.WebComponentBootstrapHandler(\\$.*)?",
+
+                "com\\.vaadin\\.flow\\.server\\.DevModeHandler",
+                // Frontend tasks classes which are not stored anywhere but used
+                // only once
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.scanner\\..*",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.JarContentsManager",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.AbstractUpdateImports",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.FallibleCommand",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.NodeTasks",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.NodeUpdater",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskCopyFrontendFiles",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskCopyLocalFrontendFiles",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskCreatePackageJson",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskRunNpmInstall",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskUpdateImports(\\$.*)?",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskUpdatePackages",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskUpdateWebpack",
 
                 // Various test classes
                 ".*\\.test(s)?\\..*", ".*Test.*",

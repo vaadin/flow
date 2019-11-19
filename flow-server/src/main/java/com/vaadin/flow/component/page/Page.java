@@ -547,7 +547,7 @@ public class Page implements Serializable {
      * @param windowName
      *            the name of the window.
      */
-    private void open(String url, String windowName) {
+    public void open(String url, String windowName) {
         executeJavaScript("window.open($0, $1)", url, windowName);
     }
 
