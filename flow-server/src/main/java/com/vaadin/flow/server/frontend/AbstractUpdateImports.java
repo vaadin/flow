@@ -437,8 +437,7 @@ abstract class AbstractUpdateImports implements Runnable, Serializable {
         }
         // file is a flow resource e.g.
         // /node_modules/@vaadin/flow-frontend/gridConnector.js
-        file = getFile(new File(getNodeModulesDir(), NODE_MODULES),
-                FLOW_NPM_PACKAGE_NAME, jsImport);
+        file = getFile(getNodeModulesDir(), FLOW_NPM_PACKAGE_NAME, jsImport);
         return file.exists() ? file : null;
     }
 

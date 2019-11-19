@@ -12,8 +12,7 @@ import org.junit.Test;
 
 import com.vaadin.flow.server.frontend.TestUtils;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_DEPS_FOLDER;
 
 public class DevModeInitializerClassLoaderTest {
 
@@ -55,7 +54,7 @@ public class DevModeInitializerClassLoaderTest {
         customLoader.close();
 
         List<String> files = TestUtils.listFilesRecursively(
-                new File(baseDir, NODE_MODULES + FLOW_NPM_PACKAGE_NAME));
+                new File(baseDir, FLOW_NPM_DEPS_FOLDER));
         Assert.assertEquals(3, files.size());
 
         Assert.assertTrue("Js resource should have been copied from jar file",
