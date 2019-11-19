@@ -18,6 +18,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.Uses;
+import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateData;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
@@ -71,6 +72,66 @@ public class NpmTemplateParserTest {
                 "Template element should have contained a div element with the id 'test'",
                 "div", templateContent.getTemplateElement()
                         .getElementById("test").tag().toString());
+    }
+
+    @Test
+    public void getTemplateContent_polymer2TemplateStyleInsertion_contentParsedCorrectly() {
+        Mockito.when(configuration.getStringProperty(Mockito.anyString(),
+                Mockito.anyString()))
+                .thenReturn(VAADIN_SERVLET_RESOURCES
+                        + "config/no-html-template.json");
+
+        TemplateParser parser = NpmTemplateParser.getInstance();
+        TemplateData data = parser.getTemplateContent(
+                NoHtmlTemplateContent.class, "no-html-template", service);
+        Element templateElement = data.getTemplateElement();
+        Assert.assertNotNull(templateElement);
+        Elements divs = templateElement.getElementsByTag("div");
+        Assert.assertEquals(1, divs.size());
+        Assert.assertEquals("No Template", divs.get(0).text());
+    }
+
+    @Test
+    public void getTemplateContent_polymer2TemplateStyleInsertion_severalDomModules_correctTemplateContentIsChosen() {
+        Mockito.when(configuration.getStringProperty(Mockito.anyString(),
+                Mockito.anyString()))
+                .thenReturn(VAADIN_SERVLET_RESOURCES
+                        + "config/no-html-template.json");
+
+        TemplateParser parser = NpmTemplateParser.getInstance();
+        TemplateData data = parser.getTemplateContent(
+                SeveralDomModulesTemplateContent.class,
+                "several-dom-modules-template", service);
+        Element templateElement = data.getTemplateElement();
+        Assert.assertNotNull(templateElement);
+        Elements divs = templateElement.getElementsByTag("div");
+        Assert.assertEquals(1, divs.size());
+        Assert.assertEquals("Several Dom-Modules", divs.get(0).text());
+    }
+
+    @Test
+    public void should_FindCorrectDataInBeverageStats() {
+        Mockito.when(configuration.getStringProperty(Mockito.anyString(),
+                Mockito.anyString()))
+                .thenReturn(VAADIN_SERVLET_RESOURCES
+                        + "config/stats-beverage.json");
+
+        TemplateParser instance = NpmTemplateParser.getInstance();
+        TemplateParser.TemplateData templateContent = instance
+                .getTemplateContent(ReviewList.class, "likeable-element",
+                        service);
+
+        Assert.assertEquals("Parent element ID not the expected one.",
+                "likeable-element",
+                templateContent.getTemplateElement().parent().id());
+
+        Assert.assertEquals("Expected template element to have 2 children", 2,
+                templateContent.getTemplateElement().childNodeSize());
+
+        Assert.assertEquals(
+                "Template element should have contained a div element with the id 'search'",
+                "vaadin-text-field", templateContent.getTemplateElement()
+                        .getElementById("search").tag().toString());
     }
 
     @Test
@@ -348,4 +409,18 @@ public class NpmTemplateParserTest {
     public class ChildTemplate extends PolymerTemplate<TemplateModel> {
 
     }
+
+    @JsModule("./no-html-template.js")
+    @Tag("no-template")
+    public class NoHtmlTemplateContent extends PolymerTemplate<TemplateModel> {
+
+    }
+
+    @JsModule("./several-dom-modules-template.js")
+    @Tag("several-dom-modules-template")
+    public class SeveralDomModulesTemplateContent
+            extends PolymerTemplate<TemplateModel> {
+
+    }
+
 }
