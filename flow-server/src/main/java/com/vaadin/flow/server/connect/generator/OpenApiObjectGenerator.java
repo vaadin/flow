@@ -665,9 +665,10 @@ public class OpenApiObjectGenerator {
         generatedSchema.add(qualifiedName);
 
         List<ResolvedReferenceType> directAncestors = resolvedType
-                .getAllClassesAncestors().stream()
-                .filter(parent -> !Object.class.getName()
-                        .equals(parent.getQualifiedName()))
+                .getDirectAncestors().stream()
+                .filter(parent -> parent.getTypeDeclaration().isClass()
+                        && !Object.class.getName()
+                                .equals(parent.getQualifiedName()))
                 .collect(Collectors.toList());
 
         if (directAncestors.isEmpty()) {
