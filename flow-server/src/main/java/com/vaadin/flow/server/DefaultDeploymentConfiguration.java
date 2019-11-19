@@ -21,16 +21,18 @@ import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_JS;
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
-import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.shared.communication.PushMode;
+
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_JS;
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
+import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
 
 /**
  * The default implementation of {@link DeploymentConfiguration} based on a base
@@ -323,8 +325,9 @@ public class DefaultDeploymentConfiguration
         String entryPointMessage;
         if (!indexEntry.exists() && !indexEntryTs.exists()) {
             entryPointMessage = String.format(
-                    "'index.ts' (index.js) is not found from '%s'. Using default 'index.js'.",
-                    indexEntry.getPath());
+                    "- 'index.ts' (index.js) is not found from '%s'. Using default '%sindex.js'.%n" +
+                            "  Please follow the instruction in the default file for customization if necessary.",
+                    indexEntry.getPath(), TARGET);
         } else {
             String fileName = indexEntry.exists() ? "index.js" : "index.ts";
             String filePath = indexEntry.exists() ? indexEntry.getPath()
@@ -341,8 +344,9 @@ public class DefaultDeploymentConfiguration
         String indexHTMLMessage;
         if (!indexHTML.exists()) {
             indexHTMLMessage = String.format(
-                    "'index.html' is not found from '%s'. Using default 'index.html'%n",
-                    indexHTML.getPath());
+                    "- 'index.html' is not found from '%s'. Using default '%sindex.html'.%n" +
+                            "  Please follow the instruction in the default file for customization if necessary.%n%n",
+                    indexHTML.getPath(), TARGET);
         } else {
             indexHTMLMessage = String.format("Using 'index.html' from '%s'%n",
                     indexHTML.getPath());
