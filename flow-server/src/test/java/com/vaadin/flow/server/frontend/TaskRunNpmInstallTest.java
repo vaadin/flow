@@ -49,7 +49,7 @@ public class TaskRunNpmInstallTest {
         npmFolder = temporaryFolder.newFolder();
         nodeUpdater = new NodeUpdater(Mockito.mock(ClassFinder.class),
                 Mockito.mock(FrontendDependencies.class), npmFolder,
-                new File("")) {
+                new File(""), null) {
 
             @Override
             public void execute() {

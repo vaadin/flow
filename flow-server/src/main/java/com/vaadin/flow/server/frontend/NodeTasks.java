@@ -251,9 +251,12 @@ public class NodeTasks implements FallibleCommand {
         }
 
         /**
-         * Sets whether copy resources from classpath to the `node_modules`
-         * folder as they are available for webpack build.
+         * Sets whether copy resources from classpath to the appropriate npm
+         * package folder so as they are available for webpack build.
          *
+         *
+         * @param frontendDepsDirectory
+         *            target folder
          * @param jars
          *            set of class nodes to be visited. Not {@code null}
          *
@@ -435,7 +438,7 @@ public class NodeTasks implements FallibleCommand {
 
         if (builder.createMissingPackageJson) {
             TaskCreatePackageJson packageCreator = new TaskCreatePackageJson(
-                    builder.npmFolder, builder.generatedFolder);
+                    builder.npmFolder, builder.generatedFolder, builder.frontendDepsTargetDirectory);
             commands.add(packageCreator);
         }
 
