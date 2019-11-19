@@ -28,7 +28,11 @@ import org.jsoup.nodes.Node;
  * @author Vaadin Ltd
  *
  */
-class JsoupUtils {
+final class JsoupUtils {
+
+    private JsoupUtils() {
+        // Utility class
+    }
 
     /**
      * Removes all comments from the {@code node} tree.

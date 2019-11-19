@@ -82,10 +82,10 @@ public final class BundleParser {
      * end character with <code>;}</code> e.g. <code>';}</code>
      */
     private static final Pattern TEMPLATE_PATTERN = Pattern.compile(
-            "get[\\s]*template\\(\\)[\\s]*\\{[\\s]*return[\\s]*html([\\`|\\'|\\\"])([\\s\\S]*)\\1;[\\s]*\\}");
+            "get[\\s]*template\\(\\)[\\s]*\\{[\\s]*return[\\s]*html([\\`\\'\\\"])([\\s\\S]*)\\1;[\\s]*\\}");
 
     private static final Pattern NO_TEMPLATE_PATTERN = Pattern.compile(
-            "innerHTML[\\s]*=[\\s]*([\\`|\\'|\\\"])([\\s]*<dom-module\\s+[\\s\\S]*)\\1;");
+            "innerHTML[\\s]*=[\\s]*([\\`\\'\\\"])([\\s]*<dom-module\\s+[\\s\\S]*)\\1;");
 
     private static final Pattern HASH_PATTERN = Pattern
             .compile("\"hash\"\\s*:\\s*\"([^\"]+)\"\\s*,");
@@ -177,30 +177,11 @@ public final class BundleParser {
             LOGGER.trace("The parsed template document was {}",
                     templateDocument);
         } else {
-            while (noTemplateMatcher.find()
-                    && noTemplateMatcher.groupCount() == 2) {
-                String group = noTemplateMatcher.group(2);
-                LOGGER.trace(
-                        "Found Polymer 2 style insertion as a Polymer 3 template content {}",
-                        group);
-
-                templateDocument = Jsoup.parse(group);
-                LOGGER.trace("The parsed template document was {}",
-                        templateDocument);
-                Optional<Element> domModule = JsoupUtils
-                        .getDomModule(templateDocument, null);
-                if (!domModule.isPresent()) {
-                    continue;
-                }
-                JsoupUtils.removeCommentsRecursively(domModule.get());
-                Elements templates = domModule.get()
-                        .getElementsByTag(TEMPLATE_TAG_NAME);
-                if (templates.isEmpty()) {
-                    continue;
-                }
-                return templates.get(0);
+            Element template = tryParsePolymer2(templateDocument,
+                    noTemplateMatcher);
+            if (template != null) {
+                return template;
             }
-
         }
         if (templateDocument == null) {
             LOGGER.warn("No template data found in {} sources.", fileName);
@@ -217,6 +198,34 @@ public final class BundleParser {
                 .forEach(template::appendChild);
 
         return template;
+    }
+
+    private static Element tryParsePolymer2(Document templateDocument,
+            Matcher noTemplateMatcher) {
+        while (noTemplateMatcher.find()
+                && noTemplateMatcher.groupCount() == 2) {
+            String group = noTemplateMatcher.group(2);
+            LOGGER.trace(
+                    "Found Polymer 2 style insertion as a Polymer 3 template content {}",
+                    group);
+
+            templateDocument = Jsoup.parse(group);
+            LOGGER.trace("The parsed template document was {}",
+                    templateDocument);
+            Optional<Element> domModule = JsoupUtils
+                    .getDomModule(templateDocument, null);
+            if (!domModule.isPresent()) {
+                continue;
+            }
+            JsoupUtils.removeCommentsRecursively(domModule.get());
+            Elements templates = domModule.get()
+                    .getElementsByTag(TEMPLATE_TAG_NAME);
+            if (templates.isEmpty()) {
+                continue;
+            }
+            return templates.get(0);
+        }
+        return null;
     }
 
     // From the statistics json recursively go through all chunks and modules to
