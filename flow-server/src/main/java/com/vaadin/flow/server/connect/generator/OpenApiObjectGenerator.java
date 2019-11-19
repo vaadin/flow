@@ -246,8 +246,6 @@ public class OpenApiObjectGenerator {
                             .getFullyQualifiedName().orElse(simpleClassName)));
             openApiModel.addTagsItem(tag);
         }
-        // Keep the order consistent
-        openApiModel.getTags().sort(Comparator.comparing(Tag::getName));
     }
 
     private OpenAPI createBasicModel() {

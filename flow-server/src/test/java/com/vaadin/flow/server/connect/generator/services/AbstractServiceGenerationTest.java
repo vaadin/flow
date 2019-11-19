@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -508,6 +509,9 @@ public abstract class AbstractServiceGenerationTest {
             removeAndCompareFilePathExtensionInTags(generated, expected);
             removeAndCompareFilePathExtensionInSchemas(generated, expected);
 
+            generated.getTags().sort(Comparator.comparing(Tag::getName));
+            expected.getTags().sort(Comparator.comparing(Tag::getName));
+
             Assert.assertEquals("The generated OpenAPI does not match",
                     expected, generated);
         } catch (URISyntaxException e) {
@@ -592,7 +596,7 @@ public abstract class AbstractServiceGenerationTest {
         }).collect(Collectors.toList());
     }
 
-    private void verifyOpenApiJsons(URL expectedOpenApiJsonResourceUrl) {
+    private void verifyOpenApiJsonByString(URL expectedOpenApiJsonResourceUrl) {
         assertEquals(TestUtils.readResource(expectedOpenApiJsonResourceUrl),
                 readFile(openApiJsonOutput));
     }
