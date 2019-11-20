@@ -32,9 +32,11 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponent;
+import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinServiceInitListener;
+import com.vaadin.flow.server.frontend.scanner.samples.ErrorComponent;
 import com.vaadin.flow.server.frontend.scanner.samples.JsOrderComponent;
 import com.vaadin.flow.server.frontend.scanner.samples.MyServiceListener;
 import com.vaadin.flow.server.frontend.scanner.samples.MyUIInitListener;
@@ -61,9 +63,12 @@ public class FrontendDependenciesTest {
                 .loadClass(VaadinServiceInitListener.class.getName()))
                 .thenReturn((Class) VaadinServiceInitListener.class);
 
-        Mockito.when(classFinder
-                .loadClass(WebComponentExporter.class.getName()))
+        Mockito.when(
+                classFinder.loadClass(WebComponentExporter.class.getName()))
                 .thenReturn((Class) WebComponentExporter.class);
+
+        Mockito.when(classFinder.loadClass(HasErrorParameter.class.getName()))
+                .thenReturn((Class) HasErrorParameter.class);
 
         Mockito.when(classFinder.loadClass(FrontendDependencies.LUMO))
                 .thenReturn((Class) FakeLumo.class);
@@ -88,6 +93,22 @@ public class FrontendDependenciesTest {
         Set<String> scripts = dependencies.getScripts();
         Assert.assertEquals(1, scripts.size());
         Assert.assertEquals("bar.js", scripts.iterator().next());
+    }
+
+    @Test
+    public void hasErrorParameterComponent_endpointIsCollected()
+            throws ClassNotFoundException {
+        Mockito.when(classFinder.getSubTypesOf(HasErrorParameter.class))
+                .thenReturn(Collections.singleton(ErrorComponent.class));
+        FrontendDependencies dependencies = new FrontendDependencies(
+                classFinder, false);
+        List<String> modules = dependencies.getModules();
+        Assert.assertEquals(1, modules.size());
+        Assert.assertEquals("./src/bar.js", modules.get(0));
+
+        Set<String> scripts = dependencies.getScripts();
+        Assert.assertEquals(1, scripts.size());
+        Assert.assertEquals("./src/baz.js", scripts.iterator().next());
     }
 
     @Test
@@ -139,25 +160,24 @@ public class FrontendDependenciesTest {
     // flow #6408
     @Test
     public void annotationsInRouterLayoutWontBeFlaggedAsBelongingToTheme() {
-        Mockito.when(classFinder.getAnnotatedClasses(Route.class))
-                .thenReturn(Collections.singleton(RouteComponentWithLayout.class));
+        Mockito.when(classFinder.getAnnotatedClasses(Route.class)).thenReturn(
+                Collections.singleton(RouteComponentWithLayout.class));
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false);
 
         List<String> expectedOrder = Arrays.asList("theme-foo.js", "foo.js");
         Assert.assertThat("Theme's annotations should come first",
-                    dependencies.getModules(), is(expectedOrder)
-                );
+                dependencies.getModules(), is(expectedOrder));
     }
 
     // flow #6524
     @Test
     public void extractsAndScansClassesFromMethodReferences() {
-        Mockito.when(classFinder.getAnnotatedClasses(Route.class))
-                .thenReturn(Collections.singleton(RouteComponentWithMethodReference.class));
+        Mockito.when(classFinder.getAnnotatedClasses(Route.class)).thenReturn(
+                Collections.singleton(RouteComponentWithMethodReference.class));
 
-        FrontendDependencies dependencies =
-                new FrontendDependencies(classFinder, false);
+        FrontendDependencies dependencies = new FrontendDependencies(
+                classFinder, false);
 
         List<String> modules = dependencies.getModules();
         Assert.assertEquals(3, modules.size());
@@ -180,7 +200,8 @@ public class FrontendDependenciesTest {
         Assert.assertNotNull(dependencies.getThemeDefinition());
     }
 
-    public static class MyComponent extends Component {}
+    public static class MyComponent extends Component {
+    }
 
     public static class MyExporter extends WebComponentExporter<MyComponent> {
         public MyExporter() {
@@ -188,11 +209,14 @@ public class FrontendDependenciesTest {
         }
 
         @Override
-        protected void configureInstance(WebComponent<MyComponent> webComponent, MyComponent component) { }
+        protected void configureInstance(WebComponent<MyComponent> webComponent,
+                MyComponent component) {
+        }
     }
 
     public static class FakeLumo implements AbstractTheme {
-        public FakeLumo() {}
+        public FakeLumo() {
+        }
 
         @Override
         public String getBaseUrl() {

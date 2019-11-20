@@ -16,12 +16,13 @@
 package com.vaadin.flow.server;
 
 import javax.servlet.ServletContext;
+import java.util.Enumeration;
 import java.util.function.Supplier;
 
 /**
  * {@link VaadinContext} that goes with {@link VaadinServletService}.
- * @author miki
- * @since 14.0.0
+ *
+ * @since 2.0.0
  */
 public class VaadinServletContext implements VaadinContext {
 
@@ -78,6 +79,18 @@ public class VaadinServletContext implements VaadinContext {
     public void removeAttribute(Class<?> clazz) {
         ensureServletContext();
         context.removeAttribute(clazz.getName());
+    }
+
+    @Override
+    public Enumeration<String> getContextParameterNames() {
+        ensureServletContext();
+        return context.getInitParameterNames();
+    }
+
+    @Override
+    public String getContextParameter(String name) {
+        ensureServletContext();
+        return context.getInitParameter(name);
     }
 
 }

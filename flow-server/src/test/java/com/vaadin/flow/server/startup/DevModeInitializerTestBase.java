@@ -58,7 +58,7 @@ public class DevModeInitializerTestBase {
     public final TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     @Before
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public void setup() throws Exception {
         assertNull(getDevModeHandler());
 
@@ -69,7 +69,8 @@ public class DevModeInitializerTestBase {
         createStubWebpackServer("Compiled", 500, baseDir);
 
         servletContext = Mockito.mock(ServletContext.class);
-        ServletRegistration registration = Mockito.mock(ServletRegistration.class);
+        ServletRegistration registration = Mockito
+                .mock(ServletRegistration.class);
 
         initParams = new HashMap<>();
         initParams.put(FrontendUtils.PROJECT_BASEDIR, baseDir);
@@ -111,7 +112,6 @@ public class DevModeInitializerTestBase {
         System.clearProperty("vaadin." + SERVLET_PARAMETER_COMPATIBILITY_MODE);
         System.clearProperty("vaadin." + SERVLET_PARAMETER_PRODUCTION_MODE);
         System.clearProperty("vaadin." + SERVLET_PARAMETER_REUSE_DEV_SERVER);
-        System.clearProperty("vaadin." + SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE);
         System.clearProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN);
 
         webpackFile.delete();
@@ -130,7 +130,6 @@ public class DevModeInitializerTestBase {
     public void runDestroy() throws Exception {
         devModeInitializer.contextDestroyed(null);
     }
-
 
     static List<URL> getClasspathURLs() {
         return Arrays.stream(

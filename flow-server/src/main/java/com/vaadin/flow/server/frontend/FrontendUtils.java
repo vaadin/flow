@@ -15,11 +15,18 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -37,6 +44,8 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
+import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
 
@@ -349,15 +358,19 @@ public class FrontendUtils {
         // not work because it's a shell or windows script that looks for node
         // and will fail. Thus we look for the `mpn-cli` node script instead
         File file = new File(baseDir, "node/node_modules/npm/bin/npm-cli.js");
+        List<String> returnCommand = new ArrayList<>();
         if (file.canRead()) {
             // We return a two element list with node binary and npm-cli script
-            return Arrays.asList(getNodeExecutable(baseDir),
-                    file.getAbsolutePath());
+            returnCommand.add(getNodeExecutable(baseDir));
+            returnCommand.add(file.getAbsolutePath());
+        } else {
+            // Otherwise look for regulan `npm`
+            String command = isWindows() ? "npm.cmd" : "npm";
+            returnCommand.add(
+                    getExecutable(baseDir, command, null).getAbsolutePath());
         }
-        // Otherwise look for regulan `npm`
-        String command = isWindows() ? "npm.cmd" : "npm";
-        return Arrays.asList(
-                getExecutable(baseDir, command, null).getAbsolutePath());
+        returnCommand.add("--no-update-notifier");
+        return returnCommand;
     }
 
     /**
@@ -476,6 +489,11 @@ public class FrontendUtils {
             content = getStatsFromWebpack();
         }
 
+        if (config.isStatsExternal()) {
+            content = getStatsFromExternalUrl(config.getExternalStatsUrl(),
+                    service.getContext());
+        }
+
         if (content == null) {
             content = getStatsFromClassPath(service);
         }
@@ -566,6 +584,52 @@ public class FrontendUtils {
         return handler.prepareConnection("/stats.json", "GET").getInputStream();
     }
 
+    private static InputStream getStatsFromExternalUrl(String externalStatsUrl,
+            VaadinContext context) {
+        String url;
+        // If url is relative try to get host from request
+        // else fallback on 127.0.0.1:8080
+        if (externalStatsUrl.startsWith("/")) {
+            VaadinRequest request = VaadinRequest.getCurrent();
+            String host = request.getHeader("host");
+            if (host == null) {
+                host = "http://127.0.0.1:8080";
+            }
+            url = host + externalStatsUrl;
+        } else {
+            url = externalStatsUrl;
+        }
+        try {
+            URL uri = new URL(url);
+            HttpURLConnection connection = (HttpURLConnection) uri
+                    .openConnection();
+            connection.setRequestMethod("GET");
+            // one minute timeout should be enough
+            connection.setReadTimeout(60000);
+            connection.setConnectTimeout(60000);
+            String lastModified = connection.getHeaderField("last-modified");
+            if (lastModified != null) {
+                LocalDateTime modified = ZonedDateTime.parse(lastModified,
+                        DateTimeFormatter.RFC_1123_DATE_TIME).toLocalDateTime();
+                Stats statistics = context.getAttribute(Stats.class);
+                if (statistics == null || modified
+                        .isAfter(statistics.getLastModified())) {
+                    statistics = new Stats(
+                            streamToString(connection.getInputStream()),
+                            lastModified);
+                    context.setAttribute(statistics);
+                }
+                return new ByteArrayInputStream(statistics.statsJson.getBytes(
+                        StandardCharsets.UTF_8));
+            }
+            return connection.getInputStream();
+        } catch (IOException e) {
+            getLogger().error("Failed to retrieve stats.json from the url {}.",
+                    url, e);
+        }
+        return null;
+    }
+
     private static InputStream getStatsFromClassPath(VaadinService service) {
         String stats = service.getDeploymentConfiguration()
                 .getStringProperty(SERVLET_PARAMETER_STATISTICS_JSON,
@@ -608,14 +672,19 @@ public class FrontendUtils {
                     handler.prepareConnection("/assetsByChunkName", "GET")
                             .getInputStream());
         }
-
-        String stats = config
-                .getStringProperty(SERVLET_PARAMETER_STATISTICS_JSON,
-                        VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT)
-                // Remove absolute
-                .replaceFirst("^/", "");
-        InputStream resourceAsStream = service.getClassLoader()
-                .getResourceAsStream(stats);
+        InputStream resourceAsStream;
+        if (config.isStatsExternal()) {
+            resourceAsStream = getStatsFromExternalUrl(
+                    config.getExternalStatsUrl(), service.getContext());
+        } else {
+            String stats = config
+                    .getStringProperty(SERVLET_PARAMETER_STATISTICS_JSON,
+                            VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT)
+                    // Remove absolute
+                    .replaceFirst("^/", "");
+            resourceAsStream = service.getClassLoader()
+                    .getResourceAsStream(stats);
+        }
         try (Scanner scan = new Scanner(resourceAsStream,
                 StandardCharsets.UTF_8.name())) {
             StringBuilder assets = new StringBuilder();
@@ -679,7 +748,8 @@ public class FrontendUtils {
             List<String> nodeVersionCommand = new ArrayList<>();
             nodeVersionCommand.add(FrontendUtils.getNodeExecutable(baseDir));
             nodeVersionCommand.add("--version");
-            FrontendVersion nodeVersion = getVersion("node", nodeVersionCommand);
+            FrontendVersion nodeVersion = getVersion("node",
+                    nodeVersionCommand);
             validateToolVersion("node", nodeVersion, SUPPORTED_NODE_VERSION,
                     SHOULD_WORK_NODE_VERSION);
         } catch (UnknownVersionException e) {
@@ -687,8 +757,8 @@ public class FrontendUtils {
         }
 
         try {
-            List<String> npmVersionCommand = new ArrayList<>();
-            npmVersionCommand.addAll(FrontendUtils.getNpmExecutable(baseDir));
+            List<String> npmVersionCommand = new ArrayList<>(
+                    FrontendUtils.getNpmExecutable(baseDir));
             npmVersionCommand.add("--version");
             FrontendVersion npmVersion = getVersion("npm", npmVersionCommand);
             validateToolVersion("npm", npmVersion, SUPPORTED_NPM_VERSION,
@@ -904,8 +974,8 @@ public class FrontendUtils {
         }
     }
 
-    private static FrontendVersion getVersion(String tool, List<String> versionCommand)
-            throws UnknownVersionException {
+    private static FrontendVersion getVersion(String tool,
+            List<String> versionCommand) throws UnknownVersionException {
         try {
             Process process = FrontendUtils.createProcessBuilder(versionCommand)
                     .start();
@@ -942,5 +1012,38 @@ public class FrontendUtils {
 
     private static Logger getLogger() {
         return LoggerFactory.getLogger(FrontendUtils.class);
+    }
+
+    /**
+     * Container class for caching the external stats.json contents.
+     */
+    private static class Stats implements Serializable {
+        private final String lastModified;
+        protected final String statsJson;
+
+        /**
+         * Create a new container for stats.json caching.
+         *
+         * @param statsJson
+         *         the gotten stats.json as a string
+         * @param lastModified
+         *         last modification timestamp for stats.json in RFC-1123
+         *         date-time format, such as 'Tue, 3 Jun 2008 11:05:30 GMT'
+         */
+        public Stats(String statsJson, String lastModified) {
+            this.statsJson = statsJson;
+            this.lastModified = lastModified;
+        }
+
+        /**
+         * Return last modified timestamp for contained stats.json.
+         *
+         * @return timestamp as LocalDateTime
+         */
+        public LocalDateTime getLastModified() {
+            return ZonedDateTime
+                    .parse(lastModified, DateTimeFormatter.RFC_1123_DATE_TIME)
+                    .toLocalDateTime();
+        }
     }
 }

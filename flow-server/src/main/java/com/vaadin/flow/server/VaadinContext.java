@@ -16,15 +16,17 @@
 package com.vaadin.flow.server;
 
 import java.io.Serializable;
+import java.util.Enumeration;
 import java.util.function.Supplier;
 
 /**
  * Context in which {@link VaadinService} is running.
  *
- * It is used to store service-scoped attributes.
+ * This is used to store service-scoped attributes and also works as a wrapper
+ * for context objects with properties e.g. <code>ServletContext</code> and
+ * <code>PortletContext</code>
  *
- * @author miki
- * @since 14.0.0
+ * @since 2.0.0
  */
 public interface VaadinContext extends Serializable {
 
@@ -73,4 +75,24 @@ public interface VaadinContext extends Serializable {
      * @see #setAttribute(Object) for setting attributes.
      */
     void removeAttribute(Class<?> clazz);
+
+    /**
+     * Returns the names of the initialization parameters as an
+     * <code>Enumeration</code>, or an empty <code>Enumeration</code> if there
+     * are o initialization parameters.
+     *
+     * @return initialization parameters as a <code>Enumeration</code>
+     */
+    Enumeration<String> getContextParameterNames();
+
+    /**
+     * Returns the value for the requested parameter, or <code>null</code> if
+     * the parameter does not exist.
+     *
+     * @param name
+     *         name of the parameter whose value is requested
+     * @return parameter value as <code>String</code> or <code>null</code> for
+     * no parameter
+     */
+    String getContextParameter(String name);
 }

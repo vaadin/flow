@@ -22,7 +22,10 @@ import java.io.Serializable;
  *
  * @author Vaadin Ltd
  * @since 2.0
+ * @deprecated this command is an internal command and is not supposed to be
+ *             used in application code
  */
+@Deprecated
 public interface FallibleCommand extends Serializable {
 
     /**
