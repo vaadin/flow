@@ -41,6 +41,7 @@ import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.shared.ApplicationConstants.FRONTEND_PROTOCOL_PREFIX;
 import static elemental.json.impl.JsonUtil.stringify;
@@ -66,6 +67,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     private static final String DEP_LICENSE_DEFAULT = "UNLICENSED";
     private static final String DEP_NAME_KEY = "name";
     private static final String DEP_NAME_DEFAULT = "no-name";
+    private static final String DEP_MAIN_KEY = "main";
     protected static final String DEP_NAME_FLOW_DEPS = "@vaadin/flow-deps";
     protected static final String DEP_NAME_FLOW_JARS = "@vaadin/flow-frontend";
     private static final String DEP_VERSION_KEY = "version";
@@ -295,12 +297,14 @@ public abstract class NodeUpdater implements FallibleCommand {
         addDependency(packageJson, null, DEP_NAME_KEY, DEP_NAME_FLOW_DEPS);
         addDependency(packageJson, null, DEP_VERSION_KEY, DEP_VERSION_DEFAULT);
         addDependency(packageJson, null, DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT);
+        addDependency(packageJson, null, DEP_MAIN_KEY, IMPORTS_NAME);
     }
 
     void updateJarDependencies(JsonObject packageJson) {
         addDependency(packageJson, null, DEP_NAME_KEY, DEP_NAME_FLOW_JARS);
         addDependency(packageJson, null, DEP_VERSION_KEY, DEP_VERSION_DEFAULT);
         addDependency(packageJson, null, DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT);
+        addDependency(packageJson, null, DEP_MAIN_KEY, "Flow");
     }
 
     boolean addDependency(JsonObject json, String key, String pkg,
