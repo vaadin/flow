@@ -94,7 +94,6 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
         task.execute();
 
         List<String> files = TestUtils.listFilesRecursively(frontendDepsFolder);
-        System.err.println(files);
         Assert.assertEquals(3, files.size());
 
         Assert.assertTrue("Js resource should have been copied from jar file",

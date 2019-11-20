@@ -82,16 +82,15 @@ public class TaskCreatePackageJson extends NodeUpdater {
                 modified = true;
             }
 
-            if (frontendDepsFolder != null) {
-                if (!new File(npmFolder, NODE_MODULES + FLOW_NPM_PACKAGE_NAME)
-                        .equals(frontendDepsFolder)) {
-                    JsonObject depsContent = getDepsPackageJson();
-                    if (depsContent == null) {
-                        depsContent = Json.createObject();
-                        updateJarDependencies(depsContent);
-                        writeDepsPackageFile(depsContent);
-                        modified = true;
-                    }
+            if (frontendDepsFolder != null && !new File(npmFolder,
+                    NODE_MODULES + FLOW_NPM_PACKAGE_NAME)
+                            .equals(frontendDepsFolder)) {
+                JsonObject depsContent = getDepsPackageJson();
+                if (depsContent == null) {
+                    depsContent = Json.createObject();
+                    updateJarDependencies(depsContent);
+                    writeDepsPackageFile(depsContent);
+                    modified = true;
                 }
             }
         } catch (IOException e) {

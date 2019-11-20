@@ -79,7 +79,7 @@ public class BuildFrontendMojoTest {
     private File importsFile;
     private File generatedFolder;
     private File nodeModulesPath;
-    private File flowPackagPath;
+    private File flowPackagePath;
     private File projectFrontendResourcesDirectory;
     private String mainPackage;
     private String appPackage;
@@ -106,7 +106,7 @@ public class BuildFrontendMojoTest {
         generatedFolder = new File(npmFolder, DEFAULT_GENERATED_DIR);
         importsFile = new File(generatedFolder, IMPORTS_NAME);
         nodeModulesPath = new File(npmFolder, NODE_MODULES);
-        flowPackagPath = new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME);
+        flowPackagePath = new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME);
         File frontendDirectory = new File(npmFolder, DEFAULT_FRONTEND_DIR);
 
         mainPackage = new File(npmFolder, PACKAGE_JSON).getAbsolutePath();
@@ -158,9 +158,9 @@ public class BuildFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "generatedTsFolder",
                 generatedTsFolder);
         ReflectionUtils.setVariableValueInObject(mojo, "frontendDepsDirectory",
-                flowPackagPath);
+                flowPackagePath);
 
-        flowPackagPath.mkdirs();
+        flowPackagePath.mkdirs();
         generatedFolder.mkdirs();
 
         setProject(mojo, npmFolder);
@@ -241,7 +241,7 @@ public class BuildFrontendMojoTest {
         assertContainsImports(true, expectedLines.toArray(new String[0]));
 
         Assert.assertTrue(
-                new File(flowPackagPath, "ExampleConnector.js").exists());
+                new File(flowPackagePath, "ExampleConnector.js").exists());
     }
 
     @Test

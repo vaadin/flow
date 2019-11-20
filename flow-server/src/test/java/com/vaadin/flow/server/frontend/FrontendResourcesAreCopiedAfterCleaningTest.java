@@ -82,7 +82,8 @@ public class FrontendResourcesAreCopiedAfterCleaningTest {
         builder.withEmbeddableWebComponents(false).enableImportsUpdate(false)
                 .createMissingPackageJson(true).enableImportsUpdate(true)
                 .runNpmInstall(false).enablePackagesUpdate(true)
-                .copyResources(depsFolder, Collections.singleton(testJar)).build()
+                .withFrontendDependencies(depsFolder)
+                .copyResources(Collections.singleton(testJar)).build()
                 .execute();
     }
 
@@ -96,7 +97,8 @@ public class FrontendResourcesAreCopiedAfterCleaningTest {
         builder.withEmbeddableWebComponents(false).enableImportsUpdate(false)
                 .createMissingPackageJson(true).enableImportsUpdate(true)
                 .runNpmInstall(false).enableNpmFileCleaning(true)
-                .copyResources(depsFolder, Collections.emptySet())
+                .withFrontendDependencies(depsFolder)
+                .copyResources(Collections.emptySet())
                 .enablePackagesUpdate(true).build().execute();
     }
 }

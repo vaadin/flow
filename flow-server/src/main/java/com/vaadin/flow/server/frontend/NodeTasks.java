@@ -252,23 +252,32 @@ public class NodeTasks implements FallibleCommand {
         }
 
         /**
-         * Sets whether copy resources from classpath to the appropriate npm
-         * package folder so as they are available for webpack build.
-         *
+         * Sets the appropriate npm package folder for copying flow resources in
+         * jars.
          *
          * @param frontendDepsDirectory
          *            target folder
+         * @return the builder
+         */
+        public Builder withFrontendDependencies(File frontendDepsDirectory) {
+            this.frontendDepsTargetDirectory = frontendDepsDirectory
+                    .isAbsolute() ? frontendDepsDirectory
+                            : new File(npmFolder,
+                                    frontendDepsDirectory.getPath());
+            return this;
+        }
+
+        /**
+         * Sets whether copy resources from classpath to the appropriate npm
+         * package folder so as they are available for webpack build.
+         *
          * @param jars
          *            set of class nodes to be visited. Not {@code null}
          *
          * @return the builder
          */
-        public Builder copyResources(File frontendDepsDirectory, Set<File> jars) {
+        public Builder copyResources(Set<File> jars) {
             Objects.requireNonNull(jars, "Parameter 'jars' must not be null!");
-            this.frontendDepsTargetDirectory = frontendDepsDirectory
-                    .isAbsolute() ? frontendDepsDirectory
-                            : new File(npmFolder,
-                                    frontendDepsDirectory.getPath());
             this.jarFiles = jars;
             return this;
         }

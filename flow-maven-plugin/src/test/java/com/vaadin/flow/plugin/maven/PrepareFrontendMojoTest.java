@@ -93,6 +93,8 @@ public class PrepareFrontendMojoTest {
                 defaultJavaSource);
         ReflectionUtils.setVariableValueInObject(mojo, "generatedTsFolder",
                 generatedTsFolder);
+        ReflectionUtils.setVariableValueInObject(mojo, "frontendDepsDirectory",
+                flowPackagePath);
 
         Assert.assertTrue(flowPackagePath.mkdirs());
         setProject(mojo, projectBase);

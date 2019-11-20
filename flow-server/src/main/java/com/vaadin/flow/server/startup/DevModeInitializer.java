@@ -315,7 +315,8 @@ public class DevModeInitializer implements ServletContainerInitializer,
         try {
             builder.enablePackagesUpdate(true)
                     .useByteCodeScanner(useByteCodeScanner)
-                    .copyResources(frontendDepsFolder, frontendLocations)
+                    .withFrontendDependencies(frontendDepsFolder)
+                    .copyResources(frontendLocations)
                     .copyLocalResources(new File(baseDir,
                             Constants.LOCAL_FRONTEND_RESOURCES_PATH))
                     .enableImportsUpdate(true).runNpmInstall(true)
