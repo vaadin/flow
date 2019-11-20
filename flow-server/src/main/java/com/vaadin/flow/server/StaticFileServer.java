@@ -20,7 +20,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLDecoder;
@@ -119,26 +118,6 @@ public class StaticFileServer implements StaticFileHandler {
         if (isAllowedVAADINBuildUrl(filenameWithPath)) {
             resourceUrl = servletService.getClassLoader()
                     .getResource("META-INF" + filenameWithPath);
-
-            if (resourceUrl != null) {
-                try {
-                    String metaInfVaadinUri = servletService.getClassLoader()
-                            .getResource("META-INF/" + VAADIN_BUILD_FILES_PATH)
-                            .toURI().normalize().toString();
-                    String resourceUri = resourceUrl.toURI().normalize()
-                            .toString();
-                    if (!resourceUri.startsWith(metaInfVaadinUri)) {
-                        getLogger().info("Blocked attempt to access file: {}",
-                                filenameWithPath);
-                        response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
-                        return true;
-                    }
-                } catch (URISyntaxException e) {
-                    throw new RuntimeException(
-                            "An error occurred during converting URL to URI.",
-                            e);
-                }
-            }
         }
         if (resourceUrl == null) {
             resourceUrl = servletService.getStaticResource(filenameWithPath);
