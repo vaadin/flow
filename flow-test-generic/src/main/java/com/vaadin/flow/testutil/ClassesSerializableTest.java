@@ -188,6 +188,13 @@ public abstract class ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskUpdateImports(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskUpdatePackages",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskUpdateWebpack",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.AbstractTaskConnectGenerator",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskGenerateConnect",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskGenerateOpenApi",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.AbstractTaskClientGenerator",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskGenerateTsConfig",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskGenerateIndexHtml",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskGenerateIndexJs",
 
                 // Various test classes
                 ".*\\.test(s)?\\..*", ".*Test.*",
