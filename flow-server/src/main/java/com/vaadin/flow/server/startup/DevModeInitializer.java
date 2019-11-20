@@ -96,7 +96,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_JAVA
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_OPENAPI_JSON_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_DEPS_FOLDER;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
@@ -232,7 +232,7 @@ public class DevModeInitializer implements ServletContainerInitializer,
         String frontendFolder = config.getStringProperty(PARAM_FRONTEND_DIR,
                 System.getProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR));
 
-        File frontendDepsFolder = new File(baseDir, FLOW_NPM_DEPS_FOLDER);
+        File frontendDepsFolder = new File(baseDir, DEAULT_FLOW_RESOURCES_FOLDER);
 
         Builder builder = new NodeTasks.Builder(new DevModeClassFinder(classes),
                 new File(baseDir), new File(generatedDir),

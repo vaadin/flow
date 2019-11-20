@@ -31,7 +31,7 @@ import org.junit.rules.TemporaryFolder;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_DEPS_FOLDER;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEAULT_FLOW_RESOURCES_FOLDER;
 
 public class FrontendResourcesAreCopiedAfterCleaningTest {
 
@@ -64,7 +64,7 @@ public class FrontendResourcesAreCopiedAfterCleaningTest {
 
     private void assertCopiedFrontendFileAmount(int fileCount)
             throws IOException {
-        File dir = new File(npmFolder, "node_modules/@vaadin/flow-frontend");
+        File dir = new File(npmFolder, DEAULT_FLOW_RESOURCES_FOLDER);
         FileUtils.forceMkdir(dir);
         List<String> files = TestUtils.listFilesRecursively(dir);
 
@@ -78,7 +78,7 @@ public class FrontendResourcesAreCopiedAfterCleaningTest {
                         .getClassLoader());
         NodeTasks.Builder builder = new NodeTasks.Builder(classFinder,
                 npmFolder);
-        File depsFolder = new File(npmFolder, FLOW_NPM_DEPS_FOLDER);
+        File depsFolder = new File(npmFolder, DEAULT_FLOW_RESOURCES_FOLDER);
         builder.withEmbeddableWebComponents(false).enableImportsUpdate(false)
                 .createMissingPackageJson(true).enableImportsUpdate(true)
                 .runNpmInstall(false).enablePackagesUpdate(true)
@@ -92,9 +92,11 @@ public class FrontendResourcesAreCopiedAfterCleaningTest {
                         .getClassLoader());
         NodeTasks.Builder builder = new NodeTasks.Builder(classFinder,
                 npmFolder);
+        File depsFolder = new File(npmFolder, DEAULT_FLOW_RESOURCES_FOLDER);
         builder.withEmbeddableWebComponents(false).enableImportsUpdate(false)
                 .createMissingPackageJson(true).enableImportsUpdate(true)
                 .runNpmInstall(false).enableNpmFileCleaning(true)
+                .copyResources(depsFolder, Collections.emptySet())
                 .enablePackagesUpdate(true).build().execute();
     }
 }

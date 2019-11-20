@@ -106,6 +106,11 @@ public class FrontendUtils {
     public static final String WEBPACK_GENERATED = "webpack.generated.js";
 
     /**
+     * Default target folder for the java project.
+     */
+    public static final String TARGET = "target/";
+
+    /**
      * The NPM package name that will be used for the javascript files present
      * in jar resources that will to be copied to the npm folder so as they are
      * accessible to webpack.
@@ -116,12 +121,7 @@ public class FrontendUtils {
     /**
      * Default folder for copying front-end resources present in the classpath jars.
      */
-    public static final String FLOW_NPM_DEPS_FOLDER = NODE_MODULES + FLOW_NPM_PACKAGE_NAME;
-
-    /**
-     * Default target folder for the java project.
-     */
-    public static final String TARGET = "target/";
+    public static final String DEAULT_FLOW_RESOURCES_FOLDER = TARGET + "flow-frontend";
 
     /**
      * Default folder name for flow generated stuff relative to the
