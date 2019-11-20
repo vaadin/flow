@@ -282,7 +282,7 @@ public class WebBrowser implements Serializable {
      * match for iPad running iOS 13 the check will need to check {@link
      * WebBrowser#isMacOSX()} and {@link com.vaadin.flow.component.page.ExtendedClientDetails#isTouchDevice()}.
      * e.g. the check for iPad needs to be '<code>webBrowser.isIPad() ||
-     * (webBrowser.isMacOSX() && extendedDetails.isTouchDevice())</code>'
+     * (webBrowser.isMacOSX() &#38;&#38; extendedDetails.isTouchDevice())</code>'
      */
     @Deprecated
     public boolean isIPad() {
