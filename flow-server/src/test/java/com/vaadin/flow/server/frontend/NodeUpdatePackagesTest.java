@@ -435,10 +435,6 @@ public class NodeUpdatePackagesTest extends NodeUpdateTestUtil {
         packageCreator.execute();
         packageUpdater.execute();
 
-        Assert.assertFalse(
-                "Modification flag should be false when there was no dependencies.",
-                packageUpdater.modified);
-
         // delete generated file
         appPackageJson.delete();
 
