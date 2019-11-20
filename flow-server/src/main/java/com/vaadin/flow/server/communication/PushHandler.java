@@ -20,6 +20,9 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.Collection;
 
+import elemental.json.Json;
+import elemental.json.JsonObject;
+import elemental.json.JsonValue;
 import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResource.TRANSPORT;
@@ -198,7 +201,8 @@ public class PushHandler {
                 assert VaadinSession.getCurrent() == session;
             } catch (SessionExpiredException e) {
                 sendNotificationAndDisconnect(resource,
-                        VaadinService.createSessionExpiredJSON(true));
+                        wrapJsonForClient(getWithAsyncIncluded(
+                                VaadinService.createSessionExpiredJSON())));
                 return;
             }
 
@@ -210,7 +214,8 @@ public class PushHandler {
 
                 if (ui == null) {
                     sendNotificationAndDisconnect(resource,
-                            VaadinService.createUINotFoundJSON(true));
+                            wrapJsonForClient(getWithAsyncIncluded(
+                                    VaadinService.createUINotFoundJSON())));
                 } else {
                     callback.run(resource, ui);
                 }
@@ -257,6 +262,29 @@ public class PushHandler {
                 // can't call ErrorHandler, we don't have a lock
             }
         }
+    }
+
+    private String getWithAsyncIncluded(String jsonString) {
+        JsonObject json = Json.parse(jsonString);
+
+        if (json.hasKey("meta")) {
+            JsonObject meta = Json.createObject();
+            JsonObject oldMeta = json.getObject("meta");
+
+            meta.put(JsonConstants.META_ASYNC, true);
+            for (String key: oldMeta.keys()) {
+                meta.put(key, (JsonValue) oldMeta.get(key));
+            }
+
+            json.put("meta", meta);
+        }
+
+        return json.toString();
+    }
+
+    private static String wrapJsonForClient(String jsonString) {
+        // some dirt to prevent cross site scripting
+        return "for(;;);[" + jsonString + "]";
     }
 
     /**

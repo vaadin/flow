@@ -1749,39 +1749,29 @@ public abstract class VaadinService implements Serializable {
     /**
      * Creates the JSON to send to the client when the session has expired.
      *
-     * @param async
-     *            a boolean indicating whether the message is sent synchronously
-     *            or asynchronously.
      * @return the JSON used to inform the client about a session expiration, as
      *         a string
      */
-    public static String createSessionExpiredJSON(boolean async) {
+    public static String createSessionExpiredJSON() {
         JsonObject json = Json.createObject();
         JsonObject meta = Json.createObject();
         json.put("meta", meta);
 
-        if (async) {
-            meta.put(JsonConstants.META_ASYNC, true);
-        }
-
         meta.put(JsonConstants.META_SESSION_EXPIRED, true);
-        return wrapJsonForClient(json);
+        return json.toJson();
     }
 
     /**
      * Creates the JSON to send to the client when the UI cannot be found.
      *
-     * @param async
-     *            a boolean indicating whether the message is sent synchronously
-     *            or asynchronously.
      * @return the JSON used to inform the client that the UI cannot be found,
      *         as a string
      */
-    public static String createUINotFoundJSON(boolean async) {
+    public static String createUINotFoundJSON() {
         // Session Expired is technically not really the correct thing as
         // the session exists but the requested UI does not. Still we want
         // to handle it the same way on the client side.
-        return createSessionExpiredJSON(async);
+        return createSessionExpiredJSON();
     }
 
     private static void putValueOrJsonNull(JsonObject json, String key,
