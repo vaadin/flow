@@ -1,3 +1,9 @@
+/**
+ * This module is generated from CollectionService.java
+ * All changes to this file are overridden. Please consider to make changes in the corresponding Java file if necessary.
+ * @module CollectionService
+ */
+
 // @ts-ignore
 import client from './connect-client.default';
 import Collection from './com/vaadin/flow/server/connect/generator/services/collectionservice/CollectionService/Collection';

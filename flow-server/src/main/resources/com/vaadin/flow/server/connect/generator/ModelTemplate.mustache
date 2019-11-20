@@ -4,13 +4,18 @@ import {{~#importAs}} {{importAs}}{{/importAs}}{{~^importAs}} {{className}}{{/im
 
 {{#models}}
 {{#model}}
-{{#unescapedDescription}}
 /**
-{{#multiplelines unescapedDescription}}
+{{#unescapedDescription}}{{!
+}}{{#multiplelines unescapedDescription}}
  * {{{@line}}}
-{{/multiplelines}}
+{{/multiplelines}}{{!
+}}{{/unescapedDescription}}
+ * This module is generated from {{classname}}.
+ * All changes to this file are overridden. Please consider to make changes in the corresponding Java file if necessary.{{!
+ }}{{#vendorExtensions.x-vaadin-file-path}}
+ * @see {@link file://{{vendorExtensions.x-vaadin-file-path}}{{!}}}{{!
+ }}{{/vendorExtensions.x-vaadin-file-path}}
  */
-{{/unescapedDescription}}
 export default interface {{{getClassNameFromImports classname ../../imports}}} {{~#parentSchema}} extends {{{getClassNameFromImports parentSchema ../../imports}}}{{/parentSchema}} {
 {{#vars}}
 {{#unescapedDescription}}

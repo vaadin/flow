@@ -2,7 +2,8 @@
  * This class is used
  * <h1>for OpenApi generator test</h1>
  *
- * This module has been generated from GeneratorTestClass.java
+ * This module is generated from GeneratorTestClass.java
+ * All changes to this file are overridden. Please consider to make changes in the corresponding Java file if necessary.
  * @module GeneratorTestClass
  */
 

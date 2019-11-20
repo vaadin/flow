@@ -2,6 +2,10 @@ import Account from './Account';
 import Group from './Group';
 import ModelFromDifferentPackage from '../subpackage/ModelFromDifferentPackage';
 
+/**
+ * This module is generated from com.vaadin.flow.server.connect.generator.services.model.ModelService.Account.
+ * All changes to this file are overridden. Please consider to make changes in the corresponding Java file if necessary.
+ */
 export default interface Account {
   children: Account;
   /**

@@ -37,7 +37,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +47,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.models.Components;
@@ -65,6 +70,7 @@ import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
+import io.swagger.v3.oas.models.tags.Tag;
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
@@ -80,6 +86,9 @@ import com.vaadin.flow.server.connect.generator.OpenApiObjectGenerator;
 import com.vaadin.flow.server.connect.generator.OpenApiSpecGenerator;
 import com.vaadin.flow.server.connect.generator.TestUtils;
 import com.vaadin.flow.server.connect.generator.VaadinConnectTsGenerator;
+import com.vaadin.flow.server.connect.generator.services.complexhierarchymodel.GrandParentModel;
+import com.vaadin.flow.server.connect.generator.services.complexhierarchymodel.Model;
+import com.vaadin.flow.server.connect.generator.services.complexhierarchymodel.ParentModel;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -90,7 +99,15 @@ public abstract class AbstractServiceGenerationTest {
     private static final List<Class<?>> JSON_NUMBER_CLASSES = Arrays.asList(
             Number.class, byte.class, char.class, short.class, int.class,
             long.class, float.class, double.class);
+    private static final Pattern JAVA_PATH_REFERENCE_REGEX = Pattern
+            .compile("( \\* @see \\{@link file:\\/\\/(.*)\\}\n)");
 
+    /**
+     * Classes in this list are simulated as classes from different jars so that
+     * it doesn't have absolute link to the original java file.
+     */
+    private static final List<Class> DENY_LIST_CHECKING_ABSOLUTE_PATH = Arrays
+            .asList(Model.class, ParentModel.class, GrandParentModel.class);
     @Rule
     public TemporaryFolder outputDirectory = new TemporaryFolder();
 
@@ -498,12 +515,94 @@ public abstract class AbstractServiceGenerationTest {
             OpenAPI expected = parser
                     .read(new File(expectedOpenApiJsonResourceUrl.toURI()).toPath()
                             .toAbsolutePath().toString());
+            removeAndCompareFilePathExtensionInTags(generated, expected);
+            removeAndCompareFilePathExtensionInSchemas(generated, expected);
+
+            generated.getTags().sort(Comparator.comparing(Tag::getName));
+            expected.getTags().sort(Comparator.comparing(Tag::getName));
+
             Assert.assertEquals("The generated OpenAPI does not match",
                     expected, generated);
         } catch (URISyntaxException e) {
             throw new IllegalStateException("Can't compare OpenAPI json.", e);
         }
 
+    }
+
+    private void removeAndCompareFilePathExtensionInSchemas(OpenAPI generated,
+            OpenAPI expected) {
+        Map<String, String> generatedSchemaAndFilePathMap = new HashMap<>();
+        getSchemaNameAndFilePathMap(generated, generatedSchemaAndFilePathMap);
+
+        Map<String, String> expectedSchemaAndFilePathMap = new HashMap<>();
+        getSchemaNameAndFilePathMap(expected, expectedSchemaAndFilePathMap);
+
+        for (Map.Entry<String, String> stringStringEntry : generatedSchemaAndFilePathMap
+                .entrySet()) {
+            String key = stringStringEntry.getKey();
+            String value = stringStringEntry.getValue();
+            boolean isBothNull = value == null
+                    && expectedSchemaAndFilePathMap.get(key) == null;
+            String errorMessage = String.format(
+                    "File path doesn't match " + "for schema '%s'", key);
+            Assert.assertTrue(errorMessage, isBothNull || (value != null
+                    && value.endsWith(expectedSchemaAndFilePathMap.get(key))));
+        }
+    }
+
+    private Map<String, Schema> getSchemaNameAndFilePathMap(OpenAPI openAPI,
+            Map<String, String> schemaNameAndFilePathMap) {
+        Map<String, Schema> schemas = openAPI.getComponents().getSchemas();
+        for (Map.Entry<String, Schema> stringSchemaEntry : schemas.entrySet()) {
+            if (stringSchemaEntry.getValue().getExtensions() != null) {
+                schemaNameAndFilePathMap.put(stringSchemaEntry.getKey(),
+                        (String) stringSchemaEntry.getValue().getExtensions()
+                                .get(OpenApiObjectGenerator.EXTENSION_VAADIN_FILE_PATH));
+                stringSchemaEntry.getValue().getExtensions().remove(
+                        OpenApiObjectGenerator.EXTENSION_VAADIN_FILE_PATH);
+            }
+        }
+        return schemas;
+    }
+
+    private void removeAndCompareFilePathExtensionInTags(OpenAPI generated,
+            OpenAPI expected) {
+        Map<String, String> generatedFilePath = new HashMap<>();
+        List<Tag> newTagsWithoutFilePath = mapTagNameWithPath(generated,
+                generatedFilePath);
+        generated.setTags(newTagsWithoutFilePath);
+
+        Map<String, String> expectedFilePath = new HashMap<>();
+        List<Tag> expectedTagsWithoutFilePath = mapTagNameWithPath(expected,
+                expectedFilePath);
+        expected.setTags(expectedTagsWithoutFilePath);
+
+        for (Map.Entry<String, String> generatedEntrySet : generatedFilePath
+                .entrySet()) {
+            String value = generatedEntrySet.getValue();
+            String key = generatedEntrySet.getKey();
+            boolean isBothNull = value == null
+                    && expectedFilePath.get(key) == null;
+            String errorMessage = String.format(
+                    "File path doesn't match for tag '%s'",
+                    key);
+            Assert.assertTrue(errorMessage,
+                    isBothNull || (value != null
+                            && value.endsWith(expectedFilePath.get(key))));
+        }
+    }
+
+    private List<Tag> mapTagNameWithPath(OpenAPI openAPI,
+            Map<String, String> tagNameFilePathMap) {
+        return openAPI.getTags().stream().peek(tag -> {
+            if (tag.getExtensions() != null) {
+                tagNameFilePathMap.put(tag.getName(), (String) tag
+                        .getExtensions()
+                        .get(OpenApiObjectGenerator.EXTENSION_VAADIN_FILE_PATH));
+                tag.getExtensions().remove(
+                        OpenApiObjectGenerator.EXTENSION_VAADIN_FILE_PATH);
+            }
+        }).collect(Collectors.toList());
     }
 
     private void verifyOpenApiJsonByString(URL expectedOpenApiJsonResourceUrl) {
@@ -536,12 +635,18 @@ public abstract class AbstractServiceGenerationTest {
 
         Path outputFilePath = outputDirectory.getRoot().toPath()
                 .resolve(expectedClass.getSimpleName() + ".ts");
-
-        Assert.assertEquals(
-                String.format(
-                        "Class '%s' has unexpected json produced in file '%s'",
-                        expectedClass, expectedResource.getPath()),
-                expectedTs, readFile(outputFilePath));
+        String errorMessage = String.format(
+                "Class '%s' has unexpected json produced in file '%s'",
+                expectedClass, expectedResource.getPath());
+        String actualContent = readFile(outputFilePath);
+        if (!expectedClass.getPackage().getName()
+                .startsWith("com.vaadin.flow.server")) {
+            // the class comes from jars
+            Assert.assertEquals(errorMessage, expectedTs, actualContent);
+            return;
+        }
+        removeAbsolutePathAndCompare(expectedClass, expectedTs, errorMessage,
+                actualContent);
     }
 
     private void assertModelClassGeneratedTs(Class<?> expectedClass) {
@@ -555,10 +660,47 @@ public abstract class AbstractServiceGenerationTest {
         Path outputFilePath = outputDirectory.getRoot().toPath().resolve(
                 StringUtils.replaceChars(canonicalName, '.', '/') + ".ts");
 
-        Assert.assertEquals(String.format(
+        String errorMessage = String.format(
                 "Model class '%s' has unexpected typescript produced in file '%s'",
-                expectedClass, expectedResource.getPath()), expectedTs,
-                readFile(outputFilePath));
+                expectedClass, expectedResource.getPath());
+        String actualContent = readFile(outputFilePath);
+        if (!expectedClass.getPackage().getName()
+                .startsWith("com.vaadin.flow.server")
+                || DENY_LIST_CHECKING_ABSOLUTE_PATH.contains(expectedClass)) {
+            // the class comes from jars
+            Assert.assertEquals(errorMessage, expectedTs, actualContent);
+            return;
+        }
+        removeAbsolutePathAndCompare(expectedClass, expectedTs, errorMessage,
+                actualContent);
+    }
+
+    private void removeAbsolutePathAndCompare(Class<?> expectedClass,
+            String expectedTs, String errorMessage, String actualContent) {
+        Matcher matcher = JAVA_PATH_REFERENCE_REGEX.matcher(actualContent);
+
+        Assert.assertTrue(errorMessage, matcher.find());
+
+        String actualJavaFileReference = matcher.group(1);
+        String actualContentWithoutPathReference = actualContent
+                .replace(actualJavaFileReference, "");
+        Assert.assertEquals(errorMessage, expectedTs,
+                actualContentWithoutPathReference);
+
+        String javaFilePathReference = matcher.group(2);
+
+        Class declaringClass = expectedClass;
+        while (declaringClass.getDeclaringClass() != null) {
+            declaringClass = declaringClass.getDeclaringClass();
+        }
+        String expectedEndingJavaFilePath = StringUtils.replaceChars(
+                declaringClass.getCanonicalName(), '.', '/') + ".java";
+        String wrongPathMessage = String.format(
+                "The generated model class '%s' refers to Java path '%s'. The path should end with '%s'",
+                expectedClass, actualJavaFileReference,
+                expectedEndingJavaFilePath);
+        Assert.assertTrue(wrongPathMessage,
+                javaFilePathReference.endsWith(expectedEndingJavaFilePath));
     }
 
     /**

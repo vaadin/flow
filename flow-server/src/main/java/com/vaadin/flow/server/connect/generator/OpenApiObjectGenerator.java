@@ -55,6 +55,7 @@ import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
 import com.github.javaparser.ast.nodeTypes.NodeWithSimpleName;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
+import com.github.javaparser.javadoc.Javadoc;
 import com.github.javaparser.javadoc.JavadocBlockTag;
 import com.github.javaparser.resolution.declarations.ResolvedFieldDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedReferenceTypeDeclaration;
@@ -101,6 +102,7 @@ import com.vaadin.flow.server.connect.auth.AnonymousAllowed;
  */
 public class OpenApiObjectGenerator {
     public static final String EXTENSION_VAADIN_CONNECT_PARAMETERS_DESCRIPTION = "x-vaadin-parameters-description";
+    public static final String EXTENSION_VAADIN_FILE_PATH = "x-vaadin-file-path";
 
     private static final String VAADIN_CONNECT_OAUTH2_SECURITY_SCHEME = "vaadin-connect-oauth2";
     private static final String VAADIN_CONNECT_OAUTH2_TOKEN_URL = "/oauth/token";
@@ -108,8 +110,9 @@ public class OpenApiObjectGenerator {
     private List<Path> javaSourcePaths = new ArrayList<>();
     private OpenApiConfiguration configuration;
     private Map<String, ResolvedReferenceType> usedTypes;
-    private Map<String, String> servicesJavadoc;
+    private Map<ClassOrInterfaceDeclaration, String> servicesJavadoc;
     private Map<String, ClassOrInterfaceDeclaration> nonServiceMap;
+    private Map<String, String> qualifiedNameToPath;
     private Map<String, PathItem> pathItems;
     private Set<String> generatedSchema;
     private OpenAPI openApiModel;
@@ -180,6 +183,7 @@ public class OpenApiObjectGenerator {
         }
         openApiModel = createBasicModel();
         nonServiceMap = new HashMap<>();
+        qualifiedNameToPath = new HashMap<>();
         pathItems = new TreeMap<>();
         usedTypes = new HashMap<>();
         generatedSchema = new HashSet<>();
@@ -195,8 +199,14 @@ public class OpenApiObjectGenerator {
                 .entrySet()) {
             List<Schema> schemas = createSchemasFromQualifiedNameAndType(
                     entry.getKey(), entry.getValue());
-            schemas.forEach(schema -> openApiModel.getComponents()
-                    .addSchemas(schema.getName(), schema));
+            schemas.forEach(schema -> {
+                if (qualifiedNameToPath.get(schema.getName()) != null) {
+                    schema.addExtension(EXTENSION_VAADIN_FILE_PATH,
+                            qualifiedNameToPath.get(schema.getName()));
+                }
+                openApiModel.getComponents().addSchemas(schema.getName(),
+                        schema);
+            });
         }
         addTagsInformation();
     }
@@ -223,11 +233,17 @@ public class OpenApiObjectGenerator {
     }
 
     private void addTagsInformation() {
-        for (Map.Entry<String, String> serviceJavadoc : servicesJavadoc
+        for (Map.Entry<ClassOrInterfaceDeclaration, String> serviceJavadoc : servicesJavadoc
                 .entrySet()) {
             Tag tag = new Tag();
-            tag.name(serviceJavadoc.getKey());
+            ClassOrInterfaceDeclaration serviceDeclaration = serviceJavadoc
+                    .getKey();
+            String simpleClassName = serviceDeclaration.getNameAsString();
+            tag.name(simpleClassName);
             tag.description(serviceJavadoc.getValue());
+            tag.addExtension(EXTENSION_VAADIN_FILE_PATH,
+                    qualifiedNameToPath.get(serviceDeclaration
+                            .getFullyQualifiedName().orElse(simpleClassName)));
             openApiModel.addTagsItem(tag);
         }
     }
@@ -268,7 +284,8 @@ public class OpenApiObjectGenerator {
                 .filter(classOrInterfaceDeclaration -> !classOrInterfaceDeclaration
                         .isInterface())
                 .map(this::appendNestedClasses).orElse(Collections.emptyList())
-                .forEach(this::parseClass));
+                .forEach(classOrInterfaceDeclaration -> this.parseClass(
+                        classOrInterfaceDeclaration, compilationUnit)));
         pathItems.forEach((pathName, pathItem) -> openApiModel.getPaths()
                 .addPathItem(pathName, pathItem));
         return SourceRoot.Callback.Result.DONT_SAVE;
@@ -286,18 +303,26 @@ public class OpenApiObjectGenerator {
         return nestedClasses;
     }
 
-    private void parseClass(ClassOrInterfaceDeclaration classDeclaration) {
+    private void parseClass(ClassOrInterfaceDeclaration classDeclaration,
+            CompilationUnit compilationUnit) {
         Optional<AnnotationExpr> serviceAnnotation = classDeclaration
                 .getAnnotationByClass(VaadinService.class);
+        compilationUnit.getStorage().ifPresent(storage -> {
+            String className = classDeclaration.getFullyQualifiedName()
+                    .orElse(classDeclaration.getNameAsString());
+            qualifiedNameToPath.put(className, storage.getPath().toString());
+        });
         if (!serviceAnnotation.isPresent()) {
             nonServiceMap.put(classDeclaration.resolve().getQualifiedName(),
                     classDeclaration);
         } else {
-            classDeclaration.getJavadoc()
-                    .ifPresent(javadoc -> servicesJavadoc.put(
-                            classDeclaration.getNameAsString(),
-                            javadoc.getDescription().toText()));
-
+            Optional<Javadoc> javadoc = classDeclaration.getJavadoc();
+            if (javadoc.isPresent()) {
+                servicesJavadoc.put(classDeclaration,
+                        javadoc.get().getDescription().toText());
+            } else {
+                servicesJavadoc.put(classDeclaration, "");
+            }
             pathItems.putAll(createPathItems(
                     getServiceName(classDeclaration, serviceAnnotation.get()),
                     classDeclaration));
@@ -483,7 +508,6 @@ public class OpenApiObjectGenerator {
 
             Operation post = createPostOperation(methodDeclaration,
                     requiresAuthentication(typeDeclaration, methodDeclaration));
-
             if (methodDeclaration.getParameters().isNonEmpty()) {
                 post.setRequestBody(createRequestBody(methodDeclaration));
             }
@@ -660,7 +684,6 @@ public class OpenApiObjectGenerator {
         List<Schema> results = new ArrayList<>();
 
         Schema schema = createSingleSchemaFromResolvedType(resolvedType);
-
         String qualifiedName = resolvedType.getQualifiedName();
         generatedSchema.add(qualifiedName);
 
