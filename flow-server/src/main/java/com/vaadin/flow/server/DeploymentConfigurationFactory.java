@@ -173,12 +173,17 @@ public final class DeploymentConfigurationFactory implements Serializable {
         // already set.
         if (json != null) {
             JsonObject buildInfo = JsonUtil.parse(json);
+            if (buildInfo.hasKey(SERVLET_PARAMETER_PRODUCTION_MODE)) {
+                initParameters.setProperty(SERVLET_PARAMETER_PRODUCTION_MODE,
+                        String.valueOf(buildInfo.getBoolean(
+                                SERVLET_PARAMETER_PRODUCTION_MODE)));
+            }
             if (buildInfo.hasKey(EXTERNAL_STATS_FILE_TOKEN) || buildInfo
                     .hasKey(EXTERNAL_STATS_URL_TOKEN)) {
-                // If external stats file is flagged then we should always run in
-                // npm production mode.
-                initParameters.setProperty(SERVLET_PARAMETER_PRODUCTION_MODE,
-                        Boolean.toString(true));
+                // If external stats file is flagged then compatibility mode and
+                // dev server should both be false - only variable that can
+                // be configured, in addition to stats variables, is
+                // production mode
                 initParameters.setProperty(SERVLET_PARAMETER_COMPATIBILITY_MODE,
                         Boolean.toString(false));
                 initParameters.setProperty(SERVLET_PARAMETER_ENABLE_DEV_SERVER,
@@ -189,12 +194,8 @@ public final class DeploymentConfigurationFactory implements Serializable {
                     initParameters.setProperty(EXTERNAL_STATS_URL,
                             buildInfo.getString(EXTERNAL_STATS_URL_TOKEN));
                 }
+                // NO OTHER CONFIGURATION:
                 return;
-            }
-            if (buildInfo.hasKey(SERVLET_PARAMETER_PRODUCTION_MODE)) {
-                initParameters.setProperty(SERVLET_PARAMETER_PRODUCTION_MODE,
-                        String.valueOf(buildInfo.getBoolean(
-                                SERVLET_PARAMETER_PRODUCTION_MODE)));
             }
             if (buildInfo.hasKey(SERVLET_PARAMETER_COMPATIBILITY_MODE)) {
                 initParameters.setProperty(SERVLET_PARAMETER_COMPATIBILITY_MODE,
