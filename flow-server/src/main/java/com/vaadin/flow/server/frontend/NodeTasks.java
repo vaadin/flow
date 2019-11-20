@@ -68,13 +68,13 @@ public class NodeTasks implements FallibleCommand {
 
         private Set<File> jarFiles = null;
 
-        private boolean copyResources = false;
-
         private boolean generateEmbeddableWebComponents = true;
 
         private boolean cleanNpmFiles = false;
 
-        private File frontendResourcesDirectory = null;
+        private File flowResourcesFolder = null;
+
+        private File localResourcesFolder = null;
 
         private boolean useByteCodeScanner = false;
 
@@ -133,8 +133,9 @@ public class NodeTasks implements FallibleCommand {
         public Builder(ClassFinder classFinder, File npmFolder,
                 File generatedPath) {
             this(classFinder, npmFolder, generatedPath,
-                    new File(npmFolder, System.getProperty(PARAM_FRONTEND_DIR,
-                            DEFAULT_FRONTEND_DIR)));
+                    new File(npmFolder,
+                            System.getProperty(PARAM_FRONTEND_DIR,
+                                    DEFAULT_FRONTEND_DIR)));
         }
 
         /**
@@ -251,8 +252,24 @@ public class NodeTasks implements FallibleCommand {
         }
 
         /**
-         * Sets whether copy resources from classpath to the `node_modules`
-         * folder as they are available for webpack build.
+         * Sets the appropriate npm package folder for copying flow resources in
+         * jars.
+         *
+         * @param flowResourcesFolder
+         *            target folder
+         * @return the builder
+         */
+        public Builder withFlowResourcesFolder(File flowResourcesFolder) {
+            this.flowResourcesFolder = flowResourcesFolder
+                    .isAbsolute() ? flowResourcesFolder
+                            : new File(npmFolder,
+                                    flowResourcesFolder.getPath());
+            return this;
+        }
+
+        /**
+         * Sets whether copy resources from classpath to the appropriate npm
+         * package folder so as they are available for webpack build.
          *
          * @param jars
          *            set of class nodes to be visited. Not {@code null}
@@ -262,7 +279,6 @@ public class NodeTasks implements FallibleCommand {
         public Builder copyResources(Set<File> jars) {
             Objects.requireNonNull(jars, "Parameter 'jars' must not be null!");
             this.jarFiles = jars;
-            this.copyResources = true;
             return this;
         }
 
@@ -295,12 +311,12 @@ public class NodeTasks implements FallibleCommand {
         /**
          * Set local frontend files to be copied from given folder.
          *
-         * @param frontendResourcesDirectory
+         * @param localResourcesFolder
          *            folder to copy local frontend files from
          * @return the builder, for chaining
          */
-        public Builder copyLocalResources(File frontendResourcesDirectory) {
-            this.frontendResourcesDirectory = frontendResourcesDirectory;
+        public Builder copyLocalResources(File localResourcesFolder) {
+            this.localResourcesFolder = localResourcesFolder;
             return this;
         }
 
@@ -445,7 +461,7 @@ public class NodeTasks implements FallibleCommand {
         if (builder.createMissingPackageJson) {
             TaskCreatePackageJson packageCreator = new TaskCreatePackageJson(
                     builder.npmFolder, builder.generatedFolder,
-                    builder.polymerVersion);
+                    builder.flowResourcesFolder, builder.polymerVersion);
             commands.add(packageCreator);
         }
 
@@ -462,7 +478,8 @@ public class NodeTasks implements FallibleCommand {
         if (builder.enablePackagesUpdate) {
             TaskUpdatePackages packageUpdater = new TaskUpdatePackages(
                     classFinder, frontendDependencies, builder.npmFolder,
-                    builder.generatedFolder, builder.cleanNpmFiles);
+                    builder.generatedFolder, builder.flowResourcesFolder,
+                    builder.cleanNpmFiles);
             commands.add(packageUpdater);
 
             if (builder.runNpmInstall) {
@@ -470,14 +487,17 @@ public class NodeTasks implements FallibleCommand {
             }
         }
 
-        if (builder.copyResources) {
-            commands.add(new TaskCopyFrontendFiles(builder.npmFolder,
-                    builder.jarFiles));
-        }
 
-        if (builder.frontendResourcesDirectory != null) {
-            commands.add(new TaskCopyLocalFrontendFiles(builder.npmFolder,
-                    builder.frontendResourcesDirectory));
+
+        if (builder.jarFiles != null) {
+            commands.add(new TaskCopyFrontendFiles(
+                    builder.flowResourcesFolder, builder.jarFiles));
+
+            if (builder.localResourcesFolder != null) {
+                commands.add(new TaskCopyLocalFrontendFiles(
+                        builder.flowResourcesFolder,
+                        builder.localResourcesFolder));
+            }
         }
 
         if (builder.webpackTemplate != null

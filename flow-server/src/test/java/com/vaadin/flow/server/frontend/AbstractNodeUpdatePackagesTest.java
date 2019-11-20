@@ -77,11 +77,11 @@ public abstract class AbstractNodeUpdatePackagesTest
         NodeUpdateTestUtil.createStubNode(true, true,
                 baseDir.getAbsolutePath());
 
-        packageCreator = new TaskCreatePackageJson(baseDir, generatedDir, null);
+        packageCreator = new TaskCreatePackageJson(baseDir, generatedDir, null, null);
 
         ClassFinder classFinder = getClassFinder();
         packageUpdater = new TaskUpdatePackages(classFinder,
-                getScanner(classFinder), baseDir, generatedDir, false);
+                getScanner(classFinder), baseDir, generatedDir, null, false);
         mainPackageJson = new File(baseDir, PACKAGE_JSON);
         appPackageJson = new File(generatedDir, PACKAGE_JSON);
 
@@ -238,7 +238,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
         packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
-                baseDir, generatedDir, false);
+                baseDir, generatedDir, null, false);
 
         // Generate package json in a proper format first
         packageCreator.execute();
@@ -271,7 +271,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
         packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
-                baseDir, generatedDir, false);
+                baseDir, generatedDir, null, false);
 
         // Generate package json in a proper format first
         packageCreator.execute();
@@ -300,7 +300,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         ClassFinder classFinder = getClassFinder();
         // create a new package updater, with forced clean up enabled
         packageUpdater = new TaskUpdatePackages(classFinder,
-                getScanner(classFinder), baseDir, generatedDir, true);
+                getScanner(classFinder), baseDir, generatedDir, null, true);
         packageUpdater.execute();
 
         // clean up happened
@@ -353,7 +353,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
         packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
-                baseDir, generatedDir, false);
+                baseDir, generatedDir, null, false);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -385,7 +385,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
         packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
-                baseDir, generatedDir, false);
+                baseDir, generatedDir, null, false);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -419,7 +419,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
         packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
-                baseDir, generatedDir, false);
+                baseDir, generatedDir, null, false);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -447,7 +447,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
         packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
-                baseDir, generatedDir, false);
+                baseDir, generatedDir, null, false);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -478,7 +478,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
         packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
-                baseDir, generatedDir, false);
+                baseDir, generatedDir, null, false);
 
         // Set a package Hash
         JsonObject mainJson = Json.createObject();

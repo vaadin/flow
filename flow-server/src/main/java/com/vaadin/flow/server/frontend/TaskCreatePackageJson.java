@@ -22,6 +22,8 @@ import java.io.UncheckedIOException;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.TaskUpdatePackages.APP_PACKAGE_HASH;
 
 /**
@@ -42,13 +44,15 @@ public class TaskCreatePackageJson extends NodeUpdater {
      *            folder with the `package.json` file.
      * @param generatedPath
      *            folder where flow generated files will be placed.
+     * @param flowResourcesPath
+     *            folder where flow resources taken from jars will be placed.
      * @param polymerVersion
      *            polymer version, may be {@code null} ({@code "3.2.0"} by
      *            default)
      */
     TaskCreatePackageJson(File npmFolder, File generatedPath,
-            String polymerVersion) {
-        super(null, null, npmFolder, generatedPath);
+            File flowResourcesPath, String polymerVersion) {
+        super(null, null, npmFolder, generatedPath, flowResourcesPath);
         this.polymerVersion = polymerVersion;
     }
 
@@ -72,12 +76,24 @@ public class TaskCreatePackageJson extends NodeUpdater {
                 }
                 writeMainPackageFile(mainContent);
             }
-            JsonObject customContent = getAppPackageJson();
-            if (customContent == null) {
-                customContent = Json.createObject();
-                updateAppDefaultDependencies(customContent);
-                writeAppPackageFile(customContent);
+            JsonObject appContent = getAppPackageJson();
+            if (appContent == null) {
+                appContent = Json.createObject();
+                updateAppDefaultDependencies(appContent);
+                writeAppPackageFile(appContent);
                 modified = true;
+            }
+
+            if (flowResourcesFolder != null && !new File(npmFolder,
+                    NODE_MODULES + FLOW_NPM_PACKAGE_NAME)
+                            .equals(flowResourcesFolder)) {
+                JsonObject depsContent = getResourcesPackageJson();
+                if (depsContent == null) {
+                    depsContent = Json.createObject();
+                    updateResourcesDependencies(depsContent);
+                    writeDepsPackageFile(depsContent);
+                    modified = true;
+                }
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);

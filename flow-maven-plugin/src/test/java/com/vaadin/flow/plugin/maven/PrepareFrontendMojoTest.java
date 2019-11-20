@@ -44,7 +44,7 @@ public class PrepareFrontendMojoTest {
 
     private final PrepareFrontendMojo mojo = new PrepareFrontendMojo();
     private File nodeModulesPath;
-    private File flowPackagePath;
+    private File flowResourcesFolder;
     private String webpackConfig;
     private String packageJson;
     private File projectBase;
@@ -62,7 +62,7 @@ public class PrepareFrontendMojoTest {
                 VAADIN_SERVLET_RESOURCES + TOKEN_FILE);
 
         nodeModulesPath = new File(projectBase, NODE_MODULES);
-        flowPackagePath = new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME);
+        flowResourcesFolder = new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME);
         webpackConfig = new File(projectBase, WEBPACK_CONFIG).getAbsolutePath();
         packageJson = new File(projectBase, PACKAGE_JSON).getAbsolutePath();
         webpackOutputDirectory = new File(projectBase,
@@ -93,8 +93,10 @@ public class PrepareFrontendMojoTest {
                 defaultJavaSource);
         ReflectionUtils.setVariableValueInObject(mojo, "generatedTsFolder",
                 generatedTsFolder);
+        ReflectionUtils.setVariableValueInObject(mojo, "flowResourcesFolder",
+                flowResourcesFolder);
 
-        Assert.assertTrue(flowPackagePath.mkdirs());
+        Assert.assertTrue(flowResourcesFolder.mkdirs());
         setProject(mojo, projectBase);
     }
 

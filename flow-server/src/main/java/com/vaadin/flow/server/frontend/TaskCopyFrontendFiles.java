@@ -25,8 +25,6 @@ import org.slf4j.LoggerFactory;
 
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 
 
 /**
@@ -49,13 +47,12 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
      * @param resourcesToScan
      *            folders and jar files to scan.
      */
-    TaskCopyFrontendFiles(File npmFolder, Set<File> resourcesToScan) {
-        Objects.requireNonNull(npmFolder,
-                "Parameter 'npmFolder' must not be " + "null");
+    TaskCopyFrontendFiles(File targetDirectory, Set<File> resourcesToScan) {
+        Objects.requireNonNull(targetDirectory,
+                "Parameter 'targetDirectory' must not be " + "null");
         Objects.requireNonNull(resourcesToScan,
                 "Parameter 'jarFilesToScan' must not be null");
-        this.targetDirectory = new File(npmFolder,
-                NODE_MODULES + FLOW_NPM_PACKAGE_NAME);
+        this.targetDirectory = targetDirectory;
         resourceLocations = resourcesToScan.stream().filter(File::exists)
                 .collect(Collectors.toSet());
     }

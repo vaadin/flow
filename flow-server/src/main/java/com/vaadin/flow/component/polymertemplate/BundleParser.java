@@ -26,13 +26,12 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.server.frontend.FrontendUtils;
-
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonType;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static elemental.json.JsonType.ARRAY;
 import static elemental.json.JsonType.OBJECT;
 import static elemental.json.JsonType.STRING;
@@ -261,7 +260,7 @@ public final class BundleParser {
             // For polymer templates inside add-ons we will not find the sources
             // using ./ as the actual path contains
             // "node_modules/@vaadin/flow-frontend/" instead of "./"
-            if (name.contains(FrontendUtils.FLOW_NPM_PACKAGE_NAME)) {
+            if (name.contains(FLOW_NPM_PACKAGE_NAME)) {
                 alternativeFileName = alternativeFileName.replaceFirst("\\./",
                         "");
             }

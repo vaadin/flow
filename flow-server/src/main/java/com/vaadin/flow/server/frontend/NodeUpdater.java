@@ -41,6 +41,7 @@ import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.shared.ApplicationConstants.FRONTEND_PROTOCOL_PREFIX;
 import static elemental.json.impl.JsonUtil.stringify;
@@ -66,7 +67,9 @@ public abstract class NodeUpdater implements FallibleCommand {
     private static final String DEP_LICENSE_DEFAULT = "UNLICENSED";
     private static final String DEP_NAME_KEY = "name";
     private static final String DEP_NAME_DEFAULT = "no-name";
+    private static final String DEP_MAIN_KEY = "main";
     protected static final String DEP_NAME_FLOW_DEPS = "@vaadin/flow-deps";
+    protected static final String DEP_NAME_FLOW_JARS = "@vaadin/flow-frontend";
     private static final String DEP_VERSION_KEY = "version";
     private static final String DEP_VERSION_DEFAULT = "1.0.0";
 
@@ -85,6 +88,12 @@ public abstract class NodeUpdater implements FallibleCommand {
      * Base directory for flow generated files.
      */
     protected final File generatedFolder;
+
+
+    /**
+     * Base directory for flow dependencies coming from jars.
+     */
+    protected final File flowResourcesFolder;
 
     /**
      * The {@link FrontendDependencies} object representing the application
@@ -107,15 +116,18 @@ public abstract class NodeUpdater implements FallibleCommand {
      *            folder with the `package.json` file
      * @param generatedPath
      *            folder where flow generated files will be placed.
+     * @param flowResourcesPath
+     *            folder where flow dependencies will be copied to.
      */
     protected NodeUpdater(ClassFinder finder,
             FrontendDependenciesScanner frontendDependencies, File npmFolder,
-            File generatedPath) {
+            File generatedPath, File flowResourcesPath) {
         this.frontDeps = frontendDependencies;
         this.finder = finder;
         this.npmFolder = npmFolder;
         this.nodeModulesFolder = new File(npmFolder, NODE_MODULES);
         this.generatedFolder = generatedPath;
+        this.flowResourcesFolder = flowResourcesPath;
     }
 
     static Set<String> getGeneratedModules(File directory,
@@ -196,6 +208,10 @@ public abstract class NodeUpdater implements FallibleCommand {
         return getPackageJson(new File(generatedFolder, PACKAGE_JSON));
     }
 
+    JsonObject getResourcesPackageJson() throws IOException {
+        return getPackageJson(new File(flowResourcesFolder, PACKAGE_JSON));
+    }
+
     JsonObject getPackageJson(File packageFile) throws IOException {
         JsonObject packageJson = null;
         if (packageFile.exists()) {
@@ -223,20 +239,33 @@ public abstract class NodeUpdater implements FallibleCommand {
                 polymerDepVersion) || added;
         added = addDependency(packageJson, DEPENDENCIES,
                 "@webcomponents/webcomponentsjs", "^2.2.10") || added;
-        // dependency for the custom package.json placed in the generated
-        // folder.
         try {
+            // dependency for the custom package.json placed in the generated
+            // folder.
             String customPkg = "./" + FrontendUtils.getUnixRelativePath(
                     npmFolder.getAbsoluteFile().toPath(),
                     generatedFolder.getAbsoluteFile().toPath());
             added = addDependency(packageJson, DEPENDENCIES, DEP_NAME_FLOW_DEPS,
                     customPkg) || added;
+
+            // dependency for the package.json in the folder where frontend
+            // dependencies are copied
+            if (flowResourcesFolder != null
+                    // Skip if deps are copied directly to `node_modules` folder
+                    && !flowResourcesFolder.toString().contains(NODE_MODULES)) {
+                String depsPkg = "./" + FrontendUtils.getUnixRelativePath(
+                        npmFolder.getAbsoluteFile().toPath(),
+                        flowResourcesFolder.getAbsoluteFile().toPath());
+                added = addDependency(packageJson, DEPENDENCIES, DEP_NAME_FLOW_JARS,
+                        depsPkg) || added;
+            }
         } catch (IllegalArgumentException iae) {
             log().error("Exception in relativization of '{}' to '{}'",
                     npmFolder.getAbsoluteFile().toPath(),
                     generatedFolder.getAbsoluteFile().toPath());
             throw iae;
         }
+
         added = addDevDependency(packageJson, "webpack", "4.30.0", added);
         added = addDevDependency(packageJson, "webpack-cli", "3.3.0", added);
         added = addDevDependency(packageJson, "webpack-dev-server", "3.3.0",
@@ -268,6 +297,14 @@ public abstract class NodeUpdater implements FallibleCommand {
         addDependency(packageJson, null, DEP_NAME_KEY, DEP_NAME_FLOW_DEPS);
         addDependency(packageJson, null, DEP_VERSION_KEY, DEP_VERSION_DEFAULT);
         addDependency(packageJson, null, DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT);
+        addDependency(packageJson, null, DEP_MAIN_KEY, IMPORTS_NAME);
+    }
+
+    void updateResourcesDependencies(JsonObject packageJson) {
+        addDependency(packageJson, null, DEP_NAME_KEY, DEP_NAME_FLOW_JARS);
+        addDependency(packageJson, null, DEP_VERSION_KEY, DEP_VERSION_DEFAULT);
+        addDependency(packageJson, null, DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT);
+        addDependency(packageJson, null, DEP_MAIN_KEY, "Flow");
     }
 
     boolean addDependency(JsonObject json, String key, String pkg,
@@ -293,6 +330,11 @@ public abstract class NodeUpdater implements FallibleCommand {
     String writeAppPackageFile(JsonObject packageJson) throws IOException {
         return writePackageFile(packageJson,
                 new File(generatedFolder, PACKAGE_JSON));
+    }
+
+    String writeDepsPackageFile(JsonObject packageJson) throws IOException {
+        return writePackageFile(packageJson,
+                new File(flowResourcesFolder, PACKAGE_JSON));
     }
 
     String writePackageFile(JsonObject json, File packageFile)

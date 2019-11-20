@@ -17,14 +17,8 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
@@ -32,6 +26,8 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.apache.commons.io.FileUtils;
 
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.server.Constants;
@@ -56,24 +52,6 @@ public class TaskUpdatePackages extends NodeUpdater {
     private static final String SHRINK_WRAP = "@vaadin/vaadin-shrinkwrap";
     private boolean forceCleanUp;
 
-    private static class RemoveFileVisitor extends SimpleFileVisitor<Path>
-            implements Serializable {
-
-        @Override
-        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
-                throws IOException {
-            Files.delete(file);
-            return super.visitFile(file, attrs);
-        }
-
-        @Override
-        public FileVisitResult postVisitDirectory(Path dir, IOException exc)
-                throws IOException {
-            Files.delete(dir);
-            return super.postVisitDirectory(dir, exc);
-        }
-    }
-
     /**
      * Create an instance of the updater given all configurable parameters.
      *
@@ -85,14 +63,17 @@ public class TaskUpdatePackages extends NodeUpdater {
      *            folder with the `package.json` file
      * @param generatedPath
      *            folder where flow generated files will be placed.
+     * @param flowResourcesPath
+     *            folder where flow dependencies taken from resources files will
+     *            be placed.
      * @param forceCleanUp
      *            forces the clean up process to be run. If {@code false}, clean
      *            up will be performed when platform version update is detected.
      */
     TaskUpdatePackages(ClassFinder finder,
             FrontendDependenciesScanner frontendDependencies, File npmFolder,
-            File generatedPath, boolean forceCleanUp) {
-        super(finder, frontendDependencies, npmFolder, generatedPath);
+            File generatedPath, File flowResourcesPath, boolean forceCleanUp) {
+        super(finder, frontendDependencies, npmFolder, generatedPath, flowResourcesPath);
         this.forceCleanUp = forceCleanUp;
     }
 
@@ -200,9 +181,13 @@ public class TaskUpdatePackages extends NodeUpdater {
                         + "This file has been generated with a different platform version. Try to remove it manually.");
             }
         }
-        if (nodeModulesFolder.exists()) {
-            removeDir(nodeModulesFolder);
+
+        removeDir(nodeModulesFolder);
+
+        if (flowResourcesFolder != null) {
+            removeDir(flowResourcesFolder);
         }
+
         File generatedNodeModules = new File(generatedFolder,
                 FrontendUtils.NODE_MODULES);
         if (generatedNodeModules.exists()) {
@@ -210,8 +195,8 @@ public class TaskUpdatePackages extends NodeUpdater {
         }
     }
 
-    private void removeDir(File file) throws IOException {
-        Files.walkFileTree(file.toPath(), new RemoveFileVisitor());
+    private void removeDir(File folder) throws IOException {
+        FileUtils.deleteDirectory(folder);
     }
 
     private String getCurrentShrinkWrapVersion() throws IOException {
