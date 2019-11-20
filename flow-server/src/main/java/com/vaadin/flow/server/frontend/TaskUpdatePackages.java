@@ -104,6 +104,8 @@ public class TaskUpdatePackages extends NodeUpdater {
             if (packageJson == null) {
                 packageJson = Json.createObject();
             }
+            // Ensure newer minors are not accidentally used
+            deps.put("@vaadin/vaadin-element-mixin", "~2.1.5");
             boolean isModified = updatePackageJsonDependencies(packageJson,
                     deps);
             if (isModified) {
