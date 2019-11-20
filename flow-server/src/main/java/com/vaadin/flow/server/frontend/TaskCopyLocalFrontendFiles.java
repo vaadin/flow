@@ -31,8 +31,8 @@ import org.slf4j.LoggerFactory;
  */
 public class TaskCopyLocalFrontendFiles implements FallibleCommand {
 
-    private final File targetDirectory;
-    private final File frontendResourcesDirectory;
+    private final File flowResourcesFolder;
+    private final File localResourcesFolder;
 
     /**
      * Copy project local frontend files from defined frontendResourcesDirectory
@@ -42,20 +42,20 @@ public class TaskCopyLocalFrontendFiles implements FallibleCommand {
      * @param npmFolder
      *            target directory for the discovered files
      */
-    TaskCopyLocalFrontendFiles(File targetDirectory,
-            File frontendResourcesDirectory) {
-        this.targetDirectory = targetDirectory;
-        this.frontendResourcesDirectory = frontendResourcesDirectory;
+    TaskCopyLocalFrontendFiles(File flowResourcesFolder,
+            File localResourcesFolder) {
+        this.flowResourcesFolder = flowResourcesFolder;
+        this.localResourcesFolder = localResourcesFolder;
     }
 
     @Override
     public void execute() {
-        createTargetFolder(targetDirectory);
+        createTargetFolder(flowResourcesFolder);
 
-        if (frontendResourcesDirectory != null
-                && frontendResourcesDirectory.isDirectory()) {
+        if (localResourcesFolder != null
+                && localResourcesFolder.isDirectory()) {
             log().info("Copying project local frontend resources.");
-            copyLocalResources(frontendResourcesDirectory, targetDirectory);
+            copyLocalResources(localResourcesFolder, flowResourcesFolder);
             log().info("Copying frontend directory completed.");
         } else {
             log().debug("Found no local frontend resources for the project");

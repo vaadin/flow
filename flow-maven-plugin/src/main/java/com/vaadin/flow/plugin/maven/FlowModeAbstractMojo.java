@@ -58,10 +58,10 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
 
 
     /**
-     * A directory with project's frontend source files.
+     * The directory where flow resources from jars will be copied to.
      */
     @Parameter(defaultValue = "${project.basedir}/" + DEAULT_FLOW_RESOURCES_FOLDER)
-    public File frontendDepsDirectory;
+    public File flowResourcesFolder;
 
     /**
      * Whether or not we are running in compatibility mode.

@@ -93,7 +93,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     /**
      * Base directory for flow dependencies coming from jars.
      */
-    protected final File frontendDepsFolder;
+    protected final File flowResourcesFolder;
 
     /**
      * The {@link FrontendDependencies} object representing the application
@@ -116,18 +116,18 @@ public abstract class NodeUpdater implements FallibleCommand {
      *            folder with the `package.json` file
      * @param generatedPath
      *            folder where flow generated files will be placed.
-     * @param frontendDepsFolder
+     * @param flowResourcesPath
      *            folder where flow dependencies will be copied to.
      */
     protected NodeUpdater(ClassFinder finder,
             FrontendDependenciesScanner frontendDependencies, File npmFolder,
-            File generatedPath, File frontendDepsFolder) {
+            File generatedPath, File flowResourcesPath) {
         this.frontDeps = frontendDependencies;
         this.finder = finder;
         this.npmFolder = npmFolder;
         this.nodeModulesFolder = new File(npmFolder, NODE_MODULES);
         this.generatedFolder = generatedPath;
-        this.frontendDepsFolder = frontendDepsFolder;
+        this.flowResourcesFolder = flowResourcesPath;
     }
 
     static Set<String> getGeneratedModules(File directory,
@@ -208,8 +208,8 @@ public abstract class NodeUpdater implements FallibleCommand {
         return getPackageJson(new File(generatedFolder, PACKAGE_JSON));
     }
 
-    JsonObject getDepsPackageJson() throws IOException {
-        return getPackageJson(new File(frontendDepsFolder, PACKAGE_JSON));
+    JsonObject getResourcesPackageJson() throws IOException {
+        return getPackageJson(new File(flowResourcesFolder, PACKAGE_JSON));
     }
 
     JsonObject getPackageJson(File packageFile) throws IOException {
@@ -250,12 +250,12 @@ public abstract class NodeUpdater implements FallibleCommand {
 
             // dependency for the package.json in the folder where frontend
             // dependencies are copied
-            if (frontendDepsFolder != null
+            if (flowResourcesFolder != null
                     // Skip if deps are copied directly to `node_modules` folder
-                    && !frontendDepsFolder.toString().contains(NODE_MODULES)) {
+                    && !flowResourcesFolder.toString().contains(NODE_MODULES)) {
                 String depsPkg = "./" + FrontendUtils.getUnixRelativePath(
                         npmFolder.getAbsoluteFile().toPath(),
-                        frontendDepsFolder.getAbsoluteFile().toPath());
+                        flowResourcesFolder.getAbsoluteFile().toPath());
                 added = addDependency(packageJson, DEPENDENCIES, DEP_NAME_FLOW_JARS,
                         depsPkg) || added;
             }
@@ -300,7 +300,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         addDependency(packageJson, null, DEP_MAIN_KEY, IMPORTS_NAME);
     }
 
-    void updateJarDependencies(JsonObject packageJson) {
+    void updateResourcesDependencies(JsonObject packageJson) {
         addDependency(packageJson, null, DEP_NAME_KEY, DEP_NAME_FLOW_JARS);
         addDependency(packageJson, null, DEP_VERSION_KEY, DEP_VERSION_DEFAULT);
         addDependency(packageJson, null, DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT);
@@ -334,7 +334,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
     String writeDepsPackageFile(JsonObject packageJson) throws IOException {
         return writePackageFile(packageJson,
-                new File(frontendDepsFolder, PACKAGE_JSON));
+                new File(flowResourcesFolder, PACKAGE_JSON));
     }
 
     String writePackageFile(JsonObject json, File packageFile)

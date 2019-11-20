@@ -44,13 +44,15 @@ public class TaskCreatePackageJson extends NodeUpdater {
      *            folder with the `package.json` file.
      * @param generatedPath
      *            folder where flow generated files will be placed.
+     * @param flowResourcesPath
+     *            folder where flow resources taken from jars will be placed.
      * @param polymerVersion
      *            polymer version, may be {@code null} ({@code "3.2.0"} by
      *            default)
      */
     TaskCreatePackageJson(File npmFolder, File generatedPath,
-            File frontendDepsFolder, String polymerVersion) {
-        super(null, null, npmFolder, generatedPath, frontendDepsFolder);
+            File flowResourcesPath, String polymerVersion) {
+        super(null, null, npmFolder, generatedPath, flowResourcesPath);
         this.polymerVersion = polymerVersion;
     }
 
@@ -82,13 +84,13 @@ public class TaskCreatePackageJson extends NodeUpdater {
                 modified = true;
             }
 
-            if (frontendDepsFolder != null && !new File(npmFolder,
+            if (flowResourcesFolder != null && !new File(npmFolder,
                     NODE_MODULES + FLOW_NPM_PACKAGE_NAME)
-                            .equals(frontendDepsFolder)) {
-                JsonObject depsContent = getDepsPackageJson();
+                            .equals(flowResourcesFolder)) {
+                JsonObject depsContent = getResourcesPackageJson();
                 if (depsContent == null) {
                     depsContent = Json.createObject();
-                    updateJarDependencies(depsContent);
+                    updateResourcesDependencies(depsContent);
                     writeDepsPackageFile(depsContent);
                     modified = true;
                 }

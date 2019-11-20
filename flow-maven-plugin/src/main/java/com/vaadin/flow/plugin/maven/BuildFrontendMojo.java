@@ -165,7 +165,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                         .enableClientSideMode(isClientSideMode())
                         .enablePackagesUpdate(true)
                         .useByteCodeScanner(optimizeBundle)
-                        .withFrontendDependencies(frontendDepsDirectory)
+                        .withFlowResourcesFolder(flowResourcesFolder)
                         .copyResources(jarFiles)
                         .copyLocalResources(frontendResourcesDirectory)
                         .enableImportsUpdate(true)

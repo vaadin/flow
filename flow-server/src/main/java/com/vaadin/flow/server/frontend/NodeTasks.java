@@ -72,9 +72,9 @@ public class NodeTasks implements FallibleCommand {
 
         private boolean cleanNpmFiles = false;
 
-        private File frontendDepsTargetDirectory = null;
+        private File flowResourcesFolder = null;
 
-        private File frontendResourcesDirectory = null;
+        private File localResourcesFolder = null;
 
         private boolean useByteCodeScanner = false;
 
@@ -255,15 +255,15 @@ public class NodeTasks implements FallibleCommand {
          * Sets the appropriate npm package folder for copying flow resources in
          * jars.
          *
-         * @param frontendDepsDirectory
+         * @param flowResourcesFolder
          *            target folder
          * @return the builder
          */
-        public Builder withFrontendDependencies(File frontendDepsDirectory) {
-            this.frontendDepsTargetDirectory = frontendDepsDirectory
-                    .isAbsolute() ? frontendDepsDirectory
+        public Builder withFlowResourcesFolder(File flowResourcesFolder) {
+            this.flowResourcesFolder = flowResourcesFolder
+                    .isAbsolute() ? flowResourcesFolder
                             : new File(npmFolder,
-                                    frontendDepsDirectory.getPath());
+                                    flowResourcesFolder.getPath());
             return this;
         }
 
@@ -311,12 +311,12 @@ public class NodeTasks implements FallibleCommand {
         /**
          * Set local frontend files to be copied from given folder.
          *
-         * @param frontendResourcesDirectory
+         * @param localResourcesFolder
          *            folder to copy local frontend files from
          * @return the builder, for chaining
          */
-        public Builder copyLocalResources(File frontendResourcesDirectory) {
-            this.frontendResourcesDirectory = frontendResourcesDirectory;
+        public Builder copyLocalResources(File localResourcesFolder) {
+            this.localResourcesFolder = localResourcesFolder;
             return this;
         }
 
@@ -461,7 +461,7 @@ public class NodeTasks implements FallibleCommand {
         if (builder.createMissingPackageJson) {
             TaskCreatePackageJson packageCreator = new TaskCreatePackageJson(
                     builder.npmFolder, builder.generatedFolder,
-                    builder.frontendDepsTargetDirectory, builder.polymerVersion);
+                    builder.flowResourcesFolder, builder.polymerVersion);
             commands.add(packageCreator);
         }
 
@@ -478,7 +478,8 @@ public class NodeTasks implements FallibleCommand {
         if (builder.enablePackagesUpdate) {
             TaskUpdatePackages packageUpdater = new TaskUpdatePackages(
                     classFinder, frontendDependencies, builder.npmFolder,
-                    builder.generatedFolder, builder.frontendDepsTargetDirectory, builder.cleanNpmFiles);
+                    builder.generatedFolder, builder.flowResourcesFolder,
+                    builder.cleanNpmFiles);
             commands.add(packageUpdater);
 
             if (builder.runNpmInstall) {
@@ -490,12 +491,12 @@ public class NodeTasks implements FallibleCommand {
 
         if (builder.jarFiles != null) {
             commands.add(new TaskCopyFrontendFiles(
-                    builder.frontendDepsTargetDirectory, builder.jarFiles));
+                    builder.flowResourcesFolder, builder.jarFiles));
 
-            if (builder.frontendResourcesDirectory != null) {
+            if (builder.localResourcesFolder != null) {
                 commands.add(new TaskCopyLocalFrontendFiles(
-                        builder.frontendDepsTargetDirectory,
-                        builder.frontendResourcesDirectory));
+                        builder.flowResourcesFolder,
+                        builder.localResourcesFolder));
             }
         }
 

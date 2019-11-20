@@ -63,14 +63,17 @@ public class TaskUpdatePackages extends NodeUpdater {
      *            folder with the `package.json` file
      * @param generatedPath
      *            folder where flow generated files will be placed.
+     * @param flowResourcesPath
+     *            folder where flow dependencies taken from resources files will
+     *            be placed.
      * @param forceCleanUp
      *            forces the clean up process to be run. If {@code false}, clean
      *            up will be performed when platform version update is detected.
      */
     TaskUpdatePackages(ClassFinder finder,
             FrontendDependenciesScanner frontendDependencies, File npmFolder,
-            File generatedPath, File frontendDepsTargetDirectory, boolean forceCleanUp) {
-        super(finder, frontendDependencies, npmFolder, generatedPath, frontendDepsTargetDirectory);
+            File generatedPath, File flowResourcesPath, boolean forceCleanUp) {
+        super(finder, frontendDependencies, npmFolder, generatedPath, flowResourcesPath);
         this.forceCleanUp = forceCleanUp;
     }
 
@@ -181,8 +184,8 @@ public class TaskUpdatePackages extends NodeUpdater {
 
         removeDir(nodeModulesFolder);
 
-        if (frontendDepsFolder != null) {
-            removeDir(frontendDepsFolder);
+        if (flowResourcesFolder != null) {
+            removeDir(flowResourcesFolder);
         }
 
         File generatedNodeModules = new File(generatedFolder,

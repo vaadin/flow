@@ -232,7 +232,7 @@ public class DevModeInitializer implements ServletContainerInitializer,
         String frontendFolder = config.getStringProperty(PARAM_FRONTEND_DIR,
                 System.getProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR));
 
-        File frontendDepsFolder = new File(baseDir, DEAULT_FLOW_RESOURCES_FOLDER);
+        File flowResourcesFolder = new File(baseDir, DEAULT_FLOW_RESOURCES_FOLDER);
 
         Builder builder = new NodeTasks.Builder(new DevModeClassFinder(classes),
                 new File(baseDir), new File(generatedDir),
@@ -315,7 +315,7 @@ public class DevModeInitializer implements ServletContainerInitializer,
         try {
             builder.enablePackagesUpdate(true)
                     .useByteCodeScanner(useByteCodeScanner)
-                    .withFrontendDependencies(frontendDepsFolder)
+                    .withFlowResourcesFolder(flowResourcesFolder)
                     .copyResources(frontendLocations)
                     .copyLocalResources(new File(baseDir,
                             Constants.LOCAL_FRONTEND_RESOURCES_PATH))
