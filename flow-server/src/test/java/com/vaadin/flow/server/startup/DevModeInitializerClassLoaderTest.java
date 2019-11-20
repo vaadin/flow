@@ -12,7 +12,7 @@ import org.junit.Test;
 
 import com.vaadin.flow.server.frontend.TestUtils;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_DEPS_FOLDER;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEAULT_FLOW_RESOURCES_FOLDER;
 
 public class DevModeInitializerClassLoaderTest {
 
@@ -54,8 +54,11 @@ public class DevModeInitializerClassLoaderTest {
         customLoader.close();
 
         List<String> files = TestUtils.listFilesRecursively(
-                new File(baseDir, FLOW_NPM_DEPS_FOLDER));
-        Assert.assertEquals(3, files.size());
+                new File(baseDir, DEAULT_FLOW_RESOURCES_FOLDER));
+        Assert.assertEquals(4, files.size());
+
+        Assert.assertTrue("A package.json file should be created",
+                files.contains("package.json"));
 
         Assert.assertTrue("Js resource should have been copied from jar file",
                 files.contains("ExampleConnector.js"));
