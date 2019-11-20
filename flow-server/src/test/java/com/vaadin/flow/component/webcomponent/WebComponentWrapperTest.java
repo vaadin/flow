@@ -249,7 +249,7 @@ public class WebComponentWrapperTest {
         when(ui.getInternals()).thenReturn(internals);
 
         Component parent = new Parent();
-        parent.getElement().appendChild(wrapperElement);
+        parent.getElement().appendVirtualChild(wrapperElement);
 
         VaadinSession session = mock(VaadinSession.class);
         DeploymentConfiguration configuration = mock(

@@ -28,8 +28,6 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.server.FallibleCommand;
-
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_JS;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
@@ -49,10 +47,10 @@ public class TaskUpdateWebpack implements FallibleCommand {
      */
     private final String webpackTemplate;
     private final String webpackGeneratedTemplate;
-    private final transient Path webpackOutputPath;
-    private final transient Path flowImportsFilePath;
-    private final transient Path webpackConfigPath;
-    private final transient Path frontendDirectory;
+    private final Path webpackOutputPath;
+    private final Path flowImportsFilePath;
+    private final Path webpackConfigPath;
+    private final Path frontendDirectory;
     private final boolean isClientSideMode;
 
     /**

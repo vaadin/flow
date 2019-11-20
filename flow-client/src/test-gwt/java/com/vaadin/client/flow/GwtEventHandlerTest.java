@@ -56,6 +56,7 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
 
     private Map<String, JsArray<?>> serverMethods = new HashMap<>();
     private Map<String, StateNode> serverRpcNodes = new HashMap<>();
+    private Map<String, Integer> serverPromiseIds = new HashMap<>();
 
     @Override
     protected void gwtSetUp() throws Exception {
@@ -72,9 +73,10 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
 
             @Override
             public void sendTemplateEventToServer(StateNode node,
-                    String methodName, JsArray<?> argValues) {
+                    String methodName, JsArray<?> argValues, int promiseId) {
                 serverMethods.put(methodName, argValues);
                 serverRpcNodes.put(methodName, node);
+                serverPromiseIds.put(methodName, Integer.valueOf(promiseId));
             }
         };
 
@@ -90,6 +92,77 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
         Reactive.flush();
         assertNull(WidgetUtil.getJsProperty(element, "$server"));
     }
+
+    public void testClientCallablePromises() {
+        String methodName = "publishedMethod";
+
+        node.getList(NodeFeatures.CLIENT_DELEGATE_HANDLERS).add(0, methodName);
+        Binder.bind(node, element);
+        Reactive.flush();
+        ServerEventObject serverObject = ServerEventObject.get(element);
+
+        NativeFunction publishedMethod = new NativeFunction(
+                "return this." + methodName + "()");
+        Object promise0 = publishedMethod.apply(serverObject,
+                JsCollections.array());
+
+        assertNotNull(promise0);
+        assertEquals(Integer.valueOf(0), serverPromiseIds.get(methodName));
+        assertTrue(hasPromise(element, 0));
+
+        Object promise1 = publishedMethod.apply(serverObject,
+                JsCollections.array());
+        assertEquals(Integer.valueOf(1), serverPromiseIds.get(methodName));
+        assertTrue(hasPromise(element, 1));
+
+        addThen(promise0, value -> {
+            assertEquals("promise0", value);
+            assertFalse("Promise handlers should be cleared",
+                    hasPromise(element, 0));
+
+            completePromise(element, 1, false, null);
+        });
+
+        addCatch(promise1, message -> {
+            assertEquals(
+                    "Error: Something went wrong. Check server-side logs for more information.",
+                    message);
+            assertFalse("Promise handlers should be cleared",
+                    hasPromise(element, 1));
+
+            finishTest();
+        });
+
+        completePromise(element, 0, true, "promise0");
+
+        delayTestFinish(100);
+    }
+
+    private static native void addThen(Object promise, Consumer<String> callback)
+    /*-{
+        promise.then($entry(function(value) {
+            callback.@Consumer::accept(*)(value);
+        }));
+    }-*/;
+
+    private static native void addCatch(Object promise,
+            Consumer<String> callback)
+    /*-{
+        promise['catch']($entry(function(value) {
+            callback.@Consumer::accept(*)(""+value);
+        }));
+    }-*/;
+
+    private static native void completePromise(Element element, int promiseId,
+            boolean success, String value)
+    /*-{
+        element.$server[@ServerEventObject::PROMISE_CALLBACK_NAME](promiseId, success, value);
+    }-*/;
+
+    private static native boolean hasPromise(Element element, int promiseId)
+    /*-{
+        return promiseId in element.$server[@ServerEventObject::PROMISE_CALLBACK_NAME].promises;
+    }-*/;
 
     public void testClientCallableMethodInDom() {
         assertServerEventHandlerMethodInDom(
@@ -145,6 +218,7 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
         assertEquals(methodName, serverMethods.keySet().iterator().next());
         assertEquals(0, serverMethods.get(methodName).length());
         assertEquals(node, serverRpcNodes.get(methodName));
+        assertEquals(Integer.valueOf(-1), serverPromiseIds.get(methodName));
     }
 
     public void testPolymerMockedEventHandlerWithEventData() {
@@ -219,7 +293,7 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
      * Add a function to the element prototype ("default" function) for
      * {@code methodName} that adds the second argument to the event (first
      * argument) as a result
-     * 
+     *
      * @param element
      *            Element to add "default" method to
      * @param methodName
@@ -328,7 +402,7 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
     /**
      * Add get functionality to element if not defined. Add the key value pair
      * to property object or create object if not available.
-     * 
+     *
      * @param node
      *            Target node
      * @param property

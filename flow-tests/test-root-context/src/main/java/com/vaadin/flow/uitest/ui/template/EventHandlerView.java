@@ -70,10 +70,15 @@ public class EventHandlerView extends PolymerTemplate<TemplateModel> {
     }
 
     @ClientCallable
-    private void handleClientCall(String msg, boolean enabled) {
+    private String handleClientCall(String msg, boolean enabled) {
+        if (!enabled) {
+            throw new RuntimeException("Method is not enabled");
+        }
         Element div = ElementFactory.createDiv(
                 "Call from client, message: " + msg + ", " + enabled);
         div.setAttribute("id", "client-call");
         getParent().get().getElement().appendChild(div);
+
+        return msg.toUpperCase();
     }
 }

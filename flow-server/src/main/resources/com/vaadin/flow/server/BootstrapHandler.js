@@ -42,6 +42,23 @@
   window.Vaadin = window.Vaadin || {};
   window.Vaadin.Flow = window.Vaadin.Flow || {};
 
+  /*
+   * Needed for wrapping custom javascript functionality in the components (i.e. connectors)
+   */
+  window.Vaadin.Flow.tryCatchWrapper = function(originalFunction, component, repo) {
+    return function() {
+      try {
+        const result = originalFunction.apply(this, arguments);
+        return result;
+      } catch (error) {
+        console.error(
+            "There seems to be an error in the " + component + ":\n" + error.message + "\n"
+              + "Please submit an issue to https://github.com/vaadin/" + repo
+              + "/issues/new!");
+      }
+    }
+  };
+
   if (!window.Vaadin.Flow.clients) {
     window.Vaadin.Flow.clients = {};
 

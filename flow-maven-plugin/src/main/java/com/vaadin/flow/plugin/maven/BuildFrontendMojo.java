@@ -129,6 +129,9 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
             + Constants.LOCAL_FRONTEND_RESOURCES_PATH)
     protected File frontendResourcesDirectory;
 
+    @Parameter
+    private String polymerVersion;
+
     /**
      * Whether to use byte code scanner strategy to discover frontend
      * components.
@@ -192,7 +195,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                         .withConnectJavaSourceFolder(javaSourceFolder)
                         .withConnectGeneratedOpenApiJson(openApiJsonFile)
                         .withConnectClientTsApiFolder(generatedTsFolder)
-                        .build().execute();
+                        .withPolymerVersion(polymerVersion).build().execute();
     }
 
     private void runWebpack() {

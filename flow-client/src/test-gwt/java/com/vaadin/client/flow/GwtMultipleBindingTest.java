@@ -97,7 +97,7 @@ public class GwtMultipleBindingTest extends ClientEngineTestBase {
         tree = new StateTree(registry) {
             @Override
             public void sendTemplateEventToServer(StateNode node,
-                    String methodName, JsArray<?> argValues) {
+                    String methodName, JsArray<?> argValues, int promiseId) {
             }
         };
 

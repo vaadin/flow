@@ -21,13 +21,9 @@ import java.util.Spliterators;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import com.vaadin.flow.internal.StateNode;
 import org.junit.Assert;
 import org.junit.Test;
-
-import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.internal.nodefeature.ElementData;
-import com.vaadin.flow.internal.nodefeature.NodeProperties;
-import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 
 import elemental.json.JsonObject;
 
@@ -98,10 +94,20 @@ public class VirtualChildrenListTest {
         Assert.assertEquals(0, set.size());
     }
 
-    @Test(expected = UnsupportedOperationException.class)
-    public void remove_throw() {
+    @Test
+    public void remove_withIndex_removesNodeAndPayload() {
         list.append(child, "foo");
+
+        Assert.assertEquals(child, list.get(0));
+
         list.remove(0);
+
+        Assert.assertEquals(0, list.size());
+        Assert.assertEquals(-1, list.indexOf(child));
+
+        JsonObject payload = (JsonObject) child.getFeature(ElementData.class)
+                .getPayload();
+        Assert.assertNull(payload);
     }
 
     @Test(expected = UnsupportedOperationException.class)

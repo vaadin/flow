@@ -38,7 +38,7 @@ public class FlowPluginFrontendUtils {
      * Additionally include compile-time-only dependencies matching the pattern.
      */
     private static final String INCLUDE_FROM_COMPILE_DEPS_REGEX =
-            ".*(/|\\\\)portlet-api-.+jar$";
+            ".*(/|\\\\)(portlet-api|javax\\.servlet-api)-.+jar$";
 
     private FlowPluginFrontendUtils() {
     }

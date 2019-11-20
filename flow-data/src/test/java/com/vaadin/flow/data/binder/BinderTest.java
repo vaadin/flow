@@ -122,6 +122,23 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     }
 
     @Test
+    public void removeInvalidBinding_validateDoesNotThrow() {
+        binder.forField(nameField).bind(Person::getFirstName,
+                Person::setFirstName);
+        Binding<Person, Integer> ageBinding = binder.forField(ageField)
+                .withConverter(new StringToIntegerConverter(""))
+                .bind(Person::getAge, Person::setAge);
+        binder.withValidator(bean -> true, "");
+        binder.setBean(item);
+
+        ageField.setValue("foo");
+
+        binder.removeBinding(ageBinding);
+
+        binder.validate();
+    }
+
+    @Test
     public void clearForReadBean_boundFieldsAreCleared() {
         binder.forField(nameField).bind(Person::getFirstName,
                 Person::setFirstName);
@@ -451,8 +468,9 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         String customNullPointerRepresentation = "foo";
         Binder<Person> binder = new Binder<>(Person.class);
         binder.forField(nameField)
-                .withConverter(value -> value, value -> value == null
-                        ? customNullPointerRepresentation : value)
+                .withConverter(value -> value,
+                        value -> value == null ? customNullPointerRepresentation
+                                : value)
                 .bind("firstName");
 
         Person person = new Person();
@@ -1344,7 +1362,6 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
         binder.readBean(new AtomicReference<>());
     }
-
 
     @Test
     public void nullRejetingField_otherRejectedValue_originalExceptionIsThrown() {

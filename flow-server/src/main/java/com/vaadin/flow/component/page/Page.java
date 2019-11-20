@@ -414,9 +414,9 @@ public class Page implements Serializable {
     /**
      * Asynchronously runs the given JavaScript expression in the browser.
      * <p>
-     * It is possible to get access to the return value of the execution by
-     * registering a handler with the returned pending result. If no handler is
-     * registered, the return value will be ignored.
+     * The returned <code>PendingJavaScriptResult</code> can be used to retrieve
+     * any <code>return</code> value from the JavaScript expression. If no
+     * return value handler is registered, the return value will be ignored.
      * <p>
      * The given parameters will be available to the expression as variables
      * named <code>$0</code>, <code>$1</code>, and so on. Supported parameter
@@ -550,7 +550,7 @@ public class Page implements Serializable {
      * @param windowName
      *            the name of the window.
      */
-    private void open(String url, String windowName) {
+    public void open(String url, String windowName) {
         executeJavaScript("window.open($0, $1)", url, windowName);
     }
 

@@ -122,15 +122,21 @@ public class ServerConnector {
      *            the event handler method name to execute on the server side
      * @param argsArray
      *            the arguments array for the method
+     * @param promiseId
+     *            the promise id to use for getting the result back, or -1 if no
+     *            result is expected
      */
     public void sendTemplateEventMessage(StateNode node, String methodName,
-            JsonArray argsArray) {
+            JsonArray argsArray, int promiseId) {
         JsonObject message = Json.createObject();
         message.put(JsonConstants.RPC_TYPE,
                 JsonConstants.RPC_PUBLISHED_SERVER_EVENT_HANDLER);
         message.put(JsonConstants.RPC_NODE, node.getId());
         message.put(JsonConstants.RPC_TEMPLATE_EVENT_METHOD_NAME, methodName);
         message.put(JsonConstants.RPC_TEMPLATE_EVENT_ARGS, argsArray);
+        if (promiseId != -1) {
+            message.put(JsonConstants.RPC_TEMPLATE_EVENT_PROMISE, promiseId);
+        }
         sendMessage(message);
     }
 

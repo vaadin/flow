@@ -30,7 +30,7 @@ public class FocusableTest {
 
     }
 
-    private final UI ui = new MockUI();
+    private final MockUI ui = new MockUI();
     private final FocusableTestComponent component = new FocusableTestComponent();
 
     @Test
@@ -74,9 +74,8 @@ public class FocusableTest {
     }
 
     private void assertPendingInvocationCount(String message, int expected) {
-        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
-        List<PendingJavaScriptInvocation> invocations = ui.getInternals()
-                .dumpPendingJavaScriptInvocations();
+        List<PendingJavaScriptInvocation> invocations = ui
+                .dumpPendingJsInvocations();
         Assert.assertEquals(message, expected, invocations.size());
     }
 }

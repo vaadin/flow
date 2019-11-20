@@ -27,11 +27,12 @@ import java.util.stream.Stream;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.component.internal.ExportsWebComponent;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.component.internal.ExportsWebComponent;
+import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.SessionInitListener;
 import com.vaadin.flow.server.UIInitListener;
@@ -66,12 +67,14 @@ public class DevModeClassFinderTest {
             CssImport.class,
             CssImport.Container.class,
             Theme.class,
-            NoTheme.class);
+            NoTheme.class,
+            HasErrorParameter.class);
 
         for (Class<?> clz : classes) {
             assertTrue("should be a known class " + clz.getName(), knownClasses.contains(clz));
         }
         Assert.assertEquals(knownClasses.size(), classes.size());
+        Assert.assertEquals(15, classes.size());
     }
 
     @Test

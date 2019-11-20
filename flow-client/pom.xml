@@ -194,6 +194,7 @@
                     <style>${gwt.module.style}</style>
                     <htmlunit>FF38</htmlunit>
                     <testTimeOut>300</testTimeOut>
+                    <extraJvmArgs>-Xmx512m -Dvaadin.enableDevServer=false</extraJvmArgs>
                 </configuration>
             </plugin>
 

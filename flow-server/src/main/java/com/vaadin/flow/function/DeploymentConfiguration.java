@@ -129,8 +129,8 @@ public interface DeploymentConfiguration extends Serializable {
     boolean isSendUrlsAsParameters();
 
     /**
-     * Returns whether a session should be closed when all its open UIs have
-     * been idle for longer than its configured maximum inactivity time.
+     * Returns whether a Vaadin session should be closed when all its open UIs
+     * have been idle for longer than its configured maximum inactivity time.
      * <p>
      * A UI is idle if it is open on the client side but has no activity other
      * than heartbeat requests. If {@code isCloseIdleSessions() == false},
@@ -141,8 +141,8 @@ public interface DeploymentConfiguration extends Serializable {
      * @see WrappedSession#getMaxInactiveInterval()
      *
      *
-     * @return True if UIs and sessions receiving only heartbeat requests are
-     *         eventually closed; false if heartbeat requests extend UI and
+     * @return True if UIs and Vaadin sessions receiving only heartbeat requests
+     *         are eventually closed; false if heartbeat requests extend UI and
      *         session lifetime indefinitely.
      */
     boolean isCloseIdleSessions();
@@ -395,20 +395,41 @@ public interface DeploymentConfiguration extends Serializable {
      * @return true if dev server should be used
      */
     default boolean enableDevServer() {
-        return getBooleanProperty(
-                Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER, true);
+        return getBooleanProperty(Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER,
+                true);
     }
 
     /**
-     * Get if the dev server should be reused on each reload.
-     * True by default, set it to false in tests so as dev server
-     * is not kept as a daemon after the test.
+     * Get if the dev server should be reused on each reload. True by default,
+     * set it to false in tests so as dev server is not kept as a daemon after
+     * the test.
      *
      * @return true if dev server should be reused
      */
     default boolean reuseDevServer() {
-        return getBooleanProperty(
-                Constants.SERVLET_PARAMETER_REUSE_DEV_SERVER, true);
+        return getBooleanProperty(Constants.SERVLET_PARAMETER_REUSE_DEV_SERVER,
+                true);
+    }
+
+    /**
+     * Get if the stats.json file should be retrieved from an external service or
+     * through the classpath.
+     *
+     * @return true if stats.json is served from an external location
+     */
+    default boolean isStatsExternal() {
+        return getBooleanProperty(Constants.EXTERNAL_STATS_FILE, false);
+    }
+
+    /**
+     * Get the url from where stats.json should be retrieved from.
+     * If not given this will default to '/vaadin-static/VAADIN/config/stats.json'
+     *
+     * @return external stats.json location
+     */
+    default String getExternalStatsUrl() {
+        return getStringProperty(Constants.EXTERNAL_STATS_URL,
+                Constants.DEFAULT_EXTERNAL_STATS_URL);
     }
 
     /**

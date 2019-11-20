@@ -56,12 +56,13 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.component.internal.ExportsWebComponent;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.component.internal.ExportsWebComponent;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
@@ -110,7 +111,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
         NpmPackage.class, NpmPackage.Container.class, JsModule.class,
         JsModule.Container.class, CssImport.class, CssImport.Container.class,
         JavaScript.class, JavaScript.Container.class, Theme.class,
-        NoTheme.class })
+        NoTheme.class, HasErrorParameter.class })
 @WebListener
 public class DevModeInitializer implements ServletContainerInitializer,
         Serializable, ServletContextListener {
@@ -303,6 +304,9 @@ public class DevModeInitializer implements ServletContainerInitializer,
                         SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
                         Boolean.FALSE.toString())));
 
+        String polymerVersion = config.getStringProperty(
+                Constants.SERVLET_PARAMETER_DEVMODE_POLYMER_VERSION, null);
+
         VaadinContext vaadinContext = new VaadinServletContext(context);
         JsonObject tokenFileData = Json.createObject();
         try {
@@ -313,7 +317,8 @@ public class DevModeInitializer implements ServletContainerInitializer,
                             Constants.LOCAL_FRONTEND_RESOURCES_PATH))
                     .enableImportsUpdate(true).runNpmInstall(true)
                     .withEmbeddableWebComponents(true)
-                    .populateTokenFileData(tokenFileData).build().execute();
+                    .populateTokenFileData(tokenFileData)
+                    .withPolymerVersion(polymerVersion).build().execute();
 
             FallbackChunk chunk = FrontendUtils
                     .readFallbackChunk(tokenFileData);

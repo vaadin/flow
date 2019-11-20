@@ -30,7 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.FallibleCommand;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
@@ -207,15 +206,21 @@ public abstract class NodeUpdater implements FallibleCommand {
         return packageJson;
     }
 
-    boolean updateMainDefaultDependencies(JsonObject packageJson) {
+    boolean updateMainDefaultDependencies(JsonObject packageJson,
+            String polymerVersion) {
         boolean added = false;
         added = addDependency(packageJson, null, DEP_NAME_KEY, DEP_NAME_DEFAULT)
                 || added;
         added = addDependency(packageJson, null, DEP_LICENSE_KEY,
                 DEP_LICENSE_DEFAULT) || added;
 
+        String polymerDepVersion = polymerVersion;
+        if (polymerDepVersion == null) {
+            polymerDepVersion = "3.2.0";
+        }
+
         added = addDependency(packageJson, DEPENDENCIES, "@polymer/polymer",
-                "3.2.0") || added;
+                polymerDepVersion) || added;
         added = addDependency(packageJson, DEPENDENCIES,
                 "@webcomponents/webcomponentsjs", "^2.2.10") || added;
         // dependency for the custom package.json placed in the generated
@@ -237,7 +242,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         added = addDevDependency(packageJson, "webpack-dev-server", "3.3.0",
                 added);
         added = addDevDependency(packageJson,
-                "webpack-babel-multi-target-plugin", "2.1.0", added);
+                "webpack-babel-multi-target-plugin", "2.3.1", added);
         added = addDevDependency(packageJson, "copy-webpack-plugin", "5.0.3",
                 added);
         added = addDevDependency(packageJson, "html-webpack-plugin", "3.2.0",

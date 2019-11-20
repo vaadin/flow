@@ -17,7 +17,6 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -35,7 +34,6 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.Constants;
@@ -57,7 +55,7 @@ import static com.vaadin.flow.shared.ApplicationConstants.FRONTEND_PROTOCOL_PREF
  * @author Vaadin Ltd
  *
  */
-abstract class AbstractUpdateImports implements Runnable, Serializable {
+abstract class AbstractUpdateImports implements Runnable {
 
     private static final String EXPORT_MODULES = "export const addCssBlock = function(block, before = false) {\n"
             + " const tpl = document.createElement('template');\n"
@@ -193,7 +191,7 @@ abstract class AbstractUpdateImports implements Runnable, Serializable {
     List<String> resolveModules(Collection<String> modules,
             boolean isJsModule) {
         return modules.stream()
-                .map(module -> resolveResource(module, isJsModule))
+                .map(module -> resolveResource(module, isJsModule)).sorted()
                 .collect(Collectors.toList());
     }
 
@@ -551,10 +549,10 @@ abstract class AbstractUpdateImports implements Runnable, Serializable {
             visitImportsRecursively(filePath, path, theme, imports,
                     visitedImports);
         } catch (IOException exception) {
-            LoggerFactory.getLogger(TaskUpdateImports.class)
-                    .warn("Could not read file {}. Skipping "
-                            + "applying theme for its imports", file.getPath(),
-                            exception);
+            getLogger().warn(
+                    "Could not read file {}. Skipping "
+                            + "applying theme for its imports",
+                    file.getPath(), exception);
         }
     }
 

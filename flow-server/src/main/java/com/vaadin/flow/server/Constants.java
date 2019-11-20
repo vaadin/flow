@@ -44,6 +44,8 @@ public final class Constants implements Serializable {
     public static final String CONNECT_APPLICATION_PROPERTIES_TOKEN = "connect.applicationProperties";
     public static final String CONNECT_OPEN_API_FILE_TOKEN = "connect.openApiFile";
     public static final String CONNECT_GENERATED_TS_DIR_TOKEN = "connect.generated";
+    public static final String EXTERNAL_STATS_FILE_TOKEN = "externalStatsFile";
+    public static final String EXTERNAL_STATS_URL_TOKEN = "externalStatsUrl";
 
     /**
      * enable it if your project is a Polymer 2.0 one, should be removed in V15
@@ -217,11 +219,15 @@ public final class Constants implements Serializable {
 
     /**
      * Boolean parameter for enabling/disabling bytecode scanning in dev mode.
-     * If enabled, entry points are scanned for reachable frontend resources.
-     * If disabled, all classes on the classpath are scanned.
+     * If enabled, entry points are scanned for reachable frontend resources. If
+     * disabled, all classes on the classpath are scanned.
      */
     public static final String SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE = "devmode.optimizeBundle";
 
+    /**
+     * Configuration parameter name for polymer version.
+     */
+    public static final String SERVLET_PARAMETER_DEVMODE_POLYMER_VERSION = "devmode.polymer.version";
 
     /**
      * The path used in the vaadin servlet for handling static resources.
@@ -269,6 +275,20 @@ public final class Constants implements Serializable {
     public static final int SHOULD_WORK_NODE_MINOR_VERSION = 9;
     public static final int SHOULD_WORK_NPM_MAJOR_VERSION = 5;
     public static final int SHOULD_WORK_NPM_MINOR_VERSION = 5;
+
+    /**
+     * Property boolean for marking stats.json to be fetched from external
+     * location.
+     */
+    public static final String EXTERNAL_STATS_FILE = "external.stats.file";
+    /**
+     * Property String for external stats.json location url.
+     */
+    public static final String EXTERNAL_STATS_URL = "external.stats.url";
+    /**
+     * Default location to look for the external stats.json.
+     */
+    public static final String DEFAULT_EXTERNAL_STATS_URL = "/vaadin-static/VAADIN/config/stats.json";
 
     private Constants() {
         // prevent instantiation constants class only

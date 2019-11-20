@@ -25,8 +25,6 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.server.FallibleCommand;
-
 /**
  * Abstract class for connect related generators.
  */

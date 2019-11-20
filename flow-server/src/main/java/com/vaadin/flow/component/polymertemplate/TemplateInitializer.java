@@ -116,8 +116,6 @@ public class TemplateInitializer {
         if (idMapper.isMapped(id)) {
             return;
         }
-        // make sure that shadow root is available
-        idMapper.getOrCreateShadowRoot();
 
         Element element = new Element(tag);
         VirtualChildrenList list = getElement().getNode()

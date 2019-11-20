@@ -566,9 +566,11 @@ public class Binder<BEAN> implements Serializable {
                 TARGET nullRepresentation) {
             return withConverter(
                     fieldValue -> Objects.equals(fieldValue, nullRepresentation)
-                            ? null : fieldValue,
+                            ? null
+                            : fieldValue,
                     modelValue -> Objects.isNull(modelValue)
-                            ? nullRepresentation : modelValue);
+                            ? nullRepresentation
+                            : modelValue);
         }
 
         /**
@@ -2503,7 +2505,8 @@ public class Binder<BEAN> implements Serializable {
         Converter<FIELDVALUE, FIELDVALUE> nullRepresentationConverter = Converter
                 .from(fieldValue -> fieldValue,
                         modelValue -> Objects.isNull(modelValue)
-                                ? field.getEmptyValue() : modelValue,
+                                ? field.getEmptyValue()
+                                : modelValue,
                         Throwable::getMessage);
         ConverterDelegate<FIELDVALUE> converter = new ConverterDelegate<>(
                 nullRepresentationConverter);
@@ -2882,6 +2885,7 @@ public class Binder<BEAN> implements Serializable {
         if (bindings.remove(binding)) {
             boundProperties.entrySet()
                     .removeIf(entry -> entry.getValue().equals(binding));
+            changedBindings.remove(binding);
         }
     }
 

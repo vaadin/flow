@@ -35,9 +35,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.internal.ExportsWebComponent;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.component.internal.ExportsWebComponent;
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinServiceInitListener;
@@ -231,6 +232,11 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                 .loadClass(VaadinServiceInitListener.class.getName()))) {
             collectEndpoints(initListener);
         }
+
+        for (Class<?> errorParameters : getFinder().getSubTypesOf(
+                getFinder().loadClass(HasErrorParameter.class.getName()))) {
+            collectEndpoints(errorParameters);
+        }
     }
 
     private void collectEndpoints(Class<?> entry) throws IOException {
@@ -247,9 +253,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      * If no theme is found and the application has endpoints, it uses lumo if
      * found in the class-path
      */
-    private void computeApplicationTheme()
-            throws ClassNotFoundException, InstantiationException,
-            IllegalAccessException, IOException {
+    private void computeApplicationTheme() throws ClassNotFoundException,
+            InstantiationException, IllegalAccessException, IOException {
 
         // Re-visit theme related classes, because they might be skipped
         // when they where already added to the visited list during other

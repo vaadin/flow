@@ -15,9 +15,12 @@
  */
 package com.vaadin.tests.util;
 
+import java.util.List;
+
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
@@ -37,6 +40,13 @@ public class MockUI extends UI {
     @Override
     protected void init(VaadinRequest request) {
         // Do nothing
+    }
+
+    public List<PendingJavaScriptInvocation> dumpPendingJsInvocations() {
+        // Ensure element invocations are also flushed
+        getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        return getInternals().dumpPendingJavaScriptInvocations();
     }
 
     private static VaadinSession findOrCreateSession() {

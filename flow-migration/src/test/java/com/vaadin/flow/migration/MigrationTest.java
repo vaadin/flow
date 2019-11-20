@@ -130,12 +130,12 @@ public class MigrationTest {
                 Paths.get(sourcesFolder.getPath(), "foobar").toFile());
 
         // Expected execution calls:
-        // 1 - npm install polymer-modulizer
+        // 1 - npm --no-update-notifier install polymer-modulizer
         // 2 - node {tempFolder} i -F --confid.interactive=false -S polymer#2.8.0
-        // 3 - npm i
+        // 3 - npm --no-update-notifier i
         // 4 - node node_modules/polymer-modulizer/bin/modulizer.js --force --out , --import-style=name
 
-        LinkedList<Integer> excecuteExpectations = Stream.of(3, 7, 2, 6)
+        LinkedList<Integer> excecuteExpectations = Stream.of(4, 7, 3, 6)
                 .collect(Collectors.toCollection(LinkedList::new));
         
         Migration migration = new Migration(configuration) {

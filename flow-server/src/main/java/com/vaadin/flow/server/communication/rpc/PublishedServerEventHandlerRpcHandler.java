@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.communication.rpc;
 
+import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -88,6 +89,13 @@ public class PublishedServerEventHandlerRpcHandler
             throw new IllegalArgumentException(
                     "Incorrect type for method arguments: " + args.getClass());
         }
+        int promiseId;
+        if (invocationJson.hasKey(JsonConstants.RPC_TEMPLATE_EVENT_PROMISE)) {
+            promiseId = (int) invocationJson
+                    .getNumber(JsonConstants.RPC_TEMPLATE_EVENT_PROMISE);
+        } else {
+            promiseId = -1;
+        }
         assert node.hasFeature(ComponentMapping.class);
         Optional<Component> component = ComponentMapping.getComponent(node);
         if (!component.isPresent()) {
@@ -115,22 +123,22 @@ public class PublishedServerEventHandlerRpcHandler
 
         if (execute) {
             invokeMethod(component.get(), component.get().getClass(),
-                    methodName, (JsonArray) args);
+                    methodName, (JsonArray) args, promiseId);
         }
 
         return Optional.empty();
     }
 
     static void invokeMethod(Component instance, Class<?> clazz,
-            String methodName, JsonArray args) {
+            String methodName, JsonArray args, int promiseId) {
         assert instance != null;
         Optional<Method> method = findMethod(instance, clazz, methodName);
         if (method.isPresent()) {
-            invokeMethod(instance, method.get(), args);
+            invokeMethod(instance, method.get(), args, promiseId);
         } else if (instance instanceof Composite) {
             Component compositeContent = ((Composite<?>) instance).getContent();
             invokeMethod(compositeContent, compositeContent.getClass(),
-                    methodName, args);
+                    methodName, args, promiseId);
         } else {
             String msg = String.format("Neither class '%s' "
                     + "nor its super classes declare event handler method '%s'",
@@ -161,10 +169,35 @@ public class PublishedServerEventHandlerRpcHandler
     }
 
     private static void invokeMethod(Component instance, Method method,
+            JsonArray args, int promiseId) {
+        if (promiseId == -1) {
+            invokeMethod(instance, method, args);
+        } else {
+            try {
+                Serializable returnValue = (Serializable) invokeMethod(instance,
+                        method, args);
+
+                instance.getElement().executeJs(
+                        "this.$server['"
+                                + JsonConstants.RPC_PROMISE_CALLBACK_NAME
+                                + "']($0, true, $1)",
+                        Integer.valueOf(promiseId), returnValue);
+            } catch (RuntimeException e) {
+                instance.getElement().executeJs("this.$server['"
+                        + JsonConstants.RPC_PROMISE_CALLBACK_NAME
+                        + "']($0, false)",
+                        Integer.valueOf(promiseId));
+
+                throw e;
+            }
+        }
+    }
+
+    private static Object invokeMethod(Component instance, Method method,
             JsonArray args) {
         try {
             method.setAccessible(true);
-            method.invoke(instance, decodeArgs(instance, method, args));
+            return method.invoke(instance, decodeArgs(instance, method, args));
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         } catch (InvocationTargetException e) {
@@ -273,8 +306,9 @@ public class PublishedServerEventHandlerRpcHandler
                     throw new IllegalArgumentException(exception);
                 }
             }
-            String msg = String.format("Class '%s' has the method '%s' "
-                    + "whose parameter %d refers to unsupported type '%s'",
+            String msg = String.format(
+                    "Class '%s' has the method '%s' "
+                            + "whose parameter %d refers to unsupported type '%s'",
                     method.getDeclaringClass().getName(), method.getName(),
                     index, type.getName());
             throw new IllegalArgumentException(msg);
@@ -310,9 +344,10 @@ public class PublishedServerEventHandlerRpcHandler
     private static Object decodeArray(Method method, Class<?> type, int index,
             JsonValue argValue) {
         if (argValue.getType() != JsonType.ARRAY) {
-            String msg = String.format("Class '%s' has the method '%s' "
-                    + "whose parameter %d refers to the array type '%s' "
-                    + "but received value is not an array, its type is '%s'",
+            String msg = String.format(
+                    "Class '%s' has the method '%s' "
+                            + "whose parameter %d refers to the array type '%s' "
+                            + "but received value is not an array, its type is '%s'",
                     method.getDeclaringClass().getName(), method.getName(),
                     index, type.getName(), argValue.getType().name());
             throw new IllegalArgumentException(msg);

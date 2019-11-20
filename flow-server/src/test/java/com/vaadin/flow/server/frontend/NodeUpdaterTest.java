@@ -18,7 +18,6 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -32,6 +31,9 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
+
+import elemental.json.Json;
+import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
@@ -92,7 +94,8 @@ public class NodeUpdaterTest {
     }
 
     @Test
-    public void getGeneratedModules_should_excludeByFileName() throws IOException {
+    public void getGeneratedModules_should_excludeByFileName()
+            throws IOException {
         File generated = temporaryFolder.newFolder();
         File fileA = new File(generated, "a.js");
         File fileB = new File(generated, "b.js");
@@ -100,13 +103,37 @@ public class NodeUpdaterTest {
         fileA.createNewFile();
         fileB.createNewFile();
         fileC.createNewFile();
-        
-        Set<String> modules = NodeUpdater.getGeneratedModules(generated, Stream
-                .of("a.js", "/b.js").collect(Collectors.toSet()));
+
+        Set<String> modules = NodeUpdater.getGeneratedModules(generated,
+                Stream.of("a.js", "/b.js").collect(Collectors.toSet()));
 
         Assert.assertEquals(1, modules.size());
         // GENERATED/ is an added prefix for files from this method
         Assert.assertTrue(modules.contains("GENERATED/c.js"));
+    }
+
+    @Test
+    public void updateMainDefaultDependencies_polymerVersionIsNull_useDefault() {
+        JsonObject object = Json.createObject();
+        nodeUpdater.updateMainDefaultDependencies(object, null);
+
+        String version = getPolymerVersion(object);
+        Assert.assertEquals("3.2.0", version);
+    }
+
+    @Test
+    public void updateMainDefaultDependencies_polymerVersionIsProvided_useProvided() {
+        JsonObject object = Json.createObject();
+        nodeUpdater.updateMainDefaultDependencies(object, "foo");
+
+        String version = getPolymerVersion(object);
+        Assert.assertEquals("foo", version);
+    }
+
+    private String getPolymerVersion(JsonObject object) {
+        JsonObject deps = object.get("dependencies");
+        String version = deps.getString("@polymer/polymer");
+        return version;
     }
 
     private void resolveResource_happyPath(String resourceFolder) {

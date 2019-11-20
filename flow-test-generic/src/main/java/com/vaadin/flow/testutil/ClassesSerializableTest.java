@@ -169,10 +169,32 @@ public abstract class ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.component\\.internal\\.HtmlImportParser",
                 "com\\.vaadin\\.flow\\.server\\.webcomponent\\.WebComponentGenerator",
                 "com\\.vaadin\\.flow\\.server\\.communication\\.WebComponentBootstrapHandler(\\$.*)?",
+
+                "com\\.vaadin\\.flow\\.server\\.DevModeHandler",
+                // Frontend tasks classes which are not stored anywhere but used
+                // only once
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.scanner\\..*",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.JarContentsManager",
                 // connect is stateless
                 "com\\.vaadin\\.flow\\.server\\.connect\\..*",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.AbstractUpdateImports",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.FallibleCommand",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.NodeTasks",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.NodeUpdater",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskCopyFrontendFiles",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskCopyLocalFrontendFiles",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskCreatePackageJson",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskRunNpmInstall",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskUpdateImports(\\$.*)?",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskUpdatePackages",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskUpdateWebpack",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.AbstractTaskConnectGenerator",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskGenerateConnect",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskGenerateOpenApi",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.AbstractTaskClientGenerator",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskGenerateTsConfig",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskGenerateIndexHtml",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskGenerateIndexJs",
 
                 // Various test classes
                 ".*\\.test(s)?\\..*", ".*Test.*",

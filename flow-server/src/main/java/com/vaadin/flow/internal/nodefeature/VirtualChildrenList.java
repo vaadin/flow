@@ -154,8 +154,17 @@ public class VirtualChildrenList extends StateNodeNodeList {
     }
 
     @Override
-    protected StateNode remove(int index) {
-        throw new UnsupportedOperationException();
+    public int indexOf(StateNode node) {
+        return super.indexOf(node);
+    }
+
+    @Override
+    public StateNode remove(int index) {
+        // removing the payload in case the element is reused
+        get(index).getFeature(ElementData.class).remove(NodeProperties.PAYLOAD);
+
+        // this should not omit a node change to client side.
+        return super.remove(index);
     }
 
     @Override

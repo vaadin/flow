@@ -23,7 +23,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.ExecutionFailedException;
-import com.vaadin.flow.server.FallibleCommand;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 

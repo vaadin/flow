@@ -33,6 +33,8 @@ public class TaskCreatePackageJson extends NodeUpdater {
 
     protected static final String FORCE_INSTALL_HASH = "Main dependencies updated, force install";
 
+    private final String polymerVersion;
+
     /**
      * Create an instance of the updater given all configurable parameters.
      *
@@ -40,9 +42,14 @@ public class TaskCreatePackageJson extends NodeUpdater {
      *            folder with the `package.json` file.
      * @param generatedPath
      *            folder where flow generated files will be placed.
+     * @param polymerVersion
+     *            polymer version, may be {@code null} ({@code "3.2.0"} by
+     *            default)
      */
-    TaskCreatePackageJson(File npmFolder, File generatedPath) {
+    TaskCreatePackageJson(File npmFolder, File generatedPath,
+            String polymerVersion) {
         super(null, null, npmFolder, generatedPath);
+        this.polymerVersion = polymerVersion;
     }
 
     @Override
@@ -53,7 +60,8 @@ public class TaskCreatePackageJson extends NodeUpdater {
             if (mainContent == null) {
                 mainContent = Json.createObject();
             }
-            modified = updateMainDefaultDependencies(mainContent);
+            modified = updateMainDefaultDependencies(mainContent,
+                    polymerVersion);
             if (modified) {
                 if (mainContent.hasKey(APP_PACKAGE_HASH)) {
                     log().debug(

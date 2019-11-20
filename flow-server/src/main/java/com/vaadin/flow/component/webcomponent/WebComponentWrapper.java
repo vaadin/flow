@@ -119,7 +119,8 @@ public class WebComponentWrapper extends Component {
                         if (event.getSource().getInternals()
                                 .getLastHeartbeatTimestamp()
                                 - disconnect > timeout) {
-                            this.getElement().removeFromParent();
+                            Element element = this.getElement();
+                            element.getParent().removeVirtualChild(element);
                         }
                     });
         }
