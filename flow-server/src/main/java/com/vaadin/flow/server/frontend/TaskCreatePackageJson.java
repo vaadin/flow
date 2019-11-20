@@ -22,6 +22,8 @@ import java.io.UncheckedIOException;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.TaskUpdatePackages.APP_PACKAGE_HASH;
 
 /**
@@ -79,13 +81,17 @@ public class TaskCreatePackageJson extends NodeUpdater {
                 writeAppPackageFile(appContent);
                 modified = true;
             }
+
             if (frontendDepsFolder != null) {
-                JsonObject depsContent = getDepsPackageJson();
-                if (depsContent == null) {
-                    depsContent = Json.createObject();
-                    updateJarDependencies(depsContent);
-                    writeDepsPackageFile(depsContent);
-                    modified = true;
+                if (!new File(npmFolder, NODE_MODULES + FLOW_NPM_PACKAGE_NAME)
+                        .equals(frontendDepsFolder)) {
+                    JsonObject depsContent = getDepsPackageJson();
+                    if (depsContent == null) {
+                        depsContent = Json.createObject();
+                        updateJarDependencies(depsContent);
+                        writeDepsPackageFile(depsContent);
+                        modified = true;
+                    }
                 }
             }
         } catch (IOException e) {
