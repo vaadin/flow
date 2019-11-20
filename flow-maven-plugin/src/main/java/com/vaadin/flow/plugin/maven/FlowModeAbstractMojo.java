@@ -24,10 +24,9 @@ import org.apache.maven.plugins.annotations.Parameter;
 
 import com.vaadin.flow.server.Constants;
 
-import static com.vaadin.flow.server.Constants.*;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
+import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 
 /**
  * The base class of Flow Mojos in order to compute correctly the modes.
@@ -61,7 +60,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
     /**
      * A directory with project's frontend source files.
      */
-    @Parameter(defaultValue = "${project.basedir}/" + NODE_MODULES + FLOW_NPM_PACKAGE_NAME)
+    @Parameter(defaultValue = "${project.basedir}/" + DEAULT_FLOW_RESOURCES_FOLDER)
     public File frontendDepsDirectory;
 
     /**

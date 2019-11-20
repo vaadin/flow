@@ -135,9 +135,11 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
                             .withWebpack(webpackOutputDirectory,
                                     webpackTemplate, webpackGeneratedTemplate)
                             .enableClientSideMode(isClientSideMode())
+                            .withFrontendDependencies(frontendDepsDirectory)
                             .createMissingPackageJson(true)
                             .enableImportsUpdate(false)
-                            .enablePackagesUpdate(false).runNpmInstall(false)
+                            .enablePackagesUpdate(false)
+                            .runNpmInstall(false)
                             .build().execute();
         } catch (ExecutionFailedException exception) {
             throw new MojoFailureException(
