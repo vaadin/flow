@@ -28,6 +28,9 @@ import com.vaadin.flow.shared.BrowserDetails;
  * information such as browser name and version, screen resolution and IP
  * address.
  *
+ * Note! browser details rely on the user agent from the browser and thus
+ * the details are not always correct.
+ *
  * @author Vaadin Ltd
  * @since 1.0.
  */
@@ -302,7 +305,10 @@ public class WebBrowser implements Serializable {
      *
      * @return true if run on IPad false if the user is not using IPad or if no
      *         information on the browser is present
+     *
+     * @deprecated isIPad will return the wrong value for iOS 13 and later
      */
+    @Deprecated
     public boolean isIPad() {
         return browserDetails.isIPad();
     }
