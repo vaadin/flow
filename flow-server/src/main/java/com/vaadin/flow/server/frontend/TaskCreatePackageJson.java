@@ -91,7 +91,7 @@ public class TaskCreatePackageJson extends NodeUpdater {
                 if (depsContent == null) {
                     depsContent = Json.createObject();
                     updateResourcesDependencies(depsContent);
-                    writeDepsPackageFile(depsContent);
+                    writeResourcesPackageFile(depsContent);
                     modified = true;
                 }
             }
