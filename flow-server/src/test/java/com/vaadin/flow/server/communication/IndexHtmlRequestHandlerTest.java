@@ -243,8 +243,12 @@ public class IndexHtmlRequestHandlerTest {
         Elements scripts = document.head().getElementsByTag("script");
         Assert.assertEquals(1, scripts.size());
         Assert.assertEquals("", scripts.get(0).attr("initial"));
+        String scriptContent = scripts.get(0).toString();
         Assert.assertTrue(
-                scripts.get(0).toString().contains("Could not navigate"));
+                scriptContent.contains("Could not navigate"));
+        Assert.assertFalse("Initial object content should not be escaped",
+                scriptContent.contains("&lt;")
+                        || scriptContent.contains("&gt;"));
         Assert.assertNotNull(UI.getCurrent());
     }
 

@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.regex.Pattern;
 
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -89,8 +90,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         Element elm = new Element("script");
         elm.attr("initial", "");
-        elm.text("window.Vaadin = {Flow : {initial: "
-                + JsonUtil.stringify(initial) + "}}");
+        elm.appendChild(new DataNode("window.Vaadin = {Flow : {initial: "
+                + JsonUtil.stringify(initial) + "}}"));
         indexDocument.head().insertChildren(0, elm);
     }
 
