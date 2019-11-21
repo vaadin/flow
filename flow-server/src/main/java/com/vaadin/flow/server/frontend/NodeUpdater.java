@@ -297,7 +297,6 @@ public abstract class NodeUpdater implements FallibleCommand {
         addDependency(packageJson, null, DEP_NAME_KEY, DEP_NAME_FLOW_DEPS);
         addDependency(packageJson, null, DEP_VERSION_KEY, DEP_VERSION_DEFAULT);
         addDependency(packageJson, null, DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT);
-        addDependency(packageJson, null, DEP_MAIN_KEY, IMPORTS_NAME);
     }
 
     void updateResourcesDependencies(JsonObject packageJson) {
@@ -332,7 +331,7 @@ public abstract class NodeUpdater implements FallibleCommand {
                 new File(generatedFolder, PACKAGE_JSON));
     }
 
-    String writeDepsPackageFile(JsonObject packageJson) throws IOException {
+    String writeResourcesPackageFile(JsonObject packageJson) throws IOException {
         return writePackageFile(packageJson,
                 new File(flowResourcesFolder, PACKAGE_JSON));
     }

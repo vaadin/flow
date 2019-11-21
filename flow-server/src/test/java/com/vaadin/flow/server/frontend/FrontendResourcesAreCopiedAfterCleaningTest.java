@@ -56,7 +56,8 @@ public class FrontendResourcesAreCopiedAfterCleaningTest {
         assertCopiedFrontendFileAmount(3);
 
         performPackageClean();
-        assertCopiedFrontendFileAmount(0);
+        // Should keep the `package.json` file
+        assertCopiedFrontendFileAmount(1);
 
         copyResources();
         assertCopiedFrontendFileAmount(3);
