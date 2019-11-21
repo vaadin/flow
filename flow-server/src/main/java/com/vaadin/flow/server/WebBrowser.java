@@ -19,6 +19,7 @@ package com.vaadin.flow.server;
 import java.io.Serializable;
 import java.util.Locale;
 
+import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.shared.BrowserDetails;
 
 /**
@@ -276,13 +277,9 @@ public class WebBrowser implements Serializable {
      * Tests if the browser is run on IPad.
      *
      * @return true if run on IPad false if the user is not using IPad or if no
-     * information on the browser is present
-     *
-     * @deprecated isIPad will return the wrong value for iOS 13 and later. To
-     * match for iPad running iOS 13 the check will need to check {@link
-     * WebBrowser#isMacOSX()} and {@link com.vaadin.flow.component.page.ExtendedClientDetails#isTouchDevice()}.
-     * e.g. the check for iPad needs to be '<code>webBrowser.isIPad() ||
-     * (webBrowser.isMacOSX() &#38;&#38; extendedDetails.isTouchDevice())</code>'
+     *         information on the browser is present
+     * @deprecated isIPad will return the wrong value for iOS 13 and later. Use
+     *             instead {@link ExtendedClientDetails#isIPad()}
      */
     @Deprecated
     public boolean isIPad() {
