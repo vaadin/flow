@@ -170,9 +170,7 @@ public class ExtendedClientDetails implements Serializable {
         }
 
         this.windowName = windowName;
-        if(navigatorPlatform != null) {
-            this.navigatorPlatform = navigatorPlatform;
-        }
+        this.navigatorPlatform = navigatorPlatform;
     }
 
     /**
