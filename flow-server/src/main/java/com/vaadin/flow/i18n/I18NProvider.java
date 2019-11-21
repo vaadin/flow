@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.i18n;
 
+import com.vaadin.flow.server.VaadinService;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Locale;
@@ -33,6 +34,22 @@ public interface I18NProvider extends Serializable {
      * @return provided locales
      */
     List<Locale> getProvidedLocales();
+
+    /**
+     * Get the translation for key with the locale found in the current request.
+     * <p>
+     * Note! For usability and catching missing translations implementation
+     * should never return a null, but an exception string e.g. '!{key}!'
+     *
+     * @param key
+     *            translation key
+     * @param params
+     *            parameters used in translation string
+     * @return translation for key if found
+     */
+    default String getTranslation(String key, Object... params) {
+        return getTranslation(key, VaadinService.getCurrentRequest().getLocale(), params);
+    }
 
     /**
      * Get the translation for key with given locale.
