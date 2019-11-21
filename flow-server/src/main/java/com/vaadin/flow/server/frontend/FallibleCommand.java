@@ -13,20 +13,20 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server;
+package com.vaadin.flow.server.frontend;
 
-import java.io.Serializable;
+import com.vaadin.flow.server.ExecutionFailedException;
 
 /**
  * A generic command which may fail.
+ * <p>
+ * Note that this interface is not serializable and should not be used in a web
+ * application.
  *
  * @author Vaadin Ltd
- * @since 2.0
- * @deprecated this command is an internal command and is not supposed to be
- *             used in application code
+ * @since
  */
-@Deprecated
-public interface FallibleCommand extends Serializable {
+public interface FallibleCommand {
 
     /**
      * Runs the given command.

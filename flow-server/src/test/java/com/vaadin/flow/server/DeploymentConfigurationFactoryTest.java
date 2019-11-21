@@ -315,8 +315,10 @@ public class DeploymentConfigurationFactoryTest {
     @Test
     public void should_readConfigurationFromTokenFile() throws Exception {
         FileUtils.writeLines(tokenFile,
-                Arrays.asList("{", "\"compatibilityMode\": false,",
-                        "\"productionMode\": true", "}"));
+                Arrays.asList("{",
+                        "\"compatibilityMode\": false,",
+                        "\"productionMode\": true",
+                        "}"));
 
         DeploymentConfiguration config = createConfig(Collections
                 .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
@@ -331,10 +333,13 @@ public class DeploymentConfigurationFactoryTest {
         exception.expectMessage(
                 String.format(DEV_FOLDER_MISSING_MESSAGE, "npm"));
         FileUtils.writeLines(tokenFile,
-                Arrays.asList("{", "\"compatibilityMode\": false,",
-                        "\"productionMode\": false,", "\"npmFolder\": \"npm\",",
+                Arrays.asList("{",
+                        "\"compatibilityMode\": false,",
+                        "\"productionMode\": false,",
+                        "\"npmFolder\": \"npm\",",
                         "\"generatedFolder\": \"generated\",",
-                        "\"frontendFolder\": \"frontend\"", "}"));
+                        "\"frontendFolder\": \"frontend\"",
+                        "}"));
 
         createConfig(Collections.singletonMap(PARAM_TOKEN_FILE,
                 tokenFile.getPath()));
@@ -347,9 +352,11 @@ public class DeploymentConfigurationFactoryTest {
         exception.expectMessage(
                 String.format(DEV_FOLDER_MISSING_MESSAGE, "frontend"));
         FileUtils.writeLines(tokenFile,
-                Arrays.asList("{", "\"compatibilityMode\": false,",
+                Arrays.asList("{",
+                        "\"compatibilityMode\": false,",
                         "\"productionMode\": false,",
-                        "\"frontendFolder\": \"frontend\"", "}"));
+                        "\"frontendFolder\": \"frontend\"",
+                        "}"));
 
         createConfig(Collections.singletonMap(PARAM_TOKEN_FILE,
                 tokenFile.getPath()));
@@ -365,10 +372,12 @@ public class DeploymentConfigurationFactoryTest {
         String tempFolder = temporaryFolder.getRoot().getAbsolutePath()
                 .replace("\\", "/");
         FileUtils.writeLines(tokenFile,
-                Arrays.asList("{", "\"compatibilityMode\": false,",
+                Arrays.asList("{",
+                        "\"compatibilityMode\": false,",
                         "\"productionMode\": false,",
                         "\"npmFolder\": \"" + tempFolder + "/npm\",",
-                        "\"frontendFolder\": \"frontend\"", "}"));
+                        "\"frontendFolder\": \"frontend\"",
+                        "}"));
 
         createConfig(Collections.singletonMap(PARAM_TOKEN_FILE,
                 tokenFile.getPath()));
@@ -381,7 +390,8 @@ public class DeploymentConfigurationFactoryTest {
         String tempFolder = temporaryFolder.getRoot().getAbsolutePath()
                 .replace("\\", "/");
         FileUtils.writeLines(tokenFile, Arrays.asList("{",
-                "\"compatibilityMode\": false,", "\"productionMode\": false,",
+                "\"compatibilityMode\": false,",
+                "\"productionMode\": false,",
                 "\"npmFolder\": \"" + tempFolder + "/npm\",",
                 "\"frontendFolder\": \"" + tempFolder + "/npm/frontend\"",
                 "}"));
@@ -397,12 +407,69 @@ public class DeploymentConfigurationFactoryTest {
         String tempFolder = temporaryFolder.getRoot().getAbsolutePath()
                 .replace("\\", "/");
         FileUtils.writeLines(tokenFile, Arrays.asList("{",
-                "\"compatibilityMode\": false,", "\"productionMode\": false,",
+                "\"compatibilityMode\": false,",
+                "\"productionMode\": false,",
                 "\"npmFolder\": \"" + tempFolder + "/npm\",",
-                "\"frontendFolder\": \"" + tempFolder + "/frontend\"", "}"));
+                "\"frontendFolder\": \"" + tempFolder + "/frontend\"",
+                "}"));
 
         createConfig(Collections.singletonMap(PARAM_TOKEN_FILE,
                 tokenFile.getPath()));
+    }
+
+    @Test
+    public void externalStatsFileTrue_predefinedContext() throws Exception {
+        FileUtils.writeLines(tokenFile, Arrays.asList("{",
+                "\"externalStatsFile\": true",
+                "}"));
+
+        DeploymentConfiguration config = createConfig(Collections
+                .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
+
+        assertEquals(false, config.isProductionMode());
+        assertEquals(false, config.isCompatibilityMode());
+        assertEquals(false, config.enableDevServer());
+        assertEquals(true, config.isStatsExternal());
+        assertEquals(Constants.DEFAULT_EXTERNAL_STATS_URL, config.getExternalStatsUrl());
+    }
+
+    @Test
+    public void externalStatsUrlGiven_predefinedContext() throws Exception {
+        FileUtils.writeLines(tokenFile, Arrays.asList("{",
+                "\"externalStatsUrl\": \"http://my.server/static/stats.json\"",
+                "}"));
+
+        DeploymentConfiguration config = createConfig(Collections
+                .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
+
+        assertEquals(false, config.isProductionMode());
+        assertEquals(false, config.isCompatibilityMode());
+        assertEquals(false, config.enableDevServer());
+        assertEquals(true, config.isStatsExternal());
+        assertEquals("http://my.server/static/stats.json", config.getExternalStatsUrl());
+    }
+
+    @Test
+    public void externalStatsFileTrue_predefinedValuesAreNotOverridden() throws Exception {
+        // note that this situation shouldn't happen that the other settings
+        // would be against the external usage.
+        FileUtils.writeLines(tokenFile, Arrays.asList("{",
+                "\"compatibilityMode\": true,",
+                "\"enableDevServer\": true,",
+                // production mode can be altered even when external stats
+                // are used
+                "\"productionMode\": true,",
+                "\"externalStatsFile\": true",
+                "}"));
+
+        DeploymentConfiguration config = createConfig(Collections
+                .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
+
+        assertEquals(true, config.isProductionMode());
+        assertEquals(false, config.isCompatibilityMode());
+        assertEquals(false, config.enableDevServer());
+        assertEquals(true, config.isStatsExternal());
+        assertEquals(Constants.DEFAULT_EXTERNAL_STATS_URL, config.getExternalStatsUrl());
     }
 
     @Test

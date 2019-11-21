@@ -21,7 +21,6 @@ package com.vaadin.flow.server;
  * @author Vaadin Ltd
  * @since 2.0
  *
- * @see FallibleCommand
  */
 public class ExecutionFailedException extends Exception {
 

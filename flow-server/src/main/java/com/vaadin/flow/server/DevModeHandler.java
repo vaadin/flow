@@ -24,7 +24,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.lang.management.ManagementFactory;
 import java.net.HttpURLConnection;
@@ -69,7 +68,7 @@ import static java.net.HttpURLConnection.HTTP_OK;
  *
  * @since 2.0
  */
-public final class DevModeHandler implements Serializable {
+public final class DevModeHandler {
 
     private static final AtomicReference<DevModeHandler> atomicHandler = new AtomicReference<>();
 
@@ -103,9 +102,9 @@ public final class DevModeHandler implements Serializable {
     public static final String WEBPACK_SERVER = "node_modules/webpack-dev-server/bin/webpack-dev-server.js";
 
     private int port;
-    private transient Process webpackProcess;
+    private Process webpackProcess;
     private final boolean reuseDevServer;
-    private transient DevServerWatchDog watchDog;
+    private DevServerWatchDog watchDog;
 
     private DevModeHandler(DeploymentConfiguration config, int runningPort,
             File npmFolder, File webpack, File webpackConfig) {

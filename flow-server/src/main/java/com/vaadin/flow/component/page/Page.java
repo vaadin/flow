@@ -682,7 +682,8 @@ public class Page implements Serializable {
                         getStringElseNull.apply("v-curdate"),
                         getStringElseNull.apply("v-td"),
                         getStringElseNull.apply("v-pr"),
-                        getStringElseNull.apply("v-wn")));
+                        getStringElseNull.apply("v-wn"),
+                        getStringElseNull.apply("v-np")));
     }
 
 }

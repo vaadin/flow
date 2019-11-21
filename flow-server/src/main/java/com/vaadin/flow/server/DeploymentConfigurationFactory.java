@@ -42,6 +42,10 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
+import static com.vaadin.flow.server.Constants.EXTERNAL_STATS_FILE;
+import static com.vaadin.flow.server.Constants.EXTERNAL_STATS_FILE_TOKEN;
+import static com.vaadin.flow.server.Constants.EXTERNAL_STATS_URL;
+import static com.vaadin.flow.server.Constants.EXTERNAL_STATS_URL_TOKEN;
 import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
@@ -173,6 +177,25 @@ public final class DeploymentConfigurationFactory implements Serializable {
                 initParameters.setProperty(SERVLET_PARAMETER_PRODUCTION_MODE,
                         String.valueOf(buildInfo.getBoolean(
                                 SERVLET_PARAMETER_PRODUCTION_MODE)));
+            }
+            if (buildInfo.hasKey(EXTERNAL_STATS_FILE_TOKEN) || buildInfo
+                    .hasKey(EXTERNAL_STATS_URL_TOKEN)) {
+                // If external stats file is flagged then compatibility mode and
+                // dev server should both be false - only variable that can
+                // be configured, in addition to stats variables, is
+                // production mode
+                initParameters.setProperty(SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                        Boolean.toString(false));
+                initParameters.setProperty(SERVLET_PARAMETER_ENABLE_DEV_SERVER,
+                        Boolean.toString(false));
+                initParameters.setProperty(EXTERNAL_STATS_FILE,
+                        Boolean.toString(true));
+                if (buildInfo.hasKey(EXTERNAL_STATS_URL_TOKEN)) {
+                    initParameters.setProperty(EXTERNAL_STATS_URL,
+                            buildInfo.getString(EXTERNAL_STATS_URL_TOKEN));
+                }
+                // NO OTHER CONFIGURATION:
+                return;
             }
             if (buildInfo.hasKey(SERVLET_PARAMETER_COMPATIBILITY_MODE)) {
                 initParameters.setProperty(SERVLET_PARAMETER_COMPATIBILITY_MODE,
