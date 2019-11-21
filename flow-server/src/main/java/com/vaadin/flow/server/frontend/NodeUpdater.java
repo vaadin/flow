@@ -332,7 +332,7 @@ public abstract class NodeUpdater implements FallibleCommand {
                 new File(generatedFolder, PACKAGE_JSON));
     }
 
-    String writeDepsPackageFile(JsonObject packageJson) throws IOException {
+    String writeResourcesPackageFile(JsonObject packageJson) throws IOException {
         return writePackageFile(packageJson,
                 new File(flowResourcesFolder, PACKAGE_JSON));
     }

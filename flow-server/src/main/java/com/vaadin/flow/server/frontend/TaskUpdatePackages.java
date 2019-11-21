@@ -38,6 +38,9 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
+
 /**
  * Updates <code>package.json</code> by visiting {@link NpmPackage} annotations
  * found in the classpath. It also visits classes annotated with
@@ -185,11 +188,15 @@ public class TaskUpdatePackages extends NodeUpdater {
         removeDir(nodeModulesFolder);
 
         if (flowResourcesFolder != null) {
-            removeDir(flowResourcesFolder);
+            // Clean all files but `package.json`
+            for (File file: flowResourcesFolder.listFiles()) {
+                if (!file.getName().equals(PACKAGE_JSON)) {
+                    file.delete();
+                }
+            }
         }
 
-        File generatedNodeModules = new File(generatedFolder,
-                FrontendUtils.NODE_MODULES);
+        File generatedNodeModules = new File(generatedFolder, NODE_MODULES);
         if (generatedNodeModules.exists()) {
             removeDir(generatedNodeModules);
         }
