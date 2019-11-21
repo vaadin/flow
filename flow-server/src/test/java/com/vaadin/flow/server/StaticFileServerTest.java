@@ -136,7 +136,8 @@ public class StaticFileServerTest implements Serializable {
     private AtomicInteger responseCode;
     private AtomicLong responseContentLength;
 
-    private VaadinServletService servletService = Mockito.mock(VaadinServletService.class);
+    private VaadinServletService servletService = Mockito
+            .mock(VaadinServletService.class);
     private DeploymentConfiguration configuration;
     private ServletContext servletContext;
 
@@ -180,7 +181,8 @@ public class StaticFileServerTest implements Serializable {
         configuration = Mockito.mock(DeploymentConfiguration.class);
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
 
-        Mockito.when(servletService.getDeploymentConfiguration()).thenReturn(configuration);
+        Mockito.when(servletService.getDeploymentConfiguration())
+                .thenReturn(configuration);
         fileServer = new OverrideableStaticFileServer(servletService);
 
         // Required by the ResponseWriter
@@ -444,8 +446,9 @@ public class StaticFileServerTest implements Serializable {
         setupRequestURI("", "/some", "/file.js");
         byte[] fileData = "function() {eval('foo');};"
                 .getBytes(StandardCharsets.UTF_8);
-        Mockito.when(servletService.getStaticResource("/some/file.js")).thenReturn(
-                createFileURLWithDataAndLength("/some/file.js", fileData));
+        Mockito.when(servletService.getStaticResource("/some/file.js"))
+                .thenReturn(createFileURLWithDataAndLength("/some/file.js",
+                        fileData));
         CapturingServletOutputStream out = new CapturingServletOutputStream();
         Mockito.when(response.getOutputStream()).thenReturn(out);
 
@@ -476,25 +479,29 @@ public class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void contextAndServletPath_serveStaticBundleBuildResource() throws IOException {
+    public void contextAndServletPath_serveStaticBundleBuildResource()
+            throws IOException {
         String pathInfo = "/VAADIN/build/vaadin-bundle-1234.cache.js";
         setupRequestURI("/context", "/servlet", pathInfo);
         assertBundleBuildResource(pathInfo);
     }
 
     @Test
-    public void ServletPath_serveStaticBundleBuildResource() throws IOException {
+    public void ServletPath_serveStaticBundleBuildResource()
+            throws IOException {
         String pathInfo = "/VAADIN/build/vaadin-bundle-1234.cache.js";
         setupRequestURI("", "/servlet", pathInfo);
         assertBundleBuildResource(pathInfo);
     }
 
     @Test
-    public void contextPath_serveStaticBundleBuildResource() throws IOException {
+    public void contextPath_serveStaticBundleBuildResource()
+            throws IOException {
         String pathInfo = "/VAADIN/build/vaadin-bundle-1234.cache.js";
         setupRequestURI("/context", "", pathInfo);
         assertBundleBuildResource(pathInfo);
     }
+
     @Test
     public void serveStaticBundleBuildResource() throws IOException {
         String pathInfo = "/VAADIN/build/vaadin-bundle-1234.cache.js";
@@ -523,10 +530,8 @@ public class StaticFileServerTest implements Serializable {
         Assert.assertArrayEquals(fileData, out.getOutput());
     }
 
-    @Test
-    public void staticBuildResourceWithDirectoryChange_nothingServed()
-            throws IOException {
-        String pathInfo = "/VAADIN/build/../vaadin-bundle-1234.cache.js";
+    private void staticBuildResourceWithDirectoryChange_nothingServed(
+            String pathInfo) throws IOException {
         setupRequestURI("/context", "/servlet", pathInfo);
         byte[] fileData = "function() {eval('foo');};"
                 .getBytes(StandardCharsets.UTF_8);
@@ -538,8 +543,10 @@ public class StaticFileServerTest implements Serializable {
                         fileData));
 
         // have data available for /VAADIN/vaadin-bundle-1234.cache.js
-        Mockito.when(mockLoader.getResource("META-INF" + pathInfo.replace("build/../", ""))).thenReturn(
-                createFileURLWithDataAndLength("META-INF" + pathInfo.replace("build/../", ""),
+        Mockito.when(mockLoader
+                .getResource("META-INF" + pathInfo.replace("build/../", "")))
+                .thenReturn(createFileURLWithDataAndLength(
+                        "META-INF" + pathInfo.replace("build/../", ""),
                         fileData));
 
         mockStatsBundles(mockLoader);
@@ -554,8 +561,35 @@ public class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void customStaticBuildResource_isServed()
+    public void staticBuildResourceWithDirectoryChangeWithSlash_nothingServed()
             throws IOException {
+        staticBuildResourceWithDirectoryChange_nothingServed(
+                "/VAADIN/build/../vaadin-bundle-1234.cache.js");
+    }
+
+    @Test
+    public void staticBuildResourceWithDirectoryChangeWithBackslash_nothingServed()
+            throws IOException {
+        staticBuildResourceWithDirectoryChange_nothingServed(
+                "/VAADIN/build/something\\..\\vaadin-bundle-1234.cache.js");
+    }
+
+    @Test
+    public void staticBuildResourceWithDirectoryChangeWithEncodedBackslashUpperCase_nothingServed()
+            throws IOException {
+        staticBuildResourceWithDirectoryChange_nothingServed(
+                "/VAADIN/build/something%5C..%5Cvaadin-bundle-1234.cache.js");
+    }
+
+    @Test
+    public void staticBuildResourceWithDirectoryChangeWithEncodedBackslashLowerCase_nothingServed()
+            throws IOException {
+        staticBuildResourceWithDirectoryChange_nothingServed(
+                "/VAADIN/build/something%5c..%5cvaadin-bundle-1234.cache.js");
+    }
+
+    @Test
+    public void customStaticBuildResource_isServed() throws IOException {
         String pathInfo = "/VAADIN/build/my-text.txt";
         setupRequestURI("", "", pathInfo);
         byte[] fileData = "function() {eval('foo');};"
@@ -596,7 +630,8 @@ public class StaticFileServerTest implements Serializable {
         Mockito.when(response.getOutputStream()).thenReturn(out);
 
         Assert.assertTrue(fileServer.serveStaticResource(request, response));
-        Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, responseCode.get());
+        Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND,
+                responseCode.get());
     }
 
     @Test
@@ -629,9 +664,9 @@ public class StaticFileServerTest implements Serializable {
     }
 
     public void mockStatsBundles(ClassLoader mockLoader) {
-        Mockito.when(configuration
-                .getStringProperty(SERVLET_PARAMETER_STATISTICS_JSON,
-                        VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
+        Mockito.when(configuration.getStringProperty(
+                SERVLET_PARAMETER_STATISTICS_JSON,
+                VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
                 .thenReturn("META-INF/VAADIN/config/stats.json");
         Mockito.when(mockLoader
                 .getResourceAsStream("META-INF/VAADIN/config/stats.json"))
@@ -640,15 +675,14 @@ public class StaticFileServerTest implements Serializable {
 
     /**
      * Returns a byte array for a valid stats.json containing only chunks
+     * 
      * @return
      */
     public byte[] getStatsData() {
-        return ("{ "
-                    + "\"assetsByChunkName\" :{ "
-                    + "\"index\": \"build/vaadin-bundle-1234.cache.js\", "
-                    + "\"index.es5\": \"build/vaadin-bundle.es5-1234.cache.js\" "
-                    + "} }")
-                .getBytes(StandardCharsets.UTF_8);
+        return ("{ " + "\"assetsByChunkName\" :{ "
+                + "\"index\": \"build/vaadin-bundle-1234.cache.js\", "
+                + "\"index.es5\": \"build/vaadin-bundle.es5-1234.cache.js\" "
+                + "} }").getBytes(StandardCharsets.UTF_8);
     }
 
     @Test

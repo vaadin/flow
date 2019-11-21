@@ -15,18 +15,22 @@
  */
 package com.vaadin.flow.server;
 
-import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.internal.ResponseWriter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.regex.Pattern;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.ResponseWriter;
 
 import static com.vaadin.flow.server.Constants.VAADIN_BUILD_FILES_PATH;
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
@@ -50,6 +54,9 @@ public class StaticFileServer implements StaticFileHandler {
             + "fixIncorrectWebjarPaths";
     private static final Pattern INCORRECT_WEBJAR_PATH_REGEX = Pattern
             .compile("^/frontend[-\\w/]*/webjars/");
+    private static final Pattern PARENT_DIRECTORY_REGEX = Pattern
+            .compile("(/|\\\\)\\.\\.(/|\\\\)", Pattern.CASE_INSENSITIVE);
+
     private final ResponseWriter responseWriter;
     private final VaadinServletService servletService;
     private DeploymentConfiguration deploymentConfiguration;
@@ -78,7 +85,8 @@ public class StaticFileServer implements StaticFileHandler {
             return false;
         }
 
-        if (requestFilename.startsWith("/" + VAADIN_STATIC_FILES_PATH) || requestFilename.startsWith("/" + VAADIN_BUILD_FILES_PATH)) {
+        if (requestFilename.startsWith("/" + VAADIN_STATIC_FILES_PATH)
+                || requestFilename.startsWith("/" + VAADIN_BUILD_FILES_PATH)) {
             // The path is reserved for internal resources only
             // We rather serve 404 than let it fall through
             return true;
@@ -99,9 +107,15 @@ public class StaticFileServer implements StaticFileHandler {
             HttpServletResponse response) throws IOException {
 
         String filenameWithPath = getRequestFilename(request);
+        if (!isPathSafe(filenameWithPath)) {
+            getLogger().info("Blocked attempt to access file: {}",
+                    filenameWithPath);
+            response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+            return true;
+        }
+
         URL resourceUrl = null;
-        if (filenameWithPath.startsWith("/" + VAADIN_BUILD_FILES_PATH)
-                && isAllowedVAADINBuildUrl(filenameWithPath)) {
+        if (isAllowedVAADINBuildUrl(filenameWithPath)) {
             resourceUrl = servletService.getClassLoader()
                     .getResource("META-INF" + filenameWithPath);
         }
@@ -163,11 +177,10 @@ public class StaticFileServer implements StaticFileHandler {
     private boolean shouldFixIncorrectWebjarPaths() {
         return deploymentConfiguration.isProductionMode()
                 && deploymentConfiguration.getBooleanProperty(
-                PROPERTY_FIX_INCORRECT_WEBJAR_PATHS, false);
+                        PROPERTY_FIX_INCORRECT_WEBJAR_PATHS, false);
     }
 
-    private boolean isIncorrectWebjarPath(
-            String requestFilename) {
+    private boolean isIncorrectWebjarPath(String requestFilename) {
         return INCORRECT_WEBJAR_PATH_REGEX.matcher(requestFilename).lookingAt();
     }
 
@@ -176,32 +189,40 @@ public class StaticFileServer implements StaticFileHandler {
                 .replaceAll("/webjars/");
     }
 
+    private boolean isPathSafe(String path) {
+        // Check that the path does not have '/../', '\..\', %5C..%5C, or
+        // %2F..%2F
+        try {
+            path = URLDecoder.decode(path, StandardCharsets.UTF_8.name());
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException("An error occurred during decoding URL.",
+                    e);
+        }
+        return !PARENT_DIRECTORY_REGEX.matcher(path).find();
+    }
+
     /**
      * Check if it is ok to serve the requested file from the classpath.
      * <p>
-     * ClassLoader is applicable for use when we are in NPM mode and
-     * are serving from the VAADIN/build folder with no folder changes in path.
+     * ClassLoader is applicable for use when we are in NPM mode and are serving
+     * from the VAADIN/build folder with no folder changes in path.
      *
-     * @param filenameWithPath requested filename containing path
+     * @param filenameWithPath
+     *            requested filename containing path
      * @return true if we are ok to try serving the file
      */
     private boolean isAllowedVAADINBuildUrl(String filenameWithPath) {
         if (deploymentConfiguration.isCompatibilityMode()) {
-            getLogger().trace("Serving from the classpath in legacy "
+            getLogger().trace(
+                    "Serving from the classpath in legacy "
                             + "mode is not accepted. "
                             + "Letting request for '{}' go to servlet context.",
                     filenameWithPath);
             return false;
         }
-        // Check that we target VAADIN/build and do not have '/../'
-        if (!filenameWithPath.startsWith("/" + VAADIN_BUILD_FILES_PATH)
-                || filenameWithPath.contains("/../")) {
-            getLogger().info("Blocked attempt to access file: {}",
-                    filenameWithPath);
-            return false;
-        }
 
-        return true;
+        // Check that we target VAADIN/build
+        return filenameWithPath.startsWith("/" + VAADIN_BUILD_FILES_PATH);
     }
 
     /**
