@@ -1757,7 +1757,7 @@ public abstract class VaadinService implements Serializable {
         json.put("meta", meta);
 
         meta.put(JsonConstants.META_SESSION_EXPIRED, true);
-        return wrapJsonForClient(json);
+        return json.toJson();
     }
 
     /**

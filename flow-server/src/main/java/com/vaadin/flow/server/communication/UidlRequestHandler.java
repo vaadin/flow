@@ -74,19 +74,20 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
-        UI uI = session.getService().findUI(request);
-        if (uI == null) {
+        UI ui = session.getService().findUI(request);
+        if (ui == null) {
             // This should not happen but it will if the UI has been closed. We
             // really don't want to see it in the server logs though
-            commitJsonResponse(response, VaadinService.createUINotFoundJSON());
+            commitJsonResponse(response,
+                    wrapJsonForClient(VaadinService.createUINotFoundJSON()));
             return true;
         }
 
         StringWriter stringWriter = new StringWriter();
 
         try {
-            getRpcHandler(session).handleRpc(uI, request.getReader(), request);
-            writeUidl(uI, stringWriter, false);
+            getRpcHandler(session).handleRpc(ui, request.getReader(), request);
+            writeUidl(ui, stringWriter, false);
         } catch (JsonException e) {
             getLogger().error("Error writing JSON to response", e);
             // Refresh on client side
@@ -100,7 +101,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
             return true;
         } catch (ResynchronizationRequiredException e) { // NOSONAR
             // Resync on the client side
-            writeUidl(uI, stringWriter, true);
+            writeUidl(ui, stringWriter, true);
         } finally {
             stringWriter.close();
         }
@@ -119,9 +120,12 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
             throws IOException {
         JsonObject uidl = new UidlWriter().createUidl(ui, false, resync);
 
+        writer.write(wrapJsonForClient(uidl.toJson()));
+    }
+
+    private static String wrapJsonForClient(String jsonString) {
         // some dirt to prevent cross site scripting
-        String responseString = "for(;;);[" + uidl.toJson() + "]";
-        writer.write(responseString);
+        return "for(;;);[" + jsonString + "]";
     }
 
     private static final Logger getLogger() {
@@ -144,7 +148,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         VaadinService service = request.getService();
         service.writeUncachedStringResponse(response,
                 JsonConstants.JSON_CONTENT_TYPE,
-                VaadinService.createSessionExpiredJSON());
+                wrapJsonForClient(VaadinService.createSessionExpiredJSON()));
 
         return true;
     }
