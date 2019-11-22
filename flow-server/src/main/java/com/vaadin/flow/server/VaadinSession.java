@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
@@ -375,9 +376,11 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * Sets the session error handler.
      *
      * @param errorHandler
-     *            the new error handler
+     *            the new error handler, not <code>null</code>
      */
     public void setErrorHandler(ErrorHandler errorHandler) {
+        Objects.requireNonNull(errorHandler, "errorHandler can not be null!");
+
         checkHasLock();
         this.errorHandler = errorHandler;
     }
