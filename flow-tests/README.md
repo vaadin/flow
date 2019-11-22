@@ -34,9 +34,12 @@
 * test-multi-war
   * Tests that we can deploy multiple Flow war files to the same server
 * test-no-root-context
-  * Running tests without having any root context mapping
+  * Running tests with a non root context mapping
+    * `/custom/*` mapped istead of `/*`
+  * !Not active at the moment!
 * test-no-theme
   * Test functionality without any theme present
+  * !Not active at the moment!
 * test-npm-only-features
   * Tests that are only viable for NPM mode
     * test-default-theme
