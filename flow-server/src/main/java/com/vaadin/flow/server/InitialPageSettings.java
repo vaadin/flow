@@ -178,9 +178,9 @@ public class InitialPageSettings implements Serializable {
      * Add content to append to head of initial page.
      *
      * @param contents
-     *         dependency content
+     *         inline content to be added to the page
      * @param type
-     *         dependency type
+     *         type of content which can be JavaScript or Stylesheet (CSS)
      */
     public void addInlineWithContents(String contents, WrapMode type) {
         addInlineWithContents(Position.APPEND, contents, type);
@@ -192,9 +192,9 @@ public class InitialPageSettings implements Serializable {
      * @param position
      *         prepend or append
      * @param contents
-     *         dependency content
+     *         inline content to be added to the page
      * @param type
-     *         dependency type
+     *         type of content which can be JavaScript or Stylesheet (CSS)
      */
     public void addInlineWithContents(Position position, String contents,
                                       WrapMode type) {
