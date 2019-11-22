@@ -1709,8 +1709,10 @@ public class BootstrapHandlerTest {
     }
 
     private String contextRootRelativePath(VaadinRequest request) {
-        return ServletHelper.getContextRootRelativePath(
-                (VaadinServletRequest) request) + "/";
+        VaadinServletService service = Mockito.mock(VaadinServletService.class);
+        Mockito.doCallRealMethod().when(service)
+                .getContextRootRelativePath(Mockito.any());
+        return service.getContextRootRelativePath(request) + "/";
     }
 
     private VaadinServletRequest createVaadinRequest() {

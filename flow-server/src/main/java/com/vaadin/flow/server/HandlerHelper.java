@@ -27,12 +27,8 @@ import com.vaadin.flow.shared.ApplicationConstants;
  * {@link VaadinRequest VaadinRequests}.
  *
  * @since 1.0
- * @deprecated Use {@link HandlerHelper} instead
- *
- * @Deprecated
  */
-@Deprecated
-public class ServletHelper implements Serializable {
+public class HandlerHelper implements Serializable {
 
     /**
      * The default SystemMessages (read-only).
@@ -73,7 +69,7 @@ public class ServletHelper implements Serializable {
         }
     }
 
-    private ServletHelper() {
+    private HandlerHelper() {
         // Only utility methods
     }
 
@@ -86,11 +82,7 @@ public class ServletHelper implements Serializable {
      *            the type to check for
      * @return <code>true</code> if the request is of the given type,
      *         <code>false</code> otherwise
-     * @deprecated Use
-     *             {@link HandlerHelper#isRequestType(VaadinRequest, com.vaadin.flow.server.HandlerHelper.RequestType)}
-     *             instead
      */
-    @Deprecated
     public static boolean isRequestType(VaadinRequest request,
             RequestType requestType) {
         return requestType.getIdentifier().equals(request
@@ -117,14 +109,31 @@ public class ServletHelper implements Serializable {
      *            the request that is searched for locale or <code>null</code>
      *            if not available
      * @return the found locale
-     * @deprecated Use
-     *             {@link HandlerHelper#findLocale(VaadinSession, VaadinRequest)}
-     *             instead
      */
-    @Deprecated
     public static Locale findLocale(VaadinSession session,
             VaadinRequest request) {
-        return HandlerHelper.findLocale(session, request);
+
+        if (session == null) {
+            session = VaadinSession.getCurrent();
+        }
+        if (session != null) {
+            Locale locale = session.getLocale();
+            if (locale != null) {
+                return locale;
+            }
+        }
+
+        if (request == null) {
+            request = VaadinService.getCurrentRequest();
+        }
+        if (request != null) {
+            Locale locale = request.getLocale();
+            if (locale != null) {
+                return locale;
+            }
+        }
+
+        return Locale.getDefault();
     }
 
     /**
@@ -134,15 +143,13 @@ public class ServletHelper implements Serializable {
      *            setter for string value headers
      * @param longHeaderSetter
      *            setter for long value headers
-     * @deprecated Use
-     *             {@link HandlerHelper#setResponseNoCacheHeaders(BiConsumer, BiConsumer)}
-     *             instead
      */
-    @Deprecated
     public static void setResponseNoCacheHeaders(
             BiConsumer<String, String> headerSetter,
             BiConsumer<String, Long> longHeaderSetter) {
-        HandlerHelper.setResponseNoCacheHeaders(headerSetter, longHeaderSetter);
+        headerSetter.accept("Cache-Control", "no-cache, no-store");
+        headerSetter.accept("Pragma", "no-cache");
+        longHeaderSetter.accept("Expires", 0L);
     }
 
     /**
@@ -152,39 +159,16 @@ public class ServletHelper implements Serializable {
      * @param pathToCancel
      *            the path that should be canceled
      * @return a relative path that cancels out the provided path segment
-     * @deprecated Use {@link HandlerHelper#getCancelingRelativePath(String)}
-     *             instead
-     *
      */
-    @Deprecated
     public static String getCancelingRelativePath(String pathToCancel) {
-        return HandlerHelper.getCancelingRelativePath(pathToCancel);
-    }
-
-    /**
-     * Gets a relative path you can use to refer to the context root.
-     *
-     * @param request
-     *            the request for which the location should be determined
-     * @return A relative path to the context root. Never ends with a slash (/).
-     * @deprecated Don't use this method since it's tied to
-     *             {@link VaadinServletRequest}
-     */
-    @Deprecated
-    public static String getContextRootRelativePath(
-            VaadinServletRequest request) {
-        // Generate location from the request by finding how many "../" should
-        // be added to the servlet path before we get to the context root
-
-        // Should not take pathinfo into account because the base URI refers to
-        // the servlet path
-
-        String servletPath = request.getServletPath();
-        assert servletPath != null;
-        if (!servletPath.endsWith("/")) {
-            servletPath += "/";
+        StringBuilder sb = new StringBuilder(".");
+        // Start from i = 1 to ignore first slash
+        for (int i = 1; i < pathToCancel.length(); i++) {
+            if (pathToCancel.charAt(i) == '/') {
+                sb.append("/..");
+            }
         }
-        return ServletHelper.getCancelingRelativePath(servletPath);
+        return sb.toString();
     }
 
 }

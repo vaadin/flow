@@ -1,21 +1,19 @@
 package com.vaadin.flow.server;
 
-import static org.easymock.EasyMock.createMock;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.replay;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
-import com.vaadin.flow.server.ServletHelper;
-import com.vaadin.flow.server.VaadinServlet;
+import static org.easymock.EasyMock.createMock;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.replay;
 
 public class ServletHelperTest {
     VaadinServlet servlet;
@@ -70,14 +68,17 @@ public class ServletHelperTest {
         // Set request into replay mode
         replay(request);
 
-        String location = ServletHelper.getContextRootRelativePath(
+        VaadinServletService service = Mockito.mock(VaadinServletService.class);
+        Mockito.doCallRealMethod().when(service)
+                .getContextRootRelativePath(Mockito.any());
+        String location = service.getContextRootRelativePath(
                 servlet.createVaadinRequest(request));
         return location;
     }
 
     private HttpServletRequest createNonIncludeRequest(String base,
             String realContextPath, String realServletPath, String pathInfo)
-                    throws Exception {
+            throws Exception {
         HttpServletRequest request = createRequest(base, realContextPath,
                 realServletPath, pathInfo);
         expect(request.getAttribute("javax.servlet.include.context_path"))

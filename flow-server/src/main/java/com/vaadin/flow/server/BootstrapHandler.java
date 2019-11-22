@@ -452,7 +452,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         BootstrapContext context = createAndInitUI(uiClass, request, response,
                 session);
 
-        ServletHelper.setResponseNoCacheHeaders(response::setHeader,
+        HandlerHelper.setResponseNoCacheHeaders(response::setHeader,
                 response::setDateHeader);
 
         Document document = pageBuilder.getBootstrapPage(context);
@@ -601,8 +601,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             if (!entries.isEmpty()) {
                 // Registers the entries in a way that is picked up as a Vaadin
                 // WebComponent by the usage stats gatherer
-                document.body().appendElement(SCRIPT_TAG)
-                        .text("window.Vaadin.registrations = window.Vaadin.registrations || [];\n"
+                document.body().appendElement(SCRIPT_TAG).text(
+                        "window.Vaadin.registrations = window.Vaadin.registrations || [];\n"
                                 + "window.Vaadin.registrations.push(" + entries
                                 + ");");
             }
@@ -1317,7 +1317,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             }
 
             // Use locale from session if set, else from the request
-            Locale locale = ServletHelper.findLocale(session, request);
+            Locale locale = HandlerHelper.findLocale(session, request);
             // Get system messages
             SystemMessages systemMessages = session.getService()
                     .getSystemMessages(locale, request);
@@ -1386,7 +1386,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
              * path segment in pathInfo (i.e. the part of the requested path
              * that comes after the servlet mapping)
              */
-            return ServletHelper.getCancelingRelativePath(pathInfo);
+            return HandlerHelper.getCancelingRelativePath(pathInfo);
         }
     }
 
