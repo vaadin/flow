@@ -418,7 +418,9 @@ public class MessageHandler {
                     registry.getSystemErrorHandler().handleUnrecoverableError(
                             error.getString("caption"),
                             error.getString("message"),
-                            error.getString("details"), error.getString("url"));
+                            error.getString("details"),
+                            error.getString("url"),
+                            error.getString("querySelector"));
 
                     registry.getUILifecycle().setState(UIState.TERMINATED);
                 }

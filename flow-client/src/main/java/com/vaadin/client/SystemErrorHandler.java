@@ -69,7 +69,7 @@ public class SystemErrorHandler {
     protected void handleUnrecoverableError(String details,
             ErrorMessage message) {
         handleUnrecoverableError(message.getCaption(), message.getMessage(),
-                details, message.getUrl());
+                details, message.getUrl(), null);
     }
 
     /**
@@ -87,13 +87,37 @@ public class SystemErrorHandler {
      *            {@code null} to refresh on click
      */
     public void handleUnrecoverableError(String caption, String message,
-            String details, String url) {
+                                         String details, String url) {
+        handleUnrecoverableError(caption, message, details, url, null);
+    }
+
+    /**
+     * Shows an error notification for an error which is unrecoverable, using
+     * the given parameters.
+     *
+     * @param caption
+     *            the caption of the message
+     * @param message
+     *            the message body
+     * @param details
+     *            message details or {@code null} if there are no details
+     * @param url
+     *            a URL to redirect to when the user clicks the message or
+     *            {@code null} to refresh on click
+     * @param querySelector
+     *            query selector to find the element under which the error will
+     *            be added . If element is not found or the selector is
+     *            {@code null}, body will be used
+     */
+    public void handleUnrecoverableError(String caption, String message,
+            String details, String url, String querySelector) {
         if (caption == null && message == null && details == null) {
             WidgetUtil.redirect(url);
             return;
         }
 
-        Element systemErrorContainer = handleError(caption, message, details);
+        Element systemErrorContainer =
+                handleError(caption, message, details, querySelector);
         systemErrorContainer.addEventListener("click",
                 e -> WidgetUtil.redirect(url), false);
 
@@ -118,7 +142,7 @@ public class SystemErrorHandler {
             return;
         }
 
-        Element errorContainer = handleError(null, errorMessage, null);
+        Element errorContainer = handleError(null, errorMessage, null, null);
         errorContainer.addEventListener("click", e -> {
             // Allow user to dismiss the error by clicking it.
             errorContainer.getParentElement().removeChild(errorContainer);
@@ -142,7 +166,7 @@ public class SystemErrorHandler {
     }
 
     private Element handleError(String caption, String message,
-            String details) {
+            String details, String querySelector) {
         Document document = Browser.getDocument();
         Element systemErrorContainer = document.createDivElement();
         systemErrorContainer.setClassName("v-system-error");
@@ -168,8 +192,11 @@ public class SystemErrorHandler {
             systemErrorContainer.appendChild(detailsDiv);
             Console.error(details);
         }
-
-        document.getBody().appendChild(systemErrorContainer);
+        Element baseElement = document.querySelector(querySelector);
+        if (baseElement == null) {
+            baseElement = document.getBody();
+        }
+        baseElement.appendChild(systemErrorContainer);
         return systemErrorContainer;
     }
 
