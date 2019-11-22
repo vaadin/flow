@@ -19,6 +19,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
@@ -27,9 +28,11 @@ import com.vaadin.flow.theme.Theme;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -57,6 +60,7 @@ public class WebComponentConfigurationRegistry implements Serializable {
             new HashMap<>();
 
     private HashMap<Class<? extends Annotation>, Annotation> embeddedAppAnnotations;
+    private ArrayList<Element> bootstrapElements;
 
     /**
      * Protected constructor for internal OSGi extensions.
@@ -210,6 +214,29 @@ public class WebComponentConfigurationRegistry implements Serializable {
         try {
             return Collections
                     .unmodifiableSet(new HashSet<>(configurationMap.values()));
+        } finally {
+            unlock();
+        }
+    }
+
+    public void setBootstrapElements(List<Element> elements) {
+        lock();
+        try {
+            this.bootstrapElements = new ArrayList<>(elements);
+        } finally {
+            unlock();
+        }
+    }
+    
+    public List<Element> getBootstrapElements() {
+        lock();
+        try {
+            if (bootstrapElements != null) {
+                return Collections.unmodifiableList(bootstrapElements.stream()
+                        .map(Element::createCopy).collect(Collectors.toList()));
+            } else {
+                return Collections.emptyList();
+            }
         } finally {
             unlock();
         }

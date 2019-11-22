@@ -22,6 +22,7 @@ import java.io.Writer;
 import java.lang.annotation.Annotation;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -32,8 +33,11 @@ import org.jsoup.nodes.Element;
 
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.component.webcomponent.WebComponentUI;
+import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.internal.JsonUtils;
+import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ServletHelper;
@@ -261,12 +265,14 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
          * innerHTML. The innerHTMLs are in-lined for easier copying.
          */
         response.setContentType(contentType);
+        ArrayList<com.vaadin.flow.dom.Element> vElements = new ArrayList<>();
         try (BufferedWriter writer = new BufferedWriter(
                 new OutputStreamWriter(response.getOutputStream(), UTF_8))) {
             String varName = "headElem"; // generated head element
             writer.append("var ").append(varName).append("=null;");
             for (Element element : head.children()) {
                 if (elementShouldNotBeTransferred(element)) {
+                    collectElementForWebComponentInjection(element).ifPresent(vElements::add);
                     continue;
                 }
                 writer.append(varName).append("=");
@@ -283,6 +289,10 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                         .append(");");
             }
         }
+
+        WebComponentConfigurationRegistry
+                .getInstance(response.getService().getContext())
+                .setBootstrapElements(vElements);
     }
 
     private static boolean elementShouldNotBeTransferred(Element element) {
@@ -298,6 +308,13 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
             return "script".equals(element.tagName())
                     && element.attr("src").contains("webcomponents-loader.js");
         }
+    }
+    
+    private static Optional<com.vaadin.flow.dom.Element> collectElementForWebComponentInjection(Element element) {
+        if ("style".equals(element.tagName())) {
+            return Optional.ofNullable(ElementUtil.fromJsoup(element));
+        }
+        return Optional.empty();
     }
 
     /**

@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.dom;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -22,6 +23,7 @@ import java.util.regex.Pattern;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Composite;
@@ -232,6 +234,42 @@ public class ElementUtil {
                 .forEach(child -> target.appendChild(toJsoup(document, child)));
 
         return target;
+    }
+
+    /**
+     * TODO!
+     * @param node
+     * @return
+     */
+    public static Element fromJsoup(Node node) {
+        Element ret;
+        if (node instanceof TextNode) {
+            return  Element.createText(((TextNode) node).text());
+        } else if (node instanceof org.jsoup.nodes.Element) {
+            org.jsoup.nodes.Element jsoupElement = (org.jsoup.nodes.Element) node;
+            ret = new Element(jsoupElement.tagName());
+
+            if (jsoupElement.html() != null) {
+                ret.setProperty("innerHTML", jsoupElement.html());
+            }
+        } else {
+            LoggerFactory.getLogger(ElementUtil.class)
+                    .error(String.format(
+                            "Could not convert a %s, '%s' into %s!",
+                            Node.class.getName(), node.toString(),
+                            Element.class.getName()));
+            return null;
+        }
+
+        node.attributes().asList().forEach(attribute -> ret
+                .setAttribute(attribute.getKey(), attribute.getValue()));
+
+        List<Node> childNodes = node.childNodes();
+        if (childNodes != null && childNodes.size() > 0) {
+            childNodes.forEach(child -> ret.appendChild(fromJsoup(child)));
+        }
+
+        return ret;
     }
 
     /**

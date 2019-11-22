@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.webcomponent;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -49,22 +50,32 @@ public class WebComponentWrapper extends Component {
      * Wrapper class for the server side WebComponent.
      *
      * @param rootElement
-     *         {@link Element} to which the {@code WebComponentWrapper} is bound
-     *         to.
+     *            {@link Element} to which the {@code WebComponentWrapper} is
+     *            bound to.
      * @param binding
-     *         binding that offers methods for delivering property updates to
-     *         the {@code component} being wrapped by {@code
+     *            binding that offers methods for delivering property updates to
+     *            the {@code component} being wrapped by {@code
      *         WebComponentWrapper}
      */
     public WebComponentWrapper(Element rootElement,
-                               WebComponentBinding<?> binding) {
+            WebComponentBinding<?> binding) {
         super(rootElement);
-        Objects.requireNonNull(binding, "Parameter 'binding' must not be null!");
+        Objects.requireNonNull(binding,
+                "Parameter 'binding' must not be null!");
 
         this.webComponentBinding = binding;
         this.child = webComponentBinding.getComponent();
-        getElement().appendChild(child.getElement());
+        getElement().attachShadow().appendChild(child.getElement());
     }
+
+    public WebComponentWrapper(Element rootElement,
+            WebComponentBinding<?> binding, List<Element> bootstrapElements) {
+        this(rootElement, binding);
+        // shadow root is attached in this(...)
+        getElement().getShadowRoot().get()
+                .appendChild(bootstrapElements.toArray(new Element[0]));
+    }
+    
 
     /**
      * Synchronize method for client side to send property value updates to the
