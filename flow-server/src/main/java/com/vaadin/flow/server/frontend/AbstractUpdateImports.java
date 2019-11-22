@@ -358,7 +358,7 @@ abstract class AbstractUpdateImports implements Runnable {
             getLogger().info(notFoundMessage(npmNotFound,
                     "Failed to find the following imports in the `node_modules` tree:",
                     "If the build fails, check that npm packages are installed.\n\n"
-                            + "  To fix the build remove `node_modules` directory to reset modules.\n"
+                            + "  To fix the build remove `package-lock.json` and `node_modules` directory to reset modules.\n"
                             + "  In addition you may run `npm install` to fix `node_modules` tree structure."));
         }
 
