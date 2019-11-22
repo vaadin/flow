@@ -1721,12 +1721,42 @@ public abstract class VaadinService implements Serializable {
      */
     public static String createCriticalNotificationJSON(String caption,
             String message, String details, String url) {
+        return createCriticalNotificationJSON(caption, message, details, url,
+                null);
+    }
+
+    /**
+     * Creates a JSON message which, when sent to client as-is, will cause a
+     * critical error to be shown with the given details.
+     *
+     * @param caption
+     *            The caption of the error or null to omit
+     * @param message
+     *            The error message or null to omit
+     * @param details
+     *            Additional error details or null to omit
+     * @param url
+     *            A url to redirect to. If no other details are given then the
+     *            user will be immediately redirected to this URL. Otherwise the
+     *            message will be shown and the browser will redirect to the
+     *            given URL only after the user acknowledges the message. If
+     *            null then the browser will refresh the current page.
+     * @param querySelector
+     *            Query selector to find the element under which the error will
+     *            be added . If element is not found or the selector is
+     *            {@code null}, body will be used
+     * @return A JSON string to be sent to the client
+     */
+    public static String createCriticalNotificationJSON(
+            String caption, String message, String details, String url,
+            String querySelector) {
         try {
             JsonObject appError = Json.createObject();
             putValueOrJsonNull(appError, "caption", caption);
             putValueOrJsonNull(appError, "url", url);
             putValueOrJsonNull(appError, "message", message);
             putValueOrJsonNull(appError, "details", details);
+            putValueOrJsonNull(appError, "querySelector", querySelector);
 
             JsonObject meta = Json.createObject();
             meta.put("appError", appError);
