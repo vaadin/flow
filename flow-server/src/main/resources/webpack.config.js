@@ -20,12 +20,6 @@ module.exports = merge(flowDefaults, {
  *     throw "Unexpected structure in generated webpack config";
  *   }
  *   flowDefaults.module.rules[0].test = /\.m?js$/
- *
- *   // Include a custom JS in the entry point in addition to generated-flow-imports.js
- *   if (typeof flowDefaults.entry.index != "string") {
- *     throw "Unexpected structure in generated webpack config";
- *   }
- *   flowDefaults.entry.index = [flowDefaults.entry.index, "myCustomFile.js"];
  * </code>
  * or add new configuration in the merge block.
  * <code>
