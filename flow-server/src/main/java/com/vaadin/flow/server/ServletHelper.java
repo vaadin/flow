@@ -29,7 +29,7 @@ import com.vaadin.flow.shared.ApplicationConstants;
  * @since 1.0
  * @deprecated Use {@link HandlerHelper} instead
  *
- * @Deprecated
+ * @deprecated Use {@link HandlerHelper} instead
  */
 @Deprecated
 public class ServletHelper implements Serializable {
