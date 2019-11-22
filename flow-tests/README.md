@@ -8,9 +8,9 @@
 * test-dev-mode
   * Root context tests run in compatibility + development mode
 * test-embedding
-  * Test for for webcomponents (npm and compatibility mode) see module README.md
+  * Test for for webcomponents (npm and compatibility mode) see module [README.md](test-embedding/README.md)
   * Sum test modules:
-    * embeddin-test-assets
+    * embedding-test-assets
     * test-embedding-generic
     * test-embedding-generic-compatibility
     * test-embedding-production-mode
@@ -18,6 +18,7 @@
     * test-embedding-theme-variant
     * test-embedding-theme-variant-compatibility
     * webapp
+      * test module configuration and templates
 * test-frontend-production-custom-context
   * Test running compatibility mode with custom contextPath
 * test-lumo-theme
