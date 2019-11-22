@@ -13,10 +13,10 @@
     * embeddin-test-assets
     * test-embedding-generic
     * test-embedding-generic-compatibility
-    * test-embedding
-    * test-embedding
-    * test-embedding
-    * test-embedding
+    * test-embedding-production-mode
+    * test-embedding-production-mode-compatibility
+    * test-embedding-theme-variant
+    * test-embedding-theme-variant-compatibility
     * webapp
 * test-frontend-production-custom-context
   * Test running compatibility mode with custom contextPath
@@ -30,12 +30,11 @@
   * Uncategorized tests in both npm and bower modes
     * Contains custom theme functionality
 * test-mixed
-  * Tests for npm and compatibility mode in development and production modes
-    * contains `@Id` test
+  * Test maven builds in all 4 run modes
 * test-multi-war
   * Tests that we can deploy multiple Flow war files to the same server
 * test-no-root-context
-  * Running tests with no root context mapping
+  * Running tests without having any root context mapping
 * test-no-theme
   * Test functionality without any theme present
 * test-npm-only-features
@@ -58,7 +57,9 @@
 * test-pwa
   * ProgressiveWebApp tests
 * test-root-context
-  * Main Flow test module. Compatibility and npm modes tested.
+  * Main Flow test module. 
+    * Contains tests for all main Flow features. These should work in all supported modes.
+    * Compatibility mode and npm mode tested in development mode.
 * test-root-ui-context
   * Main UI test module. Compatibility mode only. 
 * test-router-custom-context
