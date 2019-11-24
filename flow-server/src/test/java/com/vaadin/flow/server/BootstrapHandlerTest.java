@@ -1097,10 +1097,10 @@ public class BootstrapHandlerTest {
                                         + "build/webcomponentsjs/webcomponents-loader.js\"></script>")));
 
         Assert.assertTrue(
-                "index.js should be added to head for ES6 browsers. (deferred and type module)",
+                "index.js should be added to head for ES6 browsers. (type module)",
                 allElements.stream().map(Object::toString)
                         .anyMatch(element -> element
-                                .equals("<script type=\"module\" defer src=\"./"
+                                .equals("<script type=\"module\" src=\"./"
                                         + VAADIN_MAPPING
                                         + "build/index-1111.cache.js\" data-app-id=\""
                                         + testUI.getInternals().getAppId()
