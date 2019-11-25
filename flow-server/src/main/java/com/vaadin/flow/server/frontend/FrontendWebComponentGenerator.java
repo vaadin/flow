@@ -20,7 +20,7 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.Set;
 
-import com.vaadin.flow.component.internal.ExportsWebComponent;
+import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.webcomponent.WebComponentModulesWriter;
 
@@ -32,7 +32,7 @@ import com.vaadin.flow.server.webcomponent.WebComponentModulesWriter;
  * generate web component modules files from
  * {@link com.vaadin.flow.component.WebComponentExporter} implementations found
  * by {@link ClassFinder}.
- * 
+ *
  * @author Vaadin Ltd.
  * @since 2.0
  */
@@ -44,7 +44,7 @@ public class FrontendWebComponentGenerator implements Serializable {
      * locating
      * {@link com.vaadin.flow.server.webcomponent.WebComponentModulesWriter} and
      * {@link com.vaadin.flow.component.WebComponentExporter} classes.
-     * 
+     *
      * @param finder
      *            {@link com.vaadin.flow.server.frontend.scanner.ClassFinder}
      *            implementation
@@ -60,7 +60,7 @@ public class FrontendWebComponentGenerator implements Serializable {
      * {@link com.vaadin.flow.component.WebComponentExporter} using {@code
      * finder}. Generates web component modules and places the into the {@code
      * outputDirectory}.
-     * 
+     *
      * @param outputDirectory
      *            target directory for the web component module files
      * @return generated files
@@ -72,14 +72,15 @@ public class FrontendWebComponentGenerator implements Serializable {
             final Class<?> writerClass = finder
                     .loadClass(WebComponentModulesWriter.class.getName());
             final Set<Class<?>> exporterClasses = finder
-                    .getSubTypesOf(ExportsWebComponent.class.getName());
+                    .getSubTypesOf(WebComponentExporter.class.getName());
             return WebComponentModulesWriter.DirectoryWriter
                     .generateWebComponentsToDirectory(writerClass,
                             exporterClasses, outputDirectory, false);
         } catch (ClassNotFoundException e) {
             throw new IllegalStateException(
-                    "Unable to locate a required class using custom class " +
-                            "loader", e);
+                    "Unable to locate a required class using custom class "
+                            + "loader",
+                    e);
         }
     }
 }

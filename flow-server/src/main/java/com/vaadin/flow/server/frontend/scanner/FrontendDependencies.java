@@ -35,8 +35,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.dependency.NpmPackage;
-import com.vaadin.flow.component.internal.ExportsWebComponent;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
@@ -396,9 +396,9 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         // references loaded by the specific class finder loader
         Class<? extends Annotation> routeClass = getFinder()
                 .loadClass(Route.class.getName());
-        Class<ExportsWebComponent<? extends Component>> exporterClass = getFinder()
-                .loadClass(ExportsWebComponent.class.getName());
-        Set<? extends Class<? extends ExportsWebComponent<? extends Component>>> exporterClasses = getFinder()
+        Class<WebComponentExporter<? extends Component>> exporterClass = getFinder()
+                .loadClass(WebComponentExporter.class.getName());
+        Set<? extends Class<? extends WebComponentExporter<? extends Component>>> exporterClasses = getFinder()
                 .getSubTypesOf(exporterClass);
 
         // if no exporters in the project, return
