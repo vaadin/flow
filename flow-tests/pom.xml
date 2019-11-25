@@ -219,6 +219,7 @@
             </activation>
 
             <modules>
+                <module>test-mixed</module>
                 <module>test-pwa</module>
 
                 <module>test-dev-mode</module>
@@ -242,7 +243,6 @@
                 <module>test-misc</module>
                 <module>test-misc/pom-bower.xml</module>
 
-                <module>test-mixed</module>
                 <module>test-mixed/pom-npm-production.xml</module>
                 <module>test-mixed/pom-bower-devmode.xml</module>
                 <module>test-mixed/pom-bower-production.xml</module>
