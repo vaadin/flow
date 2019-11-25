@@ -601,8 +601,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             if (!entries.isEmpty()) {
                 // Registers the entries in a way that is picked up as a Vaadin
                 // WebComponent by the usage stats gatherer
-                document.body().appendElement(SCRIPT_TAG)
-                        .text("window.Vaadin.registrations = window.Vaadin.registrations || [];\n"
+                document.body().appendElement(SCRIPT_TAG).text(
+                        "window.Vaadin.registrations = window.Vaadin.registrations || [];\n"
                                 + "window.Vaadin.registrations.push(" + entries
                                 + ");");
             }
@@ -883,15 +883,17 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                                 + "you need to run \"mvn install\" once first or launch the application using \"mvn spring-boot:run\"");
             }
             JsonObject chunks = Json.parse(content);
-
             for (String key : chunks.keys()) {
-                Element script = createJavaScriptElement(
-                        "./" + VAADIN_MAPPING + chunks.getString(key));
                 if (key.endsWith(".es5")) {
+                    Element script = createJavaScriptElement(
+                            "./" + VAADIN_MAPPING + chunks.getString(key));
                     head.appendChild(
                             script.attr("nomodule", true).attr("data-app-id",
                                     context.getUI().getInternals().getAppId()));
                 } else {
+                    Element script = createJavaScriptElement(
+                            "./" + VAADIN_MAPPING + chunks.getString(key),
+                            false);
                     head.appendChild(
                             script.attr("type", "module").attr("data-app-id",
                                     context.getUI().getInternals().getAppId()));
@@ -1128,8 +1130,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 break;
             case JS_MODULE:
                 if (url != null && UrlUtil.isExternal(url)) {
-                    dependencyElement = createJavaScriptElement(url,
-                            !inlineElement, "module");
+                    dependencyElement = createJavaScriptElement(url, false,
+                            "module");
                 } else {
                     dependencyElement = null;
                 }
