@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.webcomponent.WebComponentBinding;
@@ -39,7 +40,7 @@ import elemental.json.JsonValue;
  */
 public class WebComponentWrapper extends Component {
 
-    private Component child;
+    private Component embeddedComponent;
     private WebComponentBinding<?> webComponentBinding;
 
     // Disconnect timeout
@@ -64,8 +65,12 @@ public class WebComponentWrapper extends Component {
                 "Parameter 'binding' must not be null!");
 
         this.webComponentBinding = binding;
-        this.child = webComponentBinding.getComponent();
-        getElement().attachShadow().appendChild(child.getElement());
+        this.embeddedComponent = webComponentBinding.getComponent();
+
+        ShadowRootWrapper shadowRootWrapper = new ShadowRootWrapper();
+
+        getElement().attachShadow().appendChild(shadowRootWrapper.getElement());
+        shadowRootWrapper.add(embeddedComponent);
     }
 
     public WebComponentWrapper(Element rootElement,
@@ -91,7 +96,7 @@ public class WebComponentWrapper extends Component {
         try {
             webComponentBinding.updateProperty(property, newValue);
         } catch (IllegalArgumentException e) {
-            LoggerFactory.getLogger(child.getClass())
+            LoggerFactory.getLogger(embeddedComponent.getClass())
                     .error("Failed to synchronise property '{}'", property, e);
         }
     }
@@ -106,7 +111,7 @@ public class WebComponentWrapper extends Component {
         } else {
             LoggerFactory.getLogger(WebComponentUI.class).warn(
                     "Received reconnect request for non disconnected WebComponent '{}'",
-                    this.child.getClass().getName());
+                    this.embeddedComponent.getClass().getName());
         }
     }
 
@@ -134,6 +139,14 @@ public class WebComponentWrapper extends Component {
                             element.getParent().removeVirtualChild(element);
                         }
                     });
+        }
+    }
+
+    private static class ShadowRootWrapper extends Component implements HasComponents {
+        ShadowRootWrapper() {
+            super(new Element("div"));
+            getElement().setAttribute("id", "shadow-root");
+            getElement().setAttribute("style", "margin: 0;");
         }
     }
 }
