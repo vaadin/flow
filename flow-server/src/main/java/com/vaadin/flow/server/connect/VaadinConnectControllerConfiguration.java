@@ -17,8 +17,6 @@
 package com.vaadin.flow.server.connect;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.springframework.boot.autoconfigure.web.servlet.WebMvcRegistrations;
 import org.springframework.context.annotation.Bean;
@@ -63,19 +61,12 @@ public class VaadinConnectControllerConfiguration {
             public RequestMappingHandlerMapping getRequestMappingHandlerMapping() {
                 return new RequestMappingHandlerMapping() {
 
-                    private List<Method> registered = new ArrayList<>();
-
+                    // If Spring application context initialization fails here with a stack overflow
+                    // when starting a project that also has the `vaadin-spring` dependency, make sure
+                    // that the Spring version in `flow-server` and in `vaadin-spring` is the same.
                     @Override
                     protected void registerHandlerMethod(Object handler,
                             Method method, RequestMappingInfo mapping) {
-
-                        // Avoid registering twice, it rarely happens, but
-                        // removing this check causes infinite loops in
-                        // vaadin-spring tests.
-                        if (registered.contains(method)) {
-                            return;
-                        }
-                        registered.add(method);
 
                         if (VaadinConnectController.class
                                 .equals(method.getDeclaringClass())) {
