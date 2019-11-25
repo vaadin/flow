@@ -35,6 +35,8 @@ public class IdTestIT extends ChromeBrowserTest {
     @Test
     public void testIds() {
         open();
+
+        checkLogsForErrors();
         waitUntilWithMessage(
                 ExpectedConditions
                         .presenceOfElementLocated(By.tagName("my-component")),
