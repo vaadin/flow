@@ -388,7 +388,7 @@ public class VaadinServletService extends VaadinService {
         if (!servletPath.endsWith("/")) {
             servletPath += "/";
         }
-        return HandlerHelper.getCancelingRelativePath(servletPath);
+        return HandlerHelper.getCancelingRelativePath(servletPath) + "/";
     }
 
     @Override

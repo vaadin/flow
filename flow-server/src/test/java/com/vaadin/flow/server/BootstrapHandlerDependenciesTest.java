@@ -566,7 +566,7 @@ public class BootstrapHandlerDependenciesTest {
         VaadinServletService service = Mockito.mock(VaadinServletService.class);
         Mockito.doCallRealMethod().when(service)
                 .getContextRootRelativePath(Mockito.any());
-        return service.getContextRootRelativePath(request) + "/";
+        return service.getContextRootRelativePath(request);
     }
 
     private Document initUIAndGetPage(UI ui) {
