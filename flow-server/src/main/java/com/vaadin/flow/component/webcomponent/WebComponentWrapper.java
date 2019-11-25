@@ -66,11 +66,7 @@ public class WebComponentWrapper extends Component {
 
         this.webComponentBinding = binding;
         this.embeddedComponent = webComponentBinding.getComponent();
-
-        ShadowRootWrapper shadowRootWrapper = new ShadowRootWrapper();
-
-        getElement().attachShadow().appendChild(shadowRootWrapper.getElement());
-        shadowRootWrapper.add(embeddedComponent);
+        getElement().attachShadow().appendChild(embeddedComponent.getElement());
     }
 
     public WebComponentWrapper(Element rootElement,
@@ -139,14 +135,6 @@ public class WebComponentWrapper extends Component {
                             element.getParent().removeVirtualChild(element);
                         }
                     });
-        }
-    }
-
-    private static class ShadowRootWrapper extends Component implements HasComponents {
-        ShadowRootWrapper() {
-            super(new Element("div"));
-            getElement().setAttribute("id", "shadow-root");
-            getElement().setAttribute("style", "margin: 0;");
         }
     }
 }

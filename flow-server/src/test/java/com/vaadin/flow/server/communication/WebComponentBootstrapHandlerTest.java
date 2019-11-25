@@ -17,6 +17,7 @@ package com.vaadin.flow.server.communication;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.function.Supplier;
 
 import org.hamcrest.CoreMatchers;
 import org.jsoup.nodes.Document;
@@ -25,7 +26,14 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.startup.WebComponentConfigurationRegistryInitializer;
+import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
+
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 
 public class WebComponentBootstrapHandlerTest {
 
@@ -43,15 +51,14 @@ public class WebComponentBootstrapHandlerTest {
 
         Element style = head.ownerDocument().createElement("style");
         head.appendChild(style);
-        style.attr("type'", "text/css");
+        style.attr("type", "text/css");
         style.text("body {height:100vh;width:100vw;margin:0;}");
 
         Element script = head.ownerDocument().createElement("script");
         head.appendChild(script);
         script.text("var i=1;");
 
-        VaadinResponse response = Mockito.mock(VaadinResponse.class);
-        Mockito.when(response.getOutputStream()).thenReturn(stream);
+        VaadinResponse response = getMockResponse(stream);
         handler.writeBootstrapPage("", response, head, "");
 
         String resultingScript = stream.toString();
@@ -62,5 +69,18 @@ public class WebComponentBootstrapHandlerTest {
                 .containsString("body {height:100vh;width:100vw;margin:0;}")));
         Assert.assertThat(resultingScript,
                 CoreMatchers.not(CoreMatchers.containsString("http-equiv")));
+    }
+    
+    private VaadinResponse getMockResponse(ByteArrayOutputStream stream) throws IOException {
+        VaadinResponse response = Mockito.mock(VaadinResponse.class);
+        VaadinService service = Mockito.mock(VaadinService.class);
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+        Mockito.when(response.getOutputStream()).thenReturn(stream);
+        Mockito.when(response.getService()).thenReturn(service);
+        Mockito.when(service.getContext()).thenReturn(context);
+        Mockito.when(context.getAttribute(
+                eq(WebComponentConfigurationRegistry.class), any())).thenReturn(
+                        Mockito.mock(WebComponentConfigurationRegistry.class));
+        return response;
     }
 }

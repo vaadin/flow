@@ -272,7 +272,8 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
             writer.append("var ").append(varName).append("=null;");
             for (Element element : head.children()) {
                 if (elementShouldNotBeTransferred(element)) {
-                    collectElementForWebComponentInjection(element).ifPresent(vElements::add);
+                    collectElementForWebComponentInjection(element)
+                            .ifPresent(vElements::add);
                     continue;
                 }
                 writer.append(varName).append("=");
