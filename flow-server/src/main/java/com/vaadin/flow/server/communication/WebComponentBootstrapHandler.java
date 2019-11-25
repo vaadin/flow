@@ -33,11 +33,9 @@ import org.jsoup.nodes.Element;
 
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.component.webcomponent.WebComponentUI;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.internal.JsonUtils;
-import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ServletHelper;
@@ -53,7 +51,6 @@ import com.vaadin.flow.theme.ThemeDefinition;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
-
 import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -265,6 +262,10 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
          * innerHTML. The innerHTMLs are in-lined for easier copying.
          */
         response.setContentType(contentType);
+        /*
+         * Collection Elements that should be under the web component shadow
+         * DOMs rather than the page head
+         */
         ArrayList<com.vaadin.flow.dom.Element> vElements = new ArrayList<>();
         try (BufferedWriter writer = new BufferedWriter(
                 new OutputStreamWriter(response.getOutputStream(), UTF_8))) {
@@ -311,7 +312,8 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         }
     }
     
-    private static Optional<com.vaadin.flow.dom.Element> collectElementForWebComponentInjection(Element element) {
+    private static Optional<com.vaadin.flow.dom.Element> collectElementForWebComponentInjection(
+            Element element) {
         if ("style".equals(element.tagName())) {
             return Optional.ofNullable(ElementUtil.fromJsoup(element));
         }
