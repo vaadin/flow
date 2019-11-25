@@ -17,6 +17,8 @@
 package com.vaadin.flow.server.connect;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.boot.autoconfigure.web.servlet.WebMvcRegistrations;
 import org.springframework.context.annotation.Bean;
@@ -56,13 +58,25 @@ public class VaadinConnectControllerConfiguration {
     @Bean
     public WebMvcRegistrations webMvcRegistrationsHandlerMapping() {
         return new WebMvcRegistrations() {
+
             @Override
             public RequestMappingHandlerMapping getRequestMappingHandlerMapping() {
                 return new RequestMappingHandlerMapping() {
 
+                    private List<Method> registered = new ArrayList<>();
+
                     @Override
                     protected void registerHandlerMethod(Object handler,
                             Method method, RequestMappingInfo mapping) {
+
+                        // Avoid registering twice, it rarely happens, but
+                        // removing this check causes infinite loops in
+                        // vaadin-spring tests.
+                        if (registered.contains(method)) {
+                            return;
+                        }
+                        registered.add(method);
+
                         if (VaadinConnectController.class
                                 .equals(method.getDeclaringClass())) {
                             PatternsRequestCondition connectServicePattern = new PatternsRequestCondition(
