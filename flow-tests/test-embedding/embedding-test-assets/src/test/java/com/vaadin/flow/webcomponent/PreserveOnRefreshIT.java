@@ -181,7 +181,8 @@ public class PreserveOnRefreshIT extends ChromeBrowserTest {
     }
 
     private String getValue(WebElement element) {
-        return element.findElement(By.id(INTERNAL_INPUT_ID)).getAttribute("value");
+        return getInShadowRoot(element, By.id(INTERNAL_INPUT_ID))
+                .getAttribute("value");
     }
 
     private void writeInInput(String id, String text) {
@@ -190,7 +191,8 @@ public class PreserveOnRefreshIT extends ChromeBrowserTest {
     }
 
     private void writeInInput(WebElement element, String text) {
-        element.findElement(By.id(INTERNAL_INPUT_ID)).sendKeys(text, Keys.ENTER);
+        getInShadowRoot(element, By.id(INTERNAL_INPUT_ID)).sendKeys(text,
+                Keys.ENTER);
     }
 
     private void refreshPage() {

@@ -37,7 +37,8 @@ public class WebComponentIT extends ChromeBrowserTest {
         waitForElementVisible(By.id("show-message"));
 
         WebElement showMessage = findElement(By.id("show-message"));
-        WebElement select = showMessage.findElement(By.cssSelector("select"));
+        WebElement select = getInShadowRoot(showMessage,
+                By.cssSelector("select"));
 
         // Selection is visibly changed and event manually dispatched
         // as else the change is not seen.
@@ -47,18 +48,19 @@ public class WebComponentIT extends ChromeBrowserTest {
                 select);
 
         Assert.assertEquals("Selected: Peter, Parker",
-                showMessage.findElement(By.cssSelector("span")).getText());
+                getInShadowRoot(showMessage, By.cssSelector("span")).getText());
 
         WebElement noMessage = findElement(By.id("no-message"));
 
-        select = noMessage.findElement(By.cssSelector("select"));
+        select = getInShadowRoot(noMessage, By.cssSelector("select"));
         getCommandExecutor().executeScript(
                 "arguments[0].value='Peter';"
                         + "arguments[0].dispatchEvent(new Event('change'));",
                 select);
 
         Assert.assertFalse("Message should not be visible",
-                noMessage.findElement(By.cssSelector("span")).isDisplayed());
+                getInShadowRoot(noMessage, By.cssSelector("span"))
+                        .isDisplayed());
     }
 
     @Test
@@ -68,15 +70,15 @@ public class WebComponentIT extends ChromeBrowserTest {
         waitForElementVisible(By.tagName("themed-web-component"));
 
         TestBenchElement webComponent = $("themed-web-component").first();
-        TestBenchElement themedComponent = webComponent.$("themed-component")
-                .first();
-        Assert.assertTrue(
-                "The component which should use theme doesn't "
-                        + "contain elements",
-                themedComponent.$("div").exists());
-        TestBenchElement contentElement = themedComponent.$("div").first();
+        WebElement themedComponent = getInShadowRoot(webComponent,
+                By.tagName("themed-component"));
+
+        WebElement content = getInShadowRoot(themedComponent,
+                By.tagName("div"));
+        Assert.assertNotNull("The component which should use theme doesn't "
+                + "contain elements", content);
 
         Assert.assertEquals("rgba(255, 0, 0, 1)",
-                contentElement.getCssValue("color"));
+                content.getCssValue("color"));
     }
 }

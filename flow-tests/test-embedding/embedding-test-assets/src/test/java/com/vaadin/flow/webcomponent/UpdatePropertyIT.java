@@ -37,7 +37,7 @@ public class UpdatePropertyIT extends ChromeBrowserTest {
 
         WebElement clickCounter = findElement(By.id("counter"));
 
-        WebElement button = clickCounter.findElement(By.tagName("button"));
+        WebElement button = getInShadowRoot(clickCounter, By.tagName("button"));
 
         Assert.assertEquals("Count (id:count) should start from 0", 0,
                 getInt("count"));

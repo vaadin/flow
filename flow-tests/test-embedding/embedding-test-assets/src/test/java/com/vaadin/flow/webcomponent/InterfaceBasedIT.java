@@ -35,7 +35,7 @@ public class InterfaceBasedIT extends ChromeBrowserTest {
 
         waitForElementVisible(By.id("interface"));
         WebElement webComponent = findElement(By.id("interface"));
-        WebElement paragraph = webComponent.findElement(By.id("paragraph"));
+        WebElement paragraph = getInShadowRoot(webComponent, By.id("paragraph"));
 
         Assert.assertNotNull("Correct tag should have been found",
                 webComponent);

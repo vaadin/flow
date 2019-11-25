@@ -49,9 +49,9 @@ public class FireEventIT extends ChromeBrowserTest {
 
         WebElement calc = findElement(By.id("calc"));
 
-        WebElement button = calc.findElement(By.id("button"));
-        WebElement number1 = calc.findElement(By.id(N1));
-        WebElement number2 = calc.findElement(By.id(N2));
+        WebElement button = getInShadowRoot(calc, By.id("button"));
+        WebElement number1 = getInShadowRoot(calc, By.id(N1));
+        WebElement number2 = getInShadowRoot(calc, By.id(N2));
 
         Assert.assertEquals("Sum should be 0", "0", value(SUM));
         Assert.assertEquals("Error should be empty", "", value(ERR));
@@ -67,8 +67,8 @@ public class FireEventIT extends ChromeBrowserTest {
         number1.clear();
         number2.clear();
 
-        Assert.assertEquals("", value(N1));
-        Assert.assertEquals("", value(N2));
+        Assert.assertEquals("", value(number1));
+        Assert.assertEquals("", value(number2));
 
         button.click();
 
@@ -95,11 +95,11 @@ public class FireEventIT extends ChromeBrowserTest {
          */
         WebElement contained = findElement(By.id("contained"));
         // non-bubbling
-        WebElement button1 = contained.findElement(By.id("b1"));
+        WebElement button1 = getInShadowRoot(contained, By.id("b1"));
         // bubbling, non-cancelable
-        WebElement button2 = contained.findElement(By.id("b2"));
+        WebElement button2 = getInShadowRoot(contained, By.id("b2"));
         // bubbling, cancellable
-        WebElement button3 = contained.findElement(By.id("b3"));
+        WebElement button3 = getInShadowRoot(contained, By.id("b3"));
 
         button1.click();
 
@@ -138,5 +138,9 @@ public class FireEventIT extends ChromeBrowserTest {
 
     private String value(String id) {
         return findElement(By.id(id)).getText();
+    }
+
+    private String value(WebElement webElement) {
+        return webElement.getText();
     }
 }

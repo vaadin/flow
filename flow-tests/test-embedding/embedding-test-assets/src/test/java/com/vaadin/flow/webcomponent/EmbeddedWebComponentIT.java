@@ -17,6 +17,8 @@ package com.vaadin.flow.webcomponent;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
@@ -44,16 +46,18 @@ public class EmbeddedWebComponentIT extends ChromeBrowserTest {
         getCommandExecutor().executeScript(
                 "arguments[0].value='Peter';"
                         + "arguments[0].dispatchEvent(new Event('change'));",
-                webComponent.$("select").first());
+                getInShadowRoot(webComponent, By.tagName("select")));
 
-        TestBenchElement msg = webComponent.$("span").first();
+        WebElement msg =
+                getInShadowRoot(webComponent, By.tagName("span"));
 
         Assert.assertEquals("Selected: Peter, Parker", msg.getText());
 
         // Check that there is correctly imported custom element
-        TestBenchElement dependencyElement = $("dep-element").first();
-        TestBenchElement mainDepElement = dependencyElement
-                .$(TestBenchElement.class).id("main");
+        WebElement dependencyElement = getInShadowRoot(webComponent,
+                By.tagName("dep-element"));
+        WebElement mainDepElement = getInShadowRoot(dependencyElement, By.id(
+                "main"));
         Assert.assertEquals("Imported element", mainDepElement.getText());
     }
 }
