@@ -1,0 +1,32 @@
+<link rel="import" href="bower_components/polymer/polymer-element.html">
+
+<dom-module id="template-scalability-view">
+    <template>
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+        </style>
+
+        <div id="content">
+
+        </div>
+
+    </template>
+
+    <script>
+      class TemplateScalabilityView extends Polymer.Element {
+        static get is() {
+          return 'template-scalability-view';
+        }
+
+        static get properties() {
+          return {
+            // Declare your properties here.
+          };
+        }
+      }
+
+      customElements.define(TemplateScalabilityView.is, TemplateScalabilityView);
+    </script>
+</dom-module>

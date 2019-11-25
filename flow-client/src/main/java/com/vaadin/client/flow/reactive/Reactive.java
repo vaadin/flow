@@ -15,6 +15,8 @@
  */
 package com.vaadin.client.flow.reactive;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import com.vaadin.client.Command;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
@@ -49,6 +51,8 @@ public class Reactive {
     private static JsSet<ReactiveValueChangeListener> eventCollectors;
 
     private static Computation currentComputation = null;
+
+    private static AtomicBoolean flushing = new AtomicBoolean(false);
 
     private Reactive() {
         // Only static stuff in this class
@@ -95,19 +99,26 @@ public class Reactive {
      * @see #addPostFlushListener(FlushListener)
      */
     public static void flush() {
-        while (hasFlushListeners() || hasPostFlushListeners()) {
-            // Purge all flush listeners
-            while (hasFlushListeners()) {
-                FlushListener oldestListener = flushListeners.remove(0);
-                oldestListener.flush();
-            }
+        if(!flushing.compareAndSet(false, true)) {
+            return;
+        }
+        try {
+            while (hasFlushListeners() || hasPostFlushListeners()) {
+                // Purge all flush listeners
+                while (hasFlushListeners()) {
+                    FlushListener oldestListener = flushListeners.remove(0);
+                    oldestListener.flush();
+                }
 
-            // Purge one post flush listener, then look if there are new flush
-            // listeners to purge
-            if (hasPostFlushListeners()) {
-                FlushListener oldestListener = postFlushListeners.remove(0);
-                oldestListener.flush();
+                // Purge one post flush listener, then look if there are new flush
+                // listeners to purge
+                if (hasPostFlushListeners()) {
+                    FlushListener oldestListener = postFlushListeners.remove(0);
+                    oldestListener.flush();
+                }
             }
+        }finally {
+            flushing.set(false);
         }
     }
 
