@@ -23,6 +23,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
 import javax.servlet.annotation.WebListener;
+import javax.sound.midi.SysexMessage;
 
 import java.io.File;
 import java.io.IOException;
@@ -179,6 +180,9 @@ public class DevModeInitializer implements ServletContainerInitializer,
     @Override
     public void onStartup(Set<Class<?>> classes, ServletContext context)
             throws ServletException {
+
+
+        System.err.println(">>>>>>> ON START ...... " );
         Collection<? extends ServletRegistration> registrations = context
                 .getServletRegistrations().values();
 
@@ -210,6 +214,10 @@ public class DevModeInitializer implements ServletContainerInitializer,
     public static void initDevModeHandler(Set<Class<?>> classes,
             ServletContext context, DeploymentConfiguration config)
             throws ServletException {
+
+        System.err.println(">>>>>>> INITIALIZE .... " );
+
+
         if (config.isProductionMode()) {
             log().debug("Skipping DEV MODE because PRODUCTION MODE is set.");
             return;
