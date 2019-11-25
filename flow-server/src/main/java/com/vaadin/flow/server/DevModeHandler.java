@@ -199,7 +199,7 @@ public final class DevModeHandler {
             if (!webpackProcess.isAlive()) {
                 throw new IllegalStateException("Webpack exited prematurely");
             }
-            getLogger().info("Webpack startup and compilation completed in {} s.", (System.currentTimeMillis()-start)/1000);
+            getLogger().info("Webpack startup and compilation completed in {}ms", (System.currentTimeMillis()-start));
         } catch (IOException | InterruptedException e) {
             getLogger().error("Failed to start the webpack process", e);
         }
