@@ -60,7 +60,7 @@ import elemental.json.JsonValue;
  * {@code WebComponentExporter} when extending it, e.g.
  * {@code extends WebComponentExporter<MyComponent>}.
  * <p>
- * If you want to custome the {@link Component} instance after it has been
+ * If you want to customize the {@link Component} instance after it has been
  * created, you should override
  * {@link #configureInstance(WebComponent, Component)} which is called for each
  * created instance.
