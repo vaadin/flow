@@ -10,8 +10,7 @@
     <artifactId>flow-test-dev-mode</artifactId>
     <name>Flow tests for dev mode</name>
     <description>
-        Tests extracted from flow-test-root-context in order to run
-        true production mode with transpilation in that module.
+        Tests extracted from flow-test-root-context to be run in development mode.
     </description>
     <packaging>war</packaging>
     <properties>
