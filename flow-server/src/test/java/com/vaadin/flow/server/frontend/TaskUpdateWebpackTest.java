@@ -137,7 +137,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
         String customString = "custom element;";
         List<String> lines = FileUtils.readLines(webpackConfig, "UTF-8");
         for (int i = 0; i < lines.size(); i++) {
-            if (lines.get(i).equals("module.exports = merge(flowDefaults, {")) {
+            if (lines.get(i).equals("module.exports = merge(flowDefaults,")) {
                 lines.add(i + 1, customString);
                 break;
             }
@@ -220,7 +220,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
 
         Assert.assertTrue("No module.exports for flowDefaults available.",
                 webpackContents
-                        .contains("module.exports = merge(flowDefaults, {"));
+                        .contains("module.exports = merge(flowDefaults,"));
     }
 
     private void verifyUpdate(List<String> webpackContents, String entryPoint,
