@@ -21,7 +21,6 @@ import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -35,7 +34,8 @@ import java.util.stream.Stream;
 import org.apache.commons.io.FileUtils;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.internal.ExportsWebComponent;
+import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.internal.ReflectTools;
 
 /**
@@ -58,7 +58,8 @@ public final class WebComponentModulesWriter implements Serializable {
      * file is {@code [web component's tag].js}.
      *
      * @param exporterClasses
-     *            set of {@link ExportsWebComponent}
+     *            set of
+     *            {@link WebComponentExporter}/{@link WebComponentExporterFactory}
      *            classes
      * @param outputDirectory
      *            target directory for the generated web component module files
@@ -72,8 +73,8 @@ public final class WebComponentModulesWriter implements Serializable {
      *             if {@code outputDirectory} is not a directory
      */
     private static Set<File> writeWebComponentsToDirectory( // NOSONAR
-            Set<Class<? extends ExportsWebComponent<? extends Component>>> exporterClasses,
-            File outputDirectory, boolean compatibilityMode) {
+            Set<Class<?>> exporterClasses, File outputDirectory,
+            boolean compatibilityMode) {
         // this method is used via reflection by DirectoryWriter
         Objects.requireNonNull(exporterClasses,
                 "Parameter 'exporterClasses' must not be null");
@@ -86,34 +87,26 @@ public final class WebComponentModulesWriter implements Serializable {
                     outputDirectory.getPath()));
         }
 
-        return filterConcreteExporters(exporterClasses)
-                .map(clazz -> writeWebComponentToDirectory(clazz,
+        return WebComponentExporterUtils.getFactories(exporterClasses).stream()
+                .map(factory -> writeWebComponentToDirectory(factory,
                         outputDirectory, compatibilityMode))
                 .collect(Collectors.toSet());
-    }
-
-    private static Stream<Class<? extends ExportsWebComponent<? extends Component>>> filterConcreteExporters(
-            Set<Class<? extends ExportsWebComponent<? extends Component>>> exporterClasses) {
-        return exporterClasses.stream()
-                .filter(clazz -> ExportsWebComponent.class
-                        .isAssignableFrom(clazz) && !clazz.isInterface()
-                        && !Modifier.isAbstract(clazz.getModifiers()));
     }
 
     /**
      * Generate a file with web component html/JS content for given exporter
      * class in the given {@code outputFolder}.
      *
-     * @param clazz
-     *            web component exporter class
+     * @param factory
+     *            web component exporter factory
      * @param outputDirectory
      *            folder into which the generate file is written
      * @return the generated module content
      */
     private static File writeWebComponentToDirectory(
-            Class<? extends ExportsWebComponent<? extends Component>> clazz,
-            File outputDirectory, boolean compatibilityMode) {
-        String tag = getTag(clazz);
+            WebComponentExporterFactory<?> factory, File outputDirectory,
+            boolean compatibilityMode) {
+        String tag = getTag(factory);
 
         String fileName = compatibilityMode ? tag + ".html" : tag + ".js";
         Path generatedFile = outputDirectory.toPath().resolve(fileName);
@@ -121,7 +114,7 @@ public final class WebComponentModulesWriter implements Serializable {
             FileUtils.forceMkdir(generatedFile.getParent().toFile());
             Files.write(generatedFile,
                     Collections.singletonList(
-                            generateModule(clazz, compatibilityMode)),
+                            generateModule(factory, compatibilityMode)),
                     StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new UncheckedIOException(String.format(
@@ -132,16 +125,16 @@ public final class WebComponentModulesWriter implements Serializable {
     }
 
     private static String generateModule(
-            Class<? extends ExportsWebComponent<? extends Component>> exporterClass,
+            WebComponentExporterFactory<? extends Component> factory,
             boolean compatibilityMode) {
-        return WebComponentGenerator.generateModule(exporterClass, "../",
+        return WebComponentGenerator.generateModule(factory, "../",
                 compatibilityMode);
     }
 
     private static String getTag(
-            Class<? extends ExportsWebComponent<? extends Component>> exporterClass) {
+            WebComponentExporterFactory<? extends Component> factory) {
         WebComponentExporterTagExtractor exporterTagExtractor = new WebComponentExporterTagExtractor();
-        return exporterTagExtractor.apply(exporterClass);
+        return exporterTagExtractor.apply(factory);
     }
 
     /**
@@ -164,7 +157,7 @@ public final class WebComponentModulesWriter implements Serializable {
          *            {@code WebComponentModulesWriter} class
          * @param exporterClasses
          *            set of
-         *            {@link ExportsWebComponent}
+         *            {@link WebComponentExporter}/{@link WebComponentExporterFactory}
          *            classes, loaded with the same class loader as
          *            {@code writer}
          * @param outputDirectory
@@ -199,7 +192,7 @@ public final class WebComponentModulesWriter implements Serializable {
             Objects.requireNonNull(writerClass,
                     "Parameter 'writerClassSupplier' must not null");
             Objects.requireNonNull(exporterClasses,
-                    "Parameter 'exporterClassSupplier' must not be null");
+                    "Parameter 'exporterClasses' must not be null");
             Objects.requireNonNull(outputDirectory,
                     "Parameter 'outputDirectory' must not be null");
 

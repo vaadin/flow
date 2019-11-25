@@ -29,14 +29,14 @@ import java.lang.annotation.Target;
  * This annotation can also be used, when exporting embeddable web components.
  * Place this annotation onto the class extending
  * {@link com.vaadin.flow.component.WebComponentExporter}. This flags all the
- * embedded components from that exporter to be preserved on refresh. Due to
- * the challenge of uniquely identifying embedded components through refresh.
- * When embedded, the component is identified by window name and a generated
+ * embedded components from that exporter to be preserved on refresh. Due to the
+ * challenge of uniquely identifying embedded components through refresh. When
+ * embedded, the component is identified by window name and a generated
  * component id. This means, that if the same component instance is embedded
- * onto two pages within the same window context, the state can be
- * transferred between locations. To avoid state leaking, provide unique id
- * for the embedded web component. The id must be unique across all the pages
- * where instances of the web component are embedded.
+ * onto two pages within the same window context, the state can be transferred
+ * between locations. To avoid state leaking, provide unique id for the embedded
+ * web component. The id must be unique across all the pages where instances of
+ * the web component are embedded.
  *
  * @since 2.0
  */
