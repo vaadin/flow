@@ -198,6 +198,11 @@ public class FrontendUtils {
     public static final String INSTALL_NODE_LOCALLY = "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.7.6:install-node-and-npm -DnodeVersion=\"v12.13.0\" ";
     public static final String DISABLE_CHECK = "%nYou can disable the version check using -D%s=true";
 
+    private static final String NO_CONNECTION =
+            "Webpack-dev-server couldn't be reached for %s.\n"
+                    + "Check the startup logs for exceptions in running webpack-dev-server.\n"
+                    + "If server should be running in production mode check that production mode flag is set correctly.";
+
     private static final String NOT_FOUND = "%n%n======================================================================================================"
             + "%nFailed to determine '%s' tool." + "%nPlease install it either:"
             + "%n  - by following the https://nodejs.org/en/download/ guide to install it globally"
@@ -476,8 +481,14 @@ public class FrontendUtils {
         DeploymentConfiguration config = service.getDeploymentConfiguration();
         if (!config.isProductionMode() && config.enableDevServer()) {
             DevModeHandler handler = DevModeHandler.getDevModeHandler();
-            return streamToString(handler
-                    .prepareConnection("/stats.hash", "GET").getInputStream())
+            HttpURLConnection statsConnection = handler
+                    .prepareConnection("/stats.hash", "GET");
+            if(statsConnection.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                getLogger().error(String.format(NO_CONNECTION, "getting the stats content hash."));
+                return null;
+            }
+            return streamToString(
+                    statsConnection.getInputStream())
                             .replaceAll("\"", "");
         }
 
@@ -486,7 +497,12 @@ public class FrontendUtils {
 
     private static InputStream getStatsFromWebpack() throws IOException {
         DevModeHandler handler = DevModeHandler.getDevModeHandler();
-        return handler.prepareConnection("/stats.json", "GET").getInputStream();
+        HttpURLConnection statsConnection = handler.prepareConnection("/stats.json", "GET");
+        if(statsConnection.getResponseCode() != HttpURLConnection.HTTP_OK) {
+            getLogger().error(String.format(NO_CONNECTION, "downloading stats.json"));
+            return null;
+        }
+        return statsConnection.getInputStream();
     }
 
     private static InputStream getStatsFromExternalUrl(String externalStatsUrl,
@@ -567,8 +583,14 @@ public class FrontendUtils {
         DeploymentConfiguration config = service.getDeploymentConfiguration();
         if (!config.isProductionMode() && config.enableDevServer()) {
             DevModeHandler handler = DevModeHandler.getDevModeHandler();
+            HttpURLConnection assetsConnection = handler
+                    .prepareConnection("/assetsByChunkName", "GET");
+            if(assetsConnection.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                getLogger().error(String.format(NO_CONNECTION, "getting assets by chunk name."));
+                return null;
+            }
             return streamToString(
-                    handler.prepareConnection("/assetsByChunkName", "GET")
+                    assetsConnection
                             .getInputStream());
         }
         InputStream resourceAsStream;
