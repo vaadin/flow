@@ -15,7 +15,8 @@
     <packaging>jar</packaging>
 
     <properties>
-        <spring.version>2.1.6.RELEASE</spring.version>
+        <!-- this version has to match the Spring version used by `flow-server` -->
+        <spring.version>2.2.0.RELEASE</spring.version>
         <vaadin.spring.version>15.0-SNAPSHOT</vaadin.spring.version>
         <server.port>8888</server.port>
         <vaadin.clientSideMode>true</vaadin.clientSideMode>

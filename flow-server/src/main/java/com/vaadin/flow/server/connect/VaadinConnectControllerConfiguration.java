@@ -17,8 +17,6 @@
 package com.vaadin.flow.server.connect;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.springframework.boot.autoconfigure.web.servlet.WebMvcRegistrations;
 import org.springframework.context.annotation.Bean;
@@ -63,36 +61,18 @@ public class VaadinConnectControllerConfiguration {
             public RequestMappingHandlerMapping getRequestMappingHandlerMapping() {
                 return new RequestMappingHandlerMapping() {
 
-                    private List<Method> registered = new ArrayList<>();
-
                     @Override
                     protected void registerHandlerMethod(Object handler,
                             Method method, RequestMappingInfo mapping) {
-
-                        // Avoid registering twice, it rarely happens, but
-                        // removing this check causes infinite loops in
-                        // vaadin-spring tests.
-                        if (registered.contains(method)) {
-                            return;
-                        }
-                        registered.add(method);
+                        // If Spring context initialization fails here with a
+                        // stack overflow in a project that also has the
+                        // `vaadin-spring` dependency, make sure that the Spring
+                        // version in `flow-server` and in `vaadin-spring` is
+                        // the same.
 
                         if (VaadinConnectController.class
                                 .equals(method.getDeclaringClass())) {
-                            PatternsRequestCondition connectServicePattern = new PatternsRequestCondition(
-                                    vaadinConnectProperties
-                                            .getVaadinConnectEndpoint())
-                                                    .combine(mapping
-                                                            .getPatternsCondition());
-
-                            mapping = new RequestMappingInfo(mapping.getName(),
-                                    connectServicePattern,
-                                    mapping.getMethodsCondition(),
-                                    mapping.getParamsCondition(),
-                                    mapping.getHeadersCondition(),
-                                    mapping.getConsumesCondition(),
-                                    mapping.getProducesCondition(),
-                                    mapping.getCustomCondition());
+                            mapping = prependConnectEndpointUrl(mapping);
                         }
 
                         super.registerHandlerMethod(handler, method, mapping);
@@ -100,6 +80,27 @@ public class VaadinConnectControllerConfiguration {
                 };
             }
         };
+    }
+
+    /**
+     * Prepends the Connect endpoint URL from the Vaadin Connect properties to
+     * the {@code pattern} of a {@link RequestMappingInfo} object, and returns
+     * the updated mapping as a new object (not modifying the given
+     * {@param mapping} parameter).
+     *
+     * @return a new mapping with the Connect endpoint URL prepended to the
+     *         mapping pattern
+     */
+    private RequestMappingInfo prependConnectEndpointUrl(
+            RequestMappingInfo mapping) {
+        PatternsRequestCondition connectServicePattern = new PatternsRequestCondition(
+                vaadinConnectProperties.getVaadinConnectEndpoint())
+                        .combine(mapping.getPatternsCondition());
+
+        return new RequestMappingInfo(mapping.getName(), connectServicePattern,
+                mapping.getMethodsCondition(), mapping.getParamsCondition(),
+                mapping.getHeadersCondition(), mapping.getConsumesCondition(),
+                mapping.getProducesCondition(), mapping.getCustomCondition());
     }
 
     /**
