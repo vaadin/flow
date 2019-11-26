@@ -37,7 +37,6 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.WebComponentExporter;
-import com.vaadin.flow.component.internal.ExportsWebComponent;
 import com.vaadin.flow.migration.ClassPathIntrospector;
 import com.vaadin.flow.plugin.samplecode.AbstractExporter;
 import com.vaadin.flow.plugin.samplecode.BarExporter;
@@ -78,44 +77,47 @@ public class WebComponentModulesGeneratorTest {
         }
     }
 
-
     @Test
-    public void getExporters_exportersAreDiscovered() throws ClassNotFoundException {
+    public void getExporters_exportersAreDiscovered()
+            throws ClassNotFoundException {
         // prepare
-        ClassFinder finder =
-                getMockFinderWithExporterClasses(FooExporter.class,
-                        BarExporter.class, AbstractExporter.class);
+        ClassFinder finder = getMockFinderWithExporterClasses(FooExporter.class,
+                BarExporter.class, AbstractExporter.class);
 
-        introspector = new ClassPathIntrospector(finder) {};
+        introspector = new ClassPathIntrospector(finder) {
+        };
         generator = new WebComponentModulesGenerator(introspector);
 
         // act
-        Set<File> files =
-                generator.generateWebComponentModules(temporaryFolder.getRoot());
+        Set<File> files = generator
+                .generateWebComponentModules(temporaryFolder.getRoot());
 
         // verify
         Assert.assertEquals(2, files.size());
 
         Assert.assertTrue(
                 "FooExporter class is not discovered as an exporter class",
-                files.stream().anyMatch(file -> file.getName().contains("wc-foo")));
+                files.stream()
+                        .anyMatch(file -> file.getName().contains("wc-foo")));
         Assert.assertTrue(
                 "BarExporter class is not discovered as an exporter class",
-                files.stream().anyMatch(file -> file.getName().contains("wc-bar")));
+                files.stream()
+                        .anyMatch(file -> file.getName().contains("wc-bar")));
     }
 
-
     @Test
-    public void generateModuleFile_fileIsGenerated() throws IOException, ClassNotFoundException {
+    public void generateModuleFile_fileIsGenerated()
+            throws IOException, ClassNotFoundException {
         // prepare
-        ClassFinder finder =
-                getMockFinderWithExporterClasses(FooExporter.class);
-        introspector = new ClassPathIntrospector(finder) {};
+        ClassFinder finder = getMockFinderWithExporterClasses(
+                FooExporter.class);
+        introspector = new ClassPathIntrospector(finder) {
+        };
         generator = new WebComponentModulesGenerator(introspector);
 
         // act
-        Set<File> files =
-                generator.generateWebComponentModules(temporaryFolder.getRoot());
+        Set<File> files = generator
+                .generateWebComponentModules(temporaryFolder.getRoot());
 
         Assert.assertEquals("One file should have been generated", 1,
                 files.size());
@@ -135,7 +137,8 @@ public class WebComponentModulesGeneratorTest {
                 // split due to windows env
                 CoreMatchers.allOf(
                         CoreMatchers.containsString("set ['age'](value) {"),
-                        CoreMatchers.containsString("if (this['_age'] === value)"),
+                        CoreMatchers
+                                .containsString("if (this['_age'] === value)"),
                         CoreMatchers.containsString("this['_age'] = value;")));
 
         Assert.assertThat(
@@ -166,14 +169,14 @@ public class WebComponentModulesGeneratorTest {
         return Arrays.asList(split);
     }
 
-    private static ClassFinder getMockFinderWithExporterClasses(Class<?
-            extends WebComponentExporter>... exporters) throws ClassNotFoundException {
+    private static ClassFinder getMockFinderWithExporterClasses(
+            Class<? extends WebComponentExporter>... exporters)
+            throws ClassNotFoundException {
         ClassFinder finder = mock(ClassFinder.class);
-        Mockito.when(finder.loadClass(WebComponentModulesWriter.class.getName()))
-                .thenReturn((Class)WebComponentModulesWriter.class);
-        Mockito.when(finder.loadClass(ExportsWebComponent.class.getName()))
-                .thenReturn((Class) ExportsWebComponent.class);
-        Mockito.when(finder.getSubTypesOf(ExportsWebComponent.class))
+        Mockito.when(
+                finder.loadClass(WebComponentModulesWriter.class.getName()))
+                .thenReturn((Class) WebComponentModulesWriter.class);
+        Mockito.when(finder.getSubTypesOf(WebComponentExporter.class))
                 .thenReturn(Stream.of(exporters).collect(Collectors.toSet()));
         return finder;
     }

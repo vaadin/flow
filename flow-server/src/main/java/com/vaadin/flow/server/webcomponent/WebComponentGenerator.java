@@ -27,6 +27,7 @@ import org.apache.commons.io.IOUtils;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.shared.util.SharedUtil;
 
@@ -36,8 +37,6 @@ import elemental.json.JsonValue;
 /**
  * Generates a client-side web component from a Java class.
  * <p>
- * Current implementation will create a Polymer 2 component that can be served
- * to the client.
  *
  * @author Vaadin Ltd.
  * @since 2.0
@@ -82,10 +81,10 @@ public class WebComponentGenerator {
     }
 
     /**
-     * Generate web component html/JS for given exporter class.
+     * Generate web component html/JS for given exporter factory.
      *
-     * @param exporterClass
-     *            web component exporter class, not {@code null}
+     * @param factory
+     *            web component exporter factory, not {@code null}
      * @param frontendURI
      *            the frontend resources URI, not {@code null}
      * @param compatibilityMode
@@ -94,13 +93,13 @@ public class WebComponentGenerator {
      * @return generated web component html/JS to be served to the client
      */
     public static String generateModule(
-            Class<? extends WebComponentExporter<? extends Component>> exporterClass,
+            WebComponentExporterFactory<? extends Component> factory,
             String frontendURI, boolean compatibilityMode) {
-        Objects.requireNonNull(exporterClass);
+        Objects.requireNonNull(factory);
         Objects.requireNonNull(frontendURI);
 
         WebComponentConfiguration<? extends Component> config = new WebComponentExporter.WebComponentConfigurationFactory()
-                .create(exporterClass);
+                .create(factory.create());
 
         return generateModule(config, frontendURI, false, compatibilityMode);
     }
