@@ -50,6 +50,8 @@ public class Reactive {
 
     private static Computation currentComputation = null;
 
+    private static boolean flushing =false;
+
     private Reactive() {
         // Only static stuff in this class
     }
@@ -95,19 +97,27 @@ public class Reactive {
      * @see #addPostFlushListener(FlushListener)
      */
     public static void flush() {
-        while (hasFlushListeners() || hasPostFlushListeners()) {
-            // Purge all flush listeners
-            while (hasFlushListeners()) {
-                FlushListener oldestListener = flushListeners.remove(0);
-                oldestListener.flush();
-            }
+        if(flushing) {
+            return;
+        }
+        try {
+            flushing = true;
+            while (hasFlushListeners() || hasPostFlushListeners()) {
+                // Purge all flush listeners
+                while (hasFlushListeners()) {
+                    FlushListener oldestListener = flushListeners.remove(0);
+                    oldestListener.flush();
+                }
 
-            // Purge one post flush listener, then look if there are new flush
-            // listeners to purge
-            if (hasPostFlushListeners()) {
-                FlushListener oldestListener = postFlushListeners.remove(0);
-                oldestListener.flush();
+                // Purge one post flush listener, then look if there are new flush
+                // listeners to purge
+                if (hasPostFlushListeners()) {
+                    FlushListener oldestListener = postFlushListeners.remove(0);
+                    oldestListener.flush();
+                }
             }
+        }finally {
+            flushing = false;
         }
     }
 
