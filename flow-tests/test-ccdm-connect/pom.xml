@@ -17,6 +17,7 @@
     <properties>
         <!-- this version has to match the Spring version used by `flow-server` -->
         <spring.version>2.2.0.RELEASE</spring.version>
+        <vaadin.spring.version>15.0-SNAPSHOT</vaadin.spring.version>
         <server.port>8888</server.port>
         <vaadin.clientSideMode>true</vaadin.clientSideMode>
     </properties>
@@ -41,6 +42,17 @@
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-spring-boot-starter</artifactId>
+            <version>${vaadin.spring.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.vaadin</groupId>
+                    <artifactId>vaadin-core</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
             <artifactId>vaadin-spring</artifactId>
             <version>12.2-SNAPSHOT</version>
             <exclusions>
@@ -62,10 +74,6 @@
             <groupId>com.vaadin</groupId>
             <artifactId>flow-server-production-mode</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
