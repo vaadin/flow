@@ -22,6 +22,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -37,6 +38,7 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.migration.ClassPathIntrospector;
 import com.vaadin.flow.plugin.samplecode.AbstractExporter;
 import com.vaadin.flow.plugin.samplecode.BarExporter;
@@ -176,8 +178,15 @@ public class WebComponentModulesGeneratorTest {
         Mockito.when(
                 finder.loadClass(WebComponentModulesWriter.class.getName()))
                 .thenReturn((Class) WebComponentModulesWriter.class);
+        Mockito.when(finder.loadClass(WebComponentExporter.class.getName()))
+                .thenReturn((Class) WebComponentExporter.class);
         Mockito.when(finder.getSubTypesOf(WebComponentExporter.class))
                 .thenReturn(Stream.of(exporters).collect(Collectors.toSet()));
+        Mockito.when(
+                finder.loadClass(WebComponentExporterFactory.class.getName()))
+                .thenReturn((Class) WebComponentExporterFactory.class);
+        Mockito.when(finder.getSubTypesOf(WebComponentExporterFactory.class))
+                .thenReturn(Collections.emptySet());
         return finder;
     }
 }

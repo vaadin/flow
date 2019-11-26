@@ -31,6 +31,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
@@ -66,6 +67,10 @@ public class FrontendDependenciesTest {
         Mockito.when(
                 classFinder.loadClass(WebComponentExporter.class.getName()))
                 .thenReturn((Class) WebComponentExporter.class);
+
+        Mockito.when(classFinder
+                .loadClass(WebComponentExporterFactory.class.getName()))
+                .thenReturn((Class) WebComponentExporterFactory.class);
 
         Mockito.when(classFinder.loadClass(HasErrorParameter.class.getName()))
                 .thenReturn((Class) HasErrorParameter.class);

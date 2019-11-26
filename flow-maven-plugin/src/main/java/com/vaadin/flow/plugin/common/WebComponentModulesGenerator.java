@@ -74,7 +74,7 @@ public class WebComponentModulesGenerator extends ClassPathIntrospector {
         Set<Class<?>> exporterRelatedClasses = new HashSet<>();
         getSubtypes(WebComponentExporter.class)
                 .forEach(exporterRelatedClasses::add);
-        getSubtypes(WebComponentExporter.class)
+        getSubtypes(WebComponentExporterFactory.class)
                 .forEach(exporterRelatedClasses::add);
 
         return WebComponentModulesWriter.DirectoryWriter
