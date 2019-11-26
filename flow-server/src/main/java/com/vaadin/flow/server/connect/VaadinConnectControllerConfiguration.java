@@ -61,29 +61,18 @@ public class VaadinConnectControllerConfiguration {
             public RequestMappingHandlerMapping getRequestMappingHandlerMapping() {
                 return new RequestMappingHandlerMapping() {
 
-                    // If Spring application context initialization fails here with a stack overflow
-                    // when starting a project that also has the `vaadin-spring` dependency, make sure
-                    // that the Spring version in `flow-server` and in `vaadin-spring` is the same.
                     @Override
                     protected void registerHandlerMethod(Object handler,
                             Method method, RequestMappingInfo mapping) {
+                        // If Spring context initialization fails here with a
+                        // stack overflow in a project that also has the
+                        // `vaadin-spring` dependency, make sure that the Spring
+                        // version in `flow-server` and in `vaadin-spring` is
+                        // the same.
 
                         if (VaadinConnectController.class
                                 .equals(method.getDeclaringClass())) {
-                            PatternsRequestCondition connectServicePattern = new PatternsRequestCondition(
-                                    vaadinConnectProperties
-                                            .getVaadinConnectEndpoint())
-                                                    .combine(mapping
-                                                            .getPatternsCondition());
-
-                            mapping = new RequestMappingInfo(mapping.getName(),
-                                    connectServicePattern,
-                                    mapping.getMethodsCondition(),
-                                    mapping.getParamsCondition(),
-                                    mapping.getHeadersCondition(),
-                                    mapping.getConsumesCondition(),
-                                    mapping.getProducesCondition(),
-                                    mapping.getCustomCondition());
+                            mapping = prependConnectEndpointUrl(mapping);
                         }
 
                         super.registerHandlerMethod(handler, method, mapping);
@@ -91,6 +80,27 @@ public class VaadinConnectControllerConfiguration {
                 };
             }
         };
+    }
+
+    /**
+     * Prepends the Connect endpoint URL from the Vaadin Connect properties to
+     * the {@code pattern} of a {@link RequestMappingInfo} object, and returns
+     * the updated mapping as a new object (not modifying the given
+     * {@param mapping} parameter).
+     *
+     * @return a new mapping with the Connect endpoint URL prepended to the
+     *         mapping pattern
+     */
+    private RequestMappingInfo prependConnectEndpointUrl(
+            RequestMappingInfo mapping) {
+        PatternsRequestCondition connectServicePattern = new PatternsRequestCondition(
+                vaadinConnectProperties.getVaadinConnectEndpoint())
+                        .combine(mapping.getPatternsCondition());
+
+        return new RequestMappingInfo(mapping.getName(), connectServicePattern,
+                mapping.getMethodsCondition(), mapping.getParamsCondition(),
+                mapping.getHeadersCondition(), mapping.getConsumesCondition(),
+                mapping.getProducesCondition(), mapping.getCustomCondition());
     }
 
     /**
