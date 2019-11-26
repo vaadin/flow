@@ -18,7 +18,6 @@ package com.vaadin.flow.server;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -151,12 +150,16 @@ public final class DevModeHandler {
                         "-d --inline=false")
                 .split(" +")));
 
-        if (getLogger().isInfoEnabled()) {
-            getLogger().info(
-                    "Starting webpack-dev-server, port: {} dir: {}\n   {}",
-                    port, npmFolder, String.join(" ", command));
+        if (getLogger().isDebugEnabled()) {
+            getLogger()
+                    .debug("Starting webpack-dev-server, port: {} dir: {}\n   {}",
+                            port, npmFolder, String.join(" ", command));
+        } else {
+            getLogger()
+                    .info("Starting webpack-dev-server, port: {} dir: {}", port,
+                            npmFolder);
         }
-
+        long start = System.currentTimeMillis();
         processBuilder.command(command);
         try {
             webpackProcess = processBuilder
@@ -186,6 +189,7 @@ public final class DevModeHandler {
 
             logStream(webpackProcess.getInputStream(), succeed, failure);
 
+            getLogger().info("Waiting for webpack compilation before proceeding.");
             synchronized (this) {
                 this.wait(Integer.parseInt(config.getStringProperty( // NOSONAR
                         SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT,
@@ -195,6 +199,9 @@ public final class DevModeHandler {
             if (!webpackProcess.isAlive()) {
                 throw new IllegalStateException("Webpack exited prematurely");
             }
+            getLogger()
+                    .info("Webpack startup and compilation completed in {}ms",
+                            (System.currentTimeMillis() - start));
         } catch (IOException | InterruptedException e) {
             getLogger().error("Failed to start the webpack process", e);
         }
@@ -440,10 +447,11 @@ public final class DevModeHandler {
 
     private void readLinesLoop(Pattern success, Pattern failure,
             BufferedReader reader) throws IOException {
-        StringBuilder output = new StringBuilder();
-        Consumer<String> info = s -> getLogger().info(GREEN, s);
+        StringBuilder output = getOutputBuilder();
+        
+        Consumer<String> info = s -> getLogger().debug(GREEN, s);
         Consumer<String> error = s -> getLogger().error(RED, s);
-        Consumer<String> warn = s -> getLogger().warn(YELLOW, s);
+        Consumer<String> warn = s -> getLogger().debug(YELLOW, s);
         Consumer<String> log = info;
         for (String line; ((line = reader.readLine()) != null);) {
             String cleanLine = line
@@ -457,8 +465,11 @@ public final class DevModeHandler {
                     : line.contains("ERROR") ? error : log;
             log.accept(cleanLine);
 
-            // save output so as it can be used to alert user in browser.
-            output.append(cleanLine).append('\n');
+            // Only store webpack errors to be shown in the browser.
+            if(line.contains("ERROR")) {
+                // save output so as it can be used to alert user in browser.
+                output.append(cleanLine).append(System.lineSeparator());
+            }
 
             boolean succeed = success.matcher(line).find();
             boolean failed = failure.matcher(line).find();
@@ -468,12 +479,18 @@ public final class DevModeHandler {
                 // save output in case of failure
                 failedOutput = failed ? output.toString() : null;
                 // reset output and logger for the next compilation
-                output = new StringBuilder();
+                output = getOutputBuilder();
                 log = info;
                 // Notify DevModeHandler to continue
                 doNotify();
             }
         }
+    }
+
+    private StringBuilder getOutputBuilder() {
+        StringBuilder output = new StringBuilder();
+        output.append(String.format("Webpack build failed with errors:%n"));
+        return output;
     }
 
     private void writeStream(ServletOutputStream outputStream,
