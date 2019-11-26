@@ -20,6 +20,9 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.Collection;
 
+import elemental.json.Json;
+import elemental.json.JsonObject;
+import elemental.json.JsonValue;
 import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResource.TRANSPORT;
@@ -70,10 +73,10 @@ public class PushHandler {
      * open by calling resource.suspend(). If there is a pending push, send it
      * now.
      */
-    private final PushEventCallback establishCallback = ( resource,  ui) -> {
-            getLogger().debug(
-                    "New push connection for resource {} with transport {}",
-                     resource.uuid(), resource.transport() );
+    private final PushEventCallback establishCallback = (resource, ui) -> {
+        getLogger().debug(
+                "New push connection for resource {} with transport {}",
+                resource.uuid(), resource.transport());
 
         resource.getResponse().setContentType("text/plain; charset=UTF-8");
 
@@ -105,8 +108,7 @@ public class PushHandler {
      * respond to the request directly.)
      */
     private final PushEventCallback receiveCallback = (resource, ui) -> {
-        getLogger().debug("Received message from resource {}",
-                resource.uuid());
+        getLogger().debug("Received message from resource {}", resource.uuid());
 
         AtmosphereRequest req = resource.getRequest();
 
@@ -137,8 +139,7 @@ public class PushHandler {
             // Refresh on client side
             sendRefreshAndDisconnect(resource);
         } catch (InvalidUIDLSecurityKeyException e) {
-            getLogger().warn(
-                    "Invalid security key received from {}",
+            getLogger().warn("Invalid security key received from {}",
                     resource.getRequest().getRemoteHost());
             // Refresh on client side
             sendRefreshAndDisconnect(resource);
@@ -200,7 +201,8 @@ public class PushHandler {
                 assert VaadinSession.getCurrent() == session;
             } catch (SessionExpiredException e) {
                 sendNotificationAndDisconnect(resource,
-                        VaadinService.createSessionExpiredJSON());
+                        wrapJsonForClient(getWithAsyncIncluded(
+                                VaadinService.createSessionExpiredJSON())));
                 return;
             }
 
@@ -212,7 +214,8 @@ public class PushHandler {
 
                 if (ui == null) {
                     sendNotificationAndDisconnect(resource,
-                            VaadinService.createUINotFoundJSON());
+                            wrapJsonForClient(getWithAsyncIncluded(
+                                    VaadinService.createUINotFoundJSON())));
                 } else {
                     callback.run(resource, ui);
                 }
@@ -244,8 +247,7 @@ public class PushHandler {
                 try {
                     session.unlock();
                 } catch (Exception e) {
-                    getLogger().warn(
-                            "Error while unlocking session", e);
+                    getLogger().warn("Error while unlocking session", e);
                     // can't call ErrorHandler, we (hopefully) don't have a lock
                 }
             }
@@ -260,6 +262,29 @@ public class PushHandler {
                 // can't call ErrorHandler, we don't have a lock
             }
         }
+    }
+
+    private String getWithAsyncIncluded(String jsonString) {
+        JsonObject json = Json.parse(jsonString);
+
+        if (json.hasKey("meta")) {
+            JsonObject meta = Json.createObject();
+            JsonObject oldMeta = json.getObject("meta");
+
+            meta.put(JsonConstants.META_ASYNC, true);
+            for (String key: oldMeta.keys()) {
+                meta.put(key, (JsonValue) oldMeta.get(key));
+            }
+
+            json.put("meta", meta);
+        }
+
+        return json.toString();
+    }
+
+    private static String wrapJsonForClient(String jsonString) {
+        // some dirt to prevent cross site scripting
+        return "for(;;);[" + jsonString + "]";
     }
 
     /**
@@ -280,8 +305,7 @@ public class PushHandler {
 
     void connectionLost(AtmosphereResourceEvent event) {
         if (event == null) {
-            getLogger().error(
-                    "Could not get event. This should never happen.");
+            getLogger().error("Could not get event. This should never happen.");
             return;
         }
         // We don't want to use callWithUi here, as it assumes there's a client
@@ -290,8 +314,6 @@ public class PushHandler {
 
         AtmosphereResource resource = event.getResource();
         if (resource == null) {
-            getLogger().error(
-                    "Could not get resource. This should never happen.");
             return;
         }
         VaadinServletRequest vaadinRequest = new VaadinServletRequest(
@@ -330,8 +352,8 @@ public class PushHandler {
                 ui = findUiUsingResource(resource, session.getUIs());
 
                 if (ui == null) {
-                    getLogger().debug(
-                            "Could not get UI. This should never happen,"
+                    getLogger()
+                            .debug("Could not get UI. This should never happen,"
                                     + " except when reloading in Firefox and Chrome -"
                                     + " see http://dev.vaadin.com/ticket/14251.");
                     return;
@@ -358,8 +380,7 @@ public class PushHandler {
                      * The client is expected to close the connection after push
                      * mode has been set to disabled.
                      */
-                    getLogger().debug(
-                            "Connection closed for resource {}", id);
+                    getLogger().debug("Connection closed for resource {}", id);
                 } else {
                     /*
                      * Unexpected cancel, e.g. if the user closes the browser
@@ -379,8 +400,7 @@ public class PushHandler {
             try {
                 session.unlock();
             } catch (Exception e) {
-                getLogger().warn("Error while unlocking session",
-                        e);
+                getLogger().warn("Error while unlocking session", e);
                 // can't call ErrorHandler, we (hopefully) don't have a lock
             }
         }
@@ -441,8 +461,8 @@ public class PushHandler {
             resource.getResponse().getWriter().write(notificationJson);
             resource.resume();
         } catch (Exception e) {
-            getLogger().trace(
-                    "Failed to send critical notification to client", e);
+            getLogger().trace("Failed to send critical notification to client",
+                    e);
         }
     }
 
