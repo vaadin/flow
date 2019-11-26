@@ -15,8 +15,6 @@
  */
 package com.vaadin.client.flow.reactive;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import com.vaadin.client.Command;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
