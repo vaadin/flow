@@ -62,6 +62,9 @@ public final class WebComponentUtils {
 
         classes.stream()
                 .filter(WebComponentExporterFactory.class::isAssignableFrom)
+                .filter(clazz -> !Modifier.isAbstract(clazz.getModifiers()))
+                .filter(clazz -> !clazz
+                        .equals(DefaultWebComponentExporterFactory.class))
                 .map(clazz -> ReflectTools.createInstance(clazz))
                 .map(WebComponentExporterFactory.class::cast)
                 .forEach(factories::add);
