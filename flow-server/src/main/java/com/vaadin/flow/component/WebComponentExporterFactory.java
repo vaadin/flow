@@ -47,7 +47,7 @@ import com.vaadin.flow.internal.ReflectTools;
  * class).
  * <p>
  * NOTE: the implementation class of the object returned by the
- * {@link #create(String)} method should not be eligible as
+ * {@link #create()} method should not be eligible as
  * {@link WebComponentExporter}. Otherwise two instances of the same type will
  * be created which makes a collision. So the implementation class should not be
  * either public or should not have a default no-arguments constructor.
@@ -68,6 +68,7 @@ public interface WebComponentExporterFactory<C extends Component>
      * tag name of the web component created based on this exporter.
      *
      * @see WebComponentExporter#WebComponentExporter(String)
+     * @return an exporter instance
      */
     WebComponentExporter<C> create();
 
@@ -89,12 +90,10 @@ public interface WebComponentExporterFactory<C extends Component>
          * Creates a {@link WebComponentConfiguration} from the provided
          * {@link WebComponentExporter} class.
          *
-         * @param clazz
+         * @param exporterClass
          *            exporter class, not {@code null}
-         * @return a web component configuration matching the instance of
-         *         received {@code clazz}
          * @throws NullPointerException
-         *             when {@code clazz} is {@code null}
+         *             when {@code exporterClass} is {@code null}
          */
         public DefaultWebComponentExporterFactory(
                 Class<? extends WebComponentExporter<C>> exporterClass) {
