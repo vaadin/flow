@@ -271,14 +271,14 @@ public abstract class WebComponentExporter<C extends Component>
             C component);
 
     /**
-     * Always called before {@link #configure(WebComponent, Component)}.
+     * Always called before {@link #configureInstance(WebComponent, Component)}.
      */
     public final void preConfigure() {
         isConfigureInstanceCall = true;
     }
 
     /**
-     * Always called after {@link #configure(WebComponent, Component)}.
+     * Always called after {@link #configureInstance(WebComponent, Component)}.
      */
     public final void postConfigure() {
         isConfigureInstanceCall = false;
@@ -493,6 +493,9 @@ public abstract class WebComponentExporter<C extends Component>
          *         received {@code exporter}
          * @throws NullPointerException
          *             when {@code exporter} is {@code null}
+         *
+         * @param <T>
+         *            type of the component to export
          */
         public <T extends Component> WebComponentConfiguration<T> create(
                 WebComponentExporter<T> exporter) {

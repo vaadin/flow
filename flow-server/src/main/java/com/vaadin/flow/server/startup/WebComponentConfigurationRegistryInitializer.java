@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
@@ -82,17 +83,18 @@ public class WebComponentConfigurationRegistryInitializer
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private static Set<WebComponentConfiguration<? extends Component>> constructConfigurations(
-            @SuppressWarnings("rawtypes") Set<WebComponentExporterFactory> factories) {
+            Set<WebComponentExporterFactory> factories) {
         Objects.requireNonNull(factories,
                 "Parameter 'exporterClasses' " + "cannot be null!");
 
         final WebComponentExporter.WebComponentConfigurationFactory factory = new WebComponentExporter.WebComponentConfigurationFactory();
 
-        return factories.stream().map(WebComponentExporterFactory::create)
-                .map(exporter -> factory.create(exporter))
-                .collect(Collectors.toSet());
+        Stream<WebComponentConfiguration<? extends Component>> stream = factories
+                .stream().map(WebComponentExporterFactory::create)
+                .map(exporter -> factory.create(exporter)).map(conf -> conf);
+        return stream.collect(Collectors.toSet());
     }
 
     /**
