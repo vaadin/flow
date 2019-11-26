@@ -15,12 +15,9 @@
  */
 package com.vaadin.flow.webcomponent;
 
-import java.util.List;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
@@ -79,21 +76,5 @@ public class WebComponentIT extends ChromeBrowserTest implements HasById {
 
         Assert.assertEquals("rgba(255, 0, 0, 1)",
                 content.getCssValue("color"));
-    }
-
-    // test for #7005
-    @Test
-    public void globalStylesAreUnderTheWebComponent() {
-        open();
-
-        waitForElementVisible(By.tagName("themed-web-component"));
-        
-        TestBenchElement webComponent = $("themed-web-component").first();
-
-        List<TestBenchElement> styles = webComponent.$("style").all();
-        System.out.println(styles.size());
-
-        // getAttribute wouldn't work, so we are counting the elements
-        Assert.assertEquals(2, styles.size());
     }
 }

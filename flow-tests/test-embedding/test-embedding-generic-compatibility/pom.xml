@@ -55,6 +55,10 @@
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <configuration>
                     <dependenciesToScan>com.vaadin:flow-embedding-test-assets</dependenciesToScan>
+                    <excludes>
+                        <!-- Remove once #5732 is fixed -->
+                        <exclude>**/NpmOnlyIndexIT.java</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
 
