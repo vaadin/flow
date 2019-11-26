@@ -192,11 +192,17 @@ public class SystemErrorHandler {
             systemErrorContainer.appendChild(detailsDiv);
             Console.error(details);
         }
-        Element baseElement = document.querySelector(querySelector);
-        if (baseElement == null) {
-            baseElement = document.getBody();
+        if (querySelector != null) {
+            Element baseElement = document.querySelector(querySelector);
+            // if querySelector does not match an element on the page, the
+            // error will not be displayed
+            if (baseElement != null) {
+                baseElement.appendChild(systemErrorContainer);
+            }
+        } else {
+            document.getBody().appendChild(systemErrorContainer);
         }
-        baseElement.appendChild(systemErrorContainer);
+
         return systemErrorContainer;
     }
 
