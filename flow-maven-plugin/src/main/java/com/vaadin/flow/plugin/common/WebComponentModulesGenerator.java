@@ -16,10 +16,11 @@
 package com.vaadin.flow.plugin.common;
 
 import java.io.File;
+import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-import com.vaadin.flow.component.internal.ExportsWebComponent;
+import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.migration.ClassPathIntrospector;
 import com.vaadin.flow.server.webcomponent.WebComponentModulesWriter;
 
@@ -29,9 +30,10 @@ import com.vaadin.flow.server.webcomponent.WebComponentModulesWriter;
  *
  * Uses {@link com.vaadin.flow.server.webcomponent.WebComponentModulesWriter} to
  * generate web component modules files from
- * {@link com.vaadin.flow.component.internal.ExportsWebComponent} implementations found
- * by {@link com.vaadin.flow.migration.ClassPathIntrospector}.
- * 
+ * {@link WebComponentExporter}/{@link WebComponentExporterFactory}
+ * implementations found by
+ * {@link com.vaadin.flow.migration.ClassPathIntrospector}.
+ *
  * @author Vaadin Ltd.
  * @since 2.0
  */
@@ -57,7 +59,8 @@ public class WebComponentModulesGenerator extends ClassPathIntrospector {
      * Collects
      * {@link com.vaadin.flow.server.webcomponent.WebComponentModulesWriter}
      * class and classes that extend
-     * {@link com.vaadin.flow.component.internal.ExportsWebComponent} using {@code
+     * {@link com.vaadin.flow.component.internal.ExportsWebComponent} using
+     * {@code
      * inspector}. Generates web component modules and places the into the
      * {@code outputDirectory}.
      *
@@ -68,12 +71,15 @@ public class WebComponentModulesGenerator extends ClassPathIntrospector {
      *             if {@code inspector} cannot locate required classes
      */
     public Set<File> generateWebComponentModules(File outputDirectory) {
-        Set<Class<?>> exporterClasses = getSubtypes(ExportsWebComponent.class)
-                .collect(Collectors.toSet());
+        Set<Class<?>> exporterRelatedClasses = new HashSet<>();
+        getSubtypes(WebComponentExporter.class)
+                .forEach(exporterRelatedClasses::add);
+        getSubtypes(WebComponentExporter.class)
+                .forEach(exporterRelatedClasses::add);
 
         return WebComponentModulesWriter.DirectoryWriter
                 .generateWebComponentsToDirectory(getWriterClass(),
-                        exporterClasses, outputDirectory, true);
+                        exporterRelatedClasses, outputDirectory, true);
     }
 
     private Class<?> getWriterClass() {

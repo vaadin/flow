@@ -20,7 +20,6 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
 
-import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,27 +29,29 @@ import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.internal.CustomElementNameValidator;
 import com.vaadin.flow.server.InvalidCustomElementNameException;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
+import com.vaadin.flow.server.webcomponent.WebComponentUtils;
 
 /**
  * Servlet initializer for collecting all classes that extend
- * {@link WebComponentExporter} on startup, creates unique
- * {@link WebComponentConfiguration} instances, and adds them to
+ * {@link WebComponentExporter}/{@link WebComponentExporterFactory} on startup,
+ * creates unique {@link WebComponentConfiguration} instances, and adds them to
  * {@link WebComponentConfigurationRegistry}.
  *
  * @author Vaadin Ltd.
  * @since 2.0
  */
-@HandlesTypes({ WebComponentExporter.class })
+@HandlesTypes({ WebComponentExporter.class, WebComponentExporterFactory.class })
 public class WebComponentConfigurationRegistryInitializer
         implements ServletContainerInitializer {
 
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void onStartup(Set<Class<?>> set, ServletContext servletContext)
             throws ServletException {
         WebComponentConfigurationRegistry instance = WebComponentConfigurationRegistry
@@ -62,16 +63,10 @@ public class WebComponentConfigurationRegistryInitializer
         }
 
         try {
-            Set<Class<? extends WebComponentExporter<? extends Component>>> exporterClasses = set
-                    .stream()
-                    .filter(WebComponentExporter.class::isAssignableFrom)
-                    .filter(clazz -> !clazz.isInterface()
-                            && !Modifier.isAbstract(clazz.getModifiers()))
-                    .map(aClass -> (Class<? extends WebComponentExporter<? extends Component>>) aClass)
-                    .collect(Collectors.toSet());
-
+            Set<WebComponentExporterFactory> factories = WebComponentUtils
+                    .getFactories(set);
             Set<WebComponentConfiguration<? extends Component>> configurations = constructConfigurations(
-                    exporterClasses);
+                    factories);
 
             validateTagNames(configurations);
             validateDistinctTagNames(configurations);
@@ -87,14 +82,16 @@ public class WebComponentConfigurationRegistryInitializer
         }
     }
 
+    @SuppressWarnings("unchecked")
     private static Set<WebComponentConfiguration<? extends Component>> constructConfigurations(
-            Set<Class<? extends WebComponentExporter<? extends Component>>> exporterClasses) {
-        Objects.requireNonNull(exporterClasses,
+            @SuppressWarnings("rawtypes") Set<WebComponentExporterFactory> factories) {
+        Objects.requireNonNull(factories,
                 "Parameter 'exporterClasses' " + "cannot be null!");
 
         final WebComponentExporter.WebComponentConfigurationFactory factory = new WebComponentExporter.WebComponentConfigurationFactory();
 
-        return exporterClasses.stream().map(factory::create)
+        return factories.stream().map(WebComponentExporterFactory::create)
+                .map(exporter -> factory.create(exporter))
                 .collect(Collectors.toSet());
     }
 

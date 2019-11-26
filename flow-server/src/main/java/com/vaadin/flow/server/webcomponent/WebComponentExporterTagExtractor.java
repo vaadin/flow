@@ -18,22 +18,23 @@ package com.vaadin.flow.server.webcomponent;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.function.SerializableFunction;
 
 /**
  * Retrieves web component tag from a
- * {@link com.vaadin.flow.component.WebComponentExporter} class.
+ * {@link com.vaadin.flow.component.WebComponentExporterFactory} object.
  *
  * @author Vaadin Ltd.
  * @since 2.0
  */
 public final class WebComponentExporterTagExtractor implements
-        SerializableFunction<Class<? extends WebComponentExporter<? extends Component>>, String> {
+        SerializableFunction<WebComponentExporterFactory<? extends Component>, String> {
 
     @Override
     public String apply(
-            Class<? extends WebComponentExporter<? extends Component>> exporterClass) {
+            WebComponentExporterFactory<? extends Component> factory) {
         return new WebComponentExporter.WebComponentConfigurationFactory()
-                .create(exporterClass).getTag();
+                .create(factory.create()).getTag();
     }
 }

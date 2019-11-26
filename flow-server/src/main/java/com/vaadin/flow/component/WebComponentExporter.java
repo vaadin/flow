@@ -17,7 +17,6 @@
 package com.vaadin.flow.component;
 
 import java.io.Serializable;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -84,8 +83,11 @@ import elemental.json.JsonValue;
  *            type of the component to export
  * @author Vaadin Ltd.
  * @since 2.0
+ *
+ * @see WebComponentExporterFactory
  */
-public abstract class WebComponentExporter<C extends Component> {
+public abstract class WebComponentExporter<C extends Component>
+        implements Serializable {
 
     private static final List<Class> SUPPORTED_TYPES = Collections
             .unmodifiableList(Arrays.asList(Boolean.class, String.class,
@@ -482,43 +484,6 @@ public abstract class WebComponentExporter<C extends Component> {
             implements Serializable {
 
         /**
-         * Creates a {@link WebComponentConfiguration} from the provided
-         * {@link WebComponentExporter} class.
-         *
-         * @param clazz
-         *            exporter class, not {@code null}
-         * @return a web component configuration matching the instance of
-         *         received {@code clazz}
-         * @throws NullPointerException
-         *             when {@code clazz} is {@code null}
-         */
-        public WebComponentConfiguration<? extends Component> create(
-                Class<? extends WebComponentExporter<? extends Component>> clazz) {
-            Objects.requireNonNull(clazz, "Parameter 'clazz' cannot be null!");
-            WebComponentExporter<? extends Component> exporter;
-            try {
-                exporter = ReflectTools.createInstance(clazz);
-            } catch (IllegalArgumentException e) {
-                if (e.getCause() != null && e.getCause().getClass()
-                        .equals(InvocationTargetException.class)) {
-                    Throwable cause2 = e.getCause().getCause();
-                    if (cause2 != null && cause2.getClass()
-                            .equals(NullTagException.class)) {
-                        throw new IllegalArgumentException(String.format(
-                                "Unable to construct %s! Did "
-                                        + "'%s' give null value to "
-                                        + "super(String) constructor?",
-                                WebComponentConfiguration.class.getSimpleName(),
-                                clazz.getCanonicalName()), e);
-                    }
-                }
-                // unknown reason, cannot add information
-                throw e;
-            }
-            return create(exporter);
-        }
-
-        /**
          * Creates a {@link WebComponentConfiguration} for the provided
          * {@link WebComponentExporter} instances.
          *
@@ -529,8 +494,8 @@ public abstract class WebComponentExporter<C extends Component> {
          * @throws NullPointerException
          *             when {@code exporter} is {@code null}
          */
-        public WebComponentConfiguration<? extends Component> create(
-                WebComponentExporter<? extends Component> exporter) {
+        public <T extends Component> WebComponentConfiguration<T> create(
+                WebComponentExporter<T> exporter) {
             Objects.requireNonNull(exporter,
                     "Parameter 'exporter' cannot be " + "null!");
 
@@ -539,7 +504,7 @@ public abstract class WebComponentExporter<C extends Component> {
 
     }
 
-    private static class NullTagException extends NullPointerException {
+    static class NullTagException extends NullPointerException {
         NullTagException(String msg) {
             super(msg);
         }
