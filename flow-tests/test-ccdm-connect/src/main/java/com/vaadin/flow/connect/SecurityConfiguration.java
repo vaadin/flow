@@ -71,7 +71,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
      * Allows access to static resources, bypassing Spring security.
      */
     @Override
-    public void configure(WebSecurity web) throws Exception {
+    public void configure(WebSecurity web) {
         web.ignoring().antMatchers(
                 // Vaadin Flow static resources
                 "/VAADIN/**");
