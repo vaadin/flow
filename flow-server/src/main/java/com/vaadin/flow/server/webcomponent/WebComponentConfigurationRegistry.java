@@ -21,6 +21,7 @@ import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.internal.nodefeature.TextNodeMap;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.osgi.OSGiAccess;
@@ -219,7 +220,14 @@ public class WebComponentConfigurationRegistry implements Serializable {
         }
     }
 
-    public void setBootstrapElements(List<Element> elements) {
+    /**
+     * Set the elements that should be added to each shadow dom hosting an
+     * embedded web component.
+     * 
+     * @param elements
+     *            list of shadow dom elements
+     */
+    public void setShadowDomElements(List<Element> elements) {
         lock();
         try {
             this.bootstrapElements = new ArrayList<>(elements);
@@ -227,13 +235,20 @@ public class WebComponentConfigurationRegistry implements Serializable {
             unlock();
         }
     }
-    
-    public List<Element> getBootstrapElements() {
+
+    /**
+     * Get a copy of the elements that should be added to the shadow dom hosting
+     * the embedded web component.
+     * 
+     * @return copy of shadow dom elements
+     */
+    public List<Element> getShadowDomElements() {
         lock();
         try {
             if (bootstrapElements != null) {
                 return Collections.unmodifiableList(bootstrapElements.stream()
-                        .map(Element::createCopy).collect(Collectors.toList()));
+                        .map(WebComponentConfigurationRegistry::copyElementTree)
+                        .collect(Collectors.toList()));
             } else {
                 return Collections.emptyList();
             }
@@ -327,5 +342,38 @@ public class WebComponentConfigurationRegistry implements Serializable {
 
     private void assertLockHeld() {
         assert configurationLock.isHeldByCurrentThread();
+    }
+
+    /**
+     * Creates a copy of the element sub-tree, with the given
+     * {@code rootElement} as the root element of the created tree. State
+     * information is not copied, only attributes, properties, and child
+     * elements.
+     * 
+     * @param rootElement
+     *            element to copy and make the root node of the new element tree
+     * @return copy of the given {@code rootElement} with copied child hierarchy
+     */
+    private static Element copyElementTree(Element rootElement) {
+        if (rootElement.getNode().hasFeature(TextNodeMap.class)) {
+            return Element.createText(rootElement.getText());
+        }
+        Element ret = new Element(rootElement.getTag());
+        rootElement.getAttributeNames().forEach(
+                name -> ret.setAttribute(name, rootElement.getAttribute(name)));
+        rootElement.getPropertyNames().forEach(name -> {
+            Serializable otherProperty = rootElement.getPropertyRaw(name);
+            if (otherProperty instanceof String) {
+                ret.setProperty(name, (String) otherProperty);
+            } else if (otherProperty instanceof Double) {
+                ret.setProperty(name, (Double) otherProperty);
+            } else if (otherProperty instanceof Boolean) {
+                ret.setProperty(name, (Boolean) otherProperty);
+            }
+        });
+
+        rootElement.getChildren().map(WebComponentConfigurationRegistry::copyElementTree)
+                .forEach(ret::appendChild);
+        return ret;
     }
 }

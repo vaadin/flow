@@ -237,14 +237,21 @@ public class ElementUtil {
     }
 
     /**
-     * TODO!
+     * Converts a given JSoup {@link org.jsoup.nodes.Node} and its children into
+     * a matching {@link com.vaadin.flow.dom.Element} hierarchy.
+     * <p>
+     * Only nodes of type {@link org.jsoup.nodes.TextNode} and
+     * {@link org.jsoup.nodes.Element} are converted - other node types return
+     * an empty optional.
+     *
      * @param node
-     * @return
+     *            JSoup node to convert
+     * @return element with the matching hierarchy as the given node, or empty
      */
-    public static Element fromJsoup(Node node) {
+    public static Optional<Element> fromJsoup(Node node) {
         Element ret;
         if (node instanceof TextNode) {
-            return  Element.createText(((TextNode) node).text());
+            return Optional.of(Element.createText(((TextNode) node).text()));
         } else if (node instanceof org.jsoup.nodes.Element) {
             org.jsoup.nodes.Element jsoupElement = (org.jsoup.nodes.Element) node;
             ret = new Element(jsoupElement.tagName());
@@ -258,7 +265,7 @@ public class ElementUtil {
                             "Could not convert a %s, '%s' into %s!",
                             Node.class.getName(), node.toString(),
                             Element.class.getName()));
-            return null;
+            return Optional.empty();
         }
 
         node.attributes().asList().forEach(attribute -> ret
@@ -266,10 +273,11 @@ public class ElementUtil {
 
         List<Node> childNodes = node.childNodes();
         if (childNodes != null && childNodes.size() > 0) {
-            childNodes.forEach(child -> ret.appendChild(fromJsoup(child)));
+            childNodes.forEach(
+                    child -> fromJsoup(child).ifPresent(ret::appendChild));
         }
 
-        return ret;
+        return Optional.of(ret);
     }
 
     /**

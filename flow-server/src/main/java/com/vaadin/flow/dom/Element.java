@@ -41,7 +41,6 @@ import com.vaadin.flow.dom.impl.CustomAttribute;
 import com.vaadin.flow.dom.impl.ThemeListImpl;
 import com.vaadin.flow.internal.JavaScriptSemantics;
 import com.vaadin.flow.internal.JsonCodec;
-import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.internal.nodefeature.TextNodeMap;
@@ -113,33 +112,6 @@ public class Element extends Node<Element> {
 
         assert getNode() != null;
         assert getStateProvider() != null;
-    }
-
-    /**
-     * TODO!
-     * @param other
-     *
-     */
-    public static Element createCopy(Element other) {
-        if (other.getNode().hasFeature(TextNodeMap.class)) {
-            return createText(other.getText());
-        }
-        Element ret = new Element(other.getTag());
-        other.getAttributeNames().forEach(
-                name -> ret.setAttribute(name, other.getAttribute(name)));
-        other.getPropertyNames().forEach(name -> {
-            Serializable otherProperty = other.getPropertyRaw(name);
-            if (otherProperty instanceof String) {
-                ret.setProperty(name, (String) otherProperty);
-            } else if (otherProperty instanceof Double) {
-                ret.setProperty(name, (Double) otherProperty);
-            } else if (otherProperty instanceof Boolean) {
-                ret.setProperty(name, (Boolean) otherProperty);
-            }
-        });
-
-        other.getChildren().map(Element::createCopy).forEach(ret::appendChild);
-        return ret;
     }
 
     /**

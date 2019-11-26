@@ -40,7 +40,6 @@ import elemental.json.JsonValue;
  */
 public class WebComponentWrapper extends Component {
 
-    private Component embeddedComponent;
     private WebComponentBinding<?> webComponentBinding;
 
     // Disconnect timeout
@@ -65,8 +64,7 @@ public class WebComponentWrapper extends Component {
                 "Parameter 'binding' must not be null!");
 
         this.webComponentBinding = binding;
-        this.embeddedComponent = webComponentBinding.getComponent();
-        getElement().attachShadow().appendChild(embeddedComponent.getElement());
+        getElement().attachShadow().appendChild(webComponentBinding.getComponent().getElement());
     }
 
     public WebComponentWrapper(Element rootElement,
@@ -92,7 +90,7 @@ public class WebComponentWrapper extends Component {
         try {
             webComponentBinding.updateProperty(property, newValue);
         } catch (IllegalArgumentException e) {
-            LoggerFactory.getLogger(embeddedComponent.getClass())
+            LoggerFactory.getLogger(webComponentBinding.getComponent().getClass())
                     .error("Failed to synchronise property '{}'", property, e);
         }
     }
@@ -107,7 +105,7 @@ public class WebComponentWrapper extends Component {
         } else {
             LoggerFactory.getLogger(WebComponentUI.class).warn(
                     "Received reconnect request for non disconnected WebComponent '{}'",
-                    this.embeddedComponent.getClass().getName());
+                    webComponentBinding.getComponent().getClass().getName());
         }
     }
 

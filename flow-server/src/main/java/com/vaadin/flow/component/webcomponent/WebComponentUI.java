@@ -241,7 +241,7 @@ public class WebComponentUI extends UI {
         WebComponentBinding binding = configuration.createWebComponentBinding(
                 Instantiator.get(this), rootElement, event.getAttributeJson());
         WebComponentWrapper wrapper = new WebComponentWrapper(rootElement,
-                binding, getConfigurationRegistry().getBootstrapElements());
+                binding, getConfigurationRegistry().getShadowDomElements());
 
         return wrapper.getElement();
     }

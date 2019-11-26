@@ -25,7 +25,7 @@ import org.openqa.selenium.WebElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
-public class WebComponentIT extends ChromeBrowserTest {
+public class WebComponentIT extends ChromeBrowserTest implements HasById {
 
     @Override
     protected String getTestPath() {
@@ -38,9 +38,8 @@ public class WebComponentIT extends ChromeBrowserTest {
 
         waitForElementVisible(By.id("show-message"));
 
-        WebElement showMessage = findElement(By.id("show-message"));
-        WebElement select = getInShadowRoot(showMessage,
-                By.cssSelector("select"));
+        TestBenchElement showMessage = byId("show-message");
+        TestBenchElement select = showMessage.$("select").first();
 
         // Selection is visibly changed and event manually dispatched
         // as else the change is not seen.
@@ -50,18 +49,18 @@ public class WebComponentIT extends ChromeBrowserTest {
                 select);
 
         Assert.assertEquals("Selected: Peter, Parker",
-                getInShadowRoot(showMessage, By.cssSelector("span")).getText());
+                showMessage.$("span").first().getText());
 
-        WebElement noMessage = findElement(By.id("no-message"));
+        TestBenchElement noMessage = byId("no-message");
 
-        select = getInShadowRoot(noMessage, By.cssSelector("select"));
+        select = noMessage.$("select").first();
         getCommandExecutor().executeScript(
                 "arguments[0].value='Peter';"
                         + "arguments[0].dispatchEvent(new Event('change'));",
                 select);
 
         Assert.assertFalse("Message should not be visible",
-                getInShadowRoot(noMessage, By.cssSelector("span"))
+                noMessage.$("span").first()
                         .isDisplayed());
     }
 
@@ -72,11 +71,9 @@ public class WebComponentIT extends ChromeBrowserTest {
         waitForElementVisible(By.tagName("themed-web-component"));
 
         TestBenchElement webComponent = $("themed-web-component").first();
-        WebElement themedComponent = getInShadowRoot(webComponent,
-                By.tagName("themed-component"));
+        TestBenchElement themedComponent = webComponent.$("themed-component").first();
 
-        WebElement content = getInShadowRoot(themedComponent,
-                By.tagName("div"));
+        TestBenchElement content = themedComponent.$("div").first();
         Assert.assertNotNull("The component which should use theme doesn't "
                 + "contain elements", content);
 
@@ -93,8 +90,7 @@ public class WebComponentIT extends ChromeBrowserTest {
         
         TestBenchElement webComponent = $("themed-web-component").first();
 
-        List<WebElement> styles = findInShadowRoot(webComponent,
-                By.tagName("style"));
+        List<TestBenchElement> styles = webComponent.$("style").all();
         System.out.println(styles.size());
 
         // getAttribute wouldn't work, so we are counting the elements

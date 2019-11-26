@@ -263,18 +263,18 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
          */
         response.setContentType(contentType);
         /*
-         * Collection Elements that should be under the web component shadow
-         * DOMs rather than the page head
+         * Collection of Elements that should be transferred to the web 
+         * component shadow DOMs rather than the page head
          */
-        ArrayList<com.vaadin.flow.dom.Element> vElements = new ArrayList<>();
+        ArrayList<com.vaadin.flow.dom.Element> elementsForShadows = new ArrayList<>();
         try (BufferedWriter writer = new BufferedWriter(
                 new OutputStreamWriter(response.getOutputStream(), UTF_8))) {
             String varName = "headElem"; // generated head element
             writer.append("var ").append(varName).append("=null;");
             for (Element element : head.children()) {
                 if (elementShouldNotBeTransferred(element)) {
-                    collectElementForWebComponentInjection(element)
-                            .ifPresent(vElements::add);
+                    getElementForShadowDom(element)
+                            .ifPresent(elementsForShadows::add);
                     continue;
                 }
                 writer.append(varName).append("=");
@@ -294,7 +294,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
 
         WebComponentConfigurationRegistry
                 .getInstance(response.getService().getContext())
-                .setBootstrapElements(vElements);
+                .setShadowDomElements(elementsForShadows);
     }
 
     private static boolean elementShouldNotBeTransferred(Element element) {
@@ -312,10 +312,10 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         }
     }
     
-    private static Optional<com.vaadin.flow.dom.Element> collectElementForWebComponentInjection(
+    private static Optional<com.vaadin.flow.dom.Element> getElementForShadowDom(
             Element element) {
         if ("style".equals(element.tagName())) {
-            return Optional.ofNullable(ElementUtil.fromJsoup(element));
+            return ElementUtil.fromJsoup(element);
         }
         return Optional.empty();
     }
