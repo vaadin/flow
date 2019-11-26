@@ -14,7 +14,7 @@
  * the License.
  */
 
-package src.com.vaadin.flow.webcomponent;
+package com.vaadin.flow.webcomponent;
 
 import javax.servlet.annotation.WebServlet;
 import java.io.PrintWriter;
