@@ -210,7 +210,8 @@ public abstract class NodeUpdater implements FallibleCommand {
     boolean updateMainDefaultDependencies(JsonObject packageJson,
             String polymerVersion) {
         int added = 0;
-        added += addDependency(packageJson, null, DEP_NAME_KEY, DEP_NAME_DEFAULT);
+        added += addDependency(packageJson, null, DEP_NAME_KEY,
+                DEP_NAME_DEFAULT);
         added += addDependency(packageJson, null, DEP_LICENSE_KEY,
                 DEP_LICENSE_DEFAULT);
 
@@ -229,8 +230,8 @@ public abstract class NodeUpdater implements FallibleCommand {
             String customPkg = "./" + npmFolder.getAbsoluteFile().toPath()
                     .relativize(generatedFolder.getAbsoluteFile().toPath())
                     .toString();
-            added += addDependency(packageJson, DEPENDENCIES, DEP_NAME_FLOW_DEPS,
-                    customPkg.replaceAll("\\\\", "/"));
+            added += addDependency(packageJson, DEPENDENCIES,
+                    DEP_NAME_FLOW_DEPS, customPkg.replaceAll("\\\\", "/"));
         } catch (IllegalArgumentException iae) {
             log().error("Exception in relativization of '%s' to '%s'",
                     npmFolder.getAbsoluteFile().toPath(),
@@ -253,7 +254,7 @@ public abstract class NodeUpdater implements FallibleCommand {
                 "4.2.2");
         added += addDependency(packageJson, DEV_DEPENDENCIES, "raw-loader",
                 "3.0.0");
-        if(added > 0) {
+        if (added > 0) {
             log().info("Added {} dependencies to main package.json", added);
         }
         return added > 0;
@@ -265,8 +266,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         addDependency(packageJson, null, DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT);
     }
 
-    int addDependency(JsonObject json, String key, String pkg,
-            String vers) {
+    int addDependency(JsonObject json, String key, String pkg, String vers) {
         if (key != null) {
             if (!json.hasKey(key)) {
                 json.put(key, Json.createObject());
