@@ -160,4 +160,21 @@ public class ReactiveTest {
                 order);
     }
 
+    @Test
+    public void flushRunning_newFlushIsIgnored() {
+        List<String> order = new ArrayList<>();
+
+        Reactive.addPostFlushListener(() -> order.add("postFlush"));
+        Reactive.addFlushListener(() -> order.add("flush"));
+        Reactive.addFlushListener(() -> {
+            Reactive.flush();
+            order.add("flush2");
+        });
+
+        Assert.assertEquals(Collections.emptyList(), order);
+
+        Reactive.flush();
+
+        Assert.assertEquals(Arrays.asList("flush", "flush2", "postFlush"), order);
+    }
 }

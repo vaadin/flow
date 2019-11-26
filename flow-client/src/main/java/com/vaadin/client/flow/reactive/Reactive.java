@@ -52,7 +52,7 @@ public class Reactive {
 
     private static Computation currentComputation = null;
 
-    private static AtomicBoolean flushing = new AtomicBoolean(false);
+    private static boolean flushing =false;
 
     private Reactive() {
         // Only static stuff in this class
@@ -99,10 +99,11 @@ public class Reactive {
      * @see #addPostFlushListener(FlushListener)
      */
     public static void flush() {
-        if(!flushing.compareAndSet(false, true)) {
+        if(flushing) {
             return;
         }
         try {
+            flushing = true;
             while (hasFlushListeners() || hasPostFlushListeners()) {
                 // Purge all flush listeners
                 while (hasFlushListeners()) {
@@ -118,7 +119,7 @@ public class Reactive {
                 }
             }
         }finally {
-            flushing.set(false);
+            flushing = false;
         }
     }
 

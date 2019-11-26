@@ -15,83 +15,54 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
-import com.vaadin.flow.component.AttachEvent;
-import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.router.AfterNavigationEvent;
+import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.shared.ui.Transport;
 import com.vaadin.flow.templatemodel.TemplateModel;
-import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 /**
  * Tests a scalability bug #5806 with adding many buttons to a view.
  */
-@Push(transport = Transport.LONG_POLLING)
 @Tag("template-scalability-view")
-@HtmlImport("template-scalability-view.html")
-@Route(value = "com.vaadin.flow.uitest.ui.template.TemplateScalabilityView", layout = ViewTestLayout.class)
+@HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/template-scalability-view.html")
+@JsModule("./template-scalability-view.js")
+@Route(value = "com.vaadin.flow.uitest.ui.template.TemplateScalabilityView")
 @PageTitle("Template scalability")
-public class TemplateScalabilityView extends PolymerTemplate<TemplateModel> {
+public class TemplateScalabilityView extends PolymerTemplate<TemplateModel> implements
+        AfterNavigationObserver {
+
+    public static final String COMPLETED = "completed";
+
+    public static final int NUM_ITEMS = 50;
 
     @Id("content")
     private Div div;
 
-    private Thread worker;
-    private volatile boolean stopped;
-    private UI ui;
+    public TemplateScalabilityView() {
+        setId("scalability-view");
+    }
+
+    private void generateChildren() {
+        div.removeAll();
+        for (int i = 0; i < NUM_ITEMS; ++i) {
+            TemplateScalabilityPanel p = new TemplateScalabilityPanel("Panel " + i);
+            div.add(p);
+        }
+
+        Div complete = new Div();
+        complete.setId(COMPLETED);
+        div.addComponentAsFirst(complete);
+    }
 
     @Override
-    protected void onAttach(AttachEvent attachEvent) {
-        super.onAttach(attachEvent);
-
-        ui = getUI().orElseThrow(RuntimeException::new);
-        stopped = false;
-        worker = new Thread(this::doWork);
-        worker.start();
+    public void afterNavigation(AfterNavigationEvent event) {
+        generateChildren();
     }
-
-    @Override
-    protected void onDetach(DetachEvent detachEvent) {
-        stopped = true;
-
-        try {
-            worker.join(10000);
-            worker = null;
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        super.onDetach(detachEvent);
-    }
-
-    private void doWork() {
-        while (!stopped) {
-            try {
-                Thread.sleep(2000);
-
-                ui.access(() -> {
-                    div.removeAll();
-
-                    for (int i = 0; i < 50; ++i) {
-                        TemplateScalabilityPanel p = new TemplateScalabilityPanel(
-                                "Panel " + i);
-                        div.add(p);
-                    }
-                    Div complete = new Div();
-                    complete.setId("completed");
-                    div.add(complete);
-                });
-
-            } catch (InterruptedException ex) {
-                ex.printStackTrace();
-            }
-        }
-    }
-
 }
