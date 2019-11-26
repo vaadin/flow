@@ -44,7 +44,8 @@ public class WebComponentModulesGenerator extends ClassPathIntrospector {
      * Creates a new instances and stores the {@code introspector} to be used
      * for locating
      * {@link com.vaadin.flow.server.webcomponent.WebComponentModulesWriter}
-     * class and {@link com.vaadin.flow.component.internal.ExportsWebComponent}
+     * class and
+     * {@link WebComponentExporter}/{@link WebComponentExporterFactory}
      * implementations.
      *
      * @param introspector
@@ -58,9 +59,8 @@ public class WebComponentModulesGenerator extends ClassPathIntrospector {
     /**
      * Collects
      * {@link com.vaadin.flow.server.webcomponent.WebComponentModulesWriter}
-     * class and classes that extend
-     * {@link com.vaadin.flow.component.internal.ExportsWebComponent} using
-     * {@code
+     * class and classes that extend {@link WebComponentExporter} or
+     * {@link WebComponentExporterFactory} using {@code
      * inspector}. Generates web component modules and places the into the
      * {@code outputDirectory}.
      *
