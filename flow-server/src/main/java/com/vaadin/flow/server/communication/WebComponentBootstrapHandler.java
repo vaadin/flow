@@ -36,6 +36,7 @@ import com.vaadin.flow.component.webcomponent.WebComponentUI;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.PwaRegistry;
 import com.vaadin.flow.server.ServletHelper;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -87,6 +88,11 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
             Optional<Theme> optionalTheme = getPageConfigurationAnnotation(
                     Theme.class);
             return optionalTheme.map(ThemeDefinition::new);
+        }
+
+        @Override
+        protected Optional<PwaRegistry> getPwaRegistry() {
+            return Optional.empty();
         }
     }
 

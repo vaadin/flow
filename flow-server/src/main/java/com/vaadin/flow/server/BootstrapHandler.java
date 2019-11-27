@@ -370,6 +370,20 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         protected Optional<ThemeDefinition> getTheme() {
             return ui.getThemeFor(pageConfigurationHolder, null);
         }
+
+        /**
+         * Gets a pwa registry instance.
+         *
+         * @return an optional pwa registry instance, or an empty optional if no
+         *         pwa registry available for the context
+         */
+        protected Optional<PwaRegistry> getPwaRegistry() {
+            VaadinService vaadinService = getSession().getService();
+            if (vaadinService == null) {
+                return Optional.empty();
+            }
+            return Optional.ofNullable(vaadinService.getPwaRegistry());
+        }
     }
 
     /**
@@ -990,12 +1004,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
         private void setupPwa(Document document, BootstrapContext context) {
-            VaadinService vaadinService = context.getSession().getService();
-            if (vaadinService == null) {
-                return;
-            }
-
-            PwaRegistry registry = vaadinService.getPwaRegistry();
+            PwaRegistry registry = context.getPwaRegistry().orElse(null);
             if (registry == null) {
                 return;
             }
@@ -1036,7 +1045,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                                 + "  });\n" + "}");
 
                 // add body injections
-                if (registry.getPwaConfiguration().isInstallPromptEnabled()) {
+                if (config.isInstallPromptEnabled()) {
                     // PWA Install prompt html/js
                     document.body().append(registry.getInstallPrompt());
                 }
