@@ -452,7 +452,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         BootstrapContext context = createAndInitUI(uiClass, request, response,
                 session);
 
-        ServletHelper.setResponseNoCacheHeaders(response::setHeader,
+        HandlerHelper.setResponseNoCacheHeaders(response::setHeader,
                 response::setDateHeader);
 
         Document document = pageBuilder.getBootstrapPage(context);
@@ -1319,7 +1319,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             }
 
             // Use locale from session if set, else from the request
-            Locale locale = ServletHelper.findLocale(session, request);
+            Locale locale = HandlerHelper.findLocale(session, request);
             // Get system messages
             SystemMessages systemMessages = session.getService()
                     .getSystemMessages(locale, request);
@@ -1388,7 +1388,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
              * path segment in pathInfo (i.e. the part of the requested path
              * that comes after the servlet mapping)
              */
-            return ServletHelper.getCancelingRelativePath(pathInfo);
+            return HandlerHelper.getCancelingRelativePath(pathInfo);
         }
     }
 

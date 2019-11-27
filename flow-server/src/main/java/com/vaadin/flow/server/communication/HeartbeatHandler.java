@@ -16,19 +16,19 @@
 
 package com.vaadin.flow.server.communication;
 
-import java.io.IOException;
-
 import javax.servlet.http.HttpServletResponse;
+
+import java.io.IOException;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.UIInternals;
-import com.vaadin.flow.server.ServletHelper;
+import com.vaadin.flow.server.HandlerHelper;
+import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.SessionExpiredHandler;
 import com.vaadin.flow.server.SynchronizedRequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.ServletHelper.RequestType;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 /**
@@ -47,7 +47,7 @@ public class HeartbeatHandler extends SynchronizedRequestHandler
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
-        return ServletHelper.isRequestType(request, RequestType.HEARTBEAT);
+        return HandlerHelper.isRequestType(request, RequestType.HEARTBEAT);
     }
 
     /**
@@ -89,7 +89,7 @@ public class HeartbeatHandler extends SynchronizedRequestHandler
     @Override
     public boolean handleSessionExpired(VaadinRequest request,
             VaadinResponse response) throws IOException {
-        if (!ServletHelper.isRequestType(request, RequestType.HEARTBEAT)) {
+        if (!HandlerHelper.isRequestType(request, RequestType.HEARTBEAT)) {
             return false;
         }
 

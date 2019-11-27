@@ -19,20 +19,8 @@ package com.vaadin.flow.server.communication;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 
-import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.RequestHandler;
-import com.vaadin.flow.server.ServiceException;
-import com.vaadin.flow.server.ServletHelper;
-import com.vaadin.flow.server.ServletHelper.RequestType;
-import com.vaadin.flow.server.SessionExpiredHandler;
-import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.VaadinResponse;
-import com.vaadin.flow.server.VaadinServletRequest;
-import com.vaadin.flow.server.VaadinServletResponse;
-import com.vaadin.flow.server.VaadinServletService;
-import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.shared.communication.PushConstants;
 import java.io.IOException;
+
 import org.atmosphere.cache.UUIDBroadcasterCache;
 import org.atmosphere.client.TrackMessageSizeInterceptor;
 import org.atmosphere.cpr.ApplicationConfig;
@@ -46,6 +34,20 @@ import org.atmosphere.interceptor.HeartbeatInterceptor;
 import org.atmosphere.util.VoidAnnotationProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.HandlerHelper;
+import com.vaadin.flow.server.HandlerHelper.RequestType;
+import com.vaadin.flow.server.RequestHandler;
+import com.vaadin.flow.server.ServiceException;
+import com.vaadin.flow.server.SessionExpiredHandler;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinServletRequest;
+import com.vaadin.flow.server.VaadinServletResponse;
+import com.vaadin.flow.server.VaadinServletService;
+import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.shared.communication.PushConstants;
 
 /**
  * Handles requests to open a push (bidirectional) communication channel between
@@ -233,7 +235,7 @@ public class PushRequestHandler
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
             VaadinResponse response) throws IOException {
 
-        if (!ServletHelper.isRequestType(request, RequestType.PUSH)) {
+        if (!HandlerHelper.isRequestType(request, RequestType.PUSH)) {
             return false;
         }
 
