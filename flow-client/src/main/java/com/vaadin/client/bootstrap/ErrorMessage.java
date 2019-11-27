@@ -42,4 +42,9 @@ public final class ErrorMessage extends JavaScriptObject {
     /*-{
         return this.url;
     }-*/;
+
+    public native String getQuerySelector()
+    /*-{
+        return this.querySelector;
+    }-*/;
 }
