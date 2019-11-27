@@ -306,13 +306,9 @@ public abstract class WebComponentExporter<C extends Component>
         private WebComponentConfigurationImpl(
                 WebComponentExporter<C> exporter) {
             this.exporter = exporter;
-            if (exporter instanceof WebComponentExporter) {
-                WebComponentExporter wcExporter = exporter;
-                immutablePropertyMap = Collections
-                        .unmodifiableMap(wcExporter.propertyConfigurationMap);
-            } else {
-                immutablePropertyMap = Collections.emptyMap();
-            }
+            WebComponentExporter wcExporter = exporter;
+            immutablePropertyMap = Collections
+                    .unmodifiableMap(wcExporter.propertyConfigurationMap);
         }
 
         @Override
@@ -379,8 +375,8 @@ public abstract class WebComponentExporter<C extends Component>
 
             // collect possible new defaults from attributes as JsonValues
             final Map<String, JsonValue> newDefaultValues = Stream
-                    .of(newAttributeDefaults.keys()).collect(Collectors.toMap(
-                            key -> key, key -> newAttributeDefaults.get(key)));
+                    .of(newAttributeDefaults.keys()).collect(Collectors
+                            .toMap(key -> key, newAttributeDefaults::get));
 
             // bind properties onto the WebComponentBinding. Since
             // PropertyConfigurations are Exporter level constructs, we need

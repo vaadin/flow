@@ -93,7 +93,7 @@ public class WebComponentConfigurationRegistryInitializer
 
         Stream<WebComponentConfiguration<? extends Component>> stream = factories
                 .stream().map(WebComponentExporterFactory::create)
-                .map(exporter -> factory.create(exporter)).map(conf -> conf);
+                .map(factory::create);
         return stream.collect(Collectors.toSet());
     }
 

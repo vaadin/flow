@@ -49,7 +49,7 @@ public final class WebComponentUtils {
      *
      * @param classes
      *            types of exporters and exporter factories
-     * @return
+     * @return exported web component factories
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public static Set<WebComponentExporterFactory> getFactories(
@@ -65,7 +65,7 @@ public final class WebComponentUtils {
                 .filter(clazz -> !Modifier.isAbstract(clazz.getModifiers()))
                 .filter(clazz -> !clazz
                         .equals(DefaultWebComponentExporterFactory.class))
-                .map(clazz -> ReflectTools.createInstance(clazz))
+                .map(ReflectTools::createInstance)
                 .map(WebComponentExporterFactory.class::cast)
                 .forEach(factories::add);
         return factories;
