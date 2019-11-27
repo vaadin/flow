@@ -20,6 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 
@@ -37,17 +38,21 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
+import com.vaadin.flow.component.page.VaadinAppShell;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWithMultipleMeta;
+import com.vaadin.flow.server.startup.VaadinAppShellRegistry;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
 import static com.vaadin.flow.server.DevModeHandlerTest.createStubWebpackTcpListener;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubWebpackServer;
+import static org.junit.Assert.assertEquals;
 
 public class IndexHtmlRequestHandlerTest {
 
@@ -327,8 +332,45 @@ public class IndexHtmlRequestHandlerTest {
                 indexHtml.contains("Failed to compile"));
     }
 
+    @Test
+    public void should_not_add_metaElements_when_not_appShellPresent() throws Exception {
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+
+        String indexHtml = responseOutput
+                .toString(StandardCharsets.UTF_8.name());
+        Document document = Jsoup.parse(indexHtml);
+
+        // the template used in clientSide mode already has two metas
+        // see: src/main/resources/com/vaadin/flow/server/frontend/index.html
+        Elements elements = document.head().getElementsByTag("meta");
+        assertEquals(2, elements.size());
+    }
+
+    @Test
+    public void should_add_metaElements_when_appShellPresent() throws Exception {
+        // Set VaadinAppShell class in context
+        Mockito.when(
+                mocks.getServletContext().getAttribute(VaadinAppShell.class.getName()))
+                .thenReturn(MyAppShellWithMultipleMeta.class.getName());
+
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+
+        String indexHtml = responseOutput
+                .toString(StandardCharsets.UTF_8.name());
+        Document document = Jsoup.parse(indexHtml);
+
+        Elements elements = document.head().getElementsByTag("meta");
+        assertEquals(4, elements.size());
+        assertEquals("foo", elements.get(2).attr("name"));
+        assertEquals("bar", elements.get(2).attr("content"));
+        assertEquals("lorem", elements.get(3).attr("name"));
+        assertEquals("ipsum", elements.get(3).attr("content"));
+    }
+
     @After
-    public void tearDown() {
+    public void tearDown() throws Exception {
         session.unlock();
         mocks.cleanup();
         if (httpServer != null) {
@@ -339,6 +381,10 @@ public class IndexHtmlRequestHandlerTest {
         if (handler != null) {
             handler.stop();
         }
+        Field instance = VaadinAppShellRegistry.class
+                .getDeclaredField("instance");
+        instance.setAccessible(true);
+        instance.set(null, null);
     }
 
     private VaadinServletRequest createVaadinRequest(String pathInfo) {

@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server.communication;
 
+import javax.servlet.ServletContext;
+
 import java.io.IOException;
 import java.util.regex.Pattern;
 
@@ -29,8 +31,11 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.startup.VaadinAppShellRegistry;
 
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
@@ -55,7 +60,11 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             VaadinRequest request, VaadinResponse response) throws IOException {
         Document indexDocument = getIndexHtmlDocument(request);
 
+        ServletContext context = ((VaadinServletService) VaadinService
+                .getCurrent()).getServlet().getServletContext();
+
         prependBaseHref(request, indexDocument);
+
         if (request.getService().getBootstrapInitialPredicate()
                 .includeInitialUidl(request)) {
             includeInitialUidl(session, request, response, indexDocument);
@@ -65,7 +74,10 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             session.setAttribute(SERVER_ROUTING, Boolean.TRUE);
         }
 
+        includeAppShellElements(indexDocument, context);
+
         configureErrorDialogStyles(indexDocument);
+
         showWebpackErrors(indexDocument);
 
         response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
@@ -88,11 +100,17 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             Document indexDocument) {
         JsonObject initial = getInitialJson(request, response, session);
 
+
         Element elm = new Element("script");
         elm.attr("initial", "");
         elm.appendChild(new DataNode("window.Vaadin = {Flow : {initial: "
                 + JsonUtil.stringify(initial) + "}}"));
         indexDocument.head().insertChildren(0, elm);
+    }
+
+    private void includeAppShellElements(Document document, ServletContext context) {
+        VaadinAppShellRegistry.getInstance(context).getElements()
+                .forEach(elem -> document.head().appendChild(elem));
     }
 
     @Override

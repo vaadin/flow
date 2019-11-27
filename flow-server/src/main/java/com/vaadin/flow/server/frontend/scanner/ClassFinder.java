@@ -213,7 +213,7 @@ public interface ClassFinder extends Serializable {
 
     /**
      * Get class loader which is used to find classes.
-     * 
+     *
      * @return the class loader which is used to find classes..
      */
     ClassLoader getClassLoader();
