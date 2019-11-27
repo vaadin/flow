@@ -199,8 +199,8 @@ public class FrontendUtils {
     public static final String DISABLE_CHECK = "%nYou can disable the version check using -D%s=true";
 
     private static final String NO_CONNECTION =
-            "Webpack-dev-server couldn't be reached for %s.\n"
-                    + "Check the startup logs for exceptions in running webpack-dev-server.\n"
+            "Webpack-dev-server couldn't be reached for %s.%n"
+                    + "Check the startup logs for exceptions in running webpack-dev-server.%n"
                     + "If server should be running in production mode check that production mode flag is set correctly.";
 
     private static final String NOT_FOUND = "%n%n======================================================================================================"
@@ -483,12 +483,13 @@ public class FrontendUtils {
             DevModeHandler handler = DevModeHandler.getDevModeHandler();
             HttpURLConnection statsConnection = handler
                     .prepareConnection("/stats.hash", "GET");
-            if(statsConnection.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                getLogger().error(String.format(NO_CONNECTION, "getting the stats content hash."));
-                return null;
+            if (statsConnection.getResponseCode()
+                    != HttpURLConnection.HTTP_OK) {
+                throw new WebpackConnectionException(
+                        String.format(NO_CONNECTION,
+                                "getting the stats content hash."));
             }
-            return streamToString(
-                    statsConnection.getInputStream())
+            return streamToString(statsConnection.getInputStream())
                             .replaceAll("\"", "");
         }
 
@@ -497,10 +498,11 @@ public class FrontendUtils {
 
     private static InputStream getStatsFromWebpack() throws IOException {
         DevModeHandler handler = DevModeHandler.getDevModeHandler();
-        HttpURLConnection statsConnection = handler.prepareConnection("/stats.json", "GET");
-        if(statsConnection.getResponseCode() != HttpURLConnection.HTTP_OK) {
-            getLogger().error(String.format(NO_CONNECTION, "downloading stats.json"));
-            return null;
+        HttpURLConnection statsConnection = handler
+                .prepareConnection("/stats.json", "GET");
+        if (statsConnection.getResponseCode() != HttpURLConnection.HTTP_OK) {
+            throw new WebpackConnectionException(
+                    String.format(NO_CONNECTION, "downloading stats.json"));
         }
         return statsConnection.getInputStream();
     }
@@ -585,13 +587,13 @@ public class FrontendUtils {
             DevModeHandler handler = DevModeHandler.getDevModeHandler();
             HttpURLConnection assetsConnection = handler
                     .prepareConnection("/assetsByChunkName", "GET");
-            if(assetsConnection.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                getLogger().error(String.format(NO_CONNECTION, "getting assets by chunk name."));
-                return null;
+            if (assetsConnection.getResponseCode()
+                    != HttpURLConnection.HTTP_OK) {
+                throw new WebpackConnectionException(
+                        String.format(NO_CONNECTION,
+                                "getting assets by chunk name."));
             }
-            return streamToString(
-                    assetsConnection
-                            .getInputStream());
+            return streamToString(assetsConnection.getInputStream());
         }
         InputStream resourceAsStream;
         if (config.isStatsExternal()) {
