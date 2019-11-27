@@ -15,9 +15,11 @@
  */
 package com.vaadin.client;
 
+import java.util.Optional;
 import java.util.Set;
 
 import com.google.web.bindery.event.shared.UmbrellaException;
+
 import com.vaadin.client.bootstrap.ErrorMessage;
 
 import elemental.client.Browser;
@@ -197,7 +199,10 @@ public class SystemErrorHandler {
             // if querySelector does not match an element on the page, the
             // error will not be displayed
             if (baseElement != null) {
-                baseElement.appendChild(systemErrorContainer);
+                // if the baseElement has a shadow root, add the warning to
+                // the shadow - otherwise add it to the baseElement
+                findShadowRoot(baseElement).orElse(baseElement)
+                        .appendChild(systemErrorContainer);
             }
         } else {
             document.getBody().appendChild(systemErrorContainer);
@@ -215,5 +220,14 @@ public class SystemErrorHandler {
         }
         return e;
     }
+
+    private Optional<Element> findShadowRoot(Element host) {
+        return Optional.ofNullable(getShadowRootElement(host));
+    }
+
+    private native Element getShadowRootElement(Element host)
+    /*-{
+        return host.shadowRoot;
+    }-*/;
 
 }
