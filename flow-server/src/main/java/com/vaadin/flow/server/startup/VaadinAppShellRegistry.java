@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContext;
-
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
@@ -29,6 +27,7 @@ import org.jsoup.nodes.Element;
 import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.VaadinAppShell;
 import com.vaadin.flow.server.InvalidApplicationConfigurationException;
+import com.vaadin.flow.server.VaadinServletContext;
 
 import static com.vaadin.flow.server.startup.VaadinAppShellInitializer.getValidAnnotations;
 
@@ -50,10 +49,20 @@ public class VaadinAppShellRegistry implements Serializable {
     private static final String ERROR_LINE = "  - %s contains: %s";
     private static final String ERROR_MULTIPLE_SHELL =
             "%nUnable to find a single class extending `VaadinAppnShell` from the following candidates:%n  %s%n  %s%n";
-    private static final String SHELL_KEY = VaadinAppShell.class.getName();
 
-    private static VaadinAppShellRegistry instance;
     private Class<? extends VaadinAppShell> shell;
+
+    /**
+     * VaadinAppShellRegistry wrapper class for storing the app shell
+     * contifuration in the context.
+     */
+    public static class VaadinAppShellRegistryAttribute implements Serializable {
+        private final VaadinAppShellRegistry registry;
+
+        public VaadinAppShellRegistryAttribute(VaadinAppShellRegistry registry) {
+            this.registry = registry;
+        }
+    }
 
     /**
      * Returns the instance of the registry, or create a new one if it does not
@@ -64,38 +73,25 @@ public class VaadinAppShellRegistry implements Serializable {
      * @return the registry instance
      */
     @SuppressWarnings("unchecked")
-    public static VaadinAppShellRegistry getInstance(final ServletContext context) {
-
-        if (instance != null) {
-            return instance;
-        }
-        assert context != null;
-
+    public static VaadinAppShellRegistry getInstance(VaadinServletContext context) {
         synchronized (context) {
-            instance = new VaadinAppShellRegistry();
-
-            String shellName = (String) context.getAttribute(SHELL_KEY);
-            if (shellName != null) {
-                try {
-                    instance.shell = (Class<? extends VaadinAppShell>) Class
-                            .forName(shellName);
-                } catch (ClassNotFoundException e) {
-                    throw new IllegalArgumentException(e);
-                }
+            VaadinAppShellRegistryAttribute attribute = context
+                    .getAttribute(VaadinAppShellRegistryAttribute.class);
+            if (attribute == null) {
+                attribute = new VaadinAppShellRegistryAttribute(
+                        new VaadinAppShellRegistry());
+                context.setAttribute(attribute);
             }
+            return attribute.registry;
         }
-        return instance;
     }
 
     /**
      * Reset the registry configuration so as it's possible to perform a new
      * configuration and validation.
      */
-    public void reset(final ServletContext context) {
+    public void reset() {
         this.shell = null;
-        synchronized (context) {
-            context.removeAttribute(SHELL_KEY);
-        }
     }
 
     /**
@@ -108,17 +104,13 @@ public class VaadinAppShellRegistry implements Serializable {
      *            the servlet context.
      */
     public void setShell(
-            Class<? extends VaadinAppShell> shell, final ServletContext context) {
+            Class<? extends VaadinAppShell> shell) {
         if (this.shell != null && shell != null) {
             throw new InvalidApplicationConfigurationException(
                     String.format(VaadinAppShellRegistry.ERROR_MULTIPLE_SHELL,
                             this.shell.getName(), shell.getName()));
         }
         this.shell = shell;
-
-        synchronized (context) {
-            context.setAttribute(SHELL_KEY, shell.getName());
-        }
     }
 
     /**
