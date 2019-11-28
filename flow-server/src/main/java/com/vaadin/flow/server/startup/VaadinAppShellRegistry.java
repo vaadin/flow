@@ -27,7 +27,7 @@ import org.jsoup.nodes.Element;
 import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.VaadinAppShell;
 import com.vaadin.flow.server.InvalidApplicationConfigurationException;
-import com.vaadin.flow.server.VaadinServletContext;
+import com.vaadin.flow.server.VaadinContext;
 
 import static com.vaadin.flow.server.startup.VaadinAppShellInitializer.getValidAnnotations;
 
@@ -40,26 +40,26 @@ import static com.vaadin.flow.server.startup.VaadinAppShellInitializer.getValidA
 public class VaadinAppShellRegistry implements Serializable {
 
 
-    static final String ERROR_HEADER_NO_SHELL = "%n%nFound configuration annotations in non `VaadinAppShell` classes.%n"
+    static final String ERROR_HEADER_NO_SHELL = "%n%nFound app shell configuration annotations in non `VaadinAppShell` classes."
             + "%nPlease create a custom class extending `VaadinAppShell` and move the following annotations to it:%n  %s%n";
 
-    static final String ERROR_HEADER_OFFENDING = "%n%nFound configuration annotations in non `VaadinAppShell` classes."
-            + "%nThe following annotations must be moved to the '%s' class:%n  %s%n";
+    static final String ERROR_HEADER_OFFENDING = "%n%nFound app shell configuration annotations in non `VaadinAppShell` classes."
+            + "%nThe following annotations must be either removed or moved to the '%s' class:%n  %s%n";
 
-    private static final String ERROR_LINE = "  - %s contains: %s";
+    private static final String ERROR_LINE = "  - %s from %s";
     private static final String ERROR_MULTIPLE_SHELL =
-            "%nUnable to find a single class extending `VaadinAppnShell` from the following candidates:%n  %s%n  %s%n";
+            "%nUnable to find a single class extending `VaadinAppShell` from the following candidates:%n  %s%n  %s%n";
 
     private Class<? extends VaadinAppShell> shell;
 
     /**
-     * VaadinAppShellRegistry wrapper class for storing the app shell
-     * contifuration in the context.
+     * A wrapper class for storing the {@link VaadinAppShellRegistry} instance
+     * in the servlet context.
      */
-    public static class VaadinAppShellRegistryAttribute implements Serializable {
+    public static class VaadinAppShellRegistryWrapper implements Serializable {
         private final VaadinAppShellRegistry registry;
 
-        public VaadinAppShellRegistryAttribute(VaadinAppShellRegistry registry) {
+        public VaadinAppShellRegistryWrapper(VaadinAppShellRegistry registry) {
             this.registry = registry;
         }
     }
@@ -73,12 +73,12 @@ public class VaadinAppShellRegistry implements Serializable {
      * @return the registry instance
      */
     @SuppressWarnings("unchecked")
-    public static VaadinAppShellRegistry getInstance(VaadinServletContext context) {
+    public static VaadinAppShellRegistry getInstance(VaadinContext context) {
         synchronized (context) {
-            VaadinAppShellRegistryAttribute attribute = context
-                    .getAttribute(VaadinAppShellRegistryAttribute.class);
+            VaadinAppShellRegistryWrapper attribute = context
+                    .getAttribute(VaadinAppShellRegistryWrapper.class);
             if (attribute == null) {
-                attribute = new VaadinAppShellRegistryAttribute(
+                attribute = new VaadinAppShellRegistryWrapper(
                         new VaadinAppShellRegistry());
                 context.setAttribute(attribute);
             }
@@ -100,8 +100,6 @@ public class VaadinAppShellRegistry implements Serializable {
      *
      * @param shell
      *            the class extending VaadinAppShell class.
-     * @param context
-     *            the servlet context.
      */
     public void setShell(
             Class<? extends VaadinAppShell> shell) {
@@ -157,16 +155,18 @@ public class VaadinAppShellRegistry implements Serializable {
                 .getClassAnnotations(clz, (List) getValidAnnotations());
         if (!annotations.isEmpty()) {
             error = String.format(VaadinAppShellRegistry.ERROR_LINE,
-                    clz.getName(), annotations);
+                    annotations, clz.getName());
         }
         return error;
     }
 
     /**
-     * Gets the list of {@link Element} that should be appended to the document
-     * head based on the {@link VaadinAppShell} annotations.
+     * Modifies the `index.html` document based on the {@link VaadinAppShell}
+     * annotations.
+     *
+     * @param document a JSoup document for the index.html page
      */
-    public void applyModifications(Document document) {
+    public void modifyIndexHtmlResponse(Document document) {
         getAnnotations(Meta.class).forEach(meta -> {
             Element elem = new Element("meta");
             elem.attr("name", meta.name());

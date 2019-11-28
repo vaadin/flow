@@ -18,18 +18,22 @@ package com.vaadin.flow.component.page;
 import java.io.Serializable;
 
 /**
- * A marker class to configure the index.hml page when in client-side
+ * A marker class to configure the index.hml page when using client-side
  * bootstrapping. This class supports the following annotations that affect the
  * generated index.html page:
  * 
  * <ul>
- * <li>{@link Meta}: appends an HTML &lt;meta&gt; tag to the bottom of the  &lt;head&gt;
- * element other annotations to be added here and some more There should be at
- * max one class extending {@link VaadinAppShell} in the application.
+ * <li>{@link Meta}: appends an HTML {@code <meta>} tag to the bottom of the
+ * {@code <head>} element</li>
  * </ul>
  * 
  * <p>
- * NOTE: the application shell class is the only valid target to place the page
+ * There should be at max one class extending {@link VaadinAppShell} in the
+ * application.
+ * </p>
+ * 
+ * <p>
+ * NOTE: the application shell class is the only valid target for the page
  * configuration annotations listed above. The application would fail to start
  * if any of these annotations is wrongly placed on a class other than the
  * application shell class.
@@ -43,5 +47,5 @@ import java.io.Serializable;
  *
  * @since 3.0
  */
-public class VaadinAppShell implements Serializable {
+public abstract class VaadinAppShell implements Serializable {
 }

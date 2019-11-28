@@ -122,7 +122,7 @@ public class VaadinAppShellInitializer implements ServletContainerInitializer,
             } else {
                 String message = String.format(
                         VaadinAppShellRegistry.ERROR_HEADER_OFFENDING,
-                        registry.getShell().getClass(),
+                        registry.getShell(),
                         String.join("\n  ", offendingAnnotations));
                 throw new InvalidApplicationConfigurationException(message);
             }
