@@ -71,17 +71,13 @@ public class HierarchicalCommunicatorDataTest {
 
     private static final Item ROOT = new Item(0, "ROOT");
     private static final Item FOLDER = new Item(1, "FOLDER");
-    private static final Item LEAF = new Item( 2, "LEAF");
+    private static final Item LEAF = new Item(2, "LEAF");
     private TreeDataProvider<Item> dataProvider;
     private HierarchicalDataCommunicator<Item> communicator;
     private TreeData<Item> treeData;
-
-    private List<String> enqueueFunctions = new ArrayList<>();
-
-    private Element element;
     private MockUI ui;
 
-    private class UpdateQueue implements HierarchicalUpdate {
+    private static class UpdateQueue implements HierarchicalUpdate {
         @Override
         public void clear(int start, int length) {
         }
@@ -96,7 +92,6 @@ public class HierarchicalCommunicatorDataTest {
 
         @Override
         public void enqueue(String name, Serializable... arguments) {
-            enqueueFunctions.add(name);
         }
 
         @Override
@@ -131,7 +126,7 @@ public class HierarchicalCommunicatorDataTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         ui = new MockUI();
-        element = new Element("div");
+        Element element = new Element("div");
         ui.getElement().appendChild(element);
 
         treeData = new TreeData<>();
@@ -142,8 +137,9 @@ public class HierarchicalCommunicatorDataTest {
         communicator = new HierarchicalDataCommunicator<>(
                 Mockito.mock(CompositeDataGenerator.class), arrayUpdater,
                 json -> {
-                }, element.getNode(), () -> (ValueProvider<Item, String>) item -> String.valueOf(item.id)
-        );
+                }, element.getNode(),
+                () -> (ValueProvider<Item, String>) item -> String
+                        .valueOf(item.id));
         communicator.setDataProvider(dataProvider, null);
     }
 
@@ -157,8 +153,7 @@ public class HierarchicalCommunicatorDataTest {
         Item originalLeaf = treeData.getChildren(FOLDER).get(0);
         String key = communicator.getKeyMapper().key(originalLeaf);
 
-        Assert.assertSame(originalLeaf,
-                communicator.getKeyMapper().get(key));
+        Assert.assertSame(originalLeaf, communicator.getKeyMapper().get(key));
 
         Item updatedLeaf = new Item(originalLeaf.id, "Updated");
         treeData.removeItem(LEAF);
@@ -170,8 +165,7 @@ public class HierarchicalCommunicatorDataTest {
 
         fakeClientCommunication();
 
-        Assert.assertSame(updatedLeaf,
-                communicator.getKeyMapper().get(key));
+        Assert.assertSame(updatedLeaf, communicator.getKeyMapper().get(key));
     }
 
     private void fakeClientCommunication() {
@@ -183,7 +177,7 @@ public class HierarchicalCommunicatorDataTest {
     public static class MockUI extends UI {
 
         public MockUI() {
-            this(findOrcreateSession());
+            this(findOrCreateSession());
         }
 
         public MockUI(VaadinSession session) {
@@ -196,17 +190,19 @@ public class HierarchicalCommunicatorDataTest {
             // Do nothing
         }
 
-        private static VaadinSession findOrcreateSession() {
+        private static VaadinSession findOrCreateSession() {
             VaadinSession session = VaadinSession.getCurrent();
             if (session == null) {
-                session = new DataCommunicatorTest.AlwaysLockedVaadinSession(null);
+                session = new DataCommunicatorTest.AlwaysLockedVaadinSession(
+                        null);
                 VaadinSession.setCurrent(session);
             }
             return session;
         }
     }
 
-    public static class AlwaysLockedVaadinSession extends DataCommunicatorTest.MockVaadinSession {
+    public static class AlwaysLockedVaadinSession
+            extends DataCommunicatorTest.MockVaadinSession {
 
         public AlwaysLockedVaadinSession(VaadinService service) {
             super(service);
