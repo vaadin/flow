@@ -67,6 +67,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             // unless we detect a call to JavaScriptBootstrapUI.connectClient
             session.setAttribute(SERVER_ROUTING, Boolean.TRUE);
         }
+
         configureErrorDialogStyles(indexDocument);
 
         showWebpackErrors(indexDocument);
@@ -77,6 +78,10 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         VaadinContext context = session.getService().getContext();
         VaadinAppShellRegistry.getInstance(context)
                 .modifyIndexHtmlResponse(indexDocument);
+
+        // modify the page based on the @PWA annotation
+        setupPwa(indexDocument, session.getService());
+
 
         // modify the page based on registered IndexHtmlRequestListener:s
         request.getService().modifyIndexHtmlResponse(
