@@ -142,6 +142,19 @@ public class VaadinAppShellInitializerTest {
     }
 
     @Test
+    public void should_not_throw_when_noAppShell_and_ofendingClass()
+            throws Exception {
+        classes.add(OfendingClass.class);
+        initializer.onStartup(classes, servletContext);
+
+        VaadinAppShellRegistry.getInstance(servletContext)
+                .applyModifications(document);
+
+        List<Element> elements = document.head().children();
+        assertEquals(0, elements.size());
+    }
+
+    @Test
     public void should_throw_when_multipleAppShell() throws Exception {
         exception.expect(InvalidApplicationConfigurationException.class);
         exception.expectMessage(containsString("Unable to find a single class"));
