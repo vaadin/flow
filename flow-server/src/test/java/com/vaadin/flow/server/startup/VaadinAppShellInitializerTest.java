@@ -3,7 +3,6 @@ package com.vaadin.flow.server.startup;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRegistration;
 
-import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -23,6 +22,8 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.VaadinAppShell;
 import com.vaadin.flow.server.InvalidApplicationConfigurationException;
+import com.vaadin.flow.server.VaadinServletContext;
+import com.vaadin.flow.server.startup.VaadinAppShellRegistry.VaadinAppShellRegistryAttribute;
 
 import static com.vaadin.flow.server.DevModeHandler.getDevModeHandler;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -49,17 +50,26 @@ public class VaadinAppShellInitializerTest {
     private VaadinAppShellInitializer initializer;
 
     private ServletContext servletContext;
+    private VaadinServletContext context;
     private Map<String, String> initParams;
     private Set<Class<?>> classes;
     private Document document;
+    private Map<String, Object> attributeMap = new HashMap<>();
 
     @Before
     public void setup() throws Exception {
         assertNull(getDevModeHandler());
 
         servletContext = Mockito.mock(ServletContext.class);
+        Mockito.when(servletContext.getAttribute(Mockito.anyString())).then(invocationOnMock -> attributeMap.get(invocationOnMock.getArguments()[0].toString()));
+        Mockito.doAnswer(invocationOnMock -> attributeMap.put(
+            invocationOnMock.getArguments()[0].toString(),
+            invocationOnMock.getArguments()[1]
+            )).when(servletContext).setAttribute(Mockito.anyString(), Mockito.any());
+
         ServletRegistration registration = Mockito
                 .mock(ServletRegistration.class);
+        context = new VaadinServletContext(servletContext);
 
         initParams = new HashMap<>();
         Mockito.when(registration.getInitParameters()).thenReturn(initParams);
@@ -79,10 +89,7 @@ public class VaadinAppShellInitializerTest {
 
     @After
     public void teardown() throws Exception {
-        Field instance = VaadinAppShellRegistry.class
-                .getDeclaredField("instance");
-        instance.setAccessible(true);
-        instance.set(null, null);
+        VaadinAppShellRegistry.getInstance(context).reset();
     }
 
     @Test
@@ -90,7 +97,7 @@ public class VaadinAppShellInitializerTest {
         classes.add(MyAppShellWithMultipleMeta.class);
 
         initializer.onStartup(classes, servletContext);
-        VaadinAppShellRegistry.getInstance(servletContext)
+        VaadinAppShellRegistry.getInstance(context)
                 .applyModifications(document);
 
         List<Element> elements = document.head().children();
@@ -104,7 +111,7 @@ public class VaadinAppShellInitializerTest {
     @Test
     public void should_not_haveMetas_when_not_callingInitializer()
             throws Exception {
-        VaadinAppShellRegistry.getInstance(servletContext)
+        VaadinAppShellRegistry.getInstance(context)
                 .applyModifications(document);
         List<Element> elements = document.head().children();
         assertEquals(0, elements.size());
@@ -113,12 +120,13 @@ public class VaadinAppShellInitializerTest {
     @Test
     public void should_reuseContextAppShell_when_creatingNewInstance()
             throws Exception {
-        // Set class in context and do not call initializer
-        Mockito.when(
-                servletContext.getAttribute(VaadinAppShell.class.getName()))
-                .thenReturn(MyAppShellWithMultipleMeta.class.getName());
 
-        VaadinAppShellRegistry.getInstance(servletContext)
+        // Set class in context and do not call initializer
+        VaadinAppShellRegistry registry = new VaadinAppShellRegistry();
+        registry.setShell(MyAppShellWithMultipleMeta.class);
+        context.setAttribute(new VaadinAppShellRegistryAttribute(registry));
+
+        VaadinAppShellRegistry.getInstance(context)
                 .applyModifications(document);
 
         List<Element> elements = document.head().children();
@@ -147,7 +155,7 @@ public class VaadinAppShellInitializerTest {
         classes.add(OfendingClass.class);
         initializer.onStartup(classes, servletContext);
 
-        VaadinAppShellRegistry.getInstance(servletContext)
+        VaadinAppShellRegistry.getInstance(context)
                 .applyModifications(document);
 
         List<Element> elements = document.head().children();

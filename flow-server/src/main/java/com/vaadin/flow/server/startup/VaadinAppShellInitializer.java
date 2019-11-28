@@ -37,6 +37,7 @@ import com.vaadin.flow.component.page.VaadinAppShell;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.InvalidApplicationConfigurationException;
 import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
 
 /**
@@ -86,9 +87,8 @@ public class VaadinAppShellInitializer implements ServletContainerInitializer,
         }
 
         VaadinAppShellRegistry registry = VaadinAppShellRegistry
-                .getInstance(context);
-
-        registry.reset(context);
+                .getInstance(new VaadinServletContext(context));
+        registry.reset();
 
         if (classes.isEmpty()) {
             return;
@@ -103,7 +103,7 @@ public class VaadinAppShellInitializer implements ServletContainerInitializer,
                 .forEach(clz -> {
                     if (registry.isShell(clz)) {
                         registry.setShell(
-                                (Class<? extends VaadinAppShell>) clz, context);
+                                (Class<? extends VaadinAppShell>) clz);
                     } else {
                         String error = registry.validateClass(clz);
                         if (error != null) {

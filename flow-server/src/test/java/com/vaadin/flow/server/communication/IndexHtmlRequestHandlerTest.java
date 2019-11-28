@@ -20,7 +20,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 
@@ -38,7 +37,6 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
-import com.vaadin.flow.component.page.VaadinAppShell;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinResponse;
@@ -47,6 +45,7 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWithMultipleMeta;
 import com.vaadin.flow.server.startup.VaadinAppShellRegistry;
+import com.vaadin.flow.server.startup.VaadinAppShellRegistry.VaadinAppShellRegistryAttribute;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
@@ -349,10 +348,12 @@ public class IndexHtmlRequestHandlerTest {
 
     @Test
     public void should_add_metaElements_when_appShellPresent() throws Exception {
-        // Set VaadinAppShell class in context
+        // Set class in context and do not call initializer
+        VaadinAppShellRegistry registry = new VaadinAppShellRegistry();
+        registry.setShell(MyAppShellWithMultipleMeta.class);
         Mockito.when(
-                mocks.getServletContext().getAttribute(VaadinAppShell.class.getName()))
-                .thenReturn(MyAppShellWithMultipleMeta.class.getName());
+                mocks.getServletContext().getAttribute(VaadinAppShellRegistryAttribute.class.getName()))
+                .thenReturn(new VaadinAppShellRegistryAttribute(registry));
 
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
@@ -381,10 +382,6 @@ public class IndexHtmlRequestHandlerTest {
         if (handler != null) {
             handler.stop();
         }
-        Field instance = VaadinAppShellRegistry.class
-                .getDeclaredField("instance");
-        instance.setAccessible(true);
-        instance.set(null, null);
     }
 
     private VaadinServletRequest createVaadinRequest(String pathInfo) {

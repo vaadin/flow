@@ -32,6 +32,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -108,7 +109,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         indexDocument.head().insertChildren(0, elm);
     }
 
-    private void includeAppShellElements(Document document, ServletContext context) {
+    private void includeAppShellElements(Document document, ServletContext servletContext) {
+        VaadinServletContext context = new VaadinServletContext(servletContext);
         VaadinAppShellRegistry.getInstance(context).applyModifications(document);
     }
 
