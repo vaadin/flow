@@ -21,6 +21,13 @@ import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.ElementAttributeMap;
+import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
+import com.vaadin.flow.internal.nodefeature.ElementClassList;
+import com.vaadin.flow.internal.nodefeature.ElementData;
+import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
+import com.vaadin.flow.internal.nodefeature.ElementStylePropertyMap;
 import com.vaadin.flow.internal.nodefeature.TextNodeMap;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
@@ -39,6 +46,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Registry for storing available web component configuration implementations.
@@ -355,25 +363,72 @@ public class WebComponentConfigurationRegistry implements Serializable {
      * @return copy of the given {@code rootElement} with copied child hierarchy
      */
     private static Element copyElementTree(Element rootElement) {
+        // exception case for text node
         if (rootElement.getNode().hasFeature(TextNodeMap.class)) {
             return Element.createText(rootElement.getText());
         }
-        Element ret = new Element(rootElement.getTag());
-        rootElement.getAttributeNames().forEach(
-                name -> ret.setAttribute(name, rootElement.getAttribute(name)));
-        rootElement.getPropertyNames().forEach(name -> {
-            Serializable otherProperty = rootElement.getPropertyRaw(name);
-            if (otherProperty instanceof String) {
-                ret.setProperty(name, (String) otherProperty);
-            } else if (otherProperty instanceof Double) {
-                ret.setProperty(name, (Double) otherProperty);
-            } else if (otherProperty instanceof Boolean) {
-                ret.setProperty(name, (Boolean) otherProperty);
-            }
-        });
 
-        rootElement.getChildren().map(WebComponentConfigurationRegistry::copyElementTree)
-                .forEach(ret::appendChild);
-        return ret;
+        StateNode copyNode = new StateNode(rootElement.getNode());
+        // copy ElementData
+        ElementData originalData =
+                rootElement.getNode().getFeature(ElementData.class);
+        ElementData copyData = copyNode.getFeature(ElementData.class);
+        copyData.setTag(originalData.getTag());
+        copyData.setPayload(originalData.getPayload());
+        copyData.setVisible(originalData.isVisible());
+
+        // copy ElementPropertyMap
+        ElementPropertyMap originalProperties = rootElement.getNode()
+                .getFeature(ElementPropertyMap.class);
+        ElementPropertyMap copyProperties = copyNode
+                .getFeature(ElementPropertyMap.class);
+        originalProperties.getPropertyNames()
+                .forEach(property -> copyProperties.setProperty(property,
+                        originalProperties.getProperty(property)));
+        
+        // copy ElementAttributeMap
+        ElementAttributeMap originalAttributes =
+                rootElement.getNode().getFeature(ElementAttributeMap.class);
+        ElementAttributeMap copyAttributes = copyNode
+                .getFeature(ElementAttributeMap.class);
+        originalAttributes.attributes().forEach(
+                name -> copyAttributes.set(name, originalAttributes.get(name)));
+        
+        // copy ElementClassList
+        ElementClassList originalClassList =
+                rootElement.getNode().getFeature(ElementClassList.class);
+        ElementClassList copyClassList =
+                copyNode.getFeature(ElementClassList.class);
+        originalClassList.getClassList()
+                .forEach(item -> copyClassList.getClassList().set(item, true));
+
+        // copy ElementStylePropertyMap.class
+        ElementStylePropertyMap originalStyleProperties =
+                rootElement.getNode().getFeature(ElementStylePropertyMap.class);
+        ElementStylePropertyMap copyStyleProperties = copyNode
+                .getFeature(ElementStylePropertyMap.class);
+        originalStyleProperties.getPropertyNames()
+                .forEach(styleProp -> copyStyleProperties.setProperty(styleProp,
+                        originalStyleProperties.getProperty(styleProp), false));
+
+        ElementChildrenList originalChildren = rootElement.getNode()
+                .getFeature(ElementChildrenList.class);
+        ElementChildrenList copyChildren = copyNode
+                .getFeature(ElementChildrenList.class);
+        IntStream.range(0,originalChildren.size()).forEach(
+                index -> copyChildren.add(index, originalChildren.get(index)));
+
+        /*
+         * Skipping the following features, since don't do much for our normal
+         * use-case:
+         * ElementListenerMap, SynchronizedPropertiesList,
+         * SynchronizedPropertyEventsList, ComponentMapping,
+         * PolymerServerEventHandlers, ClientCallableHandlers,
+         * PolymerEventListenerMap, ShadowRootData,
+         * AttachExistingElementFeature, VirtualChildrenList, ReturnChannelMap
+         */
+        
+        // Element created from the copied StateNode
+        return Element.get(copyNode);
     }
 }

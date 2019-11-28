@@ -253,12 +253,7 @@ public class ElementUtil {
         if (node instanceof TextNode) {
             return Optional.of(Element.createText(((TextNode) node).text()));
         } else if (node instanceof org.jsoup.nodes.Element) {
-            org.jsoup.nodes.Element jsoupElement = (org.jsoup.nodes.Element) node;
-            ret = new Element(jsoupElement.tagName());
-
-            if (jsoupElement.html() != null) {
-                ret.setProperty("innerHTML", jsoupElement.html());
-            }
+            ret = new Element(((org.jsoup.nodes.Element)node).tagName());
         } else {
             LoggerFactory.getLogger(ElementUtil.class)
                     .error(String.format(

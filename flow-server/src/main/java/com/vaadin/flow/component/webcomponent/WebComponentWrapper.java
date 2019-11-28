@@ -23,7 +23,6 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.webcomponent.WebComponentBinding;
@@ -64,7 +63,8 @@ public class WebComponentWrapper extends Component {
                 "Parameter 'binding' must not be null!");
 
         this.webComponentBinding = binding;
-        getElement().attachShadow().appendChild(webComponentBinding.getComponent().getElement());
+        getElement().attachShadow()
+                .appendChild(webComponentBinding.getComponent().getElement());
     }
 
     public WebComponentWrapper(Element rootElement,
