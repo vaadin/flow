@@ -5,13 +5,14 @@
     "@polymer/polymer": "3.2.0",
     "@webcomponents/webcomponentsjs": "^2.2.10",
     "@vaadin/flow-deps": "./target/frontend",
-    "@vaadin/router": "^1.4.1"
+    "@vaadin/router": "^1.4.1",
+    "@vaadin/flow-frontend": "./target/flow-frontend"
   },
   "devDependencies": {
     "webpack": "4.30.0",
     "webpack-cli": "3.3.0",
     "webpack-dev-server": "3.3.0",
-    "webpack-babel-multi-target-plugin": "2.1.0",
+    "webpack-babel-multi-target-plugin": "2.3.1",
     "copy-webpack-plugin": "5.0.3",
     "webpack-merge": "4.2.1",
     "raw-loader": "3.0.0",
