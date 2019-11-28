@@ -70,10 +70,11 @@ public @interface Route {
     Class<? extends RouterLayout> layout() default UI.class;
 
     /**
-     * Have the rout chain break on defined class and not take into notice any
-     * more parent layout route prefixes.
+     * Ignore route prefixes from parent layouts and only use the path defined
+     * in this annotation.
      *
-     * @return route up to here should be absolute
+     * @return <code>true</code> to ignore parent layout prefixes,
+     *         <code>false</code> otherwise
      */
     boolean absolute() default false;
 
