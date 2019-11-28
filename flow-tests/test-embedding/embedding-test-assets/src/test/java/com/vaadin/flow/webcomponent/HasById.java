@@ -27,15 +27,17 @@ public interface HasById {
 
     default TestBenchElement byId(HasElementQuery elementQuery, String id,
             String... childIds) {
-        TestBenchElement e = elementQuery.$(TestBenchElement.class).id(id);
-        if (e != null && childIds.length > 0) {
+        TestBenchElement testBenchElement = elementQuery
+                .$(TestBenchElement.class).id(id);
+        if (testBenchElement != null && childIds.length > 0) {
             for (String childId : childIds) {
-                e = e.$(TestBenchElement.class).id(childId);
-                if (e == null) {
+                testBenchElement = testBenchElement.$(TestBenchElement.class)
+                        .id(childId);
+                if (testBenchElement == null) {
                     return null;
                 }
             }
         }
-        return e;
+        return testBenchElement;
     }
 }
