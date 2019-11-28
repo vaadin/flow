@@ -45,7 +45,7 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWithMultipleMeta;
 import com.vaadin.flow.server.startup.VaadinAppShellRegistry;
-import com.vaadin.flow.server.startup.VaadinAppShellRegistry.VaadinAppShellRegistryAttribute;
+import com.vaadin.flow.server.startup.VaadinAppShellRegistry.VaadinAppShellRegistryWrapper;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
@@ -351,9 +351,9 @@ public class IndexHtmlRequestHandlerTest {
         // Set class in context and do not call initializer
         VaadinAppShellRegistry registry = new VaadinAppShellRegistry();
         registry.setShell(MyAppShellWithMultipleMeta.class);
-        Mockito.when(
-                mocks.getServletContext().getAttribute(VaadinAppShellRegistryAttribute.class.getName()))
-                .thenReturn(new VaadinAppShellRegistryAttribute(registry));
+        Mockito.when(mocks.getServletContext()
+                .getAttribute(VaadinAppShellRegistryWrapper.class.getName()))
+                .thenReturn(new VaadinAppShellRegistryWrapper(registry));
 
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);

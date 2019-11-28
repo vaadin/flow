@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.server.communication;
 
-import javax.servlet.ServletContext;
-
 import java.io.IOException;
 import java.util.regex.Pattern;
 
@@ -29,11 +27,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServletContext;
-import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.VaadinAppShellRegistry;
@@ -61,9 +57,6 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             VaadinRequest request, VaadinResponse response) throws IOException {
         Document indexDocument = getIndexHtmlDocument(request);
 
-        ServletContext context = ((VaadinServletService) VaadinService
-                .getCurrent()).getServlet().getServletContext();
-
         prependBaseHref(request, indexDocument);
 
         if (request.getService().getBootstrapInitialPredicate()
@@ -74,15 +67,18 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             // unless we detect a call to JavaScriptBootstrapUI.connectClient
             session.setAttribute(SERVER_ROUTING, Boolean.TRUE);
         }
-
-        includeAppShellElements(indexDocument, context);
-
         configureErrorDialogStyles(indexDocument);
 
         showWebpackErrors(indexDocument);
 
         response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
 
+        // modify the page based on the page config annotations (@Meta, etc)
+        VaadinContext context = session.getService().getContext();
+        VaadinAppShellRegistry.getInstance(context)
+                .modifyIndexHtmlResponse(indexDocument);
+
+        // modify the page based on registered IndexHtmlRequestListener:s
         request.getService().modifyIndexHtmlResponse(
                 new IndexHtmlResponse(request, response, indexDocument));
 
@@ -107,11 +103,6 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         elm.appendChild(new DataNode("window.Vaadin = {Flow : {initial: "
                 + JsonUtil.stringify(initial) + "}}"));
         indexDocument.head().insertChildren(0, elm);
-    }
-
-    private void includeAppShellElements(Document document, ServletContext servletContext) {
-        VaadinServletContext context = new VaadinServletContext(servletContext);
-        VaadinAppShellRegistry.getInstance(context).applyModifications(document);
     }
 
     @Override

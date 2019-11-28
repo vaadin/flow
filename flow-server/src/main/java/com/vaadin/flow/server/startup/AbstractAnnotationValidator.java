@@ -137,9 +137,8 @@ public abstract class AbstractAnnotationValidator implements Serializable {
                             clazz.getName(), getClassAnnotations(clazz)));
                 }
             } else if (VaadinAppShell.class.isAssignableFrom(clazz)) {
-                // Validations in classes extending VaadinAppShell is done when
-                // the
-                // VaadinShellInitializer is run
+                // Annotations on the app shell classes are validated in
+                // VaadinAppShellInitializer
             } else if (!RouterLayout.class.isAssignableFrom(clazz)) {
                 if (!Modifier.isAbstract(clazz.getModifiers())) {
                     handleNonRouterLayout(clazz)

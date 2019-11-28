@@ -23,7 +23,7 @@ import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.VaadinAppShell;
 import com.vaadin.flow.server.InvalidApplicationConfigurationException;
 import com.vaadin.flow.server.VaadinServletContext;
-import com.vaadin.flow.server.startup.VaadinAppShellRegistry.VaadinAppShellRegistryAttribute;
+import com.vaadin.flow.server.startup.VaadinAppShellRegistry.VaadinAppShellRegistryWrapper;
 
 import static com.vaadin.flow.server.DevModeHandler.getDevModeHandler;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -41,7 +41,7 @@ public class VaadinAppShellInitializerTest {
     }
 
     @Meta(name = "", content = "")
-    public static class OfendingClass {
+    public static class OffendingClass {
     }
 
     @Rule
@@ -98,7 +98,7 @@ public class VaadinAppShellInitializerTest {
 
         initializer.onStartup(classes, servletContext);
         VaadinAppShellRegistry.getInstance(context)
-                .applyModifications(document);
+                .modifyIndexHtmlResponse(document);
 
         List<Element> elements = document.head().children();
         assertEquals(2, elements.size());
@@ -112,7 +112,7 @@ public class VaadinAppShellInitializerTest {
     public void should_not_haveMetas_when_not_callingInitializer()
             throws Exception {
         VaadinAppShellRegistry.getInstance(context)
-                .applyModifications(document);
+                .modifyIndexHtmlResponse(document);
         List<Element> elements = document.head().children();
         assertEquals(0, elements.size());
     }
@@ -124,10 +124,10 @@ public class VaadinAppShellInitializerTest {
         // Set class in context and do not call initializer
         VaadinAppShellRegistry registry = new VaadinAppShellRegistry();
         registry.setShell(MyAppShellWithMultipleMeta.class);
-        context.setAttribute(new VaadinAppShellRegistryAttribute(registry));
+        context.setAttribute(new VaadinAppShellRegistryWrapper(registry));
 
         VaadinAppShellRegistry.getInstance(context)
-                .applyModifications(document);
+                .modifyIndexHtmlResponse(document);
 
         List<Element> elements = document.head().children();
 
@@ -139,24 +139,24 @@ public class VaadinAppShellInitializerTest {
     }
 
     @Test
-    public void should_throw_when_ofendingClass() throws Exception {
+    public void should_throw_when_offendingClass() throws Exception {
         exception.expect(InvalidApplicationConfigurationException.class);
         exception.expectMessage(
                 containsString("Found configuration annotations"));
 
         classes.add(MyAppShellWithoutMeta.class);
-        classes.add(OfendingClass.class);
+        classes.add(OffendingClass.class);
         initializer.onStartup(classes, servletContext);
     }
 
     @Test
-    public void should_not_throw_when_noAppShell_and_ofendingClass()
+    public void should_not_throw_when_noAppShell_and_offendingClass()
             throws Exception {
-        classes.add(OfendingClass.class);
+        classes.add(OffendingClass.class);
         initializer.onStartup(classes, servletContext);
 
         VaadinAppShellRegistry.getInstance(context)
-                .applyModifications(document);
+                .modifyIndexHtmlResponse(document);
 
         List<Element> elements = document.head().children();
         assertEquals(0, elements.size());
