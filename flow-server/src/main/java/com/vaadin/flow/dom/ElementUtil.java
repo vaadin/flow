@@ -25,6 +25,7 @@ import org.jsoup.nodes.TextNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Composite;
+import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 
 /**
  * Provides utility methods for {@link Element}.
@@ -260,4 +261,26 @@ public class ElementUtil {
                 && "script".equalsIgnoreCase(element.getTag());
     }
 
+
+    /**
+     * Ensure the virtual child is removed from its parent.
+     * 
+     * @param element
+     *            the element to remove as a virtual child
+     */
+    public static void removeVirtualChildFromParent(Element element) {
+        assert(element.isVirtualChild());
+        Element parent = element.getParent();
+        if (parent.getNode().hasFeature(VirtualChildrenList.class)) {
+            VirtualChildrenList childrenList = parent.getNode()
+                    .getFeature(VirtualChildrenList.class);
+            int index = childrenList
+                    .indexOf(element.getNode());
+            if (index == -1) {
+                throw new IllegalArgumentException(
+                        "Failing to clean-up an embedded Flow web component, parent UI doesn't contain it as a virtual child.");
+            }
+            childrenList.remove(index);
+        }
+    }
 }
