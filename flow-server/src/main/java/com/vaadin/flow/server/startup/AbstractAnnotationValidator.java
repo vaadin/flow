@@ -116,7 +116,7 @@ public abstract class AbstractAnnotationValidator implements Serializable {
         return annotations.stream()
                 .filter(ann -> clazz
                         .isAnnotationPresent((Class<? extends Annotation>) ann))
-                .map(Class::getSimpleName).collect(Collectors.joining(", "));
+                .map(ann -> "@" + ann.getSimpleName()).collect(Collectors.joining(", "));
     }
 
     private List<String> validateAnnotatedClasses(
@@ -137,7 +137,9 @@ public abstract class AbstractAnnotationValidator implements Serializable {
                             clazz.getName(), getClassAnnotations(clazz)));
                 }
             } else if (VaadinAppShell.class.isAssignableFrom(clazz)) {
-                // This is handled in separated validation
+                // Validations in classes extending VaadinAppShell is done when
+                // the
+                // VaadinShellInitializer is run
             } else if (!RouterLayout.class.isAssignableFrom(clazz)) {
                 if (!Modifier.isAbstract(clazz.getModifiers())) {
                     handleNonRouterLayout(clazz)
