@@ -23,7 +23,7 @@ import java.io.Serializable;
  * generated index.html page:
  * 
  * <ul>
- * <li>{@link Meta}: appends an HTML <meta> tag to the bottom of the <head>
+ * <li>{@link Meta}: appends an HTML &lt;meta&gt; tag to the bottom of the  &lt;head&gt;
  * element other annotations to be added here and some more There should be at
  * max one class extending {@link VaadinAppShell} in the application.
  * </ul>

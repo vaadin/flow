@@ -30,6 +30,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.VaadinAppShell;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -111,10 +113,19 @@ public class VaadinAppShellInitializer implements ServletContainerInitializer,
                 });
 
         if (!offendingAnnotations.isEmpty()) {
-            String message = String.format(VaadinAppShellRegistry.ERROR_HEADER,
-                    registry.getShell().getName(),
-                    String.join("\n", offendingAnnotations));
-            throw new InvalidApplicationConfigurationException(message);
+            if (registry.getShell() == null) {
+                String message = String.format(
+                        VaadinAppShellRegistry.ERROR_HEADER_NO_SHELL,
+                        String.join("\n  ", offendingAnnotations));
+                LoggerFactory.getLogger(VaadinAppShellInitializer.class)
+                        .error(message);
+            } else {
+                String message = String.format(
+                        VaadinAppShellRegistry.ERROR_HEADER_OFFENDING,
+                        registry.getShell().getClass(),
+                        String.join("\n  ", offendingAnnotations));
+                throw new InvalidApplicationConfigurationException(message);
+            }
         }
     }
 

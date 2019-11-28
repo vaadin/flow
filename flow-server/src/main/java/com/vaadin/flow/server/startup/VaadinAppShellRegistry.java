@@ -41,8 +41,11 @@ import static com.vaadin.flow.server.startup.VaadinAppShellInitializer.getValidA
 public class VaadinAppShellRegistry implements Serializable {
 
 
-    static final String ERROR_HEADER = "%n%nFound configuration annotations in non `VaadinAppShell` classes."
-            + "%nThe following annotations must be moved to the '%s' class:%n%s%n";
+    static final String ERROR_HEADER_NO_SHELL = "%n%nFound configuration annotations in non `VaadinAppShell` classes.%n"
+            + "%nPlease create a custom class extending `VaadinAppShell` and move the following annotations to it:%n  %s%n";
+
+    static final String ERROR_HEADER_OFFENDING = "%n%nFound configuration annotations in non `VaadinAppShell` classes."
+            + "%nThe following annotations must be moved to the '%s' class:%n  %s%n";
 
     private static final String ERROR_LINE = "  - %s contains: %s";
     private static final String ERROR_MULTIPLE_SHELL =
