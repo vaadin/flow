@@ -109,8 +109,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     }
 
     private void includeAppShellElements(Document document, ServletContext context) {
-        VaadinAppShellRegistry.getInstance(context).getElements()
-                .forEach(elem -> document.head().appendChild(elem));
+        VaadinAppShellRegistry.getInstance(context).applyModifications(document);
     }
 
     @Override

@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.junit.After;
 import org.junit.Before;
@@ -50,6 +51,7 @@ public class VaadinAppShellInitializerTest {
     private ServletContext servletContext;
     private Map<String, String> initParams;
     private Set<Class<?>> classes;
+    private Document document;
 
     @Before
     public void setup() throws Exception {
@@ -67,11 +69,12 @@ public class VaadinAppShellInitializerTest {
         Map<String, ServletRegistration> registry = new HashMap<>();
         registry.put("foo", registration);
         Mockito.when(servletContext.getServletRegistrations())
-                .thenReturn((Map)registry);
+                .thenReturn((Map) registry);
         Mockito.when(servletContext.getInitParameterNames())
                 .thenReturn(Collections.emptyEnumeration());
 
         initializer = new VaadinAppShellInitializer();
+        document = Document.createShell("");
     }
 
     @After
@@ -87,9 +90,10 @@ public class VaadinAppShellInitializerTest {
         classes.add(MyAppShellWithMultipleMeta.class);
 
         initializer.onStartup(classes, servletContext);
-        List<Element> elements = VaadinAppShellRegistry
-                .getInstance(servletContext).getElements();
+        VaadinAppShellRegistry.getInstance(servletContext)
+                .applyModifications(document);
 
+        List<Element> elements = document.head().children();
         assertEquals(2, elements.size());
         assertEquals("foo", elements.get(0).attr("name"));
         assertEquals("bar", elements.get(0).attr("content"));
@@ -98,34 +102,27 @@ public class VaadinAppShellInitializerTest {
     }
 
     @Test
-    public void should_have_parentMetas_when_nonAnnotatedAppShell() throws Exception {
-        classes.add(MyAppShellWithoutMeta.class);
-
-        initializer.onStartup(classes, servletContext);
-        List<Element> elements = VaadinAppShellRegistry
-                .getInstance(servletContext).getElements();
-
-        assertEquals(1, elements.size());
-        assertEquals("charset", elements.get(0).attr("name"));
-        assertEquals("UTF-8", elements.get(0).attr("content"));
-    }
-
-    @Test
-    public void should_not_haveMetas_when_not_callingInitializer() throws Exception {
-        List<Element> elements = VaadinAppShellRegistry
-                .getInstance(servletContext).getElements();
+    public void should_not_haveMetas_when_not_callingInitializer()
+            throws Exception {
+        VaadinAppShellRegistry.getInstance(servletContext)
+                .applyModifications(document);
+        List<Element> elements = document.head().children();
         assertEquals(0, elements.size());
     }
 
     @Test
-    public void should_reuseContextAppShell_when_creatingNewInstance() throws Exception {
+    public void should_reuseContextAppShell_when_creatingNewInstance()
+            throws Exception {
         // Set class in context and do not call initializer
         Mockito.when(
                 servletContext.getAttribute(VaadinAppShell.class.getName()))
                 .thenReturn(MyAppShellWithMultipleMeta.class.getName());
 
-        List<Element> elements = VaadinAppShellRegistry
-                .getInstance(servletContext).getElements();
+        VaadinAppShellRegistry.getInstance(servletContext)
+                .applyModifications(document);
+
+        List<Element> elements = document.head().children();
+
         assertEquals(2, elements.size());
         assertEquals("foo", elements.get(0).attr("name"));
         assertEquals("bar", elements.get(0).attr("content"));
@@ -136,7 +133,8 @@ public class VaadinAppShellInitializerTest {
     @Test
     public void should_throw_when_ofendingClass() throws Exception {
         exception.expect(InvalidApplicationConfigurationException.class);
-        exception.expectMessage(containsString("Found configuration annotations"));
+        exception.expectMessage(
+                containsString("Found configuration annotations"));
 
         classes.add(MyAppShellWithoutMeta.class);
         classes.add(OfendingClass.class);
@@ -146,7 +144,7 @@ public class VaadinAppShellInitializerTest {
     @Test
     public void should_throw_when_multipleAppShell() throws Exception {
         exception.expect(InvalidApplicationConfigurationException.class);
-        exception.expectMessage(containsString("multiple classes extending"));
+        exception.expectMessage(containsString("Unable to find a single class"));
 
         classes.add(MyAppShellWithoutMeta.class);
         classes.add(MyAppShellWithMultipleMeta.class);

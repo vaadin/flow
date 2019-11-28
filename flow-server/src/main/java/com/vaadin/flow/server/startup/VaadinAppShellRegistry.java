@@ -19,11 +19,11 @@ import javax.servlet.ServletContext;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import com.vaadin.flow.component.page.Meta;
@@ -41,11 +41,12 @@ import static com.vaadin.flow.server.startup.VaadinAppShellInitializer.getValidA
 public class VaadinAppShellRegistry implements Serializable {
 
 
-    static final String ERROR_HEADER = "%n%nFound configuration annotations in non `VaadinApplicationShell` classes."
+    static final String ERROR_HEADER = "%n%nFound configuration annotations in non `VaadinAppShell` classes."
             + "%nThe following annotations must be moved to the '%s' class:%n%s%n";
 
     private static final String ERROR_LINE = "  - %s contains: %s";
-    private static final String ERROR_MULTIPLE_SHELL = "%nFound multiple classes extending `VaadinApplicationShell` in the application%n  %s%n  %s%n";
+    private static final String ERROR_MULTIPLE_SHELL =
+            "%nUnable to find a single class extending `VaadinAppnShell` from the following candidates:%n  %s%n  %s%n";
     private static final String SHELL_KEY = VaadinAppShell.class.getName();
 
     private static VaadinAppShellRegistry instance;
@@ -60,7 +61,7 @@ public class VaadinAppShellRegistry implements Serializable {
      * @return the registry instance
      */
     @SuppressWarnings("unchecked")
-    public static VaadinAppShellRegistry getInstance(ServletContext context) {
+    public static VaadinAppShellRegistry getInstance(final ServletContext context) {
 
         if (instance != null) {
             return instance;
@@ -84,6 +85,17 @@ public class VaadinAppShellRegistry implements Serializable {
     }
 
     /**
+     * Reset the registry configuration so as it's possible to perform a new
+     * configuration and validation.
+     */
+    public void reset(final ServletContext context) {
+        this.shell = null;
+        synchronized (context) {
+            context.removeAttribute(SHELL_KEY);
+        }
+    }
+
+    /**
      * Sets the {@link VaadinAppShell} class in the application. Pass a null to
      * reset the previous one when reusing the instance.
      *
@@ -93,17 +105,16 @@ public class VaadinAppShellRegistry implements Serializable {
      *            the servlet context.
      */
     public void setShell(
-            Class<? extends VaadinAppShell> shell, ServletContext context) {
+            Class<? extends VaadinAppShell> shell, final ServletContext context) {
         if (this.shell != null && shell != null) {
             throw new InvalidApplicationConfigurationException(
                     String.format(VaadinAppShellRegistry.ERROR_MULTIPLE_SHELL,
-                            this.shell, shell.getName()));
+                            this.shell.getName(), shell.getName()));
         }
         this.shell = shell;
-        if (shell != null) {
+
+        synchronized (context) {
             context.setAttribute(SHELL_KEY, shell.getName());
-        } else {
-            context.removeAttribute(SHELL_KEY);
         }
     }
 
@@ -125,9 +136,14 @@ public class VaadinAppShellRegistry implements Serializable {
      */
     public boolean isShell(Class<?> clz) {
         assert clz != null;
-        // Compare string names in order to works when classloaders are different
-        return clz.getSuperclass().getName()
-                .equals(VaadinAppShell.class.getName()); // NOSONAR
+        try {
+            // Use the same class-loader for the checking
+            return clz.getClassLoader()
+                    .loadClass(VaadinAppShell.class.getName())
+                    .isAssignableFrom(clz);
+        } catch (ClassNotFoundException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 
     /**
@@ -141,14 +157,12 @@ public class VaadinAppShellRegistry implements Serializable {
      */
     public String validateClass(Class<?> clz) {
         String error = null;
-        if (shell != null) {
-            @SuppressWarnings({ "unchecked", "rawtypes" })
-            String annotations = AbstractAnnotationValidator
-                    .getClassAnnotations(clz, (List) getValidAnnotations());
-            if (!annotations.isEmpty()) {
-                error = String.format(VaadinAppShellRegistry.ERROR_LINE,
-                        clz.getName(), annotations);
-            }
+        @SuppressWarnings({ "unchecked", "rawtypes" })
+        String annotations = AbstractAnnotationValidator
+                .getClassAnnotations(clz, (List) getValidAnnotations());
+        if (!annotations.isEmpty()) {
+            error = String.format(VaadinAppShellRegistry.ERROR_LINE,
+                    clz.getName(), annotations);
         }
         return error;
     }
@@ -156,18 +170,14 @@ public class VaadinAppShellRegistry implements Serializable {
     /**
      * Gets the list of {@link Element} that should be appended to the document
      * head based on the {@link VaadinAppShell} annotations.
-     *
-     * @return
      */
-    public List<Element> getElements() {
-        List<Element> ret = new ArrayList<>();
+    public void applyModifications(Document document) {
         getAnnotations(Meta.class).forEach(meta -> {
             Element elem = new Element("meta");
             elem.attr("name", meta.name());
             elem.attr("content", meta.content());
-            ret.add(elem);
+            document.head().appendChild(elem);
         });
-        return ret;
     }
 
     @Override

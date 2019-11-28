@@ -18,17 +18,24 @@ package com.vaadin.flow.component.page;
 import java.io.Serializable;
 
 /**
- * A marker class to configure the `index.hml` page when in clientSide mode.
- *
- * There should be only one class in the application extending this.
- *
- * It is mandatory to remove all annotations from other class before adding
- * an <code>AppShell</code> to the project.
- *
+ * A marker class to configure the index.hml page when in client-side
+ * bootstrapping. This class supports the following annotations that affect the
+ * generated index.html page:
+ * 
+ * <ul>
+ * <li>{@link Meta}: appends an HTML <meta> tag to the bottom of the <head>
+ * element other annotations to be added here and some more There should be at
+ * max one class extending {@link VaadinAppShell} in the application.
+ * </ul>
+ * 
+ * <p>
+ * NOTE: the application shell class is the only valid target to place the page
+ * configuration annotations listed above. The application would fail to start
+ * if any of these annotations is wrongly placed on a class other than the
+ * application shell class.
  * <p>
  *
  * <code>
- *
  * &#64;Meta(name = "Author", content = "Donald Duck")
  * public class AppShell extends VaadinAppShell {
  * }
@@ -36,6 +43,5 @@ import java.io.Serializable;
  *
  * @since 3.0
  */
-@Meta(name = "charset", content = "UTF-8")
 public class VaadinAppShell implements Serializable {
 }
