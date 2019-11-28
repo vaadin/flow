@@ -68,10 +68,12 @@ public class VaadinAppShellInitializer implements ServletContainerInitializer,
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
+        // NOP
     }
 
     @Override
     public void contextDestroyed(ServletContextEvent sce) {
+        // NOP
     }
 
     /**

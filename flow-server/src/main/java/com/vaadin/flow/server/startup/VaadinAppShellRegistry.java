@@ -41,12 +41,12 @@ import static com.vaadin.flow.server.startup.VaadinAppShellInitializer.getValidA
 public class VaadinAppShellRegistry implements Serializable {
 
 
-    static final String ERROR_HEADER = "\n\nFound configuration annotations in non `VaadinApplicationShell` classes."
-            + "\nThe following annotations must be moved to the '%s' class:\n%s\n";
+    static final String ERROR_HEADER = "%n%nFound configuration annotations in non `VaadinApplicationShell` classes."
+            + "%nThe following annotations must be moved to the '%s' class:%n%s%n";
 
     private static final String ERROR_LINE = "  - %s contains: %s";
-    private static final String ERROR_MULTIPLE_SHELL = "\nFound multiple classes extending `VaadinApplicationShell` in the application\n  %s\n  %s\n";
-    private final static String SHELL_KEY = VaadinAppShell.class.getName();
+    private static final String ERROR_MULTIPLE_SHELL = "%nFound multiple classes extending `VaadinApplicationShell` in the application%n  %s%n  %s%n";
+    private static final String SHELL_KEY = VaadinAppShell.class.getName();
 
     private static VaadinAppShellRegistry instance;
     private Class<? extends VaadinAppShell> shell;
@@ -57,7 +57,7 @@ public class VaadinAppShellRegistry implements Serializable {
      *
      * @param context
      *            servlet context
-     * @return
+     * @return the registry instance
      */
     @SuppressWarnings("unchecked")
     public static VaadinAppShellRegistry getInstance(ServletContext context) {
@@ -67,30 +67,32 @@ public class VaadinAppShellRegistry implements Serializable {
         }
         assert context != null;
 
-        instance = new VaadinAppShellRegistry();
+        synchronized (context) {
+            instance = new VaadinAppShellRegistry();
 
-        String shellName = (String) context.getAttribute(SHELL_KEY);
-        if (shellName != null) {
-            try {
-                instance.shell = (Class<? extends VaadinAppShell>) Class
-                        .forName(shellName);
-            } catch (ClassNotFoundException e) {
-                throw new InvalidApplicationConfigurationException(
-                        e.getMessage());
+            String shellName = (String) context.getAttribute(SHELL_KEY);
+            if (shellName != null) {
+                try {
+                    instance.shell = (Class<? extends VaadinAppShell>) Class
+                            .forName(shellName);
+                } catch (ClassNotFoundException e) {
+                    throw new IllegalArgumentException(e);
+                }
             }
         }
         return instance;
     }
 
     /**
-     * Sets the {@link VaadinAppShell} class in the application.
-     * Pass a null to reset the previous one when reusing the instance.
+     * Sets the {@link VaadinAppShell} class in the application. Pass a null to
+     * reset the previous one when reusing the instance.
      *
-     * @param shell the class extending VaadinAppShell class.
-     * @param context the servlet context.
-     * @return
+     * @param shell
+     *            the class extending VaadinAppShell class.
+     * @param context
+     *            the servlet context.
      */
-    public VaadinAppShellRegistry setShell(
+    public void setShell(
             Class<? extends VaadinAppShell> shell, ServletContext context) {
         if (this.shell != null && shell != null) {
             throw new InvalidApplicationConfigurationException(
@@ -103,8 +105,6 @@ public class VaadinAppShellRegistry implements Serializable {
         } else {
             context.removeAttribute(SHELL_KEY);
         }
-
-        return this;
     }
 
     /**
@@ -121,12 +121,13 @@ public class VaadinAppShellRegistry implements Serializable {
      *
      * @param clz
      *            the class to check.
-     * @return
+     * @return true if the class extends {@link VaadinAppShell}.
      */
     public boolean isShell(Class<?> clz) {
         assert clz != null;
         // Compare string names in order to works when classloaders are different
-        return clz.getSuperclass().getName().equals(VaadinAppShell.class.getName());
+        return clz.getSuperclass().getName()
+                .equals(VaadinAppShell.class.getName()); // NOSONAR
     }
 
     /**
@@ -135,7 +136,8 @@ public class VaadinAppShellRegistry implements Serializable {
      *
      * @param clz
      *            the class to check.
-     * @return
+     * @return a string with the error lines if the class has offending
+     *         annotations
      */
     public String validateClass(Class<?> clz) {
         String error = null;
