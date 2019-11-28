@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2019 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -208,52 +208,54 @@ public abstract class NodeUpdater implements FallibleCommand {
 
     boolean updateMainDefaultDependencies(JsonObject packageJson,
             String polymerVersion) {
-        boolean added = false;
-        added = addDependency(packageJson, null, DEP_NAME_KEY, DEP_NAME_DEFAULT)
-                || added;
-        added = addDependency(packageJson, null, DEP_LICENSE_KEY,
-                DEP_LICENSE_DEFAULT) || added;
+        int added = 0;
+        added += addDependency(packageJson, null, DEP_NAME_KEY, DEP_NAME_DEFAULT);
+        added += addDependency(packageJson, null, DEP_LICENSE_KEY,
+                DEP_LICENSE_DEFAULT);
 
         String polymerDepVersion = polymerVersion;
         if (polymerDepVersion == null) {
             polymerDepVersion = "3.2.0";
         }
 
-        added = addDependency(packageJson, DEPENDENCIES, "@polymer/polymer",
-                polymerDepVersion) || added;
-        added = addDependency(packageJson, DEPENDENCIES,
-                "@webcomponents/webcomponentsjs", "^2.2.10") || added;
+        added += addDependency(packageJson, DEPENDENCIES, "@polymer/polymer",
+                polymerDepVersion);
+        added += addDependency(packageJson, DEPENDENCIES,
+                "@webcomponents/webcomponentsjs", "^2.2.10");
         // dependency for the custom package.json placed in the generated
         // folder.
         try {
             String customPkg = "./" + npmFolder.getAbsoluteFile().toPath()
                     .relativize(generatedFolder.getAbsoluteFile().toPath())
                     .toString();
-            added = addDependency(packageJson, DEPENDENCIES, DEP_NAME_FLOW_DEPS,
-                    customPkg.replaceAll("\\\\", "/")) || added;
+            added += addDependency(packageJson, DEPENDENCIES, DEP_NAME_FLOW_DEPS,
+                    customPkg.replaceAll("\\\\", "/"));
         } catch (IllegalArgumentException iae) {
             log().error("Exception in relativization of '%s' to '%s'",
                     npmFolder.getAbsoluteFile().toPath(),
                     generatedFolder.getAbsoluteFile().toPath());
             throw iae;
         }
-        added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack",
-                "4.30.0") || added;
-        added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack-cli",
-                "3.3.0") || added;
-        added = addDependency(packageJson, DEV_DEPENDENCIES,
-                "webpack-dev-server", "3.3.0") || added;
-        added = addDependency(packageJson, DEV_DEPENDENCIES,
-                "webpack-babel-multi-target-plugin", "2.3.1") || added;
-        added = addDependency(packageJson, DEV_DEPENDENCIES,
-                "copy-webpack-plugin", "5.0.3") || added;
-        added = addDependency(packageJson, DEV_DEPENDENCIES,
-                "compression-webpack-plugin", "3.0.0") || added;
-        added = addDependency(packageJson, DEV_DEPENDENCIES, "webpack-merge",
-                "4.2.1") || added;
-        added = addDependency(packageJson, DEV_DEPENDENCIES, "raw-loader",
-                "3.0.0") || added;
-        return added;
+        added += addDependency(packageJson, DEV_DEPENDENCIES, "webpack",
+                "4.30.0");
+        added += addDependency(packageJson, DEV_DEPENDENCIES, "webpack-cli",
+                "3.3.0");
+        added += addDependency(packageJson, DEV_DEPENDENCIES,
+                "webpack-dev-server", "3.3.0");
+        added += addDependency(packageJson, DEV_DEPENDENCIES,
+                "webpack-babel-multi-target-plugin", "2.3.1");
+        added += addDependency(packageJson, DEV_DEPENDENCIES,
+                "copy-webpack-plugin", "5.0.3");
+        added += addDependency(packageJson, DEV_DEPENDENCIES,
+                "compression-webpack-plugin", "3.0.0");
+        added += addDependency(packageJson, DEV_DEPENDENCIES, "webpack-merge",
+                "4.2.1");
+        added += addDependency(packageJson, DEV_DEPENDENCIES, "raw-loader",
+                "3.0.0");
+        if(added > 0) {
+            log().info("Added {} dependencies to main package.json", added);
+        }
+        return added > 0;
     }
 
     void updateAppDefaultDependencies(JsonObject packageJson) {
@@ -262,7 +264,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         addDependency(packageJson, null, DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT);
     }
 
-    boolean addDependency(JsonObject json, String key, String pkg,
+    int addDependency(JsonObject json, String key, String pkg,
             String vers) {
         if (key != null) {
             if (!json.hasKey(key)) {
@@ -272,10 +274,10 @@ public abstract class NodeUpdater implements FallibleCommand {
         }
         if (!json.hasKey(pkg) || !json.getString(pkg).equals(vers)) {
             json.put(pkg, vers);
-            log().info("Added \"{}\": \"{}\" line.", pkg, vers);
-            return true;
+            log().debug("Added \"{}\": \"{}\" line.", pkg, vers);
+            return 1;
         }
-        return false;
+        return 0;
     }
 
     String writeMainPackageFile(JsonObject packageJson) throws IOException {

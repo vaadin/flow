@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2019 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -41,6 +41,7 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 
 /**
  * Updates <code>package.json</code> by visiting {@link NpmPackage} annotations
@@ -142,12 +143,17 @@ public class TaskUpdatePackages extends NodeUpdater {
 
     private boolean updatePackageJsonDependencies(JsonObject packageJson,
             Map<String, String> deps) throws IOException {
-        boolean added = false;
+        int added = 0;
 
         // Add application dependencies
         for (Entry<String, String> dep : deps.entrySet()) {
-            added = addDependency(packageJson, DEPENDENCIES, dep.getKey(),
-                    dep.getValue()) || added;
+            added += addDependency(packageJson, DEPENDENCIES, dep.getKey(),
+                    dep.getValue());
+        }
+
+        if (added > 0) {
+            log().info("Added {} dependencies to '{}'", added,
+                    new File(generatedFolder, PACKAGE_JSON).getPath());
         }
 
         // Remove obsolete dependencies
@@ -166,7 +172,7 @@ public class TaskUpdatePackages extends NodeUpdater {
             cleanUp();
         }
 
-        return added;
+        return added > 0;
     }
 
     /**

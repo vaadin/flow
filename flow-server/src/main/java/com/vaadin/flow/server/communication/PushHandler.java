@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2019 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.ErrorEvent;
-import com.vaadin.flow.server.ServletHelper;
+import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.SessionExpiredException;
 import com.vaadin.flow.server.SystemMessages;
 import com.vaadin.flow.server.VaadinRequest;
@@ -218,7 +218,7 @@ public class PushHandler {
                 callErrorHandler(session, e);
             } catch (final Exception e) {
                 SystemMessages msg = service.getSystemMessages(
-                        ServletHelper.findLocale(null, vaadinRequest),
+                        HandlerHelper.findLocale(null, vaadinRequest),
                         vaadinRequest);
 
                 AtmosphereResource errorResource = resource;

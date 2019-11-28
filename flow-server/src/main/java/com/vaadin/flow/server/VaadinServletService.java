@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2019 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -190,8 +190,7 @@ public class VaadinServletService extends VaadinService {
 
     @Override
     protected RouteRegistry getRouteRegistry() {
-        return ApplicationRouteRegistry
-                .getInstance(getContext());
+        return ApplicationRouteRegistry.getInstance(getContext());
     }
 
     @Override
@@ -378,8 +377,18 @@ public class VaadinServletService extends VaadinService {
     @Override
     public String getContextRootRelativePath(VaadinRequest request) {
         assert request instanceof VaadinServletRequest;
-        return ServletHelper.getContextRootRelativePath(
-                (VaadinServletRequest) request) + "/";
+        // Generate location from the request by finding how many "../" should
+        // be added to the servlet path before we get to the context root
+
+        // Should not take pathinfo into account because the base URI refers to
+        // the servlet path
+
+        String servletPath = ((VaadinServletRequest) request).getServletPath();
+        assert servletPath != null;
+        if (!servletPath.endsWith("/")) {
+            servletPath += "/";
+        }
+        return HandlerHelper.getCancelingRelativePath(servletPath) + "/";
     }
 
     @Override

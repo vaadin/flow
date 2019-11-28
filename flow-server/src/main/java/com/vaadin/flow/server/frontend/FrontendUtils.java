@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2019 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -50,6 +50,7 @@ import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
@@ -198,6 +199,10 @@ public class FrontendUtils {
     public static final String INSTALL_NODE_LOCALLY = "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.7.6:install-node-and-npm -DnodeVersion=\"v12.13.0\" ";
     public static final String DISABLE_CHECK = "%nYou can disable the version check using -D%s=true";
 
+    private static final String NO_CONNECTION = "Webpack-dev-server couldn't be reached for %s.%n"
+            + "Check the startup logs for exceptions in running webpack-dev-server.%n"
+            + "If server should be running in production mode check that production mode flag is set correctly.";
+
     private static final String NOT_FOUND = "%n%n======================================================================================================"
             + "%nFailed to determine '%s' tool." + "%nPlease install it either:"
             + "%n  - by following the https://nodejs.org/en/download/ guide to install it globally"
@@ -210,8 +215,7 @@ public class FrontendUtils {
             + "%nYou can install a new one:"
             + "%n  - by following the https://nodejs.org/en/download/ guide to install it globally"
             + "%n  - or by running the frontend-maven-plugin goal to install it in this project:"
-            + INSTALL_NODE_LOCALLY
-            + "%n" //
+            + INSTALL_NODE_LOCALLY + "%n" //
             + DISABLE_CHECK //
             + "%n======================================================================================================%n";
 
@@ -220,8 +224,7 @@ public class FrontendUtils {
             + "%nPlease install a new one either:"
             + "%n  - by following the https://nodejs.org/en/download/ guide to install it globally"
             + "%n  - or by running the frontend-maven-plugin goal to install it in this project:"
-            + INSTALL_NODE_LOCALLY
-            + "%n" //
+            + INSTALL_NODE_LOCALLY + "%n" //
             + DISABLE_CHECK //
             + "%n======================================================================================================%n";
 
@@ -231,8 +234,7 @@ public class FrontendUtils {
             + "%n  - by following the https://nodejs.org/en/download/ guide to install it globally"
             + "%s"
             + "%n  - or by running the frontend-maven-plugin goal to install it in this project:"
-            + INSTALL_NODE_LOCALLY
-            + "%n" //
+            + INSTALL_NODE_LOCALLY + "%n" //
             + DISABLE_CHECK //
             + "%n======================================================================================================%n";
 
@@ -313,7 +315,7 @@ public class FrontendUtils {
     public static List<String> getNpmExecutable(String baseDir) {
         // If `node` is not found in PATH, `node/node_modules/npm/bin/npm` will
         // not work because it's a shell or windows script that looks for node
-        // and will fail. Thus we look for the `mpn-cli` node script instead
+        // and will fail. Thus we look for the `npm-cli` node script instead
         File file = new File(baseDir, "node/node_modules/npm/bin/npm-cli.js");
         List<String> returnCommand = new ArrayList<>();
         if (file.canRead()) {
@@ -321,12 +323,38 @@ public class FrontendUtils {
             returnCommand.add(getNodeExecutable(baseDir));
             returnCommand.add(file.getAbsolutePath());
         } else {
-            // Otherwise look for regulan `npm`
+            // Otherwise look for regulag `npm`
             String command = isWindows() ? "npm.cmd" : "npm";
             returnCommand.add(
                     getExecutable(baseDir, command, null).getAbsolutePath());
         }
         returnCommand.add("--no-update-notifier");
+        return returnCommand;
+    }
+
+    /**
+     * Locate <code>pnpm</code> executable.
+     *
+     * @param baseDir
+     *            project root folder.
+     *
+     * @return the list of all commands in sequence that need to be executed to
+     *         have pnpm running
+     */
+    public static List<String> getPnpmExecutable(String baseDir) {
+        // First try local pnpm JS script if it exists
+        File file = new File(baseDir, "node_modules/pnpm/bin/pnpm.js");
+        List<String> returnCommand = new ArrayList<>();
+        if (file.canRead()) {
+            // We return a two element list with node binary and npm-cli script
+            returnCommand.add(getNodeExecutable(baseDir));
+            returnCommand.add(file.getAbsolutePath());
+        } else {
+            // Otherwise look for regulag `pnpm`
+            String command = isWindows() ? "pnpm.cmd" : "pnpm";
+            returnCommand.add(
+                    getExecutable(baseDir, command, null).getAbsolutePath());
+        }
         return returnCommand;
     }
 
@@ -454,8 +482,9 @@ public class FrontendUtils {
         if (content == null) {
             content = getStatsFromClassPath(service);
         }
-        return content != null ?
-                IOUtils.toString(content, StandardCharsets.UTF_8) : null;
+        return content != null
+                ? IOUtils.toString(content, StandardCharsets.UTF_8)
+                : null;
     }
 
     /**
@@ -476,9 +505,15 @@ public class FrontendUtils {
         DeploymentConfiguration config = service.getDeploymentConfiguration();
         if (!config.isProductionMode() && config.enableDevServer()) {
             DevModeHandler handler = DevModeHandler.getDevModeHandler();
-            return streamToString(handler
-                    .prepareConnection("/stats.hash", "GET").getInputStream())
-                            .replaceAll("\"", "");
+            HttpURLConnection statsConnection = handler
+                    .prepareConnection("/stats.hash", "GET");
+            if (statsConnection
+                    .getResponseCode() != HttpURLConnection.HTTP_OK) {
+                throw new WebpackConnectionException(String.format(
+                        NO_CONNECTION, "getting the stats content hash."));
+            }
+            return streamToString(statsConnection.getInputStream())
+                    .replaceAll("\"", "");
         }
 
         return "";
@@ -486,7 +521,13 @@ public class FrontendUtils {
 
     private static InputStream getStatsFromWebpack() throws IOException {
         DevModeHandler handler = DevModeHandler.getDevModeHandler();
-        return handler.prepareConnection("/stats.json", "GET").getInputStream();
+        HttpURLConnection statsConnection = handler
+                .prepareConnection("/stats.json", "GET");
+        if (statsConnection.getResponseCode() != HttpURLConnection.HTTP_OK) {
+            throw new WebpackConnectionException(
+                    String.format(NO_CONNECTION, "downloading stats.json"));
+        }
+        return statsConnection.getInputStream();
     }
 
     private static InputStream getStatsFromExternalUrl(String externalStatsUrl,
@@ -514,18 +555,20 @@ public class FrontendUtils {
             connection.setConnectTimeout(60000);
             String lastModified = connection.getHeaderField("last-modified");
             if (lastModified != null) {
-                LocalDateTime modified = ZonedDateTime.parse(lastModified,
-                        DateTimeFormatter.RFC_1123_DATE_TIME).toLocalDateTime();
+                LocalDateTime modified = ZonedDateTime
+                        .parse(lastModified,
+                                DateTimeFormatter.RFC_1123_DATE_TIME)
+                        .toLocalDateTime();
                 Stats statistics = context.getAttribute(Stats.class);
-                if (statistics == null || modified
-                        .isAfter(statistics.getLastModified())) {
+                if (statistics == null
+                        || modified.isAfter(statistics.getLastModified())) {
                     statistics = new Stats(
                             streamToString(connection.getInputStream()),
                             lastModified);
                     context.setAttribute(statistics);
                 }
-                return new ByteArrayInputStream(statistics.statsJson.getBytes(
-                        StandardCharsets.UTF_8));
+                return new ByteArrayInputStream(
+                        statistics.statsJson.getBytes(StandardCharsets.UTF_8));
             }
             return connection.getInputStream();
         } catch (IOException e) {
@@ -567,9 +610,14 @@ public class FrontendUtils {
         DeploymentConfiguration config = service.getDeploymentConfiguration();
         if (!config.isProductionMode() && config.enableDevServer()) {
             DevModeHandler handler = DevModeHandler.getDevModeHandler();
-            return streamToString(
-                    handler.prepareConnection("/assetsByChunkName", "GET")
-                            .getInputStream());
+            HttpURLConnection assetsConnection = handler
+                    .prepareConnection("/assetsByChunkName", "GET");
+            if (assetsConnection
+                    .getResponseCode() != HttpURLConnection.HTTP_OK) {
+                throw new WebpackConnectionException(String.format(
+                        NO_CONNECTION, "getting assets by chunk name."));
+            }
+            return streamToString(assetsConnection.getInputStream());
         }
         InputStream resourceAsStream;
         if (config.isStatsExternal()) {
@@ -612,23 +660,22 @@ public class FrontendUtils {
     }
 
     /**
-     * Scan until we reach the assetsByChunkName json object start.
-     * If faulty format add first jsonObject to assets builder.
+     * Scan until we reach the assetsByChunkName json object start. If faulty
+     * format add first jsonObject to assets builder.
      *
      * @param scan
-     *         Scanner used to scan data
+     *            Scanner used to scan data
      * @param assets
-     *         assets builder
+     *            assets builder
      */
     private static void scanToAssetChunkStart(Scanner scan,
-                                              StringBuilder assets) {
+            StringBuilder assets) {
         do {
             String line = scan.nextLine().trim();
             // Walk file until we get to the assetsByChunkName object.
             if (line.startsWith("\"assetsByChunkName\"")) {
                 if (!line.endsWith("{")) {
-                    assets.append(
-                            line.substring(line.indexOf('{') + 1).trim());
+                    assets.append(line.substring(line.indexOf('{') + 1).trim());
                 }
                 break;
             }
@@ -671,7 +718,8 @@ public class FrontendUtils {
 
     static void checkForFaultyNpmVersion(FrontendVersion npmVersion) {
         if (NPM_BLACKLISTED_VERSIONS.contains(npmVersion)) {
-            String badNpmVersion = buildBadVersionString("npm", npmVersion.getFullVersion(),
+            String badNpmVersion = buildBadVersionString("npm",
+                    npmVersion.getFullVersion(),
                     "by updating your global npm installation with `npm install -g npm@latest`");
             throw new IllegalStateException(badNpmVersion);
         }
@@ -679,9 +727,8 @@ public class FrontendUtils {
 
     private static String buildTooOldString(String tool, String version,
             int supportedMajor, int supportedMinor) {
-        return String
-                .format(TOO_OLD, tool, version, supportedMajor, supportedMinor,
-                        PARAM_IGNORE_VERSION_CHECKS);
+        return String.format(TOO_OLD, tool, version, supportedMajor,
+                supportedMinor, PARAM_IGNORE_VERSION_CHECKS);
     }
 
     private static String buildShouldWorkString(String tool, String version,
@@ -783,18 +830,18 @@ public class FrontendUtils {
             return;
         }
 
-        throw new IllegalStateException(
-                buildTooOldString(tool, toolVersion.getFullVersion(),
-                        supported.getMajorVersion(),
-                        supported.getMinorVersion()));
+        throw new IllegalStateException(buildTooOldString(tool,
+                toolVersion.getFullVersion(), supported.getMajorVersion(),
+                supported.getMinorVersion()));
     }
 
     static boolean isVersionAtLeast(FrontendVersion toolVersion,
             FrontendVersion required) {
-            int major = toolVersion.getMajorVersion();
-            int minor = toolVersion.getMinorVersion();
-            return (major > required.getMajorVersion()
-                    || (major == required.getMajorVersion() && minor >= required.getMinorVersion()));
+        int major = toolVersion.getMajorVersion();
+        int minor = toolVersion.getMinorVersion();
+        return (major > required.getMajorVersion()
+                || (major == required.getMajorVersion()
+                        && minor >= required.getMinorVersion()));
     }
 
     /**
@@ -855,17 +902,16 @@ public class FrontendUtils {
      * Parse the version number of node/npm from the given output.
      *
      * @param output
-     *         The output, typically produced by <code>tool --version</code>
+     *            The output, typically produced by <code>tool --version</code>
      * @return the parsed version as an array with 3-4 elements
      * @throws IOException
-     *         if parsing fails
+     *             if parsing fails
      */
     static String parseVersionString(String output) throws IOException {
         Optional<String> lastOuput = Stream.of(output.split("\n"))
                 .filter(line -> !line.matches("^[ ]*$"))
                 .reduce((first, second) -> second);
-        return lastOuput
-                .map(line -> line.replaceFirst("^v", ""))
+        return lastOuput.map(line -> line.replaceFirst("^v", ""))
                 .orElseThrow(() -> new IOException("No output"));
     }
 
@@ -884,10 +930,10 @@ public class FrontendUtils {
          * Create a new container for stats.json caching.
          *
          * @param statsJson
-         *         the gotten stats.json as a string
+         *            the gotten stats.json as a string
          * @param lastModified
-         *         last modification timestamp for stats.json in RFC-1123
-         *         date-time format, such as 'Tue, 3 Jun 2008 11:05:30 GMT'
+         *            last modification timestamp for stats.json in RFC-1123
+         *            date-time format, such as 'Tue, 3 Jun 2008 11:05:30 GMT'
          */
         public Stats(String statsJson, String lastModified) {
             this.statsJson = statsJson;
