@@ -17,8 +17,6 @@ package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
@@ -47,7 +45,7 @@ import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
 @HandlesTypes({ VaadinAppShell.class, Meta.class })
 @WebListener
 public class VaadinAppShellInitializer implements ServletContainerInitializer,
-        Serializable, ServletContextListener {
+        Serializable {
 
     @Override
     public void onStartup(Set<Class<?>> classes, ServletContext context)
@@ -64,16 +62,6 @@ public class VaadinAppShellInitializer implements ServletContainerInitializer,
                         registrations.iterator().next(), VaadinServlet.class);
 
         init(classes, context, config);
-    }
-
-    @Override
-    public void contextInitialized(ServletContextEvent sce) {
-        // NOP
-    }
-
-    @Override
-    public void contextDestroyed(ServletContextEvent sce) {
-        // NOP
     }
 
     /**
@@ -98,8 +86,7 @@ public class VaadinAppShellInitializer implements ServletContainerInitializer,
         VaadinAppShellRegistry registry = VaadinAppShellRegistry
                 .getInstance(context);
 
-        // Reset the registry
-        registry.setShell(null, context);
+        registry.reset(context);
 
         if (classes.isEmpty()) {
             return;
