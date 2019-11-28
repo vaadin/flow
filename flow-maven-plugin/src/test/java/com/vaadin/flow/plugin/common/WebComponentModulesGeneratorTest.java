@@ -42,6 +42,7 @@ import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.migration.ClassPathIntrospector;
 import com.vaadin.flow.plugin.samplecode.AbstractExporter;
 import com.vaadin.flow.plugin.samplecode.BarExporter;
+import com.vaadin.flow.plugin.samplecode.ExporterFactory;
 import com.vaadin.flow.plugin.samplecode.FooExporter;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.webcomponent.WebComponentModulesWriter;
@@ -84,6 +85,9 @@ public class WebComponentModulesGeneratorTest {
         ClassFinder finder = getMockFinderWithExporterClasses(FooExporter.class,
                 BarExporter.class, AbstractExporter.class);
 
+        Mockito.when(finder.getSubTypesOf(WebComponentExporterFactory.class))
+                .thenReturn(Collections.singleton(ExporterFactory.class));
+
         introspector = new ClassPathIntrospector(finder) {
         };
         generator = new WebComponentModulesGenerator(introspector);
@@ -93,7 +97,7 @@ public class WebComponentModulesGeneratorTest {
                 .generateWebComponentModules(temporaryFolder.getRoot());
 
         // verify
-        Assert.assertEquals(2, files.size());
+        Assert.assertEquals(3, files.size());
 
         Assert.assertTrue(
                 "FooExporter class is not discovered as an exporter class",
@@ -103,6 +107,10 @@ public class WebComponentModulesGeneratorTest {
                 "BarExporter class is not discovered as an exporter class",
                 files.stream()
                         .anyMatch(file -> file.getName().contains("wc-bar")));
+        Assert.assertTrue(
+                "Exporter factory class is not discovered as an exporter class",
+                files.stream().anyMatch(
+                        file -> file.getName().contains("wc-foo-bar")));
     }
 
     @Test
