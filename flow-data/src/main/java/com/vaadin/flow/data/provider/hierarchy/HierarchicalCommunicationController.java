@@ -259,6 +259,8 @@ public class HierarchicalCommunicationController<T> implements Serializable {
             boolean mapperHasKey = keyMapper.has(bean);
             String key = keyMapper.key(bean);
             if (mapperHasKey) {
+                // Ensure latest instance from provider is used
+                keyMapper.refresh(bean);
                 passivatedByUpdate.values()
                         .forEach(set -> set.remove(key));
             }
