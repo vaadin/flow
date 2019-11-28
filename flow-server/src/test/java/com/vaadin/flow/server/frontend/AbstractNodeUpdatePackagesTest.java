@@ -61,12 +61,10 @@ public abstract class AbstractNodeUpdatePackagesTest
     private File baseDir;
     private File generatedDir;
     private File mainPackageJson;
-    private File appPackageJson;
 
     private File mainNodeModules;
     private File packageLock;
     private File appNodeModules;
-    private File flowDepsPackageJson;
 
     @Before
     public void setup() throws Exception {
@@ -83,32 +81,25 @@ public abstract class AbstractNodeUpdatePackagesTest
         packageUpdater = new TaskUpdatePackages(classFinder,
                 getScanner(classFinder), baseDir, generatedDir, false);
         mainPackageJson = new File(baseDir, PACKAGE_JSON);
-        appPackageJson = new File(generatedDir, PACKAGE_JSON);
 
         mainNodeModules = new File(baseDir, FrontendUtils.NODE_MODULES);
         appNodeModules = new File(generatedDir, FrontendUtils.NODE_MODULES);
         packageLock = new File(baseDir, "package-lock.json");
 
-        File atVaadin = new File(mainNodeModules, "@vaadin");
-        File flowDeps = new File(atVaadin, "flow-deps");
-
-        flowDepsPackageJson = new File(flowDeps, PACKAGE_JSON);
     }
 
     protected abstract FrontendDependenciesScanner getScanner(
             ClassFinder finder);
 
     @Test
-    public void should_CreatePackageJson() throws Exception {
+    public void should_CreatePackageJson() {
         Assert.assertFalse(mainPackageJson.exists());
         packageCreator.execute();
         Assert.assertTrue(mainPackageJson.exists());
-        Assert.assertTrue(appPackageJson.exists());
     }
 
     @Test
-    public void should_not_ModifyPackageJson_WhenAlreadyExists()
-            throws Exception {
+    public void should_not_ModifyPackageJson_WhenAlreadyExists() {
         packageCreator.execute();
         Assert.assertTrue(packageCreator.modified);
 
@@ -123,7 +114,6 @@ public abstract class AbstractNodeUpdatePackagesTest
         Assert.assertTrue(packageCreator.modified);
         Assert.assertTrue(packageUpdater.modified);
         assertMainPackageJsonContent();
-        assertAppPackageJsonContent();
     }
 
     @Test
@@ -155,13 +145,8 @@ public abstract class AbstractNodeUpdatePackagesTest
         makeNodeModulesAndPackageLock();
 
         // Change the versions
-        getDependencies(packageUpdater.getAppPackageJson()).put(SHRINKWRAP,
+        getDependencies(packageUpdater.getPackageJson()).put(SHRINKWRAP,
                 "1.1.1");
-
-        // move app package json to the main package json
-        mainPackageJson.delete();
-        Files.move(appPackageJson.toPath(), mainPackageJson.toPath());
-        appPackageJson.delete();
 
         // run it again with existing generated package.json and mismatched
         // versions
@@ -174,7 +159,7 @@ public abstract class AbstractNodeUpdatePackagesTest
      * @throws IOException
      */
     private void assertVersionAndCleanUp() throws IOException {
-        JsonValue value = getDependencies(packageUpdater.getAppPackageJson())
+        JsonValue value = getDependencies(packageUpdater.getPackageJson())
                 .get(SHRINKWRAP);
         Assert.assertEquals("1.2.3", value.asString());
 
@@ -194,13 +179,8 @@ public abstract class AbstractNodeUpdatePackagesTest
         makeNodeModulesAndPackageLock();
 
         // Change the version
-        getDependencies(packageUpdater.getAppPackageJson()).put(SHRINKWRAP,
+        getDependencies(packageUpdater.getPackageJson()).put(SHRINKWRAP,
                 "1.1.1");
-
-        // move app package json to the flow-deps package json
-        flowDepsPackageJson.delete();
-        Files.move(appPackageJson.toPath(), flowDepsPackageJson.toPath());
-        appPackageJson.delete();
 
         // run it again with existing generated package.json and mismatched
         // versions
@@ -308,24 +288,9 @@ public abstract class AbstractNodeUpdatePackagesTest
     }
 
     @Test
-    public void generateAppPackageJsonFromScratch_hashCalculated_updaterIsModified()
-            throws IOException {
-        packageCreator.execute();
-        packageUpdater.execute();
-
-        JsonObject mainJson = getPackageJson(mainPackageJson);
-        Assert.assertTrue(mainJson.hasKey(TaskUpdatePackages.APP_PACKAGE_HASH));
-
-        Assert.assertTrue(packageUpdater.modified);
-    }
-
-    @Test
     public void regenerateAppPackageJson_sameContent_updaterIsNotModified() {
         packageCreator.execute();
         packageUpdater.execute();
-
-        // delete generated file
-        appPackageJson.delete();
 
         // regenerate it (with the same content)
         packageCreator.execute();
@@ -358,9 +323,6 @@ public abstract class AbstractNodeUpdatePackagesTest
         packageCreator.execute();
         packageUpdater.execute();
 
-        // delete generated file
-        appPackageJson.delete();
-
         // generate it one more time, the content will be different since
         // packageCreator has not added its content
         packageUpdater.execute();
@@ -389,9 +351,6 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         packageCreator.execute();
         packageUpdater.execute();
-
-        // delete generated file
-        appPackageJson.delete();
 
         packages.remove("@vaadin/vaadin-checkbox");
 
@@ -424,13 +383,8 @@ public abstract class AbstractNodeUpdatePackagesTest
         packageCreator.execute();
         packageUpdater.execute();
 
-        // delete generated file
-        appPackageJson.delete();
-
         packages.put("@vaadin/vaadin-list-box", "1.1.1");
 
-        // generate it one more time, the content will be different since
-        // packageCreator has not added its content
         packageUpdater.execute();
 
         Assert.assertTrue(
@@ -457,7 +411,7 @@ public abstract class AbstractNodeUpdatePackagesTest
                 packageUpdater.modified);
 
         // delete generated file
-        appPackageJson.delete();
+//        appPackageJson.delete();
 
         // generate it one more time, the content will be different since
         // packageCreator has not added its content
@@ -480,29 +434,27 @@ public abstract class AbstractNodeUpdatePackagesTest
         packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
                 baseDir, generatedDir, false);
 
-        // Set a package Hash
-        JsonObject mainJson = Json.createObject();
-        mainJson.put(APP_PACKAGE_HASH, "ow20f39ghs93");
-        Files.write(mainPackageJson.toPath(),
-                Collections.singletonList(stringify(mainJson)));
+//        // Set a package Hash
+//        JsonObject mainJson = packageCreator.getPackageJson();
+////        mainJson.put(APP_PACKAGE_HASH, "ow20f39ghs93");
+//        Files.write(mainPackageJson.toPath(),
+//                Collections.singletonList(stringify(mainJson)));
 
         packageCreator.execute();
-        mainJson = getPackageJson(mainPackageJson);
-        Assert.assertEquals(
-                "Main package should have added dependency and rewritten the hash.",
-                TaskCreatePackageJson.FORCE_INSTALL_HASH,
-                mainJson.get(APP_PACKAGE_HASH).asString());
         packageUpdater.execute();
 
         Assert.assertTrue(
-                "Modification flag should be true when main package was updated.",
+                "Modification flag should be true when main package was created.",
+                packageCreator.modified);
+        Assert.assertFalse(
+                "Modification flag should be false as there are no added dependencies.",
                 packageUpdater.modified);
 
-        mainJson = getPackageJson(mainPackageJson);
-        Assert.assertNotEquals(
-                "Main hash should have been updated to an actual hash.",
-                TaskCreatePackageJson.FORCE_INSTALL_HASH,
-                mainJson.get(APP_PACKAGE_HASH).asString());
+//        JsonObject mainJson = getPackageJson(mainPackageJson);
+//        Assert.assertNotEquals(
+//                "Main hash should have been updated to an actual hash.",
+//                TaskCreatePackageJson.FORCE_INSTALL_HASH,
+//                mainJson.get(APP_PACKAGE_HASH).asString());
     }
 
     private void makeNodeModulesAndPackageLock() throws IOException {
@@ -510,10 +462,6 @@ public abstract class AbstractNodeUpdatePackagesTest
         mainNodeModules.mkdirs();
         appNodeModules.mkdirs();
         Files.write(packageLock.toPath(), Collections.singletonList("{}"));
-        flowDepsPackageJson.getParentFile().mkdirs();
-        flowDepsPackageJson.createNewFile();
-        Files.write(flowDepsPackageJson.toPath(),
-                Collections.singletonList("{}"));
 
         // self control
         Assert.assertTrue(mainNodeModules.exists());
@@ -528,7 +476,7 @@ public abstract class AbstractNodeUpdatePackagesTest
     }
 
     private void assertMainPackageJsonContent() throws IOException {
-        JsonObject json = packageUpdater.getMainPackageJson();
+        JsonObject json = packageUpdater.getPackageJson();
         Assert.assertTrue(json.hasKey("name"));
         Assert.assertTrue(json.hasKey("license"));
 
@@ -550,26 +498,15 @@ public abstract class AbstractNodeUpdatePackagesTest
                 devDependencies.hasKey("copy-webpack-plugin"));
     }
 
-    private void assertAppPackageJsonContent() throws IOException {
-        JsonObject json = packageUpdater.getAppPackageJson();
-        Assert.assertTrue(json.hasKey("name"));
-        Assert.assertTrue(json.hasKey("license"));
-
-        JsonObject dependencies = getDependencies(json);
-
-        Assert.assertTrue("Missing @vaadin/vaadin-button package",
-                dependencies.hasKey("@vaadin/vaadin-button"));
-    }
-
     private JsonObject getDependencies(JsonObject json) {
         return json.getObject(DEPENDENCIES);
     }
 
     private void updateVersion() throws IOException {
         // Change the version
-        JsonObject json = packageUpdater.getAppPackageJson();
+        JsonObject json = packageUpdater.getPackageJson();
         getDependencies(json).put(SHRINKWRAP, "1.1.1");
-        Files.write(appPackageJson.toPath(),
+        Files.write(mainPackageJson.toPath(),
                 Collections.singletonList(stringify(json)));
     }
 

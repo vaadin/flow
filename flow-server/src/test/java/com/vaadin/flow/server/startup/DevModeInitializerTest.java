@@ -108,21 +108,18 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     public void should_Run_Updaters_when_NoNodeConfFiles() throws Exception {
         webpackFile.delete();
         mainPackageFile.delete();
-        appPackageFile.delete();
         runOnStartup();
         assertNotNull(getDevModeHandler());
     }
 
     @Test
-    public void should_Not_Run_Updaters_when_NoMainPackageFile()
-            throws Exception {
+    public void should_Not_Run_Updaters_when_NoMainPackageFile() {
         mainPackageFile.delete();
         assertNull(getDevModeHandler());
     }
 
     @Test
     public void should_Run_Updaters_when_NoAppPackageFile() throws Exception {
-        appPackageFile.delete();
         runOnStartup();
         assertNotNull(getDevModeHandler());
     }

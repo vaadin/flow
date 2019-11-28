@@ -16,6 +16,7 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * Version object for frontend versions comparison and handling.
@@ -106,15 +107,26 @@ public class FrontendVersion implements Serializable {
      *         version string as "major.minor.revision[.build]"
      */
     public FrontendVersion(String version) {
-        this.version = version;
+        Objects.requireNonNull(version);
+        if (!Character.isDigit(version.charAt(0))) {
+            this.version = version.substring(1);
+        } else {
+            this.version = version;
+        }
 
-        final String[] digits = version.split("[-.]", 4);
-        majorVersion = Integer.parseInt(digits[0]);
-        minorVersion = Integer.parseInt(digits[1]);
+        final String[] digits = this.version.split("[-.]", 4);
+        try {
+            majorVersion = Integer.parseInt(digits[0]);
+            minorVersion = Integer.parseInt(digits[1]);
+        } catch (NumberFormatException nfe) {
+            throw new NumberFormatException(
+                    String.format("'%s' is not a valid version!", version));
+        }
         int revisionNumber;
         String build = "";
         try {
-            revisionNumber = digits.length >= 3 ? Integer.parseInt(digits[2]) : 0;
+            revisionNumber =
+                    digits.length >= 3 ? Integer.parseInt(digits[2]) : 0;
             if (digits.length == 4) {
                 build = digits[3];
             }
@@ -174,6 +186,38 @@ public class FrontendVersion implements Serializable {
      */
     public String getBuildIdentifier() {
         return buildIdentifier;
+    }
+
+    public boolean isOlder(FrontendVersion otherVersion) {
+        boolean olderByVersion = majorVersion < otherVersion.majorVersion
+                || minorVersion < otherVersion.minorVersion
+                || revision < otherVersion.revision;
+        if (!olderByVersion && (buildIdentifier.isEmpty()
+                && !otherVersion.buildIdentifier.isEmpty())) {
+            return false;
+        }
+        return olderByVersion || (!buildIdentifier.isEmpty()
+                && otherVersion.buildIdentifier.isEmpty()) || buildIdentifier
+                .compareToIgnoreCase(otherVersion.buildIdentifier) < 0;
+    }
+
+    public boolean isNewer(FrontendVersion otherVersion) {
+        boolean newerByVersion = majorVersion > otherVersion.majorVersion
+                || minorVersion > otherVersion.minorVersion
+                || revision > otherVersion.revision;
+
+        // if other has buildIdentifier and we don't we are newer
+        boolean newerBuildIdentifier =
+                buildIdentifier.isEmpty() && !otherVersion.buildIdentifier
+                        .isEmpty();
+        // if other doesn't have a buildIdentifier and we do we are older,
+        // else compare buildIdentifiers
+        boolean olderBuildIdentifier =
+                !(!buildIdentifier.isEmpty() && otherVersion.buildIdentifier
+                        .isEmpty()) && buildIdentifier
+                        .compareToIgnoreCase(otherVersion.buildIdentifier) > 0;
+        return newerByVersion || newerBuildIdentifier || olderBuildIdentifier;
+
     }
 
     @Override

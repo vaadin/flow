@@ -2,7 +2,6 @@ package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRegistration;
-
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -29,7 +28,6 @@ import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_REUSE_DEV_SERVER;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubNode;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubWebpackServer;
@@ -48,7 +46,6 @@ public class DevModeInitializerTestBase {
     Map<String, String> initParams;
     Set<Class<?>> classes;
     File mainPackageFile;
-    File appPackageFile;
     File webpackFile;
     String baseDir;
 
@@ -85,13 +82,13 @@ public class DevModeInitializerTestBase {
                 .thenReturn(this.getClass().getClassLoader());
 
         mainPackageFile = new File(baseDir, PACKAGE_JSON);
-        appPackageFile = new File(baseDir,
-                DEFAULT_GENERATED_DIR + PACKAGE_JSON);
         webpackFile = new File(baseDir, WEBPACK_CONFIG);
-        appPackageFile.getParentFile().mkdirs();
 
-        FileUtils.write(mainPackageFile, "{}", "UTF-8");
-        FileUtils.write(appPackageFile, "{}", "UTF-8");
+        // Not this needs to update according to dependencies in
+        // NodeUpdater.getDefaultDependencies and NodeUpdater.getDefaultDevDependencies
+        FileUtils.write(mainPackageFile,
+                "{\"name\":\"no-name\",\"license\":\"UNLICENSED\",\"vaadin\":{\"dependencies\":{\"@polymer/polymer\":\"3.2.0\",\"@webcomponents/webcomponentsjs\":\"^2.2.10\"},\"devDependencies\":{\"webpack-babel-multi-target-plugin\":\"2.3.1\",\"copy-webpack-plugin\":\"5.0.3\",\"compression-webpack-plugin\":\"3.0.0\",\"raw-loader\":\"3.0.0\",\"webpack-cli\":\"3.3.0\",\"webpack\":\"4.30.0\",\"webpack-merge\":\"4.2.1\",\"webpack-dev-server\":\"3.3.0\"}}}",
+                "UTF-8");
         webpackFile.createNewFile();
 
         // Default is Bower Mode, change to Npm Mode
@@ -109,7 +106,6 @@ public class DevModeInitializerTestBase {
 
         webpackFile.delete();
         mainPackageFile.delete();
-        appPackageFile.delete();
         temporaryFolder.delete();
         if (DevModeHandler.getDevModeHandler() != null) {
             DevModeHandler.getDevModeHandler().removeRunningDevServerPort();
