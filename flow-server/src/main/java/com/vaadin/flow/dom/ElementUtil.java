@@ -255,11 +255,9 @@ public class ElementUtil {
         } else if (node instanceof org.jsoup.nodes.Element) {
             ret = new Element(((org.jsoup.nodes.Element)node).tagName());
         } else {
-            LoggerFactory.getLogger(ElementUtil.class)
-                    .error(String.format(
-                            "Could not convert a %s, '%s' into %s!",
-                            Node.class.getName(), node.toString(),
-                            Element.class.getName()));
+            LoggerFactory.getLogger(ElementUtil.class).error(String.format(
+                    "Could not convert a %s, '%s' into %s!",
+                    Node.class.getName(), node, Element.class.getName()));
             return Optional.empty();
         }
 
@@ -267,7 +265,7 @@ public class ElementUtil {
                 .setAttribute(attribute.getKey(), attribute.getValue()));
 
         List<Node> childNodes = node.childNodes();
-        if (childNodes != null && childNodes.size() > 0) {
+        if (!childNodes.isEmpty()) {
             childNodes.forEach(
                     child -> fromJsoup(child).ifPresent(ret::appendChild));
         }

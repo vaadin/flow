@@ -53,8 +53,8 @@ public class WebComponentWrapper extends Component {
      *            bound to.
      * @param binding
      *            binding that offers methods for delivering property updates to
-     *            the {@code component} being wrapped by {@code
-     *         WebComponentWrapper}
+     *            the {@code component} being wrapped by
+     *            {@code WebComponentWrapper}
      */
     public WebComponentWrapper(Element rootElement,
             WebComponentBinding<?> binding) {
@@ -67,12 +67,26 @@ public class WebComponentWrapper extends Component {
                 .appendChild(webComponentBinding.getComponent().getElement());
     }
 
-    public WebComponentWrapper(Element rootElement,
+    /**
+     * Wrapper class for the server side WebComponent.
+     *
+     * @param rootElement
+     *            {@link Element} to which the {@code WebComponentWrapper} is
+     *            bound to.
+     * @param binding
+     *            binding that offers methods for delivering property updates to
+     *            the {@code component} being wrapped by
+     *            {@code WebComponentWrapper}
+     * @param bootstrapElements
+     *            elements that should be added to the shadow dom of the
+     *            {@code rootElement}
+     */
+    protected WebComponentWrapper(Element rootElement,
             WebComponentBinding<?> binding, List<Element> bootstrapElements) {
         this(rootElement, binding);
         // shadow root is attached in this(...)
-        getElement().getShadowRoot().get()
-                .appendChild(bootstrapElements.toArray(new Element[0]));
+        getElement().getShadowRoot().ifPresent(shadow -> shadow
+                .appendChild(bootstrapElements.toArray(new Element[0])));
     }
     
 
