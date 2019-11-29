@@ -40,7 +40,8 @@ public class VaadinAppShellInitializerTest {
     public static class MyAppShellWithMultipleMeta extends VaadinAppShell {
     }
 
-    @Meta(name = "", content = "")
+    @Meta(name = "foo", content = "bar")
+    @Meta(name = "lorem", content = "ipsum")
     public static class OffendingClass {
     }
 
@@ -143,6 +144,8 @@ public class VaadinAppShellInitializerTest {
         exception.expect(InvalidApplicationConfigurationException.class);
         exception.expectMessage(
                 containsString("Found app shell configuration annotations in non"));
+        exception.expectMessage(
+                containsString("- @Meta from"));
 
         classes.add(MyAppShellWithoutMeta.class);
         classes.add(OffendingClass.class);

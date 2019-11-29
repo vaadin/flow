@@ -112,11 +112,17 @@ public abstract class AbstractAnnotationValidator implements Serializable {
     }
 
     @SuppressWarnings("unchecked")
-    protected static String getClassAnnotations(Class<?> clazz, List<Class<?>> annotations) {
+    protected static String getClassAnnotations(Class<?> clazz,
+            List<Class<?>> annotations) {
         return annotations.stream()
                 .filter(ann -> clazz
                         .isAnnotationPresent((Class<? extends Annotation>) ann))
-                .map(ann -> "@" + ann.getSimpleName()).collect(Collectors.joining(", "));
+                .map(ann ->
+                // Prepend annotation name with '@'
+                "@" + ann.getName()
+                        // Replace `$Container` ending when multiple annotations
+                        .replaceFirst("^.*\\.([^$\\.]+).*$", "$1"))
+                .collect(Collectors.joining(", "));
     }
 
     private List<String> validateAnnotatedClasses(
