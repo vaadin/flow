@@ -79,7 +79,9 @@ public class WebComponentWrapper extends Component {
      *            {@code WebComponentWrapper}
      * @param bootstrapElements
      *            elements that should be added to the shadow dom of the
-     *            {@code rootElement}
+     *            {@code rootElement}. These are copies of the original elements
+     *            and the copies are created by
+     *            {@link com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry}
      */
     protected WebComponentWrapper(Element rootElement,
             WebComponentBinding<?> binding, List<Element> bootstrapElements) {

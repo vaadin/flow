@@ -353,23 +353,28 @@ public class WebComponentConfigurationRegistry implements Serializable {
     }
 
     /**
-     * Creates a copy of the element sub-tree, with the given
-     * {@code rootElement} as the root element of the created tree.
+     * Creates a partial copy of the element sub-tree, with the given
+     * {@code rootElement} as the root element of the created tree. The copy
+     * cares only about the HTML structure of the element and by-passes state
+     * information where possible. This is used create copies from elements
+     * which should be moved from document head to each embedded web component
+     * on the page.
      * <p>
      * Copies the following
      * {@link com.vaadin.flow.internal.nodefeature.NodeFeature}:
      * <ul>
-     *     <li>{@link com.vaadin.flow.internal.nodefeature.ElementData}</li>
-     *     <li>{@link com.vaadin.flow.internal.nodefeature.ElementPropertyMap}</li>
-     *     <li>{@link com.vaadin.flow.internal.nodefeature.ElementAttributeMap}</li>
-     *     <li>{@link com.vaadin.flow.internal.nodefeature.ElementClassList}</li>
-     *     <li>{@link com.vaadin.flow.internal.nodefeature.ElementStylePropertyMap}</li>
-     *     <li>{@link com.vaadin.flow.internal.nodefeature.ElementChildrenList}</li>
+     * <li>{@link com.vaadin.flow.internal.nodefeature.ElementData}</li>
+     * <li>{@link com.vaadin.flow.internal.nodefeature.ElementAttributeMap}</li>
+     * <li>{@link com.vaadin.flow.internal.nodefeature.ElementClassList}</li>
+     * <li>{@link com.vaadin.flow.internal.nodefeature.ElementStylePropertyMap}</li>
+     * <li>{@link com.vaadin.flow.internal.nodefeature.ElementChildrenList}</li>
      * </ul>
      * 
      * @param rootElement
      *            element to copy and make the root node of the new element tree
      * @return copy of the given {@code rootElement} with copied child hierarchy
+     * @see com.vaadin.flow.dom.ElementUtil#fromJsoup(org.jsoup.nodes.Node) for
+     *      the source of the elements being copied
      */
     private static Element copyElementTree(Element rootElement) {
         // exception case for text node
@@ -386,15 +391,6 @@ public class WebComponentConfigurationRegistry implements Serializable {
         copyData.setPayload(originalData.getPayload());
         copyData.setVisible(originalData.isVisible());
 
-        // copy ElementPropertyMap
-        ElementPropertyMap originalProperties = rootElement.getNode()
-                .getFeature(ElementPropertyMap.class);
-        ElementPropertyMap copyProperties = copyNode
-                .getFeature(ElementPropertyMap.class);
-        originalProperties.getPropertyNames()
-                .forEach(property -> copyProperties.setProperty(property,
-                        originalProperties.getProperty(property)));
-        
         // copy ElementAttributeMap
         ElementAttributeMap originalAttributes =
                 rootElement.getNode().getFeature(ElementAttributeMap.class);
@@ -412,13 +408,15 @@ public class WebComponentConfigurationRegistry implements Serializable {
                 .forEach(item -> copyClassList.getClassList().set(item, true));
 
         // copy ElementStylePropertyMap.class
-        ElementStylePropertyMap originalStyleProperties =
-                rootElement.getNode().getFeature(ElementStylePropertyMap.class);
+        ElementStylePropertyMap originalStyleProperties = rootElement.getNode()
+                .getFeature(ElementStylePropertyMap.class);
         ElementStylePropertyMap copyStyleProperties = copyNode
                 .getFeature(ElementStylePropertyMap.class);
         originalStyleProperties.getPropertyNames()
                 .forEach(styleProp -> copyStyleProperties.setProperty(styleProp,
-                        originalStyleProperties.getProperty(styleProp), false));
+                        assertNotStateNode(
+                                originalStyleProperties.getProperty(styleProp)),
+                        false));
 
         // copy ElementChildrenList
         ElementChildrenList originalChildren = rootElement.getNode()
@@ -429,16 +427,23 @@ public class WebComponentConfigurationRegistry implements Serializable {
                 index -> copyChildren.add(index, originalChildren.get(index)));
 
         /*
-         * Skipping the following features, since don't do much for our normal
-         * use-case:
-         * ElementListenerMap, SynchronizedPropertiesList,
-         * SynchronizedPropertyEventsList, ComponentMapping,
-         * PolymerServerEventHandlers, ClientCallableHandlers,
+         * Skipping the following features, since don't do much for our use-case:
+         * ElementPropertyMap, ElementListenerMap,
+         * SynchronizedPropertiesList, SynchronizedPropertyEventsList,
+         * ComponentMapping, PolymerServerEventHandlers, ClientCallableHandlers,
          * PolymerEventListenerMap, ShadowRootData,
          * AttachExistingElementFeature, VirtualChildrenList, ReturnChannelMap
          */
-        
+
         // Element created from the copied StateNode
         return Element.get(copyNode);
+    }
+
+    private static Serializable assertNotStateNode(
+            Serializable serializable) {
+        assert !(serializable instanceof StateNode) : "Serializable should "
+                + "not be a " + StateNode.class.getName() + " in this case!";
+
+        return serializable;
     }
 }
