@@ -142,7 +142,7 @@ public class VaadinAppShellInitializerTest {
     public void should_throw_when_offendingClass() throws Exception {
         exception.expect(InvalidApplicationConfigurationException.class);
         exception.expectMessage(
-                containsString("Found configuration annotations"));
+                containsString("Found app shell configuration annotations in non"));
 
         classes.add(MyAppShellWithoutMeta.class);
         classes.add(OffendingClass.class);
