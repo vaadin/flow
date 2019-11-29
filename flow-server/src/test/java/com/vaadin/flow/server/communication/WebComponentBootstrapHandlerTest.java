@@ -138,7 +138,7 @@ public class WebComponentBootstrapHandlerTest {
         VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
         Mockito.when(request.getService()).thenReturn(service);
         Mockito.when(request.getServletPath()).thenReturn("/");
-        VaadinResponse response = Mockito.mock(VaadinResponse.class);
+        VaadinResponse response = getMockResponse(null);
 
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         Mockito.when(response.getOutputStream()).thenReturn(stream);
