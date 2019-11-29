@@ -17,6 +17,7 @@ package com.vaadin.flow.webcomponent;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.openqa.selenium.By;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
@@ -33,6 +34,9 @@ public class EmbeddedWebComponentIT extends ChromeBrowserTest implements HasById
     @Test
     public void servletPageGetsWebComponent_attributeIsReflectedToServer() {
         open();
+
+        // Check that there is no pwa install prompt
+        Assert.assertFalse(isElementPresent(By.id("pwa-ip")));
 
         TestBenchElement webComponent = $("client-select").first();
 

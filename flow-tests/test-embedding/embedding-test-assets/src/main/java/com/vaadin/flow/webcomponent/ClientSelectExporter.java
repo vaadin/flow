@@ -18,7 +18,11 @@ package com.vaadin.flow.webcomponent;
 
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponent;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.PWA;
 
+@PWA(name = "Client select exporter", shortName = "Client select")
+@Route
 public class ClientSelectExporter
         extends WebComponentExporter<ClientSelectComponent> {
 
@@ -29,7 +33,9 @@ public class ClientSelectExporter
     }
 
     @Override
-    public void configureInstance(WebComponent<ClientSelectComponent> webComponent, ClientSelectComponent component) {
+    public void configureInstance(
+            WebComponent<ClientSelectComponent> webComponent,
+            ClientSelectComponent component) {
 
     }
 }

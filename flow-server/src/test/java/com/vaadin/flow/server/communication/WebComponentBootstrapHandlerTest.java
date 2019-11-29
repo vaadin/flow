@@ -17,7 +17,8 @@ package com.vaadin.flow.server.communication;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.function.Supplier;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 
 import org.hamcrest.CoreMatchers;
 import org.jsoup.nodes.Document;
@@ -26,16 +27,40 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.server.MockVaadinServletService;
+import com.vaadin.flow.server.MockVaadinSession;
+import com.vaadin.flow.server.PwaConfiguration;
+import com.vaadin.flow.server.PwaIcon;
+import com.vaadin.flow.server.PwaRegistry;
+import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.startup.WebComponentConfigurationRegistryInitializer;
+import com.vaadin.flow.server.VaadinServletRequest;
+import com.vaadin.flow.server.VaadinServletService;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 
 public class WebComponentBootstrapHandlerTest {
+
+    private static class TestWebComponentBootstrapHandler
+            extends WebComponentBootstrapHandler {
+        @Override
+        protected boolean canHandleRequest(VaadinRequest request) {
+            return true;
+        }
+
+        @Override
+        protected String getServiceUrl(VaadinRequest request,
+                VaadinResponse response) {
+            return "/";
+        }
+    }
 
     @Test
     public void writeBootstrapPage_skipMetaAndStyleHeaderElements()
@@ -61,7 +86,7 @@ public class WebComponentBootstrapHandlerTest {
         VaadinResponse response = getMockResponse(stream);
         handler.writeBootstrapPage("", response, head, "");
 
-        String resultingScript = stream.toString();
+        String resultingScript = stream.toString(StandardCharsets.UTF_8.name());
 
         Assert.assertThat(resultingScript,
                 CoreMatchers.containsString("var i=1;"));
@@ -70,7 +95,65 @@ public class WebComponentBootstrapHandlerTest {
         Assert.assertThat(resultingScript,
                 CoreMatchers.not(CoreMatchers.containsString("http-equiv")));
     }
-    
+
+    @Test
+    public void writeBootstrapPage_noPWA()
+            throws IOException, ServiceException {
+        TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
+
+        PwaRegistry registry = Mockito.mock(PwaRegistry.class);
+
+        PwaConfiguration conf = Mockito.mock(PwaConfiguration.class);
+
+        Mockito.when(registry.getPwaConfiguration()).thenReturn(conf);
+
+        Mockito.when(conf.isEnabled()).thenReturn(true);
+
+        Mockito.when(conf.getManifestPath()).thenReturn("bar");
+
+        PwaIcon icon = Mockito.mock(PwaIcon.class);
+        Mockito.when(icon.asElement()).thenReturn(new Element("h1"));
+
+        Mockito.when(registry.getHeaderIcons())
+                .thenReturn(Collections.singletonList(icon));
+
+        Mockito.when(conf.isInstallPromptEnabled()).thenReturn(true);
+
+        Mockito.when(registry.getInstallPrompt()).thenReturn("baz");
+
+        VaadinServletService service = new MockVaadinServletService() {
+            @Override
+            protected PwaRegistry getPwaRegistry() {
+                return registry;
+            };
+        };
+        service.init();
+        VaadinSession session = new MockVaadinSession(service);
+        session.lock();
+        session.setConfiguration(service.getDeploymentConfiguration());
+        MockDeploymentConfiguration config = (MockDeploymentConfiguration) service
+                .getDeploymentConfiguration();
+        config.setEnableDevServer(false);
+
+        VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
+        Mockito.when(request.getService()).thenReturn(service);
+        Mockito.when(request.getServletPath()).thenReturn("/");
+        VaadinResponse response = Mockito.mock(VaadinResponse.class);
+
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        Mockito.when(response.getOutputStream()).thenReturn(stream);
+
+        handler.synchronizedHandleRequest(session, request, response);
+
+        String result = stream.toString(StandardCharsets.UTF_8.name());
+        Assert.assertThat(result,
+                CoreMatchers.not(CoreMatchers.containsString("bar")));
+        Assert.assertThat(result,
+                CoreMatchers.not(CoreMatchers.containsString("h1")));
+        Assert.assertThat(result,
+                CoreMatchers.not(CoreMatchers.containsString("baz")));
+    }
+
     private VaadinResponse getMockResponse(ByteArrayOutputStream stream) throws IOException {
         VaadinResponse response = Mockito.mock(VaadinResponse.class);
         VaadinService service = Mockito.mock(VaadinService.class);
@@ -80,7 +163,8 @@ public class WebComponentBootstrapHandlerTest {
         Mockito.when(service.getContext()).thenReturn(context);
         Mockito.when(context.getAttribute(
                 eq(WebComponentConfigurationRegistry.class), any())).thenReturn(
-                        Mockito.mock(WebComponentConfigurationRegistry.class));
+                Mockito.mock(WebComponentConfigurationRegistry.class));
         return response;
     }
+
 }
