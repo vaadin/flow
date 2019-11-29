@@ -44,7 +44,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS;
@@ -52,7 +51,6 @@ import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.getNodeExecutable;
-import static com.vaadin.flow.server.frontend.FrontendUtils.validateNodeAndNpmVersion;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 
@@ -136,11 +134,6 @@ public final class DevModeHandler {
 
         ProcessBuilder processBuilder = new ProcessBuilder()
                 .directory(npmFolder);
-
-        validateNodeAndNpmVersion(npmFolder.getAbsolutePath());
-        FrontendUtils.ensurePnpm(npmFolder.getAbsolutePath(),
-                config.getBooleanProperty(
-                        Constants.SERVLET_PARAMETER_DISABLE_PNPM, false));
 
         List<String> command = new ArrayList<>();
         command.add(getNodeExecutable(npmFolder.getAbsolutePath()));

@@ -137,6 +137,9 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
     @Parameter(defaultValue = "true")
     private boolean optimizeBundle;
 
+    @Parameter(property = "disable.pnpm", defaultValue = "false")
+    private boolean disablePnpm;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         super.execute();
@@ -187,7 +190,8 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                         .withEmbeddableWebComponents(
                                 generateEmbeddableWebComponents)
                         .withTokenFile(getTokenFile())
-                        .withPolymerVersion(polymerVersion).build().execute();
+                        .withPolymerVersion(polymerVersion)
+                        .disablePnpm(disablePnpm).build().execute();
     }
 
     private void runWebpack() {

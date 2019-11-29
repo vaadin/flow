@@ -61,7 +61,6 @@
                 <configuration>
                     <bowerMode>false</bowerMode>
                     <productionMode>true</productionMode>
-                    <disablePnpm>true</true>
                 </configuration>
             </plugin>
             <!-- Run jetty before integration tests, and stop after -->
