@@ -31,12 +31,12 @@ import com.vaadin.flow.component.WebComponentExporterFactory.DefaultWebComponent
 import com.vaadin.flow.component.webcomponent.WebComponent;
 
 @SuppressWarnings("rawtypes")
-public class WebComponentUtilsTest {
+public class WebComponentExporterUtilsTest {
 
     @Test
     public void getFactories_notEligibleExportersAreFiltered_factoriesAreReturned() {
 
-        Set<WebComponentExporterFactory> factories = WebComponentUtils
+        Set<WebComponentExporterFactory> factories = WebComponentExporterUtils
                 .getFactories(new HashSet<>(Arrays.asList(GoodExporter.class,
                         AbstractExporter.class, PackageLocalExporter.class,
                         NoPublicCtorExporter.class, ExporterFactory.class)));

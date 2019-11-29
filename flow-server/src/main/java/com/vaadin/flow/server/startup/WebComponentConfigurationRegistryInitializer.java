@@ -36,7 +36,7 @@ import com.vaadin.flow.internal.CustomElementNameValidator;
 import com.vaadin.flow.server.InvalidCustomElementNameException;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
-import com.vaadin.flow.server.webcomponent.WebComponentUtils;
+import com.vaadin.flow.server.webcomponent.WebComponentExporterUtils;
 
 /**
  * Servlet initializer for collecting all classes that extend
@@ -64,7 +64,7 @@ public class WebComponentConfigurationRegistryInitializer
         }
 
         try {
-            Set<WebComponentExporterFactory> factories = WebComponentUtils
+            Set<WebComponentExporterFactory> factories = WebComponentExporterUtils
                     .getFactories(set);
             Set<WebComponentConfiguration<? extends Component>> configurations = constructConfigurations(
                     factories);

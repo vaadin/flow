@@ -87,7 +87,7 @@ public final class WebComponentModulesWriter implements Serializable {
                     outputDirectory.getPath()));
         }
 
-        return WebComponentUtils.getFactories(exporterClasses).stream()
+        return WebComponentExporterUtils.getFactories(exporterClasses).stream()
                 .map(factory -> writeWebComponentToDirectory(factory,
                         outputDirectory, compatibilityMode))
                 .collect(Collectors.toSet());

@@ -37,9 +37,9 @@ import com.vaadin.flow.internal.ReflectTools;
  * @author Vaadin Ltd
  *
  */
-public final class WebComponentUtils {
+public final class WebComponentExporterUtils {
 
-    private WebComponentUtils() {
+    private WebComponentExporterUtils() {
         // Utility class should not be instantiated
     }
 
@@ -56,7 +56,7 @@ public final class WebComponentUtils {
             Set<Class<?>> classes) {
         Set<WebComponentExporterFactory> factories = new HashSet<>();
         classes.stream().filter(WebComponentExporter.class::isAssignableFrom)
-                .filter(WebComponentUtils::isEligible)
+                .filter(WebComponentExporterUtils::isEligible)
                 .map(clazz -> new DefaultWebComponentExporterFactory(clazz))
                 .forEach(factories::add);
 
@@ -109,6 +109,6 @@ public final class WebComponentUtils {
     }
 
     private static Logger getLogger() {
-        return LoggerFactory.getLogger(WebComponentUtils.class);
+        return LoggerFactory.getLogger(WebComponentExporterUtils.class);
     }
 }
