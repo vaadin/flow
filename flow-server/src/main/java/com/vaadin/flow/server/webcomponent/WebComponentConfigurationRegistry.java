@@ -15,25 +15,6 @@
  */
 package com.vaadin.flow.server.webcomponent;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.WebComponentExporter;
-import com.vaadin.flow.component.page.Push;
-import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
-import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.internal.AnnotationReader;
-import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.internal.nodefeature.ElementAttributeMap;
-import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
-import com.vaadin.flow.internal.nodefeature.ElementClassList;
-import com.vaadin.flow.internal.nodefeature.ElementData;
-import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
-import com.vaadin.flow.internal.nodefeature.ElementStylePropertyMap;
-import com.vaadin.flow.internal.nodefeature.TextNodeMap;
-import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.osgi.OSGiAccess;
-import com.vaadin.flow.theme.Theme;
-
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -46,7 +27,20 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.page.Push;
+import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.ElementData;
+import com.vaadin.flow.internal.nodefeature.TextNodeMap;
+import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.osgi.OSGiAccess;
+import com.vaadin.flow.theme.Theme;
 
 /**
  * Registry for storing available web component configuration implementations.
@@ -356,7 +350,10 @@ public class WebComponentConfigurationRegistry implements Serializable {
      * Creates a partial copy of the element sub-tree, with the given
      * {@code rootElement} as the root element of the created tree. The copy
      * cares only about the HTML structure of the element and by-passes state
-     * information where possible. This is used create copies from elements
+     * information where possible. The copying is done on element-level:
+     * tags, attributes, and contents.
+     * <p>
+     * This is used create copies from elements
      * which should be moved from document head to each embedded web component
      * on the page.
      * <p>
@@ -364,10 +361,6 @@ public class WebComponentConfigurationRegistry implements Serializable {
      * {@link com.vaadin.flow.internal.nodefeature.NodeFeature}:
      * <ul>
      * <li>{@link com.vaadin.flow.internal.nodefeature.ElementData}</li>
-     * <li>{@link com.vaadin.flow.internal.nodefeature.ElementAttributeMap}</li>
-     * <li>{@link com.vaadin.flow.internal.nodefeature.ElementClassList}</li>
-     * <li>{@link com.vaadin.flow.internal.nodefeature.ElementStylePropertyMap}</li>
-     * <li>{@link com.vaadin.flow.internal.nodefeature.ElementChildrenList}</li>
      * </ul>
      * 
      * @param rootElement
@@ -391,52 +384,16 @@ public class WebComponentConfigurationRegistry implements Serializable {
         copyData.setPayload(originalData.getPayload());
         copyData.setVisible(originalData.isVisible());
 
-        // copy ElementAttributeMap
-        ElementAttributeMap originalAttributes =
-                rootElement.getNode().getFeature(ElementAttributeMap.class);
-        ElementAttributeMap copyAttributes = copyNode
-                .getFeature(ElementAttributeMap.class);
-        originalAttributes.attributes().forEach(
-                name -> copyAttributes.set(name, originalAttributes.get(name)));
-        
-        // copy ElementClassList
-        ElementClassList originalClassList =
-                rootElement.getNode().getFeature(ElementClassList.class);
-        ElementClassList copyClassList =
-                copyNode.getFeature(ElementClassList.class);
-        originalClassList.getClassList()
-                .forEach(item -> copyClassList.getClassList().set(item, true));
+        Element copyElement = Element.get(copyNode);
 
-        // copy ElementStylePropertyMap.class
-        ElementStylePropertyMap originalStyleProperties = rootElement.getNode()
-                .getFeature(ElementStylePropertyMap.class);
-        ElementStylePropertyMap copyStyleProperties = copyNode
-                .getFeature(ElementStylePropertyMap.class);
-        originalStyleProperties.getPropertyNames()
-                .forEach(styleProp -> copyStyleProperties.setProperty(styleProp,
-                        assertNotStateNode(
-                                originalStyleProperties.getProperty(styleProp)),
-                        false));
-
-        // copy ElementChildrenList
-        ElementChildrenList originalChildren = rootElement.getNode()
-                .getFeature(ElementChildrenList.class);
-        ElementChildrenList copyChildren = copyNode
-                .getFeature(ElementChildrenList.class);
-        IntStream.range(0,originalChildren.size()).forEach(
-                index -> copyChildren.add(index, originalChildren.get(index)));
-
-        /*
-         * Skipping the following features, since don't do much for our use-case:
-         * ElementPropertyMap, ElementListenerMap,
-         * SynchronizedPropertiesList, SynchronizedPropertyEventsList,
-         * ComponentMapping, PolymerServerEventHandlers, ClientCallableHandlers,
-         * PolymerEventListenerMap, ShadowRootData,
-         * AttachExistingElementFeature, VirtualChildrenList, ReturnChannelMap
-         */
+        // copy relevant attributes
+        rootElement.getAttributeNames().forEach(name -> copyElement
+                .setAttribute(name, rootElement.getAttribute(name)));
+        rootElement.getChildren().forEach(
+                child -> copyElement.appendChild(copyElementTree(child)));
 
         // Element created from the copied StateNode
-        return Element.get(copyNode);
+        return copyElement;
     }
 
     private static Serializable assertNotStateNode(
