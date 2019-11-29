@@ -119,7 +119,7 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
     @Parameter(defaultValue = "${project.basedir}/frontend")
     private File frontendDirectory;
 
-    @Parameter(name = "disable.pnpm", property = "disable.pnpm", defaultValue = "false")
+    @Parameter(property = "disable.pnpm", defaultValue = "false")
     private boolean disablePnpm;
 
     @Override
