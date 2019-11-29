@@ -48,6 +48,15 @@ public class IndexHtmlRequestHandlerIT extends ChromeBrowserTest {
                 "Modified page", content);
     }
 
+    @Test
+    public void should_add_appShellAnnotations() {
+        openTestUrl("/");
+        waitForElementPresent(By.tagName("meta"));
+        WebElement meta = findElement(By.cssSelector("meta[name=foo]"));
+        Assert.assertNotNull(meta);
+        Assert.assertEquals("bar", meta.getAttribute("content"));
+    }
+
     public void indexHtmlRequestListener_openRootURL_shouldDynamicMetaContent() {
         openTestUrl("/");
         waitForElementPresent(By.cssSelector("meta[name]"));
