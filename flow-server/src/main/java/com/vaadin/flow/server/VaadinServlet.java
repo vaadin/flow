@@ -279,7 +279,9 @@ public class VaadinServlet extends HttpServlet {
     @Override
     protected void service(HttpServletRequest request,
             HttpServletResponse response) throws ServletException, IOException {
-        // Handle context root request without trailing slash, see #9921
+
+        // Handle context root request without trailing slash, see
+        // https://github.com/vaadin/framework/issues/2991
         if (handleContextOrServletRootWithoutSlash(request, response)) {
             return;
         }
