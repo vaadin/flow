@@ -22,6 +22,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.VaadinAppShell;
 import com.vaadin.flow.server.InvalidApplicationConfigurationException;
+import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.startup.VaadinAppShellRegistry.VaadinAppShellRegistryWrapper;
 
@@ -37,11 +38,13 @@ public class VaadinAppShellInitializerTest {
 
     @Meta(name = "foo", content = "bar")
     @Meta(name = "lorem", content = "ipsum")
+    @PWA(name = "my-pwa", shortName = "pwa")
     public static class MyAppShellWithMultipleMeta extends VaadinAppShell {
     }
 
-    @Meta(name = "foo", content = "bar")
-    @Meta(name = "lorem", content = "ipsum")
+    @Meta(name = "offending-foo", content = "bar")
+    @Meta(name = "offending-lorem", content = "ipsum")
+    @PWA(name = "offending-my-pwa", shortName = "pwa")
     public static class OffendingClass {
     }
 
@@ -145,7 +148,7 @@ public class VaadinAppShellInitializerTest {
         exception.expectMessage(
                 containsString("Found app shell configuration annotations in non"));
         exception.expectMessage(
-                containsString("- @Meta from"));
+                containsString("- @Meta, @PWA from"));
 
         classes.add(MyAppShellWithoutMeta.class);
         classes.add(OffendingClass.class);

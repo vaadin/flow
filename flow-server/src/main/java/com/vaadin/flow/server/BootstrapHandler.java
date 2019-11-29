@@ -966,7 +966,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             }
         }
 
-
         private void appendWebComponentsPolyfills(Element head,
                 BootstrapContext context) {
             VaadinSession session = context.getSession();
