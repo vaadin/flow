@@ -59,6 +59,11 @@ public class VaadinAppShellRegistry implements Serializable {
     public static class VaadinAppShellRegistryWrapper implements Serializable {
         private final VaadinAppShellRegistry registry;
 
+        /**
+         * Construct a wraper for an app-shell registry.
+         *
+         * @param registry the app shell registry
+         */
         public VaadinAppShellRegistryWrapper(VaadinAppShellRegistry registry) {
             this.registry = registry;
         }
@@ -74,7 +79,7 @@ public class VaadinAppShellRegistry implements Serializable {
      */
     @SuppressWarnings("unchecked")
     public static VaadinAppShellRegistry getInstance(VaadinContext context) {
-        synchronized (context) {
+        synchronized (context) { // NOSONAR
             VaadinAppShellRegistryWrapper attribute = context
                     .getAttribute(VaadinAppShellRegistryWrapper.class);
             if (attribute == null) {
