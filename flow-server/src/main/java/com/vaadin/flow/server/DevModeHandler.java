@@ -18,6 +18,7 @@ package com.vaadin.flow.server;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -43,6 +44,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS;
@@ -136,6 +138,9 @@ public final class DevModeHandler {
                 .directory(npmFolder);
 
         validateNodeAndNpmVersion(npmFolder.getAbsolutePath());
+        FrontendUtils.ensurePnpm(npmFolder.getAbsolutePath(),
+                config.getBooleanProperty(
+                        Constants.SERVLET_PARAMETER_DISABLE_PNPM, false));
 
         List<String> command = new ArrayList<>();
         command.add(getNodeExecutable(npmFolder.getAbsolutePath()));
@@ -151,13 +156,12 @@ public final class DevModeHandler {
                 .split(" +")));
 
         if (getLogger().isDebugEnabled()) {
-            getLogger()
-                    .debug("Starting webpack-dev-server, port: {} dir: {}\n   {}",
-                            port, npmFolder, String.join(" ", command));
+            getLogger().debug(
+                    "Starting webpack-dev-server, port: {} dir: {}\n   {}",
+                    port, npmFolder, String.join(" ", command));
         } else {
-            getLogger()
-                    .info("Starting webpack-dev-server, port: {} dir: {}", port,
-                            npmFolder);
+            getLogger().info("Starting webpack-dev-server, port: {} dir: {}",
+                    port, npmFolder);
         }
         long start = System.currentTimeMillis();
         processBuilder.command(command);
@@ -189,7 +193,8 @@ public final class DevModeHandler {
 
             logStream(webpackProcess.getInputStream(), succeed, failure);
 
-            getLogger().info("Waiting for webpack compilation before proceeding.");
+            getLogger()
+                    .info("Waiting for webpack compilation before proceeding.");
             synchronized (this) {
                 this.wait(Integer.parseInt(config.getStringProperty( // NOSONAR
                         SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT,
@@ -199,9 +204,9 @@ public final class DevModeHandler {
             if (!webpackProcess.isAlive()) {
                 throw new IllegalStateException("Webpack exited prematurely");
             }
-            getLogger()
-                    .info("Webpack startup and compilation completed in {}ms",
-                            (System.currentTimeMillis() - start));
+            getLogger().info(
+                    "Webpack startup and compilation completed in {}ms",
+                    (System.currentTimeMillis() - start));
         } catch (IOException | InterruptedException e) {
             getLogger().error("Failed to start the webpack process", e);
         }
@@ -448,7 +453,7 @@ public final class DevModeHandler {
     private void readLinesLoop(Pattern success, Pattern failure,
             BufferedReader reader) throws IOException {
         StringBuilder output = getOutputBuilder();
-        
+
         Consumer<String> info = s -> getLogger().debug(GREEN, s);
         Consumer<String> error = s -> getLogger().error(RED, s);
         Consumer<String> warn = s -> getLogger().debug(YELLOW, s);
@@ -466,7 +471,7 @@ public final class DevModeHandler {
             log.accept(cleanLine);
 
             // Only store webpack errors to be shown in the browser.
-            if(line.contains("ERROR")) {
+            if (line.contains("ERROR")) {
                 // save output so as it can be used to alert user in browser.
                 output.append(cleanLine).append(System.lineSeparator());
             }

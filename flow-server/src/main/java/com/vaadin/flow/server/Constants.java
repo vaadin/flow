@@ -221,6 +221,11 @@ public final class Constants implements Serializable {
     public static final String SERVLET_PARAMETER_DEVMODE_POLYMER_VERSION = "devmode.polymer.version";
 
     /**
+     * Configuration parameter name for disabling pnpm.
+     */
+    public static final String SERVLET_PARAMETER_DISABLE_PNPM = "disable.pnpm";
+
+    /**
      * The path used in the vaadin servlet for handling static resources.
      */
     public static final String META_INF = "META-INF/";
