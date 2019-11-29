@@ -18,10 +18,8 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -63,7 +61,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
     static final String DEPENDENCIES = "dependencies";
     static final String VAADIN_DEP_KEY = "vaadin";
-    private static final String DEV_DEPENDENCIES = "devDependencies";
+    static final String DEV_DEPENDENCIES = "devDependencies";
 
     private static final String DEP_LICENSE_KEY = "license";
     private static final String DEP_LICENSE_DEFAULT = "UNLICENSED";
@@ -245,9 +243,24 @@ public abstract class NodeUpdater implements FallibleCommand {
     }
 
     /**
-     * Updates default dependencies and development dependencies to package.json.
-     * @param packageJson package.json json object to update with dependencies
-     * @param polymerVersion user set polymer dependency if any
+     * Update default dependencies with the framework default polymer version.
+     *
+     * @param packageJson
+     *         package.json object to update
+     * @return true if items were added or removed from the json
+     */
+    boolean updateDefaultDependencies(JsonObject packageJson) {
+        return updateDefaultDependencies(packageJson, null);
+    }
+
+    /**
+     * Updates default dependencies and development dependencies to
+     * package.json.
+     *
+     * @param packageJson
+     *         package.json json object to update with dependencies
+     * @param polymerVersion
+     *         user set polymer dependency, {@code null} for framework default
      * @return true if items were added or removed from the {@code packageJson}
      */
     boolean updateDefaultDependencies(JsonObject packageJson,
@@ -301,7 +314,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         } else {
             vaadinDeps.put(pkg, version);
             if (!json.hasKey(pkg) || new FrontendVersion(version)
-                    .isNewer(toVersion(json, pkg))) {
+                    .isNewerThan(toVersion(json, pkg))) {
                 json.put(pkg, version);
                 log().debug("Added \"{}\": \"{}\" line.", pkg, version);
                 return 1;
@@ -323,7 +336,7 @@ public abstract class NodeUpdater implements FallibleCommand {
                 json.put(pkg, version);
                 added = true;
                 // if vaadin and package not the same, but new version is newer update package version.
-            } else if (newVersion.isNewer(packageVersion)) {
+            } else if (newVersion.isNewerThan(packageVersion)) {
                 json.put(pkg, version);
                 added = true;
             }

@@ -23,7 +23,8 @@ import java.util.Objects;
  *
  * @since
  */
-public class FrontendVersion implements Serializable {
+public class FrontendVersion
+        implements Serializable, Comparable<FrontendVersion> {
 
     /**
      * The version number of this release. For example "6.2.0". Always in the
@@ -188,46 +189,33 @@ public class FrontendVersion implements Serializable {
         return buildIdentifier;
     }
 
-    public boolean isOlder(FrontendVersion otherVersion) {
-        boolean olderByVersion = majorVersion < otherVersion.majorVersion
-                || minorVersion < otherVersion.minorVersion
-                || revision < otherVersion.revision;
-        if (!olderByVersion && (buildIdentifier.isEmpty()
-                && !otherVersion.buildIdentifier.isEmpty())) {
-            return false;
-        }
-        return olderByVersion || (!buildIdentifier.isEmpty()
-                && otherVersion.buildIdentifier.isEmpty()) || buildIdentifier
-                .compareToIgnoreCase(otherVersion.buildIdentifier) < 0;
+    /**
+     * Check if this version is older than given version.
+     *
+     * @param otherVersion
+     *         version to check against
+     * @return true if this is older than otherVersion
+     */
+    public boolean isOlderThan(FrontendVersion otherVersion) {
+        return compareTo(otherVersion) < 0;
     }
 
-    public boolean isNewer(FrontendVersion otherVersion) {
-        boolean newerByVersion = majorVersion > otherVersion.majorVersion
-                || minorVersion > otherVersion.minorVersion
-                || revision > otherVersion.revision;
-
-        // if other has buildIdentifier and we don't we are newer
-        boolean newerBuildIdentifier =
-                buildIdentifier.isEmpty() && !otherVersion.buildIdentifier
-                        .isEmpty();
-        // if other doesn't have a buildIdentifier and we do we are older,
-        // else compare buildIdentifiers
-        boolean olderBuildIdentifier =
-                !(!buildIdentifier.isEmpty() && otherVersion.buildIdentifier
-                        .isEmpty()) && buildIdentifier
-                        .compareToIgnoreCase(otherVersion.buildIdentifier) > 0;
-        return newerByVersion || newerBuildIdentifier || olderBuildIdentifier;
-
+    /**
+     * Check if this version is newer than given version.
+     *
+     * @param otherVersion
+     *         version to check against
+     * @return true if this is newer than otherVersion
+     */
+    public boolean isNewerThan(FrontendVersion otherVersion) {
+        return compareTo(otherVersion) > 0;
     }
 
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof FrontendVersion) {
             FrontendVersion other = (FrontendVersion) obj;
-            return majorVersion == other.getMajorVersion()
-                    && minorVersion == other.getMinorVersion()
-                    && revision == other.getRevision() && buildIdentifier
-                    .equals(other.getBuildIdentifier());
+            return compareTo(other) == 0;
         }
         return false;
     }
@@ -235,5 +223,28 @@ public class FrontendVersion implements Serializable {
     @Override
     public int hashCode() {
         return version.hashCode();
+    }
+
+    @Override
+    public int compareTo(FrontendVersion other) {
+        if (majorVersion != other.majorVersion) {
+            return Integer.compare(majorVersion, other.majorVersion);
+        }
+        if (minorVersion != other.minorVersion) {
+            return Integer.compare(minorVersion, other.minorVersion);
+        }
+        if (revision != other.revision) {
+            return Integer.compare(revision, other.revision);
+        }
+        if (this.buildIdentifier != other.buildIdentifier) {
+            if (buildIdentifier.isEmpty() && !other.buildIdentifier.isEmpty()) {
+                return 1;
+            } else if (!buildIdentifier.isEmpty() && other.buildIdentifier
+                    .isEmpty()) {
+                return -1;
+            }
+            return buildIdentifier.compareToIgnoreCase(other.buildIdentifier);
+        }
+        return 0;
     }
 }
