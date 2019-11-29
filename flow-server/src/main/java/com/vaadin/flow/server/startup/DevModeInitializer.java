@@ -91,6 +91,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DI
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
+import static com.vaadin.flow.server.frontend.FrontendUtils.validateNodeAndNpmVersion;
 
 /**
  * Servlet initializer starting node updaters as well as the webpack-dev-mode
@@ -267,6 +268,14 @@ public class DevModeInitializer implements ServletContainerInitializer,
                         SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
                         Boolean.FALSE.toString())));
 
+        boolean disablePnpm = config.getBooleanProperty(
+                Constants.SERVLET_PARAMETER_DISABLE_PNPM, false);
+
+        validateNodeAndNpmVersion(builder.npmFolder.getAbsolutePath());
+        FrontendUtils.ensurePnpm(builder.npmFolder.getAbsolutePath(),
+                config.getBooleanProperty(
+                        Constants.SERVLET_PARAMETER_DISABLE_PNPM, false));
+
         VaadinContext vaadinContext = new VaadinServletContext(context);
         JsonObject tokenFileData = Json.createObject();
         try {
@@ -276,8 +285,8 @@ public class DevModeInitializer implements ServletContainerInitializer,
                     .copyLocalResources(new File(baseDir,
                             Constants.LOCAL_FRONTEND_RESOURCES_PATH))
                     .enableImportsUpdate(true).runNpmInstall(true)
-                    .withEmbeddableWebComponents(true)
-                    .populateTokenFileData(tokenFileData).build().execute();
+                    .withEmbeddableWebComponents(true).disablePnpm(disablePnpm)
+                    .build().execute();
 
             FallbackChunk chunk = FrontendUtils
                     .readFallbackChunk(tokenFileData);

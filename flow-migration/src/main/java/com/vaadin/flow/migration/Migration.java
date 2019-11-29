@@ -68,7 +68,7 @@ public class Migration {
     public Migration(MigrationConfiguration configuration) {
         this.configuration = configuration;
         if (getTempMigrationFolder() == null) {
-            if(configuration.getTempMigrationFolder() != null) {
+            if (configuration.getTempMigrationFolder() != null) {
                 tempMigrationFolder = configuration.getTempMigrationFolder();
             } else {
                 try {
@@ -81,14 +81,14 @@ public class Migration {
             }
         } else {
             if (!getTempMigrationFolder().isDirectory()) {
-                String message = String
-                        .format("Received temp migration folder value '%s' is not a directory.",
-                                getTempMigrationFolder());
+                String message = String.format(
+                        "Received temp migration folder value '%s' is not a directory.",
+                        getTempMigrationFolder());
                 throw new IllegalArgumentException(message);
             } else if (getTempMigrationFolder().list().length > 0) {
-                String message = String
-                        .format("Received non empty directory '%s' for use as the temporary migration folder.",
-                                getTempMigrationFolder());
+                String message = String.format(
+                        "Received non empty directory '%s' for use as the temporary migration folder.",
+                        getTempMigrationFolder());
                 throw new IllegalArgumentException(message);
             }
             tempMigrationFolder = getTempMigrationFolder();
@@ -138,9 +138,9 @@ public class Migration {
      * Performs the migration.
      *
      * @throws MigrationToolsException
-     *         Thrown when migration tools are missing
+     *             Thrown when migration tools are missing
      * @throws MigrationFailureException
-     *         Thrown for an exception during migration
+     *             Thrown for an exception during migration
      */
     public void migrate()
             throws MigrationToolsException, MigrationFailureException {
@@ -270,18 +270,18 @@ public class Migration {
             try {
                 FileUtils.forceDelete(getTempMigrationFolder());
             } catch (IOException exception) {
-                String message = String
-                        .format("Unable to delete directory '%s'",
-                                getTempMigrationFolder());
+                String message = String.format(
+                        "Unable to delete directory '%s'",
+                        getTempMigrationFolder());
                 throw new UncheckedIOException(message, exception);
             }
         }
         try {
             FileUtils.forceMkdir(getTempMigrationFolder());
         } catch (IOException exception) {
-            String message = String
-                    .format("Failed in creating migration folder '%s'",
-                            getTempMigrationFolder());
+            String message = String.format(
+                    "Failed in creating migration folder '%s'",
+                    getTempMigrationFolder());
             throw new UncheckedIOException(message, exception);
         }
     }
@@ -295,8 +295,7 @@ public class Migration {
     }
 
     private void installNpmPackages() throws MigrationFailureException {
-        List<String> npmExec = FrontendUtils
-                .getNpmExecutable(configuration.getBaseDirectory().getPath());
+        List<String> npmExec = getFrontendInstallToolExec();
         List<String> npmInstall = new ArrayList<>(npmExec.size());
         npmInstall.addAll(npmExec);
         npmInstall.add("i");
@@ -307,6 +306,21 @@ public class Migration {
             throw new MigrationFailureException(
                     "Error during package installation via npm");
         }
+    }
+
+    private List<String> getFrontendInstallToolExec() {
+        FrontendUtils.ensurePnpm(configuration.getBaseDirectory().getPath(),
+                !configuration.isPnpmDisabled());
+
+        List<String> executable;
+        if (configuration.isPnpmDisabled()) {
+            executable = FrontendUtils.getNpmExecutable(
+                    configuration.getBaseDirectory().getPath());
+        } else {
+            executable = FrontendUtils.getPnpmExecutable(
+                    configuration.getBaseDirectory().getPath());
+        }
+        return executable;
     }
 
     private boolean runModulizer() {
@@ -391,10 +405,8 @@ public class Migration {
     }
 
     private boolean ensureTools(boolean needInstallBower) {
-        List<String> npmExecutable = FrontendUtils
-                .getNpmExecutable(configuration.getBaseDirectory().getPath());
         List<String> command = new ArrayList<>();
-        command.addAll(npmExecutable);
+        command.addAll(getFrontendInstallToolExec());
         command.add("install");
         if (needInstallBower) {
             command.add("bower");
