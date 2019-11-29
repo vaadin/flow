@@ -342,20 +342,7 @@ public class FrontendUtils {
      *         have pnpm running
      */
     public static List<String> getPnpmExecutable(String baseDir) {
-        // First try local pnpm JS script if it exists
-        File file = new File(baseDir, "node_modules/pnpm/bin/pnpm.js");
-        List<String> returnCommand = new ArrayList<>();
-        if (file.canRead()) {
-            // We return a two element list with node binary and npm-cli script
-            returnCommand.add(getNodeExecutable(baseDir));
-            returnCommand.add(file.getAbsolutePath());
-        } else {
-            // Otherwise look for regulag `pnpm`
-            String command = isWindows() ? "pnpm.cmd" : "pnpm";
-            returnCommand.add(
-                    getExecutable(baseDir, command, null).getAbsolutePath());
-        }
-        return returnCommand;
+        return getPnpmExecutable(baseDir, true);
     }
 
     /**
@@ -716,6 +703,45 @@ public class FrontendUtils {
 
     }
 
+    /**
+     * Ensure that pnpm tool is available and install it if it's not.
+     *
+     * @param baseDir
+     *            project root folder.
+     * @param ensure
+     *            whether pnpm tool should be installed if it's absent
+     */
+    public static void ensurePnpm(String baseDir, boolean ensure) {
+        if (ensure && getPnpmExecutable(baseDir, false).isEmpty()) {
+            List<String> npmExecutable = FrontendUtils
+                    .getNpmExecutable(baseDir);
+            List<String> command = new ArrayList<>();
+            command.addAll(npmExecutable);
+            command.add("install");
+            command.add("pnpm");
+
+            ProcessBuilder builder = createProcessBuilder(command);
+            builder.directory(new File(baseDir));
+
+            Process process = null;
+            try {
+                process = builder.inheritIO().start();
+                int errorCode = process.waitFor();
+                if (errorCode != 0) {
+                    getLogger().error("Couldn't install 'pnpm'");
+                } else {
+                    getLogger().debug("Pnpm is successfully installed");
+                }
+            } catch (InterruptedException | IOException e) {
+                getLogger().error("Error when running `npm install`", e);
+            } finally {
+                if (process != null) {
+                    process.destroyForcibly();
+                }
+            }
+        }
+    }
+
     static void checkForFaultyNpmVersion(FrontendVersion npmVersion) {
         if (NPM_BLACKLISTED_VERSIONS.contains(npmVersion)) {
             String badNpmVersion = buildBadVersionString("npm",
@@ -917,6 +943,31 @@ public class FrontendUtils {
 
     private static Logger getLogger() {
         return LoggerFactory.getLogger(FrontendUtils.class);
+    }
+
+    private static List<String> getPnpmExecutable(String baseDir,
+            boolean failOnAbsence) {
+        // First try local pnpm JS script if it exists
+        File file = new File(baseDir, "node_modules/pnpm/bin/pnpm.js");
+        List<String> returnCommand = new ArrayList<>();
+        if (file.canRead()) {
+            // We return a two element list with node binary and npm-cli script
+            returnCommand.add(getNodeExecutable(baseDir));
+            returnCommand.add(file.getAbsolutePath());
+        } else {
+            // Otherwise look for regulag `pnpm`
+            String command = isWindows() ? "pnpm.cmd" : "pnpm";
+            if (failOnAbsence) {
+                returnCommand.add(getExecutable(baseDir, command, null)
+                        .getAbsolutePath());
+            } else {
+                returnCommand.addAll(frontendToolsLocator.tryLocateTool(command)
+                        .map(File::getPath).map(Collections::singletonList)
+                        .orElse(Collections.emptyList()));
+            }
+        }
+
+        return returnCommand;
     }
 
     /**

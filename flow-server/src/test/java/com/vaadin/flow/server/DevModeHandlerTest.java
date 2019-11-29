@@ -38,6 +38,7 @@ import com.sun.net.httpserver.HttpServer;
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -227,17 +228,30 @@ public class DevModeHandlerTest {
     }
 
     @Test
-    public void should_HandleJavaScriptRequests() {
+    public void pnpmIsEnabled_handlesJavaScriptRequestsAndPnpmIsAvaiable() {
         HttpServletRequest request = prepareRequest("/foo.js");
         assertTrue(DevModeHandler.start(configuration, npmFolder)
                 .isDevModeRequest(request));
+
+        List<String> pnpmExecutable = FrontendUtils
+                .getPnpmExecutable(npmFolder.getPath());
+        Assert.assertFalse(pnpmExecutable.isEmpty());
     }
 
     @Test
-    public void shouldNot_HandleOtherRequests() {
+    public void pnpmIsDisabled_doesNotandleOtherRequestsAndPnpmToolIsNotChanged() {
+        List<String> pnpmExecutable = FrontendUtils
+                .getPnpmExecutable(npmFolder.getPath());
+
+        configuration.setApplicationOrSystemProperty(
+                Constants.SERVLET_PARAMETER_DISABLE_PNPM,
+                Boolean.TRUE.toString());
         HttpServletRequest request = prepareRequest("/foo.bar");
         assertFalse(DevModeHandler.start(configuration, npmFolder)
                 .isDevModeRequest(request));
+
+        Assert.assertEquals(pnpmExecutable,
+                FrontendUtils.getPnpmExecutable(npmFolder.getPath()));
     }
 
     @Test(expected = ConnectException.class)
