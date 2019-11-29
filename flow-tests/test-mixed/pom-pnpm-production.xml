@@ -8,8 +8,8 @@
         <groupId>com.vaadin</groupId>
         <version>2.2-SNAPSHOT</version>
     </parent>
-    <artifactId>flow-test-npm-production</artifactId>
-    <name>Flow tests in npm and production mode</name>
+    <artifactId>flow-test-pnpm-production</artifactId>
+    <name>Flow tests in pnpm and production mode</name>
 
     <packaging>war</packaging>
     <properties>
