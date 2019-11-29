@@ -36,6 +36,7 @@ import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.VaadinAppShell;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.InvalidApplicationConfigurationException;
+import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
@@ -45,7 +46,7 @@ import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
  *
  * @since 3.0
  */
-@HandlesTypes({ VaadinAppShell.class, Meta.class, Meta.Container.class })
+@HandlesTypes({ VaadinAppShell.class, Meta.class, Meta.Container.class, PWA.class })
 @WebListener
 public class VaadinAppShellInitializer implements ServletContainerInitializer,
         Serializable {
