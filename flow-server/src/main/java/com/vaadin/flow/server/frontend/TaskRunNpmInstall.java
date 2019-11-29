@@ -18,7 +18,10 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.vaadin.flow.server.ExecutionFailedException;
 
@@ -62,9 +65,16 @@ public class TaskRunNpmInstall implements FallibleCommand {
             File[] installedPackages = packageUpdater.nodeModulesFolder
                     .listFiles();
             assert installedPackages != null;
-            return installedPackages.length == 0
-                    || (installedPackages.length == 1 && FLOW_NPM_PACKAGE_NAME
-                            .startsWith(installedPackages[0].getName()));
+
+            if(installedPackages.length == 0) {
+                return true;
+            }
+            List<String> collect = NodeUpdater.getDefaultDevDependencies()
+                    .entrySet().stream().map(Map.Entry::getKey)
+                    .collect(Collectors.toList());
+            Arrays.stream(installedPackages).map(File::getName).forEach(collect::remove);
+            return (installedPackages.length == 1 && FLOW_NPM_PACKAGE_NAME
+                            .startsWith(installedPackages[0].getName())) || !collect.isEmpty();
         }
         return true;
     }

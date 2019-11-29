@@ -187,6 +187,8 @@ public abstract class NodeUpdater implements FallibleCommand {
             packageJson = Json.createObject();
             packageJson.put(DEP_NAME_KEY, DEP_NAME_DEFAULT);
             packageJson.put(DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT);
+        }
+        if(!packageJson.hasKey(VAADIN_DEP_KEY)) {
             packageJson.put(VAADIN_DEP_KEY, createVaadinPackagesJson());
         }
         return packageJson;
