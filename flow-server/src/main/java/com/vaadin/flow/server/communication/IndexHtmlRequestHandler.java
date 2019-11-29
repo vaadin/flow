@@ -27,10 +27,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.startup.VaadinAppShellRegistry;
 
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
@@ -56,6 +58,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         Document indexDocument = getIndexHtmlDocument(request);
 
         prependBaseHref(request, indexDocument);
+
         if (request.getService().getBootstrapInitialPredicate()
                 .includeInitialUidl(request)) {
             includeInitialUidl(session, request, response, indexDocument);
@@ -64,12 +67,18 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             // unless we detect a call to JavaScriptBootstrapUI.connectClient
             session.setAttribute(SERVER_ROUTING, Boolean.TRUE);
         }
-
         configureErrorDialogStyles(indexDocument);
+
         showWebpackErrors(indexDocument);
 
         response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
 
+        // modify the page based on the page config annotations (@Meta, etc)
+        VaadinContext context = session.getService().getContext();
+        VaadinAppShellRegistry.getInstance(context)
+                .modifyIndexHtmlResponse(indexDocument);
+
+        // modify the page based on registered IndexHtmlRequestListener:s
         request.getService().modifyIndexHtmlResponse(
                 new IndexHtmlResponse(request, response, indexDocument));
 
@@ -87,6 +96,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             VaadinRequest request, VaadinResponse response,
             Document indexDocument) {
         JsonObject initial = getInitialJson(request, response, session);
+
 
         Element elm = new Element("script");
         elm.attr("initial", "");
