@@ -32,9 +32,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAM
  */
 public class TaskRunNpmInstall implements FallibleCommand {
 
-    static final String SKIPPING_NPM_INSTALL = "Skipping `npm install`.";
-    static final String RUNNING_NPM_INSTALL = "Running `npm install` ...";
-
     private final NodeUpdater packageUpdater;
 
     private final boolean disablePnpm;
@@ -53,11 +50,12 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
     @Override
     public void execute() throws ExecutionFailedException {
+        String toolName = disablePnpm ? "npm" : "pnpm";
         if (packageUpdater.modified || shouldRunNpmInstall()) {
-            packageUpdater.log().info(RUNNING_NPM_INSTALL);
+            packageUpdater.log().info("Running `" + toolName + " install` ...");
             runNpmInstall();
         } else {
-            packageUpdater.log().info(SKIPPING_NPM_INSTALL);
+            packageUpdater.log().info("Skipping `" + toolName + " install`.");
         }
     }
 
