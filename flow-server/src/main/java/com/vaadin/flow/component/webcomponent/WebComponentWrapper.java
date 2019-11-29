@@ -61,8 +61,8 @@ public class WebComponentWrapper extends Component {
         super(rootElement);
         Objects.requireNonNull(binding, "Parameter 'binding' must not be null!");
 
-        this.webComponentBinding = binding;
-        this.child = webComponentBinding.getComponent();
+        webComponentBinding = binding;
+        child = webComponentBinding.getComponent();
         getElement().appendChild(child.getElement());
     }
 
@@ -95,7 +95,7 @@ public class WebComponentWrapper extends Component {
         } else {
             LoggerFactory.getLogger(WebComponentUI.class).warn(
                     "Received reconnect request for non disconnected WebComponent '{}'",
-                    this.child.getClass().getName());
+                    child.getClass().getName());
         }
     }
 
@@ -119,8 +119,9 @@ public class WebComponentWrapper extends Component {
                         if (event.getSource().getInternals()
                                 .getLastHeartbeatTimestamp()
                                 - disconnect > timeout) {
-                            Element element = this.getElement();
+                            Element element = getElement();
                             element.getParent().removeVirtualChild(element);
+                            disconnectRegistration.remove();
                         }
                     });
         }
