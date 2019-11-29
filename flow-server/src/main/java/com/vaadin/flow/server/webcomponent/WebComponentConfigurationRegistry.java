@@ -354,9 +354,18 @@ public class WebComponentConfigurationRegistry implements Serializable {
 
     /**
      * Creates a copy of the element sub-tree, with the given
-     * {@code rootElement} as the root element of the created tree. State
-     * information is not copied, only attributes, properties, and child
-     * elements.
+     * {@code rootElement} as the root element of the created tree.
+     * <p>
+     * Copies the following
+     * {@link com.vaadin.flow.internal.nodefeature.NodeFeature}:
+     * <ul>
+     *     <li>{@link com.vaadin.flow.internal.nodefeature.ElementData}</li>
+     *     <li>{@link com.vaadin.flow.internal.nodefeature.ElementPropertyMap}</li>
+     *     <li>{@link com.vaadin.flow.internal.nodefeature.ElementAttributeMap}</li>
+     *     <li>{@link com.vaadin.flow.internal.nodefeature.ElementClassList}</li>
+     *     <li>{@link com.vaadin.flow.internal.nodefeature.ElementStylePropertyMap}</li>
+     *     <li>{@link com.vaadin.flow.internal.nodefeature.ElementChildrenList}</li>
+     * </ul>
      * 
      * @param rootElement
      *            element to copy and make the root node of the new element tree
@@ -411,6 +420,7 @@ public class WebComponentConfigurationRegistry implements Serializable {
                 .forEach(styleProp -> copyStyleProperties.setProperty(styleProp,
                         originalStyleProperties.getProperty(styleProp), false));
 
+        // copy ElementChildrenList
         ElementChildrenList originalChildren = rootElement.getNode()
                 .getFeature(ElementChildrenList.class);
         ElementChildrenList copyChildren = copyNode
