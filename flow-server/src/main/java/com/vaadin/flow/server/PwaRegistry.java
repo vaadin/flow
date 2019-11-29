@@ -73,6 +73,13 @@ public class PwaRegistry implements Serializable {
     private List<PwaIcon> icons = new ArrayList<>();
     private final PwaConfiguration pwaConfiguration;
 
+    /**
+     * Creates a new PwaRegistry instance.
+     * 
+     * @param pwa the pwa annotation
+     * @param servletContext the context
+     * @throws IOException
+     */
     public PwaRegistry(PWA pwa, ServletContext servletContext)
             throws IOException {
         if (System.getProperty(HEADLESS_PROPERTY) == null) {
