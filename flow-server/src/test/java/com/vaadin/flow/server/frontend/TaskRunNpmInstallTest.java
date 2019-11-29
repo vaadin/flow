@@ -61,8 +61,7 @@ public class TaskRunNpmInstallTest {
             }
 
         };
-        task = new TaskRunNpmInstall(nodeUpdater);
-
+        task = new TaskRunNpmInstall(nodeUpdater, isNpm());
     }
 
     @Test
@@ -73,7 +72,7 @@ public class TaskRunNpmInstallTest {
         nodeUpdater.modified = false;
         task.execute();
 
-        Mockito.verify(logger).info(TaskRunNpmInstall.RUNNING_NPM_INSTALL);
+        Mockito.verify(logger).info(getRunningMsg());
     }
 
     @Test
@@ -85,7 +84,8 @@ public class TaskRunNpmInstallTest {
         nodeUpdater.modified = false;
         task.execute();
 
-        Mockito.verify(logger).info(TaskRunNpmInstall.SKIPPING_NPM_INSTALL);
+        Mockito.verify(logger)
+                .info("Skipping `" + getToolName() + " install`.");
     }
 
     @Test
@@ -97,7 +97,7 @@ public class TaskRunNpmInstallTest {
         nodeUpdater.modified = false;
         task.execute();
 
-        Mockito.verify(logger).info(TaskRunNpmInstall.RUNNING_NPM_INSTALL);
+        Mockito.verify(logger).info(getRunningMsg());
     }
 
     @Test
@@ -106,6 +106,22 @@ public class TaskRunNpmInstallTest {
         nodeUpdater.modified = true;
         task.execute();
 
-        Mockito.verify(logger).info(TaskRunNpmInstall.RUNNING_NPM_INSTALL);
+        Mockito.verify(logger).info(getRunningMsg());
+    }
+
+    private String getRunningMsg() {
+        return "Running `" + getToolName() + " install` ...";
+    }
+
+    protected NodeUpdater getNodeUpdater() {
+        return nodeUpdater;
+    }
+
+    protected boolean isNpm() {
+        return true;
+    }
+
+    protected String getToolName() {
+        return "npm";
     }
 }
