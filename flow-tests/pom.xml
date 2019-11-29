@@ -222,6 +222,7 @@
                 <module>test-pwa</module>
 
                 <module>test-mixed</module>
+                <module>test-mixed/pom-npm.xml</module>
 
                 <module>test-dev-mode</module>
                 <module>test-root-ui-context</module>
@@ -242,7 +243,6 @@
 
                 <!-- tests running in both modes -->
                 <module>test-misc</module>
-                <module>test-misc/pom-npm.xml</module>
                 <module>test-misc/pom-bower.xml</module>
 
                 <module>test-mixed/pom-pnpm-production.xml</module>
