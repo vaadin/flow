@@ -1,4 +1,4 @@
-package com.vaadin.flow.ccdmtest;
+package com.vaadin.flow.connect;
 
 import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.VaadinAppShell;

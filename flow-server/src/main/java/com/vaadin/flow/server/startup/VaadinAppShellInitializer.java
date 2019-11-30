@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.page.Meta;
@@ -105,6 +106,9 @@ public class VaadinAppShellInitializer implements ServletContainerInitializer,
                     if (registry.isShell(clz)) {
                         registry.setShell(
                                 (Class<? extends VaadinAppShell>) clz);
+                        getLogger().info(
+                                "Using {} class for configuring `index.html` response",
+                                clz.getName());
                     } else {
                         String error = registry.validateClass(clz);
                         if (error != null) {
@@ -118,8 +122,7 @@ public class VaadinAppShellInitializer implements ServletContainerInitializer,
                 String message = String.format(
                         VaadinAppShellRegistry.ERROR_HEADER_NO_SHELL,
                         String.join("\n  ", offendingAnnotations));
-                LoggerFactory.getLogger(VaadinAppShellInitializer.class)
-                        .error(message);
+                getLogger().error(message);
             } else {
                 String message = String.format(
                         VaadinAppShellRegistry.ERROR_HEADER_OFFENDING,
@@ -160,4 +163,8 @@ public class VaadinAppShellInitializer implements ServletContainerInitializer,
     public static List<Class<?>> getValidSupers() {
         return Collections.singletonList(VaadinAppShell.class);
     }
-}
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(VaadinAppShellInitializer.class);
+    }
+ }
