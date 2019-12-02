@@ -22,7 +22,7 @@ import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-public class InterfaceBasedIT extends ChromeBrowserTest implements HasById {
+public class FactoryExporterIT extends ChromeBrowserTest implements HasById {
 
     @Override
     protected String getTestPath() {

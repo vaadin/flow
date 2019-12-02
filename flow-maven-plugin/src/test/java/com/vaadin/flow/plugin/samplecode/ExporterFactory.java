@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2019 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -13,28 +13,31 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
-package com.vaadin.flow.server.webcomponent;
+package com.vaadin.flow.plugin.samplecode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.WebComponentExporterFactory;
-import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.component.webcomponent.WebComponent;
 
-/**
- * Retrieves web component tag from a
- * {@link com.vaadin.flow.component.WebComponentExporterFactory} object.
- *
- * @author Vaadin Ltd.
- * @since 2.0
- */
-public final class WebComponentExporterTagExtractor implements
-        SerializableFunction<WebComponentExporterFactory<? extends Component>, String> {
+public class ExporterFactory implements WebComponentExporterFactory<Component> {
+
+    private class InnerExporter extends WebComponentExporter<Component> {
+
+        private InnerExporter(String tag) {
+            super(tag);
+        }
+
+        @Override
+        protected void configureInstance(WebComponent<Component> webComponent,
+                Component component) {
+        }
+
+    }
 
     @Override
-    public String apply(
-            WebComponentExporterFactory<? extends Component> factory) {
-        return new WebComponentExporter.WebComponentConfigurationFactory()
-                .create(factory.create()).getTag();
+    public WebComponentExporter<Component> create() {
+        return new InnerExporter("wc-foo-bar");
     }
+
 }
