@@ -17,6 +17,9 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -77,11 +80,28 @@ public class TaskRunNpmInstallTest {
     }
 
     @Test
-    public void runNpmInstall_nonEmptyDir_npmInstallIsNotExecuted()
+    public void runNpmInstall_nonEmptyDir_missingDevDependencies_npmInstallIsExecuted()
             throws IOException, ExecutionFailedException {
         File nodeModules = new File(npmFolder, NODE_MODULES);
         nodeModules.mkdir();
         new File(nodeModules, "foo").createNewFile();
+        nodeUpdater.modified = false;
+        task.execute();
+
+        Mockito.verify(logger).info(TaskRunNpmInstall.RUNNING_NPM_INSTALL);
+    }
+
+    @Test
+    public void runNpmInstall_nonEmptyDir_withDevDependencies_npmInstallIsNotExecuted()
+            throws IOException, ExecutionFailedException {
+        File nodeModules = new File(npmFolder, NODE_MODULES);
+        nodeModules.mkdir();
+        List<String> devDep = NodeUpdater.getDefaultDevDependencies()
+                .entrySet().stream().map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+        for(String name: devDep) {
+            new File(nodeModules, name).createNewFile();
+        }
         nodeUpdater.modified = false;
         task.execute();
 
