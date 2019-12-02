@@ -34,8 +34,10 @@ import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.internal.nodefeature.ElementListenersTest;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.ElementStylePropertyMap;
+import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.internal.nodefeature.SynchronizedPropertiesList;
 import com.vaadin.flow.internal.nodefeature.SynchronizedPropertyEventsList;
+import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinSession;
@@ -2065,6 +2067,23 @@ public class ElementTest extends AbstractNodeTest {
         body.removeAllChildren();
 
         Assert.assertEquals(null, child.getParent());
+    }
+
+    @Test
+    public void testRemoveFromTree_isVirtualChild_removedFromParent() {
+        Element body = new UI().getElement();
+        Element child = ElementFactory.createDiv();
+
+        body.getNode().getFeature(VirtualChildrenList.class)
+                .append(child.getNode(), "");
+
+        Assert.assertTrue(child.isVirtualChild());
+
+        child.removeFromTree();
+
+        Assert.assertFalse(child.isVirtualChild());
+        Assert.assertEquals(0,
+                body.getNode().getFeature(VirtualChildrenList.class).size());
     }
 
     private StreamResource createEmptyResource(String resName) {

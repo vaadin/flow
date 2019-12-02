@@ -586,9 +586,13 @@ public class Element extends Node<Element> {
      */
     public Element removeFromTree() {
         Node<?> parent = getParentNode();
-        if (parent != null
-                && parent.getChildren().anyMatch(Predicate.isEqual(this))) {
-            parent.removeChild(this);
+        if (parent != null) {
+            if (parent.getChildren().anyMatch(Predicate.isEqual(this))) {
+                parent.removeChild(this);
+            }
+            if (isVirtualChild()) {
+                ElementUtil.removeVirtualChildFromParent(this);
+            }
         }
         getNode().removeFromTree();
         return this;

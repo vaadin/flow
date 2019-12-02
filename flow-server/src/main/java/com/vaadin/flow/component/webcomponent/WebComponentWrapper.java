@@ -18,7 +18,7 @@ package com.vaadin.flow.component.webcomponent;
 import java.util.Objects;
 import java.util.Optional;
 
-import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
+import com.vaadin.flow.dom.ElementUtil;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.ClientCallable;
@@ -120,24 +120,10 @@ public class WebComponentWrapper extends Component {
                         if (event.getSource().getInternals()
                                 .getLastHeartbeatTimestamp()
                                 - disconnect > timeout) {
-                            removeFromParent(getElement());
+                            ElementUtil.removeVirtualChildFromParent(getElement());
                         }
                     });
         }
     }
 
-    private static void removeFromParent(Element webComponentWrapperElement) {
-        Element parent = webComponentWrapperElement.getParent();
-        if (parent.getNode().hasFeature(VirtualChildrenList.class)) {
-            VirtualChildrenList childrenList = parent.getNode()
-                    .getFeature(VirtualChildrenList.class);
-            int index = childrenList
-                    .indexOf(webComponentWrapperElement.getNode());
-            if (index == -1) {
-                throw new IllegalArgumentException(
-                        "Failing to clean-up an embedded Flow web component, parent UI doesn't contain it as a virtual child.");
-            }
-            childrenList.remove(index);
-        }
-    }
 }
