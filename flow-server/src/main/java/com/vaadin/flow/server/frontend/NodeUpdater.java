@@ -211,7 +211,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         // Add default dependencies
         JsonObject dependencies = vaadinPackages.getObject(DEPENDENCIES);
-        getDefaultDependencies(null).forEach(dependencies::put);
+        getDefaultDependencies("3.2.0").forEach(dependencies::put);
 
         // Add default developmentDependencies
         JsonObject devDependencies = vaadinPackages.getObject(DEV_DEPENDENCIES);
@@ -223,8 +223,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     static Map<String, String> getDefaultDependencies(String polymerVersion) {
         Map<String, String> defaults = new HashMap<>();
 
-        defaults.put("@polymer/polymer",
-                polymerVersion == null ? "3.2.0" : polymerVersion);
+        defaults.put("@polymer/polymer", polymerVersion);
         defaults.put("@webcomponents/webcomponentsjs", "^2.2.10");
 
         return defaults;

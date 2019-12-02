@@ -103,6 +103,8 @@ public class FrontendVersion
     /**
      * Parse version numbers from version string with the format
      * "major.minor.revision[.build]". The build part is optional.
+     * <p>
+     * Versions are normalized and any caret or tildes will not be considered.
      *
      * @param version
      *         version string as "major.minor.revision[.build]"
@@ -191,6 +193,7 @@ public class FrontendVersion
 
     /**
      * Check if this version is older than given version.
+     * Will return false if equals or is newer.
      *
      * @param otherVersion
      *         version to check against
@@ -202,6 +205,7 @@ public class FrontendVersion
 
     /**
      * Check if this version is newer than given version.
+     * Will return false if equals or is older.
      *
      * @param otherVersion
      *         version to check against
@@ -211,6 +215,15 @@ public class FrontendVersion
         return compareTo(otherVersion) > 0;
     }
 
+    /**
+     * Equals will compare the version values according to compareTo.
+     * If all version numbers in the other FrontendVersion are equal to
+     * this instance version numbers then they equal.
+     *
+     * @param obj
+     *         object to test equals with
+     * @return true if parsed version parts are exactly the same
+     */
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof FrontendVersion) {
@@ -225,6 +238,14 @@ public class FrontendVersion
         return version.hashCode();
     }
 
+    /**
+     * Compare version numbers and return order as -1, 0 and 1.
+     * Where this version is older, equals, newer than given version.
+     *
+     * @param other
+     *         version to compare agains this version
+     * @return -1 this is older, 0 versions equal, 1 this is newer
+     */
     @Override
     public int compareTo(FrontendVersion other) {
         if (majorVersion != other.majorVersion) {

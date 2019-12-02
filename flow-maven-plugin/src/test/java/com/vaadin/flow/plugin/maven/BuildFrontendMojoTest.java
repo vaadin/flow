@@ -288,12 +288,13 @@ public class BuildFrontendMojoTest {
     }
 
     @Test
-    public void mavenGoal_when_packageJsonExists() throws Exception {
+    public void mavenGoalWhenPackageJsonContainsDependencies_onlyFrameworkHandledDependencyIsTouched()
+            throws Exception {
         JsonObject json = TestUtils.getInitalPackageJson();
         JsonObject dependencies = Json.createObject();
         // Add dependencies foo-bar and bar-foo
         dependencies.put("foo", "bar");
-        dependencies.put("bar","foo");
+        dependencies.put("bar", "foo");
         // Make foo framework handled
         json.getObject("vaadin").getObject("dependencies").put("foo", "bar");
         json.put("dependencies", dependencies);
