@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.demo;
 
+import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.dom.Element;
@@ -27,6 +28,7 @@ import com.vaadin.flow.dom.Element;
  * @since 1.0
  */
 @StyleSheet("src/css/sources.css")
+@JavaScript("src/script/prism.js")
 public class SourceContent extends Div {
 
     /**
@@ -85,5 +87,6 @@ public class SourceContent extends Div {
         code.getClassList().add(className);
         code.setText(text);
         getElement().appendChild(pre);
+        code.executeJs("Prism.highlightElement(this);");
     }
 }
