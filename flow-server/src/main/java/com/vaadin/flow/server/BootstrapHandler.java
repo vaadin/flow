@@ -961,55 +961,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         private void setupPwa(Document document, BootstrapContext context) {
             VaadinService vaadinService = context.getSession().getService();
-            if (vaadinService == null) {
-                return;
-            }
-
-            PwaRegistry registry = vaadinService.getPwaRegistry();
-            if (registry == null) {
-                return;
-            }
-
-            PwaConfiguration config = registry.getPwaConfiguration();
-
-            if (config.isEnabled()) {
-                // Add header injections
-                Element head = document.head();
-
-                // Describe PWA capability for iOS devices
-                head.appendElement(META_TAG)
-                        .attr("name", "apple-mobile-web-app-capable")
-                        .attr(CONTENT_ATTRIBUTE, "yes");
-
-                // Theme color
-                head.appendElement(META_TAG).attr("name", "theme-color")
-                        .attr(CONTENT_ATTRIBUTE, config.getThemeColor());
-                head.appendElement(META_TAG)
-                        .attr("name", "apple-mobile-web-app-status-bar-style")
-                        .attr(CONTENT_ATTRIBUTE, config.getThemeColor());
-
-                // Add manifest
-                head.appendElement("link").attr("rel", "manifest").attr("href",
-                        config.getManifestPath());
-
-                // Add icons
-                for (PwaIcon icon : registry.getHeaderIcons()) {
-                    head.appendChild(icon.asElement());
-                }
-
-                // Add service worker initialization
-                head.appendElement(SCRIPT_TAG)
-                        .text("if ('serviceWorker' in navigator) {\n"
-                                + "  window.addEventListener('load', function() {\n"
-                                + "    navigator.serviceWorker.register('"
-                                + config.getServiceWorkerPath() + "');\n"
-                                + "  });\n" + "}");
-
-                // add body injections
-                if (registry.getPwaConfiguration().isInstallPromptEnabled()) {
-                    // PWA Install prompt html/js
-                    document.body().append(registry.getInstallPrompt());
-                }
+            if (vaadinService != null) {
+                BootstrapHandler.setupPwa(document, vaadinService);
             }
         }
 
@@ -1630,5 +1583,54 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 "color: red;" +
                 "}");
      // @formatter:on
+    }
+
+    protected static void setupPwa(Document document, VaadinService vaadinService) {
+        PwaRegistry registry = vaadinService.getPwaRegistry();
+        if (registry == null) {
+            return;
+        }
+
+        PwaConfiguration config = registry.getPwaConfiguration();
+
+        if (config.isEnabled()) {
+            // Add header injections
+            Element head = document.head();
+
+            // Describe PWA capability for iOS devices
+            head.appendElement(META_TAG)
+                    .attr("name", "apple-mobile-web-app-capable")
+                    .attr(CONTENT_ATTRIBUTE, "yes");
+
+            // Theme color
+            head.appendElement(META_TAG).attr("name", "theme-color")
+                    .attr(CONTENT_ATTRIBUTE, config.getThemeColor());
+            head.appendElement(META_TAG)
+                    .attr("name", "apple-mobile-web-app-status-bar-style")
+                    .attr(CONTENT_ATTRIBUTE, config.getThemeColor());
+
+            // Add manifest
+            head.appendElement("link").attr("rel", "manifest").attr("href",
+                    config.getManifestPath());
+
+            // Add icons
+            for (PwaIcon icon : registry.getHeaderIcons()) {
+                head.appendChild(icon.asElement());
+            }
+
+            // Add service worker initialization
+            head.appendElement(SCRIPT_TAG)
+                    .text("if ('serviceWorker' in navigator) {\n"
+                            + "  window.addEventListener('load', function() {\n"
+                            + "    navigator.serviceWorker.register('"
+                            + config.getServiceWorkerPath() + "');\n"
+                            + "  });\n" + "}");
+
+            // add body injections
+            if (registry.getPwaConfiguration().isInstallPromptEnabled()) {
+                // PWA Install prompt html/js
+                document.body().append(registry.getInstallPrompt());
+            }
+        }
     }
 }

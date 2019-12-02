@@ -347,7 +347,7 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void should_add_metaElements_when_appShellPresent() throws Exception {
+    public void should_add_metaAndPwaElements_when_appShellPresent() throws Exception {
         // Set class in context and do not call initializer
         VaadinAppShellRegistry registry = new VaadinAppShellRegistry();
         registry.setShell(MyAppShellWithMultipleMeta.class);
@@ -363,11 +363,17 @@ public class IndexHtmlRequestHandlerTest {
         Document document = Jsoup.parse(indexHtml);
 
         Elements elements = document.head().getElementsByTag("meta");
-        assertEquals(4, elements.size());
+        assertEquals(7, elements.size());
         assertEquals("foo", elements.get(2).attr("name"));
         assertEquals("bar", elements.get(2).attr("content"));
         assertEquals("lorem", elements.get(3).attr("name"));
         assertEquals("ipsum", elements.get(3).attr("content"));
+        assertEquals("apple-mobile-web-app-capable", elements.get(4).attr("name"));
+        assertEquals("yes", elements.get(4).attr("content"));
+        assertEquals("theme-color", elements.get(5).attr("name"));
+        assertEquals("#ffffff", elements.get(5).attr("content"));
+        assertEquals("apple-mobile-web-app-status-bar-style", elements.get(6).attr("name"));
+        assertEquals("#ffffff", elements.get(6).attr("content"));
     }
 
     @After

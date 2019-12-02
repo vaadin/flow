@@ -8,10 +8,10 @@
         <groupId>com.vaadin</groupId>
         <version>3.0-SNAPSHOT</version>
     </parent>
-    
+
     <artifactId>flow-ccdm-connect</artifactId>
     <name>Flow and connect tests</name>
-    
+
     <packaging>jar</packaging>
 
     <properties>
@@ -48,25 +48,6 @@
                 <exclusion>
                     <groupId>com.vaadin</groupId>
                     <artifactId>vaadin-core</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-spring</artifactId>
-            <version>12.2-SNAPSHOT</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.vaadin</groupId>
-                    <artifactId>flow-server</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.vaadin</groupId>
-                    <artifactId>flow-push</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.vaadin</groupId>
-                    <artifactId>flow-client</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

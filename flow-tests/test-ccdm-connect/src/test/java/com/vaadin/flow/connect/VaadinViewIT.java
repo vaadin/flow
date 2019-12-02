@@ -18,6 +18,7 @@ package com.vaadin.flow.connect;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
@@ -138,6 +139,19 @@ public class VaadinViewIT extends ChromeBrowserTest {
 
         // Verify anonymous calls when logged in
         verifyCallingAnonymousService();
+    }
+
+    @Test
+    public void should_add_appShellAnnotations() {
+        WebElement meta = findElement(By.cssSelector("meta[name=foo]"));
+        Assert.assertNotNull(meta);
+        Assert.assertEquals("bar", meta.getAttribute("content"));
+    }
+
+    @Test
+    public void should_show_pwaDialog() {
+        WebElement pwa = findElement(By.id("pwa-ip"));
+        Assert.assertTrue(pwa.getText().contains("My App"));
     }
 
     private void login(String username, String password) {
