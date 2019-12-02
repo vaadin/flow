@@ -582,7 +582,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         Assert.assertTrue(json.hasKey("license"));
 
         JsonObject dependencies = json.getObject(DEPENDENCIES);
-        for(Map.Entry<String,String> entry : NodeUpdater.getDefaultDependencies().entrySet()){
+        for(Map.Entry<String,String> entry : NodeUpdater.getDefaultDependencies(null).entrySet()){
             Assert.assertTrue("Missing '"+entry.getKey()+"' package",
                     dependencies.hasKey(entry.getKey()));
         }

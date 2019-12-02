@@ -211,19 +211,20 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         // Add default dependencies
         JsonObject dependencies = vaadinPackages.getObject(DEPENDENCIES);
-        getDefaultDependencies().forEach((key, value) -> dependencies.put(key, value));
+        getDefaultDependencies(null).forEach(dependencies::put);
 
         // Add default developmentDependencies
         JsonObject devDependencies = vaadinPackages.getObject(DEV_DEPENDENCIES);
-        getDefaultDevDependencies().forEach((key, value) -> devDependencies.put(key, value));
+        getDefaultDevDependencies().forEach(devDependencies::put);
 
         return vaadinPackages;
     }
 
-    static Map<String, String> getDefaultDependencies() {
+    static Map<String, String> getDefaultDependencies(String polymerVersion) {
         Map<String, String> defaults = new HashMap<>();
 
-        defaults.put("@polymer/polymer", "3.2.0");
+        defaults.put("@polymer/polymer",
+                polymerVersion == null ? "3.2.0" : polymerVersion);
         defaults.put("@webcomponents/webcomponentsjs", "^2.2.10");
 
         return defaults;
@@ -269,27 +270,17 @@ public abstract class NodeUpdater implements FallibleCommand {
             String polymerVersion) {
         int added = 0;
 
-        added += addDependency(packageJson, DEPENDENCIES, "@polymer/polymer",
-                polymerVersion);
-        added += addDependency(packageJson, DEPENDENCIES,
-                "@webcomponents/webcomponentsjs", "^2.2.10");
+        for (Map.Entry<String, String> entry : getDefaultDependencies(
+                polymerVersion).entrySet()) {
+            added += addDependency(packageJson, DEPENDENCIES, entry.getKey(),
+                    entry.getValue());
+        }
+        for (Map.Entry<String, String> entry : getDefaultDevDependencies()
+                .entrySet()) {
+            added += addDependency(packageJson, DEV_DEPENDENCIES,
+                    entry.getKey(), entry.getValue());
+        }
 
-        added += addDependency(packageJson, DEV_DEPENDENCIES, "webpack",
-                "4.30.0");
-        added += addDependency(packageJson, DEV_DEPENDENCIES, "webpack-cli",
-                "3.3.0");
-        added += addDependency(packageJson, DEV_DEPENDENCIES,
-                "webpack-dev-server", "3.3.0");
-        added += addDependency(packageJson, DEV_DEPENDENCIES,
-                "webpack-babel-multi-target-plugin", "2.3.1");
-        added += addDependency(packageJson, DEV_DEPENDENCIES,
-                "copy-webpack-plugin", "5.0.3");
-        added += addDependency(packageJson, DEV_DEPENDENCIES,
-                "compression-webpack-plugin", "3.0.0");
-        added += addDependency(packageJson, DEV_DEPENDENCIES, "webpack-merge",
-                "4.2.1");
-        added += addDependency(packageJson, DEV_DEPENDENCIES, "raw-loader",
-                "3.0.0");
         if(added > 0) {
             log().info("Added {} dependencies to main package.json", added);
         }
