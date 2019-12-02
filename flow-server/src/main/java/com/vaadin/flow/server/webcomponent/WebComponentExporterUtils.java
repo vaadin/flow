@@ -62,13 +62,30 @@ public final class WebComponentExporterUtils {
 
         classes.stream()
                 .filter(WebComponentExporterFactory.class::isAssignableFrom)
-                .filter(clazz -> !Modifier.isAbstract(clazz.getModifiers()))
+                .filter(WebComponentExporterUtils::isFactoryInstantiatable)
                 .filter(clazz -> !clazz
                         .equals(DefaultWebComponentExporterFactory.class))
                 .map(ReflectTools::createInstance)
                 .map(WebComponentExporterFactory.class::cast)
                 .forEach(factories::add);
         return factories;
+    }
+
+    private static boolean isFactoryInstantiatable(Class<?> clazz) {
+        if (Modifier.isAbstract(clazz.getModifiers())) {
+            return false;
+        }
+        if (clazz.getTypeParameters().length > 1) {
+            getLogger().warn(
+                    "{} factory class is generic (has type parameters) and not abstract. "
+                            + "Since factory is instantiated using reflection "
+                            + "the real type won't be provided and as a result "
+                            + "it will be either useless during runtime or "
+                            + "if it's a web component type there will be an exception "
+                            + "during instantiation. Consider either making your class non-generic or abstract",
+                    clazz.getName());
+        }
+        return true;
     }
 
     private static boolean isEligible(Class<?> clazz) {
