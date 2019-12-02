@@ -26,8 +26,8 @@ import java.util.Set;
 import org.apache.commons.io.IOUtils;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.internal.ExportsWebComponent;
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.shared.util.SharedUtil;
 
@@ -37,8 +37,6 @@ import elemental.json.JsonValue;
 /**
  * Generates a client-side web component from a Java class.
  * <p>
- * Current implementation will create a Polymer 2 component that can be served
- * to the client.
  *
  * @author Vaadin Ltd.
  * @since 2.0
@@ -83,10 +81,10 @@ public class WebComponentGenerator {
     }
 
     /**
-     * Generate web component html/JS for given exporter class.
+     * Generate web component html/JS for given exporter factory.
      *
-     * @param exporterClass
-     *            web component exporter class, not {@code null}
+     * @param factory
+     *            web component exporter factory, not {@code null}
      * @param frontendURI
      *            the frontend resources URI, not {@code null}
      * @param compatibilityMode
@@ -95,13 +93,13 @@ public class WebComponentGenerator {
      * @return generated web component html/JS to be served to the client
      */
     public static String generateModule(
-            Class<? extends ExportsWebComponent<? extends Component>> exporterClass,
-                    String frontendURI, boolean compatibilityMode) {
-        Objects.requireNonNull(exporterClass);
+            WebComponentExporterFactory<? extends Component> factory,
+            String frontendURI, boolean compatibilityMode) {
+        Objects.requireNonNull(factory);
         Objects.requireNonNull(frontendURI);
 
         WebComponentConfiguration<? extends Component> config = new WebComponentExporter.WebComponentConfigurationFactory()
-                .create(exporterClass);
+                .create(factory.create());
 
         return generateModule(config, frontendURI, false, compatibilityMode);
     }
@@ -172,7 +170,7 @@ public class WebComponentGenerator {
 
         replacements.put("ui_import",
                 generateUiImport
-                ? "<link rel='import' href='web-component-ui.html'>"
+                        ? "<link rel='import' href='web-component-ui.html'>"
                         : "");
 
         return replacements;
@@ -256,8 +254,8 @@ public class WebComponentGenerator {
             throw new UnsupportedPropertyTypeException(String.format(
                     "%s is not a currently supported type for a Property."
                             + " Please use %s instead.",
-                            property.getType().getSimpleName(),
-                            JsonValue.class.getSimpleName()));
+                    property.getType().getSimpleName(),
+                    JsonValue.class.getSimpleName()));
         }
         if (value == null) {
             value = "null";
@@ -285,15 +283,17 @@ public class WebComponentGenerator {
     }
 
     /**
-     * Gets JavaScript type name for {@link com.vaadin.flow.server.webcomponent.PropertyData}
-     * for usage in generated JavaScript code.
+     * Gets JavaScript type name for
+     * {@link com.vaadin.flow.server.webcomponent.PropertyData} for usage in
+     * generated JavaScript code.
      *
      * @return the type for JS
      */
     private static String getJSTypeName(PropertyData<?> propertyData) {
         if (propertyData.getType() == Boolean.class) {
             return "Boolean";
-        } else if (propertyData.getType() == Double.class || propertyData.getType() == Integer.class) {
+        } else if (propertyData.getType() == Double.class
+                || propertyData.getType() == Integer.class) {
             return "Number";
         } else if (propertyData.getType() == String.class) {
             return "String";
@@ -302,7 +302,8 @@ public class WebComponentGenerator {
         } else if (JsonValue.class.isAssignableFrom(propertyData.getType())) {
             return "Object";
         } else {
-            throw new IllegalStateException("Unsupported type: " + propertyData.getType());
+            throw new IllegalStateException(
+                    "Unsupported type: " + propertyData.getType());
         }
     }
 

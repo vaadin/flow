@@ -38,8 +38,10 @@ import org.mockito.MockitoAnnotations;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.WebComponentExporterFactory.DefaultWebComponentExporterFactory;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.webcomponent.WebComponent;
+import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
@@ -106,6 +108,9 @@ public class WebComponentProviderTest {
                 .thenReturn(configuration);
 
         VaadinServletService service = Mockito.mock(VaadinServletService.class);
+        Mockito.doCallRealMethod().when(service)
+                .getContextRootRelativePath(Mockito.any());
+
         Mockito.doCallRealMethod().when(service)
                 .getContextRootRelativePath(Mockito.any());
 
@@ -292,6 +297,7 @@ public class WebComponentProviderTest {
                 .getEmbeddedApplicationAnnotation(Push.class).get().value());
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @SafeVarargs
     private final WebComponentConfigurationRegistry setupConfigurations(
             Class<? extends WebComponentExporter<? extends Component>>... exporters) {
@@ -303,7 +309,11 @@ public class WebComponentProviderTest {
         WebComponentExporter.WebComponentConfigurationFactory factory = new WebComponentExporter.WebComponentConfigurationFactory();
 
         registry.setConfigurations(
-                set.stream().map(factory::create).collect(Collectors.toSet()));
+                (Set<WebComponentConfiguration<? extends Component>>) set
+                        .stream()
+                        .map(clazz -> new DefaultWebComponentExporterFactory(
+                                clazz).create())
+                        .map(factory::create).collect(Collectors.toSet()));
 
         return registry;
     }

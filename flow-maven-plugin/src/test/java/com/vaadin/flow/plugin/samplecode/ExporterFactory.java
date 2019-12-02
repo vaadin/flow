@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2019 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -13,29 +13,31 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package com.vaadin.flow.plugin.samplecode;
 
-package com.vaadin.flow.webcomponent;
-
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.component.webcomponent.WebComponent;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.PWA;
 
-@PWA(name = "Client select exporter", shortName = "Client select")
-@Route
-public class ClientSelectExporter
-        extends WebComponentExporter<ClientSelectComponent> {
+public class ExporterFactory implements WebComponentExporterFactory<Component> {
 
-    public ClientSelectExporter() {
-        super("client-select");
-        addProperty("show", false)
-                .onChange(ClientSelectComponent::setMessageVisible);
+    private class InnerExporter extends WebComponentExporter<Component> {
+
+        private InnerExporter(String tag) {
+            super(tag);
+        }
+
+        @Override
+        protected void configureInstance(WebComponent<Component> webComponent,
+                Component component) {
+        }
+
     }
 
     @Override
-    public void configureInstance(
-            WebComponent<ClientSelectComponent> webComponent,
-            ClientSelectComponent component) {
-
+    public WebComponentExporter<Component> create() {
+        return new InnerExporter("wc-foo-bar");
     }
+
 }
