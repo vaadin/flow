@@ -15,18 +15,16 @@
  */
 package com.vaadin.flow.webcomponent;
 
-import java.util.List;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
-import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
-public class PreserveOnRefreshIT extends ChromeBrowserTest {
+public class PreserveOnRefreshIT extends ChromeBrowserTest implements HasById {
     private static final String MODIFIED = "modified";
     private static final String UNMODIFIED = "unmodified";
     private static final String NO_PRESERVE = "nopreserve";
@@ -146,7 +144,7 @@ public class PreserveOnRefreshIT extends ChromeBrowserTest {
 
         final String TEXT_CONTENTS = "black cat";
 
-        WebElement noIdElement = findTagWithoutId(PRESERVE_ON_REFRESH_TAG);
+        TestBenchElement noIdElement = findTagWithoutId(PRESERVE_ON_REFRESH_TAG);
 
         Assert.assertEquals(MODIFIED + " input should be empty", "",
                 getValue(MODIFIED));
@@ -170,27 +168,27 @@ public class PreserveOnRefreshIT extends ChromeBrowserTest {
                 getValue(NEW_ID));
 
         // same place, no assigned id
-        WebElement noIdElement2 = findTagWithoutId(PRESERVE_ON_REFRESH_TAG);
+        TestBenchElement noIdElement2 = findTagWithoutId(PRESERVE_ON_REFRESH_TAG);
         Assert.assertEquals("Input without id should have preserved state",
                 TEXT_CONTENTS, getValue(noIdElement2));
     }
 
     private String getValue(String id) {
-        WebElement element = findElement(By.id(id));
+        TestBenchElement element = byId(id);
         return getValue(element);
     }
 
-    private String getValue(WebElement element) {
-        return element.findElement(By.id(INTERNAL_INPUT_ID)).getAttribute("value");
+    private String getValue(TestBenchElement element) {
+        return byId(element, INTERNAL_INPUT_ID).getAttribute("value");
     }
 
     private void writeInInput(String id, String text) {
-        WebElement element = findElement(By.id(id));
+        TestBenchElement element = byId(id);
         writeInInput(element, text);
     }
 
-    private void writeInInput(WebElement element, String text) {
-        element.findElement(By.id(INTERNAL_INPUT_ID)).sendKeys(text, Keys.ENTER);
+    private void writeInInput(TestBenchElement element, String text) {
+        byId(element, INTERNAL_INPUT_ID).sendKeys(text, Keys.ENTER);
     }
 
     private void refreshPage() {
@@ -204,10 +202,8 @@ public class PreserveOnRefreshIT extends ChromeBrowserTest {
         waitForElementVisible(By.id(MODIFIED));
     }
     
-    private WebElement findTagWithoutId(String tag) {
-        List<WebElement> preserveOnRefreshElements = findElements(
-                By.tagName(tag));
-        return preserveOnRefreshElements.stream()
+    private TestBenchElement findTagWithoutId(String tag) {
+        return $(tag).all().stream()
                 .filter(webElement -> webElement.getAttribute("id").isEmpty())
                 .findFirst().get();
     }
