@@ -128,7 +128,7 @@ public class TaskUpdatePackages extends NodeUpdater {
         // Remove obsolete dependencies
         JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
         List<String> dependencyCollection = Stream.concat(deps.entrySet().stream(),
-                getDefaultDependencies(POLYMER_VERSION).entrySet().stream())
+                getDefaultDependencies().entrySet().stream())
                 .map(Entry::getKey).collect(Collectors.toList());
 
         JsonObject vaadinDependencies = packageJson.getObject(VAADIN_DEP_KEY)

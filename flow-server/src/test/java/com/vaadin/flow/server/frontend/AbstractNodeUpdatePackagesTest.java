@@ -76,7 +76,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         NodeUpdateTestUtil
                 .createStubNode(true, true, baseDir.getAbsolutePath());
 
-        packageCreator = new TaskCreatePackageJson(baseDir, generatedDir, null);
+        packageCreator = new TaskCreatePackageJson(baseDir, generatedDir);
 
         ClassFinder classFinder = getClassFinder();
         packageUpdater = new TaskUpdatePackages(classFinder,
@@ -614,7 +614,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         JsonObject dependencies = json.getObject(DEPENDENCIES);
         for (Map.Entry<String, String> entry : NodeUpdater
-                .getDefaultDependencies(NodeUpdater.POLYMER_VERSION)
+                .getDefaultDependencies()
                 .entrySet()) {
             Assert.assertTrue("Missing '" + entry.getKey() + "' package",
                     dependencies.hasKey(entry.getKey()));

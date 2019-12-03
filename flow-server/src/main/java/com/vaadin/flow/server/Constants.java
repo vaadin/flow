@@ -216,11 +216,6 @@ public final class Constants implements Serializable {
     public static final String SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE = "devmode.optimizeBundle";
 
     /**
-     * Configuration parameter name for polymer version.
-     */
-    public static final String SERVLET_PARAMETER_DEVMODE_POLYMER_VERSION = "devmode.polymer.version";
-
-    /**
      * The path used in the vaadin servlet for handling static resources.
      */
     public static final String META_INF = "META-INF/";

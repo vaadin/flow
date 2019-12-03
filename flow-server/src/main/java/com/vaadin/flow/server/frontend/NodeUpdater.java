@@ -212,7 +212,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         // Add default dependencies
         JsonObject dependencies = vaadinPackages.getObject(DEPENDENCIES);
-        getDefaultDependencies(POLYMER_VERSION).forEach(dependencies::put);
+        getDefaultDependencies().forEach(dependencies::put);
 
         // Add default developmentDependencies
         JsonObject devDependencies = vaadinPackages.getObject(DEV_DEPENDENCIES);
@@ -222,12 +222,11 @@ public abstract class NodeUpdater implements FallibleCommand {
         return vaadinPackages;
     }
 
-    static Map<String, String> getDefaultDependencies(String polymerVersion) {
-        Objects.requireNonNull(polymerVersion, "Polymer version is required");
+    static Map<String, String> getDefaultDependencies() {
 
         Map<String, String> defaults = new HashMap<>();
 
-        defaults.put("@polymer/polymer", polymerVersion);
+        defaults.put("@polymer/polymer", POLYMER_VERSION);
         defaults.put("@webcomponents/webcomponentsjs", "^2.2.10");
 
         return defaults;
@@ -249,36 +248,18 @@ public abstract class NodeUpdater implements FallibleCommand {
     }
 
     /**
-     * Update default dependencies with the framework default polymer version.
-     *
-     * @param packageJson
-     *         package.json object to update
-     * @return true if items were added or removed from the json
-     */
-    boolean updateDefaultDependencies(JsonObject packageJson) {
-        return updateDefaultDependencies(packageJson, POLYMER_VERSION);
-    }
-
-    /**
      * Updates default dependencies and development dependencies to
      * package.json.
      *
      * @param packageJson
      *         package.json json object to update with dependencies
-     * @param polymerVersion
-     *         user set polymer dependency, {@code null} for framework default
      * @return true if items were added or removed from the {@code packageJson}
      */
-    boolean updateDefaultDependencies(JsonObject packageJson,
-            String polymerVersion) {
+    boolean updateDefaultDependencies(JsonObject packageJson) {
         int added = 0;
 
-        if(polymerVersion == null) {
-            polymerVersion = POLYMER_VERSION;
-        }
-
         for (Map.Entry<String, String> entry : getDefaultDependencies(
-                polymerVersion).entrySet()) {
+                ).entrySet()) {
             added += addDependency(packageJson, DEPENDENCIES, entry.getKey(),
                     entry.getValue());
         }

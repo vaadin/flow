@@ -193,21 +193,6 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     }
 
     @Test
-    public void initDevModeHandler_usePolymerVersion() throws Exception {
-        DevModeInitializer devModeInitializer = new DevModeInitializer();
-        initParams.put(Constants.SERVLET_PARAMETER_DEVMODE_POLYMER_VERSION,
-                "3.3.0");
-        devModeInitializer.onStartup(Collections.emptySet(), servletContext);
-
-        String packageJson = Files
-                .readAllLines(mainPackageFile.toPath(), StandardCharsets.UTF_8)
-                .stream().collect(Collectors.joining());
-        JsonObject json = Json.parse(packageJson);
-        JsonObject deps = json.get("dependencies");
-        Assert.assertEquals("3.3.0", deps.getString("@polymer/polymer"));
-    }
-
-    @Test
     public void shouldUseFullPathScannerByDefault() throws Exception {
         DevModeInitializer devModeInitializer = new DevModeInitializer();
         final Set<Class<?>> classes = new HashSet<>();

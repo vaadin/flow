@@ -28,8 +28,6 @@ import elemental.json.JsonObject;
  */
 public class TaskCreatePackageJson extends NodeUpdater {
 
-    private final String polymerVersion;
-
     /**
      * Create an instance of the updater given all configurable parameters.
      *
@@ -37,14 +35,9 @@ public class TaskCreatePackageJson extends NodeUpdater {
      *            folder with the `package.json` file.
      * @param generatedPath
      *            folder where flow generated files will be placed.
-     * @param polymerVersion
-     *            polymer version, may be {@code null} ({@code "3.2.0"} by
-     *            default)
      */
-    TaskCreatePackageJson(File npmFolder, File generatedPath,
-            String polymerVersion) {
+    TaskCreatePackageJson(File npmFolder, File generatedPath) {
         super(null, null, npmFolder, generatedPath);
-        this.polymerVersion = polymerVersion;
     }
 
     @Override
@@ -52,8 +45,7 @@ public class TaskCreatePackageJson extends NodeUpdater {
         try {
             modified = false;
             JsonObject mainContent = getPackageJson();
-            modified = updateDefaultDependencies(mainContent,
-                    polymerVersion);
+            modified = updateDefaultDependencies(mainContent);
             if (modified) {
                 writePackageFile(mainContent);
             }
