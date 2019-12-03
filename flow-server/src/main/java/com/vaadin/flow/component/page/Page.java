@@ -37,6 +37,7 @@ import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.Dependency.Type;
@@ -299,7 +300,12 @@ public class Page implements Serializable {
      */
     @Deprecated
     public void addJsModule(String url, LoadMode loadMode) {
-        addDependency(new Dependency(Type.JS_MODULE, url, loadMode));
+        if (UrlUtil.isExternal(url) || url.startsWith("/")) {
+            addDependency(new Dependency(Type.JS_MODULE, url, loadMode));
+        } else {
+            throw new IllegalArgumentException(
+                    "url argument must contains either a protocol (eg. starts with \"http://\" or \"//\"), or starts with \"/\".");
+        }
     }
 
     /**
