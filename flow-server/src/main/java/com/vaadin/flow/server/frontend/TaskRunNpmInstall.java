@@ -64,7 +64,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
             assert installedPackages != null;
             return installedPackages.length == 0
                     || (installedPackages.length == 1 && FLOW_NPM_PACKAGE_NAME
-                            .startsWith(installedPackages[0].getName()));
+                    .startsWith(installedPackages[0].getName()));
         }
         return true;
     }

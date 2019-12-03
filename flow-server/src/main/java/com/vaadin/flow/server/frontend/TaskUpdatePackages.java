@@ -27,6 +27,8 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -34,11 +36,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.dependency.NpmPackage;
-import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
-import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
@@ -52,7 +52,6 @@ import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
  */
 public class TaskUpdatePackages extends NodeUpdater {
 
-    static final String APP_PACKAGE_HASH = "vaadinAppPackageHash";
     private static final String VERSION = "version";
     private static final String SHRINK_WRAP = "@vaadin/vaadin-shrinkwrap";
     private boolean forceCleanUp;
@@ -79,16 +78,16 @@ public class TaskUpdatePackages extends NodeUpdater {
      * Create an instance of the updater given all configurable parameters.
      *
      * @param finder
-     *            a reusable class finder
+     *         a reusable class finder
      * @param frontendDependencies
-     *            a reusable frontend dependencies
+     *         a reusable frontend dependencies
      * @param npmFolder
-     *            folder with the `package.json` file
+     *         folder with the `package.json` file
      * @param generatedPath
-     *            folder where flow generated files will be placed.
+     *         folder where flow generated files will be placed.
      * @param forceCleanUp
-     *            forces the clean up process to be run. If {@code false}, clean
-     *            up will be performed when platform version update is detected.
+     *         forces the clean up process to be run. If {@code false}, clean
+     *         up will be performed when platform version update is detected.
      */
     TaskUpdatePackages(ClassFinder finder,
             FrontendDependenciesScanner frontendDependencies, File npmFolder,
@@ -101,44 +100,14 @@ public class TaskUpdatePackages extends NodeUpdater {
     public void execute() {
         try {
             Map<String, String> deps = frontDeps.getPackages();
-            JsonObject packageJson = getAppPackageJson();
-            if (packageJson == null) {
-                packageJson = Json.createObject();
+            JsonObject packageJson = getPackageJson();
+            modified = updatePackageJsonDependencies(packageJson, deps);
+            if (modified) {
+                writePackageFile(packageJson);
             }
-            boolean isModified = updatePackageJsonDependencies(packageJson,
-                    deps);
-            if (isModified) {
-                writeAppPackageFile(packageJson);
-            }
-            modified = checkPackageHash(packageJson);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
-    }
-
-    /**
-     * Check and update the main package hash in all cases as we might have
-     * updated the main package with new dependencies.
-     *
-     * @param packageJson
-     *            application package json
-     * @return true if hash has changed
-     * @throws IOException
-     *             thrown from write exception
-     */
-    private boolean checkPackageHash(JsonObject packageJson)
-            throws IOException {
-        String content = "";
-        // If we have dependencies generate hash on ordered content.
-        if (packageJson.hasKey("dependencies")) {
-            JsonObject dependencies = packageJson.getObject("dependencies");
-            content = Stream.of(dependencies.keys())
-                    .map(key -> String.format("\"%s\": \"%s\"", key,
-                            dependencies.get(key).asString()))
-                    .sorted(String::compareToIgnoreCase)
-                    .collect(Collectors.joining(",\n  "));
-        }
-        return updateAppPackageHash(getHash(content));
     }
 
     private boolean updatePackageJsonDependencies(JsonObject packageJson,
@@ -158,21 +127,39 @@ public class TaskUpdatePackages extends NodeUpdater {
 
         // Remove obsolete dependencies
         JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
+        List<String> dependencyCollection = Stream.concat(deps.entrySet().stream(),
+                getDefaultDependencies().entrySet().stream())
+                .map(Entry::getKey).collect(Collectors.toList());
+
+        JsonObject vaadinDependencies = packageJson.getObject(VAADIN_DEP_KEY)
+                .getObject(DEPENDENCIES);
         boolean doCleanUp = forceCleanUp;
+        int removed = 0;
         if (dependencies != null) {
             for (String key : dependencies.keys()) {
-                if (!deps.containsKey(key)) {
+                if (!dependencyCollection.contains(key) && vaadinDependencies.hasKey(key)) {
                     dependencies.remove(key);
+                    log().debug("Removed \"{}\".", key);
+                    removed++;
                 }
             }
             doCleanUp = doCleanUp || !ensureReleaseVersion(dependencies);
+        }
+
+        if (removed > 0) {
+            log().info("Removed {} dependencies", removed);
         }
 
         if (doCleanUp) {
             cleanUp();
         }
 
-        return added > 0;
+        String oldHash = packageJson.getObject(VAADIN_DEP_KEY).getString(HASH_KEY);
+        String newHash = generatePackageJsonHash(packageJson);
+        // update packageJson hash value, if no changes it will not be written
+        packageJson.getObject(VAADIN_DEP_KEY).put(HASH_KEY, newHash);
+
+        return added > 0 || removed > 0 || !oldHash.equals(newHash);
     }
 
     /**
@@ -183,7 +170,7 @@ public class TaskUpdatePackages extends NodeUpdater {
      * target/frontend/node_modules folders in case the versions are different.
      *
      * @param dependencies
-     *            dependencies object with the vaadin-shrinkwrap version
+     *         dependencies object with the vaadin-shrinkwrap version
      * @throws IOException
      */
     private boolean ensureReleaseVersion(JsonObject dependencies)
@@ -197,7 +184,7 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     private void cleanUp() throws IOException {
-        File packageLock = getPackageLock();
+        File packageLock = getPackageLockFile();
         if (packageLock.exists()) {
             if (!packageLock.delete()) {
                 throw new IOException("Could not remove "
@@ -220,19 +207,7 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     private String getCurrentShrinkWrapVersion() throws IOException {
-        String shrinkWrapVersion = getShrinkWrapVersion(getMainPackageJson());
-        if (shrinkWrapVersion != null) {
-            return shrinkWrapVersion;
-        }
-
-        shrinkWrapVersion = getShrinkWrapVersion(getAppPackageJson());
-        if (shrinkWrapVersion != null) {
-            return shrinkWrapVersion;
-        }
-
-        File flowDeps = new File(nodeModulesFolder, DEP_NAME_FLOW_DEPS);
-        shrinkWrapVersion = getShrinkWrapVersion(
-                getPackageJson(new File(flowDeps, Constants.PACKAGE_JSON)));
+        String shrinkWrapVersion = getShrinkWrapVersion(getPackageJson());
         if (shrinkWrapVersion != null) {
             return shrinkWrapVersion;
         }
@@ -242,11 +217,11 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     private String getPackageLockShrinkWrapVersion() throws IOException {
-        File packageLock = getPackageLock();
+        File packageLock = getPackageLockFile();
         if (!packageLock.exists()) {
             return null;
         }
-        JsonObject packageLockJson = getPackageJson(packageLock);
+        JsonObject packageLockJson = getJsonFileContent(packageLock);
         if (packageLockJson == null) {
             return null;
         }
@@ -265,12 +240,11 @@ public class TaskUpdatePackages extends NodeUpdater {
         return null;
     }
 
-    private File getPackageLock() {
+    private File getPackageLockFile() {
         return new File(npmFolder, "package-lock.json");
     }
 
-    private String getShrinkWrapVersion(JsonObject packageJson)
-            throws IOException {
+    private String getShrinkWrapVersion(JsonObject packageJson) {
         if (packageJson == null) {
             return null;
         }
@@ -284,7 +258,49 @@ public class TaskUpdatePackages extends NodeUpdater {
         return null;
     }
 
-    private String getHash(String content) {
+    /**
+     * Generate hash for package dependencies. This will consider both
+     * 'dependencies' and 'devDependencies' of the packageJson format
+     * JsonObject.
+     * <p>
+     * Dependencies will be sorted by key so that different runs for same
+     * dependencies in different order will not trigger npm install.
+     *
+     * @param packageJson
+     *         JsonObject built in the same format as package.json
+     * @return has for dependencies and devDependencies
+     */
+    static String generatePackageJsonHash(JsonObject packageJson) {
+        StringBuilder hashContent = new StringBuilder();
+        if (packageJson.hasKey(DEPENDENCIES)) {
+            JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
+            hashContent.append("\"dependencies\": {");
+            String sortedDependencies = Arrays.stream(dependencies.keys())
+                    .sorted(String::compareToIgnoreCase).map(key -> String
+                            .format("\"%s\": \"%s\"", key,
+                                    dependencies.getString(key)))
+                    .collect(Collectors.joining(",\n  "));
+            hashContent.append(sortedDependencies);
+            hashContent.append("}");
+        }
+        if (packageJson.hasKey(DEV_DEPENDENCIES)) {
+            if(hashContent.length() > 0) {
+                hashContent.append(",\n");
+            }
+            JsonObject devDependencies = packageJson.getObject(DEV_DEPENDENCIES);
+            hashContent.append("\"devDependencies\": {");
+            String sortedDevDependencies = Arrays.stream(devDependencies.keys())
+                    .sorted(String::compareToIgnoreCase).map(key -> String
+                            .format("\"%s\": \"%s\"", key,
+                                    devDependencies.getString(key)))
+                    .collect(Collectors.joining(",\n  "));
+            hashContent.append(sortedDevDependencies);
+            hashContent.append("}");
+        }
+        return getHash(hashContent.toString());
+    }
+
+    private static String getHash(String content) {
         if (content.isEmpty()) {
             return content;
         }
@@ -293,27 +309,13 @@ public class TaskUpdatePackages extends NodeUpdater {
             return bytesToHex(
                     digest.digest(content.getBytes(StandardCharsets.UTF_8)));
         } catch (NoSuchAlgorithmException e) {
-            // Unrecoverable runime exception, it may not happen
+            // Unrecoverable runtime exception, that can not happen
             throw new RuntimeException(
                     "Unable to find a provider for SHA-256 algorithm", e);
         }
     }
 
-    private boolean updateAppPackageHash(String hash) throws IOException {
-        JsonObject mainContent = getMainPackageJson();
-        if (mainContent == null) {
-            mainContent = Json.createObject();
-        }
-        boolean modified = !mainContent.hasKey(APP_PACKAGE_HASH)
-                || !hash.equals(mainContent.getString(APP_PACKAGE_HASH));
-        if (modified) {
-            mainContent.put(APP_PACKAGE_HASH, hash);
-            writeMainPackageFile(mainContent);
-        }
-        return modified;
-    }
-
-    private String bytesToHex(byte[] hash) {
+    private static String bytesToHex(byte[] hash) {
         StringBuilder result = new StringBuilder();
         for (byte bit : hash) {
             String hex = Integer.toHexString(0xff & bit);
@@ -324,4 +326,5 @@ public class TaskUpdatePackages extends NodeUpdater {
         }
         return result.toString();
     }
+
 }

@@ -17,7 +17,6 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -90,7 +89,7 @@ public class TaskRunNpmInstallTest {
 
     @Test
     public void runNpmInstall_dirContainsOnlyFlowNpmPackage_npmInstallIsNotExecuted()
-            throws IOException, ExecutionFailedException {
+            throws ExecutionFailedException {
         File nodeModules = new File(npmFolder, NODE_MODULES);
         nodeModules.mkdir();
         new File(nodeModules, "@vaadin/flow-frontend/").mkdirs();

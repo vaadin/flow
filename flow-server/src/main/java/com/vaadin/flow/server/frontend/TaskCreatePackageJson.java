@@ -19,10 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 
-import elemental.json.Json;
 import elemental.json.JsonObject;
-
-import static com.vaadin.flow.server.frontend.TaskUpdatePackages.APP_PACKAGE_HASH;
 
 /**
  * Creates the <code>package.json</code> if missing.
@@ -31,10 +28,6 @@ import static com.vaadin.flow.server.frontend.TaskUpdatePackages.APP_PACKAGE_HAS
  */
 public class TaskCreatePackageJson extends NodeUpdater {
 
-    protected static final String FORCE_INSTALL_HASH = "Main dependencies updated, force install";
-
-    private final String polymerVersion;
-
     /**
      * Create an instance of the updater given all configurable parameters.
      *
@@ -42,42 +35,19 @@ public class TaskCreatePackageJson extends NodeUpdater {
      *            folder with the `package.json` file.
      * @param generatedPath
      *            folder where flow generated files will be placed.
-     * @param polymerVersion
-     *            polymer version, may be {@code null} ({@code "3.2.0"} by
-     *            default)
      */
-    TaskCreatePackageJson(File npmFolder, File generatedPath,
-            String polymerVersion) {
+    TaskCreatePackageJson(File npmFolder, File generatedPath) {
         super(null, null, npmFolder, generatedPath);
-        this.polymerVersion = polymerVersion;
     }
 
     @Override
     public void execute() {
         try {
             modified = false;
-            JsonObject mainContent = getMainPackageJson();
-            if (mainContent == null) {
-                mainContent = Json.createObject();
-            }
-            modified = updateMainDefaultDependencies(mainContent,
-                    polymerVersion);
+            JsonObject mainContent = getPackageJson();
+            modified = updateDefaultDependencies(mainContent);
             if (modified) {
-                if (mainContent.hasKey(APP_PACKAGE_HASH)) {
-                    log().debug(
-                            "Main dependencies updated. Forcing npm install.");
-                    mainContent.put(APP_PACKAGE_HASH, FORCE_INSTALL_HASH);
-                } else {
-                    mainContent.put(APP_PACKAGE_HASH, "");
-                }
-                writeMainPackageFile(mainContent);
-            }
-            JsonObject customContent = getAppPackageJson();
-            if (customContent == null) {
-                customContent = Json.createObject();
-                updateAppDefaultDependencies(customContent);
-                writeAppPackageFile(customContent);
-                modified = true;
+                writePackageFile(mainContent);
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
