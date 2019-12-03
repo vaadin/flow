@@ -131,8 +131,7 @@ public class BuildFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "runNpmInstall", false);
         ReflectionUtils.setVariableValueInObject(mojo, "compatibilityMode",
                 "false");
-        ReflectionUtils.setVariableValueInObject(mojo, "optimizeBundle",
-                true);
+        ReflectionUtils.setVariableValueInObject(mojo, "optimizeBundle", true);
 
         flowPackagPath.mkdirs();
         generatedFolder.mkdirs();

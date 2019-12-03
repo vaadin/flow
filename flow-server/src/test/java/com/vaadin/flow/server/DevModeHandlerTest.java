@@ -226,34 +226,6 @@ public class DevModeHandlerTest {
         assertNull(DevModeHandler.start(configuration, npmFolder));
     }
 
-    // @Test
-    // public void pnpmIsEnabled_handlesJavaScriptRequestsAndPnpmIsAvaiable() {
-    // HttpServletRequest request = prepareRequest("/foo.js");
-    // assertTrue(DevModeHandler.start(configuration, npmFolder)
-    // .isDevModeRequest(request));
-    //
-    // List<String> pnpmExecutable = FrontendUtils
-    // .getPnpmExecutable(npmFolder.getPath(), false);
-    // Assert.assertFalse(pnpmExecutable.isEmpty());
-    // }
-    //
-    // @Test
-    // public void
-    // pnpmIsDisabled_doesNotandleOtherRequestsAndPnpmToolIsNotChanged() {
-    // List<String> pnpmExecutable = FrontendUtils
-    // .getPnpmExecutable(npmFolder.getPath(), false);
-    //
-    // configuration.setApplicationOrSystemProperty(
-    // Constants.SERVLET_PARAMETER_DISABLE_PNPM,
-    // Boolean.TRUE.toString());
-    // HttpServletRequest request = prepareRequest("/foo.bar");
-    // assertFalse(DevModeHandler.start(configuration, npmFolder)
-    // .isDevModeRequest(request));
-    //
-    // Assert.assertEquals(pnpmExecutable,
-    // FrontendUtils.getPnpmExecutable(npmFolder.getPath(), false));
-    // }
-
     @Test(expected = ConnectException.class)
     public void should_ThrowAnException_When_WebpackNotListening()
             throws IOException {
