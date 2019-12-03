@@ -120,9 +120,6 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
     @Parameter(defaultValue = "${project.basedir}/frontend")
     private File frontendDirectory;
 
-    @Parameter(property = "disable.pnpm", defaultValue = "false")
-    private boolean disablePnpm;
-
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         super.execute();
@@ -140,7 +137,6 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         try {
             FrontendUtils
                     .validateNodeAndNpmVersion(npmFolder.getAbsolutePath());
-            FrontendUtils.ensurePnpm(npmFolder.getAbsolutePath(), !disablePnpm);
         } catch (IllegalStateException exception) {
             throw new MojoExecutionException(exception.getMessage(), exception);
         }
