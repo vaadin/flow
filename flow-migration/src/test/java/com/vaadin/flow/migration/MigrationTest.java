@@ -112,6 +112,13 @@ public class MigrationTest {
     public void migrateNpmPassesHappyPath() throws MigrationFailureException,
             MigrationToolsException, IOException {
         Mockito.when(configuration.isPnpmDisabled()).thenReturn(true);
+        // Expected execution calls:
+        // 1 - npm --no-update-notifier install polymer-modulizer
+        // 2 - node {tempFolder} i -F --confid.interactive=false -S
+        // polymer#2.8.0
+        // 3 - npm --no-update-notifier i
+        // 4 - node node_modules/polymer-modulizer/bin/modulizer.js --force
+        // --out , --import-style=name
         migratePassesHappyPath(Stream.of(4, 7, 3, 6)
                 .collect(Collectors.toCollection(LinkedList::new)));
     }
@@ -120,7 +127,14 @@ public class MigrationTest {
     public void migratePnpmPassesHappyPath() throws MigrationFailureException,
             MigrationToolsException, IOException {
         Mockito.when(configuration.isPnpmDisabled()).thenReturn(false);
-        migratePassesHappyPath(Stream.of(3, 7, 2, 6)
+        // Expected execution calls:
+        // 1 - pnpm --shamefully-hoist=true install polymer-modulizer
+        // 2 - node {tempFolder} i -F --confid.interactive=false -S
+        // polymer#2.8.0
+        // 3 - pnpm --shamefully-hoist=true i
+        // 4 - node node_modules/polymer-modulizer/bin/modulizer.js --force
+        // --out , --import-style=name
+        migratePassesHappyPath(Stream.of(4, 7, 3, 6)
                 .collect(Collectors.toCollection(LinkedList::new)));
     }
 
@@ -145,14 +159,6 @@ public class MigrationTest {
                         Paths.get(sourcesFolder.getPath(), "bar").toFile() });
         Mockito.when(configuration.getCompiledClassDirectory()).thenReturn(
                 Paths.get(sourcesFolder.getPath(), "foobar").toFile());
-
-        // Expected execution calls:
-        // 1 - npm --no-update-notifier install polymer-modulizer
-        // 2 - node {tempFolder} i -F --confid.interactive=false -S
-        // polymer#2.8.0
-        // 3 - npm --no-update-notifier i
-        // 4 - node node_modules/polymer-modulizer/bin/modulizer.js --force
-        // --out , --import-style=name
 
         Migration migration = new Migration(configuration) {
             @Override
