@@ -255,9 +255,9 @@ public class ElementUtil {
         } else if (node instanceof org.jsoup.nodes.Element) {
             ret = new Element(((org.jsoup.nodes.Element)node).tagName());
         } else {
-            LoggerFactory.getLogger(ElementUtil.class).error(String.format(
-                    "Could not convert a %s, '%s' into %s!",
-                    Node.class.getName(), node, Element.class.getName()));
+            LoggerFactory.getLogger(ElementUtil.class).error(
+                    "Could not convert a {}, '{}' into {}!",
+                    Node.class.getName(), node, Element.class.getName());
             return Optional.empty();
         }
 

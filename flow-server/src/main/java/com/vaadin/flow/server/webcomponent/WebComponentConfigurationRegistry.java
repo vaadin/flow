@@ -395,12 +395,4 @@ public class WebComponentConfigurationRegistry implements Serializable {
         // Element created from the copied StateNode
         return copyElement;
     }
-
-    private static Serializable assertNotStateNode(
-            Serializable serializable) {
-        assert !(serializable instanceof StateNode) : "Serializable should "
-                + "not be a " + StateNode.class.getName() + " in this case!";
-
-        return serializable;
-    }
 }
