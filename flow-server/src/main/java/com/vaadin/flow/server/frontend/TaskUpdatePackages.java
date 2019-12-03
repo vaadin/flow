@@ -19,11 +19,15 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -48,7 +52,6 @@ import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
  */
 public class TaskUpdatePackages extends NodeUpdater {
 
-    static final String APP_PACKAGE_HASH = "vaadinAppPackageHash";
     private static final String VERSION = "version";
     private static final String SHRINK_WRAP = "@vaadin/vaadin-shrinkwrap";
     private boolean forceCleanUp;
@@ -125,7 +128,7 @@ public class TaskUpdatePackages extends NodeUpdater {
         // Remove obsolete dependencies
         JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
         List<String> dependencyCollection = Stream.concat(deps.entrySet().stream(),
-                getDefaultDependencies(null).entrySet().stream())
+                getDefaultDependencies(POLYMER_VERSION).entrySet().stream())
                 .map(Entry::getKey).collect(Collectors.toList());
 
         JsonObject vaadinDependencies = packageJson.getObject(VAADIN_DEP_KEY)
@@ -143,7 +146,7 @@ public class TaskUpdatePackages extends NodeUpdater {
             doCleanUp = doCleanUp || !ensureReleaseVersion(dependencies);
         }
 
-        if (added > 0) {
+        if (removed > 0) {
             log().info("Removed {} dependencies", removed);
         }
 
@@ -151,7 +154,12 @@ public class TaskUpdatePackages extends NodeUpdater {
             cleanUp();
         }
 
-        return added > 0 || removed > 0;
+        String oldHash = packageJson.getObject(VAADIN_DEP_KEY).getString(HASH_KEY);
+        String newHash = generatePackageJsonHash(packageJson);
+        // update packageJson hash value, if no changes it will not be written
+        packageJson.getObject(VAADIN_DEP_KEY).put(HASH_KEY, newHash);
+
+        return added > 0 || removed > 0 || !oldHash.equals(newHash);
     }
 
     /**
@@ -249,4 +257,74 @@ public class TaskUpdatePackages extends NodeUpdater {
         }
         return null;
     }
+
+    /**
+     * Generate hash for package dependencies. This will consider both
+     * 'dependencies' and 'devDependencies' of the packageJson format
+     * JsonObject.
+     * <p>
+     * Dependencies will be sorted by key so that different runs for same
+     * dependencies in different order will not trigger npm install.
+     *
+     * @param packageJson
+     *         JsonObject built in the same format as package.json
+     * @return has for dependencies and devDependencies
+     */
+    static String generatePackageJsonHash(JsonObject packageJson) {
+        StringBuilder hashContent = new StringBuilder();
+        if (packageJson.hasKey(DEPENDENCIES)) {
+            JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
+            hashContent.append("\"dependencies\": {");
+            String sortedDependencies = Arrays.stream(dependencies.keys())
+                    .sorted(String::compareToIgnoreCase).map(key -> String
+                            .format("\"%s\": \"%s\"", key,
+                                    dependencies.getString(key)))
+                    .collect(Collectors.joining(",\n  "));
+            hashContent.append(sortedDependencies);
+            hashContent.append("}");
+        }
+        if (packageJson.hasKey(DEV_DEPENDENCIES)) {
+            if(hashContent.length() > 0) {
+                hashContent.append(",\n");
+            }
+            JsonObject devDependencies = packageJson.getObject(DEV_DEPENDENCIES);
+            hashContent.append("\"devDependencies\": {");
+            String sortedDevDependencies = Arrays.stream(devDependencies.keys())
+                    .sorted(String::compareToIgnoreCase).map(key -> String
+                            .format("\"%s\": \"%s\"", key,
+                                    devDependencies.getString(key)))
+                    .collect(Collectors.joining(",\n  "));
+            hashContent.append(sortedDevDependencies);
+            hashContent.append("}");
+        }
+        return getHash(hashContent.toString());
+    }
+
+    private static String getHash(String content) {
+        if (content.isEmpty()) {
+            return content;
+        }
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            return bytesToHex(
+                    digest.digest(content.getBytes(StandardCharsets.UTF_8)));
+        } catch (NoSuchAlgorithmException e) {
+            // Unrecoverable runtime exception, that can not happen
+            throw new RuntimeException(
+                    "Unable to find a provider for SHA-256 algorithm", e);
+        }
+    }
+
+    private static String bytesToHex(byte[] hash) {
+        StringBuilder result = new StringBuilder();
+        for (byte bit : hash) {
+            String hex = Integer.toHexString(0xff & bit);
+            if (hex.length() == 1) {
+                result.append('0');
+            }
+            result.append(hex);
+        }
+        return result.toString();
+    }
+
 }

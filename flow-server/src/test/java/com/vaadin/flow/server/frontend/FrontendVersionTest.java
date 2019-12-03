@@ -57,6 +57,28 @@ public class FrontendVersionTest {
                 fromString.equals(fromConstructor));
     }
 
+    @Test
+    public void testIsEqualTo() {
+        FrontendVersion fromString = new FrontendVersion("1.1.0");
+        FrontendVersion fromConstructor = new FrontendVersion(1, 1);
+
+        assertTrue("Parsed string didn't equal constructor",
+                fromString.isEqualTo(fromConstructor));
+        assertTrue("Constructor didn't equal parsed string",
+                fromConstructor.isEqualTo(fromString));
+
+        fromString = new FrontendVersion("1.1.alpha12");
+        fromConstructor = new FrontendVersion(1, 1, 0, "alpha12");
+        assertTrue(
+                "Major-Minor version with build identifier didn't match",
+                fromConstructor.isEqualTo(fromString));
+
+        fromString = new FrontendVersion("12.3.5.alpha12");
+        fromConstructor = new FrontendVersion(12, 3, 5, "alpha12");
+        assertTrue("Full version with build identifier didn't match",
+                fromString.isEqualTo(fromConstructor));
+    }
+
     @Test(expected = NumberFormatException.class)
     public void faultyStringVersion_throwsException() {
         new FrontendVersion("12.0b.1");

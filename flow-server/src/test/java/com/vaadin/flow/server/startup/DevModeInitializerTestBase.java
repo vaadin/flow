@@ -23,6 +23,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.DevModeHandlerTest;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.NodeUpdater;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -118,6 +119,8 @@ public class DevModeInitializerTestBase {
         defaults.put("compression-webpack-plugin", "3.0.0");
         defaults.put("webpack-merge", "4.2.1");
         defaults.put("raw-loader", "3.0.0");
+
+        vaadinPackages.put("hash", "");
 
         packageJson.put("vaadin", vaadinPackages);
 

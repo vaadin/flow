@@ -65,16 +65,9 @@ public class TaskRunNpmInstall implements FallibleCommand {
             File[] installedPackages = packageUpdater.nodeModulesFolder
                     .listFiles();
             assert installedPackages != null;
-
-            if(installedPackages.length == 0) {
-                return true;
-            }
-            List<String> devDependencies = NodeUpdater.getDefaultDevDependencies()
-                    .entrySet().stream().map(Map.Entry::getKey)
-                    .collect(Collectors.toList());
-            Arrays.stream(installedPackages).map(File::getName).forEach(devDependencies::remove);
-            return (installedPackages.length == 1 && FLOW_NPM_PACKAGE_NAME
-                            .startsWith(installedPackages[0].getName())) || !devDependencies.isEmpty();
+            return installedPackages.length == 0
+                    || (installedPackages.length == 1 && FLOW_NPM_PACKAGE_NAME
+                    .startsWith(installedPackages[0].getName()));
         }
         return true;
     }

@@ -20,8 +20,10 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
@@ -71,8 +73,8 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         generatedDir = new File(baseDir, DEFAULT_GENERATED_DIR);
 
-        NodeUpdateTestUtil.createStubNode(true, true,
-                baseDir.getAbsolutePath());
+        NodeUpdateTestUtil
+                .createStubNode(true, true, baseDir.getAbsolutePath());
 
         packageCreator = new TaskCreatePackageJson(baseDir, generatedDir, null);
 
@@ -144,8 +146,8 @@ public abstract class AbstractNodeUpdatePackagesTest
         makeNodeModulesAndPackageLock();
 
         // Change the versions
-        getDependencies(packageUpdater.getPackageJson()).put(SHRINKWRAP,
-                "1.1.1");
+        getDependencies(packageUpdater.getPackageJson())
+                .put(SHRINKWRAP, "1.1.1");
 
         // run it again with existing generated package.json and mismatched
         // versions
@@ -179,9 +181,9 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         // Change the version
         JsonObject json = packageUpdater.getPackageJson();
-        getDependencies(json).put(SHRINKWRAP,
-                "1.1.1");
-        Files.write(packageJson.toPath(), Collections.singletonList(json.toJson()));
+        getDependencies(json).put(SHRINKWRAP, "1.1.1");
+        Files.write(packageJson.toPath(),
+                Collections.singletonList(json.toJson()));
 
         // run it again with existing generated package.json and mismatched
         // versions
@@ -289,22 +291,6 @@ public abstract class AbstractNodeUpdatePackagesTest
     }
 
     @Test
-    public void regenerateAppPackageJson_sameContent_updaterIsNotModified() {
-        packageCreator.execute();
-        packageUpdater.execute();
-
-        // regenerate it (with the same content)
-        packageCreator.execute();
-        packageUpdater.execute();
-
-        // the modified flag should be false (because the hash written in the
-        // main package json matches the content of the generated file) and "npm
-        // install" won't be executed
-        // as a result of this flag value
-        Assert.assertFalse(packageUpdater.modified);
-    }
-
-    @Test
     public void generatePackageJson_sameDependencies_updaterIsNotModified() {
         FrontendDependencies frontendDependencies = Mockito
                 .mock(FrontendDependencies.class);
@@ -323,6 +309,52 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         packageCreator.execute();
         packageUpdater.execute();
+
+        // generate it one more time, the content will be different since
+        // packageCreator has not added its content
+        packageUpdater.execute();
+
+        Assert.assertFalse(
+                "Modification flag should be false when no dependencies changed.",
+                packageUpdater.modified);
+    }
+
+    @Test
+    public void generatePackageJson_sameDependenciesInDifferentOrder_updaterIsNotModified()
+            throws IOException {
+        FrontendDependencies frontendDependencies = Mockito
+                .mock(FrontendDependencies.class);
+
+        Map<String, String> packages = new HashMap<>();
+        packages.put("@polymer/iron-list", "3.0.2");
+        packages.put("@vaadin/vaadin-confirm-dialog", "1.1.4");
+        packages.put("@vaadin/vaadin-checkbox", "2.2.10");
+        packages.put("@polymer/iron-icon", "3.0.1");
+        packages.put("@vaadin/vaadin-time-picker", "2.0.2");
+
+        Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+
+        packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
+                baseDir, generatedDir, false);
+
+        packageCreator.execute();
+        packageUpdater.execute();
+
+        // Shuffle the dependencies.
+        JsonObject json = getPackageJson(this.packageJson);
+        JsonObject dependencies = json.getObject(DEPENDENCIES);
+        List<String> dependencyKeys = Arrays.asList(dependencies.keys());
+
+        Collections.shuffle(dependencyKeys);
+
+        JsonObject newDependencies = Json.createObject();
+        dependencyKeys.forEach(
+                key -> newDependencies.put(key, dependencies.getString(key)));
+
+        json.put(DEPENDENCIES, newDependencies);
+
+        Files.write(this.packageJson.toPath(),
+                Collections.singletonList(stringify(json)));
 
         // generate it one more time, the content will be different since
         // packageCreator has not added its content
@@ -407,12 +439,11 @@ public abstract class AbstractNodeUpdatePackagesTest
         packageCreator.execute();
         packageUpdater.execute();
 
-        Assert.assertFalse(
-                "Modification flag should be false when there was no dependencies.",
+        Assert.assertTrue(
+                "Modification flag should be true as we have added default dependencies.",
                 packageUpdater.modified);
 
-        // generate it one more time, the content will be different since
-        // packageCreator has not added its content
+        // generate it one more time
         packageUpdater.execute();
 
         Assert.assertFalse(
@@ -421,7 +452,7 @@ public abstract class AbstractNodeUpdatePackagesTest
     }
 
     @Test
-    public void updatedPackageJson_noDependencies_creatorIsMarkedModifiedUpdaterIsNot() {
+    public void updatedPackageJson_noDependencies_creatorAndUpdatedIsMarkedModified() {
         FrontendDependencies frontendDependencies = Mockito
                 .mock(FrontendDependencies.class);
 
@@ -437,8 +468,8 @@ public abstract class AbstractNodeUpdatePackagesTest
         Assert.assertTrue(
                 "Modification flag should be true when main package was created.",
                 packageCreator.modified);
-        Assert.assertFalse(
-                "Modification flag should be false as there are no added dependencies.",
+        Assert.assertTrue(
+                "Modification flag should be true as we should have updated the hash for default dependencies.",
                 packageUpdater.modified);
     }
 
@@ -570,7 +601,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         Assert.assertTrue(packageLock.exists());
     }
 
-    private void assertCleanUp() throws IOException {
+    private void assertCleanUp() {
         Assert.assertFalse(mainNodeModules.exists());
         Assert.assertFalse(appNodeModules.exists());
         Assert.assertFalse(packageLock.exists());
@@ -582,14 +613,17 @@ public abstract class AbstractNodeUpdatePackagesTest
         Assert.assertTrue(json.hasKey("license"));
 
         JsonObject dependencies = json.getObject(DEPENDENCIES);
-        for(Map.Entry<String,String> entry : NodeUpdater.getDefaultDependencies(null).entrySet()){
-            Assert.assertTrue("Missing '"+entry.getKey()+"' package",
+        for (Map.Entry<String, String> entry : NodeUpdater
+                .getDefaultDependencies(NodeUpdater.POLYMER_VERSION)
+                .entrySet()) {
+            Assert.assertTrue("Missing '" + entry.getKey() + "' package",
                     dependencies.hasKey(entry.getKey()));
         }
 
         JsonObject devDependencies = json.getObject(DEV_DEPENDENCIES);
-        for(Map.Entry<String,String> entry : NodeUpdater.getDefaultDevDependencies().entrySet()){
-            Assert.assertTrue("Missing '"+entry.getKey()+"' package",
+        for (Map.Entry<String, String> entry : NodeUpdater
+                .getDefaultDevDependencies().entrySet()) {
+            Assert.assertTrue("Missing '" + entry.getKey() + "' package",
                     devDependencies.hasKey(entry.getKey()));
         }
     }
@@ -619,8 +653,8 @@ public abstract class AbstractNodeUpdatePackagesTest
     JsonObject getPackageJson(File packageFile) throws IOException {
         JsonObject packageJson = null;
         if (packageFile.exists()) {
-            String fileContent = FileUtils.readFileToString(packageFile,
-                    UTF_8.name());
+            String fileContent = FileUtils
+                    .readFileToString(packageFile, UTF_8.name());
             packageJson = Json.parse(fileContent);
         }
         return packageJson;

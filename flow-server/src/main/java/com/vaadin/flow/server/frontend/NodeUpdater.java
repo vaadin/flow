@@ -61,13 +61,14 @@ public abstract class NodeUpdater implements FallibleCommand {
 
     static final String DEPENDENCIES = "dependencies";
     static final String VAADIN_DEP_KEY = "vaadin";
+    static final String HASH_KEY = "hash";
     static final String DEV_DEPENDENCIES = "devDependencies";
 
     private static final String DEP_LICENSE_KEY = "license";
     private static final String DEP_LICENSE_DEFAULT = "UNLICENSED";
     private static final String DEP_NAME_KEY = "name";
     private static final String DEP_NAME_DEFAULT = "no-name";
-    public static final Logger LOGGER = LoggerFactory.getLogger("dev-updater");
+    protected static final String POLYMER_VERSION = "3.2.0";
 
     /**
      * Base directory for {@link Constants#PACKAGE_JSON},
@@ -211,16 +212,19 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         // Add default dependencies
         JsonObject dependencies = vaadinPackages.getObject(DEPENDENCIES);
-        getDefaultDependencies("3.2.0").forEach(dependencies::put);
+        getDefaultDependencies(POLYMER_VERSION).forEach(dependencies::put);
 
         // Add default developmentDependencies
         JsonObject devDependencies = vaadinPackages.getObject(DEV_DEPENDENCIES);
         getDefaultDevDependencies().forEach(devDependencies::put);
 
+        vaadinPackages.put(HASH_KEY, "");
         return vaadinPackages;
     }
 
     static Map<String, String> getDefaultDependencies(String polymerVersion) {
+        Objects.requireNonNull(polymerVersion, "Polymer version is required");
+
         Map<String, String> defaults = new HashMap<>();
 
         defaults.put("@polymer/polymer", polymerVersion);
@@ -252,7 +256,7 @@ public abstract class NodeUpdater implements FallibleCommand {
      * @return true if items were added or removed from the json
      */
     boolean updateDefaultDependencies(JsonObject packageJson) {
-        return updateDefaultDependencies(packageJson, null);
+        return updateDefaultDependencies(packageJson, POLYMER_VERSION);
     }
 
     /**
@@ -268,6 +272,10 @@ public abstract class NodeUpdater implements FallibleCommand {
     boolean updateDefaultDependencies(JsonObject packageJson,
             String polymerVersion) {
         int added = 0;
+
+        if(polymerVersion == null) {
+            polymerVersion = POLYMER_VERSION;
+        }
 
         for (Map.Entry<String, String> entry : getDefaultDependencies(
                 polymerVersion).entrySet()) {
@@ -323,8 +331,8 @@ public abstract class NodeUpdater implements FallibleCommand {
         if (json.hasKey(pkg)) {
             FrontendVersion packageVersion = toVersion(json, pkg);
             // Vaadin and package.json versions are the same, but dependency updates (can be up or down)
-            if (vaadinVersion.equals(packageVersion) && !vaadinVersion
-                    .equals(newVersion)) {
+            if (vaadinVersion.isEqualTo(packageVersion) && !vaadinVersion
+                    .isEqualTo(newVersion)) {
                 json.put(pkg, version);
                 added = true;
                 // if vaadin and package not the same, but new version is newer update package version.

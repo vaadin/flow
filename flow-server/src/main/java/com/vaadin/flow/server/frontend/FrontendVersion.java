@@ -93,7 +93,11 @@ public class FrontendVersion
      *         build identifier
      */
     public FrontendVersion(int major, int minor, int revision, String build) {
-        this.version = major + "." + minor + "." + revision;
+        if(build.isEmpty()) {
+            this.version = major + "." + minor + "." + revision;
+        } else {
+            this.version = major + "." + minor + "." + revision + "." + build;
+        }
         majorVersion = major;
         minorVersion = minor;
         this.revision = revision;
@@ -216,26 +220,33 @@ public class FrontendVersion
     }
 
     /**
-     * Equals will compare the version values according to compareTo.
-     * If all version numbers in the other FrontendVersion are equal to
-     * this instance version numbers then they equal.
+     * Check if this and the given version are equal to each other.
      *
-     * @param obj
-     *         object to test equals with
+     * @param otherVersion
+     *         version to test equals with
      * @return true if parsed version parts are exactly the same
      */
+    public boolean isEqualTo(FrontendVersion otherVersion) {
+        return compareTo(otherVersion) == 0;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof FrontendVersion) {
             FrontendVersion other = (FrontendVersion) obj;
-            return compareTo(other) == 0;
+            return majorVersion == other.getMajorVersion()
+                    && minorVersion == other.getMinorVersion()
+                    && revision == other.getRevision() && buildIdentifier
+                    .equals(other.getBuildIdentifier());
+
         }
         return false;
     }
 
     @Override
     public int hashCode() {
-        return version.hashCode();
+        return (majorVersion + "." + minorVersion + "." + revision + "."
+                + buildIdentifier).hashCode();
     }
 
     /**
