@@ -33,6 +33,7 @@ import java.util.Optional;
 import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
@@ -85,6 +86,8 @@ public final class DeploymentConfigurationFactory implements Serializable {
 
     public static final String DEV_FOLDER_MISSING_MESSAGE = "Running project in development mode with no access to folder '%s'.%n"
             + "Build project in production mode instead, see https://vaadin.com/docs/v14/flow/production/tutorial-production-mode-basic.html";
+    private static final Logger logger = LoggerFactory
+            .getLogger(DeploymentConfigurationFactory.class);
 
     private DeploymentConfigurationFactory() {
     }
@@ -315,11 +318,10 @@ public final class DeploymentConfigurationFactory implements Serializable {
         if (Boolean.toString(parsedBoolean).equalsIgnoreCase(booleanString)) {
             return parsedBoolean;
         }
-        LoggerFactory.getLogger(DeploymentConfigurationFactory.class)
-                .debug(String
-                        .format("Property named '%s' is boolean, but contains incorrect value '%s' that is not boolean '%s'",
-                                SERVLET_PARAMETER_PRODUCTION_MODE,
-                                booleanString, parsedBoolean));
+        logger.debug(String.format(
+                "Property named '%s' is boolean, but contains incorrect value '%s' that is not boolean '%s'",
+                SERVLET_PARAMETER_PRODUCTION_MODE, booleanString,
+                parsedBoolean));
         return false;
     }
 
@@ -348,6 +350,23 @@ public final class DeploymentConfigurationFactory implements Serializable {
                     return FrontendUtils.streamToString(resource.openStream());
                 }
             }
+        } else {
+            URL firstResource = resources.get(0);
+            if (resources.size() > 1) {
+                String warningMessage = String
+                        .format("Unable to fully determine correct flow-build-info.%n"
+                                        + "Accepting file '%s' first match of '%s' possible.%n"
+                                        + "Please verify flow-build-info file content.",
+                                firstResource.getPath(), resources.size());
+                logger.warn(warningMessage);
+            } else {
+                String debugMessage = String
+                        .format("Unable to fully determine correct flow-build-info.%n"
+                                        + "Accepting file '%s'",
+                                firstResource.getPath());
+                logger.debug(debugMessage);
+            }
+            return FrontendUtils.streamToString(firstResource.openStream());
         }
         // No applicable resources found.
         return null;
@@ -407,7 +426,7 @@ public final class DeploymentConfigurationFactory implements Serializable {
         if (!hasTokenFile && hasWebpackConfig) {
             // the current working directory will be used automatically by the
             // dev server unless it's specified explicitly
-            LoggerFactory.getLogger(DeploymentConfigurationFactory.class).warn(
+            logger.warn(
                     "Found 'webpack.config.js' in the project/working directory. "
                             + "Will use it for webpack dev server.");
         }
