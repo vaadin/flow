@@ -342,6 +342,7 @@ public class FrontendUtils {
      *         have pnpm running
      */
     public static List<String> getPnpmExecutable(String baseDir) {
+        ensurePnpm(baseDir, true);
         return getPnpmExecutable(baseDir, true);
     }
 
@@ -966,7 +967,7 @@ public class FrontendUtils {
                         .orElse(Collections.emptyList()));
             }
         }
-
+        returnCommand.add("--shamefully-hoist=true");
         return returnCommand;
     }
 
