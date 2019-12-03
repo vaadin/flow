@@ -279,6 +279,7 @@ public class DevModeInitializer implements ServletContainerInitializer,
                     .copyLocalResources(new File(baseDir,
                             Constants.LOCAL_FRONTEND_RESOURCES_PATH))
                     .enableImportsUpdate(true).runNpmInstall(true)
+                    .populateTokenFileData(tokenFileData)
                     .withEmbeddableWebComponents(true).disablePnpm(disablePnpm)
                     .build().execute();
 
