@@ -46,4 +46,19 @@ public class MiscelaneousIT extends ChromeBrowserTest {
         WebElement body = findElement(By.tagName("body"));
         Assert.assertEquals("2px", body.getCssValue("padding"));
     }
+
+    /**
+     * Checks that a missing or incorrect icon is handled properly with an
+     * error log and does not halt the whole application startup.
+     */
+    @Test
+    public void handlesIncorrectIconProperly() {
+        open();
+
+        checkLogsForErrors();
+
+        Assert.assertTrue(
+                "Missing/invalid icons at startup should be handled with error log.",
+                isElementPresent(By.id(MiscelaneousView.TEST_VIEW_ID)));
+    }
 }

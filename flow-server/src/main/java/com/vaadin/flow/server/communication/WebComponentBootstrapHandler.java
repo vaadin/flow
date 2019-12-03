@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2019 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -36,7 +36,8 @@ import com.vaadin.flow.component.webcomponent.WebComponentUI;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.ServletHelper;
+import com.vaadin.flow.server.HandlerHelper;
+import com.vaadin.flow.server.PwaRegistry;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
@@ -87,6 +88,11 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
             Optional<Theme> optionalTheme = getPageConfigurationAnnotation(
                     Theme.class);
             return optionalTheme.map(ThemeDefinition::new);
+        }
+
+        @Override
+        protected Optional<PwaRegistry> getPwaRegistry() {
+            return Optional.empty();
         }
     }
 
@@ -198,7 +204,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
             BootstrapContext context = createAndInitUI(uiClass, request,
                     response, session);
 
-            ServletHelper.setResponseNoCacheHeaders(response::setHeader,
+            HandlerHelper.setResponseNoCacheHeaders(response::setHeader,
                     response::setDateHeader);
 
             String serviceUrl = getServiceUrl(request, response);

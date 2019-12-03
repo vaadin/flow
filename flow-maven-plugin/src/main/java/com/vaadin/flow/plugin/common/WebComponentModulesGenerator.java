@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2019 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,10 +16,11 @@
 package com.vaadin.flow.plugin.common;
 
 import java.io.File;
+import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-import com.vaadin.flow.component.internal.ExportsWebComponent;
+import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.migration.ClassPathIntrospector;
 import com.vaadin.flow.server.webcomponent.WebComponentModulesWriter;
 
@@ -29,9 +30,10 @@ import com.vaadin.flow.server.webcomponent.WebComponentModulesWriter;
  *
  * Uses {@link com.vaadin.flow.server.webcomponent.WebComponentModulesWriter} to
  * generate web component modules files from
- * {@link com.vaadin.flow.component.internal.ExportsWebComponent} implementations found
- * by {@link com.vaadin.flow.migration.ClassPathIntrospector}.
- * 
+ * {@link WebComponentExporter}/{@link WebComponentExporterFactory}
+ * implementations found by
+ * {@link com.vaadin.flow.migration.ClassPathIntrospector}.
+ *
  * @author Vaadin Ltd.
  * @since 2.0
  */
@@ -42,7 +44,8 @@ public class WebComponentModulesGenerator extends ClassPathIntrospector {
      * Creates a new instances and stores the {@code introspector} to be used
      * for locating
      * {@link com.vaadin.flow.server.webcomponent.WebComponentModulesWriter}
-     * class and {@link com.vaadin.flow.component.internal.ExportsWebComponent}
+     * class and
+     * {@link WebComponentExporter}/{@link WebComponentExporterFactory}
      * implementations.
      *
      * @param introspector
@@ -56,8 +59,8 @@ public class WebComponentModulesGenerator extends ClassPathIntrospector {
     /**
      * Collects
      * {@link com.vaadin.flow.server.webcomponent.WebComponentModulesWriter}
-     * class and classes that extend
-     * {@link com.vaadin.flow.component.internal.ExportsWebComponent} using {@code
+     * class and classes that extend {@link WebComponentExporter} or
+     * {@link WebComponentExporterFactory} using {@code
      * inspector}. Generates web component modules and places the into the
      * {@code outputDirectory}.
      *
@@ -68,12 +71,15 @@ public class WebComponentModulesGenerator extends ClassPathIntrospector {
      *             if {@code inspector} cannot locate required classes
      */
     public Set<File> generateWebComponentModules(File outputDirectory) {
-        Set<Class<?>> exporterClasses = getSubtypes(ExportsWebComponent.class)
-                .collect(Collectors.toSet());
+        Set<Class<?>> exporterRelatedClasses = new HashSet<>();
+        getSubtypes(WebComponentExporter.class)
+                .forEach(exporterRelatedClasses::add);
+        getSubtypes(WebComponentExporterFactory.class)
+                .forEach(exporterRelatedClasses::add);
 
         return WebComponentModulesWriter.DirectoryWriter
                 .generateWebComponentsToDirectory(getWriterClass(),
-                        exporterClasses, outputDirectory, true);
+                        exporterRelatedClasses, outputDirectory, true);
     }
 
     private Class<?> getWriterClass() {

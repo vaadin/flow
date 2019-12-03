@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2019 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -38,7 +38,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.text.WordUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -158,13 +157,6 @@ public final class DevModeHandler {
                         "-d --inline=false --progress --colors")
                 .split(" +")));
 
-
-        console(GREEN, START);
-        console(YELLOW, WordUtils
-                        .wrap(String.join(" ", command)
-                                .replace(npmFolder.getAbsolutePath(), "."), 50)
-                        .replace("\n", " \\ \n    ") + "\n\n");
-
         processBuilder.command(command);
         try {
             webpackProcess = processBuilder
@@ -194,6 +186,7 @@ public final class DevModeHandler {
 
             logStream(webpackProcess.getInputStream(), succeed, failure);
 
+            getLogger().info("Waiting for webpack compilation before proceeding.");
             synchronized (this) {
                 this.wait(Integer.parseInt(config.getStringProperty( // NOSONAR
                         SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT,
@@ -206,6 +199,9 @@ public final class DevModeHandler {
             if (!webpackProcess.isAlive()) {
                 throw new IllegalStateException("Webpack exited prematurely");
             }
+            getLogger()
+                    .info("Webpack startup and compilation completed in {}ms",
+                            (System.currentTimeMillis() - start));
         } catch (IOException | InterruptedException e) {
             getLogger().error("Failed to start the webpack process", e);
         }

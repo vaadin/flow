@@ -107,7 +107,7 @@
         <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
         <maven.clean.plugin.version>3.0.0</maven.clean.plugin.version>
         <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
-        <testbench.version>6.2.0</testbench.version>
+        <testbench.version>6.2.1</testbench.version>
         <jetty.version>9.4.11.v20180605</jetty.version>
 
         <!-- Frontend -->

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2019 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,8 +16,6 @@
 
 package com.vaadin.flow.server.communication;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringWriter;
@@ -27,8 +25,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.server.ServletHelper;
-import com.vaadin.flow.server.ServletHelper.RequestType;
+import com.vaadin.flow.server.HandlerHelper;
+import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.SessionExpiredHandler;
 import com.vaadin.flow.server.SynchronizedRequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
@@ -41,6 +39,8 @@ import com.vaadin.flow.shared.JsonConstants;
 
 import elemental.json.JsonException;
 import elemental.json.JsonObject;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Processes a UIDL request from the client.
@@ -59,7 +59,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
-        return ServletHelper.isRequestType(request, RequestType.UIDL);
+        return HandlerHelper.isRequestType(request, RequestType.UIDL);
     }
 
     /**
@@ -139,7 +139,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
     @Override
     public boolean handleSessionExpired(VaadinRequest request,
             VaadinResponse response) throws IOException {
-        if (!ServletHelper.isRequestType(request, RequestType.UIDL)) {
+        if (!HandlerHelper.isRequestType(request, RequestType.UIDL)) {
             return false;
         }
         VaadinService service = request.getService();
