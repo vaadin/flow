@@ -334,16 +334,63 @@ public class FrontendUtils {
 
     /**
      * Locate <code>pnpm</code> executable.
+     * <p>
+     * In case pnpm is not available it will be installed.
      *
      * @param baseDir
      *            project root folder.
      *
      * @return the list of all commands in sequence that need to be executed to
      *         have pnpm running
+     * @see #getPnpmExecutable(String, boolean)
      */
     public static List<String> getPnpmExecutable(String baseDir) {
         ensurePnpm(baseDir, true);
         return getPnpmExecutable(baseDir, true);
+    }
+
+    /**
+     * Locate <code>pnpm</code> executable if it's possible.
+     * <p>
+     * In case the tool is not found either {@link IllegalStateException} is
+     * thrown or an empty list is returned depending on {@code failOnAbsence}
+     * value.
+     *
+     * @param baseDir
+     *            project root folder.
+     * @param failOnAbsence
+     *            if {@code true} throws IllegalStateException if tool is not
+     *            found, if {@code false} return an empty list if tool is not
+     *            found
+     *
+     * @return the list of all commands in sequence that need to be executed to
+     *         have pnpm running
+     */
+    public static List<String> getPnpmExecutable(String baseDir,
+            boolean failOnAbsence) {
+        // First try local pnpm JS script if it exists
+        File file = new File(baseDir, "node_modules/pnpm/bin/pnpm.js");
+        List<String> returnCommand = new ArrayList<>();
+        if (file.canRead()) {
+            // We return a two element list with node binary and npm-cli script
+            returnCommand.add(getNodeExecutable(baseDir));
+            returnCommand.add(file.getAbsolutePath());
+        } else {
+            // Otherwise look for regulag `pnpm`
+            String command = isWindows() ? "pnpm.cmd" : "pnpm";
+            if (failOnAbsence) {
+                returnCommand.add(getExecutable(baseDir, command, null)
+                        .getAbsolutePath());
+            } else {
+                returnCommand.addAll(frontendToolsLocator.tryLocateTool(command)
+                        .map(File::getPath).map(Collections::singletonList)
+                        .orElse(Collections.emptyList()));
+            }
+        }
+        if (!returnCommand.isEmpty()) {
+            returnCommand.add("--shamefully-hoist=true");
+        }
+        return returnCommand;
     }
 
     /**
@@ -944,31 +991,6 @@ public class FrontendUtils {
 
     private static Logger getLogger() {
         return LoggerFactory.getLogger(FrontendUtils.class);
-    }
-
-    private static List<String> getPnpmExecutable(String baseDir,
-            boolean failOnAbsence) {
-        // First try local pnpm JS script if it exists
-        File file = new File(baseDir, "node_modules/pnpm/bin/pnpm.js");
-        List<String> returnCommand = new ArrayList<>();
-        if (file.canRead()) {
-            // We return a two element list with node binary and npm-cli script
-            returnCommand.add(getNodeExecutable(baseDir));
-            returnCommand.add(file.getAbsolutePath());
-        } else {
-            // Otherwise look for regulag `pnpm`
-            String command = isWindows() ? "pnpm.cmd" : "pnpm";
-            if (failOnAbsence) {
-                returnCommand.add(getExecutable(baseDir, command, null)
-                        .getAbsolutePath());
-            } else {
-                returnCommand.addAll(frontendToolsLocator.tryLocateTool(command)
-                        .map(File::getPath).map(Collections::singletonList)
-                        .orElse(Collections.emptyList()));
-            }
-        }
-        returnCommand.add("--shamefully-hoist=true");
-        return returnCommand;
     }
 
     /**

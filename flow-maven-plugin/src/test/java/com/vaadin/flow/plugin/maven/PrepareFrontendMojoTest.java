@@ -20,7 +20,6 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.plugin.TestUtils;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -161,29 +160,6 @@ public class PrepareFrontendMojoTest {
         JsonObject packageJsonObject = getPackageJson(packageJson);
         assertContainsPackage(packageJsonObject.getObject("dependencies"),
                 "foo");
-    }
-
-    @Test
-    public void pnpmIsEnabled_pnpmIsEitherInstalledGloballyOrLocally()
-            throws Exception {
-        mojo.execute();
-
-        List<String> pnpmExecutable = FrontendUtils
-                .getPnpmExecutable(projectBase.getPath());
-        Assert.assertFalse(pnpmExecutable.isEmpty());
-    }
-
-    @Test
-    public void pnpmIsDisabled_pnpmIsEitherInstalledGloballyOrLocally()
-            throws Exception {
-        List<String> pnpmExecutable = FrontendUtils
-                .getPnpmExecutable(projectBase.getPath());
-
-        ReflectionUtils.setVariableValueInObject(mojo, "disablePnpm", true);
-        mojo.execute();
-
-        Assert.assertEquals(pnpmExecutable,
-                FrontendUtils.getPnpmExecutable(projectBase.getPath()));
     }
 
     private void assertPackageJsonContent() throws IOException {
