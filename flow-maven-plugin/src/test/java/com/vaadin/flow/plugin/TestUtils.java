@@ -132,6 +132,7 @@ public final class TestUtils {
         defaults.put("webpack-merge", "4.2.1");
         defaults.put("raw-loader", "3.0.0");
 
+        vaadinPackages.put("hash", "");
         packageJson.put("vaadin", vaadinPackages);
 
         return packageJson;
