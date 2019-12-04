@@ -769,6 +769,7 @@ public class FrontendUtils {
             command.add("pnpm");
 
             ProcessBuilder builder = createProcessBuilder(command);
+            builder.environment().put("ADBLOCK", "1");
             builder.directory(new File(baseDir));
 
             Process process = null;

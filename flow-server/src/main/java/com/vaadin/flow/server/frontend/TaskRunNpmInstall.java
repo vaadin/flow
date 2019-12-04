@@ -66,7 +66,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
             assert installedPackages != null;
             return installedPackages.length == 0
                     || (installedPackages.length == 1 && FLOW_NPM_PACKAGE_NAME
-                    .startsWith(installedPackages[0].getName()));
+                            .startsWith(installedPackages[0].getName()));
         }
         return true;
     }
@@ -100,8 +100,9 @@ public class TaskRunNpmInstall implements FallibleCommand {
             int errorCode = process.waitFor();
             if (errorCode != 0) {
                 packageUpdater.log().error(
-                        ">>> Dependency ERROR. Check that all required dependencies are deployed in "
-                                + toolName + " repositories.");
+                        ">>> Dependency ERROR. Check that all required dependencies are "
+                                + "deployed in {} repositories.",
+                        toolName);
                 throw new ExecutionFailedException(
                         SharedUtil.capitalize(toolName)
                                 + " install has exited with non zero status. "
@@ -112,8 +113,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
                         "package.json updated and dependencies are installed. ");
             }
         } catch (InterruptedException | IOException e) {
-            packageUpdater.log()
-                    .error("Error when running `" + toolName + " install`", e);
+            packageUpdater.log().error("Error when running `{} install`",
+                    toolName, e);
             throw new ExecutionFailedException(
                     "Command '" + toolName + " install' failed to finish", e);
         } finally {
