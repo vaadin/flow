@@ -60,13 +60,7 @@ public class TaskCreatePackageJson extends NodeUpdater {
             if (flowResourcesFolder != null && !new File(npmFolder,
                     NODE_MODULES + FLOW_NPM_PACKAGE_NAME)
                             .equals(flowResourcesFolder)) {
-                JsonObject depsContent = getResourcesPackageJson();
-                if (depsContent == null) {
-                    depsContent = Json.createObject();
-                    updateResourcesDependencies(depsContent);
-                    writeResourcesPackageFile(depsContent);
-                    modified = true;
-                }
+                writeResourcesPackageFile(getResourcesPackageJson());
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);

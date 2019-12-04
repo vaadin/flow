@@ -86,6 +86,8 @@ public class TaskUpdatePackages extends NodeUpdater {
             Map<String, String> deps = frontDeps.getPackages();
             JsonObject packageJson = getPackageJson();
             modified = updatePackageJsonDependencies(packageJson, deps);
+
+
             if (modified) {
                 writePackageFile(packageJson);
             }
@@ -97,6 +99,11 @@ public class TaskUpdatePackages extends NodeUpdater {
     private boolean updatePackageJsonDependencies(JsonObject packageJson,
             Map<String, String> deps) throws IOException {
         int added = 0;
+
+        JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
+
+        // Update the dependency for the folder with resources
+        updateFrontendDependency(dependencies);
 
         // Add application dependencies
         for (Entry<String, String> dep : deps.entrySet()) {
@@ -110,7 +117,6 @@ public class TaskUpdatePackages extends NodeUpdater {
         }
 
         // Remove obsolete dependencies
-        JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
         List<String> dependencyCollection = Stream.concat(deps.entrySet().stream(),
                 getDefaultDependencies().entrySet().stream())
                 .map(Entry::getKey).collect(Collectors.toList());
@@ -146,6 +152,29 @@ public class TaskUpdatePackages extends NodeUpdater {
         return added > 0 || removed > 0 || !oldHash.equals(newHash);
     }
 
+
+    private int updateFrontendDependency(JsonObject json) {
+        if (flowResourcesFolder != null
+                // Skip if deps are copied directly to `node_modules` folder
+                && !flowResourcesFolder.toString().contains(NODE_MODULES)) {
+
+            String depsPkg = "./" + FrontendUtils.getUnixRelativePath(
+                    npmFolder.getAbsoluteFile().toPath(),
+                    flowResourcesFolder.getAbsoluteFile().toPath());
+            if (!json.hasKey(DEP_NAME_FLOW_JARS) || !depsPkg.equals(json.getString(DEP_NAME_FLOW_JARS))) {
+                json.put(DEP_NAME_FLOW_JARS, depsPkg);
+                return 1;
+            }
+        } else {
+            if (json.hasKey(DEP_NAME_FLOW_JARS)) {
+                json.remove(DEP_NAME_FLOW_JARS);
+                return 1;
+            }
+        }
+
+        return 0;
+    }
+
     /**
      * Compares vaadin-shrinkwrap dependency version from the
      * {@code dependencies} object with the current vaadin-shrinkwrap version
@@ -179,7 +208,7 @@ public class TaskUpdatePackages extends NodeUpdater {
 
         removeDir(nodeModulesFolder);
 
-        if (flowResourcesFolder != null) {
+        if (flowResourcesFolder != null && flowResourcesFolder.exists()) {
             // Clean all files but `package.json`
             for (File file: flowResourcesFolder.listFiles()) {
                 if (!file.getName().equals(PACKAGE_JSON)) {

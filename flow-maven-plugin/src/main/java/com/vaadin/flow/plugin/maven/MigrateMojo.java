@@ -116,7 +116,7 @@ public class MigrateMojo extends AbstractMojo {
         builder.setResourceDirectories(getResources());
         builder.setTargetDirectory(frontendDirectory);
         builder.setTemporaryMigrationFolder(migrateFolder);
-        builder.disablePnpm(disablePnpm);
+        builder.setDisablePnpm(disablePnpm);
 
         MigrationConfiguration configuration = builder.build();
         Migration migration = new Migration(configuration);

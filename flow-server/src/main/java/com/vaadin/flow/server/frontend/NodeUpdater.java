@@ -210,7 +210,13 @@ public abstract class NodeUpdater implements FallibleCommand {
     }
 
     JsonObject getResourcesPackageJson() throws IOException {
-        return getJsonFileContent(new File(flowResourcesFolder, PACKAGE_JSON));
+        JsonObject packageJson = getJsonFileContent(new File(flowResourcesFolder, PACKAGE_JSON));
+        if (packageJson == null) {
+            packageJson = Json.createObject();
+            packageJson.put(DEP_NAME_KEY, DEP_NAME_DEFAULT);
+            packageJson.put(DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT);
+        }
+        return packageJson;
     }
 
     static JsonObject getJsonFileContent(File packageFile) throws IOException {
@@ -248,16 +254,6 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         return defaults;
     }
-    
-    
-    static Map<String, String> getResourceDependencies() {
-        Map<String, String> defaults = new HashMap<>();
-
-        defaults.put("@polymer/polymer", POLYMER_VERSION);
-        defaults.put("@webcomponents/webcomponentsjs", "^2.2.10");
-
-        return defaults;
-    }
 
     static Map<String, String> getDefaultDevDependencies() {
         Map<String, String> defaults = new HashMap<>();
@@ -277,13 +273,6 @@ public abstract class NodeUpdater implements FallibleCommand {
         defaults.put("raw-loader", "3.0.0");
         return defaults;
     }
-    
-    void updateResourcesDependencies(JsonObject packageJson) {
-        addDependency(packageJson, null, DEP_NAME_KEY, DEP_NAME_FLOW_JARS);
-        addDependency(packageJson, null, DEP_VERSION_KEY, DEP_VERSION_DEFAULT);
-        addDependency(packageJson, null, DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT);
-        addDependency(packageJson, null, DEP_MAIN_KEY, "Flow");
-    }
 
     /**
      * Updates default dependencies and development dependencies to
@@ -301,6 +290,7 @@ public abstract class NodeUpdater implements FallibleCommand {
             added += addDependency(packageJson, DEPENDENCIES, entry.getKey(),
                     entry.getValue());
         }
+
         for (Map.Entry<String, String> entry : getDefaultDevDependencies()
                 .entrySet()) {
             added += addDependency(packageJson, DEV_DEPENDENCIES,
@@ -313,11 +303,11 @@ public abstract class NodeUpdater implements FallibleCommand {
         return added > 0;
     }
 
-
     int addDependency(JsonObject json, String key, String pkg, String version) {
         Objects.requireNonNull(json, "Json object need to be given");
         Objects.requireNonNull(key, "Json sub object needs to be give.");
         Objects.requireNonNull(pkg, "dependency package needs to be defined");
+
 
         JsonObject vaadinDeps = json.getObject(VAADIN_DEP_KEY);
         if (!json.hasKey(key)) {

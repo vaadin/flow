@@ -43,6 +43,7 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static elemental.json.impl.JsonUtil.stringify;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -51,7 +52,6 @@ public abstract class AbstractNodeUpdatePackagesTest
         extends NodeUpdateTestUtil {
 
     private static final String DEPENDENCIES = "dependencies";
-    private static final String DEV_DEPENDENCIES = "devDependencies";
 
     private static final String SHRINKWRAP = "@vaadin/vaadin-shrinkwrap";
 
@@ -62,26 +62,30 @@ public abstract class AbstractNodeUpdatePackagesTest
     private TaskCreatePackageJson packageCreator;
     private File baseDir;
     private File generatedDir;
+    private File resourcesDir;
+
     private File packageJson;
 
     private File mainNodeModules;
     private File packageLock;
     private File appNodeModules;
 
+
     @Before
     public void setup() throws Exception {
         baseDir = temporaryFolder.getRoot();
 
         generatedDir = new File(baseDir, DEFAULT_GENERATED_DIR);
+        resourcesDir = new File(baseDir, DEAULT_FLOW_RESOURCES_FOLDER);
 
         NodeUpdateTestUtil
                 .createStubNode(true, true, baseDir.getAbsolutePath());
 
-        packageCreator = new TaskCreatePackageJson(baseDir, generatedDir, null);
+        packageCreator = new TaskCreatePackageJson(baseDir, generatedDir, resourcesDir);
 
         ClassFinder classFinder = getClassFinder();
         packageUpdater = new TaskUpdatePackages(classFinder,
-                getScanner(classFinder), baseDir, generatedDir, null, false);
+                getScanner(classFinder), baseDir, generatedDir, resourcesDir, false);
         packageJson = new File(baseDir, PACKAGE_JSON);
 
         mainNodeModules = new File(baseDir, FrontendUtils.NODE_MODULES);
