@@ -6,10 +6,10 @@
     <parent>
         <artifactId>flow-tests</artifactId>
         <groupId>com.vaadin</groupId>
-        <version>3.0-SNAPSHOT</version>
+        <version>2.2-SNAPSHOT</version>
     </parent>
-    <artifactId>flow-test-pnpm-dev-mode</artifactId>
-    <name>Flow tests in pnpm and development mode</name>
+    <artifactId>flow-test-pnpm-production</artifactId>
+    <name>Flow tests in pnpm and production mode</name>
 
     <packaging>war</packaging>
     <properties>
@@ -42,6 +42,7 @@
             </plugin>
             <!-- Clean lib before running jetty -->
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
             </plugin>
             <!--  Run flow plugin to build frontend -->
@@ -52,14 +53,14 @@
                 <executions>
                     <execution>
                         <goals>
-                            <!-- only need prepare-frontend because we run tests in dev mode -->
                             <goal>prepare-frontend</goal>
+                            <goal>build-frontend</goal>
                         </goals>
                     </execution>
                 </executions>
                 <configuration>
-                    <compatibilityMode>false</compatibilityMode>
-                    <productionMode>false</productionMode>
+                    <bowerMode>false</bowerMode>
+                    <productionMode>true</productionMode>
                 </configuration>
             </plugin>
             <!-- Run jetty before integration tests, and stop after -->
@@ -67,19 +68,6 @@
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
                 <configuration>
-                    <systemProperties>
-                        <systemProperty>
-                            <!-- this avoids an issue in chrome not loading the components
-                                 randomly when webpack dev server is not in debug mode -->
-                            <name>vaadin.devmode.webpack.options</name>
-                            <value>--debug</value>
-                        </systemProperty>
-                        <systemProperty>
-                            <!-- make sure we do not leave webpack-dev-server running after IT -->
-                            <name>vaadin.reuseDevServer</name>
-                            <value>false</value>
-                        </systemProperty>
-                    </systemProperties>
                     <webApp>
                         <!-- We deploy the app with a context in the servlet container in order to test
                              that bootstrap code resolves correctly the application context and do

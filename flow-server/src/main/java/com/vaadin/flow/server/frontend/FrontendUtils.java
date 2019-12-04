@@ -383,14 +383,40 @@ public class FrontendUtils {
 
     /**
      * Locate <code>pnpm</code> executable.
+     * <p>
+     * In case pnpm is not available it will be installed.
      *
      * @param baseDir
      *            project root folder.
      *
      * @return the list of all commands in sequence that need to be executed to
      *         have pnpm running
+     * @see #getPnpmExecutable(String, boolean)
      */
     public static List<String> getPnpmExecutable(String baseDir) {
+        ensurePnpm(baseDir, true);
+        return getPnpmExecutable(baseDir, true);
+    }
+
+    /**
+     * Locate <code>pnpm</code> executable if it's possible.
+     * <p>
+     * In case the tool is not found either {@link IllegalStateException} is
+     * thrown or an empty list is returned depending on {@code failOnAbsence}
+     * value.
+     *
+     * @param baseDir
+     *            project root folder.
+     * @param failOnAbsence
+     *            if {@code true} throws IllegalStateException if tool is not
+     *            found, if {@code false} return an empty list if tool is not
+     *            found
+     *
+     * @return the list of all commands in sequence that need to be executed to
+     *         have pnpm running
+     */
+    public static List<String> getPnpmExecutable(String baseDir,
+            boolean failOnAbsence) {
         // First try local pnpm JS script if it exists
         File file = new File(baseDir, "node_modules/pnpm/bin/pnpm.js");
         List<String> returnCommand = new ArrayList<>();
@@ -401,8 +427,17 @@ public class FrontendUtils {
         } else {
             // Otherwise look for regulag `pnpm`
             String command = isWindows() ? "pnpm.cmd" : "pnpm";
-            returnCommand.add(
-                    getExecutable(baseDir, command, null).getAbsolutePath());
+            if (failOnAbsence) {
+                returnCommand.add(getExecutable(baseDir, command, null)
+                        .getAbsolutePath());
+            } else {
+                returnCommand.addAll(frontendToolsLocator.tryLocateTool(command)
+                        .map(File::getPath).map(Collections::singletonList)
+                        .orElse(Collections.emptyList()));
+            }
+        }
+        if (!returnCommand.isEmpty()) {
+            returnCommand.add("--shamefully-hoist=true");
         }
         return returnCommand;
     }
@@ -821,6 +856,46 @@ public class FrontendUtils {
             getLogger().warn("Error checking if npm is new enough", e);
         }
 
+    }
+
+    /**
+     * Ensure that pnpm tool is available and install it if it's not.
+     *
+     * @param baseDir
+     *            project root folder.
+     * @param ensure
+     *            whether pnpm tool should be installed if it's absent
+     */
+    public static void ensurePnpm(String baseDir, boolean ensure) {
+        if (ensure && getPnpmExecutable(baseDir, false).isEmpty()) {
+            List<String> npmExecutable = FrontendUtils
+                    .getNpmExecutable(baseDir);
+            List<String> command = new ArrayList<>();
+            command.addAll(npmExecutable);
+            command.add("install");
+            command.add("pnpm");
+
+            ProcessBuilder builder = createProcessBuilder(command);
+            builder.environment().put("ADBLOCK", "1");
+            builder.directory(new File(baseDir));
+
+            Process process = null;
+            try {
+                process = builder.inheritIO().start();
+                int errorCode = process.waitFor();
+                if (errorCode != 0) {
+                    getLogger().error("Couldn't install 'pnpm'");
+                } else {
+                    getLogger().debug("Pnpm is successfully installed");
+                }
+            } catch (InterruptedException | IOException e) {
+                getLogger().error("Error when running `npm install`", e);
+            } finally {
+                if (process != null) {
+                    process.destroyForcibly();
+                }
+            }
+        }
     }
 
     static void checkForFaultyNpmVersion(FrontendVersion npmVersion) {

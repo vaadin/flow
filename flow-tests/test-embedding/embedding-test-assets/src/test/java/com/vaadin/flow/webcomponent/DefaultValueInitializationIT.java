@@ -18,11 +18,10 @@ package com.vaadin.flow.webcomponent;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-public class DefaultValueInitializationIT extends ChromeBrowserTest {
+public class DefaultValueInitializationIT extends ChromeBrowserTest implements HasById{
 
     @Override
     protected String getTestPath() {
@@ -82,12 +81,10 @@ public class DefaultValueInitializationIT extends ChromeBrowserTest {
     }
 
     private String value(String componentId) {
-        WebElement comp = findElement(By.id(componentId));
-        return comp.findElement(By.id("value")).getText();
+        return byId(componentId, "value").getText();
     }
 
     private String counter(String componentId) {
-        WebElement comp = findElement(By.id(componentId));
-        return comp.findElement(By.id("counter")).getText();
+        return byId(componentId, "counter").getText();
     }
 }

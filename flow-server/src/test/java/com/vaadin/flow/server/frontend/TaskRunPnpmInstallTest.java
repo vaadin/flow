@@ -13,21 +13,29 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package com.vaadin.flow.server.frontend;
 
-package src.com.vaadin.flow.webcomponent;
+import java.io.IOException;
 
-import javax.servlet.annotation.WebServlet;
-import java.io.PrintWriter;
-import java.util.function.Consumer;
+import org.junit.Before;
 
-import com.vaadin.flow.webcomponent.servlets.AbstractPlainServlet;
+public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
-// npm mode is able to survive a root-mapped servlet, while compatibility
-// mode is not
-@WebServlet(urlPatterns = { "/*", "/items/*" }, asyncSupported = true)
-public class NpmPlainServlet extends AbstractPlainServlet {
     @Override
-    protected Consumer<PrintWriter> getImportsWriter() {
-        return this::writeNpmImports;
+    @Before
+    public void setUp() throws IOException {
+        super.setUp();
+        FrontendUtils.ensurePnpm(getNodeUpdater().npmFolder.getAbsolutePath(),
+                true);
+    }
+
+    @Override
+    protected boolean isNpm() {
+        return false;
+    }
+
+    @Override
+    protected String getToolName() {
+        return "pnpm";
     }
 }

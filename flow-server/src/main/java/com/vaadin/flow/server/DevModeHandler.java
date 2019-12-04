@@ -42,6 +42,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS;
@@ -50,7 +51,6 @@ import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.getNodeExecutable;
-import static com.vaadin.flow.server.frontend.FrontendUtils.validateNodeAndNpmVersion;
 import static java.lang.String.format;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
@@ -142,7 +142,7 @@ public final class DevModeHandler {
         ProcessBuilder processBuilder = new ProcessBuilder()
                 .directory(npmFolder);
 
-        validateNodeAndNpmVersion(npmFolder.getAbsolutePath());
+        FrontendUtils.validateNodeAndNpmVersion(npmFolder.getAbsolutePath());
 
         List<String> command = new ArrayList<>();
         command.add(getNodeExecutable(npmFolder.getAbsolutePath()));
@@ -186,7 +186,8 @@ public final class DevModeHandler {
 
             logStream(webpackProcess.getInputStream(), succeed, failure);
 
-            getLogger().info("Waiting for webpack compilation before proceeding.");
+            getLogger()
+                    .info("Waiting for webpack compilation before proceeding.");
             synchronized (this) {
                 this.wait(Integer.parseInt(config.getStringProperty( // NOSONAR
                         SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT,
@@ -199,9 +200,9 @@ public final class DevModeHandler {
             if (!webpackProcess.isAlive()) {
                 throw new IllegalStateException("Webpack exited prematurely");
             }
-            getLogger()
-                    .info("Webpack startup and compilation completed in {}ms",
-                            (System.currentTimeMillis() - start));
+            getLogger().info(
+                    "Webpack startup and compilation completed in {}ms",
+                    (System.currentTimeMillis() - start));
         } catch (IOException | InterruptedException e) {
             getLogger().error("Failed to start the webpack process", e);
         }

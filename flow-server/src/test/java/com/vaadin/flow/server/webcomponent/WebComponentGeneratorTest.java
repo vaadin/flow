@@ -161,6 +161,7 @@ public class WebComponentGeneratorTest {
                 startsWith("class Tag extends HTMLElement {"));
         Assert.assertThat(module, containsString("style.innerHTML = `\n" //
                 + "      :host {\n" //
+                + "        position: relative;\n" //
                 + "        display: inline-block;\n" //
                 + "      }\n" //
                 + "    `;\n"));

@@ -39,7 +39,6 @@ import com.vaadin.flow.server.frontend.NodeTasks;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
-
 import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFinder;
 import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_GENERATED_TS_DIR_TOKEN;
@@ -120,14 +119,18 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         }
 
         try {
-            FrontendUtils.getNodeExecutable(npmFolder.getAbsolutePath());
-            FrontendUtils.getNpmExecutable(npmFolder.getAbsolutePath());
             FrontendUtils
                     .validateNodeAndNpmVersion(npmFolder.getAbsolutePath());
         } catch (IllegalStateException exception) {
             throw new MojoExecutionException(exception.getMessage(), exception);
         }
-
+        try {
+            FileUtils.forceMkdir(generatedFolder);
+        } catch (IOException e) {
+            throw new MojoFailureException(
+                    "Failed to create folder '" + generatedFolder
+                            + "'. Verify that you may write to path.", e);
+        }
         try {
             new NodeTasks.Builder(
                     getClassFinder(project), npmFolder, generatedFolder,

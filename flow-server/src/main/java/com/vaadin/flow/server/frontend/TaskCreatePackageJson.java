@@ -24,7 +24,6 @@ import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
-import static com.vaadin.flow.server.frontend.TaskUpdatePackages.APP_PACKAGE_HASH;
 
 /**
  * Creates the <code>package.json</code> if missing.
@@ -32,10 +31,6 @@ import static com.vaadin.flow.server.frontend.TaskUpdatePackages.APP_PACKAGE_HAS
  * @since 2.0
  */
 public class TaskCreatePackageJson extends NodeUpdater {
-
-    protected static final String FORCE_INSTALL_HASH = "Main dependencies updated, force install";
-
-    private final String polymerVersion;
 
     /**
      * Create an instance of the updater given all configurable parameters.
@@ -46,42 +41,20 @@ public class TaskCreatePackageJson extends NodeUpdater {
      *            folder where flow generated files will be placed.
      * @param flowResourcesPath
      *            folder where flow resources taken from jars will be placed.
-     * @param polymerVersion
-     *            polymer version, may be {@code null} ({@code "3.2.0"} by
      *            default)
      */
-    TaskCreatePackageJson(File npmFolder, File generatedPath,
-            File flowResourcesPath, String polymerVersion) {
+    TaskCreatePackageJson(File npmFolder, File generatedPath, File flowResourcesPath) {
         super(null, null, npmFolder, generatedPath, flowResourcesPath);
-        this.polymerVersion = polymerVersion;
     }
 
     @Override
     public void execute() {
         try {
             modified = false;
-            JsonObject mainContent = getMainPackageJson();
-            if (mainContent == null) {
-                mainContent = Json.createObject();
-            }
-            modified = updateMainDefaultDependencies(mainContent,
-                    polymerVersion);
+            JsonObject mainContent = getPackageJson();
+            modified = updateDefaultDependencies(mainContent);
             if (modified) {
-                if (mainContent.hasKey(APP_PACKAGE_HASH)) {
-                    log().debug(
-                            "Main dependencies updated. Forcing npm install.");
-                    mainContent.put(APP_PACKAGE_HASH, FORCE_INSTALL_HASH);
-                } else {
-                    mainContent.put(APP_PACKAGE_HASH, "");
-                }
-                writeMainPackageFile(mainContent);
-            }
-            JsonObject appContent = getAppPackageJson();
-            if (appContent == null) {
-                appContent = Json.createObject();
-                updateAppDefaultDependencies(appContent);
-                writeAppPackageFile(appContent);
-                modified = true;
+                writePackageFile(mainContent);
             }
 
             if (flowResourcesFolder != null && !new File(npmFolder,

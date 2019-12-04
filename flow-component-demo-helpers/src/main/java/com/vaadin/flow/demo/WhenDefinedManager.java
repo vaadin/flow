@@ -17,8 +17,10 @@ package com.vaadin.flow.demo;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Set;
 
 import com.vaadin.flow.component.Component;
@@ -80,6 +82,9 @@ public class WhenDefinedManager implements Serializable {
     public void whenDefined(Component[] rootComponents, Command command) {
         Set<String> vaadinTagNames = collectVaadinTagNames(rootComponents);
 
+        collectComponentClasses(rootComponents)
+                .forEach(ui.getInternals()::addComponentDependencies);
+
         HashSet<String> missingTagNames = new HashSet<>();
         for (String tagName : vaadinTagNames) {
             ArrayList<Command> tagWaiters = tagToWaiters.get(tagName);
@@ -111,6 +116,21 @@ public class WhenDefinedManager implements Serializable {
         if (missingTagNames.isEmpty()) {
             command.execute();
         }
+    }
+
+    private static Set<Class<? extends Component>> collectComponentClasses(
+            Component[] rootComponents) {
+        Set<Class<? extends Component>> classes = new HashSet<>();
+
+        LinkedList<Component> queue = new LinkedList<>(
+                Arrays.asList(rootComponents));
+        while (!queue.isEmpty()) {
+            Component component = queue.removeLast();
+            classes.add(component.getClass());
+            component.getChildren().forEach(queue::add);
+        }
+
+        return classes;
     }
 
     private void handleLoadedTag(String tagName) {
@@ -148,7 +168,7 @@ public class WhenDefinedManager implements Serializable {
 
     /**
      * Gets or creates the manager instance for the given UI.
-     * 
+     *
      * @param ui
      *            the UI for which to get an instance, not <code>null</code>
      * @return the manager for the given UI, not <code>null</code>
