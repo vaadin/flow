@@ -231,7 +231,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 CoreMatchers.containsString(
                         "If the build fails, check that npm packages are installed."),
                 CoreMatchers.containsString(
-                        "To fix the build remove `node_modules` directory to reset modules."),
+                        "To fix the build remove `package-lock.json` and `node_modules` directory to reset modules."),
                 CoreMatchers.containsString(
                         "In addition you may run `npm install` to fix `node_modules` tree structure.")));
     }
