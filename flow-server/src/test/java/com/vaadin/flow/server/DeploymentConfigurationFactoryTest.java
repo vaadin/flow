@@ -426,7 +426,7 @@ public class DeploymentConfigurationFactoryTest {
         DeploymentConfiguration config = createConfig(Collections
                 .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
 
-        assertEquals(true, config.isProductionMode());
+        assertEquals(false, config.isProductionMode());
         assertEquals(false, config.isCompatibilityMode());
         assertEquals(false, config.enableDevServer());
         assertEquals(true, config.isStatsExternal());
@@ -442,7 +442,7 @@ public class DeploymentConfigurationFactoryTest {
         DeploymentConfiguration config = createConfig(Collections
                 .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
 
-        assertEquals(true, config.isProductionMode());
+        assertEquals(false, config.isProductionMode());
         assertEquals(false, config.isCompatibilityMode());
         assertEquals(false, config.enableDevServer());
         assertEquals(true, config.isStatsExternal());
@@ -456,7 +456,9 @@ public class DeploymentConfigurationFactoryTest {
         FileUtils.writeLines(tokenFile, Arrays.asList("{",
                 "\"compatibilityMode\": true,",
                 "\"enableDevServer\": true,",
-                "\"productionMode\": false,",
+                // production mode can be altered even when external stats
+                // are used
+                "\"productionMode\": true,",
                 "\"externalStatsFile\": true",
                 "}"));
 

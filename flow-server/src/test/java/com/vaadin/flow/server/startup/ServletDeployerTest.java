@@ -30,7 +30,6 @@ import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 
@@ -354,19 +353,22 @@ public class ServletDeployerTest {
                 .anyTimes();
 
         if (addRoutes) {
-            expect(contextMock.getAttribute(ApplicationRouteRegistry.ApplicationRouteRegistryWrapper.class.getName()))
-                    .andAnswer(() -> {
-                        ApplicationRouteRegistry registry = new ApplicationRouteRegistry();
+            expect(contextMock.getAttribute(
+                    ApplicationRouteRegistry.ApplicationRouteRegistryWrapper.class
+                            .getName())).andAnswer(() -> {
+                                ApplicationRouteRegistry registry = new ApplicationRouteRegistry();
 
-                        RouteConfiguration routeConfiguration = RouteConfiguration
-                                .forRegistry(registry);
-                        routeConfiguration.update(() -> {
-                            routeConfiguration.getHandledRegistry().clean();
-                            routeConfiguration.setAnnotatedRoute(
-                                    ComponentWithRoute.class);
-                        });
-                        return new ApplicationRouteRegistry.ApplicationRouteRegistryWrapper(registry);
-                    }).anyTimes();
+                                RouteConfiguration routeConfiguration = RouteConfiguration
+                                        .forRegistry(registry);
+                                routeConfiguration.update(() -> {
+                                    routeConfiguration.getHandledRegistry()
+                                            .clean();
+                                    routeConfiguration.setAnnotatedRoute(
+                                            ComponentWithRoute.class);
+                                });
+                                return new ApplicationRouteRegistry.ApplicationRouteRegistryWrapper(
+                                        registry);
+                            }).anyTimes();
         }
         if (addWebComponents) {
             expect(contextMock.getAttribute(
@@ -377,7 +379,7 @@ public class ServletDeployerTest {
                                 registry.setConfigurations(
                                         Collections.singleton(
                                                 new WebComponentExporter.WebComponentConfigurationFactory()
-                                                        .create(FakeExporter.class)));
+                                                        .create(new FakeExporter())));
 
                                 return registry;
                             }).anyTimes();

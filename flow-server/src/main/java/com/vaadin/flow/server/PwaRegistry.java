@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2019 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -35,12 +35,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.server.startup.VaadinAppShellRegistry;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+import org.slf4j.LoggerFactory;
 
 /**
  * Registry for PWA data.
@@ -104,11 +106,15 @@ public class PwaRegistry implements Serializable {
             // fall back to local image if unavailable
             BufferedImage baseImage = getBaseImage(logo);
 
-            // Pick top-left pixel as fill color if needed for image resizing
-            int bgColor = baseImage.getRGB(0, 0);
+            if (baseImage == null) {
+                LoggerFactory.getLogger(PwaRegistry.class).error("Image is not found or can't be loaded: " + logo);
+            } else {
+                // Pick top-left pixel as fill color if needed for image resizing
+                int bgColor = baseImage.getRGB(0, 0);
 
-            // initialize icons
-            icons = initializeIcons(baseImage, bgColor);
+                // initialize icons
+                icons = initializeIcons(baseImage, bgColor);
+            }
 
             // Load offline page as string, from servlet context if
             // available, fall back to default page

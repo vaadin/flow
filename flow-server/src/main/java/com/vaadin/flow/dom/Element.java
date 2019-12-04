@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2019 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -585,10 +585,15 @@ public class Element extends Node<Element> {
      * @return this element
      */
     public Element removeFromTree() {
+
         Node<?> parent = getParentNode();
-        if (parent != null
-                && parent.getChildren().anyMatch(Predicate.isEqual(this))) {
-            parent.removeChild(this);
+        if (parent != null) {
+            if (parent.getChildren().anyMatch(Predicate.isEqual(this))) {
+                parent.removeChild(this);
+            }
+            if (isVirtualChild()) {
+                parent.removeVirtualChild(this);
+            }
         }
         getNode().removeFromTree();
         return this;
