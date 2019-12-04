@@ -22,7 +22,6 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
-
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -35,6 +34,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
@@ -315,12 +315,38 @@ public class VaadinServletContextInitializer
                     "Search for subclasses and classes with annotations took {} seconds",
                     (classScanning - start) / 1000);
 
+            classes.addAll(getOtherRequiredTypes());
+
             try {
                 DevModeInitializer.initDevModeHandler(classes,
                         event.getServletContext(), config);
             } catch (ServletException e) {
                 throw new RuntimeException(
                         "Unable to initialize Vaadin DevModeHandler", e);
+            }
+        }
+
+        private Collection<Class<?>> getOtherRequiredTypes() {
+            List<Class<?>> types = new ArrayList<>();
+
+            // DragSource and DropTarget, two interfaces in flow-dnd module that
+            // are essential for supporting drag and drop, are not scanned
+            // because Spring doesn't scan interfaces. So, we have to add them
+            // manually.
+            getClassByName("com.vaadin.flow.component.dnd.DragSource")
+                    .ifPresent(types::add);
+            getClassByName("com.vaadin.flow.component.dnd.DropTarget")
+                    .ifPresent(types::add);
+
+            return types;
+        }
+
+        private Optional<Class> getClassByName(String name) {
+            try {
+                return Optional.of(Class
+                        .forName(name));
+            } catch (ClassNotFoundException e) {
+                return Optional.empty();
             }
         }
 
