@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>vaadin-spring-tests</artifactId>
-        <version>12.2-SNAPSHOT</version>
+        <version>13.0-SNAPSHOT</version>
     </parent>
     <artifactId>vaadin-test-spring-boot-scan-bower-mode</artifactId>
     <name>Vaadin Spring Boot integration tests with custom packages to scan in bower mode</name>
