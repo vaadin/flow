@@ -267,6 +267,9 @@ public class DevModeInitializer implements ServletContainerInitializer,
                         SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
                         Boolean.FALSE.toString())));
 
+        boolean disablePnpm = config.getBooleanProperty(
+                Constants.SERVLET_PARAMETER_DISABLE_PNPM, false);
+
         VaadinContext vaadinContext = new VaadinServletContext(context);
         JsonObject tokenFileData = Json.createObject();
         try {
@@ -276,8 +279,9 @@ public class DevModeInitializer implements ServletContainerInitializer,
                     .copyLocalResources(new File(baseDir,
                             Constants.LOCAL_FRONTEND_RESOURCES_PATH))
                     .enableImportsUpdate(true).runNpmInstall(true)
-                    .withEmbeddableWebComponents(true)
-                    .populateTokenFileData(tokenFileData).build().execute();
+                    .populateTokenFileData(tokenFileData)
+                    .withEmbeddableWebComponents(true).disablePnpm(disablePnpm)
+                    .build().execute();
 
             FallbackChunk chunk = FrontendUtils
                     .readFallbackChunk(tokenFileData);

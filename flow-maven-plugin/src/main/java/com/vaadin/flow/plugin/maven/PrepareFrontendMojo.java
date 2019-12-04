@@ -134,8 +134,6 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         }
 
         try {
-            FrontendUtils.getNodeExecutable(npmFolder.getAbsolutePath());
-            FrontendUtils.getNpmExecutable(npmFolder.getAbsolutePath());
             FrontendUtils
                     .validateNodeAndNpmVersion(npmFolder.getAbsolutePath());
         } catch (IllegalStateException exception) {

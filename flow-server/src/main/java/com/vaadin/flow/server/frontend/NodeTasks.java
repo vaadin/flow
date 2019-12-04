@@ -82,6 +82,8 @@ public class NodeTasks implements FallibleCommand {
 
         private File tokenFile;
 
+        private boolean disablePnpm;
+
         /**
          * Directory for for npm and folders and files.
          */
@@ -327,6 +329,20 @@ public class NodeTasks implements FallibleCommand {
             this.tokenFile = tokenFile;
             return this;
         }
+
+        /**
+         * Disables pnpm tool.
+         * <p>
+         * "npm" will be used instead of "pnpm".
+         *
+         * @param disable
+         *            disables pnpm.
+         * @return the builder, for chaining
+         */
+        public Builder disablePnpm(boolean disable) {
+            disablePnpm = disable;
+            return this;
+        }
     }
 
     private final Collection<FallibleCommand> commands = new ArrayList<>();
@@ -364,7 +380,8 @@ public class NodeTasks implements FallibleCommand {
             commands.add(packageUpdater);
 
             if (builder.runNpmInstall) {
-                commands.add(new TaskRunNpmInstall(packageUpdater));
+                commands.add(new TaskRunNpmInstall(packageUpdater,
+                        builder.disablePnpm));
             }
         }
 
