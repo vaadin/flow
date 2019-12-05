@@ -27,12 +27,14 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 public class MigrationTest {
@@ -42,6 +44,13 @@ public class MigrationTest {
 
     private MigrationConfiguration configuration = Mockito
             .mock(MigrationConfiguration.class);
+
+    private File targetFolder;
+
+    @After
+    public void cleanup() {
+        targetFolder = null;
+    }
 
     @Test(expected = IllegalArgumentException.class)
     public void createMigration_noBaseDir_throw() {
@@ -127,6 +136,12 @@ public class MigrationTest {
     public void migratePnpmPassesHappyPath() throws MigrationFailureException,
             MigrationToolsException, IOException {
         Mockito.when(configuration.isPnpmDisabled()).thenReturn(false);
+        targetFolder = makeTempDirectoryStructure();
+        Path pnpmBin = Files
+                .createDirectories(Paths.get(targetFolder.getAbsolutePath(),
+                        "foo", "node_modules", "pnpm", "bin"));
+        new File(pnpmBin.toFile(), "pnpm.js").createNewFile();
+
         // Expected execution calls:
         // 1 - node node_modules/pnpm/bin/pnpm.js --shamefully-hoist=true install polymer-modulizer
         // 2 - node {tempFolder} i -F --confid.interactive=false -S
@@ -210,8 +225,13 @@ public class MigrationTest {
     }
 
     private File makeTempDirectoryStructure() throws IOException {
-        File folder = temporaryFolder.newFolder();
-        folder.mkdirs();
+        File folder;
+        if(targetFolder == null) {
+            folder = temporaryFolder.newFolder();
+            folder.mkdirs();
+        } else {
+            folder = targetFolder;
+        }
         Files.createDirectories(Paths.get(folder.getAbsolutePath(), "foo",
                 "src", "main", "webapp"));
         Files.createDirectories(Paths.get(folder.getAbsolutePath(), "bar",
