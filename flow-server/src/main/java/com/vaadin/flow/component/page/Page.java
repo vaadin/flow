@@ -296,8 +296,10 @@ public class Page implements Serializable {
      *            the URL to load the JavaScript module from, not
      *            <code>null</code>
      * @param loadMode
-     *            determines dependency load mode, refer to {@link LoadMode} for
-     *            details
+     *            this argument is ignored and the <code>loadMode</code> will
+     *            always be {@link LoadMode#EAGER} since {@link LoadMode}
+     *            doesn't work with {@link Type#JS_MODULE}. See Deprecated
+     *            section for more details.
      * @deprecated {@code LoadMode} is not functional with external JavaScript
      *             modules, as those are loaded as deferred due to
      *             {@code type=module} in {@code scrip} tag. Use
@@ -305,7 +307,7 @@ public class Page implements Serializable {
      */
     @Deprecated
     public void addJsModule(String url, LoadMode loadMode) {
-        addDependency(new Dependency(Type.JS_MODULE, url, LoadMode.EAGER));
+        addJsModule(url);
     }
 
     /**
