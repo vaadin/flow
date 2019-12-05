@@ -128,13 +128,13 @@ public class MigrationTest {
             MigrationToolsException, IOException {
         Mockito.when(configuration.isPnpmDisabled()).thenReturn(false);
         // Expected execution calls:
-        // 1 - pnpm --shamefully-hoist=true install polymer-modulizer
+        // 1 - node node_modules/pnpm/bin/pnpm.js --shamefully-hoist=true install polymer-modulizer
         // 2 - node {tempFolder} i -F --confid.interactive=false -S
         // polymer#2.8.0
-        // 3 - pnpm --shamefully-hoist=true i
+        // 3 - node node_modules/pnpm/bin/pnpm.js --shamefully-hoist=true i
         // 4 - node node_modules/polymer-modulizer/bin/modulizer.js --force
         // --out , --import-style=name
-        migratePassesHappyPath(Stream.of(4, 7, 3, 6)
+        migratePassesHappyPath(Stream.of(5, 7, 4, 6)
                 .collect(Collectors.toCollection(LinkedList::new)));
     }
 
@@ -179,7 +179,8 @@ public class MigrationTest {
             @Override
             protected boolean executeProcess(List<String> command,
                     String errorMsg, String successMsg, String exceptionMsg) {
-                Assert.assertEquals("Unexpected command",
+                Assert.assertEquals(
+                        "Unexpected command '" + command.toString() + "'",
                         (int) excecuteExpectations.pop(), command.size());
                 // Skip actual execution of commands.
                 return true;
