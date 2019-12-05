@@ -502,7 +502,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         assertFalse(textField.isRequiredIndicatorVisible());
 
         BindingBuilder<Person, String> bindingBuilder = binder.forField(textField);
-        assertFalse(textField.isRequiredIndicatorVisible())
+        assertFalse(textField.isRequiredIndicatorVisible());
 
         bindingBuilder.asRequired("foobar");
         assertTrue(textField.isRequiredIndicatorVisible());
