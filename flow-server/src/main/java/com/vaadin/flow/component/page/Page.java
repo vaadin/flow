@@ -278,7 +278,7 @@ public class Page implements Serializable {
      */
     public void addJsModule(String url) {
         if (UrlUtil.isExternal(url) || url.startsWith("/")) {
-            addJsModule(url, LoadMode.EAGER);
+            addDependency(new Dependency(Type.JS_MODULE, url, LoadMode.EAGER));
         } else {
             throw new IllegalArgumentException(
                     "url argument must contains either a protocol (eg. starts with \"http://\" or \"//\"), or starts with \"/\".");
