@@ -376,7 +376,8 @@ public class NodeTasks implements FallibleCommand {
         if (builder.enablePackagesUpdate) {
             TaskUpdatePackages packageUpdater = new TaskUpdatePackages(
                     classFinder, frontendDependencies, builder.npmFolder,
-                    builder.generatedFolder, builder.cleanNpmFiles);
+                    builder.generatedFolder, builder.cleanNpmFiles,
+                    builder.disablePnpm);
             commands.add(packageUpdater);
 
             if (builder.runNpmInstall) {
