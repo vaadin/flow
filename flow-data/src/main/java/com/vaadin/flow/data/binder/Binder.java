@@ -914,7 +914,6 @@ public class Binder<BEAN> implements Serializable {
             checkUnbound();
             this.asRequiredSet = true;
             field.setRequiredIndicatorVisible(true);
-            return withValidator(customRequiredValidator);
             return withValidator((value, context) -> {
                 if (!field.isRequiredIndicatorVisible())
                     return ValidationResult.ok();
