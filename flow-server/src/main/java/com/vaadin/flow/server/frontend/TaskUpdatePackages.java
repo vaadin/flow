@@ -41,6 +41,7 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
+
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 
 /**
@@ -54,7 +55,8 @@ public class TaskUpdatePackages extends NodeUpdater {
 
     private static final String VERSION = "version";
     private static final String SHRINK_WRAP = "@vaadin/vaadin-shrinkwrap";
-    private boolean forceCleanUp;
+    private final boolean forceCleanUp;
+    private final boolean needVersionUpdateClean;
 
     private static class RemoveFileVisitor extends SimpleFileVisitor<Path>
             implements Serializable {
@@ -78,22 +80,28 @@ public class TaskUpdatePackages extends NodeUpdater {
      * Create an instance of the updater given all configurable parameters.
      *
      * @param finder
-     *         a reusable class finder
+     *            a reusable class finder
      * @param frontendDependencies
-     *         a reusable frontend dependencies
+     *            a reusable frontend dependencies
      * @param npmFolder
-     *         folder with the `package.json` file
+     *            folder with the `package.json` file
      * @param generatedPath
-     *         folder where flow generated files will be placed.
+     *            folder where flow generated files will be placed.
      * @param forceCleanUp
-     *         forces the clean up process to be run. If {@code false}, clean
-     *         up will be performed when platform version update is detected.
+     *            forces the clean up process to be run. If {@code false}, clean
+     *            up will be performed when platform version update is detected.
+     * @param needVersionUpdateClean
+     *            if {@code true} then clean up should be done in case platform
+     *            version update, otherwise no any clean up will be done unless
+     *            {@code forceCleanUp} requires it explicitly
      */
     TaskUpdatePackages(ClassFinder finder,
             FrontendDependenciesScanner frontendDependencies, File npmFolder,
-            File generatedPath, boolean forceCleanUp) {
+            File generatedPath, boolean forceCleanUp,
+            boolean needVersionUpdateClean) {
         super(finder, frontendDependencies, npmFolder, generatedPath);
         this.forceCleanUp = forceCleanUp;
+        this.needVersionUpdateClean = needVersionUpdateClean;
     }
 
     @Override
@@ -127,8 +135,9 @@ public class TaskUpdatePackages extends NodeUpdater {
 
         // Remove obsolete dependencies
         JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
-        List<String> dependencyCollection = Stream.concat(deps.entrySet().stream(),
-                getDefaultDependencies().entrySet().stream())
+        List<String> dependencyCollection = Stream
+                .concat(deps.entrySet().stream(),
+                        getDefaultDependencies().entrySet().stream())
                 .map(Entry::getKey).collect(Collectors.toList());
 
         JsonObject vaadinDependencies = packageJson.getObject(VAADIN_DEP_KEY)
@@ -137,13 +146,15 @@ public class TaskUpdatePackages extends NodeUpdater {
         int removed = 0;
         if (dependencies != null) {
             for (String key : dependencies.keys()) {
-                if (!dependencyCollection.contains(key) && vaadinDependencies.hasKey(key)) {
+                if (!dependencyCollection.contains(key)
+                        && vaadinDependencies.hasKey(key)) {
                     dependencies.remove(key);
                     log().debug("Removed \"{}\".", key);
                     removed++;
                 }
             }
-            doCleanUp = doCleanUp || !ensureReleaseVersion(dependencies);
+            doCleanUp = doCleanUp || needVersionUpdateClean
+                    && !ensureReleaseVersion(dependencies);
         }
 
         if (removed > 0) {
@@ -154,7 +165,8 @@ public class TaskUpdatePackages extends NodeUpdater {
             cleanUp();
         }
 
-        String oldHash = packageJson.getObject(VAADIN_DEP_KEY).getString(HASH_KEY);
+        String oldHash = packageJson.getObject(VAADIN_DEP_KEY)
+                .getString(HASH_KEY);
         String newHash = generatePackageJsonHash(packageJson);
         // update packageJson hash value, if no changes it will not be written
         packageJson.getObject(VAADIN_DEP_KEY).put(HASH_KEY, newHash);
@@ -170,7 +182,7 @@ public class TaskUpdatePackages extends NodeUpdater {
      * target/frontend/node_modules folders in case the versions are different.
      *
      * @param dependencies
-     *         dependencies object with the vaadin-shrinkwrap version
+     *            dependencies object with the vaadin-shrinkwrap version
      * @throws IOException
      */
     private boolean ensureReleaseVersion(JsonObject dependencies)
@@ -267,7 +279,7 @@ public class TaskUpdatePackages extends NodeUpdater {
      * dependencies in different order will not trigger npm install.
      *
      * @param packageJson
-     *         JsonObject built in the same format as package.json
+     *            JsonObject built in the same format as package.json
      * @return has for dependencies and devDependencies
      */
     static String generatePackageJsonHash(JsonObject packageJson) {
@@ -276,23 +288,24 @@ public class TaskUpdatePackages extends NodeUpdater {
             JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
             hashContent.append("\"dependencies\": {");
             String sortedDependencies = Arrays.stream(dependencies.keys())
-                    .sorted(String::compareToIgnoreCase).map(key -> String
-                            .format("\"%s\": \"%s\"", key,
-                                    dependencies.getString(key)))
+                    .sorted(String::compareToIgnoreCase)
+                    .map(key -> String.format("\"%s\": \"%s\"", key,
+                            dependencies.getString(key)))
                     .collect(Collectors.joining(",\n  "));
             hashContent.append(sortedDependencies);
             hashContent.append("}");
         }
         if (packageJson.hasKey(DEV_DEPENDENCIES)) {
-            if(hashContent.length() > 0) {
+            if (hashContent.length() > 0) {
                 hashContent.append(",\n");
             }
-            JsonObject devDependencies = packageJson.getObject(DEV_DEPENDENCIES);
+            JsonObject devDependencies = packageJson
+                    .getObject(DEV_DEPENDENCIES);
             hashContent.append("\"devDependencies\": {");
             String sortedDevDependencies = Arrays.stream(devDependencies.keys())
-                    .sorted(String::compareToIgnoreCase).map(key -> String
-                            .format("\"%s\": \"%s\"", key,
-                                    devDependencies.getString(key)))
+                    .sorted(String::compareToIgnoreCase)
+                    .map(key -> String.format("\"%s\": \"%s\"", key,
+                            devDependencies.getString(key)))
                     .collect(Collectors.joining(",\n  "));
             hashContent.append(sortedDevDependencies);
             hashContent.append("}");
