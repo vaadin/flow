@@ -153,8 +153,8 @@ public class TaskUpdatePackages extends NodeUpdater {
                     removed++;
                 }
             }
-            doCleanUp = needVersionUpdateClean
-                    && (doCleanUp || !ensureReleaseVersion(dependencies));
+            doCleanUp = doCleanUp || needVersionUpdateClean
+                    && !ensureReleaseVersion(dependencies);
         }
 
         if (removed > 0) {
