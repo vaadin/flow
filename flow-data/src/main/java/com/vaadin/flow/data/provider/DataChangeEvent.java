@@ -121,7 +121,7 @@ public class DataChangeEvent<T> extends EventObject {
      * @param unregisterListenerCommand
      *            the unregister command
      */
-    void setUnregisterListenerCommand(Command unregisterListenerCommand) {
+    public void setUnregisterListenerCommand(Command unregisterListenerCommand) {
         this.unregisterListenerCommand = unregisterListenerCommand;
     }
 
