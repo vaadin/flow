@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2019 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,7 +17,6 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -61,8 +60,7 @@ public class TaskRunNpmInstallTest {
             }
 
         };
-        task = new TaskRunNpmInstall(nodeUpdater);
-
+        task = new TaskRunNpmInstall(nodeUpdater, isNpm());
     }
 
     @Test
@@ -73,7 +71,7 @@ public class TaskRunNpmInstallTest {
         nodeUpdater.modified = false;
         task.execute();
 
-        Mockito.verify(logger).info(TaskRunNpmInstall.RUNNING_NPM_INSTALL);
+        Mockito.verify(logger).info(getRunningMsg());
     }
 
     @Test
@@ -85,19 +83,20 @@ public class TaskRunNpmInstallTest {
         nodeUpdater.modified = false;
         task.execute();
 
-        Mockito.verify(logger).info(TaskRunNpmInstall.SKIPPING_NPM_INSTALL);
+        Mockito.verify(logger)
+                .info("Skipping `" + getToolName() + " install`.");
     }
 
     @Test
     public void runNpmInstall_dirContainsOnlyFlowNpmPackage_npmInstallIsNotExecuted()
-            throws IOException, ExecutionFailedException {
+            throws ExecutionFailedException {
         File nodeModules = new File(npmFolder, NODE_MODULES);
         nodeModules.mkdir();
         new File(nodeModules, "@vaadin/flow-frontend/").mkdirs();
         nodeUpdater.modified = false;
         task.execute();
 
-        Mockito.verify(logger).info(TaskRunNpmInstall.RUNNING_NPM_INSTALL);
+        Mockito.verify(logger).info(getRunningMsg());
     }
 
     @Test
@@ -106,6 +105,22 @@ public class TaskRunNpmInstallTest {
         nodeUpdater.modified = true;
         task.execute();
 
-        Mockito.verify(logger).info(TaskRunNpmInstall.RUNNING_NPM_INSTALL);
+        Mockito.verify(logger).info(getRunningMsg());
+    }
+
+    private String getRunningMsg() {
+        return "Running `" + getToolName() + " install` ...";
+    }
+
+    protected NodeUpdater getNodeUpdater() {
+        return nodeUpdater;
+    }
+
+    protected boolean isNpm() {
+        return true;
+    }
+
+    protected String getToolName() {
+        return "npm";
     }
 }

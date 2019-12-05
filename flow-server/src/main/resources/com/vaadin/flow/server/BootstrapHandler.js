@@ -223,6 +223,10 @@
       /* Device Pixel Ratio */
       params['v-pr'] = window.devicePixelRatio;
 
+      if(navigator.platform) {
+        params['v-np'] = navigator.platform;
+      }
+      
       /* Stringify each value (they are parsed on the server side) */
       Object.keys(params).forEach(function(key) {
         var value = params[key];

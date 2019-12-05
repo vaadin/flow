@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2019 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,6 +19,7 @@ package com.vaadin.flow.server;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -63,7 +64,7 @@ import com.vaadin.flow.internal.LocaleUtil;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.Router;
-import com.vaadin.flow.server.ServletHelper.RequestType;
+import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.HeartbeatHandler;
 import com.vaadin.flow.server.communication.PwaHandler;
@@ -85,6 +86,7 @@ import elemental.json.Json;
 import elemental.json.JsonException;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -237,9 +239,9 @@ public abstract class VaadinService implements Serializable {
      * Creates a service. This method is for use by dependency injection
      * frameworks etc. and must be followed by a call to
      * {@link #setClassLoader(ClassLoader)} or {@link #setDefaultClassLoader()}
-     * before use. Furthermore {@link #getDeploymentConfiguration()} and {@link #getContext()} should be
-     * overridden (or otherwise intercepted) not to return
-     * <code>null</code>.
+     * before use. Furthermore {@link #getDeploymentConfiguration()} and
+     * {@link #getContext()} should be overridden (or otherwise intercepted) not
+     * to return <code>null</code>.
      */
     protected VaadinService() {
         deploymentConfiguration = null;
@@ -338,10 +340,11 @@ public abstract class VaadinService implements Serializable {
     protected abstract PwaRegistry getPwaRegistry();
 
     /**
-     * Returns relative context path for given request.
-     * Override this method in subclasses.
+     * Returns relative context path for given request. Override this method in
+     * subclasses.
      *
-     * @param request Request.
+     * @param request
+     *            Request.
      * @return Relative context root path for that request.
      */
     public abstract String getContextRootRelativePath(VaadinRequest request);
@@ -1369,7 +1372,8 @@ public abstract class VaadinService implements Serializable {
      */
     private int getUidlRequestTimeout(VaadinSession session) {
         return getDeploymentConfiguration().isCloseIdleSessions()
-                ? session.getSession().getMaxInactiveInterval() : -1;
+                ? session.getSession().getMaxInactiveInterval()
+                : -1;
     }
 
     /**
@@ -1567,9 +1571,9 @@ public abstract class VaadinService implements Serializable {
                 vaadinSession.getErrorHandler().error(new ErrorEvent(t));
             }
             // if this was an UIDL request, send UIDL back to the client
-            if (ServletHelper.isRequestType(request, RequestType.UIDL)) {
+            if (HandlerHelper.isRequestType(request, RequestType.UIDL)) {
                 SystemMessages ci = getSystemMessages(
-                        ServletHelper.findLocale(vaadinSession, request),
+                        HandlerHelper.findLocale(vaadinSession, request),
                         request);
                 try {
                     writeUncachedStringResponse(response,
@@ -1676,7 +1680,7 @@ public abstract class VaadinService implements Serializable {
         try {
             // If there is a URL, try to redirect there
             SystemMessages systemMessages = getSystemMessages(
-                    ServletHelper.findLocale(null, request), request);
+                    HandlerHelper.findLocale(null, request), request);
             String sessionExpiredURL = systemMessages.getSessionExpiredURL();
             if (sessionExpiredURL != null
                     && (response instanceof VaadinServletResponse)) {
@@ -1717,12 +1721,42 @@ public abstract class VaadinService implements Serializable {
      */
     public static String createCriticalNotificationJSON(String caption,
             String message, String details, String url) {
+        return createCriticalNotificationJSON(caption, message, details, url,
+                null);
+    }
+
+    /**
+     * Creates a JSON message which, when sent to client as-is, will cause a
+     * critical error to be shown with the given details.
+     *
+     * @param caption
+     *            The caption of the error or null to omit
+     * @param message
+     *            The error message or null to omit
+     * @param details
+     *            Additional error details or null to omit
+     * @param url
+     *            A url to redirect to. If no other details are given then the
+     *            user will be immediately redirected to this URL. Otherwise the
+     *            message will be shown and the browser will redirect to the
+     *            given URL only after the user acknowledges the message. If
+     *            null then the browser will refresh the current page.
+     * @param querySelector
+     *            Query selector to find the element under which the error will
+     *            be added . If element is not found or the selector is
+     *            {@code null}, body will be used
+     * @return A JSON string to be sent to the client
+     */
+    public static String createCriticalNotificationJSON(
+            String caption, String message, String details, String url,
+            String querySelector) {
         try {
             JsonObject appError = Json.createObject();
             putValueOrJsonNull(appError, "caption", caption);
             putValueOrJsonNull(appError, "url", url);
             putValueOrJsonNull(appError, "message", message);
             putValueOrJsonNull(appError, "details", details);
+            putValueOrJsonNull(appError, "querySelector", querySelector);
 
             JsonObject meta = Json.createObject();
             meta.put("appError", appError);
@@ -2292,21 +2326,25 @@ public abstract class VaadinService implements Serializable {
     /**
      * Constructs {@link VaadinContext} for this service.
      *
-     * This method will be called only once, upon first call to {@link #getContext()}.
+     * This method will be called only once, upon first call to
+     * {@link #getContext()}.
+     *
      * @return Context. This may never be {@code null}.
      */
     protected abstract VaadinContext constructVaadinContext();
 
     /**
      * Returns {@link VaadinContext} for this service.
+     *
      * @return A non-null context instance.
      */
     public VaadinContext getContext() {
-        if(vaadinContext == null) {
+        if (vaadinContext == null) {
             vaadinContext = constructVaadinContext();
         }
         return vaadinContext;
     }
+
     /**
      *
      * Executes a {@code runnable} with a {@link VaadinService} available in the

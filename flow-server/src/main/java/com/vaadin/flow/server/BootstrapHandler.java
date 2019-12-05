@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2019 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -369,6 +369,20 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         protected Optional<ThemeDefinition> getTheme() {
             return ui.getThemeFor(pageConfigurationHolder, null);
         }
+
+        /**
+         * Gets a pwa registry instance.
+         *
+         * @return an optional pwa registry instance, or an empty optional if no
+         *         pwa registry available for the context
+         */
+        protected Optional<PwaRegistry> getPwaRegistry() {
+            VaadinService vaadinService = getSession().getService();
+            if (vaadinService == null) {
+                return Optional.empty();
+            }
+            return Optional.ofNullable(vaadinService.getPwaRegistry());
+        }
     }
 
     /**
@@ -451,7 +465,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         BootstrapContext context = createAndInitUI(uiClass, request, response,
                 session);
 
-        ServletHelper.setResponseNoCacheHeaders(response::setHeader,
+        HandlerHelper.setResponseNoCacheHeaders(response::setHeader,
                 response::setDateHeader);
 
         Document document = pageBuilder.getBootstrapPage(context);
@@ -600,8 +614,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             if (!entries.isEmpty()) {
                 // Registers the entries in a way that is picked up as a Vaadin
                 // WebComponent by the usage stats gatherer
-                document.body().appendElement(SCRIPT_TAG)
-                        .text("window.Vaadin.registrations = window.Vaadin.registrations || [];\n"
+                document.body().appendElement(SCRIPT_TAG).text(
+                        "window.Vaadin.registrations = window.Vaadin.registrations || [];\n"
                                 + "window.Vaadin.registrations.push(" + entries
                                 + ");");
             }
@@ -882,15 +896,17 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                                 + "you need to run \"mvn install\" once first or launch the application using \"mvn spring-boot:run\"");
             }
             JsonObject chunks = Json.parse(content);
-
             for (String key : chunks.keys()) {
-                Element script = createJavaScriptElement(
-                        "./" + VAADIN_MAPPING + chunks.getString(key));
                 if (key.endsWith(".es5")) {
+                    Element script = createJavaScriptElement(
+                            "./" + VAADIN_MAPPING + chunks.getString(key));
                     head.appendChild(
                             script.attr("nomodule", true).attr("data-app-id",
                                     context.getUI().getInternals().getAppId()));
                 } else {
+                    Element script = createJavaScriptElement(
+                            "./" + VAADIN_MAPPING + chunks.getString(key),
+                            false);
                     head.appendChild(
                             script.attr("type", "module").attr("data-app-id",
                                     context.getUI().getInternals().getAppId()));
@@ -987,12 +1003,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
         private void setupPwa(Document document, BootstrapContext context) {
-            VaadinService vaadinService = context.getSession().getService();
-            if (vaadinService == null) {
-                return;
-            }
-
-            PwaRegistry registry = vaadinService.getPwaRegistry();
+            PwaRegistry registry = context.getPwaRegistry().orElse(null);
             if (registry == null) {
                 return;
             }
@@ -1033,7 +1044,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                                 + "  });\n" + "}");
 
                 // add body injections
-                if (registry.getPwaConfiguration().isInstallPromptEnabled()) {
+                if (config.isInstallPromptEnabled()) {
                     // PWA Install prompt html/js
                     document.body().append(registry.getInstallPrompt());
                 }
@@ -1126,8 +1137,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                         !inlineElement);
                 break;
             case JS_MODULE:
-                dependencyElement = createJavaScriptElement(url,
-                        !inlineElement, "module");
+                dependencyElement = createJavaScriptElement(url, false,
+                        "module");
                 break;
             case HTML_IMPORT:
                 dependencyElement = createHtmlImportElement(url);
@@ -1311,7 +1322,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             }
 
             // Use locale from session if set, else from the request
-            Locale locale = ServletHelper.findLocale(session, request);
+            Locale locale = HandlerHelper.findLocale(session, request);
             // Get system messages
             SystemMessages systemMessages = session.getService()
                     .getSystemMessages(locale, request);
@@ -1380,7 +1391,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
              * path segment in pathInfo (i.e. the part of the requested path
              * that comes after the servlet mapping)
              */
-            return ServletHelper.getCancelingRelativePath(pathInfo);
+            return HandlerHelper.getCancelingRelativePath(pathInfo);
         }
     }
 

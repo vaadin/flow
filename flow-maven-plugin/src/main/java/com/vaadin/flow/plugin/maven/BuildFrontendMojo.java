@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2019 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -127,15 +127,15 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
             + Constants.LOCAL_FRONTEND_RESOURCES_PATH)
     protected File frontendResourcesDirectory;
 
-    @Parameter
-    private String polymerVersion;
-
     /**
      * Whether to use byte code scanner strategy to discover frontend
      * components.
      */
     @Parameter(defaultValue = "true")
     private boolean optimizeBundle;
+
+    @Parameter(property = "disable.pnpm", defaultValue = "false")
+    private boolean disablePnpm;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -186,8 +186,8 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                         .enableImportsUpdate(true)
                         .withEmbeddableWebComponents(
                                 generateEmbeddableWebComponents)
-                        .withTokenFile(getTokenFile())
-                        .withPolymerVersion(polymerVersion).build().execute();
+                        .withTokenFile(getTokenFile()).disablePnpm(disablePnpm)
+                        .build().execute();
     }
 
     private void runWebpack() {

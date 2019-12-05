@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2019 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -122,14 +122,16 @@ public class NpmTemplateParser implements TemplateParser {
         }
 
         if (chosenDep != null) {
-            // Template needs to be wrapped in an element with id, to look
-            // like a P2 template
-            Element parent = new Element(tag);
-            parent.attr("id", tag);
 
             Element templateElement = BundleParser.parseTemplateElement(
                     chosenDep.getFirst().getUrl(), chosenDep.getSecond());
-            templateElement.appendTo(parent);
+            if (!JsoupUtils.getDomModule(templateElement, null).isPresent()) {
+                // Template needs to be wrapped in an element with id, to look
+                // like a P2 template
+                Element parent = new Element(tag);
+                parent.attr("id", tag);
+                templateElement.appendTo(parent);
+            }
 
             return new TemplateData(chosenDep.getFirst().getUrl(),
                     templateElement);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2019 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -216,9 +216,9 @@ public final class Constants implements Serializable {
     public static final String SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE = "devmode.optimizeBundle";
 
     /**
-     * Configuration parameter name for polymer version.
+     * Configuration parameter name for disabling pnpm.
      */
-    public static final String SERVLET_PARAMETER_DEVMODE_POLYMER_VERSION = "devmode.polymer.version";
+    public static final String SERVLET_PARAMETER_DISABLE_PNPM = "disable.pnpm";
 
     /**
      * The path used in the vaadin servlet for handling static resources.

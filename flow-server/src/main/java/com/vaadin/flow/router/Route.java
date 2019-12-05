@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2019 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -81,10 +81,11 @@ public @interface Route {
     Class<? extends RouterLayout> layout() default UI.class;
 
     /**
-     * Have the route chain break on defined class and not take into notice any
-     * more parent layout route prefixes.
+     * Ignore route prefixes from parent layouts and only use the path defined
+     * in this annotation.
      *
-     * @return route up to here should be absolute
+     * @return <code>true</code> to ignore parent layout prefixes,
+     *         <code>false</code> otherwise
      */
     boolean absolute() default false;
 

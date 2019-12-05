@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2019 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,7 +18,11 @@ package com.vaadin.flow.webcomponent;
 
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponent;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.PWA;
 
+@PWA(name = "Client select exporter", shortName = "Client select")
+@Route
 public class ClientSelectExporter
         extends WebComponentExporter<ClientSelectComponent> {
 
@@ -29,7 +33,9 @@ public class ClientSelectExporter
     }
 
     @Override
-    public void configureInstance(WebComponent<ClientSelectComponent> webComponent, ClientSelectComponent component) {
+    public void configureInstance(
+            WebComponent<ClientSelectComponent> webComponent,
+            ClientSelectComponent component) {
 
     }
 }

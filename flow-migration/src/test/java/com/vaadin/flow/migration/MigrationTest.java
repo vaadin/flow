@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2019 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -40,7 +40,8 @@ public class MigrationTest {
     @Rule
     public final TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-    private MigrationConfiguration configuration = Mockito.mock(MigrationConfiguration.class);
+    private MigrationConfiguration configuration = Mockito
+            .mock(MigrationConfiguration.class);
 
     @Test(expected = IllegalArgumentException.class)
     public void createMigration_noBaseDir_throw() {
@@ -108,7 +109,37 @@ public class MigrationTest {
     }
 
     @Test
-    public void migratePassesHappyPath()
+    public void migrateNpmPassesHappyPath() throws MigrationFailureException,
+            MigrationToolsException, IOException {
+        Mockito.when(configuration.isPnpmDisabled()).thenReturn(true);
+        // Expected execution calls:
+        // 1 - npm --no-update-notifier install polymer-modulizer
+        // 2 - node {tempFolder} i -F --confid.interactive=false -S
+        // polymer#2.8.0
+        // 3 - npm --no-update-notifier i
+        // 4 - node node_modules/polymer-modulizer/bin/modulizer.js --force
+        // --out , --import-style=name
+        migratePassesHappyPath(Stream.of(4, 7, 3, 6)
+                .collect(Collectors.toCollection(LinkedList::new)));
+    }
+
+    @Test
+    public void migratePnpmPassesHappyPath() throws MigrationFailureException,
+            MigrationToolsException, IOException {
+        Mockito.when(configuration.isPnpmDisabled()).thenReturn(false);
+        // Expected execution calls:
+        // 1 - pnpm --shamefully-hoist=true install polymer-modulizer
+        // 2 - node {tempFolder} i -F --confid.interactive=false -S
+        // polymer#2.8.0
+        // 3 - pnpm --shamefully-hoist=true i
+        // 4 - node node_modules/polymer-modulizer/bin/modulizer.js --force
+        // --out , --import-style=name
+        migratePassesHappyPath(Stream.of(4, 7, 3, 6)
+                .collect(Collectors.toCollection(LinkedList::new)));
+    }
+
+    private void migratePassesHappyPath(
+            LinkedList<Integer> excecuteExpectations)
             throws MigrationFailureException, MigrationToolsException,
             IOException {
         File sourcesFolder = makeTempDirectoryStructure();
@@ -116,28 +147,19 @@ public class MigrationTest {
 
         Mockito.when(configuration.getBaseDirectory())
                 .thenReturn(Paths.get(sourcesFolder.getPath(), "foo").toFile());
-        Mockito.when(configuration.getTempMigrationFolder()).
-                thenReturn(targetFolder);
+        Mockito.when(configuration.getTempMigrationFolder())
+                .thenReturn(targetFolder);
         Mockito.when(configuration.getAnnotationRewriteStrategy())
                 .thenReturn(AnnotationsRewriteStrategy.SKIP);
         Mockito.when(configuration.isKeepOriginalFiles()).thenReturn(true);
         Mockito.when(configuration.getClassFinder())
                 .thenReturn(Mockito.mock(ClassFinder.class));
-        Mockito.when(configuration.getJavaSourceDirectories()).thenReturn(
-                new File[] {
+        Mockito.when(configuration.getJavaSourceDirectories())
+                .thenReturn(new File[] {
                         Paths.get(sourcesFolder.getPath(), "bar").toFile() });
         Mockito.when(configuration.getCompiledClassDirectory()).thenReturn(
                 Paths.get(sourcesFolder.getPath(), "foobar").toFile());
 
-        // Expected execution calls:
-        // 1 - npm --no-update-notifier install polymer-modulizer
-        // 2 - node {tempFolder} i -F --confid.interactive=false -S polymer#2.8.0
-        // 3 - npm --no-update-notifier i
-        // 4 - node node_modules/polymer-modulizer/bin/modulizer.js --force --out , --import-style=name
-
-        LinkedList<Integer> excecuteExpectations = Stream.of(4, 7, 3, 6)
-                .collect(Collectors.toCollection(LinkedList::new));
-        
         Migration migration = new Migration(configuration) {
             @Override
             protected void prepareMigrationDirectory() {
@@ -157,7 +179,8 @@ public class MigrationTest {
             @Override
             protected boolean executeProcess(List<String> command,
                     String errorMsg, String successMsg, String exceptionMsg) {
-                Assert.assertEquals("Unexpected command", (int)excecuteExpectations.pop(), command.size());
+                Assert.assertEquals("Unexpected command",
+                        (int) excecuteExpectations.pop(), command.size());
                 // Skip actual execution of commands.
                 return true;
             }
@@ -165,18 +188,19 @@ public class MigrationTest {
         migration.migrate();
     }
 
-    private void populateTargetWithApplications(File targetFolder) throws IOException {
+    private void populateTargetWithApplications(File targetFolder)
+            throws IOException {
         targetFolder.mkdirs();
-        Path bowerBin = Files.createDirectories(
-                Paths.get(targetFolder.getAbsolutePath(), "node_modules",
-                        "bower", "bin"));
+        Path bowerBin = Files
+                .createDirectories(Paths.get(targetFolder.getAbsolutePath(),
+                        "node_modules", "bower", "bin"));
         new File(bowerBin.toFile(), "bower").createNewFile();
 
         // Add stub node for test. !note! will not work on windows which will
         // need to have node installed
         Path nodeDirectory = Files.createDirectories(
                 Paths.get(targetFolder.getAbsolutePath(), "node"));
-        File node = new File(nodeDirectory.toFile(),"node");
+        File node = new File(nodeDirectory.toFile(), "node");
         node.createNewFile();
         node.setExecutable(true);
         FileUtils.write(node,
@@ -187,12 +211,10 @@ public class MigrationTest {
     private File makeTempDirectoryStructure() throws IOException {
         File folder = temporaryFolder.newFolder();
         folder.mkdirs();
-        Files.createDirectories(
-                Paths.get(folder.getAbsolutePath(), "foo", "src", "main",
-                        "webapp"));
-        Files.createDirectories(
-                Paths.get(folder.getAbsolutePath(), "bar", "src", "main",
-                        "java"));
+        Files.createDirectories(Paths.get(folder.getAbsolutePath(), "foo",
+                "src", "main", "webapp"));
+        Files.createDirectories(Paths.get(folder.getAbsolutePath(), "bar",
+                "src", "main", "java"));
         Files.createDirectories(Paths.get(folder.getAbsolutePath(), "foobar"));
         return folder;
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2019 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -115,19 +115,54 @@ public class NodeUpdaterTest {
     @Test
     public void updateMainDefaultDependencies_polymerVersionIsNull_useDefault() {
         JsonObject object = Json.createObject();
-        nodeUpdater.updateMainDefaultDependencies(object, null);
+        object.put(nodeUpdater.VAADIN_DEP_KEY, nodeUpdater.createVaadinPackagesJson());
+        nodeUpdater.updateDefaultDependencies(object);
 
         String version = getPolymerVersion(object);
         Assert.assertEquals("3.2.0", version);
     }
 
     @Test
-    public void updateMainDefaultDependencies_polymerVersionIsProvided_useProvided() {
+    public void updateMainDefaultDependencies_polymerVersionIsProvidedByUser_useProvided() {
         JsonObject object = Json.createObject();
-        nodeUpdater.updateMainDefaultDependencies(object, "foo");
+        JsonObject dependencies = Json.createObject();
+        dependencies.put("@polymer/polymer", "4.0.0");
+        object.put(NodeUpdater.DEPENDENCIES, dependencies);
+        object.put(NodeUpdater.VAADIN_DEP_KEY, nodeUpdater.createVaadinPackagesJson());
+
+        nodeUpdater.updateDefaultDependencies(object);
 
         String version = getPolymerVersion(object);
-        Assert.assertEquals("foo", version);
+        Assert.assertEquals("4.0.0", version);
+    }
+
+    @Test
+    public void updateDefaultDependencies_olderVersionsAreUpdated()
+            throws IOException {
+        JsonObject packageJson = nodeUpdater.getPackageJson();
+        packageJson.put(NodeUpdater.DEPENDENCIES, Json.createObject());
+        packageJson.put(NodeUpdater.DEV_DEPENDENCIES, Json.createObject());
+        packageJson.getObject(NodeUpdater.DEPENDENCIES).put("@webcomponents/webcomponentsjs", "^2.1.1");
+        packageJson.getObject(NodeUpdater.DEV_DEPENDENCIES).put("webpack",
+                "3.3.10");
+        nodeUpdater.updateDefaultDependencies(packageJson);
+
+        Assert.assertEquals("^2.2.10", packageJson.getObject(NodeUpdater.DEPENDENCIES).getString("@webcomponents/webcomponentsjs"));
+        Assert.assertEquals("4.30.0", packageJson.getObject(NodeUpdater.DEV_DEPENDENCIES).getString("webpack"));
+    }
+
+    @Test //#6907 test when user has set newer versions
+    public void updateDefaultDependencies_newerVersionsAreNotChanged() throws IOException {
+        JsonObject packageJson = nodeUpdater.getPackageJson();
+        packageJson.put(NodeUpdater.DEPENDENCIES, Json.createObject());
+        packageJson.put(NodeUpdater.DEV_DEPENDENCIES, Json.createObject());
+        packageJson.getObject(NodeUpdater.DEPENDENCIES).put("@webcomponents/webcomponentsjs", "2.3.1");
+        packageJson.getObject(NodeUpdater.DEV_DEPENDENCIES).put("webpack",
+                "5.0.1");
+        nodeUpdater.updateDefaultDependencies(packageJson);
+
+        Assert.assertEquals("2.3.1", packageJson.getObject(NodeUpdater.DEPENDENCIES).getString("@webcomponents/webcomponentsjs"));
+        Assert.assertEquals("5.0.1", packageJson.getObject(NodeUpdater.DEV_DEPENDENCIES).getString("webpack"));
     }
 
     private String getPolymerVersion(JsonObject object) {

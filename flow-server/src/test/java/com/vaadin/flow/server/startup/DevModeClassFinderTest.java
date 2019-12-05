@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2019 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,11 +25,12 @@ import java.util.stream.Stream;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
-import com.vaadin.flow.component.internal.ExportsWebComponent;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.SessionInitListener;
@@ -51,7 +52,8 @@ public class DevModeClassFinderTest {
         Assert.assertTrue(classes.contains(Route.class));
         Assert.assertTrue(classes.contains(UIInitListener.class));
         Assert.assertTrue(classes.contains(VaadinServiceInitListener.class));
-        Assert.assertTrue(classes.contains(ExportsWebComponent.class));
+        Assert.assertTrue(classes.contains(WebComponentExporter.class));
+        Assert.assertTrue(classes.contains(WebComponentExporterFactory.class));
         Assert.assertTrue(classes.contains(NpmPackage.class));
         Assert.assertTrue(classes.contains(NpmPackage.Container.class));
         Assert.assertTrue(classes.contains(JsModule.class));
@@ -64,7 +66,7 @@ public class DevModeClassFinderTest {
         Assert.assertTrue(classes.contains(NoTheme.class));
         Assert.assertTrue(classes.contains(HasErrorParameter.class));
 
-        Assert.assertEquals(15, classes.size());
+        Assert.assertEquals(16, classes.size());
     }
 
     @Test

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2019 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -39,7 +39,6 @@ import com.vaadin.flow.server.frontend.NodeTasks;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
-
 import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFinder;
 import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.GENERATED_TOKEN;
@@ -135,14 +134,18 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         }
 
         try {
-            FrontendUtils.getNodeExecutable(npmFolder.getAbsolutePath());
-            FrontendUtils.getNpmExecutable(npmFolder.getAbsolutePath());
             FrontendUtils
                     .validateNodeAndNpmVersion(npmFolder.getAbsolutePath());
         } catch (IllegalStateException exception) {
             throw new MojoExecutionException(exception.getMessage(), exception);
         }
-
+        try {
+            FileUtils.forceMkdir(generatedFolder);
+        } catch (IOException e) {
+            throw new MojoFailureException(
+                    "Failed to create folder '" + generatedFolder
+                            + "'. Verify that you may write to path.", e);
+        }
         try {
             new NodeTasks.Builder(getClassFinder(project), npmFolder,
                     generatedFolder, frontendDirectory)

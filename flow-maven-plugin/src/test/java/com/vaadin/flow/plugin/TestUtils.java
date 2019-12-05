@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2019 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,6 +25,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import elemental.json.Json;
+import elemental.json.JsonObject;
 
 /**
  * Shared code to use in the unit tests.
@@ -107,5 +110,31 @@ public final class TestUtils {
                     "Unexpected: could not list files in directory '%s'",
                     directory), e);
         }
+    }
+
+    public static JsonObject getInitalPackageJson() {
+        JsonObject packageJson = Json.createObject();
+        JsonObject vaadinPackages = Json.createObject();
+
+        vaadinPackages.put("dependencies", Json.createObject());
+        JsonObject defaults = vaadinPackages.getObject("dependencies");
+        defaults.put("@polymer/polymer", "3.2.0");
+        defaults.put("@webcomponents/webcomponentsjs", "^2.2.10");
+
+        vaadinPackages.put("devDependencies", Json.createObject());
+        defaults = vaadinPackages.getObject("devDependencies");
+        defaults.put("webpack", "4.30.0");
+        defaults.put("webpack-cli", "3.3.0");
+        defaults.put("webpack-dev-server", "3.3.0");
+        defaults.put("webpack-babel-multi-target-plugin", "2.3.1");
+        defaults.put("copy-webpack-plugin", "5.0.3");
+        defaults.put("compression-webpack-plugin", "3.0.0");
+        defaults.put("webpack-merge", "4.2.1");
+        defaults.put("raw-loader", "3.0.0");
+
+        vaadinPackages.put("hash", "");
+        packageJson.put("vaadin", vaadinPackages);
+
+        return packageJson;
     }
 }

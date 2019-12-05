@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2019 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -259,6 +259,8 @@ public class HierarchicalCommunicationController<T> implements Serializable {
             boolean mapperHasKey = keyMapper.has(bean);
             String key = keyMapper.key(bean);
             if (mapperHasKey) {
+                // Ensure latest instance from provider is used
+                keyMapper.refresh(bean);
                 passivatedByUpdate.values()
                         .forEach(set -> set.remove(key));
             }

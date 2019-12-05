@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2019 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,7 +22,7 @@ import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-public class InterfaceBasedIT extends ChromeBrowserTest {
+public class FactoryExporterIT extends ChromeBrowserTest implements HasById {
 
     @Override
     protected String getTestPath() {
@@ -34,11 +34,8 @@ public class InterfaceBasedIT extends ChromeBrowserTest {
         open();
 
         waitForElementVisible(By.id("interface"));
-        WebElement webComponent = findElement(By.id("interface"));
-        WebElement paragraph = webComponent.findElement(By.id("paragraph"));
+        WebElement paragraph = byId("interface", "paragraph");
 
-        Assert.assertNotNull("Correct tag should have been found",
-                webComponent);
         Assert.assertNotNull("Web component exported by interface based "
                 + "exporter should have been upgraded", paragraph);
     }

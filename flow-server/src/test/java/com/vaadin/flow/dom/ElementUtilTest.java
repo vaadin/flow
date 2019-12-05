@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2019 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,10 @@
  */
 package com.vaadin.flow.dom;
 
+import java.util.Optional;
+
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Node;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -84,4 +88,39 @@ public class ElementUtilTest {
         ElementUtil.setComponent(e, c2);
     }
 
+    @Test
+    public void toAndFromJsoup() {
+        final String EXPECTED_TEXT_1 = "Some text";
+        final String EXPECTED_TEXT_2 = "Other text";
+
+        Element originalElement = ElementFactory.createDiv();
+        originalElement.appendChild(ElementFactory.createParagraph(EXPECTED_TEXT_1)
+                .appendChild(ElementFactory.createDiv(EXPECTED_TEXT_2)));
+
+        Document jDocument = Document.createShell("http://example.com");
+
+        Node jNode = ElementUtil.toJsoup(jDocument, originalElement);
+
+        Optional<Element> optionalElement = ElementUtil.fromJsoup(jNode);
+
+        Assert.assertTrue("Element should have been created from jNode",
+                optionalElement.isPresent());
+
+        Element recreatedElement = optionalElement.get();
+
+        // root
+        Assert.assertEquals("Root element should be div", "div",
+                recreatedElement.getTag());
+        // child
+        Assert.assertEquals("Child element should be a paragraph", "p",
+                recreatedElement.getChild(0).getTag());
+        Assert.assertEquals("Child element should have text", EXPECTED_TEXT_1,
+                recreatedElement.getChild(0).getText());
+        // grand-child (#1, since #0 is the text node)
+        Assert.assertEquals("Grand-child element should be a div", "div",
+                recreatedElement.getChild(0).getChild(1).getTag());
+        Assert.assertEquals("Grand-child element should have text",
+                EXPECTED_TEXT_2,
+                recreatedElement.getChild(0).getChild(1).getText());
+    }
 }

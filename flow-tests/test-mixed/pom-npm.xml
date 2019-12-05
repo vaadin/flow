@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>flow-tests</artifactId>
+        <groupId>com.vaadin</groupId>
+        <version>2.2-SNAPSHOT</version>
+    </parent>
+    <artifactId>flow-test-npm-dev-mode</artifactId>
+    <name>Flow tests in npm and development mode</name>
+
+    <packaging>war</packaging>
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-test-resources</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- Auto run clean to remove previous mode compilation -->
+            <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <!-- This is because we run multiple modes on the same module -->
+                <executions>
+                    <execution>
+                        <id>auto-clean</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- Clean lib before running jetty -->
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+            </plugin>
+            <!--  Run flow plugin to build frontend -->
+            <plugin>
+                <groupId>com.vaadin</groupId>
+                <artifactId>flow-maven-plugin</artifactId>
+                <version>${project.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <!-- only need prepare-frontend because we run tests in dev mode -->
+                            <goal>prepare-frontend</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <compatibilityMode>false</compatibilityMode>
+                    <productionMode>false</productionMode>
+                </configuration>
+            </plugin>
+            <!-- Run jetty before integration tests, and stop after -->
+            <plugin>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-maven-plugin</artifactId>
+                <configuration>
+                    <systemProperties>
+                        <systemProperty>
+                            <!-- this avoids an issue in chrome not loading the components
+                                 randomly when webpack dev server is not in debug mode -->
+                            <name>vaadin.devmode.webpack.options</name>
+                            <value>--debug</value>
+                        </systemProperty>
+                        <systemProperty>
+                            <!-- make sure we do not leave webpack-dev-server running after IT -->
+                            <name>vaadin.reuseDevServer</name>
+                            <value>false</value>
+                        </systemProperty>
+                        <systemProperty>
+                            <!-- disable PNPM -->
+                            <name>vaadin.disable.pnpm</name>
+                            <value>true</value>
+                        </systemProperty>
+                    </systemProperties>
+                    <webApp>
+                        <!-- We deploy the app with a context in the servlet container in order to test
+                             that bootstrap code resolves correctly the application context and do
+                             not render absolute references to the root path -->
+                        <contextPath>/context-path</contextPath>
+                    </webApp>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>local-run</id>
+            <activation>
+                <property>
+                    <name>!test.use.hub</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.lazerycode.selenium</groupId>
+                        <artifactId>driver-binary-downloader-maven-plugin</artifactId>
+                        <version>${driver.binary.downloader.maven.plugin.version}</version>
+                        <configuration>
+                            <onlyGetDriversForHostOperatingSystem>true</onlyGetDriversForHostOperatingSystem>
+                            <rootStandaloneServerDirectory>${project.rootdir}/driver</rootStandaloneServerDirectory>
+                            <downloadedZipFileDirectory>${project.rootdir}/driver_zips</downloadedZipFileDirectory>
+                            <customRepositoryMap>${project.rootdir}/drivers.xml</customRepositoryMap>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>selenium</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>
