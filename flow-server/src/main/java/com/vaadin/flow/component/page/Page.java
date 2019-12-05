@@ -277,7 +277,12 @@ public class Page implements Serializable {
      *            <code>null</code>
      */
     public void addJsModule(String url) {
-        addJsModule(url, LoadMode.EAGER);
+        if (UrlUtil.isExternal(url) || url.startsWith("/")) {
+            addJsModule(url, LoadMode.EAGER);
+        } else {
+            throw new IllegalArgumentException(
+                    "url argument must contains either a protocol (eg. starts with \"http://\" or \"//\"), or starts with \"/\".");
+        }
     }
 
     /**
@@ -300,12 +305,7 @@ public class Page implements Serializable {
      */
     @Deprecated
     public void addJsModule(String url, LoadMode loadMode) {
-        if (UrlUtil.isExternal(url) || url.startsWith("/")) {
-            addDependency(new Dependency(Type.JS_MODULE, url, loadMode));
-        } else {
-            throw new IllegalArgumentException(
-                    "url argument must contains either a protocol (eg. starts with \"http://\" or \"//\"), or starts with \"/\".");
-        }
+        addDependency(new Dependency(Type.JS_MODULE, url, loadMode));
     }
 
     /**
