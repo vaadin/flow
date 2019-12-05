@@ -226,20 +226,6 @@ public class DevModeHandlerTest {
         assertNull(DevModeHandler.start(configuration, npmFolder));
     }
 
-    @Test
-    public void should_HandleJavaScriptRequests() {
-        HttpServletRequest request = prepareRequest("/foo.js");
-        assertTrue(DevModeHandler.start(configuration, npmFolder)
-                .isDevModeRequest(request));
-    }
-
-    @Test
-    public void shouldNot_HandleOtherRequests() {
-        HttpServletRequest request = prepareRequest("/foo.bar");
-        assertFalse(DevModeHandler.start(configuration, npmFolder)
-                .isDevModeRequest(request));
-    }
-
     @Test(expected = ConnectException.class)
     public void should_ThrowAnException_When_WebpackNotListening()
             throws IOException {

@@ -23,6 +23,7 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.WebComponentExporterFactory.DefaultWebComponentExporterFactory;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 
 import static org.hamcrest.core.StringContains.containsString;
@@ -133,8 +134,10 @@ public class WebComponentGeneratorTest {
 
     @Test
     public void providesHTMLModuleInBowerMode() {
-        String module = WebComponentGenerator
-                .generateModule(MyComponentExporter.class, "", true);
+        String module = WebComponentGenerator.generateModule(
+                new DefaultWebComponentExporterFactory<MyComponent>(
+                        MyComponentExporter.class),
+                "", true);
         // make sure that the test works on windows machines:
         module = module.replace("\r", "");
         Assert.assertThat(module, startsWith(
@@ -148,14 +151,17 @@ public class WebComponentGeneratorTest {
 
     @Test
     public void providesJSModulesInNpmMode() {
-        String module = WebComponentGenerator
-                .generateModule(MyComponentExporter.class, "", false);
+        String module = WebComponentGenerator.generateModule(
+                new DefaultWebComponentExporterFactory<MyComponent>(
+                        MyComponentExporter.class),
+                "", false);
         // make sure that the test works on windows machines:
         module = module.replace("\r", "");
         Assert.assertThat(module,
                 startsWith("class Tag extends HTMLElement {"));
         Assert.assertThat(module, containsString("style.innerHTML = `\n" //
                 + "      :host {\n" //
+                + "        position: relative;\n" //
                 + "        display: inline-block;\n" //
                 + "      }\n" //
                 + "    `;\n"));

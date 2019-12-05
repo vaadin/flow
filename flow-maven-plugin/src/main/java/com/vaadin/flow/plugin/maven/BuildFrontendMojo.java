@@ -127,15 +127,15 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
             + Constants.LOCAL_FRONTEND_RESOURCES_PATH)
     protected File frontendResourcesDirectory;
 
-    @Parameter
-    private String polymerVersion;
-
     /**
      * Whether to use byte code scanner strategy to discover frontend
      * components.
      */
     @Parameter(defaultValue = "true")
     private boolean optimizeBundle;
+
+    @Parameter(property = "disable.pnpm", defaultValue = "false")
+    private boolean disablePnpm;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -186,8 +186,8 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                         .enableImportsUpdate(true)
                         .withEmbeddableWebComponents(
                                 generateEmbeddableWebComponents)
-                        .withTokenFile(getTokenFile())
-                        .withPolymerVersion(polymerVersion).build().execute();
+                        .withTokenFile(getTokenFile()).disablePnpm(disablePnpm)
+                        .build().execute();
     }
 
     private void runWebpack() {

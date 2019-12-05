@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.dom;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -22,6 +23,7 @@ import java.util.regex.Pattern;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Composite;
@@ -232,6 +234,43 @@ public class ElementUtil {
                 .forEach(child -> target.appendChild(toJsoup(document, child)));
 
         return target;
+    }
+
+    /**
+     * Converts a given JSoup {@link org.jsoup.nodes.Node} and its children into
+     * a matching {@link com.vaadin.flow.dom.Element} hierarchy.
+     * <p>
+     * Only nodes of type {@link org.jsoup.nodes.TextNode} and
+     * {@link org.jsoup.nodes.Element} are converted - other node types return
+     * an empty optional.
+     *
+     * @param node
+     *            JSoup node to convert
+     * @return element with the matching hierarchy as the given node, or empty
+     */
+    public static Optional<Element> fromJsoup(Node node) {
+        Element ret;
+        if (node instanceof TextNode) {
+            return Optional.of(Element.createText(((TextNode) node).text()));
+        } else if (node instanceof org.jsoup.nodes.Element) {
+            ret = new Element(((org.jsoup.nodes.Element)node).tagName());
+        } else {
+            LoggerFactory.getLogger(ElementUtil.class).error(
+                    "Could not convert a {}, '{}' into {}!",
+                    Node.class.getName(), node, Element.class.getName());
+            return Optional.empty();
+        }
+
+        node.attributes().asList().forEach(attribute -> ret
+                .setAttribute(attribute.getKey(), attribute.getValue()));
+
+        List<Node> childNodes = node.childNodes();
+        if (!childNodes.isEmpty()) {
+            childNodes.forEach(
+                    child -> fromJsoup(child).ifPresent(ret::appendChild));
+        }
+
+        return Optional.of(ret);
     }
 
     /**

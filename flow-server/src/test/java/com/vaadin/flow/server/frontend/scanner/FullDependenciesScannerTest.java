@@ -178,7 +178,7 @@ public class FullDependenciesScannerTest {
                 "1.1.2");
         Assert.assertEquals(packages.get("@foo/var-component"), "1.1.0");
         Assert.assertEquals(packages.get("@webcomponents/webcomponentsjs"),
-                "2.2.9");
+                "2.2.10");
         Assert.assertEquals(packages.get("@vaadin/vaadin-shrinkwrap"), "1.2.3");
 
         Assert.assertEquals(5, packages.size());
