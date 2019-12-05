@@ -305,7 +305,7 @@ public class Page implements Serializable {
      */
     @Deprecated
     public void addJsModule(String url, LoadMode loadMode) {
-        addDependency(new Dependency(Type.JS_MODULE, url, loadMode));
+        addDependency(new Dependency(Type.JS_MODULE, url, LoadMode.EAGER));
     }
 
     /**
