@@ -248,7 +248,7 @@
                             <goal>exec</goal>
                         </goals>
                         <configuration>
-                            <executable>npm</executable>
+                            <executable>pnpm</executable>
                             <arguments>
                                 <argument>install</argument>
                             </arguments>
