@@ -216,8 +216,8 @@ public class Binder<BEAN> implements Serializable {
          * Enable or disable asRequired validator.
          * The validator is enabled by default.
          *
-         * @see #asRequired(String)
-         * @see #asRequired(ErrorMessageProvider)
+         * @see BindingBuilder#asRequired(String)
+         * @see BindingBuilder#asRequired(ErrorMessageProvider)
          *
          * @param asRequiredEnabled
          *            {@code false} if asRequired validator should
@@ -228,8 +228,8 @@ public class Binder<BEAN> implements Serializable {
         /**
          * Returns whether asRequired validator is currently enabled or not
          *
-         * @see #asRequired(String)
-         * @see #asRequired(ErrorMessageProvider)
+         * @see BindingBuilder#asRequired(String)
+         * @see BindingBuilder#asRequired(ErrorMessageProvider)
          *
          * @return {@code false} if asRequired validator is disabled
          *         {@code true} otherwise (default)
