@@ -18,9 +18,9 @@ package com.vaadin.flow.server.communication;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -308,12 +308,11 @@ public class WebComponentProviderTest {
 
         WebComponentExporter.WebComponentConfigurationFactory factory = new WebComponentExporter.WebComponentConfigurationFactory();
 
-        registry.setConfigurations(
-                (Set<WebComponentConfiguration<? extends Component>>) set
-                        .stream()
-                        .map(clazz -> new DefaultWebComponentExporterFactory(
-                                clazz).create())
-                        .map(factory::create).collect(Collectors.toSet()));
+        Set<WebComponentConfiguration<? extends Component>> configurations = new HashSet<>();
+        for (Class<? extends WebComponentExporter<? extends Component>> exporter : exporters)
+            configurations.add(factory.create(
+                    new DefaultWebComponentExporterFactory(exporter).create()));
+        registry.setConfigurations(configurations);
 
         return registry;
     }
