@@ -4,6 +4,8 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -64,6 +66,27 @@ public class UIInternalsTest {
         Assert.assertEquals(
                 "Heartbeat listener should been removed and no new event recorded",
                 1, heartbeats.size());
+    }
+
+    @Test
+    public void heartbeatListenerRemovedFromHeartbeatEvent_noExplosion() {
+        AtomicReference<Registration> reference = new AtomicReference<>();
+        AtomicInteger runCount = new AtomicInteger();
+
+        Registration registration = internals.addHeartbeatListener(event -> {
+            runCount.incrementAndGet();
+            reference.get().remove();
+        });
+        reference.set(registration);
+
+        internals.setLastHeartbeatTimestamp(System.currentTimeMillis());
+        Assert.assertEquals("Listener should have been run once", 1,
+                runCount.get());
+
+        internals.setLastHeartbeatTimestamp(System.currentTimeMillis());
+        Assert.assertEquals(
+                "Listener should not have been run again since it was removed",
+                1, runCount.get());
     }
 
     public static class MyTheme implements AbstractTheme {
