@@ -45,6 +45,9 @@ window.Vaadin.Flow.dndConnector = {
     } else {
       event.currentTarget.classList.remove("v-drag-over-target");
     }
+    // #7109 need to stop or any parent drop target might not get highlighted,
+    // as ondragenter for it is fired before the child gets dragleave.
+    event.stopPropagation();
   },
 
   __ondropListener: function (event) {
