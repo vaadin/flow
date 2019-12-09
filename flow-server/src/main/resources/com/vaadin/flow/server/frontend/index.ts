@@ -10,13 +10,25 @@
  *     - `index.js` is also supported if you don't want to use TypeScript.
  ******************************************************************************/
 
-// import Flow module to enable traditional Vaadin server-side navigation
-// If you prefer to use TypeScript, you can import `@vaadin/flow-frontend/Flow.ts` instead
-import { Flow } from '@vaadin/flow-frontend/Flow.js';
 
-const flow = new Flow({
+// import Vaadin client-router to handle client-side and server-side navigation
+import {Router} from '@vaadin/router';
+
+// import Flow module to enable navigation to Vaadin server-side views
+import {Flow} from '@vaadin/flow-frontend/Flow';
+
+const {serverSideRoutes} = new Flow({
   imports: () => import('[to-be-generated-by-flow]')
 });
-// Let the flow-server control the application and use traditional server-side routing
-flow.start();
-// If you prefer to use client-side routing, please check out the 'Client-side Routing' page in `https://vaadin.com/docs`
+
+const routes = [
+  // Send all routes to  server-side.
+  // If you have client-side views add them above this line.
+  // For more info, please check out the 'Client-side Routing'
+  // page in `https://vaadin.com/docs/v15/flow/typescript/client-side-routing.html`
+  ...serverSideRoutes
+];
+
+// Vaadin router needs an outlet in the index.html page to display views
+const router = new Router(document.querySelector('#outlet'));
+router.setRoutes(routes);

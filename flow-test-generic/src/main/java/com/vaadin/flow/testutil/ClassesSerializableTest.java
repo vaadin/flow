@@ -194,7 +194,7 @@ public abstract class ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.AbstractTaskClientGenerator",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskGenerateTsConfig",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskGenerateIndexHtml",
-                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskGenerateIndexJs",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskGenerateIndexTs",
 
                 // Various test classes
                 ".*\\.test(s)?\\..*", ".*Test.*",
