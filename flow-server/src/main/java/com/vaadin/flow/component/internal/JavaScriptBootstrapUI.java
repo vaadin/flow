@@ -17,9 +17,12 @@ package com.vaadin.flow.component.internal;
 
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.Stream.Builder;
 
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
@@ -55,6 +58,22 @@ public class JavaScriptBootstrapUI extends UI {
      */
     public JavaScriptBootstrapUI() {
         super(new JavaScriptUIInternalUpdater());
+    }
+
+    @Override
+    public Stream<Component> getChildren() {
+        // server-side routing
+        if (wrapperElement == null) {
+            return super.getChildren();
+        }
+
+        // client-side routing,
+        // since virtual child is used, it is necessary to change the original
+        // UI element to the wrapperElement
+        Builder<Component> childComponents = Stream.builder();
+        wrapperElement.getChildren().forEach(childElement -> ComponentUtil
+                .findComponents(childElement, childComponents::add));
+        return childComponents.build();
     }
 
     /**
