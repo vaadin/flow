@@ -60,18 +60,12 @@
                 <configuration>
                     <filesets>
                         <fileset>
-                            <directory>${project.basedir}/node_modules</directory>
-                            <includes>
-                                <include>@polymer/**/*</include>
-                                <include>@vaadin/**/*</include>
-                            </includes>
-                            <followSymlinks>false</followSymlinks>
-                        </fileset>
-                        <fileset>
                             <directory>${project.basedir}</directory>
                             <includes>
-                                <include>package-lock.json</include>
-                                <include>/target/**</include>
+                                <include>package*.json</include>
+                                <include>webpack*.js</include>
+                                <include>pnpm-lock*</include>
+                                <include>node_modules/**</include>
                             </includes>
                         </fileset>
                     </filesets>
