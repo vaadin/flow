@@ -41,6 +41,7 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
+
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static elemental.json.impl.JsonUtil.stringify;
@@ -73,14 +74,14 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         generatedDir = new File(baseDir, DEFAULT_GENERATED_DIR);
 
-        NodeUpdateTestUtil
-                .createStubNode(true, true, baseDir.getAbsolutePath());
+        NodeUpdateTestUtil.createStubNode(true, true,
+                baseDir.getAbsolutePath());
 
         packageCreator = new TaskCreatePackageJson(baseDir, generatedDir);
 
         ClassFinder classFinder = getClassFinder();
         packageUpdater = new TaskUpdatePackages(classFinder,
-                getScanner(classFinder), baseDir, generatedDir, false);
+                getScanner(classFinder), baseDir, generatedDir, false, true);
         packageJson = new File(baseDir, PACKAGE_JSON);
 
         mainNodeModules = new File(baseDir, FrontendUtils.NODE_MODULES);
@@ -146,8 +147,8 @@ public abstract class AbstractNodeUpdatePackagesTest
         makeNodeModulesAndPackageLock();
 
         // Change the versions
-        getDependencies(packageUpdater.getPackageJson())
-                .put(SHRINKWRAP, "1.1.1");
+        getDependencies(packageUpdater.getPackageJson()).put(SHRINKWRAP,
+                "1.1.1");
 
         // run it again with existing generated package.json and mismatched
         // versions
@@ -206,36 +207,23 @@ public abstract class AbstractNodeUpdatePackagesTest
     }
 
     @Test
-    public void versionsDoNotMatch_inMainJson_cleanUp() throws IOException {
-        FrontendDependencies frontendDependencies = Mockito
-                .mock(FrontendDependencies.class);
-
-        Map<String, String> packages = new HashMap<>();
-        packages.put("@polymer/iron-list", "3.0.2");
-        packages.put("@vaadin/vaadin-confirm-dialog", "1.1.4");
-        packages.put("@vaadin/vaadin-checkbox", "2.2.10");
-        packages.put("@polymer/iron-icon", "3.0.1");
-        packages.put("@vaadin/vaadin-time-picker", "2.0.2");
-        packages.put(SHRINKWRAP, "1.2.3");
-
-        Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
-
-        packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
-                baseDir, generatedDir, false);
-
-        // Generate package json in a proper format first
-        packageCreator.execute();
-
-        makeNodeModulesAndPackageLock();
-
-        JsonObject packageJson = getPackageJson(this.packageJson);
-        packageJson.put(SHRINKWRAP, "1.1.1");
-        Files.write(packageLock.toPath(),
-                Collections.singletonList(stringify(packageJson)));
-
-        packageUpdater.execute();
-
+    public void versionsDoNotMatch_inMainJson_npm_cleanUp() throws IOException {
+        versionsDoNotMatch_inMainJson_cleanUp(true);
         assertVersionAndCleanUp();
+    }
+
+    @Test
+    public void versionsDoNotMatch_inMainJson_pnpm_cleanUp()
+            throws IOException {
+        versionsDoNotMatch_inMainJson_cleanUp(true);
+        JsonValue value = getDependencies(packageUpdater.getPackageJson())
+                .get(SHRINKWRAP);
+        Assert.assertEquals("1.2.3", value.asString());
+
+        // nothing is removed
+        Assert.assertFalse(mainNodeModules.exists());
+        Assert.assertFalse(appNodeModules.exists());
+        Assert.assertFalse(packageLock.exists());
     }
 
     @Test
@@ -254,7 +242,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
         packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
-                baseDir, generatedDir, false);
+                baseDir, generatedDir, false, true);
 
         // Generate package json in a proper format first
         packageCreator.execute();
@@ -283,7 +271,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         ClassFinder classFinder = getClassFinder();
         // create a new package updater, with forced clean up enabled
         packageUpdater = new TaskUpdatePackages(classFinder,
-                getScanner(classFinder), baseDir, generatedDir, true);
+                getScanner(classFinder), baseDir, generatedDir, true, true);
         packageUpdater.execute();
 
         // clean up happened
@@ -305,7 +293,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
         packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
-                baseDir, generatedDir, false);
+                baseDir, generatedDir, false, true);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -335,7 +323,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
         packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
-                baseDir, generatedDir, false);
+                baseDir, generatedDir, false, true);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -380,7 +368,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
         packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
-                baseDir, generatedDir, false);
+                baseDir, generatedDir, false, true);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -411,7 +399,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
         packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
-                baseDir, generatedDir, false);
+                baseDir, generatedDir, false, true);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -434,7 +422,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
         packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
-                baseDir, generatedDir, false);
+                baseDir, generatedDir, false, true);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -460,7 +448,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
         packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
-                baseDir, generatedDir, false);
+                baseDir, generatedDir, false, true);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -488,7 +476,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
         packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
-                baseDir, generatedDir, false);
+                baseDir, generatedDir, false, true);
 
         packageCreator.execute();
         JsonObject json = getPackageJson(packageJson);
@@ -521,7 +509,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
         packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
-                baseDir, generatedDir, false);
+                baseDir, generatedDir, false, true);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -567,7 +555,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
         packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
-                baseDir, generatedDir, false);
+                baseDir, generatedDir, false, true);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -614,8 +602,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         JsonObject dependencies = json.getObject(DEPENDENCIES);
         for (Map.Entry<String, String> entry : NodeUpdater
-                .getDefaultDependencies()
-                .entrySet()) {
+                .getDefaultDependencies().entrySet()) {
             Assert.assertTrue("Missing '" + entry.getKey() + "' package",
                     dependencies.hasKey(entry.getKey()));
         }
@@ -650,11 +637,42 @@ public abstract class AbstractNodeUpdatePackagesTest
         return object;
     }
 
+    private void versionsDoNotMatch_inMainJson_cleanUp(boolean isNpm)
+            throws IOException {
+        FrontendDependencies frontendDependencies = Mockito
+                .mock(FrontendDependencies.class);
+
+        Map<String, String> packages = new HashMap<>();
+        packages.put("@polymer/iron-list", "3.0.2");
+        packages.put("@vaadin/vaadin-confirm-dialog", "1.1.4");
+        packages.put("@vaadin/vaadin-checkbox", "2.2.10");
+        packages.put("@polymer/iron-icon", "3.0.1");
+        packages.put("@vaadin/vaadin-time-picker", "2.0.2");
+        packages.put(SHRINKWRAP, "1.2.3");
+
+        Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+
+        packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
+                baseDir, generatedDir, false, isNpm);
+
+        // Generate package json in a proper format first
+        packageCreator.execute();
+
+        makeNodeModulesAndPackageLock();
+
+        JsonObject packageJson = getPackageJson(this.packageJson);
+        packageJson.put(SHRINKWRAP, "1.1.1");
+        Files.write(packageLock.toPath(),
+                Collections.singletonList(stringify(packageJson)));
+
+        packageUpdater.execute();
+    }
+
     JsonObject getPackageJson(File packageFile) throws IOException {
         JsonObject packageJson = null;
         if (packageFile.exists()) {
-            String fileContent = FileUtils
-                    .readFileToString(packageFile, UTF_8.name());
+            String fileContent = FileUtils.readFileToString(packageFile,
+                    UTF_8.name());
             packageJson = Json.parse(fileContent);
         }
         return packageJson;

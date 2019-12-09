@@ -61,8 +61,11 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
     private boolean shouldRunNpmInstall() {
         if (packageUpdater.nodeModulesFolder.isDirectory()) {
+            // Ignore .bin and pnpm folders as those are always installed for
+            // pnpm execution
             File[] installedPackages = packageUpdater.nodeModulesFolder
-                    .listFiles();
+                    .listFiles((dir, name) -> !(".bin".equals(name) || "pnpm"
+                            .equals(name)));
             assert installedPackages != null;
             return installedPackages.length == 0
                     || (installedPackages.length == 1 && FLOW_NPM_PACKAGE_NAME
