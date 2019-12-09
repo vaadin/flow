@@ -1,8 +1,8 @@
 package com.vaadin.flow.component.internal;
 
 import java.util.Collections;
+import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertFalse;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -20,6 +20,7 @@ import com.vaadin.flow.server.VaadinRequest;
 
 import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -90,6 +91,12 @@ public class JavaScriptBootstrapUITest  {
         ui.connectClient("foo", "bar", "/dirty");
         assertEquals(Tag.SPAN, ui.wrapperElement.getChild(0).getTag());
         assertEquals(Tag.H1, ui.wrapperElement.getChild(0).getChild(0).getTag());
+    }
+
+    @Test
+    public void getChildren_should_notReturnAnEmptyList() {
+        ui.connectClient("foo", "bar", "/clean");
+        assertEquals(1, ui.getChildren().count());
     }
 
     @Test
