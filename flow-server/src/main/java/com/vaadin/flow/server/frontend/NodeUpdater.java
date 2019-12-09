@@ -37,6 +37,7 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
@@ -118,6 +119,10 @@ public abstract class NodeUpdater implements FallibleCommand {
         this.generatedFolder = generatedPath;
     }
 
+    protected File getPackageJsonFile() {
+        return new File(npmFolder, PACKAGE_JSON);
+    }
+
     static Set<String> getGeneratedModules(File directory,
             Set<String> excludes) {
         if (!directory.exists()) {
@@ -182,14 +187,13 @@ public abstract class NodeUpdater implements FallibleCommand {
     }
 
     JsonObject getPackageJson() throws IOException {
-        JsonObject packageJson = getJsonFileContent(
-                new File(npmFolder, PACKAGE_JSON));
+        JsonObject packageJson = getJsonFileContent(getPackageJsonFile());
         if (packageJson == null) {
             packageJson = Json.createObject();
             packageJson.put(DEP_NAME_KEY, DEP_NAME_DEFAULT);
             packageJson.put(DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT);
         }
-        if(!packageJson.hasKey(VAADIN_DEP_KEY)) {
+        if (!packageJson.hasKey(VAADIN_DEP_KEY)) {
             packageJson.put(VAADIN_DEP_KEY, createVaadinPackagesJson());
         }
         return packageJson;
@@ -223,7 +227,6 @@ public abstract class NodeUpdater implements FallibleCommand {
     }
 
     static Map<String, String> getDefaultDependencies() {
-
         Map<String, String> defaults = new HashMap<>();
 
         defaults.put("@polymer/polymer", POLYMER_VERSION);
@@ -252,14 +255,14 @@ public abstract class NodeUpdater implements FallibleCommand {
      * package.json.
      *
      * @param packageJson
-     *         package.json json object to update with dependencies
+     *            package.json json object to update with dependencies
      * @return true if items were added or removed from the {@code packageJson}
      */
     boolean updateDefaultDependencies(JsonObject packageJson) {
         int added = 0;
 
-        for (Map.Entry<String, String> entry : getDefaultDependencies(
-                ).entrySet()) {
+        for (Map.Entry<String, String> entry : getDefaultDependencies()
+                .entrySet()) {
             added += addDependency(packageJson, DEPENDENCIES, entry.getKey(),
                     entry.getValue());
         }
@@ -269,7 +272,7 @@ public abstract class NodeUpdater implements FallibleCommand {
                     entry.getKey(), entry.getValue());
         }
 
-        if(added > 0) {
+        if (added > 0) {
             log().info("Added {} dependencies to main package.json", added);
         }
         return added > 0;
@@ -311,12 +314,14 @@ public abstract class NodeUpdater implements FallibleCommand {
         FrontendVersion vaadinVersion = toVersion(vaadinDeps, pkg);
         if (json.hasKey(pkg)) {
             FrontendVersion packageVersion = toVersion(json, pkg);
-            // Vaadin and package.json versions are the same, but dependency updates (can be up or down)
-            if (vaadinVersion.isEqualTo(packageVersion) && !vaadinVersion
-                    .isEqualTo(newVersion)) {
+            // Vaadin and package.json versions are the same, but dependency
+            // updates (can be up or down)
+            if (vaadinVersion.isEqualTo(packageVersion)
+                    && !vaadinVersion.isEqualTo(newVersion)) {
                 json.put(pkg, version);
                 added = true;
-                // if vaadin and package not the same, but new version is newer update package version.
+                // if vaadin and package not the same, but new version is newer
+                // update package version.
             } else if (newVersion.isNewerThan(packageVersion)) {
                 json.put(pkg, version);
                 added = true;
@@ -328,7 +333,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         // always update vaadin version to the latest set version
         vaadinDeps.put(pkg, version);
 
-        if(added) {
+        if (added) {
             log().debug("Added \"{}\": \"{}\" line.", pkg, version);
         }
         return added ? 1 : 0;

@@ -35,6 +35,8 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.io.FileUtils;
+
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
@@ -53,10 +55,11 @@ import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
  */
 public class TaskUpdatePackages extends NodeUpdater {
 
+    private static final String VAADIN_FLOW_DEPS = "@vaadin/flow-deps";
     private static final String VERSION = "version";
     private static final String SHRINK_WRAP = "@vaadin/vaadin-shrinkwrap";
     private final boolean forceCleanUp;
-    private final boolean needVersionUpdateClean;
+    private final boolean disablePnpm;
 
     private static class RemoveFileVisitor extends SimpleFileVisitor<Path>
             implements Serializable {
@@ -90,18 +93,16 @@ public class TaskUpdatePackages extends NodeUpdater {
      * @param forceCleanUp
      *            forces the clean up process to be run. If {@code false}, clean
      *            up will be performed when platform version update is detected.
-     * @param needVersionUpdateClean
-     *            if {@code true} then clean up should be done in case platform
-     *            version update, otherwise no any clean up will be done unless
-     *            {@code forceCleanUp} requires it explicitly
+     * @param disablePnpm
+     *            if {@code true} then npm is used instead of pnpm, otherwise
+     *            pnpm is used
      */
     TaskUpdatePackages(ClassFinder finder,
             FrontendDependenciesScanner frontendDependencies, File npmFolder,
-            File generatedPath, boolean forceCleanUp,
-            boolean needVersionUpdateClean) {
+            File generatedPath, boolean forceCleanUp, boolean disablePnpm) {
         super(finder, frontendDependencies, npmFolder, generatedPath);
         this.forceCleanUp = forceCleanUp;
-        this.needVersionUpdateClean = needVersionUpdateClean;
+        this.disablePnpm = disablePnpm;
     }
 
     @Override
@@ -120,7 +121,7 @@ public class TaskUpdatePackages extends NodeUpdater {
 
     private boolean updatePackageJsonDependencies(JsonObject packageJson,
             Map<String, String> deps) throws IOException {
-        int added = 0;
+        int added = ensurePnpmSwitch(packageJson) ? 1 : 0;
 
         // Add application dependencies
         for (Entry<String, String> dep : deps.entrySet()) {
@@ -153,8 +154,8 @@ public class TaskUpdatePackages extends NodeUpdater {
                     removed++;
                 }
             }
-            doCleanUp = doCleanUp || needVersionUpdateClean
-                    && !ensureReleaseVersion(dependencies);
+            doCleanUp = doCleanUp
+                    || disablePnpm && !ensureReleaseVersion(dependencies);
         }
 
         if (removed > 0) {
@@ -195,6 +196,41 @@ public class TaskUpdatePackages extends NodeUpdater {
         return Objects.equals(shrinkWrapVersion, getCurrentShrinkWrapVersion());
     }
 
+    private boolean ensurePnpmSwitch(JsonObject packageJson)
+            throws IOException {
+        if (disablePnpm) {
+            return false;
+        }
+        boolean result = false;
+        /*
+         * In case of PNPM tool we should ensure that package.json doesn't
+         * contain @vaadin/flow-deps dependency.
+         */
+        if (packageJson.hasKey(DEPENDENCIES)) {
+            JsonObject object = packageJson.getObject(DEPENDENCIES);
+            if (object.hasKey(VAADIN_FLOW_DEPS)) {
+                object.remove(VAADIN_FLOW_DEPS);
+                result = true;
+            }
+        }
+        /*
+         * In case of PNPM tool we package-lock should be used only for
+         * installing PNPM locally.
+         */
+
+        JsonObject packageLockDependencies = getPackageLockDependencies();
+        if (packageLockDependencies == null) {
+            return result;
+        }
+        packageLockDependencies.remove("pnpm");
+        // if dependencies contain something other than "pnpm" then we should
+        // remove package-lock.json
+        if (packageLockDependencies.keys().length > 0) {
+            FileUtils.forceDelete(getPackageLockFile());
+        }
+        return result;
+    }
+
     private void cleanUp() throws IOException {
         File packageLock = getPackageLockFile();
         if (packageLock.exists()) {
@@ -229,6 +265,22 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     private String getPackageLockShrinkWrapVersion() throws IOException {
+        JsonObject dependencies = getPackageLockDependencies();
+        if (dependencies == null) {
+            return null;
+        }
+
+        if (!dependencies.hasKey(SHRINK_WRAP)) {
+            return null;
+        }
+        JsonObject shrinkWrap = dependencies.getObject(SHRINK_WRAP);
+        if (shrinkWrap.hasKey(VERSION)) {
+            return shrinkWrap.get(VERSION).asString();
+        }
+        return null;
+    }
+
+    private JsonObject getPackageLockDependencies() throws IOException {
         File packageLock = getPackageLockFile();
         if (!packageLock.exists()) {
             return null;
@@ -241,15 +293,7 @@ public class TaskUpdatePackages extends NodeUpdater {
             return null;
         }
         JsonObject dependencies = packageLockJson.getObject(DEPENDENCIES);
-        if (!dependencies.hasKey(SHRINK_WRAP)) {
-            return null;
-        }
-
-        JsonObject shrinkWrap = dependencies.getObject(SHRINK_WRAP);
-        if (shrinkWrap.hasKey(VERSION)) {
-            return shrinkWrap.get(VERSION).asString();
-        }
-        return null;
+        return dependencies;
     }
 
     private File getPackageLockFile() {

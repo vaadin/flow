@@ -64,6 +64,8 @@ public abstract class AbstractNodeUpdatePackagesTest
     private File generatedDir;
     private File packageJson;
 
+    private ClassFinder classFinder;
+
     private File mainNodeModules;
     private File packageLock;
     private File appNodeModules;
@@ -79,7 +81,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         packageCreator = new TaskCreatePackageJson(baseDir, generatedDir);
 
-        ClassFinder classFinder = getClassFinder();
+        classFinder = getClassFinder();
         packageUpdater = new TaskUpdatePackages(classFinder,
                 getScanner(classFinder), baseDir, generatedDir, false, true);
         packageJson = new File(baseDir, PACKAGE_JSON);
@@ -155,6 +157,80 @@ public abstract class AbstractNodeUpdatePackagesTest
         packageUpdater.execute();
 
         assertVersionAndCleanUp();
+    }
+
+    @Test
+    public void pnpmIsInUse_packageJsonContainsFlowDeps_removeFlowDeps()
+            throws IOException {
+        // use package updater with disabled PNPM
+        packageUpdater = new TaskUpdatePackages(classFinder,
+                getScanner(classFinder), baseDir, generatedDir, false, true);
+        // Generate package json in a proper format first
+        packageCreator.execute();
+        packageUpdater.execute();
+
+        packageUpdater = new TaskUpdatePackages(classFinder,
+                getScanner(classFinder), baseDir, generatedDir, false, false);
+        packageUpdater.execute();
+
+        JsonObject packJsonObject = getPackageJson(packageJson);
+        JsonObject deps = packJsonObject.get(DEPENDENCIES);
+        // No Flow deps
+        Assert.assertFalse(deps.hasKey("@vaadin/flow-deps"));
+        // Contains initially generated default polymer dep
+        Assert.assertTrue(deps.hasKey("@polymer/polymer"));
+    }
+
+    @Test
+    public void pnpmIsInUse_packageLockJsonContainsNonPMPMDeps_removePackageLock()
+            throws IOException {
+        // use package updater with disabled PNPM
+        packageUpdater = new TaskUpdatePackages(classFinder,
+                getScanner(classFinder), baseDir, generatedDir, false, true);
+        // Generate package json in a proper format first
+        packageCreator.execute();
+        packageUpdater.execute();
+
+        Files.write(packageLock.toPath(), Collections
+                .singletonList("{ 'dependencies': { '@babel/cli': {} } }"));
+
+        packageUpdater = new TaskUpdatePackages(classFinder,
+                getScanner(classFinder), baseDir, generatedDir, false, false);
+        packageUpdater.execute();
+        Assert.assertFalse(packageLock.exists());
+    }
+
+    @Test
+    public void npmIsInUse_packageJsonContainsFlowDeps_keepFlowDeps()
+            throws IOException {
+        // Generate package json in a proper format first
+        packageCreator.execute();
+        packageUpdater.execute();
+
+        JsonObject packJsonObject = getPackageJson(packageJson);
+        JsonObject deps = packJsonObject.get(DEPENDENCIES);
+        System.out.println(deps);
+
+        packageUpdater.execute();
+
+        packJsonObject = getPackageJson(packageJson);
+        Assert.assertEquals(deps.toJson(),
+                packJsonObject.get(DEPENDENCIES).toJson());
+    }
+
+    @Test
+    public void npmIsInUse_packageLockJsonContainsNonPMPMDeps_removePackageLock()
+            throws IOException {
+        // use package updater with disabled PNPM
+        // Generate package json in a proper format first
+        packageCreator.execute();
+        packageUpdater.execute();
+
+        Files.write(packageLock.toPath(), Collections
+                .singletonList("{ 'dependencies': { '@babel/cli': {} } }"));
+
+        packageUpdater.execute();
+        Assert.assertTrue(packageLock.exists());
     }
 
     /**
