@@ -81,27 +81,6 @@ export class Flow {
   }
 
   /**
-   * Initialize flow in full page mode and with server side routing.
-   */
-  async start(): Promise<void> {
-    await this.flowInit(true);
-  }
-
-  /**
-   * Go to a route defined in server.
-   *
-   * This is a generic API for non `vaadin-router` applications.
-   */
-  get navigate(): (params: NavigationParameters) => Promise<HTMLElement> {
-    // Return a function which is bound to the flow instance
-    return async (params: NavigationParameters) => {
-      await this.flowInit();
-      delete this.container.onBeforeEnter;
-      return this.flowNavigate(params);
-    }
-  }
-
-  /**
    * Return a `route` object for vaadin-router in an one-element array.
    *
    * The `FlowRoute` object `path` property handles any route,
