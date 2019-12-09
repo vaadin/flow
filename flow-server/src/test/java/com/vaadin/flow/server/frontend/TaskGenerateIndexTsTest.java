@@ -53,7 +53,7 @@ public class TaskGenerateIndexTsTest {
         Files.createFile(new File(frontendFolder, INDEX_JS).toPath());
         taskGenerateIndexTs.execute();
         Assert.assertFalse(
-                "Should not generate index.js when it exists in"
+                "Should not generate index.ts when index.js exists in"
                         + " the frontend folder",
                 taskGenerateIndexTs.shouldGenerate());
         Assert.assertFalse("The generated file should not exists",
@@ -65,7 +65,7 @@ public class TaskGenerateIndexTsTest {
         Files.createFile(new File(frontendFolder, INDEX_TS).toPath());
         taskGenerateIndexTs.execute();
         Assert.assertFalse(
-                "Should not generate index.js when it exists in"
+                "Should not generate index.ts when index.ts exists in"
                         + " the frontend folder",
                 taskGenerateIndexTs.shouldGenerate());
         Assert.assertFalse("The generated file should not exists",
