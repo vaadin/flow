@@ -575,6 +575,8 @@ public class FrontendUtils {
             String host = request.getHeader("host");
             if (host == null) {
                 host = "http://127.0.0.1:8080";
+            } else {
+                host = "http://" + host;
             }
             url = host + externalStatsUrl;
         } else {
