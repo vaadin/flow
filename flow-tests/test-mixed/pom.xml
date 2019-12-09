@@ -39,6 +39,19 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <filesets>
+                        <fileset>
+                            <directory>${project.basedir}</directory>
+                            <includes>
+                                <include>package*.json</include>
+                                <include>webpack*.js</include>
+                                <include>pnpm-lock*</include>
+                                <include>node_modules/**</include>
+                            </includes>
+                        </fileset>
+                    </filesets>
+                </configuration>
             </plugin>
             <!-- Clean lib before running jetty -->
             <plugin>
