@@ -88,6 +88,9 @@ public final class DeploymentConfigurationFactory implements Serializable {
 
     public static final String DEV_FOLDER_MISSING_MESSAGE = "Running project in development mode with no access to folder '%s'.%n"
             + "Build project in production mode instead, see https://vaadin.com/docs/v14/flow/production/tutorial-production-mode-basic.html";
+
+    private static final String WEBLOGIC_GENERATED_JAR = "_wl_cls_gen.jar";
+
     private static final Logger logger = LoggerFactory
             .getLogger(DeploymentConfigurationFactory.class);
 
@@ -301,8 +304,12 @@ public final class DeploymentConfigurationFactory implements Serializable {
                         .getResources(tokenResource));
         // Accept resource that doesn't contain
         // 'jar!/META-INF/Vaadin/config/flow-build-info.json'
+        // #6965 Oracle WebLogic repackages resources in a generated jar called
+        // called '_wl_cls_gen.jar', so accept the token file if in there also.
         URL resource = resources.stream()
-                .filter(url -> !url.getPath().endsWith("jar!/" + tokenResource))
+                .filter(url -> !url.getPath().endsWith("jar!/" + tokenResource)
+                        || url.getPath().endsWith(
+                                WEBLOGIC_GENERATED_JAR + "!/" + tokenResource))
                 .findFirst().orElse(null);
         if (resource == null && !resources.isEmpty()) {
             // For no non jar build info, in production mode check for
