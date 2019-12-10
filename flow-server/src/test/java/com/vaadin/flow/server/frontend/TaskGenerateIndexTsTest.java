@@ -27,8 +27,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_JS;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
+import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
 
 public class TaskGenerateIndexTsTest {
     @Rule
@@ -41,9 +43,11 @@ public class TaskGenerateIndexTsTest {
 
     @Before
     public void setUp() throws IOException {
-        frontendFolder = temporaryFolder.newFolder();
-        outputFolder = temporaryFolder.newFolder();
-        generatedImports = temporaryFolder.newFile("flow-generated-imports.js");
+        frontendFolder = temporaryFolder.newFolder(FRONTEND);
+        outputFolder = temporaryFolder.newFolder(TARGET);
+        File generatedFolder = temporaryFolder.newFolder(TARGET, FRONTEND);
+        generatedImports = new File(generatedFolder, "flow-generated-imports.js");
+        generatedImports.createNewFile();
         taskGenerateIndexTs = new TaskGenerateIndexTs(frontendFolder,
                 generatedImports, outputFolder);
     }
@@ -87,6 +91,12 @@ public class TaskGenerateIndexTsTest {
                 taskGenerateIndexTs.getFileContent(),
                 IOUtils.toString(taskGenerateIndexTs.getGeneratedFile().toURI(),
                         StandardCharsets.UTF_8));
+    }
+
+    @Test
+    public void replacedImport_should_beRelativeTo_targetAndFrontend() throws Exception {
+        String content = taskGenerateIndexTs.getFileContent();
+        Assert.assertTrue(content.contains("import('../target/frontend/flow-generated-imports'"));
     }
 
     @Test

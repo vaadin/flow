@@ -73,6 +73,14 @@ public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
         String relativizedImport = ensureValidRelativePath(
                 FrontendUtils.getUnixRelativePath(outputDirectory.toPath(),
                         generatedImports.toPath()));
+
+        relativizedImport = relativizedImport
+                // replace `./frontend/` with `../target/frontend/`
+                // so as it can be copied to `frontend` without changes.
+                .replaceFirst("^./", "../" + outputDirectory.getName() + "/")
+                // remove extension
+                .replaceFirst("\\.(ts|js)$", "");
+
         return indexTemplate.replace("[to-be-generated-by-flow]",
                 relativizedImport);
     }
