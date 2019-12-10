@@ -529,8 +529,9 @@ public class NodeTasks implements FallibleCommand {
                 new File(builder.generatedFolder, IMPORTS_NAME),
                 outputDirectory);
         commands.add(taskGenerateIndexJs);
+
         TaskGenerateTsConfig taskGenerateTsConfig = new TaskGenerateTsConfig(
-                builder.frontendDirectory, builder.npmFolder);
+                builder.frontendDirectory, builder.npmFolder, outputDirectory);
         commands.add(taskGenerateTsConfig);
     }
 

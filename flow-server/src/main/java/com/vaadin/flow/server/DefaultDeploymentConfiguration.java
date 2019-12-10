@@ -74,7 +74,7 @@ public class DefaultDeploymentConfiguration
 
     private static final String INDEX_NOT_FOUND =
             "- '%s' is not found from '%s'. Generating a default one in '%s%s'.%n"
-            + "Copy this file to the '%s' folder if you want to customize it.%n%n";
+            + "Copy this file to the '%s' folder if you want to customize it.%n";
 
     /**
      * Default value for {@link #getHeartbeatInterval()} = {@value} .
