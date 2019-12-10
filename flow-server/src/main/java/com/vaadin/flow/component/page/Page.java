@@ -37,11 +37,11 @@ import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.Dependency.Type;
 import com.vaadin.flow.shared.ui.LoadMode;
-
 import elemental.json.JsonObject;
 import elemental.json.JsonType;
 import elemental.json.JsonValue;
@@ -269,32 +269,37 @@ public class Page implements Serializable {
      * Adds the given external JavaScript module to the page and ensures that it
      * is loaded successfully.
      * <p>
-     * If the JavaScript modules are local or do not need to be added
-     * dynamically, you should use the {@link JsModule @JsModule} annotation
-     * instead.
+     * If the JavaScript modules do not need to be added dynamically, you should
+     * use the {@link JsModule @JsModule} annotation instead.
      *
      * @param url
      *            the URL to load the JavaScript module from, not
      *            <code>null</code>
      */
     public void addJsModule(String url) {
-        addJsModule(url, LoadMode.EAGER);
+        if (UrlUtil.isExternal(url) || url.startsWith("/")) {
+            addDependency(new Dependency(Type.JS_MODULE, url, LoadMode.EAGER));
+        } else {
+            throw new IllegalArgumentException(
+                    "url argument must contains either a protocol (eg. starts with \"http://\" or \"//\"), or starts with \"/\".");
+        }
     }
 
     /**
      * Adds the given external JavaScript module to the page and ensures that it
      * is loaded successfully.
      * <p>
-     * If the JavaScript modules are local or do not need to be added
-     * dynamically, you should use the {@link JsModule @JsModule} annotation
-     * instead.
+     * If the JavaScript modules do not need to be added dynamically, you should
+     * use the {@link JsModule @JsModule} annotation instead.
      *
      * @param url
      *            the URL to load the JavaScript module from, not
      *            <code>null</code>
      * @param loadMode
-     *            determines dependency load mode, refer to {@link LoadMode} for
-     *            details
+     *            this argument is ignored and the <code>loadMode</code> will
+     *            always be {@link LoadMode#EAGER} since {@link LoadMode}
+     *            doesn't work with {@link Type#JS_MODULE}. See Deprecated
+     *            section for more details.
      * @deprecated {@code LoadMode} is not functional with external JavaScript
      *             modules, as those are loaded as deferred due to
      *             {@code type=module} in {@code scrip} tag. Use
@@ -302,7 +307,7 @@ public class Page implements Serializable {
      */
     @Deprecated
     public void addJsModule(String url, LoadMode loadMode) {
-        addDependency(new Dependency(Type.JS_MODULE, url, loadMode));
+        addJsModule(url);
     }
 
     /**
