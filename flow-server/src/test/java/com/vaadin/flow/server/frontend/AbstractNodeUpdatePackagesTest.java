@@ -210,15 +210,14 @@ public abstract class AbstractNodeUpdatePackagesTest
     }
 
     @Test
-    public void npmIsInUse_packageLockJsonContainsNonPMPMDeps_removePackageLock()
+    public void npmIsInUse_packageLockJsonContainsNonPMPMDeps_packageLockNotRemoved()
             throws IOException {
         // use package updater with disabled PNPM
         // Generate package json in a proper format first
         packageCreator.execute();
         packageUpdater.execute();
 
-        Files.write(packageLock.toPath(), Collections
-                .singletonList("{ 'dependencies': { '@babel/cli': {} } }"));
+        Files.write(packageLock.toPath(), Collections.singletonList("{  }"));
 
         packageUpdater.execute();
         Assert.assertTrue(packageLock.exists());
