@@ -61,7 +61,6 @@ import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
-import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.internal.UsageStatistics.UsageEntry;
 import com.vaadin.flow.server.BootstrapUtils.ThemeSettings;
@@ -1129,12 +1128,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                         !inlineElement);
                 break;
             case JS_MODULE:
-                if (url != null && UrlUtil.isExternal(url)) {
-                    dependencyElement = createJavaScriptElement(url, false,
-                            "module");
-                } else {
-                    dependencyElement = null;
-                }
+                dependencyElement = createJavaScriptElement(url, false,
+                        "module");
                 break;
             case HTML_IMPORT:
                 dependencyElement = createHtmlImportElement(url);
@@ -1144,10 +1139,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                         "Unsupported dependency type: " + type);
             }
 
-            if (inlineElement && dependencyElement != null) {
+            if (inlineElement) {
                 dependencyElement.appendChild(new DataNode(
-                        dependency.getString(Dependency.KEY_CONTENTS),
-                        dependencyElement.baseUri()));
+                        dependency.getString(Dependency.KEY_CONTENTS)));
             }
 
             return dependencyElement;
