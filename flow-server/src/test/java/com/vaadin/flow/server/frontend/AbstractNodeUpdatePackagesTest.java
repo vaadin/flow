@@ -64,6 +64,8 @@ public abstract class AbstractNodeUpdatePackagesTest
     private File generatedDir;
     private File packageJson;
 
+    private ClassFinder classFinder;
+
     private File mainNodeModules;
     private File packageLock;
     private File appNodeModules;
@@ -79,7 +81,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         packageCreator = new TaskCreatePackageJson(baseDir, generatedDir);
 
-        ClassFinder classFinder = getClassFinder();
+        classFinder = getClassFinder();
         packageUpdater = new TaskUpdatePackages(classFinder,
                 getScanner(classFinder), baseDir, generatedDir, false, true);
         packageJson = new File(baseDir, PACKAGE_JSON);
@@ -155,6 +157,70 @@ public abstract class AbstractNodeUpdatePackagesTest
         packageUpdater.execute();
 
         assertVersionAndCleanUp();
+    }
+
+    @Test
+    public void pnpmIsInUse_packageJsonContainsFlowDeps_removeFlowDeps()
+            throws IOException {
+        // use package updater with disabled PNPM
+        packageUpdater = new TaskUpdatePackages(classFinder,
+                getScanner(classFinder), baseDir, generatedDir, false, true);
+        // Generate package json in a proper format first
+        packageCreator.execute();
+        packageUpdater.execute();
+
+        packageUpdater = new TaskUpdatePackages(classFinder,
+                getScanner(classFinder), baseDir, generatedDir, false, false);
+        packageUpdater.execute();
+
+        assertPackageJsonFlowDeps();
+    }
+
+    @Test
+    public void pnpmIsInUse_packageLockExists_removePackageLock()
+            throws IOException {
+        // use package updater with disabled PNPM
+        packageUpdater = new TaskUpdatePackages(classFinder,
+                getScanner(classFinder), baseDir, generatedDir, false, true);
+        // Generate package json in a proper format first
+        packageCreator.execute();
+        packageUpdater.execute();
+
+        Files.write(packageLock.toPath(), Collections.singletonList("{}"));
+
+        packageUpdater = new TaskUpdatePackages(classFinder,
+                getScanner(classFinder), baseDir, generatedDir, false, false);
+        packageUpdater.execute();
+        Assert.assertFalse(packageLock.exists());
+    }
+
+    @Test
+    public void npmIsInUse_packageJsonContainsFlowDeps_removeFlowDeps()
+            throws IOException {
+        // Generate package json in a proper format first
+        packageCreator.execute();
+        packageUpdater.execute();
+
+        JsonObject packJsonObject = getPackageJson(packageJson);
+        JsonObject deps = packJsonObject.get(DEPENDENCIES);
+
+        packageUpdater.execute();
+
+        assertPackageJsonFlowDeps();
+    }
+
+    @Test
+    public void npmIsInUse_packageLockJsonContainsNonPMPMDeps_packageLockNotRemoved()
+            throws IOException {
+        // use package updater with disabled PNPM
+        // Generate package json in a proper format first
+        packageCreator.execute();
+        packageUpdater.execute();
+
+        Files.write(packageLock.toPath(), Collections.singletonList("{  }"));
+
+        packageUpdater.execute();
+        Assert.assertTrue(packageLock.exists());
     }
 
     /**
@@ -666,6 +732,15 @@ public abstract class AbstractNodeUpdatePackagesTest
                 Collections.singletonList(stringify(packageJson)));
 
         packageUpdater.execute();
+    }
+
+    private void assertPackageJsonFlowDeps() throws IOException {
+        JsonObject packJsonObject = getPackageJson(packageJson);
+        JsonObject deps = packJsonObject.get(DEPENDENCIES);
+        // No Flow deps
+        Assert.assertFalse(deps.hasKey("@vaadin/flow-deps"));
+        // Contains initially generated default polymer dep
+        Assert.assertTrue(deps.hasKey("@polymer/polymer"));
     }
 
     JsonObject getPackageJson(File packageFile) throws IOException {
