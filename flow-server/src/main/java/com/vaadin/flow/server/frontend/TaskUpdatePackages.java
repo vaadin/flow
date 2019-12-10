@@ -121,7 +121,7 @@ public class TaskUpdatePackages extends NodeUpdater {
 
     private boolean updatePackageJsonDependencies(JsonObject packageJson,
             Map<String, String> deps) throws IOException {
-        int added = ensurePnpmSwitch(packageJson) ? 1 : 0;
+        int added = 0;
 
         // Add application dependencies
         for (Entry<String, String> dep : deps.entrySet()) {
@@ -144,7 +144,7 @@ public class TaskUpdatePackages extends NodeUpdater {
         JsonObject vaadinDependencies = packageJson.getObject(VAADIN_DEP_KEY)
                 .getObject(DEPENDENCIES);
         boolean doCleanUp = forceCleanUp;
-        int removed = 0;
+        int removed = ensureVersionUpgrade(packageJson) ? 1 : 0;
         if (dependencies != null) {
             for (String key : dependencies.keys()) {
                 if (!dependencyCollection.contains(key)
@@ -196,15 +196,11 @@ public class TaskUpdatePackages extends NodeUpdater {
         return Objects.equals(shrinkWrapVersion, getCurrentShrinkWrapVersion());
     }
 
-    private boolean ensurePnpmSwitch(JsonObject packageJson)
+    private boolean ensureVersionUpgrade(JsonObject packageJson)
             throws IOException {
-        if (disablePnpm) {
-            return false;
-        }
         boolean result = false;
         /*
-         * In case of PNPM tool we should ensure that package.json doesn't
-         * contain @vaadin/flow-deps dependency.
+         * In modern Flow versions "@vaadin/flow-deps" should not exist.
          */
         if (packageJson.hasKey(DEPENDENCIES)) {
             JsonObject object = packageJson.getObject(DEPENDENCIES);
@@ -213,19 +209,14 @@ public class TaskUpdatePackages extends NodeUpdater {
                 result = true;
             }
         }
-        /*
-         * In case of PNPM tool we package-lock should be used only for
-         * installing PNPM locally.
-         */
-
-        JsonObject packageLockDependencies = getPackageLockDependencies();
-        if (packageLockDependencies == null) {
+        if (disablePnpm) {
             return result;
         }
-        packageLockDependencies.remove("pnpm");
-        // if dependencies contain something other than "pnpm" then we should
-        // remove package-lock.json
-        if (packageLockDependencies.keys().length > 0) {
+        /*
+         * In case of PNPM tool we package-lock should not be used at all.
+         */
+        File packageLockFile = getPackageLockFile();
+        if (packageLockFile.exists()) {
             FileUtils.forceDelete(getPackageLockFile());
         }
         return result;

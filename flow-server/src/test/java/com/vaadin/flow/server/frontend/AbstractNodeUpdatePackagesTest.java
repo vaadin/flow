@@ -173,16 +173,11 @@ public abstract class AbstractNodeUpdatePackagesTest
                 getScanner(classFinder), baseDir, generatedDir, false, false);
         packageUpdater.execute();
 
-        JsonObject packJsonObject = getPackageJson(packageJson);
-        JsonObject deps = packJsonObject.get(DEPENDENCIES);
-        // No Flow deps
-        Assert.assertFalse(deps.hasKey("@vaadin/flow-deps"));
-        // Contains initially generated default polymer dep
-        Assert.assertTrue(deps.hasKey("@polymer/polymer"));
+        assertPackageJsonFlowDeps();
     }
 
     @Test
-    public void pnpmIsInUse_packageLockJsonContainsNonPMPMDeps_removePackageLock()
+    public void pnpmIsInUse_packageLockExists_removePackageLock()
             throws IOException {
         // use package updater with disabled PNPM
         packageUpdater = new TaskUpdatePackages(classFinder,
@@ -191,8 +186,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         packageCreator.execute();
         packageUpdater.execute();
 
-        Files.write(packageLock.toPath(), Collections
-                .singletonList("{ 'dependencies': { '@babel/cli': {} } }"));
+        Files.write(packageLock.toPath(), Collections.singletonList("{}"));
 
         packageUpdater = new TaskUpdatePackages(classFinder,
                 getScanner(classFinder), baseDir, generatedDir, false, false);
@@ -201,7 +195,7 @@ public abstract class AbstractNodeUpdatePackagesTest
     }
 
     @Test
-    public void npmIsInUse_packageJsonContainsFlowDeps_keepFlowDeps()
+    public void npmIsInUse_packageJsonContainsFlowDeps_removeFlowDeps()
             throws IOException {
         // Generate package json in a proper format first
         packageCreator.execute();
@@ -209,13 +203,10 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         JsonObject packJsonObject = getPackageJson(packageJson);
         JsonObject deps = packJsonObject.get(DEPENDENCIES);
-        System.out.println(deps);
 
         packageUpdater.execute();
 
-        packJsonObject = getPackageJson(packageJson);
-        Assert.assertEquals(deps.toJson(),
-                packJsonObject.get(DEPENDENCIES).toJson());
+        assertPackageJsonFlowDeps();
     }
 
     @Test
@@ -742,6 +733,15 @@ public abstract class AbstractNodeUpdatePackagesTest
                 Collections.singletonList(stringify(packageJson)));
 
         packageUpdater.execute();
+    }
+
+    private void assertPackageJsonFlowDeps() throws IOException {
+        JsonObject packJsonObject = getPackageJson(packageJson);
+        JsonObject deps = packJsonObject.get(DEPENDENCIES);
+        // No Flow deps
+        Assert.assertFalse(deps.hasKey("@vaadin/flow-deps"));
+        // Contains initially generated default polymer dep
+        Assert.assertTrue(deps.hasKey("@polymer/polymer"));
     }
 
     JsonObject getPackageJson(File packageFile) throws IOException {

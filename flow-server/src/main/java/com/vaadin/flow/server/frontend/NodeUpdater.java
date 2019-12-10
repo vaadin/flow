@@ -119,7 +119,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         this.generatedFolder = generatedPath;
     }
 
-    protected File getPackageJsonFile() {
+    private File getPackageJsonFile() {
         return new File(npmFolder, PACKAGE_JSON);
     }
 
