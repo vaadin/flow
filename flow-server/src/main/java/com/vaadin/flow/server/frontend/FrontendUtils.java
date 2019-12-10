@@ -612,7 +612,7 @@ public class FrontendUtils {
         String host = request.getHeader("host");
         if (host == null) {
             host = "http://127.0.0.1:8080";
-        } else {
+        } else if (!host.contains("://")) {
             String scheme = request.getHeader("scheme");
             if (scheme == null) {
                 scheme = "http";
