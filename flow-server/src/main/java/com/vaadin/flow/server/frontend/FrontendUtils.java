@@ -374,15 +374,12 @@ public class FrontendUtils {
     public static List<String> getPnpmExecutable(String baseDir,
             boolean failOnAbsence) {
         // First try local pnpm JS script if it exists
-        File npmInstalled = new File(baseDir, PNMP_INSTALLED_BY_NPM);
-        File npmMovedLocation = new File(baseDir,
-                "node_modules/.ignored/pnpm/bin/pnpm.js");
-        File otherNpmMovedLocation = new File(baseDir,
-                "node_modules/.ignored_pnpm/bin/pnpm.js");
         List<String> returnCommand = new ArrayList<>();
-        if (!addPnpmCommand(baseDir, otherNpmMovedLocation, returnCommand)
-                && !addPnpmCommand(baseDir, npmMovedLocation, returnCommand)
-                && !addPnpmCommand(baseDir, npmInstalled, returnCommand)) {
+        Optional<File> localPnpmScript = getLocalPnpmScript(baseDir);
+        if (localPnpmScript.isPresent()) {
+            returnCommand.add(getNodeExecutable(baseDir));
+            returnCommand.add(localPnpmScript.get().getAbsolutePath());
+        } else {
             // Otherwise look for regular `pnpm`
             String command = isWindows() ? "pnpm.cmd" : "pnpm";
             if (failOnAbsence) {
@@ -1050,15 +1047,24 @@ public class FrontendUtils {
         return LoggerFactory.getLogger(FrontendUtils.class);
     }
 
-    private static boolean addPnpmCommand(String baseDir, File file,
-            List<String> command) {
-        if (file.canRead()) {
-            // We return a two element list with node binary and pnpm-cli script
-            command.add(getNodeExecutable(baseDir));
-            command.add(file.getAbsolutePath());
-            return true;
+    private static Optional<File> getLocalPnpmScript(String baseDir) {
+        File movedPnpmScript = new File(baseDir,
+                "node_modules/.ignored_pnpm/bin/pnpm.js");
+        if (movedPnpmScript.canRead()) {
+            return Optional.of(movedPnpmScript);
         }
-        return false;
+
+        movedPnpmScript = new File(baseDir,
+                "node_modules/.ignored/pnpm/bin/pnpm.js");
+        if (movedPnpmScript.canRead()) {
+            return Optional.of(movedPnpmScript);
+        }
+
+        File npmInstalled = new File(baseDir, PNMP_INSTALLED_BY_NPM);
+        if (npmInstalled.canRead()) {
+            return Optional.of(npmInstalled);
+        }
+        return Optional.empty();
     }
 
     /**
