@@ -163,12 +163,10 @@ public abstract class AbstractNavigationStateRenderer
             TransitionOutcome transitionOutcome = executeBeforeLeaveNavigation(
                     beforeNavigationDeactivating, leaveHandlers);
 
-            if (transitionOutcome == TransitionOutcome.FORWARDED) {
-                return forward(event, beforeNavigationDeactivating);
-            }
-
-            if (transitionOutcome == TransitionOutcome.REROUTED) {
-                return reroute(event, beforeNavigationDeactivating);
+            Optional<Integer> result = handleTransactionOutcome(transitionOutcome, event,
+                    beforeNavigationDeactivating);
+            if (result.isPresent()) {
+                return result.get();
             }
 
             if (transitionOutcome == TransitionOutcome.POSTPONED) {
@@ -201,8 +199,6 @@ public abstract class AbstractNavigationStateRenderer
             clearAllPreservedChains(ui);
         }
 
-        final Component componentInstance = (Component) chain.get(0);
-
         BeforeEnterEvent beforeNavigationActivating = new BeforeEnterEvent(
                 event, routeTargetType, routeLayoutTypes);
 
@@ -218,24 +214,31 @@ public abstract class AbstractNavigationStateRenderer
         TransitionOutcome transitionOutcome = executeBeforeEnterNavigation(
                 beforeNavigationActivating, enterHandlers);
 
-        if (eventActionsSupported()
-                && TransitionOutcome.FORWARDED.equals(transitionOutcome)) {
-            return forward(event, beforeNavigationActivating);
+        Optional<Integer> result = handleTransactionOutcome(transitionOutcome, event,
+                beforeNavigationActivating);
+        if (result.isPresent()) {
+            return result.get();
         }
 
-        if (eventActionsSupported()
-                && TransitionOutcome.REROUTED.equals(transitionOutcome)) {
-            return reroute(event, beforeNavigationActivating);
-        }
+        final Component componentInstance = (Component) chain.get(0);
 
-        // Notify the target itself after all chain received the event.
         LocationChangeEvent locationChangeEvent = new LocationChangeEvent(
                 event.getSource(), event.getUI(), event.getTrigger(),
                 event.getLocation(), chain);
 
+        // Notify the target itself after all chain received the event.
         notifyNavigationTarget(componentInstance, event,
                 beforeNavigationActivating, locationChangeEvent);
 
+        result = handleTransactionOutcome(
+                getTransitionOutcome(beforeNavigationActivating)
+                        .orElse(TransitionOutcome.FINISHED),
+                event, beforeNavigationActivating);
+        if (result.isPresent()) {
+            return result.get();
+        }
+
+        // Change the UI according to the navigation Component chain.
         ui.getInternals().showRouteTarget(event.getLocation(),
                 navigationState.getResolvedPath(), componentInstance,
                 routerLayouts);
@@ -245,6 +248,7 @@ public abstract class AbstractNavigationStateRenderer
         int statusCode = locationChangeEvent.getStatusCode();
         validateStatusCode(statusCode, routeTargetType);
 
+        // After navigation event
         List<AfterNavigationHandler> afterNavigationHandlers = new ArrayList<>(
                 ui.getNavigationListeners(AfterNavigationHandler.class));
         afterNavigationHandlers
@@ -301,6 +305,23 @@ public abstract class AbstractNavigationStateRenderer
      */
     protected abstract boolean eventActionsSupported();
 
+    private Optional<Integer> handleTransactionOutcome(
+            TransitionOutcome transitionOutcome, NavigationEvent event,
+            BeforeEvent beforeNavigation) {
+
+        if (eventActionsSupported()) {
+            if (TransitionOutcome.FORWARDED.equals(transitionOutcome)) {
+                return Optional.of(forward(event, beforeNavigation));
+            }
+
+            if (TransitionOutcome.REROUTED.equals(transitionOutcome)) {
+                return Optional.of(reroute(event, beforeNavigation));
+            }
+        }
+
+        return Optional.empty();
+    }
+    
     // The first element in the returned list is always a Component
     private ArrayList<HasElement> createChain(NavigationEvent event) {
         final Class<? extends Component> routeTargetType = navigationState
@@ -356,13 +377,14 @@ public abstract class AbstractNavigationStateRenderer
             listener.beforeLeave(beforeNavigation);
 
             validateBeforeEvent(beforeNavigation);
-            if (beforeNavigation.hasForwardTarget()) {
-                return TransitionOutcome.FORWARDED;
+
+            Optional<TransitionOutcome> transitionOutcome = getTransitionOutcome(
+                    beforeNavigation);
+            if (transitionOutcome.isPresent()) {
+                return transitionOutcome.get();
             }
 
-            if (beforeNavigation.hasRerouteTarget()) {
-                return TransitionOutcome.REROUTED;
-            } else if (beforeNavigation.isPostponed()) {
+            if (beforeNavigation.isPostponed()) {
                 postponed = Postpone.withLeaveObservers(leaveHandlers);
                 return TransitionOutcome.POSTPONED;
             }
@@ -388,15 +410,25 @@ public abstract class AbstractNavigationStateRenderer
             eventHandler.beforeEnter(beforeNavigation);
             validateBeforeEvent(beforeNavigation);
 
-            if (beforeNavigation.hasForwardTarget()) {
-                return TransitionOutcome.FORWARDED;
-            }
-
-            if (beforeNavigation.hasRerouteTarget()) {
-                return TransitionOutcome.REROUTED;
+            Optional<TransitionOutcome> transitionOutcome = getTransitionOutcome(
+                    beforeNavigation);
+            if (transitionOutcome.isPresent()) {
+                return transitionOutcome.get();
             }
         }
         return TransitionOutcome.FINISHED;
+    }
+
+    private Optional<TransitionOutcome> getTransitionOutcome(BeforeEvent beforeEvent) {
+        if (beforeEvent.hasForwardTarget()) {
+            return Optional.of(TransitionOutcome.FORWARDED);
+        }
+
+        if (beforeEvent.hasRerouteTarget()) {
+            return Optional.of(TransitionOutcome.REROUTED);
+        }
+        
+        return Optional.empty();
     }
 
     private int forward(NavigationEvent event, BeforeEvent beforeNavigation) {
