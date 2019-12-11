@@ -62,6 +62,11 @@ import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
  */
 public class FrontendUtils {
 
+    private static final String PNMP_INSTALLED_BY_NPM_FOLDER = "node_modules/pnpm/";
+
+    private static final String PNMP_INSTALLED_BY_NPM = PNMP_INSTALLED_BY_NPM_FOLDER
+            + "bin/pnpm.js";
+
     public static final String PROJECT_BASEDIR = "project.basedir";
 
     /**
@@ -368,14 +373,13 @@ public class FrontendUtils {
     public static List<String> getPnpmExecutable(String baseDir,
             boolean failOnAbsence) {
         // First try local pnpm JS script if it exists
-        File file = new File(baseDir, "node_modules/pnpm/bin/pnpm.js");
         List<String> returnCommand = new ArrayList<>();
-        if (file.canRead()) {
-            // We return a two element list with node binary and npm-cli script
+        Optional<File> localPnpmScript = getLocalPnpmScript(baseDir);
+        if (localPnpmScript.isPresent()) {
             returnCommand.add(getNodeExecutable(baseDir));
-            returnCommand.add(file.getAbsolutePath());
+            returnCommand.add(localPnpmScript.get().getAbsolutePath());
         } else {
-            // Otherwise look for regulag `pnpm`
+            // Otherwise look for regular `pnpm`
             String command = isWindows() ? "pnpm.cmd" : "pnpm";
             if (failOnAbsence) {
                 returnCommand.add(getExecutable(baseDir, command, null)
@@ -770,32 +774,52 @@ public class FrontendUtils {
      */
     public static void ensurePnpm(String baseDir, boolean ensure) {
         if (ensure && getPnpmExecutable(baseDir, false).isEmpty()) {
-            List<String> npmExecutable = FrontendUtils
-                    .getNpmExecutable(baseDir);
-            List<String> command = new ArrayList<>();
-            command.addAll(npmExecutable);
-            command.add("install");
-            command.add("pnpm");
-
-            ProcessBuilder builder = createProcessBuilder(command);
-            builder.environment().put("ADBLOCK", "1");
-            builder.directory(new File(baseDir));
-
-            Process process = null;
-            try {
-                process = builder.inheritIO().start();
-                int errorCode = process.waitFor();
-                if (errorCode != 0) {
-                    getLogger().error("Couldn't install 'pnpm'");
-                } else {
-                    getLogger().debug("Pnpm is successfully installed");
+            // copy the current content of package.json file to a temporary
+            // location
+            File packageJson = new File(baseDir, "package.json");
+            File tempFile = null;
+            boolean packageJsonExists = packageJson.canRead();
+            if (packageJsonExists) {
+                try {
+                    tempFile = File.createTempFile("package", "json");
+                    FileUtils.copyFile(packageJson, tempFile);
+                } catch (IOException exception) {
+                    throw new IllegalStateException(
+                            "Couldn't make a copy of package.json file",
+                            exception);
                 }
-            } catch (InterruptedException | IOException e) {
-                getLogger().error("Error when running `npm install`", e);
-            } finally {
-                if (process != null) {
-                    process.destroyForcibly();
+                packageJson.delete();
+            }
+            // install pnpm locally using npm
+            installPnpm(baseDir, getNpmExecutable(baseDir));
+
+            /*
+             * pnpm is not able to manage itself. To be able to deal with it
+             * properly let's install it now via itself
+             */
+            installPnpm(baseDir, getPnpmExecutable(baseDir, true));
+
+            /*
+             * pnpm installed by npm should have been moved to another location
+             * which is out of regular "node_modules" package root. We don't
+             * need anymore pnpm installed inside "node_modules" and it's even
+             * dangerous to have it there since it's not able to manage itself
+             * properly. Let's remove it from "node_modules".
+             */
+            new File(baseDir, PNMP_INSTALLED_BY_NPM_FOLDER).delete();
+            // remove package-lock.json which contains pnpm as a dependency.
+            new File(baseDir, "package-lock.json").delete();
+
+            if (packageJsonExists && tempFile != null) {
+                // return back the original package.json
+                try {
+                    FileUtils.copyFile(tempFile, packageJson);
+                } catch (IOException exception) {
+                    throw new IllegalStateException(
+                            "Couldn't restore package.json file back",
+                            exception);
                 }
+                tempFile.delete();
             }
         }
     }
@@ -806,6 +830,35 @@ public class FrontendUtils {
                     npmVersion.getFullVersion(),
                     "by updating your global npm installation with `npm install -g npm@latest`");
             throw new IllegalStateException(badNpmVersion);
+        }
+    }
+
+    private static void installPnpm(String baseDir,
+            List<String> installCommand) {
+        List<String> command = new ArrayList<>();
+        command.addAll(installCommand);
+        command.add("install");
+        command.add("pnpm");
+
+        ProcessBuilder builder = createProcessBuilder(command);
+        builder.environment().put("ADBLOCK", "1");
+        builder.directory(new File(baseDir));
+
+        Process process = null;
+        try {
+            process = builder.inheritIO().start();
+            int errorCode = process.waitFor();
+            if (errorCode != 0) {
+                getLogger().error("Couldn't install 'pnpm'");
+            } else {
+                getLogger().debug("Pnpm is successfully installed");
+            }
+        } catch (InterruptedException | IOException e) {
+            getLogger().error("Error when running `npm install`", e);
+        } finally {
+            if (process != null) {
+                process.destroyForcibly();
+            }
         }
     }
 
@@ -1001,6 +1054,26 @@ public class FrontendUtils {
 
     private static Logger getLogger() {
         return LoggerFactory.getLogger(FrontendUtils.class);
+    }
+
+    private static Optional<File> getLocalPnpmScript(String baseDir) {
+        File movedPnpmScript = new File(baseDir,
+                "node_modules/.ignored_pnpm/bin/pnpm.js");
+        if (movedPnpmScript.canRead()) {
+            return Optional.of(movedPnpmScript);
+        }
+
+        movedPnpmScript = new File(baseDir,
+                "node_modules/.ignored/pnpm/bin/pnpm.js");
+        if (movedPnpmScript.canRead()) {
+            return Optional.of(movedPnpmScript);
+        }
+
+        File npmInstalled = new File(baseDir, PNMP_INSTALLED_BY_NPM);
+        if (npmInstalled.canRead()) {
+            return Optional.of(npmInstalled);
+        }
+        return Optional.empty();
     }
 
     /**
