@@ -50,7 +50,6 @@ import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
-
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
@@ -572,11 +571,7 @@ public class FrontendUtils {
         // else fallback on 127.0.0.1:8080
         if (externalStatsUrl.startsWith("/")) {
             VaadinRequest request = VaadinRequest.getCurrent();
-            String host = request.getHeader("host");
-            if (host == null) {
-                host = "http://127.0.0.1:8080";
-            }
-            url = host + externalStatsUrl;
+            url = getHostString(request) + externalStatsUrl;
         } else {
             url = externalStatsUrl;
         }
@@ -611,6 +606,20 @@ public class FrontendUtils {
                     url, e);
         }
         return null;
+    }
+
+    private static String getHostString(VaadinRequest request) {
+        String host = request.getHeader("host");
+        if (host == null) {
+            host = "http://127.0.0.1:8080";
+        } else if (!host.contains("://")) {
+            String scheme = request.getHeader("scheme");
+            if (scheme == null) {
+                scheme = "http";
+            }
+            host = scheme + "://" + host;
+        }
+        return host;
     }
 
     private static InputStream getStatsFromClassPath(VaadinService service) {
