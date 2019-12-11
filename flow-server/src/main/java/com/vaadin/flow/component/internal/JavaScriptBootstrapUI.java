@@ -50,6 +50,11 @@ import com.vaadin.flow.theme.ThemeDefinition;
 public class JavaScriptBootstrapUI extends UI {
     public static final String SERVER_ROUTING = "clientRoutingMode";
 
+    static final String CLIENT_PUSHSTATE_TO =
+            "window.history.pushState(null, '', $0)";
+    static final String CLIENT_NAVIGATE_TO =
+            "window.dispatchEvent(new CustomEvent('vaadin-router-go', {detail: new URL($0, document.baseURI)}))";
+
     Element wrapperElement;
     private NavigationState clientViewNavigationState;
 
@@ -165,19 +170,25 @@ public class JavaScriptBootstrapUI extends UI {
             getInternals().clearLastHandledNavigation();
         }
         return false;
-
     }
 
     private boolean shouldHandleNavigation(Location location) {
-        if (getInternals().hasLastHandledLocation()) {
-            return !location.getPathWithQueryParameters().equals(getInternals()
-                    .getLastHandledLocation().getPathWithQueryParameters());
-        }
-        return true;
+        return !getInternals().hasLastHandledLocation() || !sameLocation(
+                getInternals().getLastHandledLocation(), location);
+    }
+
+    private boolean sameLocation(Location oldLocation, Location newLocation) {
+        return removeLastSlash(newLocation.getPathWithQueryParameters())
+                .equals(removeLastSlash(
+                        oldLocation.getPathWithQueryParameters()));
     }
 
     private String removeFirstSlash(String route) {
         return route.replaceFirst("^/+", "");
+    }
+
+    private String removeLastSlash(String route) {
+        return route.replaceFirst("/+$", "");
     }
 
     private boolean handleNavigation(Location location,
@@ -225,12 +236,20 @@ public class JavaScriptBootstrapUI extends UI {
             // server-side routing
             renderViewForRoute(location);
         } else {
-            // client-side routing
-            getPage().executeJs(
-                    "window.dispatchEvent(new CustomEvent('vaadin-router-go',"
-                            + " {detail: new URL($0, document.baseURI)}))",
-                    location.getPathWithQueryParameters()
-            );
+            String execJs;
+            if (getInternals().hasLastHandledLocation()) {
+                // There is an in-progress navigation
+                if (sameLocation(getInternals().getLastHandledLocation(), location)) {
+                    // There are no changes, prevent looping
+                    return;
+                }
+                // Update browser URL but do not fire client-side navigation
+                execJs = CLIENT_PUSHSTATE_TO;
+            } else {
+                // There is navigation, let client-side to handle it
+                execJs = CLIENT_NAVIGATE_TO;
+            }
+            getPage().executeJs(execJs, location.getPathWithQueryParameters());
         }
     }
 

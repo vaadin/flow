@@ -5,20 +5,24 @@ import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+import org.mockito.Spy;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.BeforeLeaveEvent;
 import com.vaadin.flow.router.BeforeLeaveObserver;
+import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinRequest;
 
-import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
+import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -78,6 +82,10 @@ public class JavaScriptBootstrapUITest  {
                 ProductView.class, Collections.emptyList());
         ui = new JavaScriptBootstrapUI();
         ui.getInternals().setSession(mocks.getSession());
+
+        Mockito.when(mocks.getSession().getAttribute(SERVER_ROUTING))
+                .thenReturn(Boolean.FALSE);
+
         CurrentInstance.setCurrent(ui);
     }
 
@@ -192,14 +200,67 @@ public class JavaScriptBootstrapUITest  {
     }
 
     @Test
+    public void should_invoke_clientRoute_when_navigationHasNotBeenStarted() {
+        ui = Mockito.spy(ui);
+        Page page = Mockito.mock(Page.class);
+
+        Mockito.when(ui.getPage()).thenReturn(page);
+
+        ArgumentCaptor<String> execJs = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> execArg = ArgumentCaptor.forClass(String.class);
+
+        ui.navigate("whatever");
+        Mockito.verify(page).executeJs(execJs.capture(), execArg.capture());
+
+        assertEquals(CLIENT_NAVIGATE_TO, execJs.getValue());
+        assertEquals("whatever", execArg.getValue());
+    }
+
+    @Test
+    public void should_update_pushState_when_navigationHasBeenAlreadyStarted() {
+        ui = Mockito.spy(ui);
+        Page page = Mockito.mock(Page.class);
+        UIInternals internals = Mockito.mock(UIInternals.class);
+
+        Mockito.when(ui.getPage()).thenReturn(page);
+        Mockito.when(ui.getInternals()).thenReturn(internals);
+
+        Mockito.when(internals.hasLastHandledLocation()).thenReturn(true);
+        Location lastLocation = new Location("clean");
+        Mockito.when(internals.getLastHandledLocation()).thenReturn(lastLocation);
+
+        ArgumentCaptor<String> execJs = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> execArg = ArgumentCaptor.forClass(String.class);
+
+        ui.navigate("clean/1");
+        Mockito.verify(page).executeJs(execJs.capture(), execArg.capture());
+
+        assertEquals(CLIENT_PUSHSTATE_TO, execJs.getValue());
+        assertEquals("clean/1", execArg.getValue());
+    }
+
+    @Test
+    public void should_not_notify_clientRoute_when_navigatingToTheSame() {
+        ui = Mockito.spy(ui);
+        Page page = Mockito.mock(Page.class);
+        UIInternals internals = Mockito.mock(UIInternals.class);
+
+        Mockito.when(ui.getPage()).thenReturn(page);
+        Mockito.when(ui.getInternals()).thenReturn(internals);
+
+        Mockito.when(internals.hasLastHandledLocation()).thenReturn(true);
+        Location lastLocation = new Location("clean");
+        Mockito.when(internals.getLastHandledLocation()).thenReturn(lastLocation);
+
+        ui.navigate("clean/");
+        Mockito.verify(page, Mockito.never()).executeJs(Mockito.anyString(), Mockito.anyString());
+    }
+
+    @Test
     public void should_not_navigate_when_client_routing() {
         ui.connectClient("foo", "bar", "/clean");
         assertEquals(Tag.HEADER, ui.wrapperElement.getChild(0).getTag());
         assertEquals(Tag.H2, ui.wrapperElement.getChild(0).getChild(0).getTag());
-
-
-        Mockito.when(mocks.getSession().getAttribute(SERVER_ROUTING))
-                .thenReturn(Boolean.FALSE);
 
         // Dirty view is allowed after clean view
         ui.navigate("dirty");
