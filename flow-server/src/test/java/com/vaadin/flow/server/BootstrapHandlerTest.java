@@ -1097,14 +1097,14 @@ public class BootstrapHandlerTest {
                                         + "build/webcomponentsjs/webcomponents-loader.js\"></script>")));
 
         Assert.assertTrue(
-                "index.js should be added to head for ES6 browsers. (type module)",
+                "index.js should be added to head for ES6 browsers. (type module with crossorigin)",
                 allElements.stream().map(Object::toString)
                         .anyMatch(element -> element
                                 .equals("<script type=\"module\" src=\"./"
                                         + VAADIN_MAPPING
                                         + "build/index-1111.cache.js\" data-app-id=\""
                                         + testUI.getInternals().getAppId()
-                                        + "\"></script>")));
+                                        + "\" crossorigin></script>")));
 
         Assert.assertTrue(
                 "index.js should be added to head for ES5 browsers. (deferred and nomodule)",
