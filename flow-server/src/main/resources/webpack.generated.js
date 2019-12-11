@@ -16,7 +16,7 @@ const baseDir = path.resolve(__dirname);
 
 // the folder of app resources:
 //  - flow templates for classic Flow
-//  - client code with index.html and index.js for CCDM
+//  - client code with index.html and index.[ts/js] for CCDM
 const frontendFolder = '[to-be-generated-by-flow]';
 const fileNameOfTheFlowGeneratedMainEntryPoint = '[to-be-generated-by-flow]';
 const mavenOutputFolderForFlowBundledFiles = '[to-be-generated-by-flow]';
@@ -27,7 +27,7 @@ const clientSideIndexEntryPoint = '[to-be-generated-by-flow]';
 const build = 'build';
 // public path for resources, must match the request used in flow to get the /build/stats.json file
 const config = 'config';
-// folder for outputting index.js bundle, etc.
+// folder for outputting index.[ts/js] bundle, etc.
 const buildFolder = `${mavenOutputFolderForFlowBundledFiles}/${build}`;
 // folder for outputting stats.json
 const confFolder = `${mavenOutputFolderForFlowBundledFiles}/${config}`;

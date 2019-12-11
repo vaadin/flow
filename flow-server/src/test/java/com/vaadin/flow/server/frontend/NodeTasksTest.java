@@ -133,7 +133,7 @@ public class NodeTasksTest {
         Arrays.asList(
                 // enableClientSide
                 "target/index.html",
-                "target/index.js",
+                "target/index.ts",
                 // withConnectJavaSourceFolder and withConnectGeneratedOpenApiJson
                 "api-file.json",
                 // withConnectClientTsApiFolder

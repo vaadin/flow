@@ -27,64 +27,87 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_JS;
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
+import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
 
-public class TaskGenerateIndexJsTest {
+public class TaskGenerateIndexTsTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     private File frontendFolder;
     private File outputFolder;
     private File generatedImports;
-    private TaskGenerateIndexJs taskGenerateIndexJs;
+    private TaskGenerateIndexTs taskGenerateIndexTs;
 
     @Before
     public void setUp() throws IOException {
-        frontendFolder = temporaryFolder.newFolder();
-        outputFolder = temporaryFolder.newFolder();
-        generatedImports = temporaryFolder.newFile("flow-generated-imports.js");
-        taskGenerateIndexJs = new TaskGenerateIndexJs(frontendFolder,
+        frontendFolder = temporaryFolder.newFolder(FRONTEND);
+        outputFolder = temporaryFolder.newFolder(TARGET);
+        File generatedFolder = temporaryFolder.newFolder(TARGET, FRONTEND);
+        generatedImports = new File(generatedFolder, "flow-generated-imports.js");
+        generatedImports.createNewFile();
+        taskGenerateIndexTs = new TaskGenerateIndexTs(frontendFolder,
                 generatedImports, outputFolder);
     }
 
     @Test
-    public void should_notGenerateIndexJs_IndexJsExists() throws Exception {
+    public void should_notGenerateIndexTs_IndexJsExists() throws Exception {
         Files.createFile(new File(frontendFolder, INDEX_JS).toPath());
-        taskGenerateIndexJs.execute();
+        taskGenerateIndexTs.execute();
         Assert.assertFalse(
-                "Should not generate index.js when it exists in"
+                "Should not generate index.ts when index.js exists in"
                         + " the frontend folder",
-                taskGenerateIndexJs.shouldGenerate());
+                taskGenerateIndexTs.shouldGenerate());
         Assert.assertFalse("The generated file should not exists",
-                taskGenerateIndexJs.getGeneratedFile().exists());
+                taskGenerateIndexTs.getGeneratedFile().exists());
+    }
+
+    @Test
+    public void should_notGenerateIndexTs_IndexTsExists() throws Exception {
+        Files.createFile(new File(frontendFolder, INDEX_TS).toPath());
+        taskGenerateIndexTs.execute();
+        Assert.assertFalse(
+                "Should not generate index.ts when index.ts exists in"
+                        + " the frontend folder",
+                taskGenerateIndexTs.shouldGenerate());
+        Assert.assertFalse("The generated file should not exists",
+                taskGenerateIndexTs.getGeneratedFile().exists());
     }
 
     @Test
     public void should_generateIndexJs_IndexJsNotExist() throws Exception {
 
-        taskGenerateIndexJs.execute();
+        taskGenerateIndexTs.execute();
         Assert.assertTrue(
-                "Should generate index.js when it doesn't exist in"
+                "Should generate index.ts when it doesn't exist in"
                         + " the frontend folder",
-                taskGenerateIndexJs.shouldGenerate());
+                taskGenerateIndexTs.shouldGenerate());
         Assert.assertTrue("The generated file should exists",
-                taskGenerateIndexJs.getGeneratedFile().exists());
+                taskGenerateIndexTs.getGeneratedFile().exists());
 
-        Assert.assertEquals("Should have default content of index.js",
-                taskGenerateIndexJs.getFileContent(),
-                IOUtils.toString(taskGenerateIndexJs.getGeneratedFile().toURI(),
+        Assert.assertEquals("Should have default content of index.ts",
+                taskGenerateIndexTs.getFileContent(),
+                IOUtils.toString(taskGenerateIndexTs.getGeneratedFile().toURI(),
                         StandardCharsets.UTF_8));
     }
 
     @Test
+    public void replacedImport_should_beRelativeTo_targetAndFrontend() throws Exception {
+        String content = taskGenerateIndexTs.getFileContent();
+        Assert.assertTrue(content.contains("import('../target/frontend/flow-generated-imports'"));
+    }
+
+    @Test
     public void should_ensureValidRelativePath_whenItHasNoRelativePrefix() {
-        String customPath = TaskGenerateIndexJs.ensureValidRelativePath(
+        String customPath = TaskGenerateIndexTs.ensureValidRelativePath(
                 "../custom-frontend/generated-flow-imports.js");
         Assert.assertEquals(
                 "Should not append './' if it is already a relative path",
                 "../custom-frontend/generated-flow-imports.js", customPath);
 
-        customPath = TaskGenerateIndexJs.ensureValidRelativePath(
+        customPath = TaskGenerateIndexTs.ensureValidRelativePath(
                 "custom-frontend/generated-flow-imports.js");
         Assert.assertEquals(
                 "Should append './' if it doesn't start with a relative path",

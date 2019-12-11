@@ -41,7 +41,7 @@ public class TaskGenerateTsConfigTest {
         frontendFolder = temporaryFolder.newFolder();
         outputFolder = temporaryFolder.newFolder();
         taskGenerateTsConfig = new TaskGenerateTsConfig(frontendFolder,
-                outputFolder);
+                outputFolder, temporaryFolder.getRoot());
     }
 
     @Test
