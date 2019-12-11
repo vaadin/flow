@@ -1237,34 +1237,38 @@ public class ComponentTest {
     }
 
     @Test // 3818
-    public void enabledStateChangeOnAttachCalledForParentState_initiallyDisabled() {
+    public void enabledStateChangeOnAttachCalledForParentState() {
         enabledStateChangeOnAttachCalledForParentState(false,
                 (parent, child) -> parent.add(child));
     }
 
     @Test // 7085
-    public void enabledStateChangeOnAttachCalledForParentState_initiallyEnabled() {
+    public void enabledStateChangeOnDisableParent() {
         enabledStateChangeOnAttachCalledForParentState(true,
-                (parent, child) -> parent.add(child));
+                (parent, child) -> {
+                    parent.add(child);
+                    parent.setEnabled(false);
+                });
     }
 
     @Test
-    public void enabledStateChangeOnAttachCalledForParentOfVirtualChildState_initiallyDisabled() {
+    public void enabledStateChangeOnAttachCalledForParentOfVirtualChildState() {
         enabledStateChangeOnAttachCalledForParentState(false,
                 (parent, child) -> {
-                    Element wrapper = new Element("div");
+                    Element wrapper = ElementFactory.createAnchor();
                     parent.getElement().appendVirtualChild(wrapper);
                     wrapper.appendChild(child.getElement());
                 });
     }
 
     @Test
-    public void enabledStateChangeOnAttachCalledForParentOfVirtualChildState_initiallyEnabled() {
+    public void enabledStateChangeOnDisableParentOfVirtualChild() {
         enabledStateChangeOnAttachCalledForParentState(true,
                 (parent, child) -> {
-                    Element wrapper = new Element("div");
+                    Element wrapper = ElementFactory.createAnchor();
                     parent.getElement().appendVirtualChild(wrapper);
                     wrapper.appendChild(child.getElement());
+                    parent.setEnabled(false);
                 });
     }
 
@@ -1308,35 +1312,18 @@ public class ComponentTest {
     }
 
     @Test
-    public void enabledStateChangeOnParentDetachReturnsOldState_initiallyDisabled() {
-        enabledStateChangeOnParentDetachReturnsOldState(false,
+    public void enabledStateChangeOnParentDetachReturnsOldState() {
+        enabledStateChangeOnParentDetachReturnsOldState(
                 (parent, child) -> parent.add(child));
     }
 
     @Test
-    public void enabledStateChangeOnParentDetachReturnsOldState_initiallyEnabled() {
-        enabledStateChangeOnParentDetachReturnsOldState(true,
-                (parent, child) -> parent.add(child));
-    }
-
-    @Test
-    public void enabledStateChangeOnParentOfVirtualChildDetachReturnsOldState_initiallyDisabled() {
-        enabledStateChangeOnParentDetachReturnsOldState(false,
-                (parent, child) -> {
-                    Element wrapper = new Element("div");
-                    parent.getElement().appendVirtualChild(wrapper);
-                    wrapper.appendChild(child.getElement());
-                });
-    }
-
-    @Test
-    public void enabledStateChangeOnParentOfVirtualChildDetachReturnsOldState_initiallyEnabled() {
-        enabledStateChangeOnParentDetachReturnsOldState(true,
-                (parent, child) -> {
-                    Element wrapper = new Element("div");
-                    parent.getElement().appendVirtualChild(wrapper);
-                    wrapper.appendChild(child.getElement());
-                });
+    public void enabledStateChangeOnParentOfVirtualChildDetachReturnsOldState() {
+        enabledStateChangeOnParentDetachReturnsOldState((parent, child) -> {
+            Element wrapper = ElementFactory.createAnchor();
+            parent.getElement().appendVirtualChild(wrapper);
+            wrapper.appendChild(child.getElement());
+        });
     }
 
     @Test // 3818
@@ -1653,7 +1640,8 @@ public class ComponentTest {
             }
         };
 
-        Assert.assertFalse("Parent should be disabled", parent.isEnabled());
+        Assert.assertEquals("Parent should be disabled", initiallyEnabled,
+                parent.isEnabled());
         Assert.assertTrue("Child should be enabled.", child.isEnabled());
         Assert.assertNull(child.getElement().getAttribute("disabled"));
 
@@ -1661,18 +1649,17 @@ public class ComponentTest {
 
         Assert.assertFalse("After attach child should be disabled",
                 child.isEnabled());
-        Assert.assertEquals("Disabled event should have triggered",
-                initiallyEnabled, stateChange.get());
+        Assert.assertFalse("Disabled event should have triggered",
+                stateChange.get());
         Assert.assertNotNull(child.getElement().getAttribute("disabled"));
     }
 
     private void enabledStateChangeOnParentDetachReturnsOldState(
-            boolean initiallyEnabled,
             BiConsumer<EnabledDiv, Component> modificationStartegy) {
         UI ui = new UI();
 
         EnabledDiv grandParent = new EnabledDiv();
-        grandParent.setEnabled(initiallyEnabled);
+        grandParent.setEnabled(false);
         ui.add(grandParent);
 
         EnabledDiv parent = new EnabledDiv();
@@ -1705,8 +1692,8 @@ public class ComponentTest {
 
         Assert.assertTrue("After detach child should be enabled",
                 child.isEnabled());
-        Assert.assertNotEquals("Enable event should have triggered",
-                initiallyEnabled, stateChange.get());
+        Assert.assertTrue("Enable event should have triggered",
+                stateChange.get());
         Assert.assertNull(child.getElement().getAttribute("disabled"));
     }
 }
