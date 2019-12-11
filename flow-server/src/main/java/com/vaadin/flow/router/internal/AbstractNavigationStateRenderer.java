@@ -18,6 +18,7 @@ package com.vaadin.flow.router.internal;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -205,17 +206,6 @@ public abstract class AbstractNavigationStateRenderer
         BeforeEnterEvent beforeNavigationActivating = new BeforeEnterEvent(
                 event, routeTargetType, routeLayoutTypes);
 
-        LocationChangeEvent locationChangeEvent = new LocationChangeEvent(
-                event.getSource(), event.getUI(), event.getTrigger(),
-                event.getLocation(), chain);
-
-        notifyNavigationTarget(componentInstance, event,
-                beforeNavigationActivating, locationChangeEvent);
-
-        if (beforeNavigationActivating.hasRerouteTarget()) {
-            return reroute(event, beforeNavigationActivating);
-        }
-
         @SuppressWarnings("unchecked")
         List<RouterLayout> routerLayouts = (List<RouterLayout>) (List<?>) chain
                 .subList(1, chain.size());
@@ -223,7 +213,8 @@ public abstract class AbstractNavigationStateRenderer
         List<BeforeEnterHandler> enterHandlers = new ArrayList<>(
                 ui.getNavigationListeners(BeforeEnterHandler.class));
         enterHandlers.addAll(EventUtil.collectBeforeEnterObservers(
-                ui.getInternals().getActiveRouterTargetsChain(), chain));
+                reverse(ui.getInternals().getActiveRouterTargetsChain()),
+                reverse(chain)));
         TransitionOutcome transitionOutcome = executeBeforeEnterNavigation(
                 beforeNavigationActivating, enterHandlers);
 
@@ -236,6 +227,14 @@ public abstract class AbstractNavigationStateRenderer
                 && TransitionOutcome.REROUTED.equals(transitionOutcome)) {
             return reroute(event, beforeNavigationActivating);
         }
+
+        // Notify the target itself after all chain received the event.
+        LocationChangeEvent locationChangeEvent = new LocationChangeEvent(
+                event.getSource(), event.getUI(), event.getTrigger(),
+                event.getLocation(), chain);
+
+        notifyNavigationTarget(componentInstance, event,
+                beforeNavigationActivating, locationChangeEvent);
 
         ui.getInternals().showRouteTarget(event.getLocation(),
                 navigationState.getResolvedPath(), componentInstance,
@@ -259,7 +258,7 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     /**
-     * Notified the navigation target about the status of the navigation.
+     * Notify the navigation target about the status of the navigation.
      *
      * @param componentInstance
      *            the navigation target instance
@@ -648,4 +647,12 @@ public abstract class AbstractNavigationStateRenderer
             });
         }
     }
+
+    private static <T> List<T> reverse(List<T> list) {
+        List<T> result = new ArrayList<>(list);
+        Collections.reverse(result);
+        return Collections.unmodifiableList(result);
+    }
+
+
 }
