@@ -248,7 +248,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         added += addDependency(packageJson, DEV_DEPENDENCIES,
                 "copy-webpack-plugin", "5.0.3");
         added += addDependency(packageJson, DEV_DEPENDENCIES,
-                "compression-webpack-plugin", "3.0.0");
+                "compression-webpack-plugin", "3.0.1");
         added += addDependency(packageJson, DEV_DEPENDENCIES, "webpack-merge",
                 "4.2.1");
         added += addDependency(packageJson, DEV_DEPENDENCIES, "raw-loader",
