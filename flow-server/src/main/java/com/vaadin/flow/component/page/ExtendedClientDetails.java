@@ -95,7 +95,8 @@ public class ExtendedClientDetails implements Serializable {
             String bodyClientWidth, String bodyClientHeight, String tzOffset,
             String rawTzOffset, String dstShift, String dstInEffect,
             String tzId, String curDate, String touchDevice,
-            String devicePixelRatio, String windowName, String navigatorPlatform) {
+            String devicePixelRatio, String windowName,
+            String navigatorPlatform) {
         if (screenWidth != null) {
             try {
                 this.screenWidth = Integer.parseInt(screenWidth);
@@ -206,7 +207,7 @@ public class ExtendedClientDetails implements Serializable {
     /**
      * Gets the inner width of the browser window {@code window.innerWidth} in
      * pixels. This includes the scrollbar, if it is visible.
-     * 
+     *
      * @return the browser window inner width in pixels
      */
     public int getWindowInnerWidth() {
@@ -215,7 +216,7 @@ public class ExtendedClientDetails implements Serializable {
 
     /**
      * Gets the height of the body element in the document in pixels.
-     * 
+     *
      * @return the height of the body element
      */
     public int getBodyClientHeight() {
@@ -337,11 +338,13 @@ public class ExtendedClientDetails implements Serializable {
 
     /**
      * Gets the device pixel ratio, {@code window.devicePixelRatio}. See more
-     * from <a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio">MDN web docs</a>.
+     * from <a href=
+     * "https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio">MDN
+     * web docs</a>.
      * <p>
      * A value of -1 indicates that the value was not reported by the browser
      * correctly.
-     * 
+     *
      * @return double-precision floating-point value indicating the ratio of the
      *         display's resolution in physical pixels to the resolution in CSS
      *         pixels
@@ -372,5 +375,15 @@ public class ExtendedClientDetails implements Serializable {
         }
         WebBrowser browser = VaadinSession.getCurrent().getBrowser();
         return browser.isIPad() || (browser.isMacOSX() && isTouchDevice());
+    }
+
+    /**
+     * Check if the browser is run on IOS.
+     *
+     * @return {@code true} if run on IOS , {@code false} if the user is not
+     *         using IOS or if no information from the browser is present
+     */
+    public boolean isIOS() {
+        return isIPad() || VaadinSession.getCurrent().getBrowser().isIOS();
     }
 }
