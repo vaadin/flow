@@ -59,15 +59,16 @@ const init = function(appInitResponse) {
   window.Vaadin.Flow.tryCatchWrapper = function(originalFunction, component, repo) {
     return function() {
       try {
+        // eslint-disable-next-line
         const result = originalFunction.apply(this, arguments);
         return result;
       } catch (error) {
         console.error(
-            "There seems to be an error in the " + component + ":\n" + error.message + "\n"
-              + "Please submit an issue to https://github.com/vaadin/" + repo
-              + "/issues/new!");
+          'There seems to be an error in the ' + component + ':\n' + error.message + '\n'
+            + 'Please submit an issue to https://github.com/vaadin/' + repo
+            + '/issues/new!');
       }
-    }
+    };
   };
 
   if (!window.Vaadin.Flow.clients) {
@@ -227,7 +228,7 @@ const init = function(appInitResponse) {
       /* Device Pixel Ratio */
       params['v-pr'] = window.devicePixelRatio;
 
-      if(navigator.platform) {
+      if (navigator.platform) {
         params['v-np'] = navigator.platform;
       }
 
