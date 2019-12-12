@@ -240,17 +240,17 @@ public abstract class NodeUpdater implements FallibleCommand {
         added += addDependency(packageJson, DEV_DEPENDENCIES, "webpack",
                 "4.30.0");
         added += addDependency(packageJson, DEV_DEPENDENCIES, "webpack-cli",
-                "3.3.0");
+                "3.3.10");
         added += addDependency(packageJson, DEV_DEPENDENCIES,
-                "webpack-dev-server", "3.3.0");
+                "webpack-dev-server", "3.9.0");
         added += addDependency(packageJson, DEV_DEPENDENCIES,
-                "webpack-babel-multi-target-plugin", "2.3.1");
+                "webpack-babel-multi-target-plugin", "2.3.3");
         added += addDependency(packageJson, DEV_DEPENDENCIES,
-                "copy-webpack-plugin", "5.0.3");
+                "copy-webpack-plugin", "5.1.0");
         added += addDependency(packageJson, DEV_DEPENDENCIES,
-                "compression-webpack-plugin", "3.0.0");
+                "compression-webpack-plugin", "3.0.1");
         added += addDependency(packageJson, DEV_DEPENDENCIES, "webpack-merge",
-                "4.2.1");
+                "4.2.2");
         added += addDependency(packageJson, DEV_DEPENDENCIES, "raw-loader",
                 "3.0.0");
         if(added > 0) {
