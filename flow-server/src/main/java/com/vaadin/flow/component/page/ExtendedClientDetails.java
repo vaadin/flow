@@ -199,7 +199,7 @@ public class ExtendedClientDetails implements Serializable {
     /**
      * Gets the inner width of the browser window {@code window.innerWidth} in
      * pixels. This includes the scrollbar, if it is visible.
-     * 
+     *
      * @return the browser window inner width in pixels
      */
     public int getWindowInnerWidth() {
@@ -208,7 +208,7 @@ public class ExtendedClientDetails implements Serializable {
 
     /**
      * Gets the height of the body element in the document in pixels.
-     * 
+     *
      * @return the height of the body element
      */
     public int getBodyClientHeight() {
@@ -330,11 +330,13 @@ public class ExtendedClientDetails implements Serializable {
 
     /**
      * Gets the device pixel ratio, {@code window.devicePixelRatio}. See more
-     * from <a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio">MDN web docs</a>.
+     * from <a href=
+     * "https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio">MDN
+     * web docs</a>.
      * <p>
      * A value of -1 indicates that the value was not reported by the browser
      * correctly.
-     * 
+     *
      * @return double-precision floating-point value indicating the ratio of the
      *         display's resolution in physical pixels to the resolution in CSS
      *         pixels
