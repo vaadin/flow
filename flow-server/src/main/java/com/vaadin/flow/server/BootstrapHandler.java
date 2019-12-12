@@ -893,9 +893,11 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     Element script = createJavaScriptElement(
                             "./" + VAADIN_MAPPING + chunks.getString(key),
                             false);
-                    head.appendChild(
-                            script.attr("type", "module").attr("data-app-id",
-                                    context.getUI().getInternals().getAppId()));
+                    head.appendChild(script.attr("type", "module")
+                            .attr("data-app-id",
+                                    context.getUI().getInternals().getAppId())
+                            // Fixes basic auth in Safari #6560
+                            .attr("crossorigin", true));
                 }
             }
         }
