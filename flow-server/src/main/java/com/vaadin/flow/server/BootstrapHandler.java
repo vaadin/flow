@@ -78,6 +78,7 @@ import com.vaadin.flow.theme.ThemeDefinition;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+import elemental.json.JsonType;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
 
@@ -897,15 +898,21 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             }
             JsonObject chunks = Json.parse(content);
             for (String key : chunks.keys()) {
+                String chunkName;
+                if(chunks.get(key).getType().equals(JsonType.ARRAY)) {
+                    chunkName = getArrayChunkName(chunks, key);
+                } else {
+                    chunkName = chunks.getString(key);
+                }
                 if (key.endsWith(".es5")) {
                     Element script = createJavaScriptElement(
-                            "./" + VAADIN_MAPPING + chunks.getString(key));
+                            "./" + VAADIN_MAPPING + chunkName);
                     head.appendChild(
                             script.attr("nomodule", true).attr("data-app-id",
                                     context.getUI().getInternals().getAppId()));
                 } else {
                     Element script = createJavaScriptElement(
-                            "./" + VAADIN_MAPPING + chunks.getString(key),
+                            "./" + VAADIN_MAPPING + chunkName,
                             false);
                     head.appendChild(script.attr("type", "module")
                             .attr("data-app-id",
@@ -914,6 +921,18 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                             .attr("crossorigin", true));
                 }
             }
+        }
+
+        private String getArrayChunkName(JsonObject chunks, String key) {
+            JsonArray chunkArray = chunks.getArray(key);
+
+            for(int i = 0; i <chunkArray.length(); i++) {
+                String chunkName = chunkArray.getString(0);
+                if(chunkName.endsWith(".js")){
+                    return chunkName;
+                }
+            }
+            return "";
         }
 
         private String getClientEngineUrl(BootstrapContext context) {
