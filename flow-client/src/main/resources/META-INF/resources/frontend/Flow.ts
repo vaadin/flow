@@ -142,8 +142,14 @@ export class Flow {
   private async flowNavigate(ctx: NavigationParameters, cmd?: NavigationCommands): Promise<HTMLElement> {
     return new Promise(resolve => {
       // The callback to run from server side once the view is ready
-      this.container.serverConnected = cancel =>
-        resolve(cmd && cancel ? cmd.prevent() : this.container);
+      this.container.serverConnected = cancel => {
+        if (cmd && cancel) {
+          resolve(cmd.prevent());
+        } else {
+          this.container.style.display = '';
+          resolve(this.container);
+        }
+      };
 
       // Call server side to navigate to the given route
       this.flowRoot.$server
@@ -189,6 +195,8 @@ export class Flow {
         const tag = `flow-container-${id.toLowerCase()}`;
         this.container = this.flowRoot.$[id] = document.createElement(tag);
         this.container.id = id;
+        this.container.style.display = 'none';
+        document.body.appendChild(this.container);
       }
     }
     return this.response;

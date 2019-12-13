@@ -453,10 +453,17 @@ function stubServerRemoteFunction(id: string, cancel: boolean = false, routeRege
       assert.isDefined(container);
       assert.isDefined(container.serverConnected);
 
+      // When appending elements container should be attached and hidden
+      assert.isTrue(container.isConnected);
+      assert.equal('none', container.style.display);
+      
       container.appendChild(document.createElement('div'));
 
       // Resolve the promise
       flowRoot.$[elemId].serverConnected(cancel);
+
+      // container should be visible when not cancelled
+      assert.equal(cancel ? 'none' : '', container.style.display);
     },
     leaveNavigation: () => {
       // Resolve the promise
