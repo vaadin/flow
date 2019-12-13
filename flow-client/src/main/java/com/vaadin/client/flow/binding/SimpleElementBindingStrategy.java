@@ -19,6 +19,8 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import jsinterop.annotations.JsFunction;
+
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 import com.vaadin.client.Command;
@@ -62,7 +64,6 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonType;
 import elemental.json.JsonValue;
-import jsinterop.annotations.JsFunction;
 
 /**
  * Binding strategy for a simple (not template) {@link Element} node.
@@ -1258,6 +1259,10 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             }
         }
 
+        JsArray<Runnable> commands = JsCollections.array();
+        synchronizeProperties.forEach(
+                name -> commands.push(getSyncPropertyCommand(name, context)));
+
         Consumer<String> sendCommand = debouncePhase -> {
             synchronizeProperties
                     .forEach(name -> syncPropertyIfNeeded(name, context));
@@ -1272,6 +1277,13 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             // Send if there were not filters or at least one matched
             sendCommand.accept(null);
         }
+    }
+
+    private Runnable getSyncPropertyCommand(String propertyName,
+            BindingContext context) {
+        return context.node.getMap(NodeFeatures.ELEMENT_PROPERTIES)
+                .getProperty(propertyName).getSyncToServerCommand(WidgetUtil
+                        .getJsProperty(context.htmlNode, propertyName));
     }
 
     private static void sendEventToServer(StateNode node, String type,
