@@ -29,6 +29,8 @@ public class LazyInputView extends Div {
         input.setValueChangeMode(ValueChangeMode.LAZY);
         input.setValueChangeTimeout(500);
 
+        input.setId("text-input");
+
         input.addValueChangeListener(event -> {
             try {
                 Thread.sleep(1000);
