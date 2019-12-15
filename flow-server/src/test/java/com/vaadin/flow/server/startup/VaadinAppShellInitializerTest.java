@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.vaadin.flow.component.page.Viewport;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.junit.After;
@@ -39,12 +40,14 @@ public class VaadinAppShellInitializerTest {
     @Meta(name = "foo", content = "bar")
     @Meta(name = "lorem", content = "ipsum")
     @PWA(name = "my-pwa", shortName = "pwa")
-    public static class MyAppShellWithMultipleMeta extends VaadinAppShell {
+    @Viewport(Viewport.DEVICE_DIMENSIONS)
+    public static class MyAppShellWithViewportAndMultipleMeta extends VaadinAppShell {
     }
 
     @Meta(name = "offending-foo", content = "bar")
     @Meta(name = "offending-lorem", content = "ipsum")
     @PWA(name = "offending-my-pwa", shortName = "pwa")
+    @Viewport(Viewport.DEVICE_DIMENSIONS)
     public static class OffendingClass {
     }
 
@@ -98,18 +101,20 @@ public class VaadinAppShellInitializerTest {
 
     @Test
     public void should_haveMetas_when_annotatedAppShell() throws Exception {
-        classes.add(MyAppShellWithMultipleMeta.class);
+        classes.add(MyAppShellWithViewportAndMultipleMeta.class);
 
         initializer.onStartup(classes, servletContext);
         VaadinAppShellRegistry.getInstance(context)
                 .modifyIndexHtmlResponse(document);
 
         List<Element> elements = document.head().children();
-        assertEquals(2, elements.size());
+        assertEquals(3, elements.size());
         assertEquals("foo", elements.get(0).attr("name"));
         assertEquals("bar", elements.get(0).attr("content"));
         assertEquals("lorem", elements.get(1).attr("name"));
         assertEquals("ipsum", elements.get(1).attr("content"));
+        assertEquals("viewport", elements.get(2).attr("name"));
+        assertEquals(Viewport.DEVICE_DIMENSIONS, elements.get(2).attr("content"));
     }
 
     @Test
@@ -127,7 +132,7 @@ public class VaadinAppShellInitializerTest {
 
         // Set class in context and do not call initializer
         VaadinAppShellRegistry registry = new VaadinAppShellRegistry();
-        registry.setShell(MyAppShellWithMultipleMeta.class);
+        registry.setShell(MyAppShellWithViewportAndMultipleMeta.class);
         context.setAttribute(new VaadinAppShellRegistryWrapper(registry));
 
         VaadinAppShellRegistry.getInstance(context)
@@ -135,11 +140,13 @@ public class VaadinAppShellInitializerTest {
 
         List<Element> elements = document.head().children();
 
-        assertEquals(2, elements.size());
+        assertEquals(3, elements.size());
         assertEquals("foo", elements.get(0).attr("name"));
         assertEquals("bar", elements.get(0).attr("content"));
         assertEquals("lorem", elements.get(1).attr("name"));
         assertEquals("ipsum", elements.get(1).attr("content"));
+        assertEquals("viewport", elements.get(2).attr("name"));
+        assertEquals(Viewport.DEVICE_DIMENSIONS, elements.get(2).attr("content"));
     }
 
     @Test
@@ -148,7 +155,7 @@ public class VaadinAppShellInitializerTest {
         exception.expectMessage(
                 containsString("Found app shell configuration annotations in non"));
         exception.expectMessage(
-                containsString("- @Meta, @PWA from"));
+                containsString("- @Meta, @PWA, @Viewport from"));
 
         classes.add(MyAppShellWithoutMeta.class);
         classes.add(OffendingClass.class);
@@ -174,7 +181,7 @@ public class VaadinAppShellInitializerTest {
         exception.expectMessage(containsString("Unable to find a single class"));
 
         classes.add(MyAppShellWithoutMeta.class);
-        classes.add(MyAppShellWithMultipleMeta.class);
+        classes.add(MyAppShellWithViewportAndMultipleMeta.class);
         initializer.onStartup(classes, servletContext);
     }
 

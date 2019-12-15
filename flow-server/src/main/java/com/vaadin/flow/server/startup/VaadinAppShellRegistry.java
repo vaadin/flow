@@ -166,12 +166,15 @@ public class VaadinAppShellRegistry implements Serializable {
             document.head().appendChild(elem);
         });
 
-        Element elem = document.head().getElementsByAttributeValue("name", "viewport").first();
-        if(elem != null) {
-            getAnnotations(Viewport.class).forEach(viewport -> {
-                elem.attr("content", viewport.value());
-            });
-        }
+        getAnnotations(Viewport.class).forEach(viewport -> {
+            Element metaViewportElement = document.head().selectFirst("meta[name=viewport]");
+            if (metaViewportElement == null) {
+                metaViewportElement = new Element("meta");
+                metaViewportElement.attr("name", "viewport");
+                document.head().appendChild(metaViewportElement);
+            }
+            metaViewportElement.attr("content", viewport.value());
+        });
     }
 
     @Override
