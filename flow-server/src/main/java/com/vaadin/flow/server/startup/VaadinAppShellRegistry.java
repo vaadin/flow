@@ -185,7 +185,7 @@ public class VaadinAppShellRegistry implements Serializable {
         if(getAnnotations(Viewport.class).size() > 1) {
             throw new InvalidApplicationConfigurationException(
                     VaadinAppShellRegistry.ERROR_MULTIPLE_VIEWPORT);
-        } else {
+        } else if(getAnnotations(Viewport.class).size() > 0) {
             Element metaViewportElement = document.head().selectFirst("meta[name=viewport]");
             if (metaViewportElement == null) {
                 metaViewportElement = new Element("meta");
