@@ -20,10 +20,8 @@ import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import com.vaadin.flow.component.page.BodySize;
-import com.vaadin.flow.server.BootstrapHandler;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 

@@ -43,7 +43,7 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWithMultipleAnnotation;
+import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWithMultipleAnnotations;
 import com.vaadin.flow.server.startup.VaadinAppShellRegistry;
 import com.vaadin.flow.server.startup.VaadinAppShellRegistry.VaadinAppShellRegistryWrapper;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
@@ -350,7 +350,7 @@ public class IndexHtmlRequestHandlerTest {
     public void should_add_metaAndPwaElements_when_appShellPresent() throws Exception {
         // Set class in context and do not call initializer
         VaadinAppShellRegistry registry = new VaadinAppShellRegistry();
-        registry.setShell(MyAppShellWithMultipleAnnotation.class);
+        registry.setShell(MyAppShellWithMultipleAnnotations.class);
         Mockito.when(mocks.getServletContext()
                 .getAttribute(VaadinAppShellRegistryWrapper.class.getName()))
                 .thenReturn(new VaadinAppShellRegistryWrapper(registry));

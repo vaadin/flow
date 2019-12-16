@@ -41,7 +41,7 @@ public class VaadinAppShellInitializerTest {
     @Meta(name = "lorem", content = "ipsum")
     @PWA(name = "my-pwa", shortName = "pwa")
     @BodySize(height = "50vh", width = "50vw")
-    public static class MyAppShellWithMultipleAnnotation extends VaadinAppShell {
+    public static class MyAppShellWithMultipleAnnotations extends VaadinAppShell {
     }
 
     @Meta(name = "offending-foo", content = "bar")
@@ -101,7 +101,7 @@ public class VaadinAppShellInitializerTest {
 
     @Test
     public void should_haveMetasAndBodySize_when_annotatedAppShell() throws Exception {
-        classes.add(MyAppShellWithMultipleAnnotation.class);
+        classes.add(MyAppShellWithMultipleAnnotations.class);
 
         initializer.onStartup(classes, servletContext);
 
@@ -133,7 +133,7 @@ public class VaadinAppShellInitializerTest {
 
         // Set class in context and do not call initializer
         VaadinAppShellRegistry registry = new VaadinAppShellRegistry();
-        registry.setShell(MyAppShellWithMultipleAnnotation.class);
+        registry.setShell(MyAppShellWithMultipleAnnotations.class);
         context.setAttribute(new VaadinAppShellRegistryWrapper(registry));
 
         VaadinAppShellRegistry.getInstance(context)
@@ -182,7 +182,7 @@ public class VaadinAppShellInitializerTest {
         exception.expectMessage(containsString("Unable to find a single class"));
 
         classes.add(MyAppShellWithoutMeta.class);
-        classes.add(MyAppShellWithMultipleAnnotation.class);
+        classes.add(MyAppShellWithMultipleAnnotations.class);
         initializer.onStartup(classes, servletContext);
     }
 
