@@ -104,8 +104,7 @@ public class VaadinAppShellInitializerTest {
         classes.add(MyAppShellWithViewportAndMultipleMeta.class);
 
         initializer.onStartup(classes, servletContext);
-        VaadinAppShellRegistry.getInstance(context)
-                .modifyIndexHtmlResponse(document);
+        VaadinAppShellRegistry.getInstance(context).modifyIndexHtmlResponse(document);
 
         List<Element> elements = document.head().children();
         assertEquals(3, elements.size());

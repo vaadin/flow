@@ -50,6 +50,9 @@ public class VaadinAppShellRegistry implements Serializable {
     private static final String ERROR_MULTIPLE_SHELL =
             "%nUnable to find a single class extending `VaadinAppShell` from the following candidates:%n  %s%n  %s%n";
 
+    private static final String ERROR_MULTIPLE_VIEWPORT =
+            "%nViewport is not a repeatable annotation type.%n";
+
     private Class<? extends VaadinAppShell> shell;
 
     /**
@@ -179,15 +182,18 @@ public class VaadinAppShellRegistry implements Serializable {
             document.head().appendChild(elem);
         });
 
-        getAnnotations(Viewport.class).forEach(viewport -> {
+        if(getAnnotations(Viewport.class).size() > 1) {
+            throw new InvalidApplicationConfigurationException(
+                    VaadinAppShellRegistry.ERROR_MULTIPLE_VIEWPORT);
+        } else {
             Element metaViewportElement = document.head().selectFirst("meta[name=viewport]");
             if (metaViewportElement == null) {
                 metaViewportElement = new Element("meta");
                 metaViewportElement.attr("name", "viewport");
                 document.head().appendChild(metaViewportElement);
             }
-            metaViewportElement.attr("content", viewport.value());
-        });
+            metaViewportElement.attr("content", getAnnotations(Viewport.class).get(0).value());
+        }
     }
 
     @Override

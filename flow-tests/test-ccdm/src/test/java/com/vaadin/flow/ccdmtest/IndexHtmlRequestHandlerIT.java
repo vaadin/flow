@@ -55,6 +55,9 @@ public class IndexHtmlRequestHandlerIT extends ChromeBrowserTest {
         WebElement meta = findElement(By.cssSelector("meta[name=foo]"));
         Assert.assertNotNull(meta);
         Assert.assertEquals("bar", meta.getAttribute("content"));
+        WebElement metaViewPort = findElement(By.cssSelector("meta[name=viewport]"));
+        Assert.assertNotNull(metaViewPort);
+        Assert.assertEquals("width=device-width, height=device-height, initial-scale=1.0", metaViewPort.getAttribute("content"));
     }
 
     @Test
@@ -78,6 +81,17 @@ public class IndexHtmlRequestHandlerIT extends ChromeBrowserTest {
                 "ogImage meta element should have correct image URL",
                 "http://localhost:8888/image/my_app.png",
                 ogImageMeta.get().getAttribute("content"));
+
+        Optional<WebElement> viewportMeta = findElements(By.tagName("meta"))
+                .stream().filter(webElement -> webElement.getAttribute("name")
+                        .equals("viewport"))
+                .findFirst();
+        Assert.assertTrue("The response should have viewport meta element",
+                viewportMeta.isPresent());
+        Assert.assertEquals(
+                "viewport meta element should have correct content",
+                "width=device-width, height=device-height, initial-scale=1.0",
+                viewportMeta.get().getAttribute("content"));
     }
 
     @Test
