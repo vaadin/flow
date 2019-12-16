@@ -1,7 +1,7 @@
 package com.vaadin.flow.server;
 
 import javax.servlet.http.HttpServletRequest;
-
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -1717,6 +1717,39 @@ public class BootstrapHandlerTest {
         Element bundle = scripts.stream()
                 .filter(el -> el.attr("src")
                         .equals("./VAADIN/build/index-1111.cache.js"))
+                .findFirst().get();
+        Assert.assertFalse(bundle.hasAttr("defer"));
+    }
+
+    @Test // #7158
+    public void getBootstrapPage_assetChunksIsAnARRAY_bootstrapParsesOk()
+            throws ServiceException {
+
+        initUI(testUI);
+
+        ClassLoader classLoader = Mockito.mock(ClassLoader.class);
+        service.setClassLoader(classLoader);
+
+        String statsJson = "{\n" + " \"errors\": [],\n" + " \"warnings\": [],\n"
+                + " \"assetsByChunkName\": {\n" + "  \"bundle\": [\n"
+                + "    \"build/vaadin-bundle-e77008557c8d410bf0dc.cache.js\",\n"
+                + "    \"build/vaadin-bundle-e77008557c8d410bf0dc.cache.js.map\"\n"
+                + "  ],\n" + "  \"bundle.es5\": [\n"
+                + "    \"build/vaadin-bundle.es5-e71a5a09679e828010c4.cache.js\",\n"
+                + "    \"build/vaadin-bundle.es5-e71a5a09679e828010c4.cache.js.map\"\n"
+                + "  ]" + " }" + "}";
+
+        Mockito.when(classLoader.getResourceAsStream(Mockito.anyString()))
+                .thenReturn(new ByteArrayInputStream(statsJson.getBytes()));
+
+        BootstrapContext bootstrapContext = new BootstrapContext(request, null,
+                session, testUI, this::contextRootRelativePath);
+        Document page = pageBuilder.getBootstrapPage(bootstrapContext);
+
+        Elements scripts = page.head().getElementsByTag("script");
+
+        Element bundle = scripts.stream().filter(el -> el.attr("src")
+                .equals("./VAADIN/build/vaadin-bundle-e77008557c8d410bf0dc.cache.js"))
                 .findFirst().get();
         Assert.assertFalse(bundle.hasAttr("defer"));
     }
