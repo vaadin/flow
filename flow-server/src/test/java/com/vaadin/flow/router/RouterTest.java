@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletResponse;
 
+import com.vaadin.flow.component.HasComponents;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -1215,6 +1216,107 @@ public class RouterTest extends RoutingTestBase {
         @Override
         public void removeRouterLayoutContent(HasElement oldContent) {
             // Do nothing
+        }
+    }
+
+    @Tag(Tag.DIV)
+    public static class ProcessEventsBase extends Component
+            implements BeforeLeaveObserver, BeforeEnterObserver,
+            AfterNavigationObserver, HasComponents {
+
+        static List<String> init = new ArrayList<>();
+
+        static List<String> beforeLeave = new ArrayList<>();
+
+        static List<String> beforeEnter = new ArrayList<>();
+
+        static List<String> afterNavigation = new ArrayList<>();
+
+        static void clear() {
+            init.clear();
+            beforeLeave.clear();
+            beforeEnter.clear();
+            afterNavigation.clear();
+        }
+
+        private String id;
+
+        public ProcessEventsBase() {
+            this(null);
+        }
+
+        public ProcessEventsBase(String id) {
+            this.id = id != null ? id : getClass().getSimpleName();
+            init.add(this.id);
+        }
+
+        @Override
+        public void beforeLeave(BeforeLeaveEvent event) {
+            beforeLeave.add(id);
+        }
+
+        @Override
+        public void beforeEnter(BeforeEnterEvent event) {
+            beforeEnter.add(id);
+        }
+
+        public void setParameter(BeforeEvent event, String parameter) {
+            beforeEnter.add(parameter);
+        }
+
+        @Override
+        public void afterNavigation(AfterNavigationEvent event) {
+            afterNavigation.add(id);
+        }
+
+    }
+
+    public static class ProcessEventsRoot extends ProcessEventsBase
+            implements RouterLayout {
+
+        public ProcessEventsRoot() {
+            ProcessEventsBase child1 = new ProcessEventsBase("rootChild1");
+            add(child1);
+            add(new ProcessEventsBase("rootChild2"));
+
+            child1.add(new ProcessEventsBase("rootChild11"));
+        }
+    }
+
+    @ParentLayout(ProcessEventsRoot.class)
+    public static class ProcessEventsTrunk extends ProcessEventsBase
+            implements RouterLayout {
+
+    }
+
+    @ParentLayout(ProcessEventsTrunk.class)
+    public static class ProcessEventsBranch extends ProcessEventsBase
+            implements RouterLayout {
+
+        public ProcessEventsBranch() {
+            add(new ProcessEventsBase("branchChild1"));
+
+            ProcessEventsBase child1 = new ProcessEventsBase("branchChild2");
+            add(child1);
+
+            child1.add(new ProcessEventsBase("branchChild21"));
+        }
+    }
+
+    @Route(value = "event/twig", layout = ProcessEventsBranch.class)
+    @ParentLayout(ProcessEventsBranch.class)
+    public static class ProcessEventsTwig extends ProcessEventsBase {
+
+    }
+
+    @Route(value = "event/leaf", layout = ProcessEventsBranch.class)
+    @ParentLayout(ProcessEventsBranch.class)
+    public static class ProcessEventsLeaf extends ProcessEventsBase
+            implements HasUrlParameter<String> {
+
+        @Override
+        public void setParameter(BeforeEvent event, String parameter) {
+            super.setParameter(event, parameter);
         }
     }
 
@@ -3222,6 +3324,21 @@ public class RouterTest extends RoutingTestBase {
 
         assertExceptionComponent(
             RouteNotFoundError.class, exceptionText1, exceptionText2, exceptionText3);
+    }
+
+    @Test // #4595
+    public void route_event_listeners_are_invoked_starting_with_parent_component()
+            throws InvalidRouteConfigurationException {
+        setNavigationTargets(ProcessEventsTwig.class);
+
+        router.navigate(ui, new Location("event/twig"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        System.out.println(ProcessEventsBase.init);
+        System.out.println(ProcessEventsBase.beforeLeave);
+        System.out.println(ProcessEventsBase.beforeEnter);
+        System.out.println(ProcessEventsBase.afterNavigation);
+
     }
 
     private void setNavigationTargets(
