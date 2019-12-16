@@ -120,6 +120,13 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             + readResource("es6-collections.js") + "//]]>";
     private static final String CSS_TYPE_ATTRIBUTE_VALUE = "text/css";
 
+    /**
+     * Safari 10.1 script nomodule fix. This is only needed for Safari <= 10.1
+     * See https://gist.github.com/samthor/64b114e4a4f539915a95b91ffd340acc
+     */
+    static final String SAFARI_10_1_SCRIPT_NOMODULE_FIX = "//<![CDATA[\n"
+            + readResource("safari-10-1-script-nomodule.js") + "//]]>";
+
     private static final String CAPTION = "caption";
     private static final String MESSAGE = "message";
     private static final String URL = "url";
@@ -869,6 +876,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 conf.getPolyfills().forEach(
                         polyfill -> head.appendChild(createJavaScriptElement(
                                 "./" + VAADIN_MAPPING + polyfill, false)));
+
+                // #6817
+                appendSafari10ScriptNoModuleFix(head, context);
+
                 try {
                     appendNpmBundle(head, service, context);
                 } catch (IOException e) {
@@ -965,6 +976,18 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             if (!context.getSession().getBrowser().isEs6Supported()) {
                 head.appendChild(
                         createInlineJavaScriptElement(ES6_COLLECTIONS));
+            }
+        }
+
+        private void appendSafari10ScriptNoModuleFix(Element head,
+                BootstrapContext context) {
+            if (context.getSession().getBrowser().isSafari()
+                    && context.getSession().getBrowser()
+                            .getBrowserMajorVersion() == 10
+                    && context.getSession().getBrowser()
+                            .getBrowserMinorVersion() <= 1) {
+                head.appendChild(createInlineJavaScriptElement(
+                        SAFARI_10_1_SCRIPT_NOMODULE_FIX));
             }
         }
 
