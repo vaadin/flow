@@ -20,7 +20,10 @@ import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
+import com.vaadin.flow.component.page.BodySize;
+import com.vaadin.flow.server.BootstrapHandler;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
@@ -49,6 +52,10 @@ public class VaadinAppShellRegistry implements Serializable {
     private static final String ERROR_LINE = "  - %s from %s";
     private static final String ERROR_MULTIPLE_SHELL =
             "%nUnable to find a single class extending `VaadinAppShell` from the following candidates:%n  %s%n  %s%n";
+
+    private static final String ERROR_MULTIPLE_BODYSIZE =
+            "%nBodySize is not a repeatable annotation type.%n";
+
 
     private Class<? extends VaadinAppShell> shell;
 
@@ -168,7 +175,7 @@ public class VaadinAppShellRegistry implements Serializable {
     /**
      * Modifies the `index.html` document based on the {@link VaadinAppShell}
      * annotations.
-     *
+     *g
      * @param document a JSoup document for the index.html page
      */
     public void modifyIndexHtmlResponse(Document document) {
@@ -178,6 +185,19 @@ public class VaadinAppShellRegistry implements Serializable {
             elem.attr("content", meta.content());
             document.head().appendChild(elem);
         });
+
+        if(getAnnotations(BodySize.class).size() > 1) {
+            throw new InvalidApplicationConfigurationException(
+                    VaadinAppShellRegistry.ERROR_MULTIPLE_BODYSIZE);
+        } else if(!getAnnotations(BodySize.class).isEmpty()) {
+            String strBodySizeHeight = "height:" + getAnnotations(BodySize.class).get(0).height();
+            String strBodySizeWidth = "width:" + getAnnotations(BodySize.class).get(0).width();
+            Element elemStyle = new Element("style");
+            elemStyle.attr("type", "text/css");
+            String strContent = "body,#outlet{" + strBodySizeHeight + ";" + strBodySizeWidth + ";" + "}";
+            elemStyle.append(strContent);
+            document.head().appendChild(elemStyle);
+        }
     }
 
     @Override

@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import com.vaadin.flow.component.page.BodySize;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +48,7 @@ import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
  *
  * @since 3.0
  */
-@HandlesTypes({ VaadinAppShell.class, Meta.class, Meta.Container.class, PWA.class })
+@HandlesTypes({ VaadinAppShell.class, Meta.class, Meta.Container.class, PWA.class, BodySize.class})
 @WebListener
 public class VaadinAppShellInitializer implements ServletContainerInitializer,
         Serializable {

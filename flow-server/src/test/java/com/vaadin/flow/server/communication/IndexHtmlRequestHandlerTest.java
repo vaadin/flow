@@ -43,7 +43,7 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWithMultipleMeta;
+import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWithMultipleAnnotation;
 import com.vaadin.flow.server.startup.VaadinAppShellRegistry;
 import com.vaadin.flow.server.startup.VaadinAppShellRegistry.VaadinAppShellRegistryWrapper;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
@@ -350,7 +350,7 @@ public class IndexHtmlRequestHandlerTest {
     public void should_add_metaAndPwaElements_when_appShellPresent() throws Exception {
         // Set class in context and do not call initializer
         VaadinAppShellRegistry registry = new VaadinAppShellRegistry();
-        registry.setShell(MyAppShellWithMultipleMeta.class);
+        registry.setShell(MyAppShellWithMultipleAnnotation.class);
         Mockito.when(mocks.getServletContext()
                 .getAttribute(VaadinAppShellRegistryWrapper.class.getName()))
                 .thenReturn(new VaadinAppShellRegistryWrapper(registry));
@@ -374,6 +374,11 @@ public class IndexHtmlRequestHandlerTest {
         assertEquals("#ffffff", elements.get(5).attr("content"));
         assertEquals("apple-mobile-web-app-status-bar-style", elements.get(6).attr("name"));
         assertEquals("#ffffff", elements.get(6).attr("content"));
+
+        Elements elementsStyle = document.head().getElementsByTag("style");
+        assertEquals(2, elementsStyle.size());
+        assertEquals("text/css", elementsStyle.get(1).attr("type"));
+        assertEquals("body,#outlet{height:50vh;width:50vw;}", elementsStyle.get(1).childNode(0).toString());
     }
 
     @After
