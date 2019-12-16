@@ -51,12 +51,13 @@ public class JavaScriptBootstrapUI extends UI {
     public static final String SERVER_ROUTING = "clientRoutingMode";
 
     static final String CLIENT_PUSHSTATE_TO =
-            "window.history.pushState(null, '', $0)";
+            "setTimeout(() => window.history.pushState(null, '', $0))";
     static final String CLIENT_NAVIGATE_TO =
             "window.dispatchEvent(new CustomEvent('vaadin-router-go', {detail: new URL($0, document.baseURI)}))";
 
     Element wrapperElement;
     private NavigationState clientViewNavigationState;
+    private boolean navigationInProgress = false;
 
     /**
      * Create UI for clientSideMode.
@@ -143,14 +144,13 @@ public class JavaScriptBootstrapUI extends UI {
     }
 
     private boolean renderViewForRoute(Location location) {
-        Optional<NavigationState> navigationState = this.getRouter()
-                .resolveNavigationTarget(location);
         if (!shouldHandleNavigation(location)) {
             return false;
         }
-
         try {
             getInternals().setLastHandledNavigation(location);
+            Optional<NavigationState> navigationState = this.getRouter()
+                    .resolveNavigationTarget(location);
             if (navigationState.isPresent()) {
                 // There is a valid route in flow.
                 return handleNavigation(location, navigationState.get());
@@ -236,19 +236,34 @@ public class JavaScriptBootstrapUI extends UI {
             // server-side routing
             renderViewForRoute(location);
         } else {
+            // client-side routing
+
+            // There is an in-progress navigation or there are no changes,
+            // prevent looping
+            if (navigationInProgress
+                    || getInternals().hasLastHandledLocation() && sameLocation(
+                            getInternals().getLastHandledLocation(),
+                            location)) {
+                return;
+            }
+
+            navigationInProgress = true;
             String execJs;
-            if (getInternals().hasLastHandledLocation()) {
-                // There is an in-progress navigation
-                if (sameLocation(getInternals().getLastHandledLocation(), location)) {
-                    // There are no changes, prevent looping
-                    return;
-                }
+            NavigationState navigationState = this.getRouter()
+                    .resolveNavigationTarget(location).orElse(null);
+
+            if (navigationState != null) {
+                // Navigation can be done in server side without extra round-trip
+                handleNavigation(location, navigationState);
+
                 // Update browser URL but do not fire client-side navigation
                 execJs = CLIENT_PUSHSTATE_TO;
             } else {
-                // There is navigation, let client-side to handle it
+
+                // Server cannot resolve navigation, let client-side to handle it
                 execJs = CLIENT_NAVIGATE_TO;
             }
+            navigationInProgress = false;
             getPage().executeJs(execJs, location.getPathWithQueryParameters());
         }
     }
