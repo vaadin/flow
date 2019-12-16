@@ -19,8 +19,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
@@ -144,14 +147,23 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         }
 
         try {
-            new NodeTasks.Builder(getClassFinder(project), npmFolder,
+            NodeTasks.Builder builder = new NodeTasks.Builder(getClassFinder(project), npmFolder,
                     generatedFolder, frontendDirectory)
                             .withWebpack(webpackOutputDirectory,
                                     webpackTemplate, webpackGeneratedTemplate)
                             .createMissingPackageJson(true)
                             .enableImportsUpdate(false)
-                            .enablePackagesUpdate(false).runNpmInstall(false)
-                            .build().execute();
+                            .enablePackagesUpdate(false).runNpmInstall(false);
+            // If building a jar project copy jar artifact contents now as we might
+            // not be able to read files from jar path.
+            if("jar".equals(project.getPackaging())) {
+                Set<File> jarFiles = project.getArtifacts().stream()
+                        .filter(artifact -> "jar".equals(artifact.getType()))
+                        .map(Artifact::getFile).collect(Collectors.toSet());
+                builder.copyResources(jarFiles);
+            }
+
+            builder.build().execute();
         } catch (ExecutionFailedException exception) {
             throw new MojoFailureException(
                     "Could not execute prepare-frontend goal.", exception);
