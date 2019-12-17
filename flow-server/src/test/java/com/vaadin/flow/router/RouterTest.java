@@ -790,8 +790,15 @@ public class RouterTest extends RoutingTestBase {
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
             events.add(event);
-            message = ((Html) getChildren().findFirst().get()).getInnerHtml();
         }
+
+        @Override
+        public int setErrorParameter(BeforeEnterEvent event, ErrorParameter<NotFoundException> parameter) {
+            final int result = super.setErrorParameter(event, parameter);
+            message = ((Html) getChildren().findFirst().get()).getInnerHtml();
+            return result;
+        }
+
     }
 
     public static final String EXCEPTION_TEXT = "My custom not found class!";
