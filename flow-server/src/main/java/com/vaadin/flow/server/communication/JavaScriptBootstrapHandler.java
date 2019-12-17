@@ -143,11 +143,12 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
                 throw new IllegalArgumentException(e);
             }
             Location location = new Location(route);
-            ui.getRouter().initializeUI(ui, location);
 
             // App is using classic server-routing, set a session attribute
             // to know that in future navigation calls
             ui.getSession().setAttribute(SERVER_ROUTING, Boolean.TRUE);
+
+            ui.getRouter().initializeUI(ui, location);
         }
     }
 
