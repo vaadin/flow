@@ -18,6 +18,7 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.vaadin.flow.server.ExecutionFailedException;
@@ -34,6 +35,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
     private final NodeUpdater packageUpdater;
 
+    private final List<String> ignoredNodeFolders = Arrays
+            .asList(".bin", "pnpm", ".ignored_pnpm", ".pnpm", ".modules.yaml");
     private final boolean disablePnpm;
 
     /**
@@ -64,8 +67,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
             // Ignore .bin and pnpm folders as those are always installed for
             // pnpm execution
             File[] installedPackages = packageUpdater.nodeModulesFolder
-                    .listFiles((dir, name) -> !(".bin".equals(name) || "pnpm"
-                            .equals(name)));
+                    .listFiles((dir, name) -> !ignoredNodeFolders.contains(name));
             assert installedPackages != null;
             return installedPackages.length == 0
                     || (installedPackages.length == 1 && FLOW_NPM_PACKAGE_NAME

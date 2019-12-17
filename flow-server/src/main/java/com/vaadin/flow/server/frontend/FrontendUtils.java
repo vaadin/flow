@@ -838,7 +838,7 @@ public class FrontendUtils {
         List<String> command = new ArrayList<>();
         command.addAll(installCommand);
         command.add("install");
-        command.add("pnpm");
+        command.add("pnpm@4.3.3");
 
         ProcessBuilder builder = createProcessBuilder(command);
         builder.environment().put("ADBLOCK", "1");
