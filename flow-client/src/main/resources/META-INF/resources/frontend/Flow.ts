@@ -39,6 +39,7 @@ export interface NavigationCommands {
 }
 
 const $wnd = window as any;
+let isActive = false;
 
 /**
  * Client API for flow UI operations.
@@ -54,6 +55,7 @@ export class Flow {
 
   private baseRegex = /^\//;
 
+
   constructor(config?: FlowConfig) {
     this.flowRoot.$ = this.flowRoot.$ || {};
     this.config = config || {};
@@ -62,14 +64,13 @@ export class Flow {
     // to consider that TB needs to wait for `initFlow()`.
     $wnd.Vaadin = $wnd.Vaadin || {};
     if (!$wnd.Vaadin.Flow) {
-      let waiting = true;
       $wnd.Vaadin.Flow = {
-        clients: { clientBootstrap: { isActive: () => waiting } }
+        clients: {
+          CCDM: {
+            isActive: () => isActive
+          }
+        }
       };
-      // When first route is server-side, flow is loaded asynchronously
-      // via call to `initFlow()`, thus it waits for a while for the
-      // call to happen, otherwise first route is client-side.
-      setTimeout(() => waiting = false, 500);
     }
 
     // Regular expression used to remove the app-context
@@ -101,6 +102,8 @@ export class Flow {
     // the syntax `...serverSideRoutes` in vaadin-router.
     // @ts-ignore
     return async (params: NavigationParameters) => {
+      // flag used to inform Testbench whether a server route is in progress
+      isActive = true;
 
       // Store last action pathname so as we can check it in events
       this.pathname = params.pathname;
@@ -130,6 +133,8 @@ export class Flow {
       // The callback to run from server side to cancel navigation
       this.container.serverConnected = cancel => {
         resolve(cmd && cancel ? cmd.prevent() : {});
+        // Make Testbench know that server request has finished
+        isActive = false;
       }
 
       // Call server side to check whether we can leave the view
@@ -149,6 +154,8 @@ export class Flow {
           this.container.style.display = '';
           resolve(this.container);
         }
+        // Make Testbench know that navigation finished
+        isActive = false;
       };
 
       // Call server side to navigate to the given route
@@ -165,9 +172,6 @@ export class Flow {
   private async flowInit(serverSideRouting = false): Promise<AppInitResponse> {
     // Do not start flow twice
     if (!this.response) {
-      // remove constructor workaround for TB
-      delete $wnd.Vaadin.Flow.clients;
-
       // Initialize server side UI
       this.response = await this.flowInitUi(serverSideRouting);
 
@@ -222,8 +226,9 @@ export class Flow {
     // client init is async, we need to loop until initialized
     return new Promise(resolve => {
       const intervalId = setInterval(() => {
-        // client `isActive() == true` while initializing
+        // client `isActive() == true` while initializing or processing
         const initializing = Object.keys($wnd.Vaadin.Flow.clients)
+          .filter(key => key !== 'CCDM')
           .reduce((prev, id) => prev || $wnd.Vaadin.Flow.clients[id].isActive(), false);
         if (!initializing) {
           clearInterval(intervalId);
