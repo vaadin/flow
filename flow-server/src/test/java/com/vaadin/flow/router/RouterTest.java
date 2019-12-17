@@ -3334,11 +3334,39 @@ public class RouterTest extends RoutingTestBase {
         router.navigate(ui, new Location("event/twig"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        System.out.println(ProcessEventsBase.init);
-        System.out.println(ProcessEventsBase.beforeLeave);
-        System.out.println(ProcessEventsBase.beforeEnter);
-        System.out.println(ProcessEventsBase.afterNavigation);
+        List<String> expected = Arrays.asList("ProcessEventsRoot", "rootChild1",
+                "rootChild11", "rootChild2", "ProcessEventsTrunk",
+                "ProcessEventsBranch", "branchChild1", "branchChild2",
+                "branchChild21", "ProcessEventsTwig");
 
+        Assert.assertEquals(
+                "Component initialization is done in incorrect order",
+                expected, ProcessEventsBase.init);
+
+        Assert.assertEquals("There should be no before leave events triggered",
+                0, ProcessEventsBase.beforeLeave);
+        
+        Assert.assertEquals(
+                "Before enter events aren't triggered in correct order",
+                expected, ProcessEventsBase.beforeEnter);
+
+        Assert.assertEquals(
+                "After navigation events aren't triggered in correct order",
+                expected, ProcessEventsBase.afterNavigation);
+    }
+
+    @Test // #4595
+    public void url_parameter_is_invoked_after_before_enter_events()
+            throws InvalidRouteConfigurationException {
+        setNavigationTargets(ProcessEventsLeaf.class);
+
+        final String parameter = "red";
+        router.navigate(ui, new Location("event/leaf/" + parameter),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("Parameter should be the last invoked.", parameter,
+                ProcessEventsBase.beforeEnter
+                        .get(ProcessEventsBase.beforeEnter.size() - 1));
     }
 
     private void setNavigationTargets(
