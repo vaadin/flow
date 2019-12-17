@@ -303,13 +303,6 @@ public class FrontendUtilsTest {
             Assert.assertFalse(
                     FrontendUtils.getPnpmExecutable(baseDir, false).isEmpty());
 
-            // PNPM is moved to ignored location
-            Assert.assertTrue(
-                    new File(baseDir, "node_modules/.ignored/pnpm/bin/pnpm.js")
-                            .exists()
-                            || new File(baseDir,
-                                    "node_modules/.ignored_pnpm/bin/pnpm.js")
-                                            .exists());
             // locally installed pnpm (via npm/pnpm) is removed
             Assert.assertFalse(new File("node_modules/pnpm").exists());
 
