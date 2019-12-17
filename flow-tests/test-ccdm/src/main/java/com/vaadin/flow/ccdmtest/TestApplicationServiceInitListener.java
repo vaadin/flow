@@ -38,6 +38,12 @@ public class TestApplicationServiceInitListener
                     getBaseUrl(indexHtmlResponse) + "/image/my_app.png");
             indexHtmlResponse.getDocument().head().appendChild(meta);
         });
+
+        Element styleElem = new Element("style");
+        meta.attr("type", "text/css");
+        styleElem.text("body,#outlet{height:50vh;width:50vw;}");
+        event.addIndexHtmlRequestListener(
+                response -> response.getDocument().head().appendChild(styleElem));
     }
 
     private static String getBaseUrl(IndexHtmlResponse indexHtmlResponse) {

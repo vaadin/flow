@@ -9,8 +9,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import com.vaadin.flow.component.page.Viewport;
+import com.vaadin.flow.component.page.BodySize;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.junit.After;
@@ -41,13 +41,15 @@ public class VaadinAppShellInitializerTest {
     @Meta(name = "lorem", content = "ipsum")
     @PWA(name = "my-pwa", shortName = "pwa")
     @Viewport(Viewport.DEVICE_DIMENSIONS)
-    public static class MyAppShellWithViewportAndMultipleMeta extends VaadinAppShell {
+    @BodySize(height = "50vh", width = "50vw")
+    public static class MyAppShellWithMultipleAnnotations extends VaadinAppShell {
     }
 
     @Meta(name = "offending-foo", content = "bar")
     @Meta(name = "offending-lorem", content = "ipsum")
     @PWA(name = "offending-my-pwa", shortName = "pwa")
     @Viewport(Viewport.DEVICE_DIMENSIONS)
+    @BodySize(height = "50vh", width = "50vw")
     public static class OffendingClass {
     }
 
@@ -70,9 +72,9 @@ public class VaadinAppShellInitializerTest {
         servletContext = Mockito.mock(ServletContext.class);
         Mockito.when(servletContext.getAttribute(Mockito.anyString())).then(invocationOnMock -> attributeMap.get(invocationOnMock.getArguments()[0].toString()));
         Mockito.doAnswer(invocationOnMock -> attributeMap.put(
-            invocationOnMock.getArguments()[0].toString(),
-            invocationOnMock.getArguments()[1]
-            )).when(servletContext).setAttribute(Mockito.anyString(), Mockito.any());
+                invocationOnMock.getArguments()[0].toString(),
+                invocationOnMock.getArguments()[1]
+        )).when(servletContext).setAttribute(Mockito.anyString(), Mockito.any());
 
         ServletRegistration registration = Mockito
                 .mock(ServletRegistration.class);
@@ -100,20 +102,24 @@ public class VaadinAppShellInitializerTest {
     }
 
     @Test
-    public void should_haveMetas_when_annotatedAppShell() throws Exception {
-        classes.add(MyAppShellWithViewportAndMultipleMeta.class);
+    public void should_haveMetasAndBodySize_when_annotatedAppShell() throws Exception {
+        classes.add(MyAppShellWithMultipleAnnotations.class);
 
         initializer.onStartup(classes, servletContext);
-        VaadinAppShellRegistry.getInstance(context).modifyIndexHtmlResponse(document);
+
+        VaadinAppShellRegistry.getInstance(context)
+                .modifyIndexHtmlResponse(document);
 
         List<Element> elements = document.head().children();
-        assertEquals(3, elements.size());
+        assertEquals(4, elements.size());
         assertEquals("foo", elements.get(0).attr("name"));
         assertEquals("bar", elements.get(0).attr("content"));
         assertEquals("lorem", elements.get(1).attr("name"));
         assertEquals("ipsum", elements.get(1).attr("content"));
         assertEquals("viewport", elements.get(2).attr("name"));
         assertEquals(Viewport.DEVICE_DIMENSIONS, elements.get(2).attr("content"));
+        assertEquals("text/css", elements.get(3).attr("type"));
+        assertEquals("body,#outlet{height:50vh;width:50vw;}", elements.get(3).childNode(0).toString());
     }
 
     @Test
@@ -131,7 +137,7 @@ public class VaadinAppShellInitializerTest {
 
         // Set class in context and do not call initializer
         VaadinAppShellRegistry registry = new VaadinAppShellRegistry();
-        registry.setShell(MyAppShellWithViewportAndMultipleMeta.class);
+        registry.setShell(MyAppShellWithMultipleAnnotations.class);
         context.setAttribute(new VaadinAppShellRegistryWrapper(registry));
 
         VaadinAppShellRegistry.getInstance(context)
@@ -139,13 +145,15 @@ public class VaadinAppShellInitializerTest {
 
         List<Element> elements = document.head().children();
 
-        assertEquals(3, elements.size());
+        assertEquals(4, elements.size());
         assertEquals("foo", elements.get(0).attr("name"));
         assertEquals("bar", elements.get(0).attr("content"));
         assertEquals("lorem", elements.get(1).attr("name"));
         assertEquals("ipsum", elements.get(1).attr("content"));
         assertEquals("viewport", elements.get(2).attr("name"));
         assertEquals(Viewport.DEVICE_DIMENSIONS, elements.get(2).attr("content"));
+        assertEquals("text/css", elements.get(3).attr("type"));
+        assertEquals("body,#outlet{height:50vh;width:50vw;}", elements.get(3).childNode(0).toString());
     }
 
     @Test
@@ -154,8 +162,7 @@ public class VaadinAppShellInitializerTest {
         exception.expectMessage(
                 containsString("Found app shell configuration annotations in non"));
         exception.expectMessage(
-                containsString("- @Meta, @PWA, @Viewport from"));
-
+                containsString("- @Meta, @PWA, @Viewport, @BodySize from"));
         classes.add(MyAppShellWithoutMeta.class);
         classes.add(OffendingClass.class);
         initializer.onStartup(classes, servletContext);
@@ -180,7 +187,7 @@ public class VaadinAppShellInitializerTest {
         exception.expectMessage(containsString("Unable to find a single class"));
 
         classes.add(MyAppShellWithoutMeta.class);
-        classes.add(MyAppShellWithViewportAndMultipleMeta.class);
+        classes.add(MyAppShellWithMultipleAnnotations.class);
         initializer.onStartup(classes, servletContext);
     }
 

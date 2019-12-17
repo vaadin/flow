@@ -27,6 +27,7 @@ import org.jsoup.nodes.Element;
 import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.VaadinAppShell;
 import com.vaadin.flow.component.page.Viewport;
+import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.server.InvalidApplicationConfigurationException;
 import com.vaadin.flow.server.VaadinContext;
 
@@ -52,6 +53,9 @@ public class VaadinAppShellRegistry implements Serializable {
 
     private static final String ERROR_MULTIPLE_VIEWPORT =
             "%nViewport is not a repeatable annotation type.%n";
+
+    private static final String ERROR_MULTIPLE_BODYSIZE =
+            "%nBodySize is not a repeatable annotation type.%n";
 
     private Class<? extends VaadinAppShell> shell;
 
@@ -193,6 +197,19 @@ public class VaadinAppShellRegistry implements Serializable {
                 document.head().appendChild(metaViewportElement);
             }
             metaViewportElement.attr("content", getAnnotations(Viewport.class).get(0).value());
+        }
+
+        if(getAnnotations(BodySize.class).size() > 1) {
+            throw new InvalidApplicationConfigurationException(
+                    VaadinAppShellRegistry.ERROR_MULTIPLE_BODYSIZE);
+        } else if(!getAnnotations(BodySize.class).isEmpty()) {
+            String strBodySizeHeight = "height:" + getAnnotations(BodySize.class).get(0).height();
+            String strBodySizeWidth = "width:" + getAnnotations(BodySize.class).get(0).width();
+            Element elemStyle = new Element("style");
+            elemStyle.attr("type", "text/css");
+            String strContent = "body,#outlet{" + strBodySizeHeight + ";" + strBodySizeWidth + ";" + "}";
+            elemStyle.append(strContent);
+            document.head().appendChild(elemStyle);
         }
     }
 
