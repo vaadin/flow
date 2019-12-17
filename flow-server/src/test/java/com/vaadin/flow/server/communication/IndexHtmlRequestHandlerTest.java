@@ -24,6 +24,7 @@ import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 
 import com.sun.net.httpserver.HttpServer;
+import com.vaadin.flow.component.page.Viewport;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
@@ -43,7 +44,7 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWithMultipleMeta;
+import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWithViewportAndMultipleMeta;
 import com.vaadin.flow.server.startup.VaadinAppShellRegistry;
 import com.vaadin.flow.server.startup.VaadinAppShellRegistry.VaadinAppShellRegistryWrapper;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
@@ -350,7 +351,7 @@ public class IndexHtmlRequestHandlerTest {
     public void should_add_metaAndPwaElements_when_appShellPresent() throws Exception {
         // Set class in context and do not call initializer
         VaadinAppShellRegistry registry = new VaadinAppShellRegistry();
-        registry.setShell(MyAppShellWithMultipleMeta.class);
+        registry.setShell(MyAppShellWithViewportAndMultipleMeta.class);
         Mockito.when(mocks.getServletContext()
                 .getAttribute(VaadinAppShellRegistryWrapper.class.getName()))
                 .thenReturn(new VaadinAppShellRegistryWrapper(registry));
@@ -364,6 +365,8 @@ public class IndexHtmlRequestHandlerTest {
 
         Elements elements = document.head().getElementsByTag("meta");
         assertEquals(7, elements.size());
+        assertEquals("viewport", elements.get(1).attr("name"));
+        assertEquals(Viewport.DEVICE_DIMENSIONS, elements.get(1).attr("content"));
         assertEquals("foo", elements.get(2).attr("name"));
         assertEquals("bar", elements.get(2).attr("content"));
         assertEquals("lorem", elements.get(3).attr("name"));

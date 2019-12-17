@@ -26,6 +26,7 @@ import org.jsoup.nodes.Element;
 
 import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.VaadinAppShell;
+import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.server.InvalidApplicationConfigurationException;
 import com.vaadin.flow.server.VaadinContext;
 
@@ -39,7 +40,6 @@ import static com.vaadin.flow.server.startup.VaadinAppShellInitializer.getValidA
  */
 public class VaadinAppShellRegistry implements Serializable {
 
-
     static final String ERROR_HEADER_NO_SHELL = "%n%nFound app shell configuration annotations in non `VaadinAppShell` classes."
             + "%nPlease create a custom class extending `VaadinAppShell` and move the following annotations to it:%n  %s%n";
 
@@ -49,6 +49,9 @@ public class VaadinAppShellRegistry implements Serializable {
     private static final String ERROR_LINE = "  - %s from %s";
     private static final String ERROR_MULTIPLE_SHELL =
             "%nUnable to find a single class extending `VaadinAppShell` from the following candidates:%n  %s%n  %s%n";
+
+    private static final String ERROR_MULTIPLE_VIEWPORT =
+            "%nViewport is not a repeatable annotation type.%n";
 
     private Class<? extends VaadinAppShell> shell;
 
@@ -178,6 +181,19 @@ public class VaadinAppShellRegistry implements Serializable {
             elem.attr("content", meta.content());
             document.head().appendChild(elem);
         });
+
+        if(getAnnotations(Viewport.class).size() > 1) {
+            throw new InvalidApplicationConfigurationException(
+                    VaadinAppShellRegistry.ERROR_MULTIPLE_VIEWPORT);
+        } else if(!getAnnotations(Viewport.class).isEmpty()) {
+            Element metaViewportElement = document.head().selectFirst("meta[name=viewport]");
+            if (metaViewportElement == null) {
+                metaViewportElement = new Element("meta");
+                metaViewportElement.attr("name", "viewport");
+                document.head().appendChild(metaViewportElement);
+            }
+            metaViewportElement.attr("content", getAnnotations(Viewport.class).get(0).value());
+        }
     }
 
     @Override
