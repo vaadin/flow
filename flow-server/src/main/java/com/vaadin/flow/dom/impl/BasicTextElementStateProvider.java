@@ -91,7 +91,7 @@ public class BasicTextElementStateProvider
         return BasicElementStateProvider.get().getParent(node);
     }
 
-    private Object readResolve() throws ObjectStreamException {
+    protected Object readResolve() throws ObjectStreamException {
         return INSTANCE;
     }    
 }

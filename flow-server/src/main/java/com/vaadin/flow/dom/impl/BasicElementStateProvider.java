@@ -430,7 +430,7 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
         return features;
     }
 
-    private Object readResolve() throws ObjectStreamException {
+    protected Object readResolve() throws ObjectStreamException {
         return instance;
     }
 }

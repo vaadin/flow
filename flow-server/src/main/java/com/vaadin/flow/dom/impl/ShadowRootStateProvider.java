@@ -241,7 +241,7 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
         throw new UnsupportedOperationException();
     }
     
-    private Object readResolve() throws ObjectStreamException {
+    protected Object readResolve() throws ObjectStreamException {
         return INSTANCE;
     }    
 }
