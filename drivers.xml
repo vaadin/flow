@@ -2,7 +2,7 @@
 <root>
     <windows>
         <driver id="googlechrome">
-            <version id="78.0.3904.70">
+            <version id="79.0.3945.36">
                 <bitrate thirtytwobit="true" sixtyfourbit="true">
                     <filelocation>https://chromedriver.storage.googleapis.com/79.0.3945.36/chromedriver_win32.zip</filelocation>
                     <hash>671dafdf4380e1194268f72278f6c0324f47ae8e</hash>
@@ -13,7 +13,7 @@
     </windows>
     <linux>
         <driver id="googlechrome">
-            <version id="78.0.3904.70">
+            <version id="79.0.3945.36">
                 <bitrate sixtyfourbit="true">
                     <filelocation>https://chromedriver.storage.googleapis.com/79.0.3945.36/chromedriver_linux64.zip</filelocation>
                     <hash>3cf7d35a154ad53c7df627ad8d33d70dc941e658</hash>
@@ -24,7 +24,7 @@
     </linux>
     <osx>
         <driver id="googlechrome">
-            <version id="78.0.3904.70">
+            <version id="79.0.3945.36">
                 <bitrate sixtyfourbit="true">
                     <filelocation>https://chromedriver.storage.googleapis.com/79.0.3945.36/chromedriver_mac64.zip</filelocation>
                     <hash>a6009cbaadc86cab54982195bb760c64e926cf59</hash>
