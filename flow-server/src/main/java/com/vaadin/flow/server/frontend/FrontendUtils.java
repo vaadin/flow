@@ -50,6 +50,7 @@ import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
@@ -793,20 +794,6 @@ public class FrontendUtils {
             // install pnpm locally using npm
             installPnpm(baseDir, getNpmExecutable(baseDir));
 
-            /*
-             * pnpm is not able to manage itself. To be able to deal with it
-             * properly let's install it now via itself
-             */
-            installPnpm(baseDir, getPnpmExecutable(baseDir, true));
-
-            /*
-             * pnpm installed by npm should have been moved to another location
-             * which is out of regular "node_modules" package root. We don't
-             * need anymore pnpm installed inside "node_modules" and it's even
-             * dangerous to have it there since it's not able to manage itself
-             * properly. Let's remove it from "node_modules".
-             */
-            new File(baseDir, PNMP_INSTALLED_BY_NPM_FOLDER).delete();
             // remove package-lock.json which contains pnpm as a dependency.
             new File(baseDir, "package-lock.json").delete();
 
@@ -838,7 +825,7 @@ public class FrontendUtils {
         List<String> command = new ArrayList<>();
         command.addAll(installCommand);
         command.add("install");
-        command.add("pnpm@4.3.3");
+        command.add("pnpm@4.5.0");
 
         ProcessBuilder builder = createProcessBuilder(command);
         builder.environment().put("ADBLOCK", "1");
@@ -1057,6 +1044,12 @@ public class FrontendUtils {
     }
 
     private static Optional<File> getLocalPnpmScript(String baseDir) {
+        File npmInstalled = new File(baseDir, PNMP_INSTALLED_BY_NPM);
+        if (npmInstalled.canRead()) {
+            return Optional.of(npmInstalled);
+        }
+
+        // For version 4.3.3 check ".ignored" folders
         File movedPnpmScript = new File(baseDir,
                 "node_modules/.ignored_pnpm/bin/pnpm.js");
         if (movedPnpmScript.canRead()) {
@@ -1067,11 +1060,6 @@ public class FrontendUtils {
                 "node_modules/.ignored/pnpm/bin/pnpm.js");
         if (movedPnpmScript.canRead()) {
             return Optional.of(movedPnpmScript);
-        }
-
-        File npmInstalled = new File(baseDir, PNMP_INSTALLED_BY_NPM);
-        if (npmInstalled.canRead()) {
-            return Optional.of(npmInstalled);
         }
         return Optional.empty();
     }
