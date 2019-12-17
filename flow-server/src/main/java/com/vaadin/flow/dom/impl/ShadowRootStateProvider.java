@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.dom.impl;
 
+import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -239,4 +240,8 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
     public boolean isVisible(StateNode node) {
         throw new UnsupportedOperationException();
     }
+    
+    private Object readResolve() throws ObjectStreamException {
+        return INSTANCE;
+    }    
 }

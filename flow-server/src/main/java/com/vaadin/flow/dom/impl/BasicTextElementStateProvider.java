@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.dom.impl;
 
+import java.io.ObjectStreamException;
 import java.util.Collections;
 
 import com.vaadin.flow.dom.Node;
@@ -90,4 +91,7 @@ public class BasicTextElementStateProvider
         return BasicElementStateProvider.get().getParent(node);
     }
 
+    private Object readResolve() throws ObjectStreamException {
+        return INSTANCE;
+    }    
 }

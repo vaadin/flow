@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.dom.impl;
 
+import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
@@ -429,4 +430,7 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
         return features;
     }
 
+    private Object readResolve() throws ObjectStreamException {
+        return instance;
+    }
 }
