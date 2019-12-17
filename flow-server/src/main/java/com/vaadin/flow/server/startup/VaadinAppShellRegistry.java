@@ -175,7 +175,7 @@ public class VaadinAppShellRegistry implements Serializable {
     /**
      * Modifies the `index.html` document based on the {@link VaadinAppShell}
      * annotations.
-     *g
+     *
      * @param document a JSoup document for the index.html page
      */
     public void modifyIndexHtmlResponse(Document document) {

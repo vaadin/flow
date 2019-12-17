@@ -15,9 +15,7 @@
  */
 package com.vaadin.flow.ccdmtest;
 
-import java.util.List;
 import java.util.Optional;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
@@ -97,7 +95,7 @@ public class IndexHtmlRequestHandlerIT extends ChromeBrowserTest {
 
     public void indexHtmlRequestListener_openRootURL_shouldDynamicBodySizeContent() {
         openTestUrl("/");
-        waitForElementPresent(By.cssSelector("style[type]"));
+        waitForElementPresent(By.cssSelector("style"));
         Optional<WebElement> styleElement = findElements(By.tagName("style"))
                 .stream().filter(webElement -> webElement.getAttribute("type")
                         .equals("text/css"))
@@ -105,7 +103,7 @@ public class IndexHtmlRequestHandlerIT extends ChromeBrowserTest {
         Assert.assertTrue("The response should have style element",
                 styleElement.isPresent());
         Assert.assertEquals(
-                "style element should have correct image URL",
+                "style element should have correct content",
                 "body,#outlet{height:50vh;width:50vw;}",
                 styleElement.get().getText());
     }
