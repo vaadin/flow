@@ -35,6 +35,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
     private final NodeUpdater packageUpdater;
 
+    private final List<String> ignoredNodeFolders = Arrays
+            .asList(".bin", "pnpm", ".ignored_pnpm", ".pnpm", ".modules.yaml");
     private final boolean disablePnpm;
 
     /**
@@ -60,7 +62,6 @@ public class TaskRunNpmInstall implements FallibleCommand {
         }
     }
 
-    private List<String> ignoredNodeFolders = Arrays.asList(".bin", "pnpm", ".ignored_pnpm", ".pnpm", ".modules.yaml");
     private boolean shouldRunNpmInstall() {
         if (packageUpdater.nodeModulesFolder.isDirectory()) {
             // Ignore .bin and pnpm folders as those are always installed for
