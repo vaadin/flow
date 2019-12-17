@@ -26,6 +26,7 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.dom.Element;
 
 /**
@@ -45,7 +46,7 @@ public class ElementStateProviderDeserializationTest {
 
         parent.remove(child);
 
-        Assert.assertEquals(0, parent.getChildren().count());
+        Assert.assertEquals("Child component should have been removed.", 0, parent.getChildren().count());
     }
 
     private byte[] serialize(Object object) throws IOException {
@@ -69,7 +70,7 @@ public class ElementStateProviderDeserializationTest {
         private static final long serialVersionUID = 1L;
 
         public TestParentComponent(Component... components) {
-            super(new Element("Div"));
+            super(new Element(Tag.DIV));
             add(components);
         }
     }
@@ -79,7 +80,7 @@ public class ElementStateProviderDeserializationTest {
         private static final long serialVersionUID = 1L;
 
         public TestChildComponent() {
-            super(new Element("Div"));
+            super(new Element(Tag.DIV));
         }
     }
 }
