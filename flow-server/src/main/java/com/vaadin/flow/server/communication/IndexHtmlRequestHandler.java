@@ -18,6 +18,7 @@ package com.vaadin.flow.server.communication;
 import java.io.IOException;
 import java.util.regex.Pattern;
 
+import com.vaadin.flow.server.*;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
@@ -27,10 +28,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.VaadinResponse;
-import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.VaadinAppShellRegistry;
 
@@ -82,6 +79,9 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         // modify the page based on the @PWA annotation
         setupPwa(indexDocument, session.getService());
 
+        // modify the page based on the @Inline annotation
+        VaadinAppShellRegistry.getInstance(context)
+                .modifyIndexHtmlResponeWithInline(indexDocument, session, request);
 
         // modify the page based on registered IndexHtmlRequestListener:s
         request.getService().modifyIndexHtmlResponse(

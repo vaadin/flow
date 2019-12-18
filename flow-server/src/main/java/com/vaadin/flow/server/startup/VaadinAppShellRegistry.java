@@ -20,7 +20,16 @@ import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
 
+import com.vaadin.flow.component.page.Inline;
+import com.vaadin.flow.internal.UrlUtil;
+import com.vaadin.flow.server.*;
+import com.vaadin.flow.shared.ui.Dependency;
+import elemental.json.JsonObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
@@ -30,6 +39,8 @@ import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.server.InvalidApplicationConfigurationException;
 import com.vaadin.flow.server.VaadinContext;
+import org.jsoup.parser.Parser;
+import org.jsoup.parser.Tag;
 
 import static com.vaadin.flow.server.startup.VaadinAppShellInitializer.getValidAnnotations;
 
@@ -53,6 +64,9 @@ public class VaadinAppShellRegistry implements Serializable {
 
     private static final String ERROR_MULTIPLE_VIEWPORT =
             "%nViewport is not a repeatable annotation type.%n";
+    private static final String CSS_TYPE_ATTRIBUTE_VALUE = "text/css";
+    private static final String SCRIPT_TAG = "script";
+    private static final String DEFER_ATTRIBUTE = "defer";
 
     private static final String ERROR_MULTIPLE_BODYSIZE =
             "%nBodySize is not a repeatable annotation type.%n";
@@ -210,6 +224,135 @@ public class VaadinAppShellRegistry implements Serializable {
             String strContent = "body,#outlet{" + strBodySizeHeight + ";" + strBodySizeWidth + ";" + "}";
             elemStyle.append(strContent);
             document.head().appendChild(elemStyle);
+        }
+    }
+
+    public void modifyIndexHtmlResponeWithInline(Document document, VaadinSession session, VaadinRequest request) {
+        getInlineTargets(request).ifPresent(targets -> handleInlineTargets(session, request, document.head(), document.body(), targets));
+    }
+
+    private Element createInlineDependencyElement(VaadinSession session, VaadinRequest request,
+                                            JsonObject dependencyJson) {
+        String type = dependencyJson.getString(Dependency.KEY_TYPE);
+        if (Dependency.Type.contains(type)) {
+            Dependency.Type dependencyType = Dependency.Type.valueOf(type);
+            return createInlineDependencyElement(session, request, dependencyJson, dependencyType);
+        }
+        return Jsoup.parse(
+                dependencyJson.getString(Dependency.KEY_CONTENTS), "",
+                Parser.xmlParser());
+    }
+
+    private Element createInlineDependencyElement(VaadinSession session, VaadinRequest request, JsonObject dependency,
+                                            Dependency.Type type) {
+        String url = dependency.hasKey(Dependency.KEY_URL)
+                ? request.getService().resolveResource(
+                        dependency.getString(Dependency.KEY_URL),
+                        session.getBrowser())
+                : null;
+
+        final Element dependencyElement;
+        switch (type) {
+            case STYLESHEET:
+                dependencyElement = createStylesheetElement(url);
+                break;
+            case JAVASCRIPT:
+                dependencyElement = createJavaScriptElement(url, false, null);
+                break;
+            case JS_MODULE:
+                if (url != null && UrlUtil.isExternal(url)) {
+                    dependencyElement = createJavaScriptElement(url, false,
+                            "module");
+                } else {
+                    dependencyElement = null;
+                }
+                break;
+//            case HTML_IMPORT:
+//                dependencyElement = createHtmlImportElement(url);
+//                break;
+            default:
+                throw new IllegalStateException(
+                        "Unsupported dependency type: " + type);
+        }
+
+        if (dependencyElement != null) {
+            dependencyElement.appendChild(new DataNode(
+                    dependency.getString(Dependency.KEY_CONTENTS),
+                    dependencyElement.baseUri()));
+        }
+
+        return dependencyElement;
+    }
+
+    private Element createStylesheetElement(String url) {
+        final Element cssElement;
+        if (url != null) {
+            cssElement = new Element(Tag.valueOf("link"), "")
+                    .attr("rel", "stylesheet")
+                    .attr("type", CSS_TYPE_ATTRIBUTE_VALUE)
+                    .attr("href", url);
+        } else {
+            cssElement = new Element(Tag.valueOf("style"), "").attr("type",
+                    CSS_TYPE_ATTRIBUTE_VALUE);
+        }
+        return cssElement;
+    }
+
+    private static Element createJavaScriptElement(String sourceUrl, boolean defer,
+                                                   String type) {
+        if (type == null) {
+            type = "text/javascript";
+        }
+
+        Element jsElement = new Element(Tag.valueOf(SCRIPT_TAG), "")
+                .attr("type", type).attr(DEFER_ATTRIBUTE, defer);
+        if (sourceUrl != null) {
+            jsElement = jsElement.attr("src", sourceUrl);
+        }
+        return jsElement;
+    }
+    private void insertElements(Element element, Consumer<Element> action) {
+        if (element instanceof Document) {
+            element.getAllElements().stream()
+                    .filter(item -> !(item instanceof Document)
+                            && element.equals(item.parent()))
+                    .forEach(action::accept);
+        } else if (element != null) {
+            action.accept(element);
+        }
+    }
+
+    public void handleInlineTargets(VaadinSession session, VaadinRequest request, Element head, Element body, InlineTargets targets) {
+        targets.getInlineHead(Inline.Position.PREPEND).stream().map(
+                dependency -> createInlineDependencyElement(session, request, dependency))
+                .forEach(element -> insertElements(element,
+                        head::prependChild));
+        targets.getInlineHead(Inline.Position.APPEND).stream().map(
+                dependency -> createInlineDependencyElement(session, request, dependency))
+                .forEach(element -> insertElements(element,
+                        head::appendChild));
+
+        targets.getInlineBody(Inline.Position.PREPEND).stream().map(
+                dependency -> createInlineDependencyElement(session, request, dependency))
+                .forEach(element -> insertElements(element,
+                        body::prependChild));
+        targets.getInlineBody(Inline.Position.APPEND).stream().map(
+                dependency -> createInlineDependencyElement(session, request, dependency))
+                .forEach(element -> insertElements(element,
+                        body::appendChild));
+    }
+
+    public Optional<InlineTargets> getInlineTargets(
+            VaadinRequest request) {
+        List<Inline> inlineAnnotations = getAnnotations(Inline.class);
+
+        if (inlineAnnotations.isEmpty()) {
+            return Optional.empty();
+        } else {
+            InlineTargets inlines = new InlineTargets();
+            inlineAnnotations.forEach(inline -> inlines
+                    .addInlineDependency(inline, request));
+            return Optional.of(inlines);
         }
     }
 
