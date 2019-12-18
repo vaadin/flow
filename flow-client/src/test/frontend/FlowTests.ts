@@ -233,9 +233,9 @@ suite("Flow", () => {
     mockInitResponse('foobar-1111111');
 
     const flow = new Flow();
-    // Check that the CCDM puts a client object
-    assert.isDefined($wnd.Vaadin.Flow.clients.CCDM.isActive);
-    assert.isFalse($wnd.Vaadin.Flow.clients.CCDM.isActive());
+    // Check that the Flow puts a client object for TypeScript
+    assert.isDefined($wnd.Vaadin.Flow.clients.TypeScript.isActive);
+    assert.isFalse($wnd.Vaadin.Flow.clients.TypeScript.isActive());
 
     const route = flow.serverSideRoutes[0];
     return route
@@ -255,9 +255,9 @@ suite("Flow", () => {
         assert.isDefined(flowRoot.$);
         assert.isDefined(flowRoot.$['foobar-1111111']);
 
-        // When calling action CCDM.isActive should be true,
+        // When calling action TypeScript.isActive should be true,
         // since navigation has not been called yet
-        assert.isTrue($wnd.Vaadin.Flow.clients.CCDM.isActive());
+        assert.isTrue($wnd.Vaadin.Flow.clients.TypeScript.isActive());
       });
   });
 
@@ -337,13 +337,13 @@ suite("Flow", () => {
         assert.isDefined(elem.onBeforeEnter);
 
         // inform TB that a server action is in progress
-        assert.isTrue($wnd.Vaadin.Flow.clients.CCDM.isActive());
+        assert.isTrue($wnd.Vaadin.Flow.clients.TypeScript.isActive());
 
         // @ts-ignore
         elem.onBeforeEnter({pathname: 'Foo/Bar.baz'}, {})
 
         // inform TB that server action has finished
-        assert.isFalse($wnd.Vaadin.Flow.clients.CCDM.isActive());
+        assert.isFalse($wnd.Vaadin.Flow.clients.TypeScript.isActive());
 
         // Assert server side has put content in the container
         assert.equal(1, elem.children.length);

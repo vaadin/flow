@@ -66,7 +66,7 @@ export class Flow {
     if (!$wnd.Vaadin.Flow) {
       $wnd.Vaadin.Flow = {
         clients: {
-          CCDM: {
+          TypeScript: {
             isActive: () => isActive
           }
         }
@@ -228,7 +228,7 @@ export class Flow {
       const intervalId = setInterval(() => {
         // client `isActive() == true` while initializing or processing
         const initializing = Object.keys($wnd.Vaadin.Flow.clients)
-          .filter(key => key !== 'CCDM')
+          .filter(key => key !== 'TypeScript')
           .reduce((prev, id) => prev || $wnd.Vaadin.Flow.clients[id].isActive(), false);
         if (!initializing) {
           clearInterval(intervalId);
