@@ -208,11 +208,12 @@ public class FrontendUtils {
             + "Check the startup logs for exceptions in running webpack-dev-server.%n"
             + "If server should be running in production mode check that production mode flag is set correctly.";
 
-    private static final String NOT_FOUND = "%n%n======================================================================================================"
-            + "%nFailed to determine '%s' tool." + "%nPlease install it either:"
-            + "%n  - by following the https://nodejs.org/en/download/ guide to install it globally"
-            + "%n  - or by running the frontend-maven-plugin goal to install it in this project:"
+    private static final String NODE_NOT_FOUND = "%n%n======================================================================================================"
+            + "%nVaadin requires node.js to be installed. You should install the latest LTS version of it either by:"
+            + "%n  1) following the https://nodejs.org/en/download/ guide to install it globally. This is the recommended way."
+            + "%n  2) running the following Maven plugin goal to install it in this project:%n"
             + INSTALL_NODE_LOCALLY
+            + "%n%nNote that in case you don't install it globally, you'll need to install it again for another Vaadin project."
             + "%n======================================================================================================%n";
 
     private static final String SHOULD_WORK = "%n%n======================================================================================================"
@@ -436,7 +437,7 @@ public class FrontendUtils {
             // There are IOException coming from process fork
         }
         if (file == null) {
-            throw new IllegalStateException(String.format(NOT_FOUND, cmd));
+            throw new IllegalStateException(String.format(NODE_NOT_FOUND));
         }
         return file;
     }
