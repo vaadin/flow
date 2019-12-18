@@ -915,10 +915,11 @@ public class Binder<BEAN> implements Serializable {
             this.asRequiredSet = true;
             field.setRequiredIndicatorVisible(true);
             return withValidator((value, context) -> {
-                if (!field.isRequiredIndicatorVisible())
+                if (!field.isRequiredIndicatorVisible()) {
                     return ValidationResult.ok();
-                else
+                } else {
                     return customRequiredValidator.apply(value, context);
+                }
             });
         }
 
@@ -1025,7 +1026,7 @@ public class Binder<BEAN> implements Serializable {
          */
         private final Converter<FIELDVALUE, TARGET> converterValidatorChain;
 
-        private boolean asRequiredSet;
+        private final boolean asRequiredSet;
 
         public BindingImpl(BindingBuilderImpl<BEAN, FIELDVALUE, TARGET> builder,
                 ValueProvider<BEAN, TARGET> getter,
@@ -1299,7 +1300,7 @@ public class Binder<BEAN> implements Serializable {
             }
             if (asRequiredEnabled != isAsRequiredEnabled()) {
                 field.setRequiredIndicatorVisible(asRequiredEnabled);
-                        validate();
+                validate();
             }
         }
 
