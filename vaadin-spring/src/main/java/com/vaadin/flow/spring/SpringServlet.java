@@ -142,9 +142,9 @@ public class SpringServlet extends VaadinServlet {
     private void setProperty(String envProperty, String initParam,
             Properties properties) {
         Environment env = context.getBean(Environment.class);
-        String productionMode = env.getProperty(envProperty);
-        if (productionMode != null) {
-            properties.put(initParam, productionMode);
+        String value = env.getProperty(envProperty);
+        if (value != null) {
+            properties.put(initParam, value);
         }
     }
 
