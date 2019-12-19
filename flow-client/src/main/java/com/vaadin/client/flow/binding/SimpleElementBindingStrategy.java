@@ -1267,9 +1267,12 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             }
         }
 
+        JsArray<Runnable> commands = JsCollections.array();
+        synchronizeProperties.forEach(
+                name -> commands.push(getSyncPropertyCommand(name, context)));
+
         Consumer<String> sendCommand = debouncePhase -> {
-            synchronizeProperties
-                    .forEach(name -> syncPropertyIfNeeded(name, context));
+            commands.forEach(Runnable::run);
 
             sendEventToServer(node, type, eventData, debouncePhase);
         };
@@ -1281,6 +1284,13 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             // Send if there were not filters or at least one matched
             sendCommand.accept(null);
         }
+    }
+
+    private Runnable getSyncPropertyCommand(String propertyName,
+            BindingContext context) {
+        return context.node.getMap(NodeFeatures.ELEMENT_PROPERTIES)
+                .getProperty(propertyName).getSyncToServerCommand(WidgetUtil
+                        .getJsProperty(context.htmlNode, propertyName));
     }
 
     private static void sendEventToServer(StateNode node, String type,

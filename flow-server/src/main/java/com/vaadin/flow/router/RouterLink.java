@@ -21,6 +21,7 @@ import java.util.Optional;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Focusable;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.HasText;
@@ -42,8 +43,8 @@ import com.vaadin.flow.shared.ApplicationConstants;
  * @since 1.0
  */
 @Tag(Tag.A)
-public class RouterLink extends Component
-        implements HasText, HasComponents, HasStyle, AfterNavigationObserver {
+public class RouterLink extends Component implements HasText, HasComponents,
+        HasStyle, AfterNavigationObserver, Focusable<RouterLink> {
 
     private static final PropertyDescriptor<String, String> HREF = PropertyDescriptors
             .attributeWithDefault("href", "", false);

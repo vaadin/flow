@@ -21,6 +21,7 @@ import org.junit.Before;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import elemental.json.Json;
@@ -74,6 +75,7 @@ public class DevModeInitializerTestBase {
 
         initParams = new HashMap<>();
         initParams.put(FrontendUtils.PROJECT_BASEDIR, baseDir);
+        initParams.put(Constants.SERVLET_PARAMETER_DISABLE_PNPM, "true");
 
         Mockito.when(registration.getInitParameters()).thenReturn(initParams);
 
