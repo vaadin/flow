@@ -641,10 +641,9 @@ public class VaadinConnectControllerTest {
         ApplicationContext contextMock = mock(ApplicationContext.class);
         TestClass service = new TestClass();
         TestClass proxy = mock(TestClass.class, CALLS_REAL_METHODS);
-        String serviceBeanName = service.getClass().getSimpleName();
-        when(contextMock.getType(serviceBeanName)).thenReturn((Class) proxy.getClass());
-        Map<String, Object> annotatedBeans = Collections.singletonMap(serviceBeanName, proxy);
-        when(contextMock.getBeansWithAnnotation(VaadinService.class)).thenReturn(annotatedBeans);
+        when(contextMock.getBeansWithAnnotation(VaadinService.class))
+                .thenReturn(Collections.singletonMap(
+                        service.getClass().getSimpleName(), proxy));
 
         VaadinConnectController vaadinConnectController = new VaadinConnectController(
                 new ObjectMapper(), mock(VaadinConnectAccessChecker.class),
@@ -712,8 +711,6 @@ public class VaadinConnectControllerTest {
         String beanName = TestClassWithCustomServiceName.class.getSimpleName();
 
         ApplicationContext contextMock = mock(ApplicationContext.class);
-        when(contextMock.getType(beanName))
-                .thenReturn((Class) TestClassWithCustomServiceName.class);
         when(contextMock.getBeansWithAnnotation(VaadinService.class))
                 .thenReturn(Collections.singletonMap(beanName,
                         new TestClassWithCustomServiceName()));
@@ -738,10 +735,9 @@ public class VaadinConnectControllerTest {
         TestClassWithCustomServiceName service = new TestClassWithCustomServiceName();
         TestClassWithCustomServiceName proxy = mock(
                 TestClassWithCustomServiceName.class, CALLS_REAL_METHODS);
-        String serviceBeanName = service.getClass().getSimpleName();
-        when(contextMock.getType(serviceBeanName)).thenReturn((Class) proxy.getClass());
-        Map<String, Object> annotatedBeans = Collections.singletonMap(serviceBeanName, proxy);
-        when(contextMock.getBeansWithAnnotation(VaadinService.class)).thenReturn(annotatedBeans);
+        when(contextMock.getBeansWithAnnotation(VaadinService.class))
+                .thenReturn(Collections.singletonMap(
+                        service.getClass().getSimpleName(), proxy));
 
         VaadinConnectController vaadinConnectController = new VaadinConnectController(
                 new ObjectMapper(), mock(VaadinConnectAccessChecker.class),
@@ -1060,8 +1056,6 @@ public class VaadinConnectControllerTest {
         when(contextMock.getBeansWithAnnotation(VaadinService.class))
                 .thenReturn(Collections.singletonMap(serviceClass.getName(),
                         service));
-        when(contextMock.getType(serviceClass.getName()))
-                .thenReturn((Class) serviceClass);
 
         if (vaadinServiceMapper == null) {
             vaadinServiceMapper = new ObjectMapper();
