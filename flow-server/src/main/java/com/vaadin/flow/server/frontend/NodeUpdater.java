@@ -239,7 +239,7 @@ public abstract class NodeUpdater implements FallibleCommand {
                 "@webcomponents/webcomponentsjs", "^2.2.10");
 
         added += addDependency(packageJson, DEPENDENCIES, "@vaadin/router",
-                "^1.4.1");
+                "^1.6.0");
 
         try {
             // dependency for the custom package.json placed in the generated
