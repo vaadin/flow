@@ -267,9 +267,6 @@ public class VaadinAppShellRegistry implements Serializable {
                     dependencyElement = null;
                 }
                 break;
-//            case HTML_IMPORT:
-//                dependencyElement = createHtmlImportElement(url);
-//                break;
             default:
                 throw new IllegalStateException(
                         "Unsupported dependency type: " + type);
