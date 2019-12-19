@@ -3,6 +3,7 @@
    - The main function is exported as an ES module for lazy initialization.
    - Application configuration is passed as a parameter instead of using
      replacement placeholders as in the regular bootstrapping.
+   - It reuses `Vaadin.Flow.clients` if exists.
    - Fixed lint errors.
  */
 const init = function(appInitResponse) {
@@ -71,8 +72,9 @@ const init = function(appInitResponse) {
     };
   };
 
-  if (!window.Vaadin.Flow.clients) {
-    window.Vaadin.Flow.clients = {};
+  if (!window.Vaadin.Flow.initApplication) {
+
+    window.Vaadin.Flow.clients = window.Vaadin.Flow.clients || {};
 
     window.Vaadin.Flow.initApplication = function(appId, config) {
       var testbenchId = appId.replace(/-\d+$/, '');

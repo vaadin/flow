@@ -233,6 +233,10 @@ suite("Flow", () => {
     mockInitResponse('foobar-1111111');
 
     const flow = new Flow();
+    // Check that the Flow puts a client object for TypeScript
+    assert.isDefined($wnd.Vaadin.Flow.clients.TypeScript.isActive);
+    assert.isFalse($wnd.Vaadin.Flow.clients.TypeScript.isActive());
+
     const route = flow.serverSideRoutes[0];
     return route
       .action({pathname: "Foo/Bar.baz"})
@@ -250,6 +254,10 @@ suite("Flow", () => {
         // Assert that element was created amd put in flowRoot so as server can find it
         assert.isDefined(flowRoot.$);
         assert.isDefined(flowRoot.$['foobar-1111111']);
+
+        // When calling action TypeScript.isActive should be true,
+        // since navigation has not been called yet
+        assert.isTrue($wnd.Vaadin.Flow.clients.TypeScript.isActive());
       });
   });
 
@@ -327,8 +335,15 @@ suite("Flow", () => {
 
         // When using router API, it should expose the onBeforeEnter handler
         assert.isDefined(elem.onBeforeEnter);
+
+        // inform TB that a server action is in progress
+        assert.isTrue($wnd.Vaadin.Flow.clients.TypeScript.isActive());
+
         // @ts-ignore
         elem.onBeforeEnter({pathname: 'Foo/Bar.baz'}, {})
+
+        // inform TB that server action has finished
+        assert.isFalse($wnd.Vaadin.Flow.clients.TypeScript.isActive());
 
         // Assert server side has put content in the container
         assert.equal(1, elem.children.length);
@@ -438,6 +453,7 @@ function stubServerRemoteFunction(id: string, cancel: boolean = false, routeRege
   // Stub remote function exported in JavaScriptBootstrapUI.
   flowRoot.$server = {
     connectClient: (localName: string, elemId: string, route: string) => {
+
       assert.isDefined(localName);
       assert.isDefined(elemId);
       assert.isDefined(route);
