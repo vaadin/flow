@@ -34,7 +34,7 @@ import static org.junit.Assert.assertNull;
 
 public class VaadinAppShellInitializerTest {
 
-    public static class MyAppShellWithoutMeta extends VaadinAppShell {
+    public static class MyAppShellWithoutAnnotations extends VaadinAppShell {
     }
 
     @Meta(name = "foo", content = "bar")
@@ -102,6 +102,26 @@ public class VaadinAppShellInitializerTest {
     }
 
     @Test
+    public void should_not_modifyDocument_when_noAnnotatedAppShell() throws Exception {
+        classes.add(MyAppShellWithoutAnnotations.class);
+        initializer.onStartup(classes, servletContext);
+        VaadinAppShellRegistry.getInstance(context)
+                .modifyIndexHtmlResponse(document);
+        assertEquals(0, document.head().children().size());
+        assertEquals(0, document.body().children().size());
+    }
+
+    @Test
+    public void should_not_throw_when_noClassesFound_empty() throws Exception {
+        initializer.onStartup(Collections.emptySet(), servletContext);
+    }
+
+    @Test
+    public void should_not_throw_when_noClassesFound_null() throws Exception {
+        initializer.onStartup(null, servletContext);
+    }
+
+    @Test
     public void should_haveMetasAndBodySize_when_annotatedAppShell() throws Exception {
         classes.add(MyAppShellWithMultipleAnnotations.class);
 
@@ -163,7 +183,7 @@ public class VaadinAppShellInitializerTest {
                 containsString("Found app shell configuration annotations in non"));
         exception.expectMessage(
                 containsString("- @Meta, @PWA, @Viewport, @BodySize from"));
-        classes.add(MyAppShellWithoutMeta.class);
+        classes.add(MyAppShellWithoutAnnotations.class);
         classes.add(OffendingClass.class);
         initializer.onStartup(classes, servletContext);
     }
@@ -186,7 +206,7 @@ public class VaadinAppShellInitializerTest {
         exception.expect(InvalidApplicationConfigurationException.class);
         exception.expectMessage(containsString("Unable to find a single class"));
 
-        classes.add(MyAppShellWithoutMeta.class);
+        classes.add(MyAppShellWithoutAnnotations.class);
         classes.add(MyAppShellWithMultipleAnnotations.class);
         initializer.onStartup(classes, servletContext);
     }

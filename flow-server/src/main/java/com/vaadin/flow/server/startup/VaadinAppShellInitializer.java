@@ -94,7 +94,7 @@ public class VaadinAppShellInitializer implements ServletContainerInitializer,
                 .getInstance(new VaadinServletContext(context));
         registry.reset();
 
-        if (classes.isEmpty()) {
+        if (classes == null || classes.isEmpty()) {
             return;
         }
 
