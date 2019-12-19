@@ -25,9 +25,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EventObject;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -1435,7 +1437,11 @@ public class RouterTest extends RoutingTestBase {
 
         router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
 
-        router.navigate(ui, new Location("reroute"),
+        Map<String, String> params = new HashMap<>();
+        params.put("foo", "bar");
+        QueryParameters queryParameters = QueryParameters.simple(params);
+
+        router.navigate(ui, new Location("reroute", queryParameters),
                 NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertEquals("Expected event amount was wrong", 1,
@@ -1450,6 +1456,15 @@ public class RouterTest extends RoutingTestBase {
                 ReroutingNavigationTarget.events.get(0).getClass());
         Assert.assertEquals(BeforeEnterEvent.class,
                 FooBarNavigationTarget.events.get(0).getClass());
+
+        QueryParameters rerouteQueryParameters = FooBarNavigationTarget.events
+                .get(0).getLocation().getQueryParameters();
+        Assert.assertNotNull(rerouteQueryParameters);
+
+        List<String> foo = rerouteQueryParameters.getParameters().get("foo");
+        Assert.assertNotNull(foo);
+        Assert.assertFalse(foo.isEmpty());
+        Assert.assertEquals(foo.get(0), "bar");
     }
 
     @Test
@@ -2462,8 +2477,8 @@ public class RouterTest extends RoutingTestBase {
 
         Assert.assertEquals(MyTheme.class, themeObject.getClass());
     }
-    
-    
+
+
     @Test
     public void theme_is_not_gotten_from_the_super_class_when_in_npm_mode()
             throws InvalidRouteConfigurationException, Exception {
