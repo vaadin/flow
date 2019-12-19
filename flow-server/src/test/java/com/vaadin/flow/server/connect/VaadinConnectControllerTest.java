@@ -14,6 +14,7 @@ import java.security.Principal;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -50,6 +51,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.only;
@@ -161,20 +163,6 @@ public class VaadinConnectControllerTest {
         requestMock = mock(HttpServletRequest.class);
         when(requestMock.getUserPrincipal()).thenReturn(mock(Principal.class));
         when(requestMock.getHeader("X-Requested-With")).thenReturn("Vaadin CCDM");
-    }
-
-    @Test
-    public void should_ThrowException_When_ContextHasNoBeanData() {
-        String beanName = "test";
-
-        ApplicationContext contextMock = mock(ApplicationContext.class);
-        when(contextMock.getType(beanName)).thenReturn(null);
-        when(contextMock.getBeansWithAnnotation(VaadinService.class))
-                .thenReturn(Collections.singletonMap(beanName, null));
-        exception.expect(IllegalStateException.class);
-        exception.expectMessage(beanName);
-        new VaadinConnectController(mock(ObjectMapper.class), null, null,
-                null, contextMock);
     }
 
     @Test
@@ -648,6 +636,36 @@ public class VaadinConnectControllerTest {
     }
 
     @Test
+    public void should_ReturnCorrectResponse_When_ServiceClassIsProxied() {
+
+        ApplicationContext contextMock = mock(ApplicationContext.class);
+        TestClass service = new TestClass();
+        TestClass proxy = mock(TestClass.class, CALLS_REAL_METHODS);
+        String serviceBeanName = service.getClass().getSimpleName();
+        when(contextMock.getType(serviceBeanName)).thenReturn((Class) proxy.getClass());
+        Map<String, Object> annotatedBeans = Collections.singletonMap(serviceBeanName, proxy);
+        when(contextMock.getBeansWithAnnotation(VaadinService.class)).thenReturn(annotatedBeans);
+
+        VaadinConnectController vaadinConnectController = new VaadinConnectController(
+                new ObjectMapper(), mock(VaadinConnectAccessChecker.class),
+                mock(VaadinServiceNameChecker.class),
+                mock(ExplicitNullableTypeChecker.class), contextMock);
+
+        int inputValue = 222;
+        String expectedOutput = service.testMethod(inputValue);
+
+        ResponseEntity<String> response = vaadinConnectController
+                .serveVaadinService("TestClass", "testMethod",
+                        createRequestParameters(
+                                String.format("{\"value\": %s}", inputValue)),
+                        requestMock);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(String.format("\"%s\"", expectedOutput),
+                response.getBody());
+    }
+
+    @Test
     public void should_NotUseBridgeMethod_When_ServiceHasBridgeMethodFromInterface() {
         String inputId = "2222";
         String expectedResult = String.format("{\"id\":\"%s\"}", inputId);
@@ -708,6 +726,36 @@ public class VaadinConnectControllerTest {
                 .serveVaadinService("CustomService", "testMethod",
                         createRequestParameters(
                                 String.format("{\"value\": %s}", input)), requestMock);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(String.format("\"%s\"", expectedOutput),
+                response.getBody());
+    }
+
+    @Test
+    public void should_UseCustomServiceName_When_ServiceClassIsProxied() {
+
+        ApplicationContext contextMock = mock(ApplicationContext.class);
+        TestClassWithCustomServiceName service = new TestClassWithCustomServiceName();
+        TestClassWithCustomServiceName proxy = mock(
+                TestClassWithCustomServiceName.class, CALLS_REAL_METHODS);
+        String serviceBeanName = service.getClass().getSimpleName();
+        when(contextMock.getType(serviceBeanName)).thenReturn((Class) proxy.getClass());
+        Map<String, Object> annotatedBeans = Collections.singletonMap(serviceBeanName, proxy);
+        when(contextMock.getBeansWithAnnotation(VaadinService.class)).thenReturn(annotatedBeans);
+
+        VaadinConnectController vaadinConnectController = new VaadinConnectController(
+                new ObjectMapper(), mock(VaadinConnectAccessChecker.class),
+                mock(VaadinServiceNameChecker.class),
+                mock(ExplicitNullableTypeChecker.class), contextMock);
+
+        int input = 111;
+        String expectedOutput = service.testMethod(input);
+
+        ResponseEntity<String> response = vaadinConnectController
+                .serveVaadinService("CustomService", "testMethod",
+                        createRequestParameters(
+                                String.format("{\"value\": %s}", input)),
+                        requestMock);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(String.format("\"%s\"", expectedOutput),
                 response.getBody());
