@@ -42,15 +42,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
+import static com.vaadin.flow.server.frontend.FrontendUtils.GREEN;
+import static com.vaadin.flow.server.frontend.FrontendUtils.RED;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
+import static com.vaadin.flow.server.frontend.FrontendUtils.YELLOW;
+import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
+import static com.vaadin.flow.server.frontend.FrontendUtils.console;
 import static com.vaadin.flow.server.frontend.FrontendUtils.getNodeExecutable;
+import static com.vaadin.flow.server.frontend.FrontendUtils.validateNodeAndNpmVersion;
 import static java.lang.String.format;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
@@ -80,9 +85,6 @@ public final class DevModeHandler {
     private static final String SUCCEED_MSG = "\n----------------- Frontend compiled successfully. -----------------\n\n";
     private static final String START = "\n------------------ Starting Frontend compilation. ------------------\n\n";
     private static final String END = "\n------------------------- Webpack stopped  -------------------------\n";
-    private static final String YELLOW = "\u001b[38;5;111m%s\u001b[0m";
-    private static final String RED = "\u001b[38;5;196m%s\u001b[0m";
-    private static final String GREEN = "\u001b[38;5;35m%s\u001b[0m";
 
     // If after this time in millisecs, the pattern was not found, we unlock the
     // process and continue. It might happen if webpack changes their output
@@ -142,7 +144,7 @@ public final class DevModeHandler {
         ProcessBuilder processBuilder = new ProcessBuilder()
                 .directory(npmFolder);
 
-        FrontendUtils.validateNodeAndNpmVersion(npmFolder.getAbsolutePath());
+        validateNodeAndNpmVersion(npmFolder.getAbsolutePath());
 
         List<String> command = new ArrayList<>();
         command.add(getNodeExecutable(npmFolder.getAbsolutePath()));
@@ -156,6 +158,9 @@ public final class DevModeHandler {
                 .getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS,
                         "-d --inline=false --progress --colors")
                 .split(" +")));
+
+        console(GREEN, START);
+        console(YELLOW, commandToString(npmFolder.getAbsolutePath(), command));
 
         processBuilder.command(command);
         try {
@@ -489,7 +494,7 @@ public final class DevModeHandler {
             }
             // save output in case of failure
             failedOutput = failed ? cumulativeOutput.toString() : null;
-            
+
             // reset cumulative buffer for the next compilation
             cumulativeOutput = new StringBuilder();
 
@@ -635,11 +640,5 @@ public final class DevModeHandler {
 
         atomicHandler.set(null);
         removeRunningDevServerPort();
-    }
-
-    @SuppressWarnings("squid:S106")
-    private static void console(String format, Object s) {
-        // intentionally send to console instead to log
-        System.out.print(format(format, s));
     }
 }
