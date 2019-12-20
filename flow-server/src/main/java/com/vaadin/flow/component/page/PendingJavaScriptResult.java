@@ -16,10 +16,14 @@
 package com.vaadin.flow.component.page;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import com.vaadin.flow.component.page.Page.ExecutionCanceler;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JsonCodec;
+import com.vaadin.flow.server.VaadinSession;
 
 import elemental.json.JsonValue;
 
@@ -132,7 +136,10 @@ public interface PendingJavaScriptResult extends ExecutionCanceler {
     /**
      * Creates a typed completable future that will be completed with the result
      * of the execution. It will be completed asynchronously when the result of
-     * the execution is sent back to the server.
+     * the execution is sent back to the server. It is not possible to
+     * synchronously wait for the result of the execution while holding the
+     * session lock since the request handling thread that makes the result
+     * available will also need to lock the session.
      * <p>
      * A completable future can only be created before the execution has been
      * sent to the browser.
@@ -149,7 +156,61 @@ public interface PendingJavaScriptResult extends ExecutionCanceler {
             throw new IllegalArgumentException("Target type cannot be null");
         }
 
-        CompletableFuture<T> completableFuture = new CompletableFuture<>();
+        /*
+         * Assuming that subscription is only done for the currently locked
+         * session. This is quite safe since you cannot subscribe any more after
+         * the request has been sent to the client.
+         *
+         * This is the only way of catching the potentially common case of
+         * blocking on a pending result for an element that hasn't yet even been
+         * attached to a session.
+         */
+        VaadinSession session = VaadinSession.getCurrent();
+
+        /*
+         * Override the get and join methods to throw an exception instead of
+         * deadlocking if trying to block in impossible situations. This is
+         * unfortunately only practical for this immediate CompletableFuture,
+         * but there isn't any sensible way of also intercepting for instances
+         * derived using e.g. thenAccept.
+         */
+        CompletableFuture<T> completableFuture = new CompletableFuture<T>() {
+            @Override
+            public T get() throws InterruptedException, ExecutionException {
+                throwIfDeadlock();
+                return super.get();
+            }
+
+            @Override
+            public T get(long timeout, TimeUnit unit)
+                    throws InterruptedException, ExecutionException,
+                    TimeoutException {
+                throwIfDeadlock();
+                return super.get(timeout, unit);
+            }
+
+            @Override
+            public T join() {
+                throwIfDeadlock();
+                return super.join();
+            }
+
+            private void throwIfDeadlock() {
+                if (isDone()) {
+                    // Won't block if we're done
+                    return;
+                }
+                if (session != null && session.hasLock()) {
+                    /*
+                     * Disallow blocking if the current thread holds the lock
+                     * for the session that would need to be locked by a request
+                     * thread to complete the result
+                     */
+                    throw new IllegalStateException(
+                            "Cannot block on a pending result when the session is locked since the result cannot be made available while the session is locked.");
+                }
+            }
+        };
 
         then(value -> {
             T convertedValue = JsonCodec.decodeAs(value, targetType);
@@ -166,7 +227,10 @@ public interface PendingJavaScriptResult extends ExecutionCanceler {
      * Adds an untyped handler that will be run for a successful exception and a
      * handler that will be run for a failed execution. One of the handlers will
      * be invoked asynchronously when the result of the execution is sent back
-     * to the server.
+     * to the server. It is not possible to synchronously wait for the result of
+     * the execution while holding the session lock since the request handling
+     * thread that makes the result available will also need to lock the
+     * session.
      * <p>
      * Handlers can only be added before the execution has been sent to the
      * browser.

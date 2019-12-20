@@ -15,8 +15,19 @@
  */
 package com.vaadin.flow.component.internal;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -25,9 +36,12 @@ import org.junit.Test;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.component.page.PendingJavaScriptResult.JavaScriptException;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.server.MockVaadinSession;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.tests.util.SingleCaptureConsumer;
 
 import elemental.json.Json;
+import elemental.json.JsonObject;
 import elemental.json.JsonString;
 import elemental.json.JsonValue;
 
@@ -232,6 +246,122 @@ public class PendingJavaScriptInvocationTest {
         invocation.cancelExecution();
 
         assertFail("Execution canceled");
+    }
+
+    @Test
+    public void blockFromInvokingThread_throws() throws Exception {
+        MockVaadinSession session = new MockVaadinSession();
+        session.runWithLock(() -> {
+            CompletableFuture<JsonValue> completableFuture = invocation
+                    .toCompletableFuture();
+
+            for (Callable<JsonValue> action : createBlockingActions(
+                    completableFuture)) {
+                try {
+                    action.call();
+                    Assert.fail(
+                            "Blocking on a pending invocation while holding the session lock should throw");
+                } catch (IllegalStateException e) {
+                    // This is expected
+                }
+            }
+
+            return null;
+        });
+    }
+
+    @Test
+    public void blockFromSessionThreadAfterCompleting_allIsFine()
+            throws Exception {
+        MockVaadinSession session = new MockVaadinSession();
+        session.runWithLock(() -> {
+            CompletableFuture<JsonValue> completableFuture = invocation
+                    .toCompletableFuture();
+
+            JsonObject value = Json.createObject();
+            invocation.complete(value);
+
+            for (Callable<JsonValue> action : createBlockingActions(
+                    completableFuture)) {
+                JsonValue actionValue = action.call();
+                Assert.assertSame(value, actionValue);
+            }
+
+            return null;
+        });
+    }
+
+    @Test
+    public void blockFromSessionThreadAfterFailing_allIsFine()
+            throws Exception {
+        MockVaadinSession session = new MockVaadinSession();
+        session.runWithLock(() -> {
+            CompletableFuture<JsonValue> completableFuture = invocation
+                    .toCompletableFuture();
+
+            String errorMessage = "error message";
+            invocation.completeExceptionally(Json.create(errorMessage));
+
+            for (Callable<JsonValue> action : createBlockingActions(
+                    completableFuture)) {
+                try {
+                    action.call();
+                    Assert.fail("Execution should have failed");
+                } catch (ExecutionException | CompletionException e) {
+                    JavaScriptException cause = (JavaScriptException) e
+                            .getCause();
+                    Assert.assertEquals(errorMessage, cause.getMessage());
+                }
+            }
+            return null;
+        });
+    }
+
+    @Test
+    public void blockFromOtherThread_allIsFine() throws Exception {
+        MockVaadinSession session = new MockVaadinSession();
+        VaadinSession.setCurrent(session);
+
+        ExecutorService executor = Executors.newFixedThreadPool(3);
+
+        session.lock();
+        try {
+            CompletableFuture<JsonValue> completableFuture = invocation
+                    .toCompletableFuture();
+
+            List<Future<JsonValue>> futures = createBlockingActions(
+                    completableFuture).stream().map(executor::submit)
+                            .collect(Collectors.toList());
+
+            Assert.assertEquals("All futures should be pending", 0,
+                    futures.stream().filter(Future::isDone).count());
+
+            JsonObject value = Json.createObject();
+            invocation.complete(value);
+
+            Assert.assertEquals("All futures should be done", futures.size(),
+                    futures.stream().filter(Future::isDone).count());
+
+            futures.forEach(future -> {
+                try {
+                    JsonValue futureValue = future.get();
+                    Assert.assertSame(value, futureValue);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            });
+
+        } finally {
+            session.unlock();
+            executor.shutdown();
+        }
+    }
+
+    private <T> List<Callable<T>> createBlockingActions(
+            CompletableFuture<T> completableFuture) {
+        return Arrays.asList(completableFuture::get,
+                () -> completableFuture.get(1, TimeUnit.HOURS),
+                completableFuture::join);
     }
 
     private void assertStringSuccess() {
