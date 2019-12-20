@@ -67,6 +67,7 @@ public class VaadinAppShellRegistry implements Serializable {
     private static final String CSS_TYPE_ATTRIBUTE_VALUE = "text/css";
     private static final String SCRIPT_TAG = "script";
     private static final String DEFER_ATTRIBUTE = "defer";
+    private static final String TYPE = "type";
 
     private static final String ERROR_MULTIPLE_BODYSIZE =
             "%nBodySize is not a repeatable annotation type.%n";
@@ -220,7 +221,7 @@ public class VaadinAppShellRegistry implements Serializable {
             String strBodySizeHeight = "height:" + getAnnotations(BodySize.class).get(0).height();
             String strBodySizeWidth = "width:" + getAnnotations(BodySize.class).get(0).width();
             Element elemStyle = new Element("style");
-            elemStyle.attr("type", "text/css");
+            elemStyle.attr(TYPE, CSS_TYPE_ATTRIBUTE_VALUE);
             String strContent = "body,#outlet{" + strBodySizeHeight + ";" + strBodySizeWidth + ";" + "}";
             elemStyle.append(strContent);
             document.head().appendChild(elemStyle);
@@ -261,11 +262,8 @@ public class VaadinAppShellRegistry implements Serializable {
                 break;
             case JS_MODULE:
                 if (url != null && UrlUtil.isExternal(url)) {
-                    dependencyElement = createJavaScriptElement(url, false,
-                            "module");
-                } else {
-                    dependencyElement = null;
-                }
+                    dependencyElement = createJavaScriptElement(url, false, "module");
+                } else dependencyElement = null;
                 break;
             default:
                 throw new IllegalStateException(
@@ -286,10 +284,10 @@ public class VaadinAppShellRegistry implements Serializable {
         if (url != null) {
             cssElement = new Element(Tag.valueOf("link"), "")
                     .attr("rel", "stylesheet")
-                    .attr("type", CSS_TYPE_ATTRIBUTE_VALUE)
+                    .attr(TYPE, CSS_TYPE_ATTRIBUTE_VALUE)
                     .attr("href", url);
         } else {
-            cssElement = new Element(Tag.valueOf("style"), "").attr("type",
+            cssElement = new Element(Tag.valueOf("style"), "").attr(TYPE,
                     CSS_TYPE_ATTRIBUTE_VALUE);
         }
         return cssElement;
@@ -302,12 +300,13 @@ public class VaadinAppShellRegistry implements Serializable {
         }
 
         Element jsElement = new Element(Tag.valueOf(SCRIPT_TAG), "")
-                .attr("type", type).attr(DEFER_ATTRIBUTE, defer);
+                .attr(TYPE, type).attr(DEFER_ATTRIBUTE, defer);
         if (sourceUrl != null) {
             jsElement = jsElement.attr("src", sourceUrl);
         }
         return jsElement;
     }
+
     private void insertElements(Element element, Consumer<Element> action) {
         if (element instanceof Document) {
             element.getAllElements().stream()
@@ -319,7 +318,7 @@ public class VaadinAppShellRegistry implements Serializable {
         }
     }
 
-    public void handleInlineTargets(VaadinSession session, VaadinRequest request, Element head, Element body, InlineTargets targets) {
+    private void handleInlineTargets(VaadinSession session, VaadinRequest request, Element head, Element body, InlineTargets targets) {
         targets.getInlineHead(Inline.Position.PREPEND).stream().map(
                 dependency -> createInlineDependencyElement(session, request, dependency))
                 .forEach(element -> insertElements(element,
@@ -339,7 +338,7 @@ public class VaadinAppShellRegistry implements Serializable {
                         body::appendChild));
     }
 
-    public Optional<InlineTargets> getInlineTargets(
+    private Optional<InlineTargets> getInlineTargets(
             VaadinRequest request) {
         List<Inline> inlineAnnotations = getAnnotations(Inline.class);
 
