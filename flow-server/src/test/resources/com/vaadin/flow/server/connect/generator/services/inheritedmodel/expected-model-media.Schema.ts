@@ -1,6 +1,5 @@
 import ExternalDocumentation from '../ExternalDocumentation';
 import Discriminator from './Discriminator';
-import Schema from './Schema';
 import XML from './XML';
 
 /**

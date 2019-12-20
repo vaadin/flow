@@ -1,4 +1,3 @@
-import Account from './Account';
 import Group from './Group';
 import ModelFromDifferentPackage from '../subpackage/ModelFromDifferentPackage';
 
