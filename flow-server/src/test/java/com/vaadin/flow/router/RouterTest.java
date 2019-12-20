@@ -1279,10 +1279,11 @@ public class RouterTest extends RoutingTestBase {
 
         public ProcessEventsRoot() {
             ProcessEventsBase child1 = new ProcessEventsBase("rootChild1");
+            child1.add(new ProcessEventsBase("rootChild11"));
+
             add(child1);
             add(new ProcessEventsBase("rootChild2"));
 
-            child1.add(new ProcessEventsBase("rootChild11"));
         }
     }
 
@@ -3342,9 +3343,9 @@ public class RouterTest extends RoutingTestBase {
                 "ProcessEventsBranch", "branchChild1", "branchChild2",
                 "branchChild21", "ProcessEventsTwig");
 
-//        Assert.assertEquals(
-//                "Component initialization is done in incorrect order",
-//                expected, ProcessEventsBase.init);
+        Assert.assertEquals(
+                "Component initialization is done in incorrect order",
+                expected, ProcessEventsBase.init);
 
         Assert.assertTrue("There should be no before leave events triggered",
                 ProcessEventsBase.beforeLeave.isEmpty());
