@@ -925,18 +925,14 @@ public class RouterTest extends RoutingTestBase {
     @Route("beforeToError/message")
     @Tag(Tag.DIV)
     public static class RerouteToErrorWithMessage extends Component
-            implements BeforeEnterObserver, HasUrlParameter<String> {
+            implements HasUrlParameter<String> {
 
         private String message;
 
         @Override
-        public void beforeEnter(BeforeEnterEvent event) {
-            event.rerouteToError(IllegalArgumentException.class, message);
-        }
-
-        @Override
         public void setParameter(BeforeEvent event, String parameter) {
             message = parameter;
+            event.rerouteToError(IllegalArgumentException.class, message);
         }
     }
 
@@ -3350,8 +3346,8 @@ public class RouterTest extends RoutingTestBase {
 //                "Component initialization is done in incorrect order",
 //                expected, ProcessEventsBase.init);
 
-        Assert.assertEquals("There should be no before leave events triggered",
-                0, ProcessEventsBase.beforeLeave);
+        Assert.assertTrue("There should be no before leave events triggered",
+                ProcessEventsBase.beforeLeave.isEmpty());
         
         Assert.assertEquals(
                 "Before enter events aren't triggered in correct order",
