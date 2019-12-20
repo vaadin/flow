@@ -38,6 +38,7 @@ import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.text.WordUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,6 +57,10 @@ import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.YELLOW;
+import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
+import static com.vaadin.flow.server.frontend.FrontendUtils.console;
+import static java.lang.String.format;
 
 /**
  * A class for static methods and definitions that might be used in different
@@ -64,6 +69,11 @@ import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
  * @since 2.0
  */
 public class FrontendUtils {
+
+    private static final String PNMP_INSTALLED_BY_NPM_FOLDER = "node_modules/pnpm/";
+
+    private static final String PNMP_INSTALLED_BY_NPM = PNMP_INSTALLED_BY_NPM_FOLDER
+            + "bin/pnpm.js";
 
     public static final String PROJECT_BASEDIR = "project.basedir";
 
@@ -310,6 +320,12 @@ public class FrontendUtils {
 
     private static String operatingSystem = null;
 
+    public static final String YELLOW = "\u001b[38;5;111m%s\u001b[0m";
+
+    public static final String RED = "\u001b[38;5;196m%s\u001b[0m";
+
+    public static final String GREEN = "\u001b[38;5;35m%s\u001b[0m";
+
     /**
      * Only static stuff here.
      */
@@ -383,26 +399,60 @@ public class FrontendUtils {
 
     /**
      * Locate <code>pnpm</code> executable.
+     * <p>
+     * In case pnpm is not available it will be installed.
      *
      * @param baseDir
      *            project root folder.
      *
      * @return the list of all commands in sequence that need to be executed to
      *         have pnpm running
+     * @see #getPnpmExecutable(String, boolean)
      */
     public static List<String> getPnpmExecutable(String baseDir) {
+        ensurePnpm(baseDir, true);
+        return getPnpmExecutable(baseDir, true);
+    }
+
+    /**
+     * Locate <code>pnpm</code> executable if it's possible.
+     * <p>
+     * In case the tool is not found either {@link IllegalStateException} is
+     * thrown or an empty list is returned depending on {@code failOnAbsence}
+     * value.
+     *
+     * @param baseDir
+     *            project root folder.
+     * @param failOnAbsence
+     *            if {@code true} throws IllegalStateException if tool is not
+     *            found, if {@code false} return an empty list if tool is not
+     *            found
+     *
+     * @return the list of all commands in sequence that need to be executed to
+     *         have pnpm running
+     */
+    public static List<String> getPnpmExecutable(String baseDir,
+            boolean failOnAbsence) {
         // First try local pnpm JS script if it exists
-        File file = new File(baseDir, "node_modules/pnpm/bin/pnpm.js");
         List<String> returnCommand = new ArrayList<>();
-        if (file.canRead()) {
-            // We return a two element list with node binary and npm-cli script
+        Optional<File> localPnpmScript = getLocalPnpmScript(baseDir);
+        if (localPnpmScript.isPresent()) {
             returnCommand.add(getNodeExecutable(baseDir));
-            returnCommand.add(file.getAbsolutePath());
+            returnCommand.add(localPnpmScript.get().getAbsolutePath());
         } else {
-            // Otherwise look for regulag `pnpm`
+            // Otherwise look for regular `pnpm`
             String command = isWindows() ? "pnpm.cmd" : "pnpm";
-            returnCommand.add(
-                    getExecutable(baseDir, command, null).getAbsolutePath());
+            if (failOnAbsence) {
+                returnCommand.add(getExecutable(baseDir, command, null)
+                        .getAbsolutePath());
+            } else {
+                returnCommand.addAll(frontendToolsLocator.tryLocateTool(command)
+                        .map(File::getPath).map(Collections::singletonList)
+                        .orElse(Collections.emptyList()));
+            }
+        }
+        if (!returnCommand.isEmpty()) {
+            returnCommand.add("--shamefully-hoist=true");
         }
         return returnCommand;
     }
@@ -638,11 +688,7 @@ public class FrontendUtils {
         // else fallback on 127.0.0.1:8080
         if (externalStatsUrl.startsWith("/")) {
             VaadinRequest request = VaadinRequest.getCurrent();
-            String host = request.getHeader("host");
-            if (host == null) {
-                host = "http://127.0.0.1:8080";
-            }
-            url = host + externalStatsUrl;
+            url = getHostString(request) + externalStatsUrl;
         } else {
             url = externalStatsUrl;
         }
@@ -677,6 +723,20 @@ public class FrontendUtils {
                     url, e);
         }
         return null;
+    }
+
+    private static String getHostString(VaadinRequest request) {
+        String host = request.getHeader("host");
+        if (host == null) {
+            host = "http://127.0.0.1:8080";
+        } else if (!host.contains("://")) {
+            String scheme = request.getHeader("scheme");
+            if (scheme == null) {
+                scheme = "http";
+            }
+            host = scheme + "://" + host;
+        }
+        return host;
     }
 
     private static InputStream getStatsFromClassPath(VaadinService service) {
@@ -823,12 +883,89 @@ public class FrontendUtils {
 
     }
 
+    /**
+     * Ensure that pnpm tool is available and install it if it's not.
+     *
+     * @param baseDir
+     *            project root folder.
+     * @param ensure
+     *            whether pnpm tool should be installed if it's absent
+     */
+    public static void ensurePnpm(String baseDir, boolean ensure) {
+        if (ensure && getPnpmExecutable(baseDir, false).isEmpty()) {
+            // copy the current content of package.json file to a temporary
+            // location
+            File packageJson = new File(baseDir, "package.json");
+            File tempFile = null;
+            boolean packageJsonExists = packageJson.canRead();
+            if (packageJsonExists) {
+                try {
+                    tempFile = File.createTempFile("package", "json");
+                    FileUtils.copyFile(packageJson, tempFile);
+                } catch (IOException exception) {
+                    throw new IllegalStateException(
+                            "Couldn't make a copy of package.json file",
+                            exception);
+                }
+                packageJson.delete();
+            }
+            // install pnpm locally using npm
+            installPnpm(baseDir, getNpmExecutable(baseDir));
+
+            // remove package-lock.json which contains pnpm as a dependency.
+            new File(baseDir, "package-lock.json").delete();
+
+            if (packageJsonExists && tempFile != null) {
+                // return back the original package.json
+                try {
+                    FileUtils.copyFile(tempFile, packageJson);
+                } catch (IOException exception) {
+                    throw new IllegalStateException(
+                            "Couldn't restore package.json file back",
+                            exception);
+                }
+                tempFile.delete();
+            }
+        }
+    }
+
     static void checkForFaultyNpmVersion(FrontendVersion npmVersion) {
         if (NPM_BLACKLISTED_VERSIONS.contains(npmVersion)) {
             String badNpmVersion = buildBadVersionString("npm",
                     npmVersion.getFullVersion(),
                     "by updating your global npm installation with `npm install -g npm@latest`");
             throw new IllegalStateException(badNpmVersion);
+        }
+    }
+
+    private static void installPnpm(String baseDir,
+            List<String> installCommand) {
+        List<String> command = new ArrayList<>();
+        command.addAll(installCommand);
+        command.add("install");
+        command.add("pnpm@4.5.0");
+
+        console(YELLOW, commandToString(baseDir, command));
+
+        ProcessBuilder builder = createProcessBuilder(command);
+        builder.environment().put("ADBLOCK", "1");
+        builder.directory(new File(baseDir));
+
+        Process process = null;
+        try {
+            process = builder.inheritIO().start();
+            int errorCode = process.waitFor();
+            if (errorCode != 0) {
+                getLogger().error("Couldn't install 'pnpm'");
+            } else {
+                getLogger().debug("Pnpm is successfully installed");
+            }
+        } catch (InterruptedException | IOException e) {
+            getLogger().error("Error when running `npm install`", e);
+        } finally {
+            if (process != null) {
+                process.destroyForcibly();
+            }
         }
     }
 
@@ -1066,6 +1203,27 @@ public class FrontendUtils {
         return LoggerFactory.getLogger(FrontendUtils.class);
     }
 
+    private static Optional<File> getLocalPnpmScript(String baseDir) {
+        File npmInstalled = new File(baseDir, PNMP_INSTALLED_BY_NPM);
+        if (npmInstalled.canRead()) {
+            return Optional.of(npmInstalled);
+        }
+
+        // For version 4.3.3 check ".ignored" folders
+        File movedPnpmScript = new File(baseDir,
+                "node_modules/.ignored_pnpm/bin/pnpm.js");
+        if (movedPnpmScript.canRead()) {
+            return Optional.of(movedPnpmScript);
+        }
+
+        movedPnpmScript = new File(baseDir,
+                "node_modules/.ignored/pnpm/bin/pnpm.js");
+        if (movedPnpmScript.canRead()) {
+            return Optional.of(movedPnpmScript);
+        }
+        return Optional.empty();
+    }
+
     /**
      * Container class for caching the external stats.json contents.
      */
@@ -1097,5 +1255,38 @@ public class FrontendUtils {
                     .parse(lastModified, DateTimeFormatter.RFC_1123_DATE_TIME)
                     .toLocalDateTime();
         }
+    }
+
+    /**
+     * Pretty prints a command line order. It split in lines adapting to 80
+     * columns, and allowing copy and paste in console. It also removes the
+     * current directory to avoid security issues in log files.
+     *
+     * @param baseDir
+     *            the current directory
+     * @param command
+     *            the command and it's arguments
+     * @return the string for printing in logs
+     */
+    public static String commandToString(String baseDir, List<String> command) {
+        return "\n" + WordUtils
+                .wrap(String.join(" ", command).replace(baseDir, "."), 50)
+                .replace("\n", " \\ \n    ") + "\n";
+    }
+
+    /**
+     * Intentionally send to console instead to log, useful when executing
+     * external processes.
+     *
+     * @param format
+     *            Format of the line to send to console, it must contain a `%s`
+     *            outlet for the message
+     * @param message
+     *            the string to show
+     */
+    @SuppressWarnings("squid:S106")
+    public
+    static void console(String format, Object message) {
+        System.out.print(format(format, message));
     }
 }

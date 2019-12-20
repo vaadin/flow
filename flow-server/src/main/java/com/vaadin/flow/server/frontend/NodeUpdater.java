@@ -18,9 +18,10 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -53,6 +54,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @since 2.0
  */
 public abstract class NodeUpdater implements FallibleCommand {
+
     /**
      * Relative paths of generated should be prefixed with this value, so they
      * can be correctly separated from {projectDir}/frontend files.
@@ -60,7 +62,9 @@ public abstract class NodeUpdater implements FallibleCommand {
     static final String GENERATED_PREFIX = "GENERATED/";
 
     static final String DEPENDENCIES = "dependencies";
-    private static final String DEV_DEPENDENCIES = "devDependencies";
+    static final String VAADIN_DEP_KEY = "vaadin";
+    static final String HASH_KEY = "hash";
+    static final String DEV_DEPENDENCIES = "devDependencies";
 
     private static final String DEP_LICENSE_KEY = "license";
     private static final String DEP_LICENSE_DEFAULT = "UNLICENSED";
@@ -69,8 +73,10 @@ public abstract class NodeUpdater implements FallibleCommand {
     private static final String DEP_MAIN_KEY = "main";
     protected static final String DEP_NAME_FLOW_DEPS = "@vaadin/flow-deps";
     protected static final String DEP_NAME_FLOW_JARS = "@vaadin/flow-frontend";
+    private static final String DEP_MAIN_FLOW_JARS = "Flow";
     private static final String DEP_VERSION_KEY = "version";
     private static final String DEP_VERSION_DEFAULT = "1.0.0";
+    protected static final String POLYMER_VERSION = "3.2.0";
 
     /**
      * Base directory for {@link Constants#PACKAGE_JSON},
@@ -129,6 +135,10 @@ public abstract class NodeUpdater implements FallibleCommand {
         this.flowResourcesFolder = flowResourcesPath;
     }
 
+    private File getPackageJsonFile() {
+        return new File(npmFolder, PACKAGE_JSON);
+    }
+
     static Set<String> getGeneratedModules(File directory,
             Set<String> excludes) {
         if (!directory.exists()) {
@@ -153,14 +163,7 @@ public abstract class NodeUpdater implements FallibleCommand {
                 .collect(Collectors.toSet());
     }
 
-    List<String> resolveModules(Collection<String> modules,
-            boolean isJsModule) {
-        return modules.stream()
-                .map(module -> resolveResource(module, isJsModule))
-                .collect(Collectors.toList());
-    }
-
-    protected String resolveResource(String importPath, boolean isJsModule) {
+    String resolveResource(String importPath, boolean isJsModule) {
         String resolved = importPath;
         if (!importPath.startsWith("@")) {
 
@@ -199,144 +202,187 @@ public abstract class NodeUpdater implements FallibleCommand {
                         + "/" + resource) != null;
     }
 
-    JsonObject getMainPackageJson() throws IOException {
-        return getPackageJson(new File(npmFolder, PACKAGE_JSON));
-    }
-
-    JsonObject getAppPackageJson() throws IOException {
-        return getPackageJson(new File(generatedFolder, PACKAGE_JSON));
-    }
-
-    JsonObject getResourcesPackageJson() throws IOException {
-        return getPackageJson(new File(flowResourcesFolder, PACKAGE_JSON));
-    }
-
-    JsonObject getPackageJson(File packageFile) throws IOException {
-        JsonObject packageJson = null;
-        if (packageFile.exists()) {
-            String fileContent = FileUtils.readFileToString(packageFile,
-                    UTF_8.name());
-            packageJson = Json.parse(fileContent);
+    JsonObject getPackageJson() throws IOException {
+        JsonObject packageJson = getJsonFileContent(getPackageJsonFile());
+        if (packageJson == null) {
+            packageJson = Json.createObject();
+            packageJson.put(DEP_NAME_KEY, DEP_NAME_DEFAULT);
+            packageJson.put(DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT);
+        }
+        if (!packageJson.hasKey(VAADIN_DEP_KEY)) {
+            packageJson.put(VAADIN_DEP_KEY, createVaadinPackagesJson());
         }
         return packageJson;
     }
 
-    boolean updateMainDefaultDependencies(JsonObject packageJson,
-            String polymerVersion) {
+    JsonObject getResourcesPackageJson() throws IOException {
+        JsonObject packageJson = getJsonFileContent(new File(flowResourcesFolder, PACKAGE_JSON));
+        if (packageJson == null) {
+            packageJson = Json.createObject();
+            packageJson.put(DEP_NAME_KEY, DEP_NAME_FLOW_JARS);
+            packageJson.put(DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT);
+            packageJson.put(DEP_MAIN_KEY, DEP_MAIN_FLOW_JARS);
+            packageJson.put(DEP_VERSION_KEY, DEP_VERSION_DEFAULT);
+        }
+        return packageJson;
+    }
+
+    static JsonObject getJsonFileContent(File packageFile) throws IOException {
+        JsonObject jsonContent = null;
+        if (packageFile.exists()) {
+            String fileContent = FileUtils.readFileToString(packageFile,
+                    UTF_8.name());
+            jsonContent = Json.parse(fileContent);
+        }
+        return jsonContent;
+    }
+
+    static JsonObject createVaadinPackagesJson() {
+        JsonObject vaadinPackages = Json.createObject();
+        vaadinPackages.put(DEPENDENCIES, Json.createObject());
+        vaadinPackages.put(DEV_DEPENDENCIES, Json.createObject());
+
+        // Add default dependencies
+        JsonObject dependencies = vaadinPackages.getObject(DEPENDENCIES);
+        getDefaultDependencies().forEach(dependencies::put);
+
+        // Add default developmentDependencies
+        JsonObject devDependencies = vaadinPackages.getObject(DEV_DEPENDENCIES);
+        getDefaultDevDependencies().forEach(devDependencies::put);
+
+        vaadinPackages.put(HASH_KEY, "");
+        return vaadinPackages;
+    }
+
+    static Map<String, String> getDefaultDependencies() {
+        Map<String, String> defaults = new HashMap<>();
+
+        defaults.put("@vaadin/router","^1.6.0");
+
+        defaults.put("@polymer/polymer", POLYMER_VERSION);
+        defaults.put("@webcomponents/webcomponentsjs", "^2.2.10");
+
+        return defaults;
+    }
+
+    static Map<String, String> getDefaultDevDependencies() {
+        Map<String, String> defaults = new HashMap<>();
+
+        defaults.put("html-webpack-plugin", "3.2.0");
+        defaults.put("script-ext-html-webpack-plugin", "2.1.4");
+        defaults.put("typescript","3.5.3");
+        defaults.put("awesome-typescript-loader", "5.2.1");
+
+        defaults.put("webpack", "4.30.0");
+        defaults.put("webpack-cli", "3.3.10");
+        defaults.put("webpack-dev-server", "3.9.0");
+        defaults.put("webpack-babel-multi-target-plugin", "2.3.3");
+        defaults.put("copy-webpack-plugin", "5.1.0");
+        defaults.put("compression-webpack-plugin", "3.0.1");
+        defaults.put("webpack-merge", "4.2.2");
+        defaults.put("raw-loader", "3.0.0");
+
+        return defaults;
+    }
+
+    /**
+     * Updates default dependencies and development dependencies to
+     * package.json.
+     *
+     * @param packageJson
+     *            package.json json object to update with dependencies
+     * @return true if items were added or removed from the {@code packageJson}
+     */
+    boolean updateDefaultDependencies(JsonObject packageJson) {
         int added = 0;
-        added += addDependency(packageJson, null, DEP_NAME_KEY, DEP_NAME_DEFAULT);
-        added += addDependency(packageJson, null, DEP_LICENSE_KEY,
-                DEP_LICENSE_DEFAULT);
-
-        String polymerDepVersion = polymerVersion;
-        if (polymerDepVersion == null) {
-            polymerDepVersion = "3.2.0";
+        
+        for (Map.Entry<String, String> entry : getDefaultDependencies()
+                .entrySet()) {
+            added += addDependency(packageJson, DEPENDENCIES, entry.getKey(),
+                    entry.getValue());
         }
 
-        added += addDependency(packageJson, DEPENDENCIES, "@polymer/polymer",
-                polymerDepVersion);
-        added += addDependency(packageJson, DEPENDENCIES,
-                "@webcomponents/webcomponentsjs", "^2.2.10");
-
-        added += addDependency(packageJson, DEPENDENCIES, "@vaadin/router",
-                "^1.6.0");
-
-        try {
-            // dependency for the custom package.json placed in the generated
-            // folder.
-            String customPkg = "./" + npmFolder.getAbsoluteFile().toPath()
-                    .relativize(generatedFolder.getAbsoluteFile().toPath())
-                    .toString();
-            added += addDependency(packageJson, DEPENDENCIES, DEP_NAME_FLOW_DEPS,
-                    customPkg.replaceAll("\\\\", "/"));
-
-            // dependency for the package.json in the folder where frontend
-            // dependencies are copied
-            if (flowResourcesFolder != null
-                    // Skip if deps are copied directly to `node_modules` folder
-                    && !flowResourcesFolder.toString().contains(NODE_MODULES)) {
-                String depsPkg = "./" + FrontendUtils.getUnixRelativePath(
-                        npmFolder.getAbsoluteFile().toPath(),
-                        flowResourcesFolder.getAbsoluteFile().toPath());
-                added += addDependency(packageJson, DEPENDENCIES,
-                        DEP_NAME_FLOW_JARS, depsPkg);
-            }
-        } catch (IllegalArgumentException iae) {
-            log().error("Exception in relativization of '{}' to '{}'",
-                    npmFolder.getAbsoluteFile().toPath(),
-                    generatedFolder.getAbsoluteFile().toPath());
-            throw iae;
+        for (Map.Entry<String, String> entry : getDefaultDevDependencies()
+                .entrySet()) {
+            added += addDependency(packageJson, DEV_DEPENDENCIES,
+                    entry.getKey(), entry.getValue());
         }
 
-        added += addDependency(packageJson, DEV_DEPENDENCIES,
-                "html-webpack-plugin", "3.2.0");
-        added += addDependency(packageJson, DEV_DEPENDENCIES,
-                "script-ext-html-webpack-plugin", "2.1.4");
-        added += addDependency(packageJson, DEV_DEPENDENCIES, "typescript",
-                "3.5.3");
-        added += addDependency(packageJson, DEV_DEPENDENCIES,
-                "awesome-typescript-loader", "5.2.1");
-        added += addDependency(packageJson, DEV_DEPENDENCIES, "webpack",
-                "4.30.0");
-        added += addDependency(packageJson, DEV_DEPENDENCIES, "webpack",
-                "4.30.0");
-        added += addDependency(packageJson, DEV_DEPENDENCIES, "webpack-cli",
-                "3.3.0");
-        added += addDependency(packageJson, DEV_DEPENDENCIES,
-                "webpack-dev-server", "3.3.0");
-        added += addDependency(packageJson, DEV_DEPENDENCIES,
-                "webpack-babel-multi-target-plugin", "2.3.1");
-        added += addDependency(packageJson, DEV_DEPENDENCIES,
-                "copy-webpack-plugin", "5.0.3");
-        added += addDependency(packageJson, DEV_DEPENDENCIES,
-                "compression-webpack-plugin", "3.0.0");
-        added += addDependency(packageJson, DEV_DEPENDENCIES, "webpack-merge",
-                "4.2.1");
-        added += addDependency(packageJson, DEV_DEPENDENCIES, "raw-loader",
-                "3.0.0");
-        if(added > 0) {
+        if (added > 0) {
             log().info("Added {} dependencies to main package.json", added);
         }
         return added > 0;
     }
 
-    void updateAppDefaultDependencies(JsonObject packageJson) {
-        addDependency(packageJson, null, DEP_NAME_KEY, DEP_NAME_FLOW_DEPS);
-        addDependency(packageJson, null, DEP_VERSION_KEY, DEP_VERSION_DEFAULT);
-        addDependency(packageJson, null, DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT);
-        addDependency(packageJson, null, DEP_MAIN_KEY, "Flow");
-    }
+    int addDependency(JsonObject json, String key, String pkg, String version) {
+        Objects.requireNonNull(json, "Json object need to be given");
+        Objects.requireNonNull(key, "Json sub object needs to be give.");
+        Objects.requireNonNull(pkg, "dependency package needs to be defined");
 
-    void updateResourcesDependencies(JsonObject packageJson) {
-        addDependency(packageJson, null, DEP_NAME_KEY, DEP_NAME_FLOW_JARS);
-        addDependency(packageJson, null, DEP_VERSION_KEY, DEP_VERSION_DEFAULT);
-        addDependency(packageJson, null, DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT);
-        addDependency(packageJson, null, DEP_MAIN_KEY, "Flow");
-    }
 
-    int addDependency(JsonObject json, String key, String pkg,
-            String vers) {
-        if (key != null) {
-            if (!json.hasKey(key)) {
-                json.put(key, Json.createObject());
-            }
-            json = json.get(key);
+        JsonObject vaadinDeps = json.getObject(VAADIN_DEP_KEY);
+        if (!json.hasKey(key)) {
+            json.put(key, Json.createObject());
         }
-        if (!json.hasKey(pkg) || !json.getString(pkg).equals(vers)) {
-            json.put(pkg, vers);
-            log().debug("Added \"{}\": \"{}\" line.", pkg, vers);
-            return 1;
+        json = json.get(key);
+        vaadinDeps = vaadinDeps.getObject(key);
+
+        if (vaadinDeps.hasKey(pkg)) {
+            if (version == null) {
+                version = vaadinDeps.getString(pkg);
+            }
+            return handleExistingVaadinDep(json, pkg, version, vaadinDeps);
+        } else {
+            vaadinDeps.put(pkg, version);
+            if (!json.hasKey(pkg) || new FrontendVersion(version)
+                    .isNewerThan(toVersion(json, pkg))) {
+                json.put(pkg, version);
+                log().debug("Added \"{}\": \"{}\" line.", pkg, version);
+                return 1;
+            }
         }
         return 0;
     }
 
-    String writeMainPackageFile(JsonObject packageJson) throws IOException {
-        return writePackageFile(packageJson, new File(npmFolder, PACKAGE_JSON));
+
+    private int handleExistingVaadinDep(JsonObject json, String pkg,
+            String version, JsonObject vaadinDeps) {
+        boolean added = false;
+        if (json.hasKey(pkg)) {
+            FrontendVersion packageVersion = toVersion(json, pkg);
+            FrontendVersion newVersion = new FrontendVersion(version);
+            FrontendVersion vaadinVersion = toVersion(vaadinDeps, pkg);
+            // Vaadin and package.json versions are the same, but dependency
+            // updates (can be up or down)
+            if (vaadinVersion.isEqualTo(packageVersion)
+                    && !vaadinVersion.isEqualTo(newVersion)) {
+                json.put(pkg, version);
+                added = true;
+                // if vaadin and package not the same, but new version is newer
+                // update package version.
+            } else if (newVersion.isNewerThan(packageVersion)) {
+                json.put(pkg, version);
+                added = true;
+            }
+        } else {
+            json.put(pkg, version);
+            added = true;
+        }
+        // always update vaadin version to the latest set version
+        vaadinDeps.put(pkg, version);
+
+        if (added) {
+            log().debug("Added \"{}\": \"{}\" line.", pkg, version);
+        }
+        return added ? 1 : 0;
     }
 
-    String writeAppPackageFile(JsonObject packageJson) throws IOException {
-        return writePackageFile(packageJson,
-                new File(generatedFolder, PACKAGE_JSON));
+    private static FrontendVersion toVersion(JsonObject json, String key) {
+        return new FrontendVersion(json.getString(key));
+    }
+
+    String writePackageFile(JsonObject packageJson) throws IOException {
+        return writePackageFile(packageJson, new File(npmFolder, PACKAGE_JSON));
     }
 
     String writeResourcesPackageFile(JsonObject packageJson) throws IOException {

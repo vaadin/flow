@@ -22,7 +22,7 @@ import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-public class FactoryExporterIT extends ChromeBrowserTest {
+public class FactoryExporterIT extends ChromeBrowserTest implements HasById {
 
     @Override
     protected String getTestPath() {
@@ -34,11 +34,8 @@ public class FactoryExporterIT extends ChromeBrowserTest {
         open();
 
         waitForElementVisible(By.id("interface"));
-        WebElement webComponent = findElement(By.id("interface"));
-        WebElement paragraph = webComponent.findElement(By.id("paragraph"));
+        WebElement paragraph = byId("interface", "paragraph");
 
-        Assert.assertNotNull("Correct tag should have been found",
-                webComponent);
         Assert.assertNotNull("Web component exported by interface based "
                 + "exporter should have been upgraded", paragraph);
     }

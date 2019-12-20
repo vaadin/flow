@@ -5,8 +5,6 @@ import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,7 +12,6 @@ import java.util.EventListener;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
@@ -30,9 +27,6 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.connect.generator.VaadinConnectClientGenerator;
 import com.vaadin.flow.server.frontend.FallbackChunk;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
@@ -117,7 +111,6 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     public void should_Run_Updaters_when_NoNodeConfFiles() throws Exception {
         webpackFile.delete();
         mainPackageFile.delete();
-        appPackageFile.delete();
         runOnStartup();
         assertNotNull(getDevModeHandler());
     }
@@ -132,7 +125,6 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
     @Test
     public void should_Run_Updaters_when_NoAppPackageFile() throws Exception {
-        appPackageFile.delete();
         runOnStartup();
         assertNotNull(getDevModeHandler());
     }
@@ -203,21 +195,6 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         Assert.assertFalse(fallbackChunk.getModules().contains("foo"));
 
         Assert.assertTrue(fallbackChunk.getModules().contains("bar"));
-    }
-
-    @Test
-    public void initDevModeHandler_usePolymerVersion() throws Exception {
-        DevModeInitializer devModeInitializer = new DevModeInitializer();
-        initParams.put(Constants.SERVLET_PARAMETER_DEVMODE_POLYMER_VERSION,
-                "3.3.0");
-        devModeInitializer.onStartup(Collections.emptySet(), servletContext);
-
-        String packageJson = Files
-                .readAllLines(mainPackageFile.toPath(), StandardCharsets.UTF_8)
-                .stream().collect(Collectors.joining());
-        JsonObject json = Json.parse(packageJson);
-        JsonObject deps = json.get("dependencies");
-        Assert.assertEquals("3.3.0", deps.getString("@polymer/polymer"));
     }
 
     @Test

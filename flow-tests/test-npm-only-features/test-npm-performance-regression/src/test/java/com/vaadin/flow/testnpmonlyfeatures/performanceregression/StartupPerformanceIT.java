@@ -34,8 +34,8 @@ public class StartupPerformanceIT {
                 ".*Time: .*[0-9]+ms", true);
 
         int npmInstallTime = measureLogEntryTimeDistance(
-                "- Running `npm install`",
-                "- package.json updated and npm dependencies installed",
+                "- Running `pnpm install`",
+                "- package.json updated and dependencies are installed",
                 false);
 
         int startupTimeWithoutNpmInstallTime = startupTime - npmInstallTime;

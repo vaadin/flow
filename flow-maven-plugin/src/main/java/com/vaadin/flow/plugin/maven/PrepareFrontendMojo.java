@@ -19,8 +19,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
@@ -39,7 +42,6 @@ import com.vaadin.flow.server.frontend.NodeTasks;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
-
 import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFinder;
 import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_GENERATED_TS_DIR_TOKEN;
@@ -120,27 +122,38 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         }
 
         try {
-            FrontendUtils.getNodeExecutable(npmFolder.getAbsolutePath());
-            FrontendUtils.getNpmExecutable(npmFolder.getAbsolutePath());
             FrontendUtils
                     .validateNodeAndNpmVersion(npmFolder.getAbsolutePath());
         } catch (IllegalStateException exception) {
             throw new MojoExecutionException(exception.getMessage(), exception);
         }
-
         try {
-            new NodeTasks.Builder(
-                    getClassFinder(project), npmFolder, generatedFolder,
-                    frontendDirectory)
+            FileUtils.forceMkdir(generatedFolder);
+        } catch (IOException e) {
+            throw new MojoFailureException(
+                    "Failed to create folder '" + generatedFolder
+                            + "'. Verify that you may write to path.", e);
+        }
+        try {
+            NodeTasks.Builder builder = new NodeTasks.Builder(getClassFinder(project), npmFolder,
+                    generatedFolder, frontendDirectory)
                             .withWebpack(webpackOutputDirectory,
                                     webpackTemplate, webpackGeneratedTemplate)
                             .enableClientSideMode(isClientSideMode())
                             .withFlowResourcesFolder(flowResourcesFolder)
                             .createMissingPackageJson(true)
                             .enableImportsUpdate(false)
-                            .enablePackagesUpdate(false)
-                            .runNpmInstall(false)
-                            .build().execute();
+                            .enablePackagesUpdate(false).runNpmInstall(false);
+            // If building a jar project copy jar artifact contents now as we might
+            // not be able to read files from jar path.
+            if("jar".equals(project.getPackaging())) {
+                Set<File> jarFiles = project.getArtifacts().stream()
+                        .filter(artifact -> "jar".equals(artifact.getType()))
+                        .map(Artifact::getFile).collect(Collectors.toSet());
+                builder.copyResources(jarFiles);
+            }
+
+            builder.build().execute();
         } catch (ExecutionFailedException exception) {
             throw new MojoFailureException(
                     "Could not execute prepare-frontend goal.", exception);

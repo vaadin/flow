@@ -548,7 +548,7 @@ public class UIInternals implements Serializable {
         List<E> registeredListeners = (List<E>) listeners
                 .computeIfAbsent(handler, key -> new ArrayList<>());
 
-        return Collections.unmodifiableList(registeredListeners);
+        return Collections.unmodifiableList(new ArrayList<>(registeredListeners));
     }
 
     /**

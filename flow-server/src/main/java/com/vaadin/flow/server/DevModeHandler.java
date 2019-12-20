@@ -48,7 +48,12 @@ import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
+import static com.vaadin.flow.server.frontend.FrontendUtils.GREEN;
+import static com.vaadin.flow.server.frontend.FrontendUtils.RED;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
+import static com.vaadin.flow.server.frontend.FrontendUtils.YELLOW;
+import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
+import static com.vaadin.flow.server.frontend.FrontendUtils.console;
 import static com.vaadin.flow.server.frontend.FrontendUtils.getNodeExecutable;
 import static com.vaadin.flow.server.frontend.FrontendUtils.validateNodeAndNpmVersion;
 import static java.lang.String.format;
@@ -80,9 +85,6 @@ public final class DevModeHandler {
     private static final String SUCCEED_MSG = "\n----------------- Frontend compiled successfully. -----------------\n\n";
     private static final String START = "\n------------------ Starting Frontend compilation. ------------------\n\n";
     private static final String END = "\n------------------------- Webpack stopped  -------------------------\n";
-    private static final String YELLOW = "\u001b[38;5;111m%s\u001b[0m";
-    private static final String RED = "\u001b[38;5;196m%s\u001b[0m";
-    private static final String GREEN = "\u001b[38;5;35m%s\u001b[0m";
 
     // If after this time in millisecs, the pattern was not found, we unlock the
     // process and continue. It might happen if webpack changes their output
@@ -157,6 +159,9 @@ public final class DevModeHandler {
                         "-d --inline=false --progress --colors")
                 .split(" +")));
 
+        console(GREEN, START);
+        console(YELLOW, commandToString(npmFolder.getAbsolutePath(), command));
+
         processBuilder.command(command);
         try {
             webpackProcess = processBuilder
@@ -186,7 +191,8 @@ public final class DevModeHandler {
 
             logStream(webpackProcess.getInputStream(), succeed, failure);
 
-            getLogger().info("Waiting for webpack compilation before proceeding.");
+            getLogger()
+                    .info("Waiting for webpack compilation before proceeding.");
             synchronized (this) {
                 this.wait(Integer.parseInt(config.getStringProperty( // NOSONAR
                         SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT,
@@ -199,9 +205,9 @@ public final class DevModeHandler {
             if (!webpackProcess.isAlive()) {
                 throw new IllegalStateException("Webpack exited prematurely");
             }
-            getLogger()
-                    .info("Webpack startup and compilation completed in {}ms",
-                            (System.currentTimeMillis() - start));
+            getLogger().info(
+                    "Webpack startup and compilation completed in {}ms",
+                    (System.currentTimeMillis() - start));
         } catch (IOException | InterruptedException e) {
             getLogger().error("Failed to start the webpack process", e);
         }
@@ -488,7 +494,7 @@ public final class DevModeHandler {
             }
             // save output in case of failure
             failedOutput = failed ? cumulativeOutput.toString() : null;
-            
+
             // reset cumulative buffer for the next compilation
             cumulativeOutput = new StringBuilder();
 
@@ -634,11 +640,5 @@ public final class DevModeHandler {
 
         atomicHandler.set(null);
         removeRunningDevServerPort();
-    }
-
-    @SuppressWarnings("squid:S106")
-    private static void console(String format, Object s) {
-        // intentionally send to console instead to log
-        System.out.print(format(format, s));
     }
 }

@@ -8,6 +8,7 @@ class _TagCamel_ extends HTMLElement {
     var style = document.createElement("style");
     style.innerHTML = `
       :host {
+        position: relative;
         display: inline-block;
       }
     `;

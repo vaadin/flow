@@ -31,6 +31,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import elemental.json.JsonObject;
+import elemental.json.impl.JsonUtil;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 
@@ -67,14 +68,13 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
 
     @Test
     public void should_createPackageJson() throws IOException {
-        TaskCreatePackageJson task = new TaskCreatePackageJson(npmFolder, generatedFolder, frontendDepsFolder, "latest");
+        TaskCreatePackageJson task = new TaskCreatePackageJson(npmFolder, generatedFolder, frontendDepsFolder);
         task.execute();
         Assert.assertTrue(new File(npmFolder, PACKAGE_JSON).exists());
-        Assert.assertTrue(new File(generatedFolder, PACKAGE_JSON).exists());
+        Assert.assertFalse(new File(generatedFolder, PACKAGE_JSON).exists());
         Assert.assertTrue(new File(frontendDepsFolder, PACKAGE_JSON).exists());
-        JsonObject deps = task.getMainPackageJson().getObject("dependencies");
-        Assert.assertTrue(deps.hasKey("@vaadin/flow-deps"));
-        Assert.assertTrue(deps.hasKey("@vaadin/flow-frontend"));
+        JsonObject deps = task.getPackageJson().getObject("dependencies");
+        Assert.assertFalse(deps.hasKey("@vaadin/flow-deps"));
     }
 
     private void should_collectJsAndCssFilesFromJars(String jarFile,

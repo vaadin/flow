@@ -79,6 +79,10 @@
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <configuration>
                     <dependenciesToScan>com.vaadin:flow-embedding-test-assets</dependenciesToScan>
+                    <excludes>
+                        <!-- NpmOnly test shouldn't be run under compatibility mode! -->
+                        <exclude>**/NpmOnlyIndexIT.java</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
 

@@ -18,11 +18,16 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.shared.util.SharedUtil;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.YELLOW;
+import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
+import static com.vaadin.flow.server.frontend.FrontendUtils.console;
 
 /**
  * Run <code>npm install</code> after dependencies have been updated.
@@ -31,10 +36,11 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAM
  */
 public class TaskRunNpmInstall implements FallibleCommand {
 
-    static final String SKIPPING_NPM_INSTALL = "Skipping `npm install`.";
-    static final String RUNNING_NPM_INSTALL = "Running `npm install` ...";
-
     private final NodeUpdater packageUpdater;
+
+    private final List<String> ignoredNodeFolders = Arrays
+            .asList(".bin", "pnpm", ".ignored_pnpm", ".pnpm", ".modules.yaml");
+    private final boolean disablePnpm;
 
     /**
      * Create an instance of the command.
@@ -43,24 +49,28 @@ public class TaskRunNpmInstall implements FallibleCommand {
      *            package-updater instance used for checking if previous
      *            execution modified the package.json file
      */
-    TaskRunNpmInstall(NodeUpdater packageUpdater) {
+    TaskRunNpmInstall(NodeUpdater packageUpdater, boolean disablePnpm) {
         this.packageUpdater = packageUpdater;
+        this.disablePnpm = disablePnpm;
     }
 
     @Override
     public void execute() throws ExecutionFailedException {
+        String toolName = disablePnpm ? "npm" : "pnpm";
         if (packageUpdater.modified || shouldRunNpmInstall()) {
-            packageUpdater.log().info(RUNNING_NPM_INSTALL);
+            packageUpdater.log().info("Running `" + toolName + " install` ...");
             runNpmInstall();
         } else {
-            packageUpdater.log().info(SKIPPING_NPM_INSTALL);
+            packageUpdater.log().info("Skipping `" + toolName + " install`.");
         }
     }
 
     private boolean shouldRunNpmInstall() {
         if (packageUpdater.nodeModulesFolder.isDirectory()) {
+            // Ignore .bin and pnpm folders as those are always installed for
+            // pnpm execution
             File[] installedPackages = packageUpdater.nodeModulesFolder
-                    .listFiles();
+                    .listFiles((dir, name) -> !ignoredNodeFolders.contains(name));
             assert installedPackages != null;
             return installedPackages.length == 0
                     || (installedPackages.length == 1 && FLOW_NPM_PACKAGE_NAME
@@ -70,42 +80,55 @@ public class TaskRunNpmInstall implements FallibleCommand {
     }
 
     /**
-     * Executes `npm install` after `package.json` has been updated.
+     * Installs frontend resources (using either pnpm or npm) after
+     * `package.json` has been updated.
      */
     private void runNpmInstall() throws ExecutionFailedException {
-        List<String> npmExecutable;
+        List<String> executable;
+        String baseDir = packageUpdater.npmFolder.getAbsolutePath();
         try {
-            npmExecutable = FrontendUtils.getNpmExecutable(
-                    packageUpdater.npmFolder.getAbsolutePath());
+            executable = disablePnpm ? FrontendUtils.getNpmExecutable(baseDir)
+                    : FrontendUtils.getPnpmExecutable(baseDir);
         } catch (IllegalStateException exception) {
             throw new ExecutionFailedException(exception.getMessage(),
                     exception);
         }
-        List<String> command = new ArrayList<>(npmExecutable);
+        List<String> command = new ArrayList<>(executable);
         command.add("install");
+
+        console(YELLOW, commandToString(
+                packageUpdater.npmFolder.getAbsolutePath(), command));
 
         ProcessBuilder builder = FrontendUtils.createProcessBuilder(command);
         builder.environment().put("ADBLOCK", "1");
         builder.directory(packageUpdater.npmFolder);
 
+        String toolName = disablePnpm ? "npm" : "pnpm";
+
         Process process = null;
         try {
+
             process = builder.inheritIO().start();
             int errorCode = process.waitFor();
             if (errorCode != 0) {
                 packageUpdater.log().error(
-                        ">>> Dependency ERROR. Check that all required dependencies are deployed in npm repositories.");
+                        ">>> Dependency ERROR. Check that all required dependencies are "
+                                + "deployed in {} repositories.",
+                        toolName);
                 throw new ExecutionFailedException(
-                        "Npm install has exited with non zero status. "
-                                + "Some dependencies are not installed. Check npm command output");
+                        SharedUtil.capitalize(toolName)
+                                + " install has exited with non zero status. "
+                                + "Some dependencies are not installed. Check "
+                                + toolName + " command output");
             } else {
                 packageUpdater.log().info(
-                        "package.json updated and npm dependencies installed. ");
+                        "package.json updated and dependencies are installed. ");
             }
         } catch (InterruptedException | IOException e) {
-            packageUpdater.log().error("Error when running `npm install`", e);
+            packageUpdater.log().error("Error when running `{} install`",
+                    toolName, e);
             throw new ExecutionFailedException(
-                    "Command 'npm install' failed to finish", e);
+                    "Command '" + toolName + " install' failed to finish", e);
         } finally {
             if (process != null) {
                 process.destroyForcibly();

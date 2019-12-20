@@ -196,7 +196,7 @@ public class NodeTestComponents extends NodeUpdateTestUtil {
         }
     }
 
-    @NpmPackage(value = "@webcomponents/webcomponentsjs", version = "2.2.9")
+    @NpmPackage(value = "@webcomponents/webcomponentsjs", version = "2.2.10")
     public static class ExtraImport {
     }
 
