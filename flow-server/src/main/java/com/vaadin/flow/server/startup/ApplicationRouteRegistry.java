@@ -16,6 +16,8 @@
 package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletContext;
+import java.io.Serializable;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -257,6 +259,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
         errorNavigationTargets.stream()
                 .filter(target -> !defaultErrorHandlers.contains(target))
                 .filter(this::allErrorFiltersMatch)
+                .filter(handler -> !Modifier.isAbstract(handler.getModifiers()))
                 .forEach(target -> addErrorTarget(target, exceptionTargetsMap));
 
         initErrorTargets(exceptionTargetsMap);
