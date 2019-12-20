@@ -248,10 +248,9 @@ public class VaadinAppShellInitializerTest {
 
     private HttpServletRequest createRequest(String pathInfo) {
         HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
-        Mockito.doAnswer(invocation -> "").when(request).getServletPath();
-        Mockito.doAnswer(invocation -> pathInfo).when(request).getPathInfo();
-        Mockito.doAnswer(invocation -> new StringBuffer(pathInfo)).when(request)
-                .getRequestURL();
+        Mockito.when(request.getServletPath()).thenReturn("");
+        Mockito.when(request.getPathInfo()).thenReturn(pathInfo);
+        Mockito.when(request.getRequestURL()).thenReturn(new StringBuffer(pathInfo));
         return request;
     }
 }

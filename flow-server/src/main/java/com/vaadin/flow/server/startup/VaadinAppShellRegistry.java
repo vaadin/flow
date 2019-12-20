@@ -28,6 +28,7 @@ import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.*;
 import com.vaadin.flow.shared.ui.Dependency;
 import elemental.json.JsonObject;
+import elemental.json.impl.JsonUtil;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
@@ -228,6 +229,16 @@ public class VaadinAppShellRegistry implements Serializable {
         }
     }
 
+    /**
+     * Modifies the `index.html` document based on the {@link VaadinAppShell}
+     * annotations.
+     *
+     * @param document a JSoup document for the index.html page
+     * @param session
+     *            The session for the request
+     * @param request
+     *            The request to handle
+     */
     public void modifyIndexHtmlResponeWithInline(Document document, VaadinSession session, VaadinRequest request) {
         getInlineTargets(request).ifPresent(targets -> handleInlineTargets(session, request, document.head(), document.body(), targets));
     }
@@ -272,8 +283,7 @@ public class VaadinAppShellRegistry implements Serializable {
 
         if (dependencyElement != null) {
             dependencyElement.appendChild(new DataNode(
-                    dependency.getString(Dependency.KEY_CONTENTS),
-                    dependencyElement.baseUri()));
+                    dependency.getString(Dependency.KEY_CONTENTS)));
         }
 
         return dependencyElement;

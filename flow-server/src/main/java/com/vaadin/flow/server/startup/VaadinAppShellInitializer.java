@@ -50,7 +50,8 @@ import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
  *
  * @since 3.0
  */
-@HandlesTypes({ VaadinAppShell.class, Meta.class, Meta.Container.class, PWA.class, Inline.class, Inline.Container.class, Viewport.class, BodySize.class})
+@HandlesTypes({ VaadinAppShell.class, Meta.class, Meta.Container.class,
+        PWA.class, Inline.class, Inline.Container.class, Viewport.class, BodySize.class})
 @WebListener
 public class VaadinAppShellInitializer implements ServletContainerInitializer,
         Serializable {
