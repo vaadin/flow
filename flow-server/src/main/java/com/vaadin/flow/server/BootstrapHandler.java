@@ -81,7 +81,6 @@ import elemental.json.JsonObject;
 import elemental.json.JsonType;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
-
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -588,11 +587,17 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             if (devMode != null) {
                 String errorMsg = devMode.getFailedOutput();
                 if (errorMsg != null) {
+                    Element errorElement = document.createElement("div");
+                    errorElement.setBaseUri("");
+                    errorElement.attr("class", "v-system-error");
+                    errorElement.attr("onclick",
+                            "this.parentElement.removeChild(this)");
+                    errorElement
+                            .html("<h3 style=\"display:inline;\">Webpack Error</h3>"
+                                    + "<h6 style=\"display:inline; padding-left:10px;\">Click to close</h6>"
+                                    + "<pre>" + errorMsg + "</pre>");
                     document.body()
-                            .appendChild(new Element(Tag.valueOf("div"), "")
-                                    .attr("class", "v-system-error")
-                                    .html("<h3>Webpack Error</h3><pre>"
-                                            + errorMsg + "</pre>"));
+                            .appendChild(errorElement);
                 }
             }
         }
