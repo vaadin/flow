@@ -39,6 +39,7 @@ export interface NavigationCommands {
 }
 
 const $wnd = window as any;
+let isActive = false;
 
 /**
  * Client API for flow UI operations.
@@ -54,6 +55,7 @@ export class Flow {
 
   private baseRegex = /^\//;
 
+
   constructor(config?: FlowConfig) {
     this.flowRoot.$ = this.flowRoot.$ || {};
     this.config = config || {};
@@ -62,14 +64,13 @@ export class Flow {
     // to consider that TB needs to wait for `initFlow()`.
     $wnd.Vaadin = $wnd.Vaadin || {};
     if (!$wnd.Vaadin.Flow) {
-      let waiting = true;
       $wnd.Vaadin.Flow = {
-        clients: { clientBootstrap: { isActive: () => waiting } }
+        clients: {
+          TypeScript: {
+            isActive: () => isActive
+          }
+        }
       };
-      // When first route is server-side, flow is loaded asynchronously
-      // via call to `initFlow()`, thus it waits for a while for the
-      // call to happen, otherwise first route is client-side.
-      setTimeout(() => waiting = false, 500);
     }
 
     // Regular expression used to remove the app-context
@@ -78,27 +79,6 @@ export class Flow {
       // IE11 does not support document.baseURI
       (document.baseURI || elm && elm.href || '/')
         .replace(/^https?:\/\/[^\/]+/i, ''));
-  }
-
-  /**
-   * Initialize flow in full page mode and with server side routing.
-   */
-  async start(): Promise<void> {
-    await this.flowInit(true);
-  }
-
-  /**
-   * Go to a route defined in server.
-   *
-   * This is a generic API for non `vaadin-router` applications.
-   */
-  get navigate(): (params: NavigationParameters) => Promise<HTMLElement> {
-    // Return a function which is bound to the flow instance
-    return async (params: NavigationParameters) => {
-      await this.flowInit();
-      delete this.container.onBeforeEnter;
-      return this.flowNavigate(params);
-    }
   }
 
   /**
@@ -122,6 +102,8 @@ export class Flow {
     // the syntax `...serverSideRoutes` in vaadin-router.
     // @ts-ignore
     return async (params: NavigationParameters) => {
+      // flag used to inform Testbench whether a server route is in progress
+      isActive = true;
 
       // Store last action pathname so as we can check it in events
       this.pathname = params.pathname;
@@ -151,6 +133,8 @@ export class Flow {
       // The callback to run from server side to cancel navigation
       this.container.serverConnected = cancel => {
         resolve(cmd && cancel ? cmd.prevent() : {});
+        // Make Testbench know that server request has finished
+        isActive = false;
       }
 
       // Call server side to check whether we can leave the view
@@ -163,8 +147,16 @@ export class Flow {
   private async flowNavigate(ctx: NavigationParameters, cmd?: NavigationCommands): Promise<HTMLElement> {
     return new Promise(resolve => {
       // The callback to run from server side once the view is ready
-      this.container.serverConnected = cancel =>
-        resolve(cmd && cancel ? cmd.prevent() : this.container);
+      this.container.serverConnected = cancel => {
+        if (cmd && cancel) {
+          resolve(cmd.prevent());
+        } else {
+          this.container.style.display = '';
+          resolve(this.container);
+        }
+        // Make Testbench know that navigation finished
+        isActive = false;
+      };
 
       // Call server side to navigate to the given route
       this.flowRoot.$server
@@ -180,9 +172,6 @@ export class Flow {
   private async flowInit(serverSideRouting = false): Promise<AppInitResponse> {
     // Do not start flow twice
     if (!this.response) {
-      // remove constructor workaround for TB
-      delete $wnd.Vaadin.Flow.clients;
-
       // Initialize server side UI
       this.response = await this.flowInitUi(serverSideRouting);
 
@@ -210,6 +199,12 @@ export class Flow {
         const tag = `flow-container-${id.toLowerCase()}`;
         this.container = this.flowRoot.$[id] = document.createElement(tag);
         this.container.id = id;
+
+        // It might be that components created from server expect that their content has been rendered.
+        // Appending eagerly the container we avoid these kind of errors.
+        // Note that the client router will move this container to the outlet if the navigation succeed
+        this.container.style.display = 'none';
+        document.body.appendChild(this.container);
       }
     }
     return this.response;
@@ -231,8 +226,9 @@ export class Flow {
     // client init is async, we need to loop until initialized
     return new Promise(resolve => {
       const intervalId = setInterval(() => {
-        // client `isActive() == true` while initializing
+        // client `isActive() == true` while initializing or processing
         const initializing = Object.keys($wnd.Vaadin.Flow.clients)
+          .filter(key => key !== 'TypeScript')
           .reduce((prev, id) => prev || $wnd.Vaadin.Flow.clients[id].isActive(), false);
         if (!initializing) {
           clearInterval(intervalId);

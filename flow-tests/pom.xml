@@ -260,7 +260,6 @@
                 <module>test-multi-war</module>
                 <module>test-ccdm</module>
                 <module>test-ccdm/pom-production.xml</module>                
-                <module>test-ccdm-connect</module>
 
                 <!-- This test fails in local -->
                 <module>test-root-context</module>

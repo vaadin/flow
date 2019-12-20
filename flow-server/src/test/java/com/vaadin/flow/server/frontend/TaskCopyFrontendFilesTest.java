@@ -75,7 +75,6 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
         Assert.assertTrue(new File(frontendDepsFolder, PACKAGE_JSON).exists());
         JsonObject deps = task.getPackageJson().getObject("dependencies");
         Assert.assertFalse(deps.hasKey("@vaadin/flow-deps"));
-        Assert.assertFalse(deps.hasKey("@vaadin/flow-frontend"));
     }
 
     private void should_collectJsAndCssFilesFromJars(String jarFile,

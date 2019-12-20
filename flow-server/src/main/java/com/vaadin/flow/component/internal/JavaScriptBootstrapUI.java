@@ -17,9 +17,12 @@ package com.vaadin.flow.component.internal;
 
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.Stream.Builder;
 
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
@@ -47,14 +50,36 @@ import com.vaadin.flow.theme.ThemeDefinition;
 public class JavaScriptBootstrapUI extends UI {
     public static final String SERVER_ROUTING = "clientRoutingMode";
 
+    static final String CLIENT_PUSHSTATE_TO =
+            "setTimeout(() => window.history.pushState(null, '', $0))";
+    static final String CLIENT_NAVIGATE_TO =
+            "window.dispatchEvent(new CustomEvent('vaadin-router-go', {detail: new URL($0, document.baseURI)}))";
+
     Element wrapperElement;
     private NavigationState clientViewNavigationState;
+    private boolean navigationInProgress = false;
 
     /**
      * Create UI for clientSideMode.
      */
     public JavaScriptBootstrapUI() {
         super(new JavaScriptUIInternalUpdater());
+    }
+
+    @Override
+    public Stream<Component> getChildren() {
+        // server-side routing
+        if (wrapperElement == null) {
+            return super.getChildren();
+        }
+
+        // client-side routing,
+        // since virtual child is used, it is necessary to change the original
+        // UI element to the wrapperElement
+        Builder<Component> childComponents = Stream.builder();
+        wrapperElement.getChildren().forEach(childElement -> ComponentUtil
+                .findComponents(childElement, childComponents::add));
+        return childComponents.build();
     }
 
     /**
@@ -119,14 +144,13 @@ public class JavaScriptBootstrapUI extends UI {
     }
 
     private boolean renderViewForRoute(Location location) {
-        Optional<NavigationState> navigationState = this.getRouter()
-                .resolveNavigationTarget(location);
         if (!shouldHandleNavigation(location)) {
             return false;
         }
-
         try {
             getInternals().setLastHandledNavigation(location);
+            Optional<NavigationState> navigationState = this.getRouter()
+                    .resolveNavigationTarget(location);
             if (navigationState.isPresent()) {
                 // There is a valid route in flow.
                 return handleNavigation(location, navigationState.get());
@@ -146,19 +170,25 @@ public class JavaScriptBootstrapUI extends UI {
             getInternals().clearLastHandledNavigation();
         }
         return false;
-
     }
 
     private boolean shouldHandleNavigation(Location location) {
-        if (getInternals().hasLastHandledLocation()) {
-            return !location.getPathWithQueryParameters().equals(getInternals()
-                    .getLastHandledLocation().getPathWithQueryParameters());
-        }
-        return true;
+        return !getInternals().hasLastHandledLocation() || !sameLocation(
+                getInternals().getLastHandledLocation(), location);
+    }
+
+    private boolean sameLocation(Location oldLocation, Location newLocation) {
+        return removeLastSlash(newLocation.getPathWithQueryParameters())
+                .equals(removeLastSlash(
+                        oldLocation.getPathWithQueryParameters()));
     }
 
     private String removeFirstSlash(String route) {
         return route.replaceFirst("^/+", "");
+    }
+
+    private String removeLastSlash(String route) {
+        return route.replaceFirst("/+$", "");
     }
 
     private boolean handleNavigation(Location location,
@@ -207,11 +237,34 @@ public class JavaScriptBootstrapUI extends UI {
             renderViewForRoute(location);
         } else {
             // client-side routing
-            getPage().executeJs(
-                    "window.dispatchEvent(new CustomEvent('vaadin-router-go',"
-                            + " {detail: new URL($0, document.baseURI)}))",
-                    location.getPathWithQueryParameters()
-            );
+
+            // There is an in-progress navigation or there are no changes,
+            // prevent looping
+            if (navigationInProgress
+                    || getInternals().hasLastHandledLocation() && sameLocation(
+                            getInternals().getLastHandledLocation(),
+                            location)) {
+                return;
+            }
+
+            navigationInProgress = true;
+            String execJs;
+            NavigationState navigationState = this.getRouter()
+                    .resolveNavigationTarget(location).orElse(null);
+
+            if (navigationState != null) {
+                // Navigation can be done in server side without extra round-trip
+                handleNavigation(location, navigationState);
+
+                // Update browser URL but do not fire client-side navigation
+                execJs = CLIENT_PUSHSTATE_TO;
+            } else {
+
+                // Server cannot resolve navigation, let client-side to handle it
+                execJs = CLIENT_NAVIGATE_TO;
+            }
+            navigationInProgress = false;
+            getPage().executeJs(execJs, location.getPathWithQueryParameters());
         }
     }
 

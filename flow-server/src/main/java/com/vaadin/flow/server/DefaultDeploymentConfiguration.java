@@ -72,6 +72,10 @@ public class DefaultDeploymentConfiguration
             + "and \"automatic\". The default of \"disabled\" will be used."
             + SEPARATOR;
 
+    private static final String INDEX_NOT_FOUND =
+            "- '%s' is not found from '%s'. Generating a default one in '%s%s'.%n"
+            + "Copy this file to the '%s' folder if you want to customize it.%n";
+
     /**
      * Default value for {@link #getHeartbeatInterval()} = {@value} .
      */
@@ -162,7 +166,7 @@ public class DefaultDeploymentConfiguration
 
     /**
      * {@inheritDoc} The default is true.
-     * 
+     *
      */
     @Override
     public boolean isClientSideMode() {
@@ -324,10 +328,9 @@ public class DefaultDeploymentConfiguration
         File indexEntryTs = new File(frontendDir, INDEX_TS);
         String entryPointMessage;
         if (!indexEntry.exists() && !indexEntryTs.exists()) {
-            entryPointMessage = String.format(
-                    "- 'index.ts' (index.js) is not found from '%s'. Using default '%sindex.js'.%n" +
-                            "  Please follow the instruction in the default file for customization if necessary.",
-                    indexEntry.getPath(), TARGET);
+            entryPointMessage = String.format(INDEX_NOT_FOUND,
+                    indexEntryTs.getName(), indexEntryTs.getPath(), TARGET,
+                    indexEntryTs.getName(), indexEntryTs.getParentFile().getPath());
         } else {
             String fileName = indexEntry.exists() ? "index.js" : "index.ts";
             String filePath = indexEntry.exists() ? indexEntry.getPath()
@@ -343,10 +346,9 @@ public class DefaultDeploymentConfiguration
 
         String indexHTMLMessage;
         if (!indexHTML.exists()) {
-            indexHTMLMessage = String.format(
-                    "- 'index.html' is not found from '%s'. Using default '%sindex.html'.%n" +
-                            "  Please follow the instruction in the default file for customization if necessary.%n%n",
-                    indexHTML.getPath(), TARGET);
+            indexHTMLMessage = String.format(INDEX_NOT_FOUND,
+                    indexHTML.getName(), indexHTML.getPath(), TARGET,
+                    indexHTML.getName(), indexHTML.getParentFile().getPath());
         } else {
             indexHTMLMessage = String.format("Using 'index.html' from '%s'%n",
                     indexHTML.getPath());

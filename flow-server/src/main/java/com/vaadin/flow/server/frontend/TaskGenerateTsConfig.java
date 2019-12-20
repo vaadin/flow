@@ -18,9 +18,9 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
 import org.apache.commons.io.IOUtils;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -32,8 +32,9 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
 
     private static final String TSCONFIG_JSON = "tsconfig.json";
-    private File frontendFolder;
-    private File npmFolder;
+    private final File frontendFolder;
+    private final File npmFolder;
+    private final File outputDirectory;
 
     /**
      * Create a task to generate <code>tsconfig.json</code> file.
@@ -43,10 +44,13 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
      *            not.
      * @param npmFolder
      *            project folder where the file will be generated.
+     * @param outputDirectory
+     *            the output directory of the generated index.ts file
      */
-    TaskGenerateTsConfig(File frontendFolder, File npmFolder) {
+    TaskGenerateTsConfig(File frontendFolder, File npmFolder, File outputDirectory) {
         this.frontendFolder = frontendFolder;
         this.npmFolder = npmFolder;
+        this.outputDirectory = outputDirectory;
     }
 
     @Override
@@ -64,6 +68,7 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
     protected boolean shouldGenerate() {
         File tsConfigFile = new File(npmFolder, TSCONFIG_JSON);
         return !tsConfigFile.exists()
-                && new File(frontendFolder, INDEX_TS).exists();
+                && new File(frontendFolder, INDEX_TS).exists()
+                || new File(outputDirectory, INDEX_TS).exists();
     }
 }

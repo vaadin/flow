@@ -29,7 +29,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  *
  * @since 3.0
  */
-public class TaskGenerateIndexJs extends AbstractTaskClientGenerator {
+public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
 
     private final File frontendDirectory;
     private File generatedImports;
@@ -47,7 +47,7 @@ public class TaskGenerateIndexJs extends AbstractTaskClientGenerator {
      * @param outputDirectory
      *            the output directory of the generated file
      */
-    TaskGenerateIndexJs(File frontendDirectory, File generatedImports,
+    TaskGenerateIndexTs(File frontendDirectory, File generatedImports,
             File outputDirectory) {
         this.frontendDirectory = frontendDirectory;
         this.generatedImports = generatedImports;
@@ -56,7 +56,7 @@ public class TaskGenerateIndexJs extends AbstractTaskClientGenerator {
 
     @Override
     protected File getGeneratedFile() {
-        return new File(outputDirectory, INDEX_JS);
+        return new File(outputDirectory, INDEX_TS);
     }
 
     @Override
@@ -69,10 +69,18 @@ public class TaskGenerateIndexJs extends AbstractTaskClientGenerator {
     @Override
     protected String getFileContent() throws IOException {
         String indexTemplate = IOUtils
-                .toString(getClass().getResourceAsStream(INDEX_JS), UTF_8);
+                .toString(getClass().getResourceAsStream(INDEX_TS), UTF_8);
         String relativizedImport = ensureValidRelativePath(
                 FrontendUtils.getUnixRelativePath(outputDirectory.toPath(),
                         generatedImports.toPath()));
+
+        relativizedImport = relativizedImport
+                // replace `./frontend/` with `../target/frontend/`
+                // so as it can be copied to `frontend` without changes.
+                .replaceFirst("^./", "../" + outputDirectory.getName() + "/")
+                // remove extension
+                .replaceFirst("\\.(ts|js)$", "");
+
         return indexTemplate.replace("[to-be-generated-by-flow]",
                 relativizedImport);
     }
@@ -80,7 +88,7 @@ public class TaskGenerateIndexJs extends AbstractTaskClientGenerator {
     /**
      * Ensure that the given relative path is valid as an import path. NOTE:
      * expose only for testing purpose.
-     * 
+     *
      * @param relativePath
      *            given relative path
      * @return valid import path

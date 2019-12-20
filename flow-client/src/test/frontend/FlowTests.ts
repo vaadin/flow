@@ -117,15 +117,14 @@ suite("Flow", () => {
     assert.isDefined($wnd.Vaadin.Flow);
   });
 
-  test("should initialize Flow server navigation when calling start()", () => {
+  test("should initialize Flow server navigation when calling flowInit(true)", () => {
     assert.isUndefined($wnd.Vaadin);
 
     stubServerRemoteFunction('FooBar-12345');
     mockInitResponse('FooBar-12345', changesResponse);
 
     const flow = new Flow();
-    return flow
-      .start()
+    return (flow as any).flowInit(true)
       .then(() => {
         assert.isDefined(flow.response);
         assert.isDefined(flow.response.appConfig);
@@ -145,15 +144,14 @@ suite("Flow", () => {
       });
   });
 
-  test("should initialize UI when calling start()", () => {
+  test("should initialize UI when calling flowInit(true)", () => {
     assert.isUndefined($wnd.Vaadin);
 
     const initial = createInitResponse('FooBar-12345');
     $wnd.Vaadin = {Flow: {initial: JSON.parse(initial)}};
 
     const flow = new Flow();
-    return flow
-      .start()
+    return (flow as any).flowInit(true)
       .then(() => {
         assert.isDefined(flow.response);
         assert.isDefined(flow.response.appConfig);
@@ -177,7 +175,7 @@ suite("Flow", () => {
       });
   });
 
-  test("should inject appId script when calling start() with custom config.imports", () => {
+  test("should inject appId script when calling flowInit(true) with custom config.imports", () => {
       assert.isUndefined($wnd.Vaadin);
 
       const initial = createInitResponse('FooBar-12345');
@@ -186,8 +184,7 @@ suite("Flow", () => {
       const flow = new Flow({
         imports: () => {}
       });
-      return flow
-        .start()
+      return (flow as any).flowInit(true)
         .then(() => {
           assert.isDefined(flow.response);
           assert.isDefined(flow.response.appConfig);
@@ -222,8 +219,7 @@ suite("Flow", () => {
         .body(`Unexpected Server Error`);
     });
 
-    return new Flow()
-      .start()
+    return (new Flow() as any).flowInit(true)
       .then(() => {
         throw new Error('Should not happen');
       })
@@ -232,13 +228,18 @@ suite("Flow", () => {
       });
   });
 
-  test("should connect client and server on navigation", () => {
+  test("should connect client and server on route action", () => {
     stubServerRemoteFunction('foobar-1111111');
     mockInitResponse('foobar-1111111');
 
     const flow = new Flow();
-    return flow
-      .navigate({pathname: "Foo/Bar.baz"})
+    // Check that the Flow puts a client object for TypeScript
+    assert.isDefined($wnd.Vaadin.Flow.clients.TypeScript.isActive);
+    assert.isFalse($wnd.Vaadin.Flow.clients.TypeScript.isActive());
+
+    const route = flow.serverSideRoutes[0];
+    return route
+      .action({pathname: "Foo/Bar.baz"})
       .then(() => {
         // Check that flowInit() was called
         assert.isDefined(flow.response);
@@ -253,6 +254,10 @@ suite("Flow", () => {
         // Assert that element was created amd put in flowRoot so as server can find it
         assert.isDefined(flowRoot.$);
         assert.isDefined(flowRoot.$['foobar-1111111']);
+
+        // When calling action TypeScript.isActive should be true,
+        // since navigation has not been called yet
+        assert.isTrue($wnd.Vaadin.Flow.clients.TypeScript.isActive());
       });
   });
 
@@ -262,39 +267,29 @@ suite("Flow", () => {
 
     const flow = new Flow();
     flow['baseRegex'] = /^\/foo\//;
+    const route = flow.serverSideRoutes[0];
 
-    return flow
-      .navigate({pathname: "/foo/Foo/Bar.baz"})
+    return route
+      .action({pathname: "/foo/Foo/Bar.baz"})
       .then(() => {
         assert.isDefined(flow.response);
       });
   });
 
-  test("should bind Flow navigate function to the flow context", () => {
+  test("should bind Flow serverSideRoutes function to the flow context", () => {
     // A mock class for router
     class TestRouter {
-      config: any;
-
-      constructor(config: any) {
-        this.config = config;
-      }
-
-      navigate(params: any) : Promise<HTMLElement> {
-        return this.config.navigate(params);
-      }
+      routes: []
     }
 
     stubServerRemoteFunction('ROOT-12345');
     mockInitResponse('ROOT-12345');
 
-    const flow = new Flow();
-    const router = new TestRouter ({
-      // we'd rather this API syntax instead of () => flow.navigate();
-      navigate: flow.navigate
-    });
+    const router = new TestRouter ();
+    router.routes = new Flow().serverSideRoutes;
 
     return router
-      .navigate({pathname: 'another-route'})
+      .routes[0].action({pathname: 'another-route'})
       .then(elem => {
         assert.isDefined(elem);
       });
@@ -304,12 +299,13 @@ suite("Flow", () => {
     stubServerRemoteFunction('ROOT-12345');
     mockInitResponse('ROOT-12345');
 
-    const flow = new Flow();
-    return flow
-      .navigate({pathname: "Foo"})
+    const route = new Flow().serverSideRoutes[0];
+
+    return route
+      .action({pathname: "Foo"})
       .then(e1 => {
-        return flow
-          .navigate({pathname: "Bar"})
+        return route
+          .action({pathname: "Bar"})
           .then(e2 => {
             assert.equal(1, Object.keys(flowRoot.$).length);
             assert.equal(e1, e2);
@@ -339,8 +335,15 @@ suite("Flow", () => {
 
         // When using router API, it should expose the onBeforeEnter handler
         assert.isDefined(elem.onBeforeEnter);
+
+        // inform TB that a server action is in progress
+        assert.isTrue($wnd.Vaadin.Flow.clients.TypeScript.isActive());
+
         // @ts-ignore
         elem.onBeforeEnter({pathname: 'Foo/Bar.baz'}, {})
+
+        // inform TB that server action has finished
+        assert.isFalse($wnd.Vaadin.Flow.clients.TypeScript.isActive());
 
         // Assert server side has put content in the container
         assert.equal(1, elem.children.length);
@@ -450,6 +453,7 @@ function stubServerRemoteFunction(id: string, cancel: boolean = false, routeRege
   // Stub remote function exported in JavaScriptBootstrapUI.
   flowRoot.$server = {
     connectClient: (localName: string, elemId: string, route: string) => {
+
       assert.isDefined(localName);
       assert.isDefined(elemId);
       assert.isDefined(route);
@@ -465,10 +469,17 @@ function stubServerRemoteFunction(id: string, cancel: boolean = false, routeRege
       assert.isDefined(container);
       assert.isDefined(container.serverConnected);
 
+      // When appending elements container should be attached and hidden
+      assert.isTrue(container.isConnected);
+      assert.equal('none', container.style.display);
+
       container.appendChild(document.createElement('div'));
 
       // Resolve the promise
       flowRoot.$[elemId].serverConnected(cancel);
+
+      // container should be visible when not cancelled
+      assert.equal(cancel ? 'none' : '', container.style.display);
     },
     leaveNavigation: () => {
       // Resolve the promise

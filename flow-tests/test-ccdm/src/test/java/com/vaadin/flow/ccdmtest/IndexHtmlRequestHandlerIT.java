@@ -16,7 +16,6 @@
 package com.vaadin.flow.ccdmtest;
 
 import java.util.Optional;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
@@ -55,6 +54,9 @@ public class IndexHtmlRequestHandlerIT extends ChromeBrowserTest {
         WebElement meta = findElement(By.cssSelector("meta[name=foo]"));
         Assert.assertNotNull(meta);
         Assert.assertEquals("bar", meta.getAttribute("content"));
+        WebElement metaViewPort = findElement(By.cssSelector("meta[name=viewport]"));
+        Assert.assertNotNull(metaViewPort);
+        Assert.assertEquals("width=device-width, height=device-height, initial-scale=1.0", metaViewPort.getAttribute("content"));
     }
 
     @Test
@@ -78,6 +80,32 @@ public class IndexHtmlRequestHandlerIT extends ChromeBrowserTest {
                 "ogImage meta element should have correct image URL",
                 "http://localhost:8888/image/my_app.png",
                 ogImageMeta.get().getAttribute("content"));
+
+        Optional<WebElement> viewportMeta = findElements(By.tagName("meta"))
+                .stream().filter(webElement -> webElement.getAttribute("name")
+                        .equals("viewport"))
+                .findFirst();
+        Assert.assertTrue("The response should have viewport meta element",
+                viewportMeta.isPresent());
+        Assert.assertEquals(
+                "viewport meta element should have correct content",
+                "width=device-width, height=device-height, initial-scale=1.0",
+                viewportMeta.get().getAttribute("content"));
+    }
+
+    public void indexHtmlRequestListener_openRootURL_shouldDynamicBodySizeContent() {
+        openTestUrl("/");
+        waitForElementPresent(By.cssSelector("style"));
+        Optional<WebElement> styleElement = findElements(By.tagName("style"))
+                .stream().filter(webElement -> webElement.getAttribute("type")
+                        .equals("text/css"))
+                .findFirst();
+        Assert.assertTrue("The response should have style element",
+                styleElement.isPresent());
+        Assert.assertEquals(
+                "style element should have correct content",
+                "body,#outlet{height:50vh;width:50vw;}",
+                styleElement.get().getText());
     }
 
     @Test

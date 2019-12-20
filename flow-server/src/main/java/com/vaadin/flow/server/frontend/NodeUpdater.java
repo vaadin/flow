@@ -54,6 +54,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @since 2.0
  */
 public abstract class NodeUpdater implements FallibleCommand {
+
     /**
      * Relative paths of generated should be prefixed with this value, so they
      * can be correctly separated from {projectDir}/frontend files.
@@ -72,6 +73,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     private static final String DEP_MAIN_KEY = "main";
     protected static final String DEP_NAME_FLOW_DEPS = "@vaadin/flow-deps";
     protected static final String DEP_NAME_FLOW_JARS = "@vaadin/flow-frontend";
+    private static final String DEP_MAIN_FLOW_JARS = "Flow";
     private static final String DEP_VERSION_KEY = "version";
     private static final String DEP_VERSION_DEFAULT = "1.0.0";
     protected static final String POLYMER_VERSION = "3.2.0";
@@ -217,8 +219,10 @@ public abstract class NodeUpdater implements FallibleCommand {
         JsonObject packageJson = getJsonFileContent(new File(flowResourcesFolder, PACKAGE_JSON));
         if (packageJson == null) {
             packageJson = Json.createObject();
-            packageJson.put(DEP_NAME_KEY, DEP_NAME_DEFAULT);
+            packageJson.put(DEP_NAME_KEY, DEP_NAME_FLOW_JARS);
             packageJson.put(DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT);
+            packageJson.put(DEP_MAIN_KEY, DEP_MAIN_FLOW_JARS);
+            packageJson.put(DEP_VERSION_KEY, DEP_VERSION_DEFAULT);
         }
         return packageJson;
     }
@@ -253,6 +257,8 @@ public abstract class NodeUpdater implements FallibleCommand {
     static Map<String, String> getDefaultDependencies() {
         Map<String, String> defaults = new HashMap<>();
 
+        defaults.put("@vaadin/router","^1.6.0");
+
         defaults.put("@polymer/polymer", POLYMER_VERSION);
         defaults.put("@webcomponents/webcomponentsjs", "^2.2.10");
 
@@ -275,6 +281,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         defaults.put("compression-webpack-plugin", "3.0.1");
         defaults.put("webpack-merge", "4.2.2");
         defaults.put("raw-loader", "3.0.0");
+
         return defaults;
     }
 
@@ -288,7 +295,7 @@ public abstract class NodeUpdater implements FallibleCommand {
      */
     boolean updateDefaultDependencies(JsonObject packageJson) {
         int added = 0;
-
+        
         for (Map.Entry<String, String> entry : getDefaultDependencies()
                 .entrySet()) {
             added += addDependency(packageJson, DEPENDENCIES, entry.getKey(),
@@ -299,6 +306,18 @@ public abstract class NodeUpdater implements FallibleCommand {
                 .entrySet()) {
             added += addDependency(packageJson, DEV_DEPENDENCIES,
                     entry.getKey(), entry.getValue());
+        }
+
+        // dependency for the package.json in the folder where frontend
+        // dependencies are copied
+        if (flowResourcesFolder != null
+                // Skip if deps are copied directly to `node_modules` folder
+                && !flowResourcesFolder.toString().contains(NODE_MODULES)) {
+            String depsPkg = "./" + FrontendUtils.getUnixRelativePath(
+                    npmFolder.getAbsoluteFile().toPath(),
+                    flowResourcesFolder.getAbsoluteFile().toPath());
+            added += addDependency(packageJson, DEPENDENCIES,
+                    DEP_NAME_FLOW_JARS, depsPkg);
         }
 
         if (added > 0) {
@@ -341,21 +360,25 @@ public abstract class NodeUpdater implements FallibleCommand {
     private int handleExistingVaadinDep(JsonObject json, String pkg,
             String version, JsonObject vaadinDeps) {
         boolean added = false;
-        FrontendVersion newVersion = new FrontendVersion(version);
-        FrontendVersion vaadinVersion = toVersion(vaadinDeps, pkg);
         if (json.hasKey(pkg)) {
-            FrontendVersion packageVersion = toVersion(json, pkg);
-            // Vaadin and package.json versions are the same, but dependency
-            // updates (can be up or down)
-            if (vaadinVersion.isEqualTo(packageVersion)
-                    && !vaadinVersion.isEqualTo(newVersion)) {
-                json.put(pkg, version);
-                added = true;
-                // if vaadin and package not the same, but new version is newer
-                // update package version.
-            } else if (newVersion.isNewerThan(packageVersion)) {
-                json.put(pkg, version);
-                added = true;
+            if (version.startsWith("./")) {
+                added = !version.equals(json.getString(pkg));
+            } else {
+                FrontendVersion packageVersion = toVersion(json, pkg);
+                FrontendVersion newVersion = new FrontendVersion(version);
+                FrontendVersion vaadinVersion = toVersion(vaadinDeps, pkg);
+                // Vaadin and package.json versions are the same, but dependency
+                // updates (can be up or down)
+                if (vaadinVersion.isEqualTo(packageVersion)
+                        && !vaadinVersion.isEqualTo(newVersion)) {
+                    json.put(pkg, version);
+                    added = true;
+                    // if vaadin and package not the same, but new version is newer
+                    // update package version.
+                } else if (newVersion.isNewerThan(packageVersion)) {
+                    json.put(pkg, version);
+                    added = true;
+                }
             }
         } else {
             json.put(pkg, version);

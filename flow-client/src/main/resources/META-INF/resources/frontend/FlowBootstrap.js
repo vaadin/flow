@@ -3,6 +3,7 @@
    - The main function is exported as an ES module for lazy initialization.
    - Application configuration is passed as a parameter instead of using
      replacement placeholders as in the regular bootstrapping.
+   - It reuses `Vaadin.Flow.clients` if exists.
    - Fixed lint errors.
  */
 const init = function(appInitResponse) {
@@ -53,8 +54,27 @@ const init = function(appInitResponse) {
   window.Vaadin = window.Vaadin || {};
   window.Vaadin.Flow = window.Vaadin.Flow || {};
 
-  if (!window.Vaadin.Flow.clients) {
-    window.Vaadin.Flow.clients = {};
+  /*
+   * Needed for wrapping custom javascript functionality in the components (i.e. connectors)
+   */
+  window.Vaadin.Flow.tryCatchWrapper = function(originalFunction, component, repo) {
+    return function() {
+      try {
+        // eslint-disable-next-line
+        const result = originalFunction.apply(this, arguments);
+        return result;
+      } catch (error) {
+        console.error(
+          'There seems to be an error in the ' + component + ':\n' + error.message + '\n'
+            + 'Please submit an issue to https://github.com/vaadin/' + repo
+            + '/issues/new!');
+      }
+    };
+  };
+
+  if (!window.Vaadin.Flow.initApplication) {
+
+    window.Vaadin.Flow.clients = window.Vaadin.Flow.clients || {};
 
     window.Vaadin.Flow.initApplication = function(appId, config) {
       var testbenchId = appId.replace(/-\d+$/, '');
@@ -209,6 +229,10 @@ const init = function(appInitResponse) {
 
       /* Device Pixel Ratio */
       params['v-pr'] = window.devicePixelRatio;
+
+      if (navigator.platform) {
+        params['v-np'] = navigator.platform;
+      }
 
       /* Stringify each value (they are parsed on the server side) */
       Object.keys(params).forEach(function(key) {
