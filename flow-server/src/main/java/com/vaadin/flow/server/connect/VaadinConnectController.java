@@ -139,7 +139,7 @@ public class VaadinConnectController {
 
         context.getBeansWithAnnotation(VaadinService.class).forEach(
                 (name, serviceBean) -> validateServiceBean(serviceNameChecker,
-                        context, name, serviceBean));
+                        name, serviceBean));
     }
 
     private static Logger getLogger() {
@@ -147,7 +147,7 @@ public class VaadinConnectController {
     }
 
     void validateServiceBean(VaadinServiceNameChecker serviceNameChecker,
-            ApplicationContext context, String name, Object serviceBean) {
+            String name, Object serviceBean) {
         // Check the bean type instead of the implementation type in
         // case of e.g. proxies
         Class<?> beanType = ClassUtils.getUserClass(serviceBean.getClass());
