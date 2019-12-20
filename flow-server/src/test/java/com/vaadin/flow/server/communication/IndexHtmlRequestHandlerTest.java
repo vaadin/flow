@@ -348,7 +348,7 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void should_add_metaAndPwaElements_when_appShellPresent() throws Exception {
+    public void should_add_metaAndPwa_Inline_Elements_when_appShellPresent() throws Exception {
         // Set class in context and do not call initializer
         VaadinAppShellRegistry registry = new VaadinAppShellRegistry();
         registry.setShell(MyAppShellWithMultipleAnnotations.class);
@@ -378,10 +378,15 @@ public class IndexHtmlRequestHandlerTest {
         assertEquals("apple-mobile-web-app-status-bar-style", elements.get(6).attr("name"));
         assertEquals("#ffffff", elements.get(6).attr("content"));
 
-        Elements elementsStyle = document.head().getElementsByTag("style");
-        assertEquals(2, elementsStyle.size());
-        assertEquals("text/css", elementsStyle.get(1).attr("type"));
-        assertEquals("body,#outlet{height:50vh;width:50vw;}", elementsStyle.get(1).childNode(0).toString());
+        Elements headInlineAndStyleElements = document.head().getElementsByTag("style");
+        assertEquals(3, headInlineAndStyleElements.size());
+        assertEquals("text/css", headInlineAndStyleElements.get(1).attr("type"));
+        assertEquals("body,#outlet{height:50vh;width:50vw;}", headInlineAndStyleElements.get(1).childNode(0).toString());
+        assertEquals("text/css", headInlineAndStyleElements.get(2).attr("type"));
+
+        Elements bodyInlineElements = document.body().getElementsByTag("script");
+        assertEquals(3, bodyInlineElements.size());
+        assertEquals("text/javascript", bodyInlineElements.get(0).attr("type"));
     }
 
     @After
@@ -411,5 +416,4 @@ public class IndexHtmlRequestHandlerTest {
                 .getRequestURL();
         return request;
     }
-
 }

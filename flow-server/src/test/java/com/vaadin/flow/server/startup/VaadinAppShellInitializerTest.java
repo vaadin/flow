@@ -2,6 +2,7 @@ package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRegistration;
+import javax.servlet.http.HttpServletRequest;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -11,6 +12,9 @@ import java.util.Map;
 import java.util.Set;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.component.page.BodySize;
+
+import com.vaadin.flow.component.page.*;
+import com.vaadin.flow.server.*;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.junit.After;
@@ -20,11 +24,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.component.page.Meta;
-import com.vaadin.flow.component.page.VaadinAppShell;
-import com.vaadin.flow.server.InvalidApplicationConfigurationException;
-import com.vaadin.flow.server.PWA;
-import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.startup.VaadinAppShellRegistry.VaadinAppShellRegistryWrapper;
 
 import static com.vaadin.flow.server.DevModeHandler.getDevModeHandler;
@@ -40,6 +39,8 @@ public class VaadinAppShellInitializerTest {
     @Meta(name = "foo", content = "bar")
     @Meta(name = "lorem", content = "ipsum")
     @PWA(name = "my-pwa", shortName = "pwa")
+    @Inline(wrapping = Inline.Wrapping.STYLESHEET, position = Inline.Position.APPEND, target = TargetElement.HEAD, value = "")
+    @Inline(wrapping = Inline.Wrapping.JAVASCRIPT, position = Inline.Position.PREPEND, target = TargetElement.BODY, value = "")
     @Viewport(Viewport.DEVICE_DIMENSIONS)
     @BodySize(height = "50vh", width = "50vw")
     public static class MyAppShellWithMultipleAnnotations extends VaadinAppShell {
@@ -48,6 +49,8 @@ public class VaadinAppShellInitializerTest {
     @Meta(name = "offending-foo", content = "bar")
     @Meta(name = "offending-lorem", content = "ipsum")
     @PWA(name = "offending-my-pwa", shortName = "pwa")
+    @Inline(wrapping = Inline.Wrapping.STYLESHEET, position = Inline.Position.PREPEND, target = TargetElement.HEAD, value = "")
+    @Inline(wrapping = Inline.Wrapping.JAVASCRIPT, position = Inline.Position.APPEND, target = TargetElement.BODY, value = "")
     @Viewport(Viewport.DEVICE_DIMENSIONS)
     @BodySize(height = "50vh", width = "50vw")
     public static class OffendingClass {
@@ -64,12 +67,20 @@ public class VaadinAppShellInitializerTest {
     private Set<Class<?>> classes;
     private Document document;
     private Map<String, Object> attributeMap = new HashMap<>();
+    private VaadinResponse response;
+    private MockServletServiceSessionSetup mocks;
+    private MockServletServiceSessionSetup.TestVaadinServletService service;
+    private VaadinSession session;
 
     @Before
     public void setup() throws Exception {
         assertNull(getDevModeHandler());
 
         servletContext = Mockito.mock(ServletContext.class);
+        mocks = new MockServletServiceSessionSetup();
+        service = mocks.getService();
+        session = mocks.getSession();
+        response = Mockito.mock(VaadinResponse.class);
         Mockito.when(servletContext.getAttribute(Mockito.anyString())).then(invocationOnMock -> attributeMap.get(invocationOnMock.getArguments()[0].toString()));
         Mockito.doAnswer(invocationOnMock -> attributeMap.put(
                 invocationOnMock.getArguments()[0].toString(),
@@ -143,6 +154,25 @@ public class VaadinAppShellInitializerTest {
     }
 
     @Test
+    public void should_haveInline_when_annotatedAppShell() throws Exception {
+        classes.add(MyAppShellWithMultipleAnnotations.class);
+
+        initializer.onStartup(classes, servletContext);
+        VaadinRequest request = createVaadinRequest("/");
+        VaadinAppShellRegistry.getInstance(context).modifyIndexHtmlResponeWithInline(document, session, request);
+
+        List<Element> headElements = document.head().children();
+        assertEquals(1, headElements.size());
+        assertEquals("text/css", headElements.get(0).attr("type"));
+        assertEquals("style", headElements.get(0).tagName());
+
+        List<Element> bodyElements = document.body().children();
+        assertEquals(1, bodyElements.size());
+        assertEquals("text/javascript", bodyElements.get(0).attr("type"));
+        assertEquals("script", bodyElements.get(0).tagName());
+    }
+
+    @Test
     public void should_not_haveMetas_when_not_callingInitializer()
             throws Exception {
         VaadinAppShellRegistry.getInstance(context)
@@ -182,7 +212,7 @@ public class VaadinAppShellInitializerTest {
         exception.expectMessage(
                 containsString("Found app shell configuration annotations in non"));
         exception.expectMessage(
-                containsString("- @Meta, @PWA, @Viewport, @BodySize from"));
+                containsString("- @Meta, @PWA, @Inline, @Viewport, @BodySize from"));
         classes.add(MyAppShellWithoutAnnotations.class);
         classes.add(OffendingClass.class);
         initializer.onStartup(classes, servletContext);
@@ -211,4 +241,16 @@ public class VaadinAppShellInitializerTest {
         initializer.onStartup(classes, servletContext);
     }
 
+    private VaadinServletRequest createVaadinRequest(String pathInfo) {
+        HttpServletRequest request = createRequest(pathInfo);
+        return new VaadinServletRequest(request, service);
+    }
+
+    private HttpServletRequest createRequest(String pathInfo) {
+        HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+        Mockito.when(request.getServletPath()).thenReturn("");
+        Mockito.when(request.getPathInfo()).thenReturn(pathInfo);
+        Mockito.when(request.getRequestURL()).thenReturn(new StringBuffer(pathInfo));
+        return request;
+    }
 }

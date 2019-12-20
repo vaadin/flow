@@ -93,7 +93,7 @@ public class InlineTargets {
      *            prepend or append
      * @return current list of inline objects
      */
-    protected List<JsonObject> getInlineHead(Inline.Position position) {
+    public List<JsonObject> getInlineHead(Inline.Position position) {
         return inlineHead.computeIfAbsent(position, key -> new ArrayList<>());
     }
 
@@ -104,7 +104,7 @@ public class InlineTargets {
      *            prepend or append
      * @return current list of inline objects
      */
-    protected List<JsonObject> getInlineBody(Inline.Position position) {
+    public List<JsonObject> getInlineBody(Inline.Position position) {
         return inlineBody.computeIfAbsent(position, key -> new ArrayList<>());
     }
 }
