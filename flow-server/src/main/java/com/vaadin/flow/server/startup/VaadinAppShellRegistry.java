@@ -28,7 +28,6 @@ import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.*;
 import com.vaadin.flow.shared.ui.Dependency;
 import elemental.json.JsonObject;
-import elemental.json.impl.JsonUtil;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
