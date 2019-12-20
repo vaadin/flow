@@ -27,6 +27,9 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.ErrorParameter;
+import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteData;
@@ -274,5 +277,20 @@ public abstract class RouteRegistryTestBase {
     @Tag("div")
     protected static class MiddleLayout extends Component
             implements RouterLayout {
+    }
+
+    @Tag("div")
+    public static abstract class AbstractErrorView<EXCEPTION_TYPE extends Exception> extends Component implements
+            HasErrorParameter<EXCEPTION_TYPE> {
+    }
+
+    @Tag("div")
+    public static class ErrorView extends AbstractErrorView<NullPointerException> {
+
+        @Override
+        public int setErrorParameter(BeforeEnterEvent event,
+                ErrorParameter<NullPointerException> parameter) {
+            return 0;
+        }
     }
 }
