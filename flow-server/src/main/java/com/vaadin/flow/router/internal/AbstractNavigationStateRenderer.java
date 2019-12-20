@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServletResponse;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.Pair;
@@ -180,18 +181,29 @@ public abstract class AbstractNavigationStateRenderer
         }
 
         final ArrayList<HasElement> chain;
+        final List<Class<? extends HasElement>> chainClasses;
 
-        if (isPreserveOnRefreshTarget(routeTargetType, routeLayoutTypes)) {
+        final boolean preserveOnRefreshTarget = isPreserveOnRefreshTarget(
+                routeTargetType, routeLayoutTypes);
+
+        if (preserveOnRefreshTarget) {
             final Optional<ArrayList<HasElement>> maybeChain =
-                    createOrRehandlePreserveOnRefreshComponent(event);
+                    getPreservedChain(event);
             if (!maybeChain.isPresent()) {
+                // We're returning because the preserved chain is not ready to
+                // be used as is, and requires client data requested within
+                // `createOrRehandlePreserveOnRefreshComponent`. Once the data
+                // is retrieved from the client, `handle` method will be invoked
+                // with the same `NavigationEvent` argument.
                 return HttpServletResponse.SC_OK;
             } else {
                 chain = maybeChain.get();
             }
         } else {
-            // Non-preserving component, create fresh chain
-            chain = createChain(event);
+
+            // Create an empty chain which gets populated later in
+            // `createChainIfEmptyAndExecuteBeforeEnterNavigation`.
+            chain = new ArrayList<>();
 
             // Has any preserved components already been created here? If so,
             // we don't want to navigate back to them ever so clear cache for
@@ -202,17 +214,8 @@ public abstract class AbstractNavigationStateRenderer
         BeforeEnterEvent beforeNavigationActivating = new BeforeEnterEvent(
                 event, routeTargetType, routeLayoutTypes);
 
-        @SuppressWarnings("unchecked")
-        List<RouterLayout> routerLayouts = (List<RouterLayout>) (List<?>) chain
-                .subList(1, chain.size());
-
-        List<BeforeEnterHandler> enterHandlers = new ArrayList<>(
-                ui.getNavigationListeners(BeforeEnterHandler.class));
-        enterHandlers.addAll(EventUtil.collectBeforeEnterObservers(
-                reverse(ui.getInternals().getActiveRouterTargetsChain()),
-                reverse(chain)));
-        TransitionOutcome transitionOutcome = executeBeforeEnterNavigation(
-                beforeNavigationActivating, enterHandlers);
+        TransitionOutcome transitionOutcome = createChainIfEmptyAndExecuteBeforeEnterNavigation(
+                beforeNavigationActivating, event, chain);
 
         Optional<Integer> result = handleTransactionOutcome(transitionOutcome, event,
                 beforeNavigationActivating);
@@ -237,6 +240,16 @@ public abstract class AbstractNavigationStateRenderer
         if (result.isPresent()) {
             return result.get();
         }
+
+        // Preserve the navigation chain if all went well and it's being shown
+        // on the UI.
+        if (preserveOnRefreshTarget) {
+            setPreservedChain(chain, event);
+        }
+
+        @SuppressWarnings("unchecked")
+        List<RouterLayout> routerLayouts = (List<RouterLayout>) (List<?>) chain
+                .subList(1, chain.size());
 
         // Change the UI according to the navigation Component chain.
         ui.getInternals().showRouteTarget(event.getLocation(),
@@ -338,6 +351,22 @@ public abstract class AbstractNavigationStateRenderer
         return chain;
     }
 
+    // The last element in the returned list is always a Component class
+    private List<Class<? extends HasElement>> createTypesChain(NavigationEvent event) {
+        final Class<? extends Component> routeTargetType = navigationState
+                .getNavigationTarget();
+        final List<Class<? extends RouterLayout>> routeLayoutTypes = reverse(
+                getRouterLayoutTypes(routeTargetType,
+                        event.getUI().getRouter()));
+
+        final ArrayList<Class<? extends HasElement>> chain = new ArrayList<>();
+        for (Class<? extends RouterLayout> parentType : routeLayoutTypes) {
+            chain.add(parentType);
+        }
+        chain.add(routeTargetType);
+        return chain;
+    }
+
     private void clearContinueNavigationAction(UI ui) {
         storeContinueNavigationAction(ui, null);
     }
@@ -394,29 +423,108 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     /**
-     * Inform any {@link BeforeEnterObserver}s in attaching element chain.
+     * Inform any {@link BeforeEnterObserver}s in attaching element chain. The
+     * event is sent first to the {@link BeforeEnterHandler}s registered within
+     * the {@link UI}, then to any element in the chain and to any of it's child
+     * components in the hierarchy which implements {@link BeforeEnterHandler}
+     * 
+     * If the <code>chain</code> argument is empty <code>chainClasses</code> is
+     * going to be used and populate <code>chain</code> with new created
+     * instance.
      *
      * @param beforeNavigation
-     *            navigation event sent to observers
-     * @param enterHandlers
-     *            handlers for before enter event
+     *            before enter navigation event sent to observers
+     * @param event
+     *            original navigation event
+     * @param chain
+     *            the chain of {@link HasElement} instances which will be
+     *            rendered. In case this is empty it'll be populated with
+     *            instances according with the navigation event's location.
      * @return result of observer events
      */
-    private TransitionOutcome executeBeforeEnterNavigation(
+    private TransitionOutcome createChainIfEmptyAndExecuteBeforeEnterNavigation(
             BeforeEnterEvent beforeNavigation,
-            List<BeforeEnterHandler> enterHandlers) {
+            NavigationEvent event,
+            ArrayList<HasElement> chain) {
 
-        for (BeforeEnterHandler eventHandler : enterHandlers) {
-            eventHandler.beforeEnter(beforeNavigation);
-            validateBeforeEvent(beforeNavigation);
+        // Always send the beforeNavigation event first to the registered
+        // listeners
+        List<BeforeEnterHandler> registeredRnterHandlers = new ArrayList<>(
+                beforeNavigation.getUI()
+                        .getNavigationListeners(BeforeEnterHandler.class));
 
-            Optional<TransitionOutcome> transitionOutcome = getTransitionOutcome(
-                    beforeNavigation);
+        Optional<TransitionOutcome> transitionOutcome = sendBeforeEnterEvent(
+                beforeNavigation, registeredRnterHandlers);
+        if (transitionOutcome.isPresent()) {
+            return transitionOutcome.get();
+        }
+
+        if (chain.isEmpty()) {
+            // Create the chain components if missing.
+            List<Class<? extends HasElement>> typesChain = createTypesChain(
+                    event);
+
+            for (Class<? extends HasElement> elementType : typesChain) {
+                HasElement element = getRouteTarget(elementType, event);
+
+                chain.add(element);
+
+                List<BeforeEnterHandler> chainEnterHandlers = new ArrayList<>(
+                        EventUtil.collectBeforeEnterObservers(element));
+
+                transitionOutcome = sendBeforeEnterEvent(
+                        beforeNavigation, chainEnterHandlers);
+                if (transitionOutcome.isPresent()) {
+                    
+                    // Reverse the chain for consistency although it may not be
+                    // used since the navigation has not been processed in full.
+                    Collections.reverse(chain);
+
+                    return transitionOutcome.get();
+                }
+            }
+
+            // Reverse the chain to preserve backwards compatibility.
+            // The events were sent starting from parent layout and ending with
+            // the navigation target component.
+            // The chain ought to be output starting with the navigation target
+            // component as the first element.
+            Collections.reverse(chain);
+
+        } else {
+            // Used when the chain already exists by being preserved on refresh.
+            // See `isPreserveOnRefreshTarget` method implementation and usage.
+            List<BeforeEnterHandler> chainEnterHandlers = new ArrayList<>(
+                    EventUtil.collectBeforeEnterObservers(chain));
+            
+            transitionOutcome = sendBeforeEnterEvent(
+                    beforeNavigation, chainEnterHandlers);
             if (transitionOutcome.isPresent()) {
                 return transitionOutcome.get();
             }
         }
+
         return TransitionOutcome.FINISHED;
+    }
+
+    private Optional<TransitionOutcome> sendBeforeEnterEvent(
+            BeforeEnterEvent beforeNavigation,
+            List<BeforeEnterHandler> enterHandlers) {
+
+        for (BeforeEnterHandler eventHandler : enterHandlers) {
+            Optional<TransitionOutcome> transitionOutcome = sendBeforeEnterEvent(beforeNavigation, eventHandler);
+            if (transitionOutcome.isPresent()) {
+                return transitionOutcome;
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    private Optional<TransitionOutcome> sendBeforeEnterEvent(BeforeEnterEvent beforeNavigation, BeforeEnterHandler eventHandler) {
+        eventHandler.beforeEnter(beforeNavigation);
+        validateBeforeEvent(beforeNavigation);
+        return getTransitionOutcome(beforeNavigation);
     }
 
     private Optional<TransitionOutcome> getTransitionOutcome(BeforeEvent beforeEvent) {
@@ -487,20 +595,21 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     /**
-     * Creates a new instance of the target component for the route when the
-     * target class is annotated with @PreserveOnRefresh. It checks if there
-     * exists a cached component of the route location in the current window.
+     * Checks if there exists a cached component chain of the route location in
+     * the current window.
+     * 
      * If retrieving the window name requires another round-trip, schedule it
-     * and make a new call to the handle {@link #handle(NavigationEvent)} in
-     * the callback. In this case, this method returns {@link Optional#empty()}.
+     * and make a new call to the handle {@link #handle(NavigationEvent)} in the
+     * callback. In this case, this method returns {@link Optional#empty()}.
+     *
+     * If the chain is missing and needs to be created this method returns an
+     * {@link Optional} wrapping an empty {@link ArrayList}.
      */
-    private Optional<ArrayList<HasElement>> createOrRehandlePreserveOnRefreshComponent(
+    private Optional<ArrayList<HasElement>> getPreservedChain(
             NavigationEvent event) {
         final Location location = event.getLocation();
         final UI ui = event.getUI();
         final VaadinSession session = ui.getSession();
-
-        final ArrayList<HasElement> chain;
 
         if (ui.getInternals().getExtendedClientDetails() == null) {
             if (hasPreservedChainOfLocation(session, location)) {
@@ -510,17 +619,6 @@ public abstract class AbstractNavigationStateRenderer
                 ui.getPage().retrieveExtendedClientDetails(details ->
                         handle(event));
                 return Optional.empty();
-            } else {
-                // We can immediately create the new component instance and
-                // route to it. But we also want to retrieve the window
-                // name in order to cache the component for later potential
-                // refreshes.
-                chain = createChain(event);
-                ui.getPage().retrieveExtendedClientDetails(details -> {
-                    final String windowName = ui.getInternals()
-                            .getExtendedClientDetails().getWindowName();
-                    setPreservedChain(session, windowName, location, chain);
-                });
             }
         } else {
             final String windowName = ui.getInternals()
@@ -529,7 +627,7 @@ public abstract class AbstractNavigationStateRenderer
                     getPreservedChain(session, windowName, event.getLocation());
             if (maybePreserved.isPresent()) {
                 // Re-use preserved chain for this route
-                chain = maybePreserved.get();
+                ArrayList<HasElement> chain = maybePreserved.get();
                 final HasElement root = chain.get(chain.size()-1);
                 final Component component = (Component) chain.get(0);
                 final Optional<UI> maybePrevUI = component.getUI();
@@ -541,15 +639,43 @@ public abstract class AbstractNavigationStateRenderer
                 // and notifications) to the new UI
                 maybePrevUI.ifPresent(prevUi ->
                         moveElementsToNewUI(prevUi, ui));
-            } else {
-                // Instantiate new chain for the route
-                chain = createChain(event);
-                setPreservedChain(session, windowName, location, chain);
+
+                return Optional.of(chain);
             }
         }
-        return Optional.of(chain);
+
+        return Optional.of(new ArrayList<>(0));
     }
 
+    /**
+     * Invoke this method with the chain that needs to be preserved after
+     * {@link #handle(NavigationEvent)} method created it.
+     */
+    private void setPreservedChain(ArrayList<HasElement> chain,
+            NavigationEvent event) {
+
+        final Location location = event.getLocation();
+        final UI ui = event.getUI();
+        final VaadinSession session = ui.getSession();
+
+        final ExtendedClientDetails extendedClientDetails = ui.getInternals()
+                .getExtendedClientDetails();
+
+        if (extendedClientDetails == null) {
+            // We need first to retrieve the window name in order to cache the
+            // component chain for later potential refreshes.
+            ui.getPage().retrieveExtendedClientDetails(details -> {
+                setPreservedChain(session, details.getWindowName(), location,
+                        chain);
+            });
+
+        } else {
+            final String windowName = extendedClientDetails.getWindowName();
+            setPreservedChain(session, windowName, location, chain);
+        }
+    }
+
+    
     private static void validateStatusCode(int statusCode,
             Class<? extends Component> targetClass) {
         if (!statusCodes.contains(statusCode)) {

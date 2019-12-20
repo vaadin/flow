@@ -111,6 +111,51 @@ public final class EventUtil {
     }
 
     /**
+     * Collect before enter observer instances based on what will be attached
+     * when a new view chain is applied.
+     *
+     * @param chain
+     *            the view chain after the navigation
+     *
+     * @return list of found BeforeEnterObservers in the chain tree.
+     */
+    public static List<BeforeEnterObserver> collectBeforeEnterObservers(
+            Collection<? extends HasElement> chain) {
+
+        return chain.stream().flatMap(chainRoot -> {
+            return collectBeforeEnterObserversStream(chainRoot);
+        }).collect(Collectors.toList());
+    }
+
+    /**
+     * Collect before enter observer instances in the <code>element</code>'s
+     * hierarchy.
+     *
+     * @param element
+     *            an element
+     *
+     * @return list of found BeforeEnterObservers in the element hierarchy tree.
+     */
+    public static List<BeforeEnterObserver> collectBeforeEnterObservers(
+            HasElement element) {
+
+        return collectBeforeEnterObserversStream(element)
+                .collect(Collectors.toList());
+    }
+
+    private static Stream<? extends BeforeEnterObserver> collectBeforeEnterObserversStream(HasElement element) {
+        Element chainRootElement = element.getElement();
+
+        Predicate<Element> currentRootAndNonRoots = input -> {
+            return true;
+        };
+
+        return getImplementingComponents(
+                flattenDescendants(chainRootElement, currentRootAndNonRoots),
+                BeforeEnterObserver.class);
+    }
+
+    /**
      * Collect all Components implementing {@link BeforeLeaveObserver} connected
      * to the given UI.
      *
