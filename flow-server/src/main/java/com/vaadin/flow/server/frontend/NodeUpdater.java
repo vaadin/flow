@@ -308,18 +308,6 @@ public abstract class NodeUpdater implements FallibleCommand {
                     entry.getKey(), entry.getValue());
         }
 
-        // dependency for the package.json in the folder where frontend
-        // dependencies are copied
-        if (flowResourcesFolder != null
-                // Skip if deps are copied directly to `node_modules` folder
-                && !flowResourcesFolder.toString().contains(NODE_MODULES)) {
-            String depsPkg = "./" + FrontendUtils.getUnixRelativePath(
-                    npmFolder.getAbsoluteFile().toPath(),
-                    flowResourcesFolder.getAbsoluteFile().toPath());
-            added += addDependency(packageJson, DEPENDENCIES,
-                    DEP_NAME_FLOW_JARS, depsPkg);
-        }
-
         if (added > 0) {
             log().info("Added {} dependencies to main package.json", added);
         }
@@ -361,24 +349,20 @@ public abstract class NodeUpdater implements FallibleCommand {
             String version, JsonObject vaadinDeps) {
         boolean added = false;
         if (json.hasKey(pkg)) {
-            if (version.startsWith("./")) {
-                added = !version.equals(json.getString(pkg));
-            } else {
-                FrontendVersion packageVersion = toVersion(json, pkg);
-                FrontendVersion newVersion = new FrontendVersion(version);
-                FrontendVersion vaadinVersion = toVersion(vaadinDeps, pkg);
-                // Vaadin and package.json versions are the same, but dependency
-                // updates (can be up or down)
-                if (vaadinVersion.isEqualTo(packageVersion)
-                        && !vaadinVersion.isEqualTo(newVersion)) {
-                    json.put(pkg, version);
-                    added = true;
-                    // if vaadin and package not the same, but new version is newer
-                    // update package version.
-                } else if (newVersion.isNewerThan(packageVersion)) {
-                    json.put(pkg, version);
-                    added = true;
-                }
+            FrontendVersion packageVersion = toVersion(json, pkg);
+            FrontendVersion newVersion = new FrontendVersion(version);
+            FrontendVersion vaadinVersion = toVersion(vaadinDeps, pkg);
+            // Vaadin and package.json versions are the same, but dependency
+            // updates (can be up or down)
+            if (vaadinVersion.isEqualTo(packageVersion)
+                    && !vaadinVersion.isEqualTo(newVersion)) {
+                json.put(pkg, version);
+                added = true;
+                // if vaadin and package not the same, but new version is newer
+                // update package version.
+            } else if (newVersion.isNewerThan(packageVersion)) {
+                json.put(pkg, version);
+                added = true;
             }
         } else {
             json.put(pkg, version);
