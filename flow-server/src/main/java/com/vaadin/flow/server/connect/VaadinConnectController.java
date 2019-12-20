@@ -54,6 +54,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.ClassUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -149,13 +150,7 @@ public class VaadinConnectController {
             ApplicationContext context, String name, Object serviceBean) {
         // Check the bean type instead of the implementation type in
         // case of e.g. proxies
-        Class<?> beanType = context.getType(name);
-        if (beanType == null) {
-            throw new IllegalStateException(String.format(
-                    "Unable to determine a type for the bean with name '%s', "
-                            + "double check your bean configuration",
-                    name));
-        }
+        Class<?> beanType = ClassUtils.getUserClass(serviceBean.getClass());
 
         String serviceName = Optional
                 .ofNullable(beanType.getAnnotation(VaadinService.class))
