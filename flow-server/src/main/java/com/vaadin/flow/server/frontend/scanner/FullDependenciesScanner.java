@@ -18,6 +18,7 @@ package com.vaadin.flow.server.frontend.scanner;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -184,13 +185,26 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
             Set<Class<?>> annotatedClasses = getFinder()
                     .getAnnotatedClasses(loadedAnnotation);
             Map<String, String> result = new HashMap<>();
+            StringBuilder log = new StringBuilder();
             for (Class<?> clazz : annotatedClasses) {
                 classes.add(clazz.getName());
                 List<? extends Annotation> packageAnnotations = annotationFinder
                         .apply(clazz, loadedAnnotation);
-                packageAnnotations.forEach(pckg -> result.put(
-                        invokeAnnotationMethodAsString(pckg, VALUE),
-                        invokeAnnotationMethodAsString(pckg, "version")));
+                packageAnnotations.forEach(pckg -> {
+                    String value = invokeAnnotationMethodAsString(pckg, VALUE);
+                    String vers = invokeAnnotationMethodAsString(pckg,
+                            "version");
+                    log.append("\n  - " + value + " " + vers + " "
+                            + clazz.getName());
+                    result.put(value, vers);
+                });
+            }
+            if (getLogger().isDebugEnabled()) {
+                getLogger().debug(
+                        "\n List of npm dependencies found in the project: "
+                                + Arrays.stream(log.toString().split("\n"))
+                                        .sorted().distinct()
+                                        .collect(Collectors.joining("\n")));
             }
             return result;
         } catch (ClassNotFoundException exception) {
@@ -225,13 +239,27 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
             BiConsumer<Class<?>, String> valueHandler, Class<T> annotationType,
             Function<Annotation, String> valueExtractor) {
         try {
+            StringBuilder log = new StringBuilder();
+            String annName = "@" + annotationType.getSimpleName();
             Class<? extends Annotation> loadedAnnotation = getFinder()
                     .loadClass(annotationType.getName());
             Set<Class<?>> annotatedClasses = getFinder()
                     .getAnnotatedClasses(loadedAnnotation);
             annotatedClasses.stream().forEach(clazz -> annotationFinder
-                    .apply(clazz, loadedAnnotation).forEach(ann -> valueHandler
-                            .accept(clazz, valueExtractor.apply(ann))));
+                    .apply(clazz, loadedAnnotation).forEach(ann -> {
+                        String value = valueExtractor.apply(ann);
+                        valueHandler.accept(clazz, value);
+                        log.append(
+                                "\n  - " + annName + " " + value + " " + clazz);
+                    }));
+
+            if (getLogger().isDebugEnabled()) {
+                getLogger().debug(
+                        "\n List of " + annName + " found in the project: "
+                                + Arrays.stream(log.toString().split("\n"))
+                                        .sorted().distinct()
+                                        .collect(Collectors.joining("\n")));
+            }
         } catch (ClassNotFoundException exception) {
             throw new IllegalStateException(
                     COULD_NOT_LOAD_ERROR_MSG + annotationType.getName(),
