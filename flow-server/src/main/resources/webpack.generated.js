@@ -127,8 +127,8 @@ module.exports = {
     maxAssetSize: 2097152 // 2MB
   },
   plugins: [
-    // Generate compressed bundles
-    !devMode && new CompressionPlugin(),
+    // Generate compressed bundles when not devMode
+    ...(devMode ? [] : [new CompressionPlugin()]),
 
     // Transpile with babel, and produce different bundles per browser
     new BabelMultiTargetPlugin({
