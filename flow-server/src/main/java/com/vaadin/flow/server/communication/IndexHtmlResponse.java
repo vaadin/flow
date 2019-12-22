@@ -46,7 +46,7 @@ public class IndexHtmlResponse {
      * @param document
      *            the {@link Document} object of the response page
      * @param ui
-     *            the UI for the bootstrap.
+     *            the UI for the bootstrap
      */
     public IndexHtmlResponse(VaadinRequest vaadinRequest,
                              VaadinResponse vaadinResponse, Document document, UI ui) {
@@ -108,6 +108,11 @@ public class IndexHtmlResponse {
      * @return the UI
      */
     public Optional<UI> getUI() {
-        return Optional.ofNullable(UI.getCurrent());
+        if(this.vaadinRequest.getService()
+                .getDeploymentConfiguration().isClientSideMode()) {
+            return Optional.empty();
+        } else {
+            return Optional.ofNullable(ui);
+        }
     }
 }
