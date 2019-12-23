@@ -56,6 +56,26 @@ public class VaadinAppShellInitializerTest {
     public static class OffendingClass {
     }
 
+    public static class MyAppShellWithCofigurator extends VaadinAppShell
+            implements AppShellConfigurator {
+        @Override
+        public void configurePage(AppShellSettings settings) {
+        }
+    }
+
+    public static class OffendingClassWithConfigurator implements PageConfigurator {
+        @Override
+        public void configurePage(InitialPageSettings settings) {
+        }
+    }
+
+    public static class InvalidClassWithAppShellConfigurator
+            implements AppShellConfigurator {
+        @Override
+        public void configurePage(AppShellSettings settings) {
+        }
+    }
+
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
@@ -240,6 +260,43 @@ public class VaadinAppShellInitializerTest {
         classes.add(MyAppShellWithMultipleAnnotations.class);
         initializer.onStartup(classes, servletContext);
     }
+
+    @Test
+    public void should_throw_when_offendingClassWithConfigurator() throws Exception {
+        exception.expect(InvalidApplicationConfigurationException.class);
+        exception.expectMessage(
+                containsString("Found deprecated `PageConfigurator`"));
+        exception.expectMessage(
+                containsString("- " + OffendingClassWithConfigurator.class.getName()));
+        classes.add(MyAppShellWithCofigurator.class);
+        classes.add(OffendingClassWithConfigurator.class);
+        initializer.onStartup(classes, servletContext);
+    }
+
+    @Test
+    public void should_not_throw_when_noAppShellConfigurator_and_classWithPageConfigurator() throws Exception {
+        classes.add(OffendingClassWithConfigurator.class);
+        classes.add(MyAppShellWithoutAnnotations.class);
+        initializer.onStartup(classes, servletContext);
+    }
+
+    @Test
+    public void should_not_throw_when_noAppShell_and_classWithPageConfigurator() throws Exception {
+        classes.add(OffendingClassWithConfigurator.class);
+        classes.add(OffendingClassWithConfigurator.class);
+        initializer.onStartup(classes, servletContext);
+    }
+    
+    @Test
+    public void should_throw_when_invalidClassWithAppShellConfigurator() throws Exception {
+        exception.expect(InvalidApplicationConfigurationException.class);
+        exception.expectMessage(
+                containsString("Found incorrect classes implementing `AppShellConfigurator`"));
+        exception.expectMessage(
+                containsString("- " + InvalidClassWithAppShellConfigurator.class.getName()));
+        classes.add(InvalidClassWithAppShellConfigurator.class);
+        initializer.onStartup(classes, servletContext);
+    }    
 
     private VaadinServletRequest createVaadinRequest(String pathInfo) {
         HttpServletRequest request = createRequest(pathInfo);

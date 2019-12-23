@@ -17,15 +17,16 @@ package com.vaadin.flow.server;
 
 import java.io.Serializable;
 
+import com.vaadin.flow.component.page.VaadinAppShell;
+
 /**
- * Configures the initial page contents.
+ * Configures the initial page contents. It only can be added to classes
+ * extending {@link VaadinAppShell}
  *
- * @since 1.0
- * @deprecated since 3.0 use {@link AppShellConfigurator}
+ * @since 3.0
  */
 @FunctionalInterface
-@Deprecated
-public interface PageConfigurator extends Serializable {
+public interface AppShellConfigurator extends Serializable {
 
     /**
      * Configure the initial page settings when called.
@@ -33,5 +34,5 @@ public interface PageConfigurator extends Serializable {
      * @param settings
      *            initial page settings
      */
-    void configurePage(InitialPageSettings settings);
+    void configurePage(AppShellSettings settings);
 }
