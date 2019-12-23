@@ -55,22 +55,19 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         Document indexDocument = getIndexHtmlDocument(request);
 
         prependBaseHref(request, indexDocument);
+        IndexHtmlResponse indexHtmlResponse;
 
         if (request.getService().getBootstrapInitialPredicate()
                 .includeInitialUidl(request)) {
             includeInitialUidl(session, request, response, indexDocument);
 
-            // modify the page based on registered IndexHtmlRequestListener with UI
-            request.getService().modifyIndexHtmlResponse(
-                    new IndexHtmlResponse(request, response, indexDocument, UI.getCurrent()));
+            indexHtmlResponse = new IndexHtmlResponse(request, response, indexDocument, UI.getCurrent());
 
             // App might be using classic server-routing, which is true
             // unless we detect a call to JavaScriptBootstrapUI.connectClient
             session.setAttribute(SERVER_ROUTING, Boolean.TRUE);
         } else {
-            // modify the page based on registered IndexHtmlRequestListener:s
-            request.getService().modifyIndexHtmlResponse(
-                    new IndexHtmlResponse(request, response, indexDocument));
+            indexHtmlResponse = new IndexHtmlResponse(request, response, indexDocument);
         }
 
         configureErrorDialogStyles(indexDocument);
@@ -90,6 +87,9 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         // modify the page based on the @Inline annotation
         VaadinAppShellRegistry.getInstance(context)
                 .modifyIndexHtmlResponeWithInline(indexDocument, session, request);
+
+        // modify the page based on registered IndexHtmlRequestListener:s
+        request.getService().modifyIndexHtmlResponse(indexHtmlResponse);
 
         try {
             response.getOutputStream()
