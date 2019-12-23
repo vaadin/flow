@@ -631,12 +631,14 @@ public class BrowserDetails implements Serializable {
      *         supported or might work
      */
     public boolean isTooOldToFunctionProperly() {
-        // Check Trident version to detect compatibility mode
-        if (isIE() && getBrowserMajorVersion() < 11) {
+        // IE 11 and older versions are not supported
+        if (isIE() && getBrowserMajorVersion() <= 11) {
             return true;
         }
-        // Safari 9+
-        if (isSafari() && getBrowserMajorVersion() < 9) {
+        // Safari 11.1+
+        if (isSafari() && (getBrowserMajorVersion() < 11
+                || getBrowserMajorVersion() == 11
+                        && getBrowserMinorVersion() <= 1)) {
             return true;
         }
         // Firefox 43+ for now
