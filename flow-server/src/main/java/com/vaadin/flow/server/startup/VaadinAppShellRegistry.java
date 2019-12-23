@@ -24,6 +24,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 import com.vaadin.flow.component.page.Inline;
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.*;
 import com.vaadin.flow.shared.ui.Dependency;
@@ -55,6 +56,15 @@ public class VaadinAppShellRegistry implements Serializable {
     static final String ERROR_HEADER_NO_SHELL = "%n%nFound app shell configuration annotations in non `VaadinAppShell` classes."
             + "%nPlease create a custom class extending `VaadinAppShell` and move the following annotations to it:%n  %s%n";
 
+    static final String ERROR_HEADER_NO_APP_CONFIGURATOR = "%n%nCreate a custom class implementing `AppShellConfigurator` and extending `VaadinAppShell`"
+            + "%nand remove `PageConfigurator` interface from the following classes: %n  - %s%n";
+
+    static final String ERROR_HEADER_OFFENDING_CONFIGURATOR = "%n%nFound deprecated `PageConfigurator` in non `VaadinAppShell` classes."
+            + "%nMove the configuration code to the '%s' and remove the `PageConfigurator` from:%n  - %s%n";
+
+    static final String ERROR_HEADER_INCORRECT_CONFIGURATOR = "%n%nFound incorrect classes implementing `AppShellConfigurator`."
+            + "%nPlease remove the `AppShellConfigurator` interfaz from:%n  - %s%n";
+
     static final String ERROR_HEADER_OFFENDING = "%n%nFound app shell configuration annotations in non `VaadinAppShell` classes."
             + "%nThe following annotations must be either removed or moved to the '%s' class:%n  %s%n";
 
@@ -73,6 +83,7 @@ public class VaadinAppShellRegistry implements Serializable {
             "%nBodySize is not a repeatable annotation type.%n";
 
     private Class<? extends VaadinAppShell> shell;
+    private VaadinAppShell appShell;
 
     /**
      * A wrapper class for storing the {@link VaadinAppShellRegistry} instance
@@ -119,6 +130,7 @@ public class VaadinAppShellRegistry implements Serializable {
      */
     public void reset() {
         this.shell = null;
+        this.appShell = null;
     }
 
     /**
@@ -136,6 +148,7 @@ public class VaadinAppShellRegistry implements Serializable {
                             this.shell.getName(), shell.getName()));
         }
         this.shell = shell;
+        this.appShell = ReflectTools.createInstance(shell);
     }
 
     /**
@@ -252,6 +265,27 @@ public class VaadinAppShellRegistry implements Serializable {
         return Jsoup.parse(
                 dependencyJson.getString(Dependency.KEY_CONTENTS), "",
                 Parser.xmlParser());
+    }
+
+    /**
+     * Return the {@link VaadinAppShell} used in the application.
+     * 
+     * @return the instance
+     */
+    public Optional<VaadinAppShell> getAppShell() {
+        return Optional.ofNullable(appShell);
+    }
+
+    /**
+     * Return the {@link AppShellConfigurator} used in the application.
+     * 
+     * @return the configurator
+     */
+    public Optional<AppShellConfigurator> getAppShellConfigurator() {
+        return Optional.ofNullable(appShell != null
+                && AppShellConfigurator.class.isAssignableFrom(shell)
+                        ? (AppShellConfigurator) appShell
+                        : null);
     }
 
     private Element createInlineDependencyElement(VaadinSession session, VaadinRequest request, JsonObject dependency,

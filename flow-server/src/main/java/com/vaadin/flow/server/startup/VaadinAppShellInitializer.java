@@ -28,22 +28,32 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-import com.vaadin.flow.component.page.Inline;
-import com.vaadin.flow.component.page.Viewport;
-import com.vaadin.flow.component.page.BodySize;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.page.BodySize;
+import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.VaadinAppShell;
+import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.AppShellConfigurator;
 import com.vaadin.flow.server.InvalidApplicationConfigurationException;
 import com.vaadin.flow.server.PWA;
+import com.vaadin.flow.server.PageConfigurator;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
+
+import static com.vaadin.flow.server.startup.VaadinAppShellRegistry.ERROR_HEADER_INCORRECT_CONFIGURATOR;
+import static com.vaadin.flow.server.startup.VaadinAppShellRegistry.ERROR_HEADER_NO_APP_CONFIGURATOR;
+import static com.vaadin.flow.server.startup.VaadinAppShellRegistry.ERROR_HEADER_NO_SHELL;
+import static com.vaadin.flow.server.startup.VaadinAppShellRegistry.ERROR_HEADER_OFFENDING;
+import static com.vaadin.flow.server.startup.VaadinAppShellRegistry.ERROR_HEADER_OFFENDING_CONFIGURATOR;
 
 /**
  * Servlet initializer visiting {@link VaadinAppShell} configuration.
@@ -124,16 +134,51 @@ public class VaadinAppShellInitializer implements ServletContainerInitializer,
         if (!offendingAnnotations.isEmpty()) {
             if (registry.getShell() == null) {
                 String message = String.format(
-                        VaadinAppShellRegistry.ERROR_HEADER_NO_SHELL,
+                        ERROR_HEADER_NO_SHELL,
                         String.join("\n  ", offendingAnnotations));
                 getLogger().error(message);
             } else {
                 String message = String.format(
-                        VaadinAppShellRegistry.ERROR_HEADER_OFFENDING,
+                        ERROR_HEADER_OFFENDING,
                         registry.getShell(),
                         String.join("\n  ", offendingAnnotations));
                 throw new InvalidApplicationConfigurationException(message);
             }
+        }
+
+        Optional<VaadinAppShell> appShell = registry.getAppShell();
+        String shellName = appShell.map(s -> s.getClass().getName()).orElse(null);
+        Optional<AppShellConfigurator> configurator = registry.getAppShellConfigurator();
+
+        List<String> classesImplementingPageConfigurator = classes.stream()
+                .filter(clz -> PageConfigurator.class.isAssignableFrom(clz))
+                .map(Class::getName).collect(Collectors.toList());
+
+        if (!classesImplementingPageConfigurator.isEmpty()) {
+            String message = classesImplementingPageConfigurator.stream()
+                    .collect(Collectors.joining("\n  - "));
+            if (configurator.isPresent()) {
+                message = String.format(ERROR_HEADER_OFFENDING_CONFIGURATOR,
+                        shellName, message);
+                throw new InvalidApplicationConfigurationException(message);
+            } else {
+                message = String.format(ERROR_HEADER_NO_APP_CONFIGURATOR, message);
+                getLogger().error(message);
+            }
+        }
+
+        List<String> classesImplementingAppShellConfigurator = classes.stream()
+                .filter(clz -> AppShellConfigurator.class.isAssignableFrom(clz))
+                .map(Class::getName)
+                .filter(name -> !name.equals(shellName))
+                .collect(Collectors.toList());
+
+        if (!classesImplementingAppShellConfigurator.isEmpty()) {
+            String message = String.format(
+                    ERROR_HEADER_INCORRECT_CONFIGURATOR,
+                    classesImplementingAppShellConfigurator.stream()
+                            .collect(Collectors.joining("\n -")));
+            throw new InvalidApplicationConfigurationException(message);
         }
     }
 

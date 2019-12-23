@@ -180,6 +180,7 @@ class BootstrapUtils {
     private static InitialPageSettings createInitialPageSettingsObject(
             BootstrapHandler.BootstrapContext context) {
         UI ui = context.getUI();
+
         VaadinRequest request = context.getRequest();
         WebBrowser browser = context.getSession().getBrowser();
 

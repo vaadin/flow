@@ -16,9 +16,9 @@
 package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
-import com.vaadin.flow.server.*;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
@@ -28,6 +28,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.server.AppShellConfigurator;
+import com.vaadin.flow.server.AppShellSettings;
+import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.VaadinAppShellRegistry;
 
@@ -71,21 +77,27 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
 
-        // modify the page based on the page config annotations (@Meta, etc)
         VaadinContext context = session.getService().getContext();
-        VaadinAppShellRegistry.getInstance(context)
-                .modifyIndexHtmlResponse(indexDocument);
+        VaadinAppShellRegistry registry = VaadinAppShellRegistry.getInstance(context);
+        
+        // modify the page based on the page config annotations (@Meta, etc)
+        registry.modifyIndexHtmlResponse(indexDocument);
 
         // modify the page based on the @PWA annotation
         setupPwa(indexDocument, session.getService());
 
         // modify the page based on the @Inline annotation
-        VaadinAppShellRegistry.getInstance(context)
-                .modifyIndexHtmlResponeWithInline(indexDocument, session, request);
+        registry.modifyIndexHtmlResponeWithInline(indexDocument, session, request);
 
         // modify the page based on registered IndexHtmlRequestListener:s
         request.getService().modifyIndexHtmlResponse(
                 new IndexHtmlResponse(request, response, indexDocument));
+
+        // modify the page based on the AppShellConfigurator class
+        registry.getAppShellConfigurator().ifPresent(conf -> {
+            AppShellSettings settings = new AppShellSettings(request);
+            conf.configurePage(settings);
+        });
 
         try {
             response.getOutputStream()
@@ -96,6 +108,25 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         }
         return true;
     }
+
+
+    private Optional<AppShellSettings> getAppShellSettings(VaadinRequest request) {
+        UI ui = UI.getCurrent();
+
+        Optional<AppShellConfigurator> configurator = ui.getChildren()
+                .filter(component -> component instanceof AppShellConfigurator)
+                .map(component -> (AppShellConfigurator) component).findFirst();
+
+        if (configurator.isPresent()) {
+            AppShellSettings settings = new AppShellSettings(request);
+            if (settings != null) {
+                configurator.get().configurePage(settings);
+                return Optional.of(settings);
+            }
+        }
+        return Optional.empty();
+    }
+
 
     private void includeInitialUidl(VaadinSession session,
             VaadinRequest request, VaadinResponse response,
