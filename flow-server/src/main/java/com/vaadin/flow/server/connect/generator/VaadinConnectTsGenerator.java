@@ -625,6 +625,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         CodegenModel codegenModel = super.fromModel(name, schema,
                 allDefinitions);
         Set<String> imports = collectImportsFromSchema(schema);
+        imports.removeIf(type -> type.equals(name)); // Remove self imports
         codegenModel.setImports(imports);
         return codegenModel;
     }
