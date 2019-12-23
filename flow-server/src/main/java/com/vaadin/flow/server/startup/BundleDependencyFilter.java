@@ -42,7 +42,6 @@ import com.vaadin.flow.shared.ui.LoadMode;
 public class BundleDependencyFilter implements DependencyFilter {
     private final String mainBundlePath;
     private final Map<String, Set<String>> importContainedInBundles;
-    private boolean isES6;
 
     /**
      * Creates a filter with the required information.
@@ -63,16 +62,11 @@ public class BundleDependencyFilter implements DependencyFilter {
         this.importContainedInBundles = Objects.requireNonNull(
                 importContainedInBundles,
                 "Import to bundle mapping cannot be null");
-        this.isES6 = browser.isEs6Supported();
     }
 
     @Override
     public List<Dependency> filter(List<Dependency> dependencies,
             FilterContext filterContext) {
-        if (filterContext.getBrowser().isEs6Supported() != this.isES6) {
-            return dependencies;
-        }
-
         Collection<Dependency> fragments = new LinkedHashSet<>(
                 dependencies.size());
         Collection<Dependency> notFragments = new LinkedHashSet<>(

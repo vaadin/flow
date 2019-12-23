@@ -15,9 +15,6 @@
  */
 package com.vaadin.flow.server.startup;
 
-import static com.vaadin.flow.server.startup.BundleFilterFactory.FLOW_BUNDLE_MANIFEST;
-import static com.vaadin.flow.server.startup.BundleFilterFactory.MAIN_BUNDLE_NAME_PREFIX;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
@@ -43,6 +40,9 @@ import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 
 import elemental.json.JsonException;
+
+import static com.vaadin.flow.server.startup.BundleFilterFactory.FLOW_BUNDLE_MANIFEST;
+import static com.vaadin.flow.server.startup.BundleFilterFactory.MAIN_BUNDLE_NAME_PREFIX;
 
 public class BundleFilterFactoryTest {
     private static final String NON_HASHED_BUNDLE_NAME = MAIN_BUNDLE_NAME_PREFIX
@@ -237,26 +237,10 @@ public class BundleFilterFactoryTest {
                         LoadMode.EAGER))
                 .collect(Collectors.toList());
 
-        // First filter in list is ES6, it should filter dependencies only when
-        // browser is ES6
         List<Dependency> filteredResult = filters.get(0).filter(dependencies,
                 new FilterContext(null, FakeBrowser.getEs6()));
-        List<Dependency> unfilteredResult = filters.get(0).filter(dependencies,
-                new FilterContext(null, FakeBrowser.getEs5()));
 
         Assert.assertTrue(filteredResult.containsAll(filtered));
         Assert.assertEquals(filteredResult.size(), filtered.size());
-        Assert.assertEquals(unfilteredResult, dependencies);
-
-        // Second filter in list is ES5, it should filter dependencies only when
-        // browser is ES5
-        filteredResult = filters.get(1).filter(dependencies,
-                new FilterContext(null, FakeBrowser.getEs5()));
-        unfilteredResult = filters.get(1).filter(dependencies,
-                new FilterContext(null, FakeBrowser.getEs6()));
-
-        Assert.assertTrue(filteredResult.containsAll(filtered));
-        Assert.assertEquals(filteredResult.size(), filtered.size());
-        Assert.assertEquals(unfilteredResult, dependencies);
     }
 }

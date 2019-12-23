@@ -33,8 +33,8 @@ import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.ResponseWriterTest.CapturingServletOutputStream;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.TestRouteRegistry;
-import com.vaadin.flow.server.communication.IndexHtmlResponse;
 import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
+import com.vaadin.flow.server.communication.IndexHtmlResponse;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 public class MockServletServiceSessionSetup {
@@ -93,7 +93,8 @@ public class MockServletServiceSessionSetup {
             bootstrapListeners.add(listener);
         }
 
-        public void addIndexHtmlRequestListener(IndexHtmlRequestListener listener) {
+        public void addIndexHtmlRequestListener(
+                IndexHtmlRequestListener listener) {
             indexHtmlRequestListeners.add(listener);
         }
 
@@ -269,7 +270,8 @@ public class MockServletServiceSessionSetup {
         servlet = new TestVaadinServlet();
 
         deploymentConfiguration.setXsrfProtectionEnabled(false);
-        Mockito.doAnswer(invocation -> servletContext.getClass().getClassLoader())
+        Mockito.doAnswer(
+                invocation -> servletContext.getClass().getClassLoader())
                 .when(servletContext).getClassLoader();
         Mockito.when(servletConfig.getServletContext())
                 .thenReturn(servletContext);
@@ -308,7 +310,6 @@ public class MockServletServiceSessionSetup {
         }
 
         Mockito.when(request.getServletPath()).thenReturn("");
-        Mockito.when(browser.isEs6Supported()).thenReturn(true);
     }
 
     public TestVaadinServletService getService() {
@@ -355,10 +356,6 @@ public class MockServletServiceSessionSetup {
         deploymentConfiguration.setProductionMode(productionMode);
     }
 
-    public void setBrowserEs6(boolean browserEs6) {
-        Mockito.when(browser.isEs6Supported()).thenReturn(browserEs6);
-    }
-
     public TestVaadinServletResponse createResponse() throws IOException {
         HttpServletResponse httpServletResponse = Mockito
                 .mock(HttpServletResponse.class);
@@ -368,9 +365,12 @@ public class MockServletServiceSessionSetup {
 
     }
 
-    public VaadinRequest createRequest(MockServletServiceSessionSetup mocks, String path) {
-        HttpServletRequest httpServletRequest = Mockito.mock(HttpServletRequest.class);
-        return new VaadinServletRequest(httpServletRequest, mocks.getService()) {
+    public VaadinRequest createRequest(MockServletServiceSessionSetup mocks,
+            String path) {
+        HttpServletRequest httpServletRequest = Mockito
+                .mock(HttpServletRequest.class);
+        return new VaadinServletRequest(httpServletRequest,
+                mocks.getService()) {
             @Override
             public String getPathInfo() {
                 return path.replaceFirst("\\?.*$", "");
@@ -395,7 +395,8 @@ public class MockServletServiceSessionSetup {
 
             @Override
             public StringBuffer getRequestURL() {
-                return new StringBuffer("http://localhost:8888" + getPathInfo());
+                return new StringBuffer(
+                        "http://localhost:8888" + getPathInfo());
             }
         };
     }

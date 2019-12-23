@@ -62,16 +62,13 @@ public class BundleFilterFactory implements Serializable {
      */
     public Stream<BundleDependencyFilter> createFilters(VaadinService service) {
         if (!service.getDeploymentConfiguration().isCompatibilityMode()
-                || !service.getDeploymentConfiguration().useCompiledFrontendResources()) {
+                || !service.getDeploymentConfiguration()
+                        .useCompiledFrontendResources()) {
             return Stream.empty();
         }
 
-        return Stream
-                .of(createBundleFilterForBrowser(FakeBrowser.getEs6(), service),
-                        createBundleFilterForBrowser(FakeBrowser.getEs5(),
-                                service))
-                .flatMap(maybeFilter -> maybeFilter.map(Stream::of)
-                        .orElseGet(Stream::empty));
+        return createBundleFilterForBrowser(FakeBrowser.getEs6(), service)
+                .map(Stream::of).orElseGet(Stream::empty);
     }
 
     private Optional<BundleDependencyFilter> createBundleFilterForBrowser(
@@ -87,12 +84,11 @@ public class BundleFilterFactory implements Serializable {
                 .getResourceAsStream(FLOW_BUNDLE_MANIFEST, browser, null)) {
             if (bundleManifestStream == null) {
                 throw new IllegalArgumentException(String.format(
-                        "Failed to find the bundle manifest file '%s' in the servlet context for '%s' browsers."
+                        "Failed to find the bundle manifest file '%s' in the servlet context for 'ES6' browsers."
                                 + " If you are running a dev-mode servlet container in maven e.g. `jetty:run` change it to `jetty:run-exploded`."
                                 + " If you are not compiling frontend resources, include the 'vaadin-maven-plugin' in your build script."
                                 + " Otherwise, you can skip this error either by disabling production mode, or by setting the servlet parameter '%s=true'.",
                         FLOW_BUNDLE_MANIFEST,
-                        browser.isEs6Supported() ? "ES6" : "ES5",
                         Constants.USE_ORIGINAL_FRONTEND_RESOURCES));
             }
             return Optional.of(Json.parse(IOUtils.toString(bundleManifestStream,

@@ -9,7 +9,6 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
-const {BabelMultiTargetPlugin} = require('webpack-babel-multi-target-plugin');
 
 const path = require('path');
 const baseDir = path.resolve(__dirname);
@@ -119,17 +118,6 @@ module.exports = {
 
   module: {
     rules: [
-      { // Files that Babel has to transpile
-        test: /\.js$/,
-        use: [BabelMultiTargetPlugin.loader()]
-      },
-      {
-        test: /\.ts$/,
-        use: [
-          BabelMultiTargetPlugin.loader(),
-          'awesome-typescript-loader'
-        ]
-      },
       {
         test: /\.css$/i,
         use: ['raw-loader']
@@ -144,42 +132,12 @@ module.exports = {
     // Generate compressed bundles
     new CompressionPlugin(),
 
-    // Transpile with babel, and produce different bundles per browser
-    new BabelMultiTargetPlugin({
-      babel: {
-        // workaround for Safari 10 scope issue (https://bugs.webkit.org/show_bug.cgi?id=159270)
-        plugins: ["@babel/plugin-transform-block-scoping"],
-
-        presetOptions: {
-          useBuiltIns: false // polyfills are provided from webcomponents-loader.js
-        }
-      },
-      targets: {
-        'es6': { // Evergreen browsers
-          browsers: [
-            // It guarantees that babel outputs pure es6 in bundle and in stats.json
-            // In the case of browsers no supporting certain feature it will be
-            // covered by the webcomponents-loader.js
-            'last 1 Chrome major versions'
-          ],
-          esModule: true
-        },
-        'es5': { // IE11
-          browsers: [
-            'ie 11'
-          ],
-          tagAssetsWithKey: true, // append a suffix to the file name
-          noModule: true
-        }
-      }
-    }),
-
     // Generates the stats file for flow `@Id` binding.
     function (compiler) {
       compiler.hooks.afterEmit.tapAsync("FlowIdPlugin", (compilation, done) => {
         let statsJson = compilation.getStats().toJson();
-        // Get bundles as accepted keys (except any es5 bundle)
-        let acceptedKeys = statsJson.assets.filter(asset => asset.chunks.length > 0 && !asset.chunkNames.toString().includes("es5"))
+        // Get bundles as accepted keys 
+        let acceptedKeys = statsJson.assets.filter(asset => asset.chunks.length > 0)
           .map(asset => asset.chunks).reduce((acc, val) => acc.concat(val), []);
 
         // Collect all modules for the given keys

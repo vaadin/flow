@@ -41,7 +41,6 @@ public class VaadinServletServiceTest {
 
     private MockServletServiceSessionSetup mocks;
     private TestVaadinServletService service;
-    private final String[] es5es6 = new String[] { "es5", "es6" };
     private VaadinServlet servlet;
 
     @Before
@@ -93,33 +92,11 @@ public class VaadinServletServiceTest {
                 service.resolveResource("frontend://foo", mocks.getBrowser()));
         Assert.assertEquals("/foo",
                 service.resolveResource("context://foo", mocks.getBrowser()));
-
-        mocks.setBrowserEs6(false);
-
-        Assert.assertEquals("",
-                service.resolveResource("", mocks.getBrowser()));
-        Assert.assertEquals("foo",
-                service.resolveResource("foo", mocks.getBrowser()));
-        Assert.assertEquals("/frontend-es5/foo",
-                service.resolveResource("frontend://foo", mocks.getBrowser()));
-        Assert.assertEquals("/foo",
-                service.resolveResource("context://foo", mocks.getBrowser()));
     }
 
     @Test
     public void resolveResourceNPM_production() {
         mocks.setProductionMode(true);
-
-        Assert.assertEquals("",
-                service.resolveResource("", mocks.getBrowser()));
-        Assert.assertEquals("foo",
-                service.resolveResource("foo", mocks.getBrowser()));
-        Assert.assertEquals("/frontend/foo",
-                service.resolveResource("frontend://foo", mocks.getBrowser()));
-        Assert.assertEquals("/foo",
-                service.resolveResource("context://foo", mocks.getBrowser()));
-
-        mocks.setBrowserEs6(false);
 
         Assert.assertEquals("",
                 service.resolveResource("", mocks.getBrowser()));
@@ -192,14 +169,6 @@ public class VaadinServletServiceTest {
                 "frontend://foo.txt", browser, null);
         testGetResourceAndGetResourceAsStream(null, "/frontend/bar.txt",
                 browser, null);
-
-        mocks.setBrowserEs6(false);
-        testGetResourceAndGetResourceAsStream(null, "/frontend/foo.txt",
-                browser, null);
-        testGetResourceAndGetResourceAsStream("/frontend-es5/foo.txt",
-                "frontend://foo.txt", browser, null);
-        testGetResourceAndGetResourceAsStream(null, "/frontend/bar.txt",
-                browser, null);
     }
 
     @Test
@@ -264,43 +233,36 @@ public class VaadinServletServiceTest {
         mocks.setProductionMode(true);
         WebBrowser browser = mocks.getBrowser();
         TestTheme theme = new TestTheme();
-        for (String es : es5es6) {
-            String frontendFolder = "/frontend-" + es;
-            mocks.getServlet().addServletContextResource(
-                    frontendFolder + "/raw/raw-only.txt");
-            mocks.getServlet().addServletContextResource(
-                    frontendFolder + "/raw/has-theme-variant.txt");
-            mocks.getServlet().addServletContextResource(
-                    frontendFolder + "/theme/has-theme-variant.txt");
-            mocks.getServlet().addServletContextResource(
-                    frontendFolder + "/theme/theme-only.txt");
-        }
+        String frontendFolder = "/frontend-es6";
+        mocks.getServlet().addServletContextResource(
+                frontendFolder + "/raw/raw-only.txt");
+        mocks.getServlet().addServletContextResource(
+                frontendFolder + "/raw/has-theme-variant.txt");
+        mocks.getServlet().addServletContextResource(
+                frontendFolder + "/theme/has-theme-variant.txt");
+        mocks.getServlet().addServletContextResource(
+                frontendFolder + "/theme/theme-only.txt");
 
-        for (String es : es5es6) {
-            mocks.setBrowserEs6("es6".equals(es));
-            String expectedFrontend = "file:///frontend-" + es;
-            // Only raw version
-            Assert.assertEquals(new URL(expectedFrontend + "/raw/raw-only.txt"),
-                    service.getResource("frontend://raw/raw-only.txt", browser,
-                            theme));
+        String expectedFrontend = "file:///frontend-es6";
+        // Only raw version
+        Assert.assertEquals(new URL(expectedFrontend + "/raw/raw-only.txt"),
+                service.getResource("frontend://raw/raw-only.txt", browser,
+                        theme));
 
-            // Only themed version
-            Assert.assertEquals(
-                    new URL(expectedFrontend + "/theme/theme-only.txt"),
-                    service.getResource("frontend://raw/theme-only.txt",
-                            browser, theme));
+        // Only themed version
+        Assert.assertEquals(new URL(expectedFrontend + "/theme/theme-only.txt"),
+                service.getResource("frontend://raw/theme-only.txt", browser,
+                        theme));
 
-            // Raw and themed version
-            Assert.assertEquals(
-                    new URL(expectedFrontend + "/theme/has-theme-variant.txt"),
-                    service.getResource("frontend://raw/has-theme-variant.txt",
-                            browser, theme));
-            Assert.assertEquals(
-                    new URL(expectedFrontend + "/theme/has-theme-variant.txt"),
-                    service.getResource(
-                            "frontend://theme/has-theme-variant.txt", browser,
-                            null)); // No theme -> raw version
-        }
+        // Raw and themed version
+        Assert.assertEquals(
+                new URL(expectedFrontend + "/theme/has-theme-variant.txt"),
+                service.getResource("frontend://raw/has-theme-variant.txt",
+                        browser, theme));
+        Assert.assertEquals(
+                new URL(expectedFrontend + "/theme/has-theme-variant.txt"),
+                service.getResource("frontend://theme/has-theme-variant.txt",
+                        browser, null)); // No theme -> raw version
     }
 
     @Test

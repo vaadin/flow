@@ -75,8 +75,7 @@ public interface DeploymentConfiguration extends Serializable {
      * @return true if in clientSideMode, false otherwise.
      */
     default boolean isClientSideMode() {
-        return getBooleanProperty(SERVLET_PARAMETER_CLIENT_SIDE_MODE,
-                true);
+        return getBooleanProperty(SERVLET_PARAMETER_CLIENT_SIDE_MODE, true);
     }
 
     /**
@@ -294,19 +293,6 @@ public interface DeploymentConfiguration extends Serializable {
     }
 
     /**
-     * Gets the URL from which frontend resources should be loaded in ES5
-     * compatible browsers.
-     *
-     * @return the ES5 resource URL
-     */
-    default String getEs5FrontendPrefix() {
-        return useCompiledFrontendResources()
-                ? getStringProperty(Constants.FRONTEND_URL_ES5,
-                        Constants.FRONTEND_URL_ES5_DEFAULT_VALUE)
-                : getDevelopmentFrontendPrefix();
-    }
-
-    /**
      * Gets the URL from which frontend resources should be loaded in NPM mode.
      *
      * @return the NPM resource URL
@@ -412,8 +398,8 @@ public interface DeploymentConfiguration extends Serializable {
     }
 
     /**
-     * Get if the stats.json file should be retrieved from an external service or
-     * through the classpath.
+     * Get if the stats.json file should be retrieved from an external service
+     * or through the classpath.
      *
      * @return true if stats.json is served from an external location
      */
@@ -422,8 +408,8 @@ public interface DeploymentConfiguration extends Serializable {
     }
 
     /**
-     * Get the url from where stats.json should be retrieved from.
-     * If not given this will default to '/vaadin-static/VAADIN/config/stats.json'
+     * Get the url from where stats.json should be retrieved from. If not given
+     * this will default to '/vaadin-static/VAADIN/config/stats.json'
      *
      * @return external stats.json location
      */
@@ -451,7 +437,7 @@ public interface DeploymentConfiguration extends Serializable {
      * @return true if initial UIDL should be included in page
      */
     default boolean isEagerServerLoad() {
-        return getBooleanProperty(
-                Constants.SERVLET_PARAMETER_INITIAL_UIDL, false);
+        return getBooleanProperty(Constants.SERVLET_PARAMETER_INITIAL_UIDL,
+                false);
     }
 }
