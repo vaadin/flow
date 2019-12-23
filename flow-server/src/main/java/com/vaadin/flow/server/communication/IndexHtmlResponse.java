@@ -108,11 +108,6 @@ public class IndexHtmlResponse {
      * @return the UI
      */
     public Optional<UI> getUI() {
-        if(this.vaadinRequest.getService()
-                .getDeploymentConfiguration().isClientSideMode()) {
-            return Optional.empty();
-        } else {
-            return Optional.ofNullable(ui);
-        }
+        return Optional.ofNullable(UI.getCurrent());
     }
 }
