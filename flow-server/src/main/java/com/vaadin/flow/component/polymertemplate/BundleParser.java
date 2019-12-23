@@ -242,11 +242,6 @@ public final class BundleParser {
                 && validKey(module, SOURCE, STRING)) {
             String name = module.getString(NAME);
 
-            // If the found module is
-            if (name.endsWith("es5")) {
-                return source;
-            }
-
             // append `.js` extension if not yet as webpack does
             fileName = fileName.replaceFirst("(\\.js|)$", ".js");
 

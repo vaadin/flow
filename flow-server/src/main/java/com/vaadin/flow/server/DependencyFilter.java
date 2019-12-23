@@ -43,51 +43,11 @@ public interface DependencyFilter extends Serializable {
      * @param dependencies
      *            the collected dependencies, possibly already modified by other
      *            filters
-     * @param filterContext
-     *            context information, e.g about the target UI
+     * @param service
+     *            a Vaadin service
      * @return a list of dependencies to load
      */
     List<Dependency> filter(List<Dependency> dependencies,
-            FilterContext filterContext);
-
-    /**
-     * Provides context information for the dependency filter operation.
-     */
-    public static class FilterContext implements Serializable {
-
-        private final VaadinService service;
-        private final WebBrowser browser;
-
-        /**
-         * Creates a new context for the given session.
-         *
-         * @param service
-         *            the service which is loading dependencies
-         * @param browser
-         *            the browser
-         */
-        public FilterContext(VaadinService service, WebBrowser browser) {
-            this.service = service;
-            this.browser = browser;
-        }
-
-        /**
-         * Gets the related Vaadin service.
-         *
-         * @return the Vaadin service
-         */
-        public VaadinService getService() {
-            return service;
-        }
-
-        /**
-         * Gets the browser info needed for filtering.
-         *
-         * @return the WebBrowser used
-         */
-        public WebBrowser getBrowser() {
-            return browser;
-        }
-    }
+            VaadinService service);
 
 }

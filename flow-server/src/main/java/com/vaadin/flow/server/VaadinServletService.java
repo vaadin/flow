@@ -216,9 +216,8 @@ public class VaadinServletService extends VaadinService {
     }
 
     @Override
-    public String resolveResource(String url, WebBrowser browser) {
+    public String resolveResource(String url) {
         Objects.requireNonNull(url, "Url cannot be null");
-        Objects.requireNonNull(browser, "Browser cannot be null");
 
         String frontendRootUrl;
         DeploymentConfiguration config = getDeploymentConfiguration();
@@ -242,24 +241,21 @@ public class VaadinServletService extends VaadinService {
     }
 
     @Override
-    public URL getResource(String path, WebBrowser browser,
-            AbstractTheme theme) {
+    public URL getResource(String path, AbstractTheme theme) {
         return getResourceInServletContextOrWebJar(
-                getThemedOrRawPath(path, browser, theme));
+                getThemedOrRawPath(path, theme));
     }
 
     @Override
-    public InputStream getResourceAsStream(String path, WebBrowser browser,
-            AbstractTheme theme) {
+    public InputStream getResourceAsStream(String path, AbstractTheme theme) {
         return getResourceInServletContextOrWebJarAsStream(
-                getThemedOrRawPath(path, browser, theme));
+                getThemedOrRawPath(path, theme));
     }
 
     @Override
-    public Optional<String> getThemedUrl(String url, WebBrowser browser,
-            AbstractTheme theme) {
-        if (theme != null && !resolveResource(url, browser)
-                .equals(getThemedOrRawPath(url, browser, theme))) {
+    public Optional<String> getThemedUrl(String url, AbstractTheme theme) {
+        if (theme != null && !resolveResource(url)
+                .equals(getThemedOrRawPath(url, theme))) {
             return Optional.of(theme.translateUrl(url));
         }
         return Optional.empty();
@@ -274,18 +270,14 @@ public class VaadinServletService extends VaadinService {
      *
      * @param url
      *            the untranslated URL to the resource to find
-     * @param browser
-     *            the web browser to resolve for, relevant for es5 vs es6
-     *            resolving
      * @param theme
      *            the theme to use for resolving, or <code>null</code> to not
      *            use a theme
      * @return the path to the themed resource if such exists, otherwise the
      *         resolved raw path
      */
-    private String getThemedOrRawPath(String url, WebBrowser browser,
-            AbstractTheme theme) {
-        String resourcePath = resolveResource(url, browser);
+    private String getThemedOrRawPath(String url, AbstractTheme theme) {
+        String resourcePath = resolveResource(url);
 
         Optional<String> themeResourcePath = getThemeResourcePath(resourcePath,
                 theme);

@@ -242,7 +242,7 @@ function collectModules(statsJson, acceptedChunks) {
         let subModules = [];
         // Create sub modules only if they are available
         if (module.modules) {
-          module.modules.filter(module => !module.name.includes("es5")).forEach(function (module) {
+          module.modules.forEach(function (module) {
             const subModule = {
               name: module.name,
               source: module.source

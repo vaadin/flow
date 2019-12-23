@@ -18,7 +18,6 @@ package com.vaadin.flow.server.startup;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -33,7 +32,6 @@ import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.DependencyFilter.FilterContext;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.ui.Dependency;
@@ -52,10 +50,6 @@ public class BundleFilterFactoryTest {
     private static final String FRONTEND_ES6_BUNDLE_MANIFEST = FLOW_BUNDLE_MANIFEST
             .replace(ApplicationConstants.FRONTEND_PROTOCOL_PREFIX,
                     "/frontend-es6/");
-
-    private static final String FRONTEND_ES5_BUNDLE_MANIFEST = FLOW_BUNDLE_MANIFEST
-            .replace(ApplicationConstants.FRONTEND_PROTOCOL_PREFIX,
-                    "/frontend-es5/");
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -178,9 +172,6 @@ public class BundleFilterFactoryTest {
     public void empty_bundle_manifest_stream_no_dependency_filter_added() {
         mocks.getServlet()
                 .addServletContextResource(FRONTEND_ES6_BUNDLE_MANIFEST, "{}");
-        mocks.getServlet()
-                .addServletContextResource(FRONTEND_ES5_BUNDLE_MANIFEST, "{}");
-
         long filterCount = new BundleFilterFactory()
                 .createFilters(mocks.getService()).count();
         Assert.assertEquals(0, filterCount);
@@ -205,26 +196,22 @@ public class BundleFilterFactoryTest {
 
         mocks.getServlet()
                 .addServletContextResource(FRONTEND_ES6_BUNDLE_MANIFEST, json);
-        mocks.getServlet()
-                .addServletContextResource(FRONTEND_ES5_BUNDLE_MANIFEST, json);
 
-        for (String frontend : Arrays.asList("/frontend-es6/",
-                "/frontend-es5/")) {
-            for (int i = 0; i < 6; i++) {
-                mocks.getServlet().addServletContextResource("dependency-" + i);
-            }
-            mocks.getServlet()
-                    .addServletContextResource(frontend + "fragment-1");
-            mocks.getServlet()
-                    .addServletContextResource(frontend + "fragment-2");
-            mocks.getServlet().addServletContextResource(frontend + bundleName);
+        for (int i = 0; i < 6; i++) {
+            mocks.getServlet().addServletContextResource("dependency-" + i);
         }
+        mocks.getServlet()
+                .addServletContextResource("/frontend-es6/fragment-1");
+        mocks.getServlet()
+                .addServletContextResource("/frontend-es6/fragment-2");
+        mocks.getServlet()
+                .addServletContextResource("/frontend-es6/" + bundleName);
 
         List<BundleDependencyFilter> filters = new BundleFilterFactory()
                 .createFilters(mocks.getService()).collect(Collectors.toList());
 
-        // BundleDependencyFilter for ES6 and ES5 should be added
-        Assert.assertEquals(filters.size(), 2);
+        // BundleDependencyFilter for ES6 should be added
+        Assert.assertEquals(filters.size(), 1);
 
         List<Dependency> dependencies = IntStream.range(0, 6)
                 .mapToObj(number -> new Dependency(Dependency.Type.HTML_IMPORT,
@@ -238,7 +225,7 @@ public class BundleFilterFactoryTest {
                 .collect(Collectors.toList());
 
         List<Dependency> filteredResult = filters.get(0).filter(dependencies,
-                new FilterContext(null, FakeBrowser.getEs6()));
+                null);
 
         Assert.assertTrue(filteredResult.containsAll(filtered));
         Assert.assertEquals(filteredResult.size(), filtered.size());

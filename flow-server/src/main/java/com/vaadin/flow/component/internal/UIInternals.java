@@ -72,7 +72,6 @@ import com.vaadin.flow.router.internal.BeforeLeaveHandler;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.WebBrowser;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
@@ -548,7 +547,8 @@ public class UIInternals implements Serializable {
         List<E> registeredListeners = (List<E>) listeners
                 .computeIfAbsent(handler, key -> new ArrayList<>());
 
-        return Collections.unmodifiableList(new ArrayList<>(registeredListeners));
+        return Collections
+                .unmodifiableList(new ArrayList<>(registeredListeners));
     }
 
     /**
@@ -738,7 +738,7 @@ public class UIInternals implements Serializable {
 
     /**
      * Move all the children of the other UI to this current UI.
-     * 
+     *
      * @param otherUI
      *            the other UI to transfer content from.
      */
@@ -967,9 +967,8 @@ public class UIInternals implements Serializable {
     private String translateTheme(String importValue) {
         if (theme != null) {
             VaadinService service = session.getService();
-            WebBrowser browser = session.getBrowser();
             Optional<String> themedUrl = service.getThemedUrl(importValue,
-                    browser, theme);
+                    theme);
             return themedUrl.orElse(importValue);
         } else {
             Matcher componentMatcher = componentSource.matcher(importValue);

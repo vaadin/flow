@@ -22,8 +22,8 @@ import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 
 /**
- * Test class for testing es5 and es6 resolution by browser capability. This is
- * valid only for bower mode where we need to decide ourselves.
+ * Test class for testing es6 resolution by browser capability. This is valid
+ * only for bower mode where we need to decide ourselves.
  */
 public class VaadinServletServiceTest {
 
@@ -60,7 +60,7 @@ public class VaadinServletServiceTest {
     @Test
     public void resolveNullThrows() {
         try {
-            service.resolveResource(null, mocks.getBrowser());
+            service.resolveResource(null);
             Assert.fail("null should not resolve");
         } catch (NullPointerException e) {
             Assert.assertEquals("Url cannot be null", e.getMessage());
@@ -69,14 +69,11 @@ public class VaadinServletServiceTest {
 
     @Test
     public void resolveResource() {
-        Assert.assertEquals("",
-                service.resolveResource("", mocks.getBrowser()));
-        Assert.assertEquals("foo",
-                service.resolveResource("foo", mocks.getBrowser()));
+        Assert.assertEquals("", service.resolveResource(""));
+        Assert.assertEquals("foo", service.resolveResource("foo"));
         Assert.assertEquals("/frontend/foo",
-                service.resolveResource("frontend://foo", mocks.getBrowser()));
-        Assert.assertEquals("/foo",
-                service.resolveResource("context://foo", mocks.getBrowser()));
+                service.resolveResource("frontend://foo"));
+        Assert.assertEquals("/foo", service.resolveResource("context://foo"));
     }
 
     @Test
@@ -84,46 +81,40 @@ public class VaadinServletServiceTest {
         mocks.getDeploymentConfiguration().setCompatibilityMode(true);
         mocks.setProductionMode(true);
 
-        Assert.assertEquals("",
-                service.resolveResource("", mocks.getBrowser()));
-        Assert.assertEquals("foo",
-                service.resolveResource("foo", mocks.getBrowser()));
+        Assert.assertEquals("", service.resolveResource(""));
+        Assert.assertEquals("foo", service.resolveResource("foo"));
         Assert.assertEquals("/frontend-es6/foo",
-                service.resolveResource("frontend://foo", mocks.getBrowser()));
-        Assert.assertEquals("/foo",
-                service.resolveResource("context://foo", mocks.getBrowser()));
+                service.resolveResource("frontend://foo"));
+        Assert.assertEquals("/foo", service.resolveResource("context://foo"));
     }
 
     @Test
     public void resolveResourceNPM_production() {
         mocks.setProductionMode(true);
 
-        Assert.assertEquals("",
-                service.resolveResource("", mocks.getBrowser()));
-        Assert.assertEquals("foo",
-                service.resolveResource("foo", mocks.getBrowser()));
+        Assert.assertEquals("", service.resolveResource(""));
+        Assert.assertEquals("foo", service.resolveResource("foo"));
         Assert.assertEquals("/frontend/foo",
-                service.resolveResource("frontend://foo", mocks.getBrowser()));
-        Assert.assertEquals("/foo",
-                service.resolveResource("context://foo", mocks.getBrowser()));
+                service.resolveResource("frontend://foo"));
+        Assert.assertEquals("/foo", service.resolveResource("context://foo"));
     }
 
     private void testGetResourceAndGetResourceAsStream(
             String expectedServletContextResource, String untranslatedUrl,
-            WebBrowser browser, AbstractTheme theme) throws IOException {
+            AbstractTheme theme) throws IOException {
 
         if (expectedServletContextResource == null) {
+            Assert.assertNull(service.getResource(untranslatedUrl, theme));
             Assert.assertNull(
-                    service.getResource(untranslatedUrl, browser, theme));
-            Assert.assertNull(service.getResourceAsStream(untranslatedUrl,
-                    browser, theme));
+                    service.getResourceAsStream(untranslatedUrl, theme));
         } else {
             URL expectedUrl = new URL(
                     "file://" + expectedServletContextResource);
             Assert.assertEquals(expectedUrl,
-                    service.getResource(untranslatedUrl, browser, theme));
-            String contents = IOUtils.toString(service.getResourceAsStream(
-                    untranslatedUrl, browser, theme), StandardCharsets.UTF_8);
+                    service.getResource(untranslatedUrl, theme));
+            String contents = IOUtils.toString(
+                    service.getResourceAsStream(untranslatedUrl, theme),
+                    StandardCharsets.UTF_8);
             Assert.assertEquals("This is " + expectedServletContextResource,
                     contents);
         }
@@ -136,20 +127,19 @@ public class VaadinServletServiceTest {
         mocks.getServlet().addWebJarResource("paper-slider/paper-slider.html");
 
         testGetResourceAndGetResourceAsStream("/frontend/foo.txt",
-                "/frontend/foo.txt", browser, null);
+                "/frontend/foo.txt", null);
         testGetResourceAndGetResourceAsStream("/frontend/foo.txt",
-                "frontend://foo.txt", browser, null);
-        testGetResourceAndGetResourceAsStream(null, "frontend://bar.txt",
-                browser, null);
+                "frontend://foo.txt", null);
+        testGetResourceAndGetResourceAsStream(null, "frontend://bar.txt", null);
 
         testGetResourceAndGetResourceAsStream(
                 "/webjars/paper-slider/paper-slider.html",
                 "/frontend/bower_components/paper-slider/paper-slider.html",
-                browser, null);
+                null);
         testGetResourceAndGetResourceAsStream(
                 "/webjars/paper-slider/paper-slider.html",
                 "frontend://bower_components/paper-slider/paper-slider.html",
-                browser, null);
+                null);
     }
 
     // Theme resource is not handled from servlet in NPM
@@ -158,17 +148,13 @@ public class VaadinServletServiceTest {
         mocks.getDeploymentConfiguration().setCompatibilityMode(true);
 
         mocks.getServlet().addServletContextResource("/frontend-es6/foo.txt");
-        mocks.getServlet().addServletContextResource("/frontend-es5/foo.txt");
 
         mocks.setProductionMode(true);
-        WebBrowser browser = mocks.getBrowser();
 
-        testGetResourceAndGetResourceAsStream(null, "/frontend/foo.txt",
-                browser, null);
+        testGetResourceAndGetResourceAsStream(null, "/frontend/foo.txt", null);
         testGetResourceAndGetResourceAsStream("/frontend-es6/foo.txt",
-                "frontend://foo.txt", browser, null);
-        testGetResourceAndGetResourceAsStream(null, "/frontend/bar.txt",
-                browser, null);
+                "frontend://foo.txt", null);
+        testGetResourceAndGetResourceAsStream(null, "/frontend/bar.txt", null);
     }
 
     @Test
@@ -195,34 +181,34 @@ public class VaadinServletServiceTest {
 
         // Only raw version
         testGetResourceAndGetResourceAsStream("/frontend/raw/raw-only.txt",
-                "frontend://raw/raw-only.txt", browser, theme);
+                "frontend://raw/raw-only.txt", theme);
         testGetResourceAndGetResourceAsStream(
                 "/webjars/vaadin-button/raw/raw-only.txt",
                 "frontend://bower_components/vaadin-button/raw/raw-only.txt",
-                browser, theme);
+                theme);
         // Only themed version
         testGetResourceAndGetResourceAsStream("/frontend/theme/theme-only.txt",
-                "frontend://raw/theme-only.txt", browser, theme);
+                "frontend://raw/theme-only.txt", theme);
         testGetResourceAndGetResourceAsStream(
                 "/webjars/vaadin-button/theme/theme-only.txt",
                 "frontend://bower_components/vaadin-button/raw/theme-only.txt",
-                browser, theme);
+                theme);
 
         // Raw and themed version
         testGetResourceAndGetResourceAsStream(
                 "/frontend/theme/has-theme-variant.txt",
-                "frontend://raw/has-theme-variant.txt", browser, theme);
+                "frontend://raw/has-theme-variant.txt", theme);
         testGetResourceAndGetResourceAsStream(
                 "/webjars/vaadin-button/theme/has-theme-variant.txt",
                 "frontend://bower_components/vaadin-button/raw/has-theme-variant.txt",
-                browser, theme);
+                theme);
         testGetResourceAndGetResourceAsStream(
                 "/frontend/theme/has-theme-variant.txt",
-                "frontend://theme/has-theme-variant.txt", browser, null);
+                "frontend://theme/has-theme-variant.txt", null);
         testGetResourceAndGetResourceAsStream(
                 "/webjars/vaadin-button/theme/has-theme-variant.txt",
                 "frontend://bower_components/vaadin-button/theme/has-theme-variant.txt",
-                browser, theme);
+                theme);
     }
 
     // NPM theme is not handled in servlet service.
@@ -231,7 +217,6 @@ public class VaadinServletServiceTest {
         mocks.getDeploymentConfiguration().setCompatibilityMode(true);
 
         mocks.setProductionMode(true);
-        WebBrowser browser = mocks.getBrowser();
         TestTheme theme = new TestTheme();
         String frontendFolder = "/frontend-es6";
         mocks.getServlet().addServletContextResource(
@@ -246,23 +231,21 @@ public class VaadinServletServiceTest {
         String expectedFrontend = "file:///frontend-es6";
         // Only raw version
         Assert.assertEquals(new URL(expectedFrontend + "/raw/raw-only.txt"),
-                service.getResource("frontend://raw/raw-only.txt", browser,
-                        theme));
+                service.getResource("frontend://raw/raw-only.txt", theme));
 
         // Only themed version
         Assert.assertEquals(new URL(expectedFrontend + "/theme/theme-only.txt"),
-                service.getResource("frontend://raw/theme-only.txt", browser,
-                        theme));
+                service.getResource("frontend://raw/theme-only.txt", theme));
 
         // Raw and themed version
         Assert.assertEquals(
                 new URL(expectedFrontend + "/theme/has-theme-variant.txt"),
                 service.getResource("frontend://raw/has-theme-variant.txt",
-                        browser, theme));
+                        theme));
         Assert.assertEquals(
                 new URL(expectedFrontend + "/theme/has-theme-variant.txt"),
                 service.getResource("frontend://theme/has-theme-variant.txt",
-                        browser, null)); // No theme -> raw version
+                        null)); // No theme -> raw version
     }
 
     @Test

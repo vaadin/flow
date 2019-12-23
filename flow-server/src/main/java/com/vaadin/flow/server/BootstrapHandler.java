@@ -430,8 +430,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          * - resolves to the application context root</li>
          * <li><code>{@value ApplicationConstants#FRONTEND_PROTOCOL_PREFIX}</code>
          * - resolves to the build path where web components were compiled.
-         * Browsers supporting ES6 can receive different, more optimized files
-         * than browsers that only support ES5.</li>
          * <li><code>{@value ApplicationConstants#BASE_PROTOCOL_PREFIX}</code> -
          * resolves to the base URI of the page</li>
          * </ul>
@@ -883,21 +881,13 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 } else {
                     chunkName = chunks.getString(key);
                 }
-                if (key.endsWith(".es5")) {
-                    Element script = createJavaScriptElement(
-                            "./" + VAADIN_MAPPING + chunkName);
-                    head.appendChild(
-                            script.attr("nomodule", true).attr("data-app-id",
-                                    context.getUI().getInternals().getAppId()));
-                } else {
-                    Element script = createJavaScriptElement(
-                            "./" + VAADIN_MAPPING + chunkName, false);
-                    head.appendChild(script.attr("type", "module")
-                            .attr("data-app-id",
-                                    context.getUI().getInternals().getAppId())
-                            // Fixes basic auth in Safari #6560
-                            .attr("crossorigin", true));
-                }
+                Element script = createJavaScriptElement(
+                        "./" + VAADIN_MAPPING + chunkName, false);
+                head.appendChild(script.attr("type", "module")
+                        .attr("data-app-id",
+                                context.getUI().getInternals().getAppId())
+                        // Fixes basic auth in Safari #6560
+                        .attr("crossorigin", true));
             }
         }
 
@@ -988,8 +978,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             VaadinSession session = context.getSession();
 
             VaadinService service = session.getService();
-            if (!service.isResourceAvailable(POLYFILLS_JS, session.getBrowser(),
-                    null)) {
+            if (!service.isResourceAvailable(POLYFILLS_JS, null)) {
                 // No webcomponents polyfill, load nothing
                 return;
             }

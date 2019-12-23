@@ -27,7 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.DependencyFilter;
-import com.vaadin.flow.server.WebBrowser;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
@@ -46,8 +46,6 @@ public class BundleDependencyFilter implements DependencyFilter {
     /**
      * Creates a filter with the required information.
      *
-     * @param browser
-     *            Type of browser handled by this filter
      * @param mainBundlePath
      *            path to the main bundle that contains common code of the app,
      *            not {@code null}
@@ -55,7 +53,7 @@ public class BundleDependencyFilter implements DependencyFilter {
      *            a map that is used to look up the bundles that imports are
      *            contained in, not {@code null}
      */
-    public BundleDependencyFilter(WebBrowser browser, String mainBundlePath,
+    public BundleDependencyFilter(String mainBundlePath,
             Map<String, Set<String>> importContainedInBundles) {
         this.mainBundlePath = Objects.requireNonNull(mainBundlePath,
                 "Main bundle name cannot be null");
@@ -66,7 +64,7 @@ public class BundleDependencyFilter implements DependencyFilter {
 
     @Override
     public List<Dependency> filter(List<Dependency> dependencies,
-            FilterContext filterContext) {
+            VaadinService service) {
         Collection<Dependency> fragments = new LinkedHashSet<>(
                 dependencies.size());
         Collection<Dependency> notFragments = new LinkedHashSet<>(

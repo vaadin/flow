@@ -131,7 +131,7 @@ public class DefaultDeploymentConfigurationTest {
                 initParameters);
         String developmentPrefix = Constants.FRONTEND_URL_DEV_DEFAULT;
         assertThat(String.format(
-                "In development mode, both es5 and es6 prefixes should be equal to '%s'",
+                "In development mode, es6 prefix should be equal to '%s'",
                 developmentPrefix), config.getEs6FrontendPrefix(),
                 is(developmentPrefix));
     }

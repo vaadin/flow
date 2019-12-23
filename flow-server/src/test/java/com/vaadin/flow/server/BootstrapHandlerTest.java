@@ -1104,16 +1104,6 @@ public class BootstrapHandlerTest {
                                         + "build/index-1111.cache.js\" data-app-id=\""
                                         + testUI.getInternals().getAppId()
                                         + "\" crossorigin></script>")));
-
-        Assert.assertTrue(
-                "index.js should be added to head for ES5 browsers. (deferred and nomodule)",
-                allElements.stream().map(Object::toString)
-                        .anyMatch(element -> element.equals(
-                                "<script type=\"text/javascript\" defer src=\"./"
-                                        + VAADIN_MAPPING
-                                        + "build/index.es5-2222.cache.js\" nomodule data-app-id=\""
-                                        + testUI.getInternals().getAppId()
-                                        + "\"></script>")));
     }
 
     @Test // 3333
@@ -1658,10 +1648,7 @@ public class BootstrapHandlerTest {
                 + " \"assetsByChunkName\": {\n" + "  \"bundle\": [\n"
                 + "    \"build/vaadin-bundle-e77008557c8d410bf0dc.cache.js\",\n"
                 + "    \"build/vaadin-bundle-e77008557c8d410bf0dc.cache.js.map\"\n"
-                + "  ],\n" + "  \"bundle.es5\": [\n"
-                + "    \"build/vaadin-bundle.es5-e71a5a09679e828010c4.cache.js\",\n"
-                + "    \"build/vaadin-bundle.es5-e71a5a09679e828010c4.cache.js.map\"\n"
-                + "  ]" + " }" + "}";
+                + "  ],\n" + " }" + "}";
 
         Mockito.when(classLoader.getResourceAsStream(Mockito.anyString()))
                 .thenReturn(new ByteArrayInputStream(statsJson.getBytes()));

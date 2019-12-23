@@ -270,8 +270,7 @@ public interface DeploymentConfiguration extends Serializable {
 
     /**
      * Gets the URL from which frontend resources should be loaded during
-     * development, unless explicitly configured to use the production es6 and
-     * es5 URLs.
+     * development, unless explicitly configured to use the production es6 URL.
      *
      * @return the development resource URL
      */
