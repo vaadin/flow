@@ -278,16 +278,4 @@ public class BrowserInfo {
         return browserDetails.getBrowserMinorVersion();
     }
 
-    /**
-     * Checks if the browser supports ECMAScript 6, based on the user agent.
-     *
-     * @see com.vaadin.flow.shared.BrowserDetails#isEs6Supported()
-     *
-     * @return <code>true</code> if the browser supports ES6, <code>false</code>
-     *         otherwise.
-     */
-    public boolean isEs6Supported() {
-        return browserDetails.isEs6Supported();
-    }
-
 }
