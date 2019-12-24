@@ -272,7 +272,7 @@ public class VaadinServiceTest {
     @Test
     public void dependencyFilterOrder_bundeFiltersAfterApplicationFilters() {
         DependencyFilter applicationFilter = (dependencies,
-                filterContext) -> dependencies;
+                service) -> dependencies;
 
         MockDeploymentConfiguration configuration = new MockDeploymentConfiguration() {
             @Override
@@ -320,13 +320,11 @@ public class VaadinServiceTest {
         List<DependencyFilter> filters = new ArrayList<>();
         service.getDependencyFilters().forEach(filters::add);
 
-        Assert.assertEquals(3, filters.size());
+        Assert.assertEquals(2, filters.size());
 
         Assert.assertSame(applicationFilter, filters.get(0));
         Assert.assertSame(BundleDependencyFilter.class,
                 filters.get(1).getClass());
-        Assert.assertSame(BundleDependencyFilter.class,
-                filters.get(2).getClass());
     }
 
     private static VaadinService createService() {
