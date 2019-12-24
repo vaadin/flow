@@ -22,14 +22,13 @@ import com.vaadin.flow.component.dnd.DragSource;
 import com.vaadin.flow.component.dnd.DropTarget;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.Command;
-import com.vaadin.flow.server.WebBrowser;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.LoadMode;
 
 /**
  * Internal class for drag and drop related utility methods. This class is not
  * meant for external usage and can be removed at any point.
- * 
+ *
  * @author Vaadin Ltd
  * @since 2.0
  */
@@ -115,7 +114,7 @@ public class DndUtil {
      * the static methods in {@link com.vaadin.flow.component.dnd.DragSource
      * DragSource} and {@link com.vaadin.flow.component.dnd.DropTarget
      * DropTarget} are used, because otherwise the connector is not loaded.
-     * 
+     *
      * @param component
      *            the component that should be attached and uses dnd connector
      */
@@ -135,7 +134,7 @@ public class DndUtil {
     /**
      * Adds the mobile dnd polyfills when a iOS device is used. Calling this is
      * NOOP for non-iOS devices. The polyfills are only loaded once per page.
-     * 
+     *
      * @param component
      *            the component using dnd
      */
@@ -146,13 +145,10 @@ public class DndUtil {
             }
             // #7123 need to delegate iOS checking to client side due to iPads
             // with iOS 13
-            WebBrowser browser = ui.getSession().getBrowser();
-            String url1 = ui.getSession().getService().resolveResource(
-                    MOBILE_DND_POLYFILL_URL,
-                    browser);
-            String url2 = ui.getSession().getService().resolveResource(
-                    VAADIN_MOBILE_DND_POLYFILL_URL,
-                    browser);
+            String url1 = ui.getSession().getService()
+                    .resolveResource(MOBILE_DND_POLYFILL_URL);
+            String url2 = ui.getSession().getService()
+                    .resolveResource(VAADIN_MOBILE_DND_POLYFILL_URL);
 
             ui.getPage().executeJs(
                     String.format(MOBILE_POLYFILL_INJECT_SCRIPT, url1, url2));
@@ -163,7 +159,7 @@ public class DndUtil {
     /**
      * Triggers drag source activation method in JS connector once when the
      * component has been attached.
-     * 
+     *
      * @param dragSource
      *            the drag source to update active status on
      * @param <T>
@@ -182,7 +178,7 @@ public class DndUtil {
      * component has been attached. Will make sure the activation in JS is done
      * again when the component is detached and attached again, because
      * otherwise the element will not be a drop target again.
-     * 
+     *
      * @param dropTarget
      *            the drop target to update active status on
      * @param <T>
