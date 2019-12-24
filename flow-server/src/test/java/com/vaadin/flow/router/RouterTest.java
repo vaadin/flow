@@ -37,6 +37,7 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.component.HasComponents;
+import com.vaadin.flow.component.Text;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -676,9 +677,13 @@ public class RouterTest extends RoutingTestBase {
     @Route(value = "child", layout = RouteParent.class)
     @Tag(Tag.DIV)
     public static class RouteChild extends Component
-            implements BeforeLeaveObserver, BeforeEnterObserver {
+            implements HasComponents, BeforeLeaveObserver, BeforeEnterObserver {
 
         static List<EventObject> events = new ArrayList<>();
+
+        public RouteChild() {
+            add("child target");
+        }
 
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
@@ -719,9 +724,13 @@ public class RouterTest extends RoutingTestBase {
     @Route(value = "single", layout = RouteParent.class, absolute = true)
     @Tag(Tag.DIV)
     public static class LoneRoute extends Component
-            implements BeforeEnterObserver {
+            implements HasComponents, BeforeEnterObserver {
 
         static List<EventObject> events = new ArrayList<>();
+
+        public LoneRoute() {
+            add("lone target");
+        }
 
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
@@ -3331,7 +3340,7 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test // #4595
-    public void route_event_listeners_are_invoked_starting_with_parent_component()
+    public void navigation_event_listeners_are_invoked_starting_with_parent_component()
             throws InvalidRouteConfigurationException {
         setNavigationTargets(ProcessEventsTwig.class);
 
@@ -3360,7 +3369,7 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test // #4595
-    public void url_parameter_is_invoked_after_before_enter_events()
+    public void navigation_url_parameter_is_invoked_after_before_enter_events()
             throws InvalidRouteConfigurationException {
         setNavigationTargets(ProcessEventsLeaf.class);
 

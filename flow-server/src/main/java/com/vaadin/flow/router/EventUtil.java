@@ -116,14 +116,19 @@ public final class EventUtil {
      *
      * @param chain
      *            the view chain after the navigation
+     * @param childrenExclusions
+     *            any children of any element in the chain input that is found
+     *            in this collection will be excluded from the result
      *
      * @return list of found BeforeEnterObservers in the chain tree.
      */
-    public static List<BeforeEnterObserver> collectBeforeEnterObservers(
-            Collection<? extends HasElement> chain) {
+    public static List<BeforeEnterObserver> collectBeforeEnterObserversFromChain(
+            Collection<? extends HasElement> chain,
+            Collection<? extends HasElement> childrenExclusions) {
 
         return chain.stream().flatMap(chainRoot -> {
-            return collectBeforeEnterObserversStream(chainRoot);
+            return collectBeforeEnterObserversStream(chainRoot,
+                    getElements(childrenExclusions));
         }).collect(Collectors.toList());
     }
 
@@ -133,26 +138,38 @@ public final class EventUtil {
      *
      * @param element
      *            an element
+     * @param childrenExclusions
+     *            any children of the element input that is found in this
+     *            collection will be excluded from the result
      *
      * @return list of found BeforeEnterObservers in the element hierarchy tree.
      */
-    public static List<BeforeEnterObserver> collectBeforeEnterObservers(
-            HasElement element) {
+    public static List<BeforeEnterObserver> collectBeforeEnterObserversFromChainElement(
+            HasElement element,
+            Collection<? extends HasElement> childrenExclusions) {
 
-        return collectBeforeEnterObserversStream(element)
-                .collect(Collectors.toList());
+        return collectBeforeEnterObserversStream(element,
+                getElements(childrenExclusions)).collect(Collectors.toList());
     }
 
-    private static Stream<? extends BeforeEnterObserver> collectBeforeEnterObserversStream(HasElement element) {
+    private static Stream<? extends BeforeEnterObserver> collectBeforeEnterObserversStream(
+            HasElement element,
+            Collection<Element> childrenExclusions) {
         Element chainRootElement = element.getElement();
 
         Predicate<Element> currentRootAndNonRoots = input -> {
-            return true;
+            return input.equals(element) || !childrenExclusions.contains(input);
         };
 
         return getImplementingComponents(
                 flattenDescendants(chainRootElement, currentRootAndNonRoots),
                 BeforeEnterObserver.class);
+    }
+    
+    private static Collection<Element> getElements(
+            Collection<? extends HasElement> components) {
+        return components.stream().map(HasElement::getElement)
+                .collect(Collectors.toSet());
     }
 
     /**

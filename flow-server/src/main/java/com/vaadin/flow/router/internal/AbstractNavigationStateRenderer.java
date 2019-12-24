@@ -215,7 +215,8 @@ public abstract class AbstractNavigationStateRenderer
                 event, routeTargetType, routeLayoutTypes);
 
         TransitionOutcome transitionOutcome = createChainIfEmptyAndExecuteBeforeEnterNavigation(
-                beforeNavigationActivating, event, chain);
+                beforeNavigationActivating, event, chain,
+                ui.getInternals().getActiveRouterTargetsChain());
 
         Optional<Integer> result = handleTransactionOutcome(transitionOutcome, event,
                 beforeNavigationActivating);
@@ -440,12 +441,13 @@ public abstract class AbstractNavigationStateRenderer
      *            the chain of {@link HasElement} instances which will be
      *            rendered. In case this is empty it'll be populated with
      *            instances according with the navigation event's location.
+     * @param oldChain
+     *            the old navigation chain.
      * @return result of observer events
      */
     private TransitionOutcome createChainIfEmptyAndExecuteBeforeEnterNavigation(
-            BeforeEnterEvent beforeNavigation,
-            NavigationEvent event,
-            ArrayList<HasElement> chain) {
+            BeforeEnterEvent beforeNavigation, NavigationEvent event,
+            List<HasElement> chain, List<HasElement> oldChain) {
 
         // Always send the beforeNavigation event first to the registered
         // listeners
@@ -470,7 +472,8 @@ public abstract class AbstractNavigationStateRenderer
                 chain.add(element);
 
                 List<BeforeEnterHandler> chainEnterHandlers = new ArrayList<>(
-                        EventUtil.collectBeforeEnterObservers(element));
+                        EventUtil.collectBeforeEnterObserversFromChainElement(
+                                element, oldChain));
 
                 transitionOutcome = sendBeforeEnterEvent(
                         beforeNavigation, chainEnterHandlers);
@@ -495,7 +498,7 @@ public abstract class AbstractNavigationStateRenderer
             // Used when the chain already exists by being preserved on refresh.
             // See `isPreserveOnRefreshTarget` method implementation and usage.
             List<BeforeEnterHandler> chainEnterHandlers = new ArrayList<>(
-                    EventUtil.collectBeforeEnterObservers(chain));
+                    EventUtil.collectBeforeEnterObserversFromChain(chain, oldChain));
             
             transitionOutcome = sendBeforeEnterEvent(
                     beforeNavigation, chainEnterHandlers);
