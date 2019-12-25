@@ -91,13 +91,13 @@ import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_APPLICATION_PROPERTIES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_GENERATED_TS_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_JAVA_SOURCE_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_OPENAPI_JSON_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
@@ -216,10 +216,6 @@ public class DevModeInitializer implements ServletContainerInitializer,
             log().debug("Skipping DEV MODE because PRODUCTION MODE is set.");
             return;
         }
-        if (config.isCompatibilityMode()) {
-            log().debug("Skipping DEV MODE because BOWER MODE is set.");
-            return;
-        }
         if (!config.enableDevServer()) {
             log().debug(
                     "Skipping DEV MODE because dev server shouldn't be enabled.");
@@ -234,7 +230,8 @@ public class DevModeInitializer implements ServletContainerInitializer,
         String frontendFolder = config.getStringProperty(PARAM_FRONTEND_DIR,
                 System.getProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR));
 
-        File flowResourcesFolder = new File(baseDir, DEAULT_FLOW_RESOURCES_FOLDER);
+        File flowResourcesFolder = new File(baseDir,
+                DEAULT_FLOW_RESOURCES_FOLDER);
 
         Builder builder = new NodeTasks.Builder(new DevModeClassFinder(classes),
                 new File(baseDir), new File(generatedDir),

@@ -24,7 +24,6 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component.MapToExistingElement;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.dependency.Uses;

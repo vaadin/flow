@@ -31,7 +31,6 @@ import com.vaadin.flow.server.frontend.FallbackChunk;
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_REUSE_DEV_SERVER;
 import static com.vaadin.flow.server.DevModeHandler.getDevModeHandler;
@@ -83,8 +82,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     @Test
     public void loadingJars_useObsoleteResourcesFolder_allFilesExist()
             throws IOException, ServletException {
-        loadingJars_allFilesExist(
-                COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT);
+        loadingJars_allFilesExist(COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT);
     }
 
     @Test
@@ -134,15 +132,6 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         webpackFile.delete();
         runOnStartup();
         assertNotNull(getDevModeHandler());
-    }
-
-    @Test
-    public void should_Not_Run_Updaters_inBowerMode() throws Exception {
-        System.setProperty("vaadin." + SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                "true");
-        DevModeInitializer devModeInitializer = new DevModeInitializer();
-        devModeInitializer.onStartup(classes, servletContext);
-        assertNull(DevModeHandler.getDevModeHandler());
     }
 
     @Test

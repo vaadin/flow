@@ -23,7 +23,6 @@ import com.vaadin.flow.component.dnd.DropTarget;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.shared.ui.LoadMode;
 
 /**
  * Internal class for drag and drop related utility methods. This class is not
@@ -105,30 +104,6 @@ public class DndUtil {
 
     private DndUtil() {
         // no instances from this class
-    }
-
-    /**
-     * Includes the dnd connector when the component is attached to a UI.
-     * <p>
-     * This is only for the case when the project is in compatibility mode and
-     * the static methods in {@link com.vaadin.flow.component.dnd.DragSource
-     * DragSource} and {@link com.vaadin.flow.component.dnd.DropTarget
-     * DropTarget} are used, because otherwise the connector is not loaded.
-     *
-     * @param component
-     *            the component that should be attached and uses dnd connector
-     */
-    public static void addDndConnectorWhenComponentAttached(
-            Component component) {
-        component.getElement().getNode().runWhenAttached(ui -> {
-            if (ComponentUtil.getData(ui, DND_CONNECTOR_COMPATIBILITY) == null
-                    && ui.getSession().getConfiguration()
-                            .isCompatibilityMode()) {
-                ui.getPage().addJavaScript(DND_CONNECTOR_COMPATIBILITY,
-                        LoadMode.EAGER);
-                ComponentUtil.setData(ui, DND_CONNECTOR_COMPATIBILITY, true);
-            }
-        });
     }
 
     /**

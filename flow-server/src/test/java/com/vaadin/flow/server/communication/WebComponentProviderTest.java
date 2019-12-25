@@ -18,6 +18,7 @@ package com.vaadin.flow.server.communication;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.HashSet;
@@ -113,8 +114,6 @@ public class WebComponentProviderTest {
 
         Mockito.doCallRealMethod().when(service)
                 .getContextRootRelativePath(Mockito.any());
-
-        Mockito.when(configuration.isCompatibilityMode()).thenReturn(false);
 
         provider = new WebComponentProvider();
     }

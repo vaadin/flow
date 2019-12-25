@@ -29,7 +29,6 @@ import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_REUSE_DEV_SERVER;
 import static com.vaadin.flow.server.DevModeHandler.getDevModeHandler;
@@ -95,15 +94,13 @@ public class DevModeInitializerTestBase {
         webpackFile = new File(baseDir, WEBPACK_CONFIG);
 
         // Not this needs to update according to dependencies in
-        // NodeUpdater.getDefaultDependencies and NodeUpdater.getDefaultDevDependencies
+        // NodeUpdater.getDefaultDependencies and
+        // NodeUpdater.getDefaultDevDependencies
         FileUtils.write(mainPackageFile, getInitalPackageJson().toJson(),
                 "UTF-8");
         webpackFile.createNewFile();
-        FileUtils.forceMkdir(new File(baseDir, DEFAULT_CONNECT_JAVA_SOURCE_FOLDER));
-
-        // Default is Bower Mode, change to Npm Mode
-        System.setProperty("vaadin." + SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                "false");
+        FileUtils.forceMkdir(
+                new File(baseDir, DEFAULT_CONNECT_JAVA_SOURCE_FOLDER));
 
         devModeInitializer = new DevModeInitializer();
     }
@@ -137,7 +134,6 @@ public class DevModeInitializerTestBase {
 
     @After
     public void teardown() throws Exception, SecurityException {
-        System.clearProperty("vaadin." + SERVLET_PARAMETER_COMPATIBILITY_MODE);
         System.clearProperty("vaadin." + SERVLET_PARAMETER_PRODUCTION_MODE);
         System.clearProperty("vaadin." + SERVLET_PARAMETER_REUSE_DEV_SERVER);
         System.clearProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN);

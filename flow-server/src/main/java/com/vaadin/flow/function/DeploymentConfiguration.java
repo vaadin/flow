@@ -47,29 +47,6 @@ public interface DeploymentConfiguration extends Serializable {
     boolean isProductionMode();
 
     /**
-     * Returns whether Vaadin is running in Vaadin 13 compatibility mode.
-     *
-     * NOTE: compatibility mode will be unsupported in future versions.
-     *
-     * @deprecated use {@link #isCompatibilityMode()}
-     *
-     * @return true if in compatibility mode, false otherwise.
-     */
-    @Deprecated
-    boolean isBowerMode();
-
-    /**
-     * Returns whether Vaadin is running in Vaadin 13 compatibility mode.
-     *
-     * NOTE: compatibility mode will be unsupported in future versions.
-     *
-     * @return true if in compatibility mode, false otherwise.
-     */
-    default boolean isCompatibilityMode() {
-        return isBowerMode();
-    }
-
-    /**
      * Returns whether Vaadin is running in clientSideMode.
      *
      * @return true if in clientSideMode, false otherwise.
@@ -267,65 +244,6 @@ public interface DeploymentConfiguration extends Serializable {
      * @return the configured class loader name
      */
     String getClassLoaderName();
-
-    /**
-     * Gets the URL from which frontend resources should be loaded during
-     * development, unless explicitly configured to use the production es6 URL.
-     *
-     * @return the development resource URL
-     */
-    default String getDevelopmentFrontendPrefix() {
-        return Constants.FRONTEND_URL_DEV_DEFAULT;
-    }
-
-    /**
-     * Gets the URL from which frontend resources should be loaded in ES6
-     * compatible browsers.
-     *
-     * @return the ES6 resource URL
-     */
-    default String getEs6FrontendPrefix() {
-        return useCompiledFrontendResources()
-                ? getStringProperty(Constants.FRONTEND_URL_ES6,
-                        Constants.FRONTEND_URL_ES6_DEFAULT_VALUE)
-                : getDevelopmentFrontendPrefix();
-    }
-
-    /**
-     * Gets the URL from which frontend resources should be loaded in NPM mode.
-     *
-     * @return the NPM resource URL
-     */
-    default String getNpmFrontendPrefix() {
-        return getDevelopmentFrontendPrefix();
-    }
-
-    /**
-     * Determines if webJars mechanism is enabled. It is disabled if the user
-     * have explicitly set the {@link Constants#DISABLE_WEBJARS} property to
-     * {@code true}, or the user have not set the property at all and the
-     * {@link #useCompiledFrontendResources()} returns false.
-     *
-     * @return {@code true} if webJars are enabled, {@code false} otherwise
-     */
-    default boolean areWebJarsEnabled() {
-        return !getBooleanProperty(Constants.DISABLE_WEBJARS,
-                useCompiledFrontendResources());
-    }
-
-    /**
-     * Determines if Flow should use compiled or original frontend resources.
-     *
-     * User can explicitly disable bundled resources usage by setting the
-     * {@link Constants#USE_ORIGINAL_FRONTEND_RESOURCES} property to
-     * {@code true}.
-     *
-     * @return {@code true} if Flow should use compiled frontend resources.
-     */
-    default boolean useCompiledFrontendResources() {
-        return isProductionMode() && !getBooleanProperty(
-                Constants.USE_ORIGINAL_FRONTEND_RESOURCES, false);
-    }
 
     /**
      * Determines if Flow should automatically register servlets. For more

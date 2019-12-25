@@ -46,22 +46,18 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.internal.DependencyTreeCache;
-import com.vaadin.flow.component.internal.HtmlImportParser;
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.LocaleUtil;
-import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
@@ -76,7 +72,6 @@ import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.communication.UidlRequestHandler;
 import com.vaadin.flow.server.communication.WebComponentBootstrapHandler;
 import com.vaadin.flow.server.communication.WebComponentProvider;
-import com.vaadin.flow.server.startup.BundleFilterFactory;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
@@ -203,10 +198,6 @@ public abstract class VaadinService implements Serializable {
 
     private Instantiator instantiator;
 
-    private DependencyTreeCache<String> htmlImportDependencyCache;
-
-    private Registration htmlImportDependencyCacheClearRegistration;
-
     private VaadinContext vaadinContext;
 
     /**
@@ -284,10 +275,8 @@ public abstract class VaadinService implements Serializable {
 
             requestHandlers = Collections.unmodifiableCollection(handlers);
 
-            dependencyFilters = Stream
-                    .concat(instantiator.getDependencyFilters(
-                            event.getAddedDependencyFilters()),
-                            new BundleFilterFactory().createFilters(this))
+            dependencyFilters = instantiator
+                    .getDependencyFilters(event.getAddedDependencyFilters())
                     .collect(Collectors.toList());
             bootstrapListeners = instantiator
                     .getBootstrapListeners(event.getAddedBootstrapListeners())
@@ -305,35 +294,8 @@ public abstract class VaadinService implements Serializable {
             getRouteRegistry().getRegisteredRoutes().stream()
                     .map(Object::toString).forEach(logger::debug);
 
-            if (configuration.isCompatibilityMode()) {
-                UsageStatistics.markAsUsed("flow/Bower", null);
-            } else {
-                UsageStatistics.markAsUsed("flow/npm", null);
-            }
+            UsageStatistics.markAsUsed("flow/npm", null);
         }
-
-        htmlImportDependencyCache = new DependencyTreeCache<>(path -> {
-            List<String> dependencies = new ArrayList<>();
-            HtmlImportParser.parseImports(path,
-                    resourcePath -> getResourceAsStream(resourcePath, null),
-                    resourcePath -> resolveResource(resourcePath),
-                    dependency -> {
-                        if (!dependency.startsWith(
-                                "frontend://bower_components/polymer/")) {
-                            dependencies.add(dependency);
-                        }
-                    });
-
-            return dependencies;
-        });
-
-        /*
-         * When all reflection caches are cleared, we also clear the HMTL
-         * dependnecy cache so that the reflection caches managed by
-         * ComponentMetaData won't keep using previously parsed data.
-         */
-        htmlImportDependencyCacheClearRegistration = ReflectionCache
-                .addClearAllAction(htmlImportDependencyCache::clear);
 
         initialized = true;
     }
@@ -2099,8 +2061,6 @@ public abstract class VaadinService implements Serializable {
      * @see Servlet#destroy()
      */
     public void destroy() {
-        htmlImportDependencyCacheClearRegistration.remove();
-
         ServiceDestroyEvent event = new ServiceDestroyEvent(this);
         serviceDestroyListeners
                 .forEach(listener -> listener.serviceDestroy(event));
@@ -2326,15 +2286,6 @@ public abstract class VaadinService implements Serializable {
      */
     public abstract Optional<String> getThemedUrl(String url,
             AbstractTheme theme);
-
-    /**
-     * Gets the HTML import dependency cache that is used by this service.
-     *
-     * @return the HTML dependency cache
-     */
-    public DependencyTreeCache<String> getHtmlImportDependencyCache() {
-        return htmlImportDependencyCache;
-    }
 
     /**
      * Constructs {@link VaadinContext} for this service.

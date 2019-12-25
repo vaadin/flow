@@ -17,7 +17,6 @@ package com.vaadin.flow.server;
 
 import java.util.Properties;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.is;
@@ -34,14 +33,6 @@ import static org.junit.Assert.assertTrue;
  */
 public class DefaultDeploymentConfigurationTest {
 
-    private static Properties DEFAULT_PARAMS = new Properties();
-
-    {
-        DEFAULT_PARAMS.setProperty(
-                Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                Boolean.TRUE.toString());
-    }
-
     @Test
     public void testGetSystemPropertyForDefaultPackage()
             throws ClassNotFoundException {
@@ -49,7 +40,7 @@ public class DefaultDeploymentConfigurationTest {
         String value = "value";
         String prop = "prop";
         System.setProperty(prop, value);
-        Properties initParameters = new Properties(DEFAULT_PARAMS);
+        Properties initParameters = new Properties();
         DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
                 clazz, initParameters);
         assertEquals(value, config.getSystemProperty(prop));
@@ -63,7 +54,7 @@ public class DefaultDeploymentConfigurationTest {
                 DefaultDeploymentConfigurationTest.class.getPackage().getName()
                         + '.' + prop,
                 value);
-        Properties initParameters = new Properties(DEFAULT_PARAMS);
+        Properties initParameters = new Properties();
         DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
                 DefaultDeploymentConfigurationTest.class, initParameters);
         assertEquals(value, config.getSystemProperty(prop));
@@ -71,7 +62,7 @@ public class DefaultDeploymentConfigurationTest {
 
     @Test
     public void booleanValueReadIgnoreTheCase_true() {
-        Properties initParameters = new Properties(DEFAULT_PARAMS);
+        Properties initParameters = new Properties();
         initParameters.setProperty(
                 Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS, "tRUe");
 
@@ -84,7 +75,7 @@ public class DefaultDeploymentConfigurationTest {
 
     @Test
     public void booleanValueReadIgnoreTheCase_false() {
-        Properties initParameters = new Properties(DEFAULT_PARAMS);
+        Properties initParameters = new Properties();
         initParameters.setProperty(
                 Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS, "FaLsE");
 
@@ -98,7 +89,7 @@ public class DefaultDeploymentConfigurationTest {
 
     @Test
     public void booleanValueRead_emptyIsTrue() {
-        Properties initParameters = new Properties(DEFAULT_PARAMS);
+        Properties initParameters = new Properties();
         initParameters.setProperty(
                 Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS, "");
 
@@ -111,47 +102,12 @@ public class DefaultDeploymentConfigurationTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void booleanValueRead_exceptionOnNonBooleanValue() {
-        Properties initParameters = new Properties(DEFAULT_PARAMS);
+        Properties initParameters = new Properties();
         initParameters.setProperty(
                 Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
                 "incorrectValue");
 
         createDeploymentConfig(initParameters);
-    }
-
-    @Test
-    public void frontendPrefix_developmentMode() {
-        Properties initParameters = new Properties(DEFAULT_PARAMS);
-        initParameters.setProperty(Constants.FRONTEND_URL_ES6,
-                "context://build/frontend-es6/");
-        initParameters.setProperty(Constants.SERVLET_PARAMETER_PRODUCTION_MODE,
-                Boolean.FALSE.toString());
-
-        DefaultDeploymentConfiguration config = createDeploymentConfig(
-                initParameters);
-        String developmentPrefix = Constants.FRONTEND_URL_DEV_DEFAULT;
-        assertThat(String.format(
-                "In development mode, es6 prefix should be equal to '%s'",
-                developmentPrefix), config.getEs6FrontendPrefix(),
-                is(developmentPrefix));
-    }
-
-    @Test
-    public void frontendPrefix_productionMode() {
-        String es6Prefix = "context://build/frontend-es6/";
-
-        Properties initParameters = new Properties(DEFAULT_PARAMS);
-        initParameters.setProperty(Constants.FRONTEND_URL_ES6, es6Prefix);
-        initParameters.setProperty(Constants.SERVLET_PARAMETER_PRODUCTION_MODE,
-                Boolean.TRUE.toString());
-
-        DefaultDeploymentConfiguration config = createDeploymentConfig(
-                initParameters);
-
-        assertThat(String.format(
-                "In production mode, es6 prefix should be equal to '%s' parameter value",
-                Constants.FRONTEND_URL_ES6), config.getEs6FrontendPrefix(),
-                is(es6Prefix));
     }
 
     private DefaultDeploymentConfiguration createDeploymentConfig(
@@ -162,7 +118,7 @@ public class DefaultDeploymentConfigurationTest {
 
     @Test
     public void defaultPushUrl() {
-        Properties initParameters = new Properties(DEFAULT_PARAMS);
+        Properties initParameters = new Properties();
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 initParameters);
         assertThat(config.getPushURL(), is(""));
@@ -170,34 +126,12 @@ public class DefaultDeploymentConfigurationTest {
 
     @Test
     public void pushUrl() {
-        Properties initParameters = new Properties(DEFAULT_PARAMS);
+        Properties initParameters = new Properties();
         initParameters.setProperty(Constants.SERVLET_PARAMETER_PUSH_URL, "foo");
 
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 initParameters);
         assertThat(config.getPushURL(), is("foo"));
-    }
-
-    @Test
-    public void bundleIsEnabledInProduction() {
-        Properties initParameters = new Properties(DEFAULT_PARAMS);
-        initParameters.setProperty(Constants.SERVLET_PARAMETER_PRODUCTION_MODE,
-                "true");
-        DefaultDeploymentConfiguration config = createDeploymentConfig(
-                initParameters);
-        Assert.assertTrue(config.useCompiledFrontendResources());
-    }
-
-    @Test
-    public void bundleCanBeDisabled() {
-        Properties initParameters = new Properties(DEFAULT_PARAMS);
-        initParameters.setProperty(Constants.SERVLET_PARAMETER_PRODUCTION_MODE,
-                "true");
-        initParameters.setProperty(Constants.USE_ORIGINAL_FRONTEND_RESOURCES,
-                "true");
-        DefaultDeploymentConfiguration config = createDeploymentConfig(
-                initParameters);
-        Assert.assertFalse(config.useCompiledFrontendResources());
     }
 
 }

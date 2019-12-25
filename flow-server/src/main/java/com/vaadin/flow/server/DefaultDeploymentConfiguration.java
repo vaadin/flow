@@ -19,7 +19,6 @@ package com.vaadin.flow.server;
 import java.io.File;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,11 +45,11 @@ public class DefaultDeploymentConfiguration
     private static final String SEPARATOR = "\n====================================================================";
 
     public static final String NOT_PRODUCTION_MODE_INFO = SEPARATOR
-            + "\nVaadin is running in DEBUG MODE.\n" +
-            "In order to run your application in production mode and disable debug features, " +
-            "you should enable it by setting the servlet init parameter productionMode to true.\n" +
-            "See https://vaadin.com/docs/v14/flow/production/tutorial-production-mode-basic.html " +
-            "for more information about the production mode." + SEPARATOR;
+            + "\nVaadin is running in DEBUG MODE.\n"
+            + "In order to run your application in production mode and disable debug features, "
+            + "you should enable it by setting the servlet init parameter productionMode to true.\n"
+            + "See https://vaadin.com/docs/v14/flow/production/tutorial-production-mode-basic.html "
+            + "for more information about the production mode." + SEPARATOR;
 
     public static final String WARNING_COMPATIBILITY_MODE = SEPARATOR
             + "\nRunning in Vaadin 13 (Flow 1) compatibility mode.\n\n"
@@ -72,8 +71,7 @@ public class DefaultDeploymentConfiguration
             + "and \"automatic\". The default of \"disabled\" will be used."
             + SEPARATOR;
 
-    private static final String INDEX_NOT_FOUND =
-            "- '%s' is not found from '%s'. Generating a default one in '%s%s'.%n"
+    private static final String INDEX_NOT_FOUND = "- '%s' is not found from '%s'. Generating a default one in '%s%s'.%n"
             + "Copy this file to the '%s' folder if you want to customize it.%n";
 
     /**
@@ -131,7 +129,6 @@ public class DefaultDeploymentConfiguration
         boolean log = loggWarning.getAndSet(false);
 
         checkProductionMode(log);
-        checkCompatibilityMode(log);
         checkClientSideMode(log);
         checkRequestTiming();
         checkXsrfProtection(log);
@@ -152,16 +149,6 @@ public class DefaultDeploymentConfiguration
     @Override
     public boolean isProductionMode() {
         return productionMode;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * The default is false.
-     */
-    @Override
-    public boolean isBowerMode() {
-        return compatibilityMode;
     }
 
     /**
@@ -271,41 +258,6 @@ public class DefaultDeploymentConfiguration
     }
 
     /**
-     * Log a warning if Vaadin is running in compatibility mode. Throw
-     * {@link IllegalStateException} if the mode could not be determined from
-     * parameters.
-     */
-    private void checkCompatibilityMode(boolean loggWarning) {
-        boolean explicitlySet = false;
-        if (getStringProperty(Constants.SERVLET_PARAMETER_BOWER_MODE,
-                null) != null) {
-            compatibilityMode = getBooleanProperty(
-                    Constants.SERVLET_PARAMETER_BOWER_MODE, false);
-            explicitlySet = true;
-        } else if (getStringProperty(
-                Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE, null) != null) {
-            compatibilityMode = getBooleanProperty(
-                    Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE, false);
-            explicitlySet = true;
-        }
-
-        @SuppressWarnings("unchecked")
-        Consumer<CompatibilityModeStatus> consumer = (Consumer<CompatibilityModeStatus>) getInitParameters()
-                .get(DeploymentConfigurationFactory.DEV_MODE_ENABLE_STRATEGY);
-        if (consumer != null) {
-            if (explicitlySet && !compatibilityMode) {
-                consumer.accept(CompatibilityModeStatus.EXPLICITLY_SET_FALSE);
-            } else if (!explicitlySet) {
-                consumer.accept(CompatibilityModeStatus.UNDEFINED);
-            }
-        }
-
-        if (compatibilityMode && loggWarning) {
-            getLogger().warn(WARNING_COMPATIBILITY_MODE);
-        }
-    }
-
-    /**
      * Log a message if Vaadin is running in clientSideMode.
      */
     private void checkClientSideMode(boolean loggWarning) {
@@ -330,7 +282,8 @@ public class DefaultDeploymentConfiguration
         if (!indexEntry.exists() && !indexEntryTs.exists()) {
             entryPointMessage = String.format(INDEX_NOT_FOUND,
                     indexEntryTs.getName(), indexEntryTs.getPath(), TARGET,
-                    indexEntryTs.getName(), indexEntryTs.getParentFile().getPath());
+                    indexEntryTs.getName(),
+                    indexEntryTs.getParentFile().getPath());
         } else {
             String fileName = indexEntry.exists() ? "index.js" : "index.ts";
             String filePath = indexEntry.exists() ? indexEntry.getPath()

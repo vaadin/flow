@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
@@ -34,7 +33,6 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Synchronize;
 import com.vaadin.flow.component.dependency.CssImport;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.StyleSheet;
@@ -43,9 +41,7 @@ import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.ui.LoadMode;
-import com.vaadin.flow.shared.util.SharedUtil;
 
 /**
  * Immutable meta data related to a component class.
@@ -192,30 +188,10 @@ public class ComponentMetaData {
 
         scannedClasses.add(componentClass);
 
-        if (service.getDeploymentConfiguration().isCompatibilityMode()) {
-            dependencyInfo.htmlImports
-                    .addAll(getHtmlImportDependencies(service, componentClass));
+        List<JsModule> jsModules = AnnotationReader
+                .getJsModuleAnnotations(componentClass);
 
-        } else {
-            List<JsModule> jsModules = AnnotationReader
-                    .getJsModuleAnnotations(componentClass);
-
-            // Ignore @HtmlImport(s) when @JsModule(s) present.
-            if (!jsModules.isEmpty()) {
-                dependencyInfo.jsModules.addAll(jsModules);
-            } else {
-                // Show a warning when @HtmlImport is present and there is no
-                // @JsModule or @CssImport.
-                if (!getHtmlImportDependencies(service, componentClass)
-                        .isEmpty()
-                        && AnnotationReader
-                                .getCssImportAnnotations(componentClass)
-                                .isEmpty()) {
-                    getLogger().error(HTML_IMPORT_WITHOUT_JS_MODULE_WARNING,
-                            componentClass.getName());
-                }
-            }
-        }
+        dependencyInfo.jsModules.addAll(jsModules);
 
         dependencyInfo.javaScripts.addAll(
                 AnnotationReader.getJavaScriptAnnotations(componentClass));
@@ -267,27 +243,6 @@ public class ComponentMetaData {
                     event -> dependencyInfo.remove(service));
             return findDependencies(service, componentClass);
         });
-    }
-
-    private static Collection<HtmlImportDependency> getHtmlImportDependencies(
-            VaadinService service, Class<? extends Component> componentClass) {
-        return AnnotationReader.getHtmlImportAnnotations(componentClass)
-                .stream().map(htmlImport -> getHtmlImportDependencies(service,
-                        htmlImport))
-                .collect(Collectors.toList());
-    }
-
-    private static HtmlImportDependency getHtmlImportDependencies(
-            VaadinService service, HtmlImport htmlImport) {
-        String importPath = SharedUtil.prefixIfRelative(htmlImport.value(),
-                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
-
-        DependencyTreeCache<String> cache = service
-                .getHtmlImportDependencyCache();
-
-        Set<String> dependencies = cache.getDependencies(importPath);
-
-        return new HtmlImportDependency(dependencies, htmlImport.loadMode());
     }
 
     /**

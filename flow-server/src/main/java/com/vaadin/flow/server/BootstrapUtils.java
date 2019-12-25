@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -36,7 +35,6 @@ import org.jsoup.parser.Parser;
 
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Meta;
@@ -325,16 +323,6 @@ class BootstrapUtils {
         ThemeSettings settings = new ThemeSettings();
         Class<? extends AbstractTheme> themeClass = themeDefinition.getTheme();
         AbstractTheme theme = ReflectTools.createInstance(themeClass);
-
-        if (!context.isProductionMode()) {
-            List<JsonObject> head = Stream
-                    .of(themeClass.getAnnotationsByType(HtmlImport.class))
-                    .map(HtmlImport::value)
-                    .map(url -> createImportLink(context.getUriResolver(), url))
-                    .map(BootstrapUtils::createInlineDependencyObject)
-                    .collect(Collectors.toList());
-            settings.setHeadContents(head);
-        }
 
         settings.setHeadInjectedContent(createHeaderInlineScript(theme));
 

@@ -33,7 +33,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -78,11 +77,10 @@ public class TaskUpdateImports extends NodeUpdater {
 
     private class UpdateMainImportsFile extends AbstractUpdateImports {
 
-        private static final String LOAD_FALLBACK =
-                "\nwindow.Vaadin.Flow.loadFallback = () => import('./"  + FALLBACK_IMPORTS_NAME + "');";
+        private static final String LOAD_FALLBACK = "\nwindow.Vaadin.Flow.loadFallback = () => import('./"
+                + FALLBACK_IMPORTS_NAME + "');";
 
-        private static final String EXPORT_MODULES_DEF =
-                "export declare const addCssBlock: (block: string, before?: boolean) => void;";
+        private static final String EXPORT_MODULES_DEF = "export declare const addCssBlock: (block: string, before?: boolean) => void;";
 
         private final File generatedFlowImports;
         private final File generatedFlowDefinitions;
@@ -94,7 +92,8 @@ public class TaskUpdateImports extends NodeUpdater {
                 File fallBackImports) {
             super(frontendDirectory, npmDirectory, generatedDirectory);
             generatedFlowImports = new File(generatedDirectory, IMPORTS_NAME);
-            generatedFlowDefinitions = new File(generatedDirectory, IMPORTS_D_TS_NAME);
+            generatedFlowDefinitions = new File(generatedDirectory,
+                    IMPORTS_D_TS_NAME);
             finder = classFinder;
             this.fallBackImports = fallBackImports;
         }
@@ -132,7 +131,8 @@ public class TaskUpdateImports extends NodeUpdater {
             }
             try {
                 updateImportsFile(generatedFlowImports, lines);
-                updateImportsFile(generatedFlowDefinitions, getDefinitionLines());
+                updateImportsFile(generatedFlowDefinitions,
+                        getDefinitionLines());
             } catch (IOException e) {
                 throw new IllegalStateException(String.format(
                         "Failed to update the Flow imports file '%s'",
