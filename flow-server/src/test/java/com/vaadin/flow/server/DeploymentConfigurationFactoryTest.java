@@ -245,20 +245,6 @@ public class DeploymentConfigurationFactoryTest {
     }
 
     @Test
-    public void noTokenFile_nowWebpackConfig_throws() throws Exception {
-        exception.expect(IllegalStateException.class);
-        exception.expectMessage(
-                "There are neither 'flow-build-info.json' nor 'webpack.config.js' file available");
-
-        URLClassLoader classLoader = new URLClassLoader(new URL[] {});
-        expect(contextMock.getClassLoader()).andReturn(classLoader);
-
-        DeploymentConfigurationFactory.createDeploymentConfiguration(
-                VaadinServlet.class,
-                createVaadinConfigMock(Collections.emptyMap(), emptyMap()));
-    }
-
-    @Test
     public void shouldNotThrow_noTokenFile_correctWebPackConfigExists()
             throws Exception {
         Map<String, String> map = new HashMap<>();
