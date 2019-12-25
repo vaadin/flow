@@ -52,6 +52,7 @@ import com.vaadin.flow.theme.ThemeDefinition;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -195,25 +196,20 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
-        if (session.getService().getDeploymentConfiguration()
-                .isCompatibilityMode()) {
-            return super.synchronizedHandleRequest(session, request, response);
-        } else {
-            // Find UI class
-            Class<? extends UI> uiClass = getUIClass(request);
+        // Find UI class
+        Class<? extends UI> uiClass = getUIClass(request);
 
-            BootstrapContext context = createAndInitUI(uiClass, request,
-                    response, session);
+        BootstrapContext context = createAndInitUI(uiClass, request, response,
+                session);
 
-            HandlerHelper.setResponseNoCacheHeaders(response::setHeader,
-                    response::setDateHeader);
+        HandlerHelper.setResponseNoCacheHeaders(response::setHeader,
+                response::setDateHeader);
 
-            String serviceUrl = getServiceUrl(request, response);
+        String serviceUrl = getServiceUrl(request, response);
 
-            Document document = getPageBuilder().getBootstrapPage(context);
-            writeBootstrapPage(response, document.head(), serviceUrl);
-            return true;
-        }
+        Document document = getPageBuilder().getBootstrapPage(context);
+        writeBootstrapPage(response, document.head(), serviceUrl);
+        return true;
     }
 
     /**
@@ -269,7 +265,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
          */
         response.setContentType(contentType);
         /*
-         * Collection of Elements that should be transferred to the web 
+         * Collection of Elements that should be transferred to the web
          * component shadow DOMs rather than the page head
          */
         ArrayList<com.vaadin.flow.dom.Element> elementsForShadows = new ArrayList<>();
@@ -317,7 +313,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                     && element.attr("src").contains("webcomponents-loader.js");
         }
     }
-    
+
     private static Optional<com.vaadin.flow.dom.Element> getElementForShadowDom(
             Element element) {
         if ("style".equals(element.tagName())) {

@@ -18,14 +18,13 @@ package com.vaadin.flow.server;
 import java.io.Serializable;
 import java.util.List;
 
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.shared.ui.Dependency;
 
 /**
- * Filter for dependencies loaded using {@link StyleSheet @StyleSheet},
- * {@link JavaScript @JavaScript} and {@link HtmlImport @HtmlImport}.
+ * Filter for dependencies loaded using {@link StyleSheet @StyleSheet}, and *
+ * {@link JavaScript @JavaScript}.
  *
  * @see ServiceInitEvent#addDependencyFilter(DependencyFilter)
  * @since 1.0

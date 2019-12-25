@@ -33,9 +33,7 @@ public class UnsupportedBrowserHandler extends SynchronizedRequestHandler {
 
     // @formatter:off
     private static final String UNSUPPORTED_PAGE_HEAD_CONTENT = "<head>"
-            + "  <style>"
-            + "    html {"
-            + "      background: #fff;"
+            + "  <style>" + "    html {" + "      background: #fff;"
             + "      color: #444;"
             + "      font: 400 1em/1.5 \"Helvetica Neue\", Roboto, \"Segoe UI\", sans-serif;"
             + "      padding: 2em;"

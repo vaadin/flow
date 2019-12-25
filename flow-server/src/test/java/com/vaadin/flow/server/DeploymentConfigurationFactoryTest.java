@@ -2,7 +2,6 @@ package com.vaadin.flow.server;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 
 import java.io.File;
 import java.io.IOException;
@@ -82,8 +81,6 @@ public class DeploymentConfigurationFactoryTest {
         FileUtils.writeLines(tokenFile, Arrays.asList("{", "}"));
         contextMock = mock(ServletContext.class);
 
-        defaultServletParams.put(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                Boolean.FALSE.toString());
         defaultServletParams.put(PARAM_TOKEN_FILE, tokenFile.getPath());
     }
 
@@ -248,37 +245,25 @@ public class DeploymentConfigurationFactoryTest {
     }
 
     @Test
-    public void should_throwIfModeNotSet() throws Exception {
-        exception.expect(IllegalStateException.class);
-        exception.expectMessage("Unable to determine mode of operation.");
-        createConfig(emptyMap());
-    }
-
-    @Test
-    public void should_throwIfCompatibilityModeIsFalseButNoTokenFile()
-            throws Exception {
+    public void noTokenFile_nowWebpackConfig_throws() throws Exception {
         exception.expect(IllegalStateException.class);
         exception.expectMessage(
-                "The compatibility mode is explicitly set to 'false'");
+                "There are neither 'flow-build-info.json' nor 'webpack.config.js' file available");
 
         URLClassLoader classLoader = new URLClassLoader(new URL[] {});
         expect(contextMock.getClassLoader()).andReturn(classLoader);
 
         DeploymentConfigurationFactory.createDeploymentConfiguration(
                 VaadinServlet.class,
-                createVaadinConfigMock(Collections.singletonMap(
-                        Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                        Boolean.FALSE.toString()), emptyMap()));
+                createVaadinConfigMock(Collections.emptyMap(), emptyMap()));
     }
 
     @Test
-    public void shouldNotThrowIfCompatibilityModeIsFalse_noTokenFile_correctWebPackConfigExists()
+    public void shouldNotThrow_noTokenFile_correctWebPackConfigExists()
             throws Exception {
         Map<String, String> map = new HashMap<>();
         map.put(FrontendUtils.PROJECT_BASEDIR,
                 temporaryFolder.getRoot().getAbsolutePath());
-        map.put(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                Boolean.FALSE.toString());
 
         File webPack = new File(temporaryFolder.getRoot().getAbsolutePath(),
                 FrontendUtils.WEBPACK_CONFIG);
@@ -289,40 +274,12 @@ public class DeploymentConfigurationFactoryTest {
     }
 
     @Test
-    public void shouldThrowIfCompatibilityModeIsFalse_noTokenFile_incorrectWebPackConfigExists()
-            throws Exception {
-        exception.expect(IllegalStateException.class);
-        exception.expectMessage(
-                "The compatibility mode is explicitly set to 'false'");
-
-        URLClassLoader classLoader = new URLClassLoader(new URL[] {});
-        expect(contextMock.getClassLoader()).andReturn(classLoader);
-
-        Map<String, String> map = new HashMap<>();
-        map.put(FrontendUtils.PROJECT_BASEDIR,
-                temporaryFolder.getRoot().getAbsolutePath());
-        map.put(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                Boolean.FALSE.toString());
-
-        File webPack = new File(temporaryFolder.getRoot().getAbsolutePath(),
-                FrontendUtils.WEBPACK_CONFIG);
-        webPack.createNewFile();
-
-        DeploymentConfigurationFactory.createDeploymentConfiguration(
-                VaadinServlet.class, createVaadinConfigMock(map, emptyMap()));
-    }
-
-    @Test
     public void should_readConfigurationFromTokenFile() throws Exception {
         FileUtils.writeLines(tokenFile,
-                Arrays.asList("{",
-                        "\"compatibilityMode\": false,",
-                        "\"productionMode\": true",
-                        "}"));
+                Arrays.asList("{", "\"productionMode\": true", "}"));
 
         DeploymentConfiguration config = createConfig(Collections
                 .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
-        assertFalse(config.isCompatibilityMode());
         assertTrue(config.isProductionMode());
     }
 
@@ -333,13 +290,10 @@ public class DeploymentConfigurationFactoryTest {
         exception.expectMessage(
                 String.format(DEV_FOLDER_MISSING_MESSAGE, "npm"));
         FileUtils.writeLines(tokenFile,
-                Arrays.asList("{",
-                        "\"compatibilityMode\": false,",
-                        "\"productionMode\": false,",
-                        "\"npmFolder\": \"npm\",",
+                Arrays.asList("{", "\"compatibilityMode\": false,",
+                        "\"productionMode\": false,", "\"npmFolder\": \"npm\",",
                         "\"generatedFolder\": \"generated\",",
-                        "\"frontendFolder\": \"frontend\"",
-                        "}"));
+                        "\"frontendFolder\": \"frontend\"", "}"));
 
         createConfig(Collections.singletonMap(PARAM_TOKEN_FILE,
                 tokenFile.getPath()));
@@ -352,11 +306,9 @@ public class DeploymentConfigurationFactoryTest {
         exception.expectMessage(
                 String.format(DEV_FOLDER_MISSING_MESSAGE, "frontend"));
         FileUtils.writeLines(tokenFile,
-                Arrays.asList("{",
-                        "\"compatibilityMode\": false,",
+                Arrays.asList("{", "\"compatibilityMode\": false,",
                         "\"productionMode\": false,",
-                        "\"frontendFolder\": \"frontend\"",
-                        "}"));
+                        "\"frontendFolder\": \"frontend\"", "}"));
 
         createConfig(Collections.singletonMap(PARAM_TOKEN_FILE,
                 tokenFile.getPath()));
@@ -372,12 +324,10 @@ public class DeploymentConfigurationFactoryTest {
         String tempFolder = temporaryFolder.getRoot().getAbsolutePath()
                 .replace("\\", "/");
         FileUtils.writeLines(tokenFile,
-                Arrays.asList("{",
-                        "\"compatibilityMode\": false,",
+                Arrays.asList("{", "\"compatibilityMode\": false,",
                         "\"productionMode\": false,",
                         "\"npmFolder\": \"" + tempFolder + "/npm\",",
-                        "\"frontendFolder\": \"frontend\"",
-                        "}"));
+                        "\"frontendFolder\": \"frontend\"", "}"));
 
         createConfig(Collections.singletonMap(PARAM_TOKEN_FILE,
                 tokenFile.getPath()));
@@ -390,8 +340,7 @@ public class DeploymentConfigurationFactoryTest {
         String tempFolder = temporaryFolder.getRoot().getAbsolutePath()
                 .replace("\\", "/");
         FileUtils.writeLines(tokenFile, Arrays.asList("{",
-                "\"compatibilityMode\": false,",
-                "\"productionMode\": false,",
+                "\"compatibilityMode\": false,", "\"productionMode\": false,",
                 "\"npmFolder\": \"" + tempFolder + "/npm\",",
                 "\"frontendFolder\": \"" + tempFolder + "/npm/frontend\"",
                 "}"));
@@ -407,11 +356,9 @@ public class DeploymentConfigurationFactoryTest {
         String tempFolder = temporaryFolder.getRoot().getAbsolutePath()
                 .replace("\\", "/");
         FileUtils.writeLines(tokenFile, Arrays.asList("{",
-                "\"compatibilityMode\": false,",
-                "\"productionMode\": false,",
+                "\"compatibilityMode\": false,", "\"productionMode\": false,",
                 "\"npmFolder\": \"" + tempFolder + "/npm\",",
-                "\"frontendFolder\": \"" + tempFolder + "/frontend\"",
-                "}"));
+                "\"frontendFolder\": \"" + tempFolder + "/frontend\"", "}"));
 
         createConfig(Collections.singletonMap(PARAM_TOKEN_FILE,
                 tokenFile.getPath()));
@@ -419,18 +366,17 @@ public class DeploymentConfigurationFactoryTest {
 
     @Test
     public void externalStatsFileTrue_predefinedContext() throws Exception {
-        FileUtils.writeLines(tokenFile, Arrays.asList("{",
-                "\"externalStatsFile\": true",
-                "}"));
+        FileUtils.writeLines(tokenFile,
+                Arrays.asList("{", "\"externalStatsFile\": true", "}"));
 
         DeploymentConfiguration config = createConfig(Collections
                 .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
 
         assertEquals(false, config.isProductionMode());
-        assertEquals(false, config.isCompatibilityMode());
         assertEquals(false, config.enableDevServer());
         assertEquals(true, config.isStatsExternal());
-        assertEquals(Constants.DEFAULT_EXTERNAL_STATS_URL, config.getExternalStatsUrl());
+        assertEquals(Constants.DEFAULT_EXTERNAL_STATS_URL,
+                config.getExternalStatsUrl());
     }
 
     @Test
@@ -443,33 +389,34 @@ public class DeploymentConfigurationFactoryTest {
                 .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
 
         assertEquals(false, config.isProductionMode());
-        assertEquals(false, config.isCompatibilityMode());
         assertEquals(false, config.enableDevServer());
         assertEquals(true, config.isStatsExternal());
-        assertEquals("http://my.server/static/stats.json", config.getExternalStatsUrl());
+        assertEquals("http://my.server/static/stats.json",
+                config.getExternalStatsUrl());
     }
 
     @Test
-    public void externalStatsFileTrue_predefinedValuesAreNotOverridden() throws Exception {
+    public void externalStatsFileTrue_predefinedValuesAreNotOverridden()
+            throws Exception {
         // note that this situation shouldn't happen that the other settings
         // would be against the external usage.
-        FileUtils.writeLines(tokenFile, Arrays.asList("{",
-                "\"compatibilityMode\": true,",
-                "\"enableDevServer\": true,",
-                // production mode can be altered even when external stats
-                // are used
-                "\"productionMode\": true,",
-                "\"externalStatsFile\": true",
-                "}"));
+        FileUtils.writeLines(tokenFile,
+                Arrays.asList("{", "\"compatibilityMode\": true,",
+                        "\"enableDevServer\": true,",
+                        // production mode can be altered even when external
+                        // stats
+                        // are used
+                        "\"productionMode\": true,",
+                        "\"externalStatsFile\": true", "}"));
 
         DeploymentConfiguration config = createConfig(Collections
                 .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
 
         assertEquals(true, config.isProductionMode());
-        assertEquals(false, config.isCompatibilityMode());
         assertEquals(false, config.enableDevServer());
         assertEquals(true, config.isStatsExternal());
-        assertEquals(Constants.DEFAULT_EXTERNAL_STATS_URL, config.getExternalStatsUrl());
+        assertEquals(Constants.DEFAULT_EXTERNAL_STATS_URL,
+                config.getExternalStatsUrl());
     }
 
     @Test
@@ -498,7 +445,8 @@ public class DeploymentConfigurationFactoryTest {
                 .thenReturn(tokenFile.getPath());
 
         Properties properties = DeploymentConfigurationFactory
-                .createInitParameters(Object.class, new VaadinServletConfig(config));
+                .createInitParameters(Object.class,
+                        new VaadinServletConfig(config));
 
         Object object = properties
                 .get(DeploymentConfigurationFactory.FALLBACK_CHUNK);
@@ -527,7 +475,8 @@ public class DeploymentConfigurationFactoryTest {
     private VaadinConfig createVaadinConfigMock(
             Map<String, String> servletConfigParameters,
             Map<String, String> servletContextParameters) throws Exception {
-        return new VaadinServletConfig(createServletConfigMock(servletConfigParameters,servletContextParameters));
+        return new VaadinServletConfig(createServletConfigMock(
+                servletConfigParameters, servletContextParameters));
     }
 
     private ServletConfig createServletConfigMock(

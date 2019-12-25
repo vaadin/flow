@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.shared.ui;
 
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 
@@ -24,14 +23,12 @@ import com.vaadin.flow.component.dependency.StyleSheet;
  * importing dependency either via annotations:
  * <ul>
  * <li>{@link JavaScript},
- * <li>{@link StyleSheet},
- * <li>{@link HtmlImport}
+ * <li>{@link StyleSheet}
  * </ul>
  * or via {@link com.vaadin.flow.component.page.Page} methods:
  * <ul>
  * <li>{@link com.vaadin.flow.component.page.Page#addJavaScript(String, LoadMode)}
  * <li>{@link com.vaadin.flow.component.page.Page#addStyleSheet(String, LoadMode)}
- * <li>{@link com.vaadin.flow.component.page.Page#addHtmlImport(String, LoadMode)}
  * </ul>
  *
  * @author Vaadin Ltd

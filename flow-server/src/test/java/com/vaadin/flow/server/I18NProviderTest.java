@@ -37,18 +37,10 @@ import com.vaadin.flow.shared.ApplicationConstants;
 @NotThreadSafe
 public class I18NProviderTest {
 
-    private static Properties DEFAULT_PARAMS = new Properties();
-
-    {
-        DEFAULT_PARAMS.setProperty(
-                Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                Boolean.TRUE.toString());
-    }
-
     @Test
     public void no_property_defined_should_leave_with_default_locale()
             throws ServletException, ServiceException {
-        initServletAndService(DEFAULT_PARAMS);
+        initServletAndService(new Properties());
 
         Assert.assertEquals("Locale was not the expected default locale",
                 Locale.getDefault(), VaadinSession.getCurrent().getLocale());
@@ -57,7 +49,7 @@ public class I18NProviderTest {
     @Test
     public void property_defined_should_init_registy_with_provider()
             throws ServletException, ServiceException {
-        Properties initParams = new Properties(DEFAULT_PARAMS);
+        Properties initParams = new Properties();
         initParams.setProperty(Constants.I18N_PROVIDER,
                 TestProvider.class.getName());
 
@@ -71,7 +63,7 @@ public class I18NProviderTest {
     @Test
     public void with_defined_provider_locale_should_be_the_available_one()
             throws ServletException, ServiceException {
-        Properties initParams = new Properties(DEFAULT_PARAMS);
+        Properties initParams = new Properties();
         initParams.setProperty(Constants.I18N_PROVIDER,
                 TestProvider.class.getName());
 

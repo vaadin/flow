@@ -219,15 +219,9 @@ public class VaadinServletService extends VaadinService {
     public String resolveResource(String url) {
         Objects.requireNonNull(url, "Url cannot be null");
 
-        String frontendRootUrl;
         DeploymentConfiguration config = getDeploymentConfiguration();
-        if (config.isCompatibilityMode()) {
-            frontendRootUrl = config.getEs6FrontendPrefix();
-        } else {
-            frontendRootUrl = config.getNpmFrontendPrefix();
-        }
 
-        return contextResolver.resolveVaadinUri(url, frontendRootUrl);
+        return contextResolver.resolveVaadinUri(url, null);
     }
 
     @Override

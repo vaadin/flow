@@ -59,6 +59,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.validateNodeAndNpmVe
 import static java.lang.String.format;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
+
 /**
  * Handles getting resources from <code>webpack-dev-server</code>.
  * <p>
@@ -245,7 +246,6 @@ public final class DevModeHandler {
     public static DevModeHandler start(int runningPort,
             DeploymentConfiguration configuration, File npmFolder) {
         if (configuration.isProductionMode()
-                || configuration.isCompatibilityMode()
                 || !configuration.enableDevServer()) {
             return null;
         }
@@ -312,8 +312,8 @@ public final class DevModeHandler {
      * @return true if the request should be forwarded to webpack
      */
     public boolean isDevModeRequest(HttpServletRequest request) {
-        return request.getPathInfo() != null
-                && request.getPathInfo().matches("/" + VAADIN_MAPPING + ".+\\.js");
+        return request.getPathInfo() != null && request.getPathInfo()
+                .matches("/" + VAADIN_MAPPING + ".+\\.js");
     }
 
     /**
@@ -441,9 +441,11 @@ public final class DevModeHandler {
             } catch (IOException e) {
                 if ("Stream closed".equals(e.getMessage())) {
                     console(GREEN, END);
-                    getLogger().debug("Exception when reading webpack output.", e);
+                    getLogger().debug("Exception when reading webpack output.",
+                            e);
                 } else {
-                    getLogger().error("Exception when reading webpack output.", e);
+                    getLogger().error("Exception when reading webpack output.",
+                            e);
                 }
             }
 
@@ -477,8 +479,7 @@ public final class DevModeHandler {
         }
 
         // remove color escape codes for console
-        String cleanLine = line
-                .replaceAll("(\u001b\\[[;\\d]*m|[\b\r]+)", "");
+        String cleanLine = line.replaceAll("(\u001b\\[[;\\d]*m|[\b\r]+)", "");
 
         // save output so as it can be used to alert user in browser.
         cumulativeOutput.append(cleanLine);
