@@ -65,7 +65,7 @@ public class TemplateDataAnalyzer {
     private final Set<String> twoWayBindingPaths = new HashSet<>();
     private final Set<String> notInjectableElementIds = new HashSet<>();
 
-    private String htmlImportUri;
+    private String modulePath;
 
     /**
      * Three argument consumer.
@@ -200,7 +200,7 @@ public class TemplateDataAnalyzer {
         TemplateData templateData = parser.getTemplateContent(templateClass,
                 tag, service);
         Element templateRoot = templateData.getTemplateElement();
-        htmlImportUri = templateData.getHtmlImportUri();
+        modulePath = templateData.getModulePath();
         Elements templates = templateRoot.getElementsByTag("template");
         for (org.jsoup.nodes.Element element : templates) {
             org.jsoup.nodes.Element parent = element.parent();
@@ -210,7 +210,7 @@ public class TemplateDataAnalyzer {
                 inspectTwoWayBindings(element);
             }
         }
-        IdCollector idExtractor = new IdCollector(templateClass, htmlImportUri,
+        IdCollector idExtractor = new IdCollector(templateClass, modulePath,
                 templateRoot);
         idExtractor.collectInjectedIds(notInjectableElementIds);
         return readData(idExtractor);
@@ -284,7 +284,7 @@ public class TemplateDataAnalyzer {
                 throw new IllegalStateException(String.format(
                         "Couldn't parse the template '%s': "
                                 + "sub-templates are not supported. Sub-template found: %n'%s'",
-                        htmlImportUri, element.toString()));
+                        modulePath, element.toString()));
             }
 
             String id = element.hasAttr("id") ? element.attr("id") : null;

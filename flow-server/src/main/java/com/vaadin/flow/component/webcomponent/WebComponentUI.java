@@ -67,23 +67,6 @@ public class WebComponentUI extends UI {
         VaadinSession session = getSession();
         DeploymentConfiguration deploymentConfiguration = session.getService()
                 .getDeploymentConfiguration();
-        if (deploymentConfiguration.isCompatibilityMode()
-                && deploymentConfiguration.useCompiledFrontendResources()) {
-            /*
-             * This code adds a number of HTML dependencies to the page but in
-             * fact there are no such HTML files: they should have been
-             * generated during transpilation via maven plugin. To be able to
-             * activate transpiled code the embedded application imports the
-             * "dependencies" which represent the transpiled files.
-             *
-             * This code is not needed when in npm mode, since the web
-             * components will be contained within index.js
-             */
-            getConfigurationRegistry().getConfigurations()
-                    .forEach(config -> getPage()
-                            .addHtmlImport(getWebComponentHtmlPath(config)));
-        }
-
         getEventBus().addListener(WebComponentConnectEvent.class,
                 this::connectWebComponent);
     }
@@ -200,8 +183,9 @@ public class WebComponentUI extends UI {
                             getInternals().getExtendedClientDetails()));
         } else {
             getPage().retrieveExtendedClientDetails(extendedClientDetails -> {
-                attachCachedOrCreatedWebComponent(webComponentConfiguration.get(),
-                        event, getComponentHash(event, extendedClientDetails));
+                attachCachedOrCreatedWebComponent(
+                        webComponentConfiguration.get(), event,
+                        getComponentHash(event, extendedClientDetails));
             });
         }
     }
@@ -400,7 +384,7 @@ public class WebComponentUI extends UI {
          * new one will be ignored.
          * <p>
          * This is an atomic operation.
-         * 
+         *
          * @param identifier
          *            Unique identifier for the {@code element}
          * @param element
@@ -416,7 +400,7 @@ public class WebComponentUI extends UI {
         /**
          * Retrieves the {@link com.vaadin.flow.dom.Element} stored in the
          * registry, identified by {@code identifier}.
-         * 
+         *
          * @param identifier
          *            Unique identifier for the {@link Element}
          * @return an {@link Element}, or {@code null} if nothing is stored for

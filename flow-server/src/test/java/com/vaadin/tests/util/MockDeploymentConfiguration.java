@@ -14,7 +14,6 @@ public class MockDeploymentConfiguration
     private boolean productionMode = false;
     private boolean enableDevServer = true;
     private boolean reuseDevServer = true;
-    private boolean compatibilityMode = false;
     private boolean clientSideMode = false;
     private boolean xsrfProtectionEnabled = true;
     private int heartbeatInterval = 300;
@@ -32,11 +31,6 @@ public class MockDeploymentConfiguration
     @Override
     public boolean isProductionMode() {
         return productionMode;
-    }
-
-    @Override
-    public boolean isBowerMode() {
-        return compatibilityMode;
     }
 
     @Override
@@ -163,10 +157,6 @@ public class MockDeploymentConfiguration
         this.brotli = brotli;
     }
 
-    public void setCompatibilityMode(boolean compatibility) {
-        compatibilityMode = compatibility;
-    }
-
     @Override
     public boolean isClientSideMode() {
         return clientSideMode;
@@ -178,7 +168,7 @@ public class MockDeploymentConfiguration
 
     @Override
     public boolean isEagerServerLoad() {
-        return this.eagerServerLoad ;
+        return this.eagerServerLoad;
     }
 
     public void setEagerServerLoad(boolean includeBootsrapInitialUidl) {

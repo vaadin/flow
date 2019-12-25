@@ -17,6 +17,7 @@ package com.vaadin.flow.component.internal;
 
 import java.util.Collection;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -28,9 +29,6 @@ import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletSe
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.util.SharedUtil;
-
-import net.jcip.annotations.NotThreadSafe;
-import org.mockito.Mockito;
 
 /**
  * End-to-end tests with the same cases as the deprecated
@@ -49,7 +47,6 @@ public class ServiceDependencyParserTest {
         mocks = new MockServletServiceSessionSetup();
         servlet = mocks.getServlet();
         service = mocks.getService();
-        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
     }
 
     @After

@@ -1,6 +1,7 @@
 package com.vaadin.flow.server;
 
 import javax.servlet.http.HttpServletRequest;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,7 +32,6 @@ import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.page.BodySize;
@@ -84,11 +84,9 @@ public class BootstrapHandlerTest {
     @PageTitle(UI_TITLE)
     @JavaScript(value = "lazy.js", loadMode = LoadMode.LAZY)
     @StyleSheet(value = "lazy.css", loadMode = LoadMode.LAZY)
-    @HtmlImport(value = "lazy.html", loadMode = LoadMode.LAZY)
     @JavaScript("eager.js")
     @StyleSheet("context://eager-relative.css")
     @StyleSheet("eager.css")
-    @HtmlImport("eager.html")
     protected static class TestUI extends UI {
 
         public TestUI() {
@@ -298,7 +296,6 @@ public class BootstrapHandlerTest {
     public static class ForcedWrapping extends Component {
     }
 
-    @HtmlImport("frontend://bower_components/vaadin-lumo-styles/color.html")
     public static class MyTheme implements AbstractTheme {
 
         @Override
@@ -413,8 +410,6 @@ public class BootstrapHandlerTest {
                 .thenReturn(sessionRegistry);
 
         testUI.getInternals().setSession(session);
-
-        mocks.setBrowserEs6(false);
     }
 
     @After
@@ -1033,32 +1028,6 @@ public class BootstrapHandlerTest {
                 allElements.get(allElements.size() - 1).toString());
     }
 
-    @Test // 3197
-    public void theme_contents_are_appended_to_head()
-            throws InvalidRouteConfigurationException {
-
-        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
-
-        initUI(testUI, createVaadinRequest(),
-                Collections.singleton(MyThemeTest.class));
-
-        Document page = pageBuilder.getBootstrapPage(new BootstrapContext(
-                request, null, session, testUI, this::contextRootRelativePath));
-
-        Elements allElements = page.head().getAllElements();
-        Assert.assertTrue("Custom style should have been added to head.",
-                allElements.stream().map(Object::toString)
-                        .anyMatch(element -> element.equals(
-                                "<link rel=\"import\" href=\"./frontend/bower_components/vaadin-lumo-styles/color.html\">")));
-
-        allElements = page.head().getAllElements();
-        // Note element 0 is the full head element.
-        // Custom style should have been added to head.
-        Assert.assertTrue("Custom style should have been added to head.",
-                allElements.stream().map(Element::toString)
-                        .anyMatch(s -> s.equals(EXPECTED_THEME_CONTENTS)));
-    }
-
     @Test
     public void theme_not_appended_to_head_in_npm()
             throws InvalidRouteConfigurationException {
@@ -1118,37 +1087,6 @@ public class BootstrapHandlerTest {
     }
 
     @Test // 3333
-    public void theme_contents_are_appended_to_head_for_alias_route()
-            throws InvalidRouteConfigurationException {
-        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
-
-        HttpServletRequest request = createRequest();
-        Mockito.doAnswer(invocation -> "/alias").when(request).getPathInfo();
-        VaadinServletRequest aliasRequest = new VaadinServletRequest(request,
-                service);
-
-        initUI(testUI, aliasRequest,
-                Collections.singleton(MyAliasThemeTest.class));
-
-        Document page = pageBuilder
-                .getBootstrapPage(new BootstrapContext(aliasRequest, null,
-                        session, testUI, this::contextRootRelativePath));
-
-        Elements allElements = page.head().getAllElements();
-        Assert.assertTrue("Custom style should have been added to head.",
-                allElements.stream().map(Object::toString)
-                        .anyMatch(element -> element.equals(
-                                "<link rel=\"import\" href=\"./frontend/bower_components/vaadin-lumo-styles/color.html\">")));
-        allElements = page.head().getAllElements();
-
-        // Note element 0 is the full head element.
-        // Custom style should have been added to head.
-        Assert.assertTrue("Custom style should have been added to head.",
-                allElements.stream().map(Element::toString)
-                        .anyMatch(s -> s.equals(EXPECTED_THEME_CONTENTS)));
-    }
-
-    @Test // 3333
     public void theme_contents_are_not_appended_to_head_for_root_route()
             throws InvalidRouteConfigurationException {
         initUI(testUI, createVaadinRequest(),
@@ -1161,50 +1099,6 @@ public class BootstrapHandlerTest {
                 page.head().toString().contains("vaadin-lumo"));
         Assert.assertFalse("Page body should not have custom styles",
                 page.body().toString().contains("<custom-style>"));
-    }
-
-    @Test // 3384
-    public void theme_contents_added_also_when_theme_in_super_class()
-            throws InvalidRouteConfigurationException {
-
-        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
-
-        initUI(testUI, createVaadinRequest(),
-                Collections.singleton(ExtendingView.class));
-
-        Document page = pageBuilder.getBootstrapPage(new BootstrapContext(
-                request, null, session, testUI, this::contextRootRelativePath));
-
-        Elements allElements = page.head().getAllElements();
-        Assert.assertTrue("Custom style should have been added to head.",
-                allElements.stream().map(Object::toString)
-                        .anyMatch(element -> element.equals(
-                                "<link rel=\"import\" href=\"./frontend/bower_components/vaadin-lumo-styles/color.html\">")));
-
-        allElements = page.head().getAllElements();
-        // Note element 0 is the full head element.
-        // Custom style should have been added to head.
-        Assert.assertTrue("Custom style should have been added to head.",
-                allElements.stream().map(Element::toString)
-                        .anyMatch(s -> s.equals(EXPECTED_THEME_CONTENTS)));
-    }
-
-    @Test
-    public void themeContents_htmlAttributesAreAddedToHtmlTag() {
-        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
-
-        initUI(testUI, createVaadinRequest(),
-                Collections.singleton(MyThemeTest.class));
-
-        Document page = pageBuilder.getBootstrapPage(new BootstrapContext(
-                request, null, session, testUI, this::contextRootRelativePath));
-
-        Element html = page.body().parent();
-
-        // self check
-        Assert.assertEquals("html", html.tagName());
-
-        Assert.assertEquals("bar", html.attr("foo"));
     }
 
     @Test
@@ -1233,7 +1127,8 @@ public class BootstrapHandlerTest {
     }
 
     @Test
-    public void bootstrapListener_isInvokedInServerSideMode() throws ServiceException {
+    public void bootstrapListener_isInvokedInServerSideMode()
+            throws ServiceException {
         AtomicReference<VaadinUriResolver> resolver = new AtomicReference<>();
         service.addBootstrapListener(evt -> evt.getDocument().head()
                 .getElementsByTag("script").remove());
@@ -1261,11 +1156,13 @@ public class BootstrapHandlerTest {
     }
 
     @Test(expected = IllegalStateException.class)
-    public void bootstrapListener_throwsInClientSideMode() throws ServiceException {
+    public void bootstrapListener_throwsInClientSideMode()
+            throws ServiceException {
         deploymentConfiguration.setClientSideMode(true);
 
         ServiceInitEvent event = new ServiceInitEvent(service);
-        event.addBootstrapListener(evt -> {});
+        event.addBootstrapListener(evt -> {
+        });
     }
 
     @Test
@@ -1275,11 +1172,6 @@ public class BootstrapHandlerTest {
                 .getDependencyFilters();
         filters.add((list, context) -> {
             list.clear(); // remove everything
-            return list;
-        });
-        filters.add((list, context) -> {
-            list.add(new Dependency(Dependency.Type.HTML_IMPORT,
-                    "imported-by-filter.html", LoadMode.EAGER));
             return list;
         });
         filters.add((list, context) -> {
@@ -1330,53 +1222,6 @@ public class BootstrapHandlerTest {
                 "imported-by-filter.css should be in the head of the page",
                 found);
 
-        found = links.stream().anyMatch(element -> element.attr("href")
-                .equals("./frontend/imported-by-filter.html"));
-        Assert.assertTrue(
-                "imported-by-filter.html should be in the head of the page",
-                found);
-    }
-
-    // This test is not applicable for npm mode
-    @Test
-    public void frontendProtocol_productionMode_es5Url() {
-        mocks.setProductionMode(true);
-        deploymentConfiguration.setCompatibilityMode(true);
-        initUI(testUI);
-        WebBrowser mockedWebBrowser = Mockito.mock(WebBrowser.class);
-        Mockito.when(session.getBrowser()).thenReturn(mockedWebBrowser);
-        Mockito.when(mockedWebBrowser.isEs6Supported()).thenReturn(false);
-
-        String resolvedContext = context.getUriResolver()
-                .resolveVaadinUri(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX);
-
-        String urlES5 = context.getUriResolver().resolveVaadinUri(
-                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + "foo");
-
-        assertEquals(Constants.FRONTEND_URL_ES5_DEFAULT_VALUE.replace(
-                ApplicationConstants.CONTEXT_PROTOCOL_PREFIX, resolvedContext)
-                + "foo", urlES5);
-    }
-
-    // This test is not applicable for npm mode
-    @Test
-    public void frontendProtocol_productionMode_useDifferentUrlsForEs5AndEs6() {
-        deploymentConfiguration.setCompatibilityMode(true);
-        initUI(testUI);
-        mocks.setProductionMode(true);
-        WebBrowser mockedWebBrowser = Mockito.mock(WebBrowser.class);
-        Mockito.when(session.getBrowser()).thenReturn(mockedWebBrowser);
-        Mockito.when(mockedWebBrowser.isEs6Supported()).thenReturn(true);
-
-        String resolvedContext = context.getUriResolver()
-                .resolveVaadinUri(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX);
-
-        String urlES6 = context.getUriResolver().resolveVaadinUri(
-                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + "foo");
-
-        assertEquals(Constants.FRONTEND_URL_ES6_DEFAULT_VALUE.replace(
-                ApplicationConstants.CONTEXT_PROTOCOL_PREFIX, resolvedContext)
-                + "foo", urlES6);
     }
 
     @Test
@@ -1402,50 +1247,6 @@ public class BootstrapHandlerTest {
                 ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + "foo");
 
         assertEquals(resolvedContext + "frontend/foo", urlES5);
-    }
-
-    // This test is not applicable for npm mode
-    @Test
-    public void frontendProtocol_productionModeAndWithProperties_useProperties_es5() {
-        deploymentConfiguration.setCompatibilityMode(true);
-        String es5Prefix = "bar/es5/";
-        deploymentConfiguration.setApplicationOrSystemProperty(
-                Constants.FRONTEND_URL_ES5, es5Prefix);
-        mocks.setProductionMode(true);
-        initUI(testUI);
-        WebBrowser mockedWebBrowser = Mockito.mock(WebBrowser.class);
-        Mockito.when(session.getBrowser()).thenReturn(mockedWebBrowser);
-        Mockito.when(mockedWebBrowser.isEs6Supported()).thenReturn(false);
-
-        String urlPart = "foo";
-
-        String urlES5 = context.getUriResolver().resolveVaadinUri(
-                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + urlPart);
-        assertThat(String.format(
-                "In development mode, es5 prefix should be equal to '%s' parameter value",
-                Constants.FRONTEND_URL_ES5), urlES5, is(es5Prefix + urlPart));
-    }
-
-    // This test is not applicable for npm mode
-    @Test
-    public void frontendProtocol_productionModeAndWithProperties_useProperties_es6() {
-        deploymentConfiguration.setCompatibilityMode(true);
-        String es6Prefix = "bar/es6/";
-        deploymentConfiguration.setApplicationOrSystemProperty(
-                Constants.FRONTEND_URL_ES6, es6Prefix);
-        initUI(testUI);
-        mocks.setProductionMode(true);
-        WebBrowser mockedWebBrowser = Mockito.mock(WebBrowser.class);
-        Mockito.when(session.getBrowser()).thenReturn(mockedWebBrowser);
-        Mockito.when(mockedWebBrowser.isEs6Supported()).thenReturn(true);
-
-        String urlPart = "foo";
-
-        String urlES6 = context.getUriResolver().resolveVaadinUri(
-                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + urlPart);
-        assertThat(String.format(
-                "In development mode, es6 prefix should be equal to '%s' parameter value",
-                Constants.FRONTEND_URL_ES6), urlES6, is(es6Prefix + urlPart));
     }
 
     @Test
@@ -1505,21 +1306,7 @@ public class BootstrapHandlerTest {
     }
 
     @Test
-    public void es6NotSupported_webcomponentsPolyfillBasePresent_polyfillsLoaded() {
-        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
-
-        mocks.setBrowserEs6(false);
-        mocks.getServlet().addServletContextResource(
-                "/frontend/bower_components/webcomponentsjs/webcomponents-loader.js");
-        Element head = initTestUI();
-
-        checkInlinedScript(head, "es6-collections.js", true);
-        checkInlinedScript(head, "babel-helpers.min.js", true);
-    }
-
-    @Test
     public void es6IsSupported_noPolyfillsLoaded() {
-        mocks.setBrowserEs6(true);
 
         Element head = initTestUI();
 
@@ -1756,8 +1543,8 @@ public class BootstrapHandlerTest {
 
         Elements scripts = page.head().getElementsByTag("script");
 
-        Element bundle = scripts.stream().filter(el -> el.attr("src")
-                .equals("./VAADIN/build/vaadin-bundle-e77008557c8d410bf0dc.cache.js"))
+        Element bundle = scripts.stream().filter(el -> el.attr("src").equals(
+                "./VAADIN/build/vaadin-bundle-e77008557c8d410bf0dc.cache.js"))
                 .findFirst().get();
         Assert.assertFalse(bundle.hasAttr("defer"));
     }

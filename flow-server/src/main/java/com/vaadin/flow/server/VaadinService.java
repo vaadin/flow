@@ -46,7 +46,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.slf4j.Logger;
@@ -76,7 +75,6 @@ import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.communication.UidlRequestHandler;
 import com.vaadin.flow.server.communication.WebComponentBootstrapHandler;
 import com.vaadin.flow.server.communication.WebComponentProvider;
-import com.vaadin.flow.server.startup.BundleFilterFactory;
 import com.vaadin.flow.server.startup.FakeBrowser;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -285,10 +283,8 @@ public abstract class VaadinService implements Serializable {
 
             requestHandlers = Collections.unmodifiableCollection(handlers);
 
-            dependencyFilters = Stream
-                    .concat(instantiator.getDependencyFilters(
-                            event.getAddedDependencyFilters()),
-                            new BundleFilterFactory().createFilters(this))
+            dependencyFilters = instantiator
+                    .getDependencyFilters(event.getAddedDependencyFilters())
                     .collect(Collectors.toList());
             bootstrapListeners = instantiator
                     .getBootstrapListeners(event.getAddedBootstrapListeners())
@@ -306,11 +302,7 @@ public abstract class VaadinService implements Serializable {
             getRouteRegistry().getRegisteredRoutes().stream()
                     .map(Object::toString).forEach(logger::debug);
 
-            if (configuration.isCompatibilityMode()) {
-                UsageStatistics.markAsUsed("flow/Bower", null);
-            } else {
-                UsageStatistics.markAsUsed("flow/npm", null);
-            }
+            UsageStatistics.markAsUsed("flow/npm", null);
         }
 
         htmlImportDependencyCache = new DependencyTreeCache<>(path -> {
@@ -1780,9 +1772,8 @@ public abstract class VaadinService implements Serializable {
      *            {@code null}, body will be used
      * @return A JSON string to be sent to the client
      */
-    public static String createCriticalNotificationJSON(
-            String caption, String message, String details, String url,
-            String querySelector) {
+    public static String createCriticalNotificationJSON(String caption,
+            String message, String details, String url, String querySelector) {
         try {
             JsonObject appError = Json.createObject();
             putValueOrJsonNull(appError, "caption", caption);

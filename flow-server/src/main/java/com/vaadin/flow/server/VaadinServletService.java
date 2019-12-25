@@ -222,15 +222,7 @@ public class VaadinServletService extends VaadinService {
 
         String frontendRootUrl;
         DeploymentConfiguration config = getDeploymentConfiguration();
-        if (config.isCompatibilityMode()) {
-            if (browser.isEs6Supported()) {
-                frontendRootUrl = config.getEs6FrontendPrefix();
-            } else {
-                frontendRootUrl = config.getEs5FrontendPrefix();
-            }
-        } else {
-            frontendRootUrl = config.getNpmFrontendPrefix();
-        }
+        frontendRootUrl = config.getNpmFrontendPrefix();
 
         return contextResolver.resolveVaadinUri(url, frontendRootUrl);
     }

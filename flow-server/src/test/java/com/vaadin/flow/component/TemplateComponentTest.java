@@ -15,19 +15,19 @@
  */
 package com.vaadin.flow.component;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.component.polymertemplate.TemplateParser;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.templatemodel.TemplateModel;
-
-import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class TemplateComponentTest {
@@ -50,10 +50,6 @@ public class TemplateComponentTest {
     @Before
     public void init() throws Exception {
         mocks = new MockServletServiceSessionSetup();
-        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
-
-        mocks.getServlet().addServletContextResource("/registration-form.html",
-                template_file);
 
         ui = new UI();
         ui.getInternals().setSession(mocks.getSession());
@@ -182,10 +178,26 @@ public class TemplateComponentTest {
 
     }
 
+    static class TestTemplateParser implements TemplateParser {
+
+        @Override
+        public TemplateData getTemplateContent(
+                Class<? extends PolymerTemplate<?>> clazz, String tag,
+                VaadinService service) {
+            // TODO Auto-generated method stub
+            return null;
+        }
+
+    }
+
     @Tag("registration-form")
-    @HtmlImport("/registration-form.html")
     private static class Template extends PolymerTemplate<TemplateModel>
             implements HasEnabled {
+
+        public Template() {
+            super();
+        }
+
         @Id
         private EnabledDiv name;
 

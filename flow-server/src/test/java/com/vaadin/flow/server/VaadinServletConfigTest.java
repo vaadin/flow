@@ -2,6 +2,7 @@ package com.vaadin.flow.server;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -28,27 +29,25 @@ public class VaadinServletConfigTest {
         ServletConfig servletConfig = Mockito.mock(ServletConfig.class);
         servletContext = Mockito.mock(ServletContext.class);
 
-        Mockito.when(servletConfig.getServletContext()).thenReturn(servletContext);
+        Mockito.when(servletConfig.getServletContext())
+                .thenReturn(servletContext);
 
         Mockito.when(servletContext.getAttribute(Mockito.anyString()))
                 .then(invocationOnMock -> attributeMap
                         .get(invocationOnMock.getArguments()[0].toString()));
-        Mockito.doAnswer(invocationOnMock -> attributeMap
-                .put(invocationOnMock.getArguments()[0].toString(),
-                        invocationOnMock.getArguments()[1]))
-                .when(servletContext)
+        Mockito.doAnswer(invocationOnMock -> attributeMap.put(
+                invocationOnMock.getArguments()[0].toString(),
+                invocationOnMock.getArguments()[1])).when(servletContext)
                 .setAttribute(Mockito.anyString(), Mockito.any());
 
         properties = new HashMap<>();
-        properties.put(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE, "false");
         properties.put(Constants.SERVLET_PARAMETER_PRODUCTION_MODE, "true");
         properties.put(Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER, "false");
 
         Mockito.when(servletConfig.getInitParameterNames())
                 .thenReturn(Collections.enumeration(properties.keySet()));
-        Mockito.when(servletConfig.getInitParameter(Mockito.anyString()))
-                .then(invocation -> properties
-                        .get(invocation.getArguments()[0]));
+        Mockito.when(servletConfig.getInitParameter(Mockito.anyString())).then(
+                invocation -> properties.get(invocation.getArguments()[0]));
         config = new VaadinServletConfig(servletConfig);
     }
 
@@ -65,7 +64,6 @@ public class VaadinServletConfigTest {
         }
     }
 
-
     @Test
     public void vaadinContextThroughConfig_setAndGetAttribute() {
         String value = "my-attribute";
@@ -78,10 +76,9 @@ public class VaadinServletConfigTest {
         result = config.getVaadinContext().getAttribute(String.class);
         Assert.assertEquals(newValue, result);
         // now the provider should not be called, so value should be still there
-        result = config.getVaadinContext().getAttribute(String.class,
-                () -> {
-                    throw new AssertionError("Should not be called");
-                });
+        result = config.getVaadinContext().getAttribute(String.class, () -> {
+            throw new AssertionError("Should not be called");
+        });
         Assert.assertEquals(newValue, result);
     }
 }

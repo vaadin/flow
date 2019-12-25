@@ -48,18 +48,6 @@ public final class Constants implements Serializable {
     public static final String EXTERNAL_STATS_URL_TOKEN = "externalStatsUrl";
 
     /**
-     * enable it if your project is a Polymer 2.0 one, should be removed in V15
-     *
-     * @deprecated the parameter is renamed to
-     *             {@link #SERVLET_PARAMETER_COMPATIBILITY_MODE}
-     */
-    @Deprecated
-    public static final String SERVLET_PARAMETER_BOWER_MODE = "bowerMode";
-    /**
-     * enable it if your project is a Polymer 2.0 one, should be removed in V15
-     */
-    public static final String SERVLET_PARAMETER_COMPATIBILITY_MODE = "compatibilityMode";
-    /**
      * Enable it if your project is using client-side bootstrapping (CCDM).
      */
     public static final String SERVLET_PARAMETER_CLIENT_SIDE_MODE = "clientSideMode";
@@ -96,26 +84,10 @@ public final class Constants implements Serializable {
     public static final String LOAD_ES5_ADAPTERS = "load.es5.adapters";
 
     /**
-     * Configuration name for the frontend URL prefix for ES6.
-     */
-    public static final String FRONTEND_URL_ES6 = "frontend.url.es6";
-
-    /**
-     * Configuration name for the frontend URL prefix for ES5.
-     */
-    public static final String FRONTEND_URL_ES5 = "frontend.url.es5";
-
-    /**
      * Default frontend URL prefix for ES6.
      */
     public static final String FRONTEND_URL_ES6_DEFAULT_VALUE = ApplicationConstants.CONTEXT_PROTOCOL_PREFIX
             + "frontend-es6/";
-
-    /**
-     * Default frontend URL prefix for ES.
-     */
-    public static final String FRONTEND_URL_ES5_DEFAULT_VALUE = ApplicationConstants.CONTEXT_PROTOCOL_PREFIX
-            + "frontend-es5/";
 
     /**
      * Default frontend URL prefix for development.
