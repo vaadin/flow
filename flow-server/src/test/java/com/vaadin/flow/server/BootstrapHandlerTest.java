@@ -1182,7 +1182,7 @@ public class BootstrapHandlerTest {
             return list;
         });
         filters.add((list, context) -> {
-            list.remove(2); // removes the imported-by-filter2.js
+            list.remove(1); // removes the imported-by-filter2.js
             return list;
         });
         filters.add((list, context) -> {

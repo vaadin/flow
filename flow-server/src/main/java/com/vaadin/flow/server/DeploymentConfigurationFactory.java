@@ -329,30 +329,6 @@ public final class DeploymentConfigurationFactory implements Serializable {
         return json;
     }
 
-    private static boolean isProductionMode(Properties initParameters) {
-        String booleanString;
-        // First check system property then initParameters
-        if (System.getProperty(
-                VAADIN_PREFIX + SERVLET_PARAMETER_PRODUCTION_MODE) != null) {
-            booleanString = System.getProperty(
-                    VAADIN_PREFIX + SERVLET_PARAMETER_PRODUCTION_MODE);
-        } else {
-            booleanString = initParameters.getProperty(
-                    SERVLET_PARAMETER_PRODUCTION_MODE,
-                    Boolean.FALSE.toString());
-        }
-
-        boolean parsedBoolean = Boolean.parseBoolean(booleanString);
-        if (Boolean.toString(parsedBoolean).equalsIgnoreCase(booleanString)) {
-            return parsedBoolean;
-        }
-        logger.debug(String.format(
-                "Property named '%s' is boolean, but contains incorrect value '%s' that is not boolean '%s'",
-                SERVLET_PARAMETER_PRODUCTION_MODE, booleanString,
-                parsedBoolean));
-        return false;
-    }
-
     /**
      * Check if the webpack.generated.js resources is inside 2 jars
      * (flow-server.jar and application.jar) if this is the case then we can
