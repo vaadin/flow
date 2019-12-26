@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.google.gwt.core.client.impl.SchedulerImpl;
+
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsMap;
 import com.vaadin.flow.shared.ui.Dependency;
@@ -137,14 +138,10 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
         new DependencyLoader(registry).loadDependencies(createDependenciesMap(
                 new Dependency(Dependency.Type.JAVASCRIPT, lazyJsUrl,
                         LoadMode.LAZY).toJson(),
-                new Dependency(Dependency.Type.HTML_IMPORT, lazyHtmlUrl,
-                        LoadMode.LAZY).toJson(),
                 new Dependency(Dependency.Type.STYLESHEET, lazyCssUrl,
                         LoadMode.LAZY).toJson(),
 
                 new Dependency(Dependency.Type.JAVASCRIPT, eagerJsUrl,
-                        LoadMode.EAGER).toJson(),
-                new Dependency(Dependency.Type.HTML_IMPORT, eagerHtmlUrl,
                         LoadMode.EAGER).toJson(),
                 new Dependency(Dependency.Type.STYLESHEET, eagerCssUrl,
                         LoadMode.EAGER).toJson()));
@@ -177,10 +174,6 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
                 new Dependency(Dependency.Type.STYLESHEET, cssUrl1,
                         LoadMode.LAZY).toJson(),
                 new Dependency(Dependency.Type.STYLESHEET, cssUrl2,
-                        LoadMode.LAZY).toJson(),
-                new Dependency(Dependency.Type.HTML_IMPORT, htmlUrl1,
-                        LoadMode.LAZY).toJson(),
-                new Dependency(Dependency.Type.HTML_IMPORT, htmlUrl2,
                         LoadMode.LAZY).toJson()));
 
         assertEquals(
@@ -225,13 +218,6 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
                 new Dependency(Dependency.Type.STYLESHEET, lazyCssUrl,
                         LoadMode.LAZY).toJson(),
                 new Dependency(Dependency.Type.STYLESHEET, eagerCssUrl,
-                        LoadMode.EAGER).toJson(),
-
-                createInlineDependency(Dependency.Type.HTML_IMPORT,
-                        inlineHtmlContents),
-                new Dependency(Dependency.Type.HTML_IMPORT, lazyHtmlUrl,
-                        LoadMode.LAZY).toJson(),
-                new Dependency(Dependency.Type.HTML_IMPORT, eagerHtmlUrl,
                         LoadMode.EAGER).toJson()));
 
         // When multiple LoadModes are used, no guarantees on the order can be

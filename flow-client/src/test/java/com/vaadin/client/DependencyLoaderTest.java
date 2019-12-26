@@ -15,8 +15,6 @@
  */
 package com.vaadin.client;
 
-import static org.junit.Assert.assertEquals;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -32,6 +30,8 @@ import com.vaadin.flow.shared.ui.LoadMode;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * This class is used to test {@link DependencyLoader} functionality, that does
@@ -143,17 +143,6 @@ public class DependencyLoaderTest {
     }
 
     @Test
-    public void loadHtml() {
-        String TEST_URL = "http://foo.bar/baz.html";
-        new DependencyLoader(registry).loadDependencies(createDependenciesMap(
-                new Dependency(Dependency.Type.HTML_IMPORT, TEST_URL,
-                        LoadMode.EAGER).toJson()));
-
-        assertEquals(Collections.singletonList(TEST_URL),
-                mockResourceLoader.loadingHtml);
-    }
-
-    @Test
     public void loadMultiple() {
         String TEST_JS_URL = "http://foo.bar/baz.js";
         String TEST_JS_URL2 = "/my.js";
@@ -174,49 +163,11 @@ public class DependencyLoaderTest {
     }
 
     @Test
-    public void loadFrontendDependency() {
-        String TEST_URL = "frontend://my-component.html";
-
-        registry.getApplicationConfiguration()
-                .setFrontendRootUrl("http://someplace.com/es6/");
-
-        new DependencyLoader(registry).loadDependencies(createDependenciesMap(
-                new Dependency(Dependency.Type.HTML_IMPORT, TEST_URL,
-                        LoadMode.EAGER).toJson()));
-
-        assertEquals(
-                Collections.singletonList(
-                        "http://someplace.com/es6/my-component.html"),
-                mockResourceLoader.loadingHtml);
-    }
-
-    @Test
-    public void loadFrontendDependencyWithContext() {
-        String TEST_URL = "frontend://my-component.html";
-
-        ApplicationConfiguration config = registry
-                .getApplicationConfiguration();
-        config.setFrontendRootUrl("context://es6/");
-        config.setContextRootUrl("http://someplace.com/");
-
-        new DependencyLoader(registry).loadDependencies(createDependenciesMap(
-                new Dependency(Dependency.Type.HTML_IMPORT, TEST_URL,
-                        LoadMode.EAGER).toJson()));
-
-        assertEquals(
-                Collections.singletonList(
-                        "http://someplace.com/es6/my-component.html"),
-                mockResourceLoader.loadingHtml);
-    }
-
-    @Test
     public void ensureEagerDependenciesLoadedInOrder() {
         String jsUrl1 = "/1.js";
         String jsUrl2 = "/2.js";
         String cssUrl1 = "/1.css";
         String cssUrl2 = "/2.css";
-        String htmlUrl1 = "/1.html";
-        String htmlUrl2 = "/2.html";
 
         new DependencyLoader(registry).loadDependencies(createDependenciesMap(
                 new Dependency(Dependency.Type.JAVASCRIPT, jsUrl1,
@@ -226,10 +177,6 @@ public class DependencyLoaderTest {
                 new Dependency(Dependency.Type.STYLESHEET, cssUrl1,
                         LoadMode.EAGER).toJson(),
                 new Dependency(Dependency.Type.STYLESHEET, cssUrl2,
-                        LoadMode.EAGER).toJson(),
-                new Dependency(Dependency.Type.HTML_IMPORT, htmlUrl1,
-                        LoadMode.EAGER).toJson(),
-                new Dependency(Dependency.Type.HTML_IMPORT, htmlUrl2,
                         LoadMode.EAGER).toJson()));
 
         assertEquals(
@@ -242,10 +189,6 @@ public class DependencyLoaderTest {
                 Arrays.asList(cssUrl1, cssUrl2),
                 mockResourceLoader.loadingStyles);
 
-        assertEquals(
-                "htmlUrl1 should come before htmlUrl2, because it was added earlier",
-                Arrays.asList(htmlUrl1, htmlUrl2),
-                mockResourceLoader.loadingHtml);
     }
 
     @Test
@@ -263,11 +206,7 @@ public class DependencyLoaderTest {
                 createInlineDependency(Dependency.Type.STYLESHEET,
                         cssContents1),
                 createInlineDependency(Dependency.Type.STYLESHEET,
-                        cssContents2),
-                createInlineDependency(Dependency.Type.HTML_IMPORT,
-                        htmlContents1),
-                createInlineDependency(Dependency.Type.HTML_IMPORT,
-                        htmlContents2)));
+                        cssContents2)));
 
         assertEquals(
                 "jsContents1 should come before jsContents2, because it was added earlier",
