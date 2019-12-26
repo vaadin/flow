@@ -234,12 +234,6 @@ public class DependencyLoader {
                 return resourceLoader::inlineStyleSheet;
             }
             return resourceLoader::loadStylesheet;
-        case HTML_IMPORT:
-            if (inline) {
-                return resourceLoader::inlineHtml;
-            }
-            return (scriptUrl, resourceLoadListener) -> resourceLoader
-                    .loadHtml(scriptUrl, resourceLoadListener, false);
         case JAVASCRIPT:
             if (inline) {
                 return resourceLoader::inlineScript;
