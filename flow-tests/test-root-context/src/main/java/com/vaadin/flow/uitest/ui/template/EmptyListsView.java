@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.router.Route;
@@ -31,7 +30,6 @@ import com.vaadin.flow.uitest.ui.AbstractDivView;
 @Route("com.vaadin.flow.uitest.ui.template.EmptyListsView")
 public class EmptyListsView extends AbstractDivView {
 
-    @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/EmptyLists.html")
     @JsModule("EmptyLists.js")
     @com.vaadin.flow.component.Tag("empty-list")
     public static class EmptyLists extends PolymerTemplate<EmptyListsModel> {

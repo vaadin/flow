@@ -8,12 +8,16 @@
         <artifactId>flow-tests</artifactId>
         <version>3.0-SNAPSHOT</version>
     </parent>
-    <artifactId>flow-test-root-context</artifactId>
-    <name>Flow root context tests</name>
+    <artifactId>flow-test-root-context-npm</artifactId>
+    <name>Flow root context tests in NPM dev mode</name>
     <packaging>war</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
-        <ui.jar.classes>${project.build.directory}/ui-jar</ui.jar.classes>
+        <exclude.it.tests>LazyLoadingTemplateIT,
+            DependenciesLoadingPageApiIT, AnnotatedFrontendInlineIT,
+            DependenciesLoadingAnnotationsIT, FrontendInlineApiIT,
+            RouteNotFoundProdModeIT
+        </exclude.it.tests>
     </properties>
 
     <dependencies>
@@ -21,52 +25,12 @@
             <groupId>com.vaadin</groupId>
             <artifactId>flow-html-components-testbench</artifactId>
             <version>${project.version}</version>
-            <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-test-common</artifactId>
             <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>flow-server-compatibility-mode</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.webjars.bowergithub.polymerelements</groupId>
-            <artifactId>paper-input</artifactId>
-            <version>2.2.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.webjars.bowergithub.polymerelements</groupId>
-            <artifactId>iron-flex-layout</artifactId>
-            <version>2.0.3</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.webjars.bowergithub.polymerelements</groupId>
-            <artifactId>paper-slider</artifactId>
-            <version>2.0.6</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.webjars.bowergithub.webcomponents</groupId>
-            <artifactId>shadycss</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.webjars.bowergithub.vaadin</groupId>
-            <artifactId>vaadin-usage-statistics</artifactId>
-            <version>2.0.2</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.webjars.bowergithub.webcomponents</groupId>
-            <artifactId>webcomponentsjs</artifactId>
         </dependency>
 
         <dependency>
@@ -91,83 +55,59 @@
 
     <build>
         <plugins>
-            <!-- This module is mapped to default web context -->
+           <!-- Auto run clean to remove previous mode compilation -->
+           <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <!-- This is because we run multiple modes on the same module -->
+                <executions>
+                    <execution>
+                        <id>auto-clean</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+           <!-- Clean lib before running jetty -->
+           <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+            </plugin>
+            <!--  Run flow plugin to build frontend -->
+            <plugin>
+                <groupId>com.vaadin</groupId>
+                <artifactId>flow-maven-plugin</artifactId>
+                <version>${project.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-frontend</goal>
+                            <goal>build-frontend</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <compatibilityMode>false</compatibilityMode>
+                    <productionMode>false</productionMode>
+                </configuration>
+            </plugin>
+            <!-- Run jetty before integration tests, and stop after -->
             <plugin>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
-            </plugin>
-
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <version>3.0.0</version>
-                <executions>
-                    <execution>
-                        <id>add-resource</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>add-resource</goal>
-                        </goals>
-                        <configuration>
-                            <resources>
-                                <!-- This makes static resource files be 
-                                    available via servlet context and via HTTP -->
-                                <resource>
-                                    <directory>src/main/webapp</directory>
-                                    <targetPath></targetPath>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-war-plugin</artifactId>
                 <configuration>
-                    <archive>
-                        <manifestEntries>
-                            <Implementation-Title>${project.name}
-                            </Implementation-Title>
-                            <Implementation-Version>${project.version}
-                            </Implementation-Version>
-                        </manifestEntries>
-                    </archive>
+                    <systemProperties>
+                        <!--  We want to run tests against static bundle, but
+                              running vaadin in debug mode -->
+                        <systemProperty>
+                            <name>vaadin.disableDevServer</name>
+                            <value>true</value>
+                        </systemProperty>
+                    </systemProperties>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
-                        <index>false</index>
-                        <manifest>
-                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                        </manifest>
-                    </archive>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>ui-tests</id>
-                        <goals>
-                            <goal>test-jar</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>ui</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <configuration>
-                            <classifier>ui</classifier>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
-
     <profiles>
         <profile>
             <id>local-run</id>
@@ -194,160 +134,6 @@
                                 <goals>
                                     <goal>selenium</goal>
                                 </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>productionMode</id>
-            <activation>
-                <property>
-                    <!-- In BrowserStack tests are run on IE11, and transpilation 
-                        is needed -->
-                    <name>test.use.browserstack</name>
-                    <value>true</value>
-                </property>
-            </activation>
-
-            <properties>
-                <transpilation.output>${project.build.directory}/build</transpilation.output>
-            </properties>
-
-            <dependencies>
-                <dependency>
-                    <groupId>com.vaadin</groupId>
-                    <artifactId>flow-server-production-mode</artifactId>
-                    <version>${project.version}</version>
-                </dependency>
-            </dependencies>
-
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>com.vaadin</groupId>
-                        <artifactId>flow-maven-plugin</artifactId>
-                        <version>${project.version}</version>
-                        <executions>
-                            <execution>
-                                <goals>
-                                    <goal>copy-production-files</goal>
-                                    <goal>package-for-production</goal>
-                                </goals>
-                                <configuration>
-                                    <transpileOutputDirectory>${transpilation.output}</transpileOutputDirectory>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-
-                    <plugin>
-                        <groupId>org.eclipse.jetty</groupId>
-                        <artifactId>jetty-maven-plugin</artifactId>
-                        <configuration>
-                            <webAppConfig>
-                                <containerIncludeJarPattern>^$</containerIncludeJarPattern>
-                                <resourceBases>
-                                    <resourceBase>${transpilation.output}</resourceBase>
-                                </resourceBases>
-                            </webAppConfig>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>web-jar-repackage</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-dependency-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>unpack-dependencies</id>
-                                <phase>generate-resources</phase>
-                                <goals>
-                                    <goal>unpack-dependencies</goal>
-                                </goals>
-                                <configuration>
-                                    <includes>**/webjars/**</includes>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <version>1.7</version>
-                        <executions>
-                            <execution>
-                                <id>clean-ui-classes</id>
-                                <phase>initialize</phase>
-                                <configuration>
-                                    <tasks>
-                                        <delete
-                                            dir="${ui.jar.classes}"></delete>
-                                    </tasks>
-                                </configuration>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                            </execution>
-                            <execution>
-                                <id>repackage-webjars</id>
-                                <phase>process-resources</phase>
-                                <configuration>
-                                    <tasks>
-                                        <mkdir
-                                            dir="${ui.jar.classes}/frontend/bower_components"></mkdir>
-                                        <copy
-                                            todir="${ui.jar.classes}/frontend/bower_components">
-                                            <fileset
-                                                dir="${project.build.directory}/dependency/META-INF/resources/webjars/" />
-                                        </copy>
-                                    </tasks>
-                                </configuration>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                            </execution>
-                            <execution>
-                                <id>ui-jar-classes</id>
-                                <phase>package</phase>
-                                <configuration>
-                                    <tasks>
-                                        <copy
-                                            todir="${ui.jar.classes}">
-                                            <fileset
-                                                dir="${project.build.outputDirectory}" />
-                                        </copy>
-                                        <copy
-                                            todir="${ui.jar.classes}/META-INF/resources/frontend/bower_components">
-                                            <fileset
-                                                dir="${ui.jar.classes}/frontend/bower_components" />
-                                        </copy>
-                                    </tasks>
-                                </configuration>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-jar-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>ui</id>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                                <configuration>
-                                    <classesDirectory>${ui.jar.classes}</classesDirectory>
-                                    <classifier>ui</classifier>
-                                </configuration>
                             </execution>
                         </executions>
                     </plugin>

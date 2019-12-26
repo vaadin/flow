@@ -24,14 +24,12 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Optional;
 import java.util.Properties;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
-import com.vaadin.flow.server.webjar.WebJarServer;
 import com.vaadin.flow.shared.JsonConstants;
 
 /**
@@ -51,7 +49,6 @@ import com.vaadin.flow.shared.JsonConstants;
 public class VaadinServlet extends HttpServlet {
     private VaadinServletService servletService;
     private StaticFileHandler staticFileHandler;
-    private WebJarServer webJarServer;
 
     /**
      * Called by the servlet container to indicate to a servlet that the servlet
@@ -78,9 +75,6 @@ public class VaadinServlet extends HttpServlet {
                 .getDeploymentConfiguration();
 
         staticFileHandler = createStaticFileHandler(servletService);
-        if (deploymentConfiguration.areWebJarsEnabled()) {
-            webJarServer = new WebJarServer(deploymentConfiguration);
-        }
 
         // Sets current service even though there are no request and response
         servletService.setCurrentInstances(null, null);
@@ -231,7 +225,7 @@ public class VaadinServlet extends HttpServlet {
             return;
         }
 
-        if (serveStaticOrWebJarRequest(request, response)) {
+        if (serveStaticRequest(request, response)) {
             return;
         }
 
@@ -253,8 +247,7 @@ public class VaadinServlet extends HttpServlet {
 
     /**
      * Handles a request by serving a static file from Webpack when in
-     * npm-dev-mode, or from a WebJar when in bower-dev-mode or from the
-     * file-system when in production.
+     * npm-dev-mode or from the file-system when in production.
      *
      * It's not done via {@link VaadinService} handlers because static requests
      * do not need a established session.
@@ -273,7 +266,7 @@ public class VaadinServlet extends HttpServlet {
      *                if an input or output error occurs while the servlet is
      *                handling the HTTP request
      */
-    protected boolean serveStaticOrWebJarRequest(HttpServletRequest request,
+    protected boolean serveStaticRequest(HttpServletRequest request,
             HttpServletResponse response) throws IOException {
         DevModeHandler handler = DevModeHandler.getDevModeHandler();
 
@@ -287,8 +280,7 @@ public class VaadinServlet extends HttpServlet {
             return true;
         }
 
-        return webJarServer != null
-                && webJarServer.tryServeWebJarResource(request, response);
+        return false;
     }
 
     /**
@@ -526,13 +518,4 @@ public class VaadinServlet extends HttpServlet {
         ;
     }
 
-    /**
-     * Gets the web jar server.
-     *
-     * @return the web jar server or an empty optional if no web jar server is
-     *         used
-     */
-    protected Optional<WebJarServer> getWebJarServer() {
-        return Optional.ofNullable(webJarServer);
-    }
 }

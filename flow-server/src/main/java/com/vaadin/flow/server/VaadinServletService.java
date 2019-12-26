@@ -240,14 +240,14 @@ public class VaadinServletService extends VaadinService {
     @Override
     public URL getResource(String path, WebBrowser browser,
             AbstractTheme theme) {
-        return getResourceInServletContextOrWebJar(
+        return getResourceInServletContext(
                 getThemedOrRawPath(path, browser, theme));
     }
 
     @Override
     public InputStream getResourceAsStream(String path, WebBrowser browser,
             AbstractTheme theme) {
-        return getResourceInServletContextOrWebJarAsStream(
+        return getResourceInServletContextAsStream(
                 getThemedOrRawPath(path, browser, theme));
     }
 
@@ -286,7 +286,7 @@ public class VaadinServletService extends VaadinService {
         Optional<String> themeResourcePath = getThemeResourcePath(resourcePath,
                 theme);
         if (themeResourcePath.isPresent()) {
-            URL themeResource = getResourceInServletContextOrWebJar(
+            URL themeResource = getResourceInServletContext(
                     themeResourcePath.get());
             if (themeResource != null) {
                 return themeResourcePath.get();
@@ -319,24 +319,19 @@ public class VaadinServletService extends VaadinService {
     }
 
     /**
-     * Finds the given resource in the servlet context or in a webjar.
+     * Finds the given resource in the servlet context.
      *
      * @param path
-     *            the path inside servlet context, automatically translated as
-     *            needed for webjars
+     *            the path inside servlet context
      * @return a URL for the resource or <code>null</code> if no resource was
      *         found
      */
-    public URL getResourceInServletContextOrWebJar(String path) {
+    public URL getResourceInServletContext(String path) {
         ServletContext servletContext = getServlet().getServletContext();
         try {
             URL url = servletContext.getResource(path);
             if (url != null) {
                 return url;
-            }
-            Optional<String> webJarPath = getWebJarPath(path);
-            if (webJarPath.isPresent()) {
-                return servletContext.getResource(webJarPath.get());
             }
         } catch (MalformedURLException e) {
             getLogger().warn("Error finding resource for '{}'", path, e);
@@ -345,40 +340,16 @@ public class VaadinServletService extends VaadinService {
     }
 
     /**
-     * Opens a stream for the given resource found in the servlet context or in
-     * a webjar.
+     * Opens a stream for the given resource found in the servlet context.
      *
      * @param path
-     *            the path inside servlet context, automatically translated as
-     *            needed for webjars
+     *            the path inside servlet context
      * @return a URL for the resource or <code>null</code> if no resource was
      *         found
      */
-    private InputStream getResourceInServletContextOrWebJarAsStream(
-            String path) {
+    private InputStream getResourceInServletContextAsStream(String path) {
         ServletContext servletContext = getServlet().getServletContext();
-        InputStream stream = servletContext.getResourceAsStream(path);
-        if (stream != null) {
-            return stream;
-        }
-        Optional<String> webJarPath = getWebJarPath(path);
-        if (webJarPath.isPresent()) {
-            return servletContext.getResourceAsStream(webJarPath.get());
-        }
-        return null;
-    }
-
-    /**
-     * Finds a resource for the given path inside a webjar.
-     *
-     * @param path
-     *            the resource path
-     * @return the path to the resource inside a webjar or <code>null</code> if
-     *         the resource was not found in a webjar
-     */
-    private Optional<String> getWebJarPath(String path) {
-        return getServlet().getWebJarServer()
-                .flatMap(server -> server.getWebJarResourcePath(path));
+        return servletContext.getResourceAsStream(path);
     }
 
     @Override

@@ -20,6 +20,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.WriteListener;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -675,7 +676,7 @@ public class StaticFileServerTest implements Serializable {
 
     /**
      * Returns a byte array for a valid stats.json containing only chunks
-     * 
+     *
      * @return
      */
     public byte[] getStatsData() {
@@ -709,45 +710,4 @@ public class StaticFileServerTest implements Serializable {
                 responseCode.get());
     }
 
-    @Test
-    public void serveStaticResourceFromWebjarWithIncorrectPath()
-            throws IOException {
-        Mockito.when(configuration.getBooleanProperty(
-                StaticFileServer.PROPERTY_FIX_INCORRECT_WEBJAR_PATHS, false))
-                .thenReturn(true);
-
-        byte[] fileData = "function() {eval('foo');};"
-                .getBytes(StandardCharsets.UTF_8);
-        Mockito.when(servletService.getStaticResource("/webjars/foo/bar.js"))
-                .thenReturn(createFileURLWithDataAndLength(
-                        "/webjars/foo/bar.js", fileData));
-
-        CapturingServletOutputStream out = new CapturingServletOutputStream();
-        Mockito.when(response.getOutputStream()).thenReturn(out);
-
-        setupRequestURI("", "", "/frontend/src/webjars/foo/bar.js");
-
-        Assert.assertTrue(fileServer.isStaticResourceRequest(request));
-        Assert.assertTrue(fileServer.serveStaticResource(request, response));
-        Assert.assertArrayEquals(fileData, out.getOutput());
-    }
-
-    @Test
-    public void serveStaticResourceFromWebjarWithIncorrectPathAndFixingDisabled()
-            throws IOException {
-        Mockito.when(configuration.getBooleanProperty(
-                StaticFileServer.PROPERTY_FIX_INCORRECT_WEBJAR_PATHS, false))
-                .thenReturn(false);
-
-        Mockito.when(servletService
-                .getStaticResource("/frontend/src/webjars/foo/bar.js"))
-                .thenReturn(null);
-
-        setupRequestURI("", "", "/frontend/src/webjars/foo/bar.js");
-
-        Assert.assertFalse(fileServer.isStaticResourceRequest(request));
-        Assert.assertTrue(fileServer.serveStaticResource(request, response));
-        Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND,
-                responseCode.get());
-    }
 }

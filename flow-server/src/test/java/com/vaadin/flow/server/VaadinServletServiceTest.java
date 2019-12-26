@@ -132,22 +132,12 @@ public class VaadinServletServiceTest {
     public void getResourceNoTheme() throws IOException {
         WebBrowser browser = mocks.getBrowser();
         mocks.getServlet().addServletContextResource("/frontend/foo.txt");
-        mocks.getServlet().addWebJarResource("paper-slider/paper-slider.html");
 
         testGetResourceAndGetResourceAsStream("/frontend/foo.txt",
                 "/frontend/foo.txt", browser, null);
         testGetResourceAndGetResourceAsStream("/frontend/foo.txt",
                 "frontend://foo.txt", browser, null);
         testGetResourceAndGetResourceAsStream(null, "frontend://bar.txt",
-                browser, null);
-
-        testGetResourceAndGetResourceAsStream(
-                "/webjars/paper-slider/paper-slider.html",
-                "/frontend/bower_components/paper-slider/paper-slider.html",
-                browser, null);
-        testGetResourceAndGetResourceAsStream(
-                "/webjars/paper-slider/paper-slider.html",
-                "frontend://bower_components/paper-slider/paper-slider.html",
                 browser, null);
     }
 
@@ -165,44 +155,19 @@ public class VaadinServletServiceTest {
         mocks.getServlet()
                 .addServletContextResource("/frontend/theme/theme-only.txt");
 
-        mocks.getServlet().addWebJarResource("vaadin-button/raw/raw-only.txt");
-        mocks.getServlet()
-                .addWebJarResource("vaadin-button/raw/has-theme-variant.txt");
-        mocks.getServlet()
-                .addWebJarResource("vaadin-button/theme/has-theme-variant.txt");
-        mocks.getServlet()
-                .addWebJarResource("vaadin-button/theme/theme-only.txt");
-
         // Only raw version
         testGetResourceAndGetResourceAsStream("/frontend/raw/raw-only.txt",
                 "frontend://raw/raw-only.txt", browser, theme);
-        testGetResourceAndGetResourceAsStream(
-                "/webjars/vaadin-button/raw/raw-only.txt",
-                "frontend://bower_components/vaadin-button/raw/raw-only.txt",
-                browser, theme);
         // Only themed version
         testGetResourceAndGetResourceAsStream("/frontend/theme/theme-only.txt",
                 "frontend://raw/theme-only.txt", browser, theme);
-        testGetResourceAndGetResourceAsStream(
-                "/webjars/vaadin-button/theme/theme-only.txt",
-                "frontend://bower_components/vaadin-button/raw/theme-only.txt",
-                browser, theme);
-
         // Raw and themed version
         testGetResourceAndGetResourceAsStream(
                 "/frontend/theme/has-theme-variant.txt",
                 "frontend://raw/has-theme-variant.txt", browser, theme);
         testGetResourceAndGetResourceAsStream(
-                "/webjars/vaadin-button/theme/has-theme-variant.txt",
-                "frontend://bower_components/vaadin-button/raw/has-theme-variant.txt",
-                browser, theme);
-        testGetResourceAndGetResourceAsStream(
                 "/frontend/theme/has-theme-variant.txt",
                 "frontend://theme/has-theme-variant.txt", browser, null);
-        testGetResourceAndGetResourceAsStream(
-                "/webjars/vaadin-button/theme/has-theme-variant.txt",
-                "frontend://bower_components/vaadin-button/theme/has-theme-variant.txt",
-                browser, theme);
     }
 
     @Test

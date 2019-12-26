@@ -51,12 +51,6 @@ public class DefaultDeploymentConfiguration
             + "See https://vaadin.com/docs/v14/flow/production/tutorial-production-mode-basic.html "
             + "for more information about the production mode." + SEPARATOR;
 
-    public static final String WARNING_COMPATIBILITY_MODE = SEPARATOR
-            + "\nRunning in Vaadin 13 (Flow 1) compatibility mode.\n\n"
-            + "This mode uses webjars/Bower for client side dependency management and HTML imports for dependency loading.\n\n"
-            + "The default mode in Vaadin 14+ (Flow 2+) is based on npm for dependency management and JavaScript modules for dependency inclusion.\n\n"
-            + "See http://vaadin.com/docs for more information." + SEPARATOR;
-
     public static final String WARNING_XSRF_PROTECTION_DISABLED = SEPARATOR
             + "\nWARNING: Cross-site request forgery protection is disabled!"
             + SEPARATOR;

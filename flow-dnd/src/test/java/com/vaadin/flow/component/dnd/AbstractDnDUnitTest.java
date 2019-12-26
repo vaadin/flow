@@ -20,6 +20,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.dnd.internal.DnDUtilHelper;
 import com.vaadin.flow.component.internal.DependencyList;
@@ -32,10 +37,6 @@ import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.WebBrowser;
 import com.vaadin.flow.shared.ui.Dependency;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
 
 public abstract class AbstractDnDUnitTest {
 
@@ -46,12 +47,7 @@ public abstract class AbstractDnDUnitTest {
     @Before
     public void setup() {
         DefaultDeploymentConfiguration configuration = new DefaultDeploymentConfiguration(
-                VaadinServlet.class, new Properties()) {
-            @Override
-            public boolean isCompatibilityMode() {
-                return compatibilityMode;
-            }
-        };
+                VaadinServlet.class, new Properties());
         WebBrowser browser = Mockito.mock(WebBrowser.class);
         Mockito.when(browser.isIOS()).then(invocation -> iOS);
 

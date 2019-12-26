@@ -17,7 +17,6 @@ package com.vaadin.flow.uitest.ui.frontend;
 
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Text;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.html.Div;
@@ -28,8 +27,6 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.uitest.ui.template.HiddenTemplateView;
 
 // Devmode detector detects bundling based on whether polymer-element.html is loaded
-@HtmlImport("bower_components/polymer/polymer-element.html")
-@HtmlImport("bower_components/vaadin-development-mode-detector/vaadin-development-mode-detector.html")
 @NpmPackage(value = "@vaadin/vaadin-development-mode-detector", version = "1.1.0")
 @JsModule("@vaadin/vaadin-development-mode-detector/vaadin-development-mode-detector.js")
 @Route(value = "com.vaadin.flow.uitest.ui.frontend.UsageStatisticsView", layout = ViewTestLayout.class)

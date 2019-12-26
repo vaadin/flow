@@ -266,19 +266,6 @@ public interface DeploymentConfiguration extends Serializable {
     }
 
     /**
-     * Determines if webJars mechanism is enabled. It is disabled if the user
-     * have explicitly set the {@link Constants#DISABLE_WEBJARS} property to
-     * {@code true}, or the user have not set the property at all and the
-     * {@link #useCompiledFrontendResources()} returns false.
-     *
-     * @return {@code true} if webJars are enabled, {@code false} otherwise
-     */
-    default boolean areWebJarsEnabled() {
-        return !getBooleanProperty(Constants.DISABLE_WEBJARS,
-                useCompiledFrontendResources());
-    }
-
-    /**
      * Determines if Flow should use compiled or original frontend resources.
      *
      * User can explicitly disable bundled resources usage by setting the

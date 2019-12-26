@@ -97,12 +97,6 @@ public final class Constants implements Serializable {
 
     /**
      * Configuration name for the parameter that determines if Flow should use
-     * webJars or not.
-     */
-    public static final String DISABLE_WEBJARS = "disable.webjars";
-
-    /**
-     * Configuration name for the parameter that determines if Flow should use
      * bundled fragments or not.
      */
     public static final String USE_ORIGINAL_FRONTEND_RESOURCES = "original.frontend.resources";
