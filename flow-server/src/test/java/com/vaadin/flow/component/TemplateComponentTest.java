@@ -15,7 +15,8 @@
  */
 package com.vaadin.flow.component;
 
-import net.jcip.annotations.NotThreadSafe;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -29,17 +30,11 @@ import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
-@NotThreadSafe
 public class TemplateComponentTest {
 
-    UI ui;
+    private UI ui;
 
-    private static final String template_file = "<dom-module id='registration-form'>"
-            + " <template>" + "  <div id='name'>{{name}}</div>" + " </template>"
-            + " <script>" + "  class RegistrationForm extends Polymer.Element {"
-            + "   static get is() {return 'registration-form'}" + "  }"
-            + "  customElements.define(RegistrationForm.is, RegistrationForm);"
-            + " </script>" + "</dom-module>";
+    private static final String TEMPLATE = " <template>  <div id='name'>{{name}}</div> </template>";
 
     private MockServletServiceSessionSetup mocks;
 
@@ -184,8 +179,9 @@ public class TemplateComponentTest {
         public TemplateData getTemplateContent(
                 Class<? extends PolymerTemplate<?>> clazz, String tag,
                 VaadinService service) {
-            // TODO Auto-generated method stub
-            return null;
+            Document doc = Jsoup.parse(TEMPLATE);
+            return new TemplateData("",
+                    doc.getElementsByTag("template").get(0));
         }
 
     }
@@ -195,7 +191,7 @@ public class TemplateComponentTest {
             implements HasEnabled {
 
         public Template() {
-            super();
+            super(new TestTemplateParser());
         }
 
         @Id
