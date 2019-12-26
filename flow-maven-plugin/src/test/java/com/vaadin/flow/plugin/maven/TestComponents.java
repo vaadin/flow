@@ -17,7 +17,6 @@
 package com.vaadin.flow.plugin.maven;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
@@ -54,7 +53,6 @@ public class TestComponents {
     public static class VaadinNpmComponent extends Component {
     }
 
-    @HtmlImport("frontend://bower_components/vaadin-date-picker/vaadin-date-picker-light.html")
     @JsModule("vaadin-mixed-component/src/vaadin-mixed-component.js")
     public static class VaadinMixedComponent extends Component {
     }
