@@ -37,8 +37,8 @@ public interface TemplateParser {
     /**
      * Wrapper for the parsing result.
      * <p>
-     * The data contains {@link HtmlImport} uri where the template is declared
-     * and its content as an {@link Element} instance.
+     * The data contains path uri where the template is declared and its content
+     * as an {@link Element} instance.
      *
      * @author Vaadin Ltd
      * @since 1.0
