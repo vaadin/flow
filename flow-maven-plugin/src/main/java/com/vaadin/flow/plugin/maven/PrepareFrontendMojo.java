@@ -42,6 +42,7 @@ import com.vaadin.flow.server.frontend.NodeTasks;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
+
 import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFinder;
 import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_GENERATED_TS_DIR_TOKEN;
@@ -51,7 +52,6 @@ import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.GENERATED_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_CLIENT_SIDE_MODE;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_INITIAL_UIDL;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
@@ -109,17 +109,8 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        super.execute();
-
         // propagate info via System properties and token file
         propagateBuildInfo();
-
-        // Do nothing when compatibility mode
-        if (compatibility) {
-            getLog().debug(
-                    "Skipped 'prepare-frontend' goal because compatibility mode is set.");
-            return;
-        }
 
         try {
             FrontendUtils
@@ -130,13 +121,14 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         try {
             FileUtils.forceMkdir(generatedFolder);
         } catch (IOException e) {
-            throw new MojoFailureException(
-                    "Failed to create folder '" + generatedFolder
-                            + "'. Verify that you may write to path.", e);
+            throw new MojoFailureException("Failed to create folder '"
+                    + generatedFolder + "'. Verify that you may write to path.",
+                    e);
         }
         try {
-            NodeTasks.Builder builder = new NodeTasks.Builder(getClassFinder(project), npmFolder,
-                    generatedFolder, frontendDirectory)
+            NodeTasks.Builder builder = new NodeTasks.Builder(
+                    getClassFinder(project), npmFolder, generatedFolder,
+                    frontendDirectory)
                             .withWebpack(webpackOutputDirectory,
                                     webpackTemplate, webpackGeneratedTemplate)
                             .enableClientSideMode(isClientSideMode())
@@ -144,9 +136,10 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
                             .createMissingPackageJson(true)
                             .enableImportsUpdate(false)
                             .enablePackagesUpdate(false).runNpmInstall(false);
-            // If building a jar project copy jar artifact contents now as we might
+            // If building a jar project copy jar artifact contents now as we
+            // might
             // not be able to read files from jar path.
-            if("jar".equals(project.getPackaging())) {
+            if ("jar".equals(project.getPackaging())) {
                 Set<File> jarFiles = project.getArtifacts().stream()
                         .filter(artifact -> "jar".equals(artifact.getType()))
                         .map(Artifact::getFile).collect(Collectors.toSet());
@@ -166,7 +159,6 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         // token file with the information about the build
         File token = new File(webpackOutputDirectory, TOKEN_FILE);
         JsonObject buildInfo = Json.createObject();
-        buildInfo.put(SERVLET_PARAMETER_COMPATIBILITY_MODE, compatibility);
         buildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, productionMode);
         buildInfo.put(SERVLET_PARAMETER_CLIENT_SIDE_MODE, isClientSideMode());
         buildInfo.put(SERVLET_PARAMETER_INITIAL_UIDL, eagerServerLoad);
@@ -204,22 +196,16 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
                             + ".properties:%n productionMode: %s%n bowerMode:"
                             + " %s%n compatibilityMode: %s%n webpackPort: %s%n "
                             + "project.basedir: %s%nGoal parameters:%n "
-                            + "productionMode: %s%n compatibilityMode: %s%n "
-                            + "compatibility: %b%n npmFolder: %s%nToken file: "
-                            + "%s%n" + "Token content: %s%n",
+                            + "productionMode: %s%n "
+                            + "npmFolder: %s%nToken file: " + "%s%n"
+                            + "Token content: %s%n",
                     project.getName(),
                     System.getProperty("vaadin.productionMode"),
                     System.getProperty("vaadin.bowerMode"),
-                    System.getProperty("vaadin.compatibiityMode"),
                     System.getProperty("vaadin.devmode.webpack.running-port"),
                     System.getProperty("project.basedir"), productionMode,
-                    compatibilityMode, compatibility, npmFolder,
-                    token.getAbsolutePath(), buildInfo.toJson()));
+                    npmFolder, token.getAbsolutePath(), buildInfo.toJson()));
         }
     }
 
-    @Override
-    boolean isDefaultCompatibility() {
-        return false;
-    }
 }

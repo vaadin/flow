@@ -52,7 +52,6 @@ import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFind
 import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.GENERATED_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
@@ -120,15 +119,6 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        super.execute();
-
-        // Do nothing when compatibility mode
-        if (compatibility) {
-            getLog().info(
-                    "Skipped 'build-frontend' goal because compatibility mode is set to true.");
-            return;
-        }
-
         updateBuildFile();
 
         long start = System.nanoTime();
@@ -264,27 +254,6 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                     StandardCharsets.UTF_8.name());
         } catch (IOException e) {
             getLog().warn("Unable to read token file", e);
-        }
-    }
-
-    @Override
-    boolean isDefaultCompatibility() {
-        File tokenFile = getTokenFile();
-        if (!tokenFile.exists()) {
-            getLog().warn("'build-frontend' goal was called without previously "
-                    + "calling 'prepare-frontend'");
-            return true;
-        }
-        try {
-            String json = FileUtils.readFileToString(tokenFile,
-                    StandardCharsets.UTF_8.name());
-            JsonObject buildInfo = JsonUtil.parse(json);
-            return buildInfo.hasKey(SERVLET_PARAMETER_COMPATIBILITY_MODE)
-                    ? buildInfo.getBoolean(SERVLET_PARAMETER_COMPATIBILITY_MODE)
-                    : true;
-        } catch (IOException e) {
-            getLog().warn("Unable to read token file", e);
-            return true;
         }
     }
 

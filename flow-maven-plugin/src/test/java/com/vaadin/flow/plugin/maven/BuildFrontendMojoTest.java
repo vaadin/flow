@@ -53,8 +53,8 @@ import com.vaadin.flow.plugin.TestUtils;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
+
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
@@ -85,7 +85,6 @@ public class BuildFrontendMojoTest {
     private File defaultJavaSource;
     private String openApiJsonFile;
     private File generatedTsFolder;
-
 
     private File tokenFile;
 
@@ -118,7 +117,6 @@ public class BuildFrontendMojoTest {
                 "target/generated-resources/openapi.json").getAbsolutePath();
         generatedTsFolder = new File(npmFolder, "frontend/generated");
 
-
         Assert.assertTrue("Failed to create a test project resources",
                 projectFrontendResourcesDirectory.mkdirs());
         Assert.assertTrue("Failed to create a test project file",
@@ -139,13 +137,10 @@ public class BuildFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", npmFolder);
         ReflectionUtils.setVariableValueInObject(mojo, "generateBundle", false);
         ReflectionUtils.setVariableValueInObject(mojo, "runNpmInstall", false);
-        ReflectionUtils.setVariableValueInObject(mojo, "compatibilityMode",
-                "false");
         ReflectionUtils.setVariableValueInObject(mojo, "optimizeBundle", true);
 
         ReflectionUtils.setVariableValueInObject(mojo, "openApiJsonFile",
-                new File(npmFolder,
-                        "target/generated-resources/openapi.json"));
+                new File(npmFolder, "target/generated-resources/openapi.json"));
         ReflectionUtils.setVariableValueInObject(mojo, "applicationProperties",
                 new File(npmFolder,
                         "src/main/resources/application.properties"));
@@ -333,7 +328,8 @@ public class BuildFrontendMojoTest {
         assertContainsPackage(dependencies, "@vaadin/vaadin-button",
                 "@vaadin/vaadin-element-mixin");
 
-        Assert.assertFalse("Foo should have been removed", dependencies.hasKey("foo"));
+        Assert.assertFalse("Foo should have been removed",
+                dependencies.hasKey("foo"));
         Assert.assertTrue("Bar should remain", dependencies.hasKey("bar"));
     }
 
@@ -352,7 +348,6 @@ public class BuildFrontendMojoTest {
                 webpackOutputDirectory);
 
         JsonObject initialBuildInfo = Json.createObject();
-        initialBuildInfo.put(SERVLET_PARAMETER_COMPATIBILITY_MODE, false);
         initialBuildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, false);
         initialBuildInfo.put("npmFolder", "npm");
         initialBuildInfo.put("generatedFolder", "generated");
@@ -368,8 +363,6 @@ public class BuildFrontendMojoTest {
         JsonObject buildInfo = JsonUtil.parse(json);
         Assert.assertNotNull("devMode token should be available",
                 buildInfo.get(SERVLET_PARAMETER_ENABLE_DEV_SERVER));
-        Assert.assertNotNull("compatibilityMode token should be available",
-                buildInfo.get(SERVLET_PARAMETER_COMPATIBILITY_MODE));
         Assert.assertNotNull("productionMode token should be available",
                 buildInfo.get(SERVLET_PARAMETER_PRODUCTION_MODE));
         Assert.assertNull("npmFolder should have been removed",
@@ -407,10 +400,11 @@ public class BuildFrontendMojoTest {
     }
 
     @Test
-    public void mavenGoal_generateTsFiles_when_enabled()
-            throws Exception {
-        File connectClientApi = new File(generatedTsFolder, "connect-client.default.ts");
-        File serviceClientApi = new File(generatedTsFolder, "MyVaadinServices.ts");
+    public void mavenGoal_generateTsFiles_when_enabled() throws Exception {
+        File connectClientApi = new File(generatedTsFolder,
+                "connect-client.default.ts");
+        File serviceClientApi = new File(generatedTsFolder,
+                "MyVaadinServices.ts");
 
         Assert.assertFalse(connectClientApi.exists());
         Assert.assertFalse(serviceClientApi.exists());
