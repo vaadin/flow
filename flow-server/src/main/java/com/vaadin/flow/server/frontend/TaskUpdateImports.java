@@ -55,8 +55,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
  * An updater that it's run when the servlet context is initialised in dev-mode
  * or when flow-maven-plugin goals are run in order to update Flow imports file
  * and <code>node_module/@vaadin/flow-frontend</code> contents by visiting all
- * classes with {@link JsModule} {@link HtmlImport} and {@link Theme}
- * annotations.
+ * classes with {@link JsModule} and {@link Theme} annotations.
  *
  * @since 2.0
  */

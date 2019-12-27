@@ -468,8 +468,7 @@ public class ComponentUtil {
 
     /**
      * Gets the dependencies for the given class, defined using annotations (
-     * {@link HtmlImport}, {@link JavaScript}, {@link StyleSheet} and
-     * {@link Uses}).
+     * {@link JavaScript}, {@link StyleSheet} and {@link Uses}).
      *
      * @param service
      *            the service to use for resolving dependencies

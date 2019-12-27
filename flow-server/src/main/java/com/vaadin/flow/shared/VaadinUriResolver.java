@@ -20,7 +20,7 @@ import java.io.Serializable;
 /**
  * Utility for translating special Vaadin URIs into URLs usable by the browser.
  * This is an abstract class performing the main logic in
- * {@link #resolveVaadinUri(String, String, String)}.
+ * {@link #resolveVaadinUri(String, String)}.
  * <p>
  * Concrete implementations of this class should implement {@link Serializable}
  * in case a reference to an object of this class is stored on the server side.

@@ -414,9 +414,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          * The following URI schemes are supported:
          * <ul>
          * <li><code>{@value ApplicationConstants#CONTEXT_PROTOCOL_PREFIX}</code>
-         * - resolves to the application context root</li> Browsers supporting
-         * ES6 can receive different, more optimized files than browsers that
-         * only support ES5.</li>
+         * - resolves to the application context root</li>
          * <li><code>{@value ApplicationConstants#BASE_PROTOCOL_PREFIX}</code> -
          * resolves to the base URI of the page</li>
          * </ul>

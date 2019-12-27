@@ -48,10 +48,7 @@ import elemental.json.JsonObject;
  * The implementation scans all JsModule annotations for the given template
  * class and tries to find the one that contains template definition using the
  * tag name.
- * <p>
- * The class is Singleton. Use {@link DefaultTemplateParser#getInstance()} to
- * get its instance.
- *
+ * 
  * @author Vaadin Ltd
  * @since 2.0
  *
