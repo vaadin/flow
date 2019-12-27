@@ -113,7 +113,6 @@ public class DependencyLoaderTest {
             set(URIResolver.class, new URIResolver(this));
             ApplicationConfiguration appConf = new ApplicationConfiguration();
             appConf.setContextRootUrl("../");
-            appConf.setFrontendRootUrl("/frontend/");
             set(ApplicationConfiguration.class, appConf);
         }
     };
