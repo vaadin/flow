@@ -57,10 +57,6 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.webjars.bowergithub.webcomponents</groupId>
-            <artifactId>shadycss</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-client</artifactId>
             <version>${project.version}</version>
