@@ -7,14 +7,11 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import com.vaadin.flow.component.page.Viewport;
-import com.vaadin.flow.component.page.BodySize;
 
-import com.vaadin.flow.component.page.*;
-import com.vaadin.flow.server.*;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.junit.After;
@@ -24,7 +21,27 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.component.page.BodySize;
+import com.vaadin.flow.component.page.Inline;
+import com.vaadin.flow.component.page.Meta;
+import com.vaadin.flow.component.page.TargetElement;
+import com.vaadin.flow.component.page.VaadinAppShell;
+import com.vaadin.flow.component.page.Viewport;
+import com.vaadin.flow.server.AppShellSettings;
+import com.vaadin.flow.server.AppShellSettings.Position;
+import com.vaadin.flow.server.AppShellSettings.WrapMode;
+import com.vaadin.flow.server.InitialPageSettings;
+import com.vaadin.flow.server.InvalidApplicationConfigurationException;
+import com.vaadin.flow.server.MockServletServiceSessionSetup;
+import com.vaadin.flow.server.PWA;
+import com.vaadin.flow.server.PageConfigurator;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinServletContext;
+import com.vaadin.flow.server.VaadinServletRequest;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.VaadinAppShellRegistry.VaadinAppShellRegistryWrapper;
+import com.vaadin.flow.shared.communication.PushMode;
 
 import static com.vaadin.flow.server.DevModeHandler.getDevModeHandler;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -33,7 +50,7 @@ import static org.junit.Assert.assertNull;
 
 public class VaadinAppShellInitializerTest {
 
-    public static class MyAppShellWithoutAnnotations extends VaadinAppShell {
+    public static class MyAppShellWithoutAnnotations implements VaadinAppShell {
     }
 
     @Meta(name = "foo", content = "bar")
@@ -43,7 +60,7 @@ public class VaadinAppShellInitializerTest {
     @Inline(wrapping = Inline.Wrapping.JAVASCRIPT, position = Inline.Position.PREPEND, target = TargetElement.BODY, value = "")
     @Viewport(Viewport.DEVICE_DIMENSIONS)
     @BodySize(height = "50vh", width = "50vw")
-    public static class MyAppShellWithMultipleAnnotations extends VaadinAppShell {
+    public static class MyAppShellWithMultipleAnnotations implements VaadinAppShell {
     }
 
     @Meta(name = "offending-foo", content = "bar")
@@ -56,10 +73,60 @@ public class VaadinAppShellInitializerTest {
     public static class OffendingClass {
     }
 
-    public static class MyAppShellWithCofigurator extends VaadinAppShell
-            implements AppShellConfigurator {
+    public static class MyAppShellWithConfigurator implements VaadinAppShell {
         @Override
         public void configurePage(AppShellSettings settings) {
+            settings.setViewport("foo-viewport");
+            settings.addFavIcon("icon1", "icon1.png", "1x1");
+            settings.addFavIcon("icon2", "icon2.png", "2x2");
+
+            settings.addInlineWithContents(Position.PREPEND,
+                    "window.messages = window.messages || [];\n"
+                            + "window.messages.push(\"content script\");",
+                    WrapMode.JAVASCRIPT);
+
+            settings.addInlineFromFile(Position.PREPEND, "inline.js",
+                    WrapMode.JAVASCRIPT);
+
+            settings.addInlineFromFile("inline.js", WrapMode.JAVASCRIPT);
+            settings.addInlineFromFile("inline.html", WrapMode.NONE);
+            settings.addInlineFromFile("inline.css", WrapMode.STYLESHEET);
+
+            settings.addLink("icons/favicon.ico",
+                    new LinkedHashMap<String, String>() {
+                        {
+                            put("rel", "shortcut icon");
+                        }
+                    });
+            settings.addLink("icons/icon-192.png",
+                    new LinkedHashMap<String, String>() {
+                        {
+                            put("rel", "icon");
+                            put("sizes", "192x192");
+                        }
+                    });
+
+            settings.addLink("shortcut icon", "icons/favicon.ico");
+
+            settings.addFavIcon("icon", "icons/icon-192.png", "192x192");
+            settings.addFavIcon("icon", "icons/icon-200.png", "2");
+
+            settings.addMetaTag(Position.PREPEND, "theme-color", "#227aef");
+            settings.addMetaTag(Position.APPEND, "back-color", "#227aef");
+
+            settings.addInlineWithContents(
+                    "body {width: 100vw; height:100vh; margin:0;}",
+                    WrapMode.STYLESHEET);
+
+            settings.getLoadingIndicatorConfiguration().get()
+                    .setApplyDefaultTheme(false);
+            settings.getLoadingIndicatorConfiguration().get()
+                    .setSecondDelay(700000);
+
+            settings.getPushConfiguration().get().setPushMode(PushMode.MANUAL);
+
+            settings.getReconnectDialogConfiguration().get()
+                    .setDialogModal(true);
         }
     }
 
@@ -69,12 +136,6 @@ public class VaadinAppShellInitializerTest {
         }
     }
 
-    public static class InvalidClassWithAppShellConfigurator
-            implements AppShellConfigurator {
-        @Override
-        public void configurePage(AppShellSettings settings) {
-        }
-    }
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
@@ -265,38 +326,21 @@ public class VaadinAppShellInitializerTest {
     public void should_throw_when_offendingClassWithConfigurator() throws Exception {
         exception.expect(InvalidApplicationConfigurationException.class);
         exception.expectMessage(
-                containsString("Found deprecated `PageConfigurator`"));
+                containsString("The `PageConfigurator` interface is deprecated since Vaadin 15 and has no effect."));
+        exception.expectMessage(
+                containsString(MyAppShellWithoutAnnotations.class.getName()));
         exception.expectMessage(
                 containsString("- " + OffendingClassWithConfigurator.class.getName()));
-        classes.add(MyAppShellWithCofigurator.class);
-        classes.add(OffendingClassWithConfigurator.class);
-        initializer.onStartup(classes, servletContext);
-    }
-
-    @Test
-    public void should_not_throw_when_noAppShellConfigurator_and_classWithPageConfigurator() throws Exception {
-        classes.add(OffendingClassWithConfigurator.class);
         classes.add(MyAppShellWithoutAnnotations.class);
+        classes.add(OffendingClassWithConfigurator.class);
         initializer.onStartup(classes, servletContext);
     }
 
     @Test
     public void should_not_throw_when_noAppShell_and_classWithPageConfigurator() throws Exception {
         classes.add(OffendingClassWithConfigurator.class);
-        classes.add(OffendingClassWithConfigurator.class);
         initializer.onStartup(classes, servletContext);
     }
-    
-    @Test
-    public void should_throw_when_invalidClassWithAppShellConfigurator() throws Exception {
-        exception.expect(InvalidApplicationConfigurationException.class);
-        exception.expectMessage(
-                containsString("Found incorrect classes implementing `AppShellConfigurator`"));
-        exception.expectMessage(
-                containsString("- " + InvalidClassWithAppShellConfigurator.class.getName()));
-        classes.add(InvalidClassWithAppShellConfigurator.class);
-        initializer.onStartup(classes, servletContext);
-    }    
 
     private VaadinServletRequest createVaadinRequest(String pathInfo) {
         HttpServletRequest request = createRequest(pathInfo);

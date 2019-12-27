@@ -53,24 +53,25 @@ import static com.vaadin.flow.server.startup.VaadinAppShellInitializer.getValidA
  */
 public class VaadinAppShellRegistry implements Serializable {
 
-    static final String ERROR_HEADER_NO_SHELL = "%n%nFound app shell configuration annotations in non `VaadinAppShell` classes."
-            + "%nPlease create a custom class extending `VaadinAppShell` and move the following annotations to it:%n  %s%n";
+    static final String ERROR_HEADER_NO_SHELL =
+            "%n%nFound app shell configuration annotations in non `VaadinAppShell` classes."
+            + "%nPlease create a custom class implementing `VaadinAppShell` and move the following annotations to it:%n  %s%n";
 
-    static final String ERROR_HEADER_NO_APP_CONFIGURATOR = "%n%nCreate a custom class implementing `AppShellConfigurator` and extending `VaadinAppShell`"
-            + "%nand remove `PageConfigurator` interface from the following classes: %n  - %s%n";
-
-    static final String ERROR_HEADER_OFFENDING_CONFIGURATOR = "%n%nFound deprecated `PageConfigurator` in non `VaadinAppShell` classes."
-            + "%nMove the configuration code to the '%s' and remove the `PageConfigurator` from:%n  - %s%n";
-
-    static final String ERROR_HEADER_INCORRECT_CONFIGURATOR = "%n%nFound incorrect classes implementing `AppShellConfigurator`."
-            + "%nPlease remove the `AppShellConfigurator` interfaz from:%n  - %s%n";
-
-    static final String ERROR_HEADER_OFFENDING = "%n%nFound app shell configuration annotations in non `VaadinAppShell` classes."
+    static final String ERROR_HEADER_OFFENDING =
+            "%n%nFound app shell configuration annotations in non `VaadinAppShell` classes."
             + "%nThe following annotations must be either removed or moved to the '%s' class:%n  %s%n";
+
+    static final String ERROR_HEADER_NO_APP_CONFIGURATOR =
+            "%n%nThe `PageConfigurator` interface is deprecated since Vaadin 15 and has no effect."
+            + "%nPlease, create a class implementing `VaadinAppShell`, and remove `PageConfigurator` from: %n  - %s%n";
+
+    static final String ERROR_HEADER_OFFENDING_CONFIGURATOR =
+            "%n%nThe `PageConfigurator` interface is deprecated since Vaadin 15 and has no effect."
+            + "%nPlease, configure the page in %s, and remove the `PageConfigurator` from: %n - %s%n";
 
     private static final String ERROR_LINE = "  - %s from %s";
     private static final String ERROR_MULTIPLE_SHELL =
-            "%nUnable to find a single class extending `VaadinAppShell` from the following candidates:%n  %s%n  %s%n";
+            "%nUnable to find a single class implementing `VaadinAppShell` from the following candidates:%n  %s%n  %s%n";
 
     private static final String ERROR_MULTIPLE_VIEWPORT =
             "%nViewport is not a repeatable annotation type.%n";
@@ -269,23 +270,11 @@ public class VaadinAppShellRegistry implements Serializable {
 
     /**
      * Return the {@link VaadinAppShell} used in the application.
-     * 
+     *
      * @return the instance
      */
     public Optional<VaadinAppShell> getAppShell() {
         return Optional.ofNullable(appShell);
-    }
-
-    /**
-     * Return the {@link AppShellConfigurator} used in the application.
-     * 
-     * @return the configurator
-     */
-    public Optional<AppShellConfigurator> getAppShellConfigurator() {
-        return Optional.ofNullable(appShell != null
-                && AppShellConfigurator.class.isAssignableFrom(shell)
-                        ? (AppShellConfigurator) appShell
-                        : null);
     }
 
     private Element createInlineDependencyElement(VaadinSession session, VaadinRequest request, JsonObject dependency,
