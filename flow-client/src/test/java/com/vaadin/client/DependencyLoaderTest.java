@@ -199,8 +199,7 @@ public class DependencyLoaderTest {
 
         new DependencyLoader(registry).loadDependencies(createDependenciesMap(
                 createInlineDependency(Dependency.Type.JAVASCRIPT, jsContents1),
-                createInlineDependency(Dependency.Type.JAVASsCRIPT,
-                        jsContents2),
+                createInlineDependency(Dependency.Type.JAVASCRIPT, jsContents2),
                 createInlineDependency(Dependency.Type.STYLESHEET,
                         cssContents1),
                 createInlineDependency(Dependency.Type.STYLESHEET,
