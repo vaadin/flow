@@ -141,9 +141,6 @@ public class Bootstrapper implements EntryPoint {
                             ApplicationConstants.CONTEXT_ROOT_URL)));
         }
 
-        conf.setFrontendRootUrl(jsoConfiguration
-                .getConfigString(ApplicationConstants.FRONTEND_URL_ES6));
-
         conf.setUIId(jsoConfiguration
                 .getConfigInteger(ApplicationConstants.UI_ID_PARAMETER)
                 .intValue());

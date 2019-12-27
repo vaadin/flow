@@ -60,20 +60,12 @@ public class URIResolver extends VaadinUriResolver {
      * @return the resolved URI
      */
     public String resolveVaadinUri(String uri) {
-        return super.resolveVaadinUri(uri, getFrontendRootUrl(),
-                getContextRootUrl());
+        return super.resolveVaadinUri(uri, getContextRootUrl());
     }
 
     protected String getContextRootUrl() {
         String root = registry.getApplicationConfiguration()
                 .getContextRootUrl();
-        assert root.endsWith("/");
-        return root;
-    }
-
-    protected String getFrontendRootUrl() {
-        String root = registry.getApplicationConfiguration()
-                .getFrontendRootUrl();
         assert root.endsWith("/");
         return root;
     }
