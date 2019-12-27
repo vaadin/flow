@@ -747,7 +747,7 @@ public class FrontendUtils {
         try {
             List<String> nodeVersionCommand = new ArrayList<>();
             nodeVersionCommand.add(FrontendUtils.getNodeExecutable(baseDir));
-            nodeVersionCommand.add("--version");
+            nodeVersionCommand.add("--version"); //NOSONAR
             FrontendVersion nodeVersion = getVersion("node",
                     nodeVersionCommand);
             validateToolVersion("node", nodeVersion, SUPPORTED_NODE_VERSION,
@@ -759,7 +759,7 @@ public class FrontendUtils {
         try {
             List<String> npmVersionCommand = new ArrayList<>(
                     FrontendUtils.getNpmExecutable(baseDir));
-            npmVersionCommand.add("--version");
+            npmVersionCommand.add("--version"); //NOSONAR
             FrontendVersion npmVersion = getVersion("npm", npmVersionCommand);
             validateToolVersion("npm", npmVersion, SUPPORTED_NPM_VERSION,
                     SHOULD_WORK_NPM_VERSION);
@@ -820,7 +820,7 @@ public class FrontendUtils {
             // check whether globally or locally installed pnpm is new enough
             try {
                 List<String> versionCmd = new ArrayList<>(pnpmCommand);
-                versionCmd.add("--version");
+                versionCmd.add("--version"); //NOSONAR
                 FrontendVersion pnpmVersion = getVersion("pnpm", versionCmd);
                 if (isVersionAtLeast(pnpmVersion, SUPPORTED_PNPM_VERSION)) {
                     return false;
