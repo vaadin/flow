@@ -295,27 +295,6 @@ public class ApplicationConfiguration {
     }
 
     /**
-     * Gets the base URL of the frontend components on the server.
-     *
-     * @return the base URL on the server for the {@literal frontend://}
-     *         protocol.
-     */
-    public String getFrontendRootUrl() {
-        return frontendRootUrl;
-    }
-
-    /**
-     * Sets the base URL of the frontend components on the server.
-     *
-     * @param frontendRootUrl
-     *            the base URL on the server for the {@literal frontend://}
-     *            protocol.
-     */
-    public void setFrontendRootUrl(String frontendRootUrl) {
-        this.frontendRootUrl = frontendRootUrl;
-    }
-
-    /**
      * Sets the exported web components.
      *
      * @param exportedWebComponents
