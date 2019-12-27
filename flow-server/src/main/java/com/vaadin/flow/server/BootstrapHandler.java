@@ -404,8 +404,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          * <ul>
          * <li><code>{@value ApplicationConstants#CONTEXT_PROTOCOL_PREFIX}</code>
          * - resolves to the application context root</li>
-         * <li><code>{@value ApplicationConstants#FRONTEND_PROTOCOL_PREFIX}</code>
-         * - resolves to the build path where web components were compiled.
          * <li><code>{@value ApplicationConstants#BASE_PROTOCOL_PREFIX}</code> -
          * resolves to the base URI of the page</li>
          * </ul>

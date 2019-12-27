@@ -321,7 +321,6 @@ public class Page implements Serializable {
      * {@link #addJsModule(String)}, etc.)
      *
      *
-     * @see #addHtmlImport(String)
      * @param expression
      *            the JavaScript expression which return a Promise
      */
