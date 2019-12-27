@@ -275,8 +275,6 @@ public class WebComponentProviderTest {
     }
 
     private WebComponentConfigurationRegistry setUpRegistry() {
-        // this hack is needed, because the OSGiAccess fake servlet context is
-        // now not needed
         return new WebComponentConfigurationRegistry() {
         };
     }

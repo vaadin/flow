@@ -44,7 +44,6 @@
                     </execution>
                 </executions>
                  <configuration>
-                    <bowerMode>false</bowerMode>
                     <productionMode>true</productionMode>
                 </configuration>
             </plugin>
