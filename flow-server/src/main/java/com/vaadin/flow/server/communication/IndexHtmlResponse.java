@@ -34,7 +34,6 @@ public class IndexHtmlResponse {
     private final VaadinRequest vaadinRequest;
     private final VaadinResponse vaadinResponse;
     private final Document document;
-    private final UI ui;
 
     /**
      * Create a response object in clientSideMode with UI.
@@ -53,7 +52,6 @@ public class IndexHtmlResponse {
         this.vaadinRequest = vaadinRequest;
         this.vaadinResponse = vaadinResponse;
         this.document = document;
-        this.ui = ui;
     }
 
     /**
@@ -71,7 +69,6 @@ public class IndexHtmlResponse {
         this.vaadinRequest = vaadinRequest;
         this.vaadinResponse = vaadinResponse;
         this.document = document;
-        this.ui = null;
     }
 
     /**
@@ -108,6 +105,11 @@ public class IndexHtmlResponse {
      * @return the UI
      */
     public Optional<UI> getUI() {
-        return Optional.ofNullable(UI.getCurrent());
+        if(!this.vaadinRequest.getService()
+                .getDeploymentConfiguration().isEagerServerLoad()) {
+            return Optional.empty();
+        } else {
+            return Optional.ofNullable(UI.getCurrent());
+        }
     }
 }

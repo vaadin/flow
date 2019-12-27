@@ -48,6 +48,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
     private static final Pattern PATH_WITH_EXTENSION = Pattern
             .compile("\\.[A-z][A-z\\d]+$");
+    private transient IndexHtmlResponse indexHtmlResponse;
 
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
@@ -55,7 +56,6 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         Document indexDocument = getIndexHtmlDocument(request);
 
         prependBaseHref(request, indexDocument);
-        IndexHtmlResponse indexHtmlResponse;
 
         if (request.getService().getBootstrapInitialPredicate()
                 .includeInitialUidl(request)) {
@@ -163,5 +163,9 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
     private static Logger getLogger() {
         return LoggerFactory.getLogger(IndexHtmlRequestHandler.class);
+    }
+
+    protected IndexHtmlResponse getIndexHtmlResponse() {
+        return this.indexHtmlResponse;
     }
 }
