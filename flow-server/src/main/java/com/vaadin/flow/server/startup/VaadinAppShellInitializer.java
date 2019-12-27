@@ -41,7 +41,6 @@ import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.VaadinAppShell;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.server.AppShellConfigurator;
 import com.vaadin.flow.server.InvalidApplicationConfigurationException;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.PageConfigurator;
@@ -49,7 +48,6 @@ import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
 
-import static com.vaadin.flow.server.startup.VaadinAppShellRegistry.ERROR_HEADER_INCORRECT_CONFIGURATOR;
 import static com.vaadin.flow.server.startup.VaadinAppShellRegistry.ERROR_HEADER_NO_APP_CONFIGURATOR;
 import static com.vaadin.flow.server.startup.VaadinAppShellRegistry.ERROR_HEADER_NO_SHELL;
 import static com.vaadin.flow.server.startup.VaadinAppShellRegistry.ERROR_HEADER_OFFENDING;
@@ -148,7 +146,6 @@ public class VaadinAppShellInitializer implements ServletContainerInitializer,
 
         Optional<VaadinAppShell> appShell = registry.getAppShell();
         String shellName = appShell.map(s -> s.getClass().getName()).orElse(null);
-        Optional<AppShellConfigurator> configurator = registry.getAppShellConfigurator();
 
         List<String> classesImplementingPageConfigurator = classes.stream()
                 .filter(clz -> PageConfigurator.class.isAssignableFrom(clz))
@@ -157,7 +154,7 @@ public class VaadinAppShellInitializer implements ServletContainerInitializer,
         if (!classesImplementingPageConfigurator.isEmpty()) {
             String message = classesImplementingPageConfigurator.stream()
                     .collect(Collectors.joining("\n  - "));
-            if (configurator.isPresent()) {
+            if (appShell.isPresent()) {
                 message = String.format(ERROR_HEADER_OFFENDING_CONFIGURATOR,
                         shellName, message);
                 throw new InvalidApplicationConfigurationException(message);
@@ -165,20 +162,6 @@ public class VaadinAppShellInitializer implements ServletContainerInitializer,
                 message = String.format(ERROR_HEADER_NO_APP_CONFIGURATOR, message);
                 getLogger().error(message);
             }
-        }
-
-        List<String> classesImplementingAppShellConfigurator = classes.stream()
-                .filter(clz -> AppShellConfigurator.class.isAssignableFrom(clz))
-                .map(Class::getName)
-                .filter(name -> !name.equals(shellName))
-                .collect(Collectors.toList());
-
-        if (!classesImplementingAppShellConfigurator.isEmpty()) {
-            String message = String.format(
-                    ERROR_HEADER_INCORRECT_CONFIGURATOR,
-                    classesImplementingAppShellConfigurator.stream()
-                            .collect(Collectors.joining("\n -")));
-            throw new InvalidApplicationConfigurationException(message);
         }
     }
 
