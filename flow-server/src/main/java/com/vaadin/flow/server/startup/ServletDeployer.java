@@ -158,12 +158,9 @@ public class ServletDeployer implements ServletContextListener {
                 context);
 
         boolean enableServlets = true;
-        boolean hasDevelopmentMode = servletConfigurations.isEmpty();
         for (DeploymentConfiguration configuration : servletConfigurations) {
             enableServlets = enableServlets
                     && !configuration.disableAutomaticServletRegistration();
-            boolean devMode = !configuration.useCompiledFrontendResources();
-            hasDevelopmentMode = hasDevelopmentMode || devMode;
         }
 
         if (enableServlets) {

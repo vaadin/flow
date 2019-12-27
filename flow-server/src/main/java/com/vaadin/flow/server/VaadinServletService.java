@@ -218,7 +218,7 @@ public class VaadinServletService extends VaadinService {
     public String resolveResource(String url) {
         Objects.requireNonNull(url, "Url cannot be null");
 
-        return contextResolver.resolveVaadinUri(url, null);
+        return contextResolver.resolveVaadinUri(url);
     }
 
     @Override
