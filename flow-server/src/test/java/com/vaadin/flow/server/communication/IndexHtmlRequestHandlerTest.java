@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 
 import com.sun.net.httpserver.HttpServer;
 import com.vaadin.flow.component.page.Viewport;
@@ -275,6 +276,26 @@ public class IndexHtmlRequestHandlerTest {
         Elements scripts = document.head().getElementsByTag("script");
         Assert.assertEquals(0, scripts.size());
         Assert.assertNull(UI.getCurrent());
+    }
+
+    @Test
+    public void should_getter_UI_return_not_empty_when_includeInitialBootstrapUidl()
+            throws IOException {
+        deploymentConfiguration.setEagerServerLoad(true);
+
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+
+        Assert.assertNotNull(indexHtmlRequestHandler.getIndexHtmlResponse().getUI());
+    }
+
+    @Test
+    public void should_getter_UI_return_empty_when_not_includeInitialBootstrapUidl()
+            throws IOException {
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+
+        Assert.assertEquals(Optional.empty(), indexHtmlRequestHandler.getIndexHtmlResponse().getUI());
     }
 
     @Test
