@@ -262,7 +262,11 @@ public class FrontendUtils {
             Constants.SHOULD_WORK_NPM_MAJOR_VERSION,
             Constants.SHOULD_WORK_NPM_MINOR_VERSION);
 
-    private static FrontendToolsLocator frontendToolsLocator = new FrontendToolsLocator();
+    private static final FrontendVersion SUPPORTED_PNPM_VERSION = new FrontendVersion(
+            Constants.SUPPORTED_PNPM_MAJOR_VERSION,
+            Constants.SUPPORTED_PNPM_MINOR_VERSION);
+
+    static FrontendToolsLocator frontendToolsLocator = new FrontendToolsLocator();
 
     private static String operatingSystem = null;
 
@@ -350,8 +354,12 @@ public class FrontendUtils {
      * @see #getPnpmExecutable(String, boolean)
      */
     public static List<String> getPnpmExecutable(String baseDir) {
-        ensurePnpm(baseDir, true);
-        return getPnpmExecutable(baseDir, true);
+        ensurePnpm(baseDir);
+        List<String> pnpmCommand = getPnpmExecutable(baseDir, true);
+        if (!pnpmCommand.isEmpty()) {
+            pnpmCommand.add("--shamefully-hoist=true");
+        }
+        return pnpmCommand;
     }
 
     /**
@@ -390,9 +398,6 @@ public class FrontendUtils {
                         .map(File::getPath).map(Collections::singletonList)
                         .orElse(Collections.emptyList()));
             }
-        }
-        if (!returnCommand.isEmpty()) {
-            returnCommand.add("--shamefully-hoist=true");
         }
         return returnCommand;
     }
@@ -770,11 +775,32 @@ public class FrontendUtils {
      *
      * @param baseDir
      *            project root folder.
-     * @param ensure
-     *            whether pnpm tool should be installed if it's absent
      */
-    public static void ensurePnpm(String baseDir, boolean ensure) {
-        if (ensure && getPnpmExecutable(baseDir, false).isEmpty()) {
+    public static void ensurePnpm(String baseDir) {
+        final List<String> pnpm = getPnpmExecutable(baseDir, false);
+        boolean installPnpmLocally = true;
+        if (!pnpm.isEmpty()) {
+            // Check if (globally or locally installed) pnpm is new enough. If
+            // not, install a supported version locally.
+            try {
+                List<String> versionCmd = new ArrayList<>(pnpm);
+                versionCmd.add("--version");
+                FrontendVersion pnpmVersion = getVersion("pnpm", versionCmd);
+                if (isVersionAtLeast(pnpmVersion, SUPPORTED_PNPM_VERSION)) {
+                    installPnpmLocally = false;
+                } else {
+                    getLogger().warn(String.format(
+                            "installed pnpm ('%s', version %s) is too old, installing supported version locally",
+                            String.join(" ", pnpm),
+                            pnpmVersion.getFullVersion()));
+                }
+            } catch (UnknownVersionException e) {
+                getLogger().warn(
+                        "Error checking pnpm version, installing pnpm locally",
+                        e);
+            }
+        }
+        if (installPnpmLocally) {
             // copy the current content of package.json file to a temporary
             // location
             File packageJson = new File(baseDir, "package.json");
