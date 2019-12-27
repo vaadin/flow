@@ -38,7 +38,6 @@ import com.vaadin.flow.server.communication.PushRequestHandler;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
-import com.vaadin.flow.theme.AbstractTheme;
 
 /**
  * A service implementation connected to a {@link VaadinServlet}.
@@ -233,89 +232,24 @@ public class VaadinServletService extends VaadinService {
     }
 
     @Override
-    public URL getResource(String path, AbstractTheme theme) {
-        return getResourceInServletContextOrWebJar(
-                getThemedOrRawPath(path, theme));
+    public URL getResource(String path) {
+        return getResourceInServletContext(resolveResource(path));
     }
 
     @Override
-    public InputStream getResourceAsStream(String path, AbstractTheme theme) {
-        return getResourceInServletContextOrWebJarAsStream(
-                getThemedOrRawPath(path, theme));
-    }
-
-    @Override
-    public Optional<String> getThemedUrl(String url, AbstractTheme theme) {
-        if (theme != null && !resolveResource(url)
-                .equals(getThemedOrRawPath(url, theme))) {
-            return Optional.of(theme.translateUrl(url));
-        }
-        return Optional.empty();
+    public InputStream getResourceAsStream(String path) {
+        return getResourceInServletContextAsStream(resolveResource(path));
     }
 
     /**
-     * Resolves the given {@code url} resource and tries to find a themed or raw
-     * version.
-     * <p>
-     * The themed version is always tried first, with the raw version used as a
-     * fallback.
-     *
-     * @param url
-     *            the untranslated URL to the resource to find
-     * @param theme
-     *            the theme to use for resolving, or <code>null</code> to not
-     *            use a theme
-     * @return the path to the themed resource if such exists, otherwise the
-     *         resolved raw path
-     */
-    private String getThemedOrRawPath(String url, AbstractTheme theme) {
-        String resourcePath = resolveResource(url);
-
-        Optional<String> themeResourcePath = getThemeResourcePath(resourcePath,
-                theme);
-        if (themeResourcePath.isPresent()) {
-            URL themeResource = getResourceInServletContextOrWebJar(
-                    themeResourcePath.get());
-            if (themeResource != null) {
-                return themeResourcePath.get();
-            }
-        }
-        return resourcePath;
-    }
-
-    /**
-     * Gets the theme specific path for the given resource.
+     * Finds the given resource in the servlet context.
      *
      * @param path
-     *            the raw path
-     * @param theme
-     *            the theme to use for resolving, possibly <code>null</code>
-     * @return the path to the themed version or an empty optional if no themed
-     *         version could be determined
-     */
-    private Optional<String> getThemeResourcePath(String path,
-            AbstractTheme theme) {
-        if (theme == null) {
-            return Optional.empty();
-        }
-        String themeUrl = theme.translateUrl(path);
-        if (path.equals(themeUrl)) {
-            return Optional.empty();
-        }
-
-        return Optional.of(themeUrl);
-    }
-
-    /**
-     * Finds the given resource in the servlet context or in a webjar.
-     *
-     * @param path
-     *            the path inside servlet context, automatically translated as
-     *            needed for webjars
+     *            the path inside servlet context
      * @return a URL for the resource or <code>null</code> if no resource was
      *         found
      */
-    public URL getResourceInServletContextOrWebJar(String path) {
+    public URL getResourceInServletContext(String path) {
         ServletContext servletContext = getServlet().getServletContext();
         try {
             return servletContext.getResource(path);
@@ -335,8 +269,7 @@ public class VaadinServletService extends VaadinService {
      * @return a URL for the resource or <code>null</code> if no resource was
      *         found
      */
-    private InputStream getResourceInServletContextOrWebJarAsStream(
-            String path) {
+    private InputStream getResourceInServletContextAsStream(String path) {
         ServletContext servletContext = getServlet().getServletContext();
         return servletContext.getResourceAsStream(path);
     }

@@ -72,7 +72,6 @@ import com.vaadin.flow.shared.VaadinUriResolver;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
-import com.vaadin.flow.theme.ThemeDefinition;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -91,8 +90,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @since 1.0
  */
 public class BootstrapHandler extends SynchronizedRequestHandler {
-
-    public static final String POLYFILLS_JS = "frontend://bower_components/webcomponentsjs/webcomponents-loader.js";
 
     private static final CharSequence GWT_STAT_EVENTS_JS = "if (typeof window.__gwtStatsEvent != 'function') {"
             + "window.Vaadin.Flow.gwtStatsEvents = [];"
@@ -351,18 +348,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 return AnnotationReader.getAnnotationsFor(
                         pageConfigurationHolder, annotationType);
             }
-        }
-
-        /**
-         * Gets the {@link ThemeDefinition} associated with the
-         * pageConfigurationHolder of this context, if any.
-         *
-         * @return the theme definition, or empty if none is found, or
-         *         pageConfigurationHolder is <code>null</code>
-         * @see UI#getThemeFor(Class, String)
-         */
-        protected Optional<ThemeDefinition> getTheme() {
-            return ui.getThemeFor(pageConfigurationHolder, null);
         }
 
         /**

@@ -2,25 +2,16 @@ package com.vaadin.flow.server;
 
 import javax.servlet.http.HttpServletRequest;
 
-import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.Properties;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.theme.AbstractTheme;
 
 import static org.easymock.EasyMock.createMock;
@@ -49,21 +40,13 @@ public class VaadinServletServiceTest {
     private TestVaadinServletService service;
     private VaadinServlet servlet;
 
-    @Rule
-    public TemporaryFolder tempFolder = new TemporaryFolder();
-
     @Before
     public void setup() throws Exception {
         mocks = new MockServletServiceSessionSetup();
         service = mocks.getService();
 
-        File token = tempFolder.newFile();
-        FileUtils.write(token, "{}", StandardCharsets.UTF_8);
-
         servlet = new VaadinServlet();
-        Properties properties = new Properties();
-        properties.put(FrontendUtils.PARAM_TOKEN_FILE, token.getPath());
-        servlet.init(new MockServletConfig(properties));
+        servlet.init(new MockServletConfig());
     }
 
     @After
@@ -88,25 +71,13 @@ public class VaadinServletServiceTest {
         Assert.assertEquals("/foo", service.resolveResource("context://foo"));
     }
 
-    private void testGetResourceAndGetResourceAsStream(
-            String expectedServletContextResource, String untranslatedUrl,
-            AbstractTheme theme) throws IOException {
+    @Test
+    public void resolveResourceNPM_production() {
+        mocks.setProductionMode(true);
 
-        if (expectedServletContextResource == null) {
-            Assert.assertNull(service.getResource(untranslatedUrl, theme));
-            Assert.assertNull(
-                    service.getResourceAsStream(untranslatedUrl, theme));
-        } else {
-            URL expectedUrl = new URL(
-                    "file://" + expectedServletContextResource);
-            Assert.assertEquals(expectedUrl,
-                    service.getResource(untranslatedUrl, theme));
-            String contents = IOUtils.toString(
-                    service.getResourceAsStream(untranslatedUrl, theme),
-                    StandardCharsets.UTF_8);
-            Assert.assertEquals("This is " + expectedServletContextResource,
-                    contents);
-        }
+        Assert.assertEquals("", service.resolveResource(""));
+        Assert.assertEquals("foo", service.resolveResource("foo"));
+        Assert.assertEquals("/foo", service.resolveResource("context://foo"));
     }
 
     @Test

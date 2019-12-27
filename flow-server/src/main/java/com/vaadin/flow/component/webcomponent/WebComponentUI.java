@@ -32,7 +32,6 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.router.HasUrlParameter;
@@ -43,10 +42,6 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
-import com.vaadin.flow.theme.AbstractTheme;
-import com.vaadin.flow.theme.Theme;
-import com.vaadin.flow.theme.ThemeDefinition;
-import com.vaadin.flow.theme.ThemeUtil;
 
 import elemental.json.JsonObject;
 
@@ -63,10 +58,6 @@ public class WebComponentUI extends UI {
     public void doInit(VaadinRequest request, int uiId) {
         super.doInit(request, uiId);
 
-        assignTheme();
-        VaadinSession session = getSession();
-        DeploymentConfiguration deploymentConfiguration = session.getService()
-                .getDeploymentConfiguration();
         getEventBus().addListener(WebComponentConnectEvent.class,
                 this::connectWebComponent);
     }
@@ -270,12 +261,6 @@ public class WebComponentUI extends UI {
     }
 
     @Override
-    public Optional<ThemeDefinition> getThemeFor(Class<?> navigationTarget,
-            String path) {
-        return Optional.empty();
-    }
-
-    @Override
     public void navigate(String location) {
         throw new UnsupportedOperationException(NO_NAVIGATION);
     }
@@ -296,31 +281,6 @@ public class WebComponentUI extends UI {
         throw new UnsupportedOperationException(NO_NAVIGATION);
     }
 
-    private void assignTheme() {
-        WebComponentConfigurationRegistry registry = getConfigurationRegistry();
-        Optional<Theme> theme = registry
-                .getEmbeddedApplicationAnnotation(Theme.class);
-        if (theme.isPresent()) {
-            getInternals().setTheme(theme.get().value());
-            assignVariant(registry, theme.get());
-        } else {
-            ThemeUtil.getLumoThemeDefinition().map(ThemeDefinition::getTheme)
-                    .ifPresent(getInternals()::setTheme);
-        }
-    }
-
-    private void assignVariant(WebComponentConfigurationRegistry registry,
-            Theme theme) {
-        AbstractTheme themeInstance = Instantiator.get(this)
-                .getOrCreate(theme.value());
-        ThemeDefinition definition = new ThemeDefinition(theme);
-        Map<String, String> attributes = themeInstance
-                .getHtmlAttributes(definition.getVariant());
-
-        registry.getConfigurations()
-                .forEach(config -> addAttributes(config.getTag(), attributes));
-    }
-
     private void addAttributes(String tag, Map<String, String> attributes) {
         final StringBuilder builder = new StringBuilder();
         builder.append("var elements = document.querySelectorAll('").append(tag)
@@ -331,15 +291,6 @@ public class WebComponentUI extends UI {
                 .append("', '").append(value).append("');"));
         builder.append("}");
         getPage().executeJs(builder.toString());
-    }
-
-    private String getWebComponentHtmlPath(
-            WebComponentConfiguration<? extends Component> config) {
-        DeploymentConfiguration deploymentConfiguration = getSession()
-                .getService().getDeploymentConfiguration();
-        String path = deploymentConfiguration.getCompiledWebComponentsPath();
-
-        return path + '/' + config.getTag() + ".html";
     }
 
     private WebComponentConfigurationRegistry getConfigurationRegistry() {

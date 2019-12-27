@@ -2222,48 +2222,37 @@ public abstract class VaadinService implements Serializable {
      *
      * @param url
      *            the untranslated Vaadin URL for the resource
-     * @param theme
-     *            the theme to use for translating the URL or <code>null</code>
-     *            if no theme is used
      * @return the resource located at the named path, or <code>null</code> if
      *         there is no resource at that path
      */
-    public abstract URL getResource(String url, AbstractTheme theme);
+    public abstract URL getResource(String url);
 
     /**
      * Opens a stream to to the resource at the given Vaadin URI.
      *
      * @param url
      *            the untranslated Vaadin URL for the resource
-     * @param theme
-     *            the theme to use for translating the URL or <code>null</code>
-     *            if no theme is used
      * @return a stream for the resource or <code>null</code> if no resource
      *         exists at the specified path
      */
-    public abstract InputStream getResourceAsStream(String url,
-            AbstractTheme theme);
+    public abstract InputStream getResourceAsStream(String url);
 
     /**
      * Checks if a resource is available at the given Vaadin URI.
      *
      * @param url
      *            the untranslated Vaadin URL for the resource
-     * @param theme
-     *            the theme to use for translating the URL or <code>null</code>
-     *            if no theme is used
      * @return <code>true</code> if a resource is found and can be read using
      *         {@link #getResourceAsStream(String, AbstractTheme)},
      *         <code>false</code> if it is not found
      */
-    public boolean isResourceAvailable(String url, AbstractTheme theme) {
-        return getResource(url, theme) != null;
+    public boolean isResourceAvailable(String url) {
+        return getResource(url) != null;
     }
 
     /**
      * Resolves the given {@code url} resource to be useful for
-     * {@link #getResource(String, AbstractTheme)} and
-     * {@link #getResourceAsStream(String, AbstractTheme)}.
+     * {@link #getResource(String)} and {@link #getResourceAsStream(String )}.
      *
      * @param url
      *            the resource to resolve, not <code>null</code>
@@ -2271,21 +2260,6 @@ public abstract class VaadinService implements Serializable {
      *         was performed
      */
     public abstract String resolveResource(String url);
-
-    /**
-     * Checks if the given URL has a themed version. If it does, returns the
-     * untranslated URL for the themed resource.
-     *
-     * @param url
-     *            the URL to lookup
-     * @param theme
-     *            the theme to check
-     * @return an optional containing the untranslated (containing vaadin
-     *         protocols) URL to the themed resource if such exists, an empty
-     *         optional if the given resource has no themed version
-     */
-    public abstract Optional<String> getThemedUrl(String url,
-            AbstractTheme theme);
 
     /**
      * Constructs {@link VaadinContext} for this service.

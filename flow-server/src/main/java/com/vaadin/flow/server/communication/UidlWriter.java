@@ -61,7 +61,6 @@ import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
-import com.vaadin.flow.theme.AbstractTheme;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -85,7 +84,6 @@ public class UidlWriter implements Serializable {
     public static class ResolveContext implements Serializable {
         private VaadinService service;
         private WebBrowser browser;
-        private AbstractTheme theme;
 
         /**
          * Creates a new context.
@@ -97,11 +95,9 @@ public class UidlWriter implements Serializable {
          * @param theme
          *            the theme, or <code>null</code> for no theme
          */
-        public ResolveContext(VaadinService service, WebBrowser browser,
-                AbstractTheme theme) {
+        public ResolveContext(VaadinService service, WebBrowser browser) {
             this.service = Objects.requireNonNull(service);
             this.browser = Objects.requireNonNull(browser);
-            this.theme = theme;
         }
 
         /**
@@ -120,15 +116,6 @@ public class UidlWriter implements Serializable {
          */
         public WebBrowser getBrowser() {
             return browser;
-        }
-
-        /**
-         * Gets the theme used for resolving.
-         *
-         * @return the theme or <code>null</code> for no theme
-         */
-        public AbstractTheme getTheme() {
-            return theme;
         }
 
     }
@@ -187,7 +174,7 @@ public class UidlWriter implements Serializable {
         encodeChanges(ui, stateChanges);
 
         populateDependencies(response, uiInternals.getDependencyList(),
-                new ResolveContext(service, session.getBrowser(), null));
+                new ResolveContext(service, session.getBrowser()));
 
         if (uiInternals.getConstantPool().hasNewConstants()) {
             response.put("constants",
@@ -281,8 +268,7 @@ public class UidlWriter implements Serializable {
     private static InputStream getInlineResourceStream(String url,
             ResolveContext context) {
         VaadinService service = context.getService();
-        InputStream stream = service.getResourceAsStream(url,
-                context.getTheme());
+        InputStream stream = service.getResourceAsStream(url);
 
         if (stream == null) {
             String resolvedPath = service.resolveResource(url);

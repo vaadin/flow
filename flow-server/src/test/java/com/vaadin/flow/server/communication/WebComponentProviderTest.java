@@ -55,8 +55,6 @@ import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.communication.PushMode;
-import com.vaadin.flow.theme.AbstractTheme;
-import com.vaadin.flow.theme.Theme;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
@@ -232,29 +230,6 @@ public class WebComponentProviderTest {
         Assert.assertNotEquals("Stream output should not match", first, second);
     }
 
-    @Test
-    public void setExporters_exportersHasNoTheme_themeIsNull() {
-        WebComponentConfigurationRegistry registry = setupConfigurations(
-                MyComponentExporter.class, OtherComponentExporter.class);
-
-        Assert.assertFalse(registry
-                .getEmbeddedApplicationAnnotation(Theme.class).isPresent());
-    }
-
-    @Test
-    public void notInitializedRegistry_themeIsEmpty() {
-        WebComponentConfigurationRegistry registry = setUpRegistry();
-        Assert.assertFalse(registry
-                .getEmbeddedApplicationAnnotation(Theme.class).isPresent());
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void setExporters_exportersHasVariousThemes_throws() {
-        WebComponentConfigurationRegistry registry = setupConfigurations(
-                ThemedComponentExporter.class,
-                AnotherThemedComponentExporter.class);
-    }
-
     @Test(expected = IllegalStateException.class)
     public void setExporters_exportersHasVariousPushes_throws() {
         WebComponentConfigurationRegistry registry = setupConfigurations(
@@ -263,28 +238,11 @@ public class WebComponentProviderTest {
     }
 
     @Test
-    public void setExporters_exportersHasOneThemes_themeIsSet() {
-        WebComponentConfigurationRegistry registry = setupConfigurations(
-                ThemedComponentExporter.class, MyComponentExporter.class);
-        Assert.assertEquals(MyTheme.class, registry
-                .getEmbeddedApplicationAnnotation(Theme.class).get().value());
-    }
-
-    @Test
     public void setExporters_exportersHasOnePush_pushIsSet() {
         WebComponentConfigurationRegistry registry = setupConfigurations(
                 ThemedComponentExporter.class, MyComponentExporter.class);
         Assert.assertTrue(registry.getEmbeddedApplicationAnnotation(Push.class)
                 .isPresent());
-    }
-
-    @Test
-    public void setExporters_exportersHasSameThemeDeclarations_themeIsSet() {
-        WebComponentConfigurationRegistry registry = setupConfigurations(
-                ThemedComponentExporter.class,
-                SameThemedComponentExporter.class);
-        Assert.assertEquals(MyTheme.class, registry
-                .getEmbeddedApplicationAnnotation(Theme.class).get().value());
     }
 
     @Test
@@ -360,7 +318,6 @@ public class WebComponentProviderTest {
     }
 
     @Push
-    @Theme(MyTheme.class)
     public static class ThemedComponentExporter
             extends WebComponentExporter<Component> {
         public ThemedComponentExporter() {
@@ -374,7 +331,6 @@ public class WebComponentProviderTest {
         }
     }
 
-    @Theme(MyTheme.class)
     @Push(value = PushMode.AUTOMATIC)
     public static class SameThemedComponentExporter
             extends WebComponentExporter<Component> {
@@ -403,45 +359,4 @@ public class WebComponentProviderTest {
         }
     }
 
-    @Theme(AnotherTheme.class)
-    public static class AnotherThemedComponentExporter
-            extends WebComponentExporter<Component> {
-        public AnotherThemedComponentExporter() {
-            super("foo-bar");
-        }
-
-        @Override
-        public void configureInstance(WebComponent<Component> webComponent,
-                Component component) {
-
-        }
-    }
-
-    public static class MyTheme implements AbstractTheme {
-
-        @Override
-        public String getBaseUrl() {
-            return null;
-        }
-
-        @Override
-        public String getThemeUrl() {
-            return null;
-        }
-
-    }
-
-    public static class AnotherTheme implements AbstractTheme {
-
-        @Override
-        public String getBaseUrl() {
-            return null;
-        }
-
-        @Override
-        public String getThemeUrl() {
-            return null;
-        }
-
-    }
 }

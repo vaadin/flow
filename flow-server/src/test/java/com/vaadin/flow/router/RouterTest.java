@@ -17,7 +17,6 @@ package com.vaadin.flow.router;
 
 import javax.servlet.http.HttpServletResponse;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -46,7 +45,6 @@ import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
@@ -64,8 +62,6 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.theme.AbstractTheme;
-import com.vaadin.flow.theme.Theme;
 import com.vaadin.tests.util.MockUI;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -1140,26 +1136,6 @@ public class RouterTest extends RoutingTestBase {
     public static class SubLayout extends Component {
     }
 
-    public static class MyTheme implements AbstractTheme {
-
-        @Override
-        public String getBaseUrl() {
-            return null;
-        }
-
-        @Override
-        public String getThemeUrl() {
-            return null;
-        }
-
-        @Override
-        public List<String> getHeaderInlineContents() {
-            return Arrays.asList(
-                    "<custom-style><style include=\"lumo-typography\"></style></custom-style>");
-        }
-    }
-
-    @Theme(MyTheme.class)
     @Tag(Tag.DIV)
     public static abstract class AbstractMain extends Component {
     }
@@ -2455,21 +2431,6 @@ public class RouterTest extends RoutingTestBase {
 
         Assert.assertEquals("Expected event amount was wrong", 1,
                 FooBarNavigationTarget.events.size());
-    }
-
-    @Test
-    public void theme_is_not_gotten_from_the_super_class_when_in_npm_mode()
-            throws InvalidRouteConfigurationException, Exception {
-
-        setNavigationTargets(ExtendingView.class);
-
-        router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
-
-        Field theme = UIInternals.class.getDeclaredField("theme");
-        theme.setAccessible(true);
-        Object themeObject = theme.get(ui.getInternals());
-
-        Assert.assertNull(themeObject);
     }
 
     @Test
