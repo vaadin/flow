@@ -63,7 +63,6 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <compatibilityMode>false</compatibilityMode>
                     <productionMode>true</productionMode>
                 </configuration>
             </plugin>
