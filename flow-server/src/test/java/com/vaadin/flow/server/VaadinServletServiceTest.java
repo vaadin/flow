@@ -21,29 +21,12 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
 import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.theme.AbstractTheme;
 
 import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 
-/**
- * Test class for testing es5 and es6 resolution by browser capability. This is
- * valid only for bower mode where we need to decide ourselves.
- */
 public class VaadinServletServiceTest {
-
-    private final class TestTheme implements AbstractTheme {
-        @Override
-        public String getBaseUrl() {
-            return "/raw/";
-        }
-
-        @Override
-        public String getThemeUrl() {
-            return "/theme/";
-        }
-    }
 
     private MockServletServiceSessionSetup mocks;
     private TestVaadinServletService service;
@@ -109,65 +92,36 @@ public class VaadinServletServiceTest {
 
     private void testGetResourceAndGetResourceAsStream(
             String expectedServletContextResource, String untranslatedUrl,
-            WebBrowser browser, AbstractTheme theme) throws IOException {
+            WebBrowser browser) throws IOException {
 
         if (expectedServletContextResource == null) {
+            Assert.assertNull(service.getResource(untranslatedUrl, browser));
             Assert.assertNull(
-                    service.getResource(untranslatedUrl, browser, theme));
-            Assert.assertNull(service.getResourceAsStream(untranslatedUrl,
-                    browser, theme));
+                    service.getResourceAsStream(untranslatedUrl, browser));
         } else {
             URL expectedUrl = new URL(
                     "file://" + expectedServletContextResource);
             Assert.assertEquals(expectedUrl,
-                    service.getResource(untranslatedUrl, browser, theme));
-            String contents = IOUtils.toString(service.getResourceAsStream(
-                    untranslatedUrl, browser, theme), StandardCharsets.UTF_8);
+                    service.getResource(untranslatedUrl, browser));
+            String contents = IOUtils.toString(
+                    service.getResourceAsStream(untranslatedUrl, browser),
+                    StandardCharsets.UTF_8);
             Assert.assertEquals("This is " + expectedServletContextResource,
                     contents);
         }
     }
 
     @Test
-    public void getResourceNoTheme() throws IOException {
+    public void getResource() throws IOException {
         WebBrowser browser = mocks.getBrowser();
         mocks.getServlet().addServletContextResource("/frontend/foo.txt");
 
         testGetResourceAndGetResourceAsStream("/frontend/foo.txt",
-                "/frontend/foo.txt", browser, null);
+                "/frontend/foo.txt", browser);
         testGetResourceAndGetResourceAsStream("/frontend/foo.txt",
-                "frontend://foo.txt", browser, null);
+                "frontend://foo.txt", browser);
         testGetResourceAndGetResourceAsStream(null, "frontend://bar.txt",
-                browser, null);
-    }
-
-    @Test
-    public void getResourceTheme() throws IOException {
-        WebBrowser browser = mocks.getBrowser();
-        TestTheme theme = new TestTheme();
-
-        mocks.getServlet()
-                .addServletContextResource("/frontend/raw/raw-only.txt");
-        mocks.getServlet().addServletContextResource(
-                "/frontend/raw/has-theme-variant.txt");
-        mocks.getServlet().addServletContextResource(
-                "/frontend/theme/has-theme-variant.txt");
-        mocks.getServlet()
-                .addServletContextResource("/frontend/theme/theme-only.txt");
-
-        // Only raw version
-        testGetResourceAndGetResourceAsStream("/frontend/raw/raw-only.txt",
-                "frontend://raw/raw-only.txt", browser, theme);
-        // Only themed version
-        testGetResourceAndGetResourceAsStream("/frontend/theme/theme-only.txt",
-                "frontend://raw/theme-only.txt", browser, theme);
-        // Raw and themed version
-        testGetResourceAndGetResourceAsStream(
-                "/frontend/theme/has-theme-variant.txt",
-                "frontend://raw/has-theme-variant.txt", browser, theme);
-        testGetResourceAndGetResourceAsStream(
-                "/frontend/theme/has-theme-variant.txt",
-                "frontend://theme/has-theme-variant.txt", browser, null);
+                browser);
     }
 
     @Test

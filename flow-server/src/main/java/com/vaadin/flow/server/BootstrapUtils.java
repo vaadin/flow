@@ -39,7 +39,6 @@ import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.Viewport;
-import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.LocationChangeEvent;
@@ -54,8 +53,6 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.BootstrapHandler.BootstrapUriResolver;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
-import com.vaadin.flow.theme.AbstractTheme;
-import com.vaadin.flow.theme.ThemeDefinition;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -66,36 +63,6 @@ import elemental.json.JsonObject;
  * @since 1.0
  */
 class BootstrapUtils {
-
-    static class ThemeSettings {
-        private List<JsonObject> headContents;
-        private JsonObject headInjectedContent;
-        private Map<String, String> htmlAttributes;
-
-        public List<JsonObject> getHeadContents() {
-            return headContents;
-        }
-
-        public void setHeadContents(List<JsonObject> headContents) {
-            this.headContents = headContents;
-        }
-
-        public JsonObject getHeadInjectedContent() {
-            return headInjectedContent;
-        }
-
-        public void setHeadInjectedContent(JsonObject headInjectedContent) {
-            this.headInjectedContent = headInjectedContent;
-        }
-
-        public Map<String, String> getHtmlAttributes() {
-            return htmlAttributes;
-        }
-
-        public void setHtmlAttributes(Map<String, String> htmlAttributes) {
-            this.htmlAttributes = htmlAttributes;
-        }
-    }
 
     private BootstrapUtils() {
     }
@@ -305,53 +272,6 @@ class BootstrapUtils {
                     file));
         }
         return stream;
-    }
-
-    static ThemeSettings getThemeSettings(
-            BootstrapHandler.BootstrapContext context) {
-        Optional<ThemeDefinition> themeDefinition = context.getTheme();
-        if (themeDefinition.isPresent()) {
-            return getThemeSettings(context, themeDefinition.get());
-        }
-        return null;
-    }
-
-    private static ThemeSettings getThemeSettings(
-            BootstrapHandler.BootstrapContext context,
-            ThemeDefinition themeDefinition) {
-
-        ThemeSettings settings = new ThemeSettings();
-        Class<? extends AbstractTheme> themeClass = themeDefinition.getTheme();
-        AbstractTheme theme = ReflectTools.createInstance(themeClass);
-
-        settings.setHeadInjectedContent(createHeaderInlineScript(theme));
-
-        settings.setHtmlAttributes(
-                theme.getHtmlAttributes(themeDefinition.getVariant()));
-
-        return settings;
-    }
-
-    private static JsonObject createHeaderInlineScript(AbstractTheme theme) {
-        StringBuilder builder = new StringBuilder();
-
-        for (String content : theme.getHeaderInlineContents()) {
-            StringBuilder inlineContent = createHeaderInjectionCall(content);
-            builder.insert(0, inlineContent.toString());
-        }
-
-        builder.insert(0, "function _inlineHeader(tag, content){\n"
-                + "var customStyle = document.createElement(tag);\n"
-                + "customStyle.innerHTML= content;\n"
-                + "var firstScript=document.head.querySelector('script');\n"
-                + "document.head.insertBefore(customStyle,firstScript);\n"
-                + "}\n");
-        builder.insert(0, "<script id='_theme-header-injection'>\n");
-        builder.append(
-                "var script = document.getElementById('_theme-header-injection');"
-                        + "if ( script ) { document.head.removeChild(script);}\n");
-        builder.append("</script>");
-        return createInlineDependencyObject(builder.toString());
     }
 
     private static StringBuilder createHeaderInjectionCall(String content) {

@@ -6,12 +6,10 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
@@ -55,8 +53,6 @@ import com.vaadin.flow.shared.VaadinUriResolver;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
-import com.vaadin.flow.theme.AbstractTheme;
-import com.vaadin.flow.theme.Theme;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
@@ -296,49 +292,6 @@ public class BootstrapHandlerTest {
     public static class ForcedWrapping extends Component {
     }
 
-    public static class MyTheme implements AbstractTheme {
-
-        @Override
-        public String getBaseUrl() {
-            return null;
-        }
-
-        @Override
-        public String getThemeUrl() {
-            return null;
-        }
-
-        @Override
-        public List<String> getHeaderInlineContents() {
-            return Arrays.asList(
-                    "<custom-style><style include=\"lumo-typography\"></style></custom-style>");
-        }
-
-        @Override
-        public Map<String, String> getHtmlAttributes(String variant) {
-            return Collections.singletonMap("foo", "bar");
-        }
-    }
-
-    @Route("")
-    @Tag(Tag.DIV)
-    @Theme(MyTheme.class)
-    public static class MyThemeTest extends Component {
-    }
-
-    @Tag(Tag.DIV)
-    @Theme(MyTheme.class)
-    public static class MyThemeParent extends Component
-            implements RouterLayout {
-    }
-
-    @Route("")
-    @RouteAlias(value = "alias", layout = MyThemeParent.class)
-    @Tag(Tag.DIV)
-    public static class MyAliasThemeTest extends Component {
-    }
-
-    @Theme(MyTheme.class)
     @Tag(Tag.DIV)
     public static abstract class AbstractMain extends Component {
     }
@@ -1029,28 +982,11 @@ public class BootstrapHandlerTest {
     }
 
     @Test
-    public void theme_not_appended_to_head_in_npm()
-            throws InvalidRouteConfigurationException {
-
-        initUI(testUI, createVaadinRequest(),
-                Collections.singleton(MyThemeTest.class));
-
-        Document page = pageBuilder.getBootstrapPage(new BootstrapContext(
-                request, null, session, testUI, this::contextRootRelativePath));
-
-        Elements allElements = page.head().getAllElements();
-        Assert.assertTrue("Custom style should not have been added to head.",
-                allElements.stream().map(Object::toString)
-                        .noneMatch(element -> element.equals(
-                                "<link rel=\"import\" href=\"./frontend/bower_components/vaadin-lumo-styles/color.html\">")));
-    }
-
-    @Test
     public void index_appended_to_head_in_npm()
             throws InvalidRouteConfigurationException {
 
         initUI(testUI, createVaadinRequest(),
-                Collections.singleton(MyThemeTest.class));
+                Collections.singleton(AliasLayout.class));
 
         Document page = pageBuilder.getBootstrapPage(new BootstrapContext(
                 request, null, session, testUI, this::contextRootRelativePath));
@@ -1084,21 +1020,6 @@ public class BootstrapHandlerTest {
                                         + "build/index.es5-2222.cache.js\" nomodule data-app-id=\""
                                         + testUI.getInternals().getAppId()
                                         + "\"></script>")));
-    }
-
-    @Test // 3333
-    public void theme_contents_are_not_appended_to_head_for_root_route()
-            throws InvalidRouteConfigurationException {
-        initUI(testUI, createVaadinRequest(),
-                Collections.singleton(MyAliasThemeTest.class));
-
-        Document page = pageBuilder.getBootstrapPage(new BootstrapContext(
-                request, null, session, testUI, this::contextRootRelativePath));
-
-        Assert.assertFalse("Page head should not contain any Lumo imports.",
-                page.head().toString().contains("vaadin-lumo"));
-        Assert.assertFalse("Page body should not have custom styles",
-                page.body().toString().contains("<custom-style>"));
     }
 
     @Test
@@ -1682,7 +1603,7 @@ public class BootstrapHandlerTest {
         Mockito.when(mockedWebBrowser.getBrowserMinorVersion()).thenReturn(1);
 
         initUI(testUI, createVaadinRequest(),
-                Collections.singleton(MyThemeTest.class));
+                Collections.singleton(AliasLayout.class));
 
         Document page = pageBuilder.getBootstrapPage(new BootstrapContext(
                 request, null, session, testUI, this::contextRootRelativePath));

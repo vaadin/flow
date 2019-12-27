@@ -52,15 +52,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.internal.DependencyTreeCache;
-import com.vaadin.flow.component.internal.HtmlImportParser;
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.LocaleUtil;
-import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
@@ -75,13 +72,11 @@ import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.communication.UidlRequestHandler;
 import com.vaadin.flow.server.communication.WebComponentBootstrapHandler;
 import com.vaadin.flow.server.communication.WebComponentProvider;
-import com.vaadin.flow.server.startup.FakeBrowser;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
-import com.vaadin.flow.theme.AbstractTheme;
 
 import elemental.json.Json;
 import elemental.json.JsonException;
@@ -202,10 +197,6 @@ public abstract class VaadinService implements Serializable {
 
     private Instantiator instantiator;
 
-    private DependencyTreeCache<String> htmlImportDependencyCache;
-
-    private Registration htmlImportDependencyCacheClearRegistration;
-
     private VaadinContext vaadinContext;
 
     /**
@@ -304,31 +295,6 @@ public abstract class VaadinService implements Serializable {
 
             UsageStatistics.markAsUsed("flow/npm", null);
         }
-
-        htmlImportDependencyCache = new DependencyTreeCache<>(path -> {
-            List<String> dependencies = new ArrayList<>();
-            WebBrowser browser = FakeBrowser.getEs6();
-            HtmlImportParser.parseImports(path,
-                    resourcePath -> getResourceAsStream(resourcePath, browser,
-                            null),
-                    resourcePath -> resolveResource(resourcePath, browser),
-                    dependency -> {
-                        if (!dependency.startsWith(
-                                "frontend://bower_components/polymer/")) {
-                            dependencies.add(dependency);
-                        }
-                    });
-
-            return dependencies;
-        });
-
-        /*
-         * When all reflection caches are cleared, we also clear the HMTL
-         * dependnecy cache so that the reflection caches managed by
-         * ComponentMetaData won't keep using previously parsed data.
-         */
-        htmlImportDependencyCacheClearRegistration = ReflectionCache
-                .addClearAllAction(htmlImportDependencyCache::clear);
 
         initialized = true;
     }
@@ -2094,8 +2060,6 @@ public abstract class VaadinService implements Serializable {
      * @see Servlet#destroy()
      */
     public void destroy() {
-        htmlImportDependencyCacheClearRegistration.remove();
-
         ServiceDestroyEvent event = new ServiceDestroyEvent(this);
         serviceDestroyListeners
                 .forEach(listener -> listener.serviceDestroy(event));
@@ -2260,14 +2224,10 @@ public abstract class VaadinService implements Serializable {
      * @param browser
      *            the web browser to resolve for, relevant for es5 vs es6
      *            resolving
-     * @param theme
-     *            the theme to use for translating the URL or <code>null</code>
-     *            if no theme is used
      * @return the resource located at the named path, or <code>null</code> if
      *         there is no resource at that path
      */
-    public abstract URL getResource(String url, WebBrowser browser,
-            AbstractTheme theme);
+    public abstract URL getResource(String url, WebBrowser browser);
 
     /**
      * Opens a stream to to the resource at the given Vaadin URI.
@@ -2277,39 +2237,16 @@ public abstract class VaadinService implements Serializable {
      * @param browser
      *            the web browser to resolve for, relevant for es5 vs es6
      *            resolving
-     * @param theme
-     *            the theme to use for translating the URL or <code>null</code>
-     *            if no theme is used
      * @return a stream for the resource or <code>null</code> if no resource
      *         exists at the specified path
      */
     public abstract InputStream getResourceAsStream(String url,
-            WebBrowser browser, AbstractTheme theme);
-
-    /**
-     * Checks if a resource is available at the given Vaadin URI.
-     *
-     * @param url
-     *            the untranslated Vaadin URL for the resource
-     * @param browser
-     *            the web browser to resolve for, relevant for es5 vs es6
-     *            resolving
-     * @param theme
-     *            the theme to use for translating the URL or <code>null</code>
-     *            if no theme is used
-     * @return <code>true</code> if a resource is found and can be read using
-     *         {@link #getResourceAsStream(String, WebBrowser, AbstractTheme)},
-     *         <code>false</code> if it is not found
-     */
-    public boolean isResourceAvailable(String url, WebBrowser browser,
-            AbstractTheme theme) {
-        return getResource(url, browser, theme) != null;
-    }
+            WebBrowser browser);
 
     /**
      * Resolves the given {@code url} resource to be useful for
-     * {@link #getResource(String, WebBrowser, AbstractTheme)} and
-     * {@link #getResourceAsStream(String, WebBrowser, AbstractTheme)}.
+     * {@link #getResource(String, WebBrowser)} and
+     * {@link #getResourceAsStream(String, WebBrowser)}.
      *
      * @param url
      *            the resource to resolve, not <code>null</code>
@@ -2320,32 +2257,6 @@ public abstract class VaadinService implements Serializable {
      *         was performed
      */
     public abstract String resolveResource(String url, WebBrowser browser);
-
-    /**
-     * Checks if the given URL has a themed version. If it does, returns the
-     * untranslated URL for the themed resource.
-     *
-     * @param url
-     *            the URL to lookup
-     * @param browser
-     *            the browser to use for lookup
-     * @param theme
-     *            the theme to check
-     * @return an optional containing the untranslated (containing vaadin
-     *         protocols) URL to the themed resource if such exists, an empty
-     *         optional if the given resource has no themed version
-     */
-    public abstract Optional<String> getThemedUrl(String url,
-            WebBrowser browser, AbstractTheme theme);
-
-    /**
-     * Gets the HTML import dependency cache that is used by this service.
-     *
-     * @return the HTML dependency cache
-     */
-    public DependencyTreeCache<String> getHtmlImportDependencyCache() {
-        return htmlImportDependencyCache;
-    }
 
     /**
      * Constructs {@link VaadinContext} for this service.

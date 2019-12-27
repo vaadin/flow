@@ -41,7 +41,6 @@ import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.router.internal.ErrorStateRenderer;
 import com.vaadin.flow.router.internal.NavigationStateRenderer;
 import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
-import com.vaadin.flow.theme.ThemeDefinition;
 
 /**
  * Custom UI for {@link JavaScriptBootstrapHandler}. This class is intended for
@@ -50,10 +49,8 @@ import com.vaadin.flow.theme.ThemeDefinition;
 public class JavaScriptBootstrapUI extends UI {
     public static final String SERVER_ROUTING = "clientRoutingMode";
 
-    static final String CLIENT_PUSHSTATE_TO =
-            "setTimeout(() => window.history.pushState(null, '', $0))";
-    static final String CLIENT_NAVIGATE_TO =
-            "window.dispatchEvent(new CustomEvent('vaadin-router-go', {detail: new URL($0, document.baseURI)}))";
+    static final String CLIENT_PUSHSTATE_TO = "setTimeout(() => window.history.pushState(null, '', $0))";
+    static final String CLIENT_NAVIGATE_TO = "window.dispatchEvent(new CustomEvent('vaadin-router-go', {detail: new URL($0, document.baseURI)}))";
 
     Element wrapperElement;
     private NavigationState clientViewNavigationState;
@@ -93,7 +90,8 @@ public class JavaScriptBootstrapUI extends UI {
      *            flow route that should be attached to the client element
      */
     @ClientCallable
-    public void connectClient(String clientElementTag, String clientElementId, String flowRoute) {
+    public void connectClient(String clientElementTag, String clientElementId,
+            String flowRoute) {
         if (wrapperElement == null) {
             // Create flow reference for the client outlet element
             wrapperElement = new Element(clientElementTag);
@@ -111,7 +109,8 @@ public class JavaScriptBootstrapUI extends UI {
         wrapperElement.executeJs("this.serverConnected($0)", postponed);
 
         // If this call happens, there is a client-side routing, thus
-        // it's needed to remove the flag that might be set in IndexHtmlRequestHandler
+        // it's needed to remove the flag that might be set in
+        // IndexHtmlRequestHandler
         getSession().setAttribute(SERVER_ROUTING, Boolean.FALSE);
     }
 
@@ -162,7 +161,8 @@ public class JavaScriptBootstrapUI extends UI {
                     return true;
                 }
 
-                // Route does not exist, and current view does not prevent navigation
+                // Route does not exist, and current view does not prevent
+                // navigation
                 // thus an error page is shown
                 handleErrorNavigation(location);
             }
@@ -173,14 +173,14 @@ public class JavaScriptBootstrapUI extends UI {
     }
 
     private boolean shouldHandleNavigation(Location location) {
-        return !getInternals().hasLastHandledLocation() || !sameLocation(
-                getInternals().getLastHandledLocation(), location);
+        return !getInternals().hasLastHandledLocation()
+                || !sameLocation(getInternals().getLastHandledLocation(),
+                        location);
     }
 
     private boolean sameLocation(Location oldLocation, Location newLocation) {
-        return removeLastSlash(newLocation.getPathWithQueryParameters())
-                .equals(removeLastSlash(
-                        oldLocation.getPathWithQueryParameters()));
+        return removeLastSlash(newLocation.getPathWithQueryParameters()).equals(
+                removeLastSlash(oldLocation.getPathWithQueryParameters()));
     }
 
     private String removeFirstSlash(String route) {
@@ -224,12 +224,6 @@ public class JavaScriptBootstrapUI extends UI {
     }
 
     @Override
-    public Optional<ThemeDefinition> getThemeFor(Class<?> navigationTarget,
-            String path) {
-        return Optional.empty();
-    }
-
-    @Override
     public void navigate(String pathname, QueryParameters queryParameters) {
         Location location = new Location(pathname, queryParameters);
         if (Boolean.TRUE.equals(getSession().getAttribute(SERVER_ROUTING))) {
@@ -240,9 +234,8 @@ public class JavaScriptBootstrapUI extends UI {
 
             // There is an in-progress navigation or there are no changes,
             // prevent looping
-            if (navigationInProgress
-                    || getInternals().hasLastHandledLocation() && sameLocation(
-                            getInternals().getLastHandledLocation(),
+            if (navigationInProgress || getInternals().hasLastHandledLocation()
+                    && sameLocation(getInternals().getLastHandledLocation(),
                             location)) {
                 return;
             }
@@ -253,14 +246,16 @@ public class JavaScriptBootstrapUI extends UI {
                     .resolveNavigationTarget(location).orElse(null);
 
             if (navigationState != null) {
-                // Navigation can be done in server side without extra round-trip
+                // Navigation can be done in server side without extra
+                // round-trip
                 handleNavigation(location, navigationState);
 
                 // Update browser URL but do not fire client-side navigation
                 execJs = CLIENT_PUSHSTATE_TO;
             } else {
 
-                // Server cannot resolve navigation, let client-side to handle it
+                // Server cannot resolve navigation, let client-side to handle
+                // it
                 execJs = CLIENT_NAVIGATE_TO;
             }
             navigationInProgress = false;
@@ -284,7 +279,6 @@ public class JavaScriptBootstrapUI extends UI {
                 return;
             }
 
-
             // client-side routing
             Element rootElement = newRoot.getElement();
             if (newRoot instanceof ClientViewPlaceholder) {
@@ -306,15 +300,17 @@ public class JavaScriptBootstrapUI extends UI {
             JavaScriptBootstrapUI oldJsUI = castToJavaScriptUI(oldUI);
 
             Element oldRoot = oldJsUI.wrapperElement == null
-                    ? oldJsUI.getElement() : oldJsUI.wrapperElement;
+                    ? oldJsUI.getElement()
+                    : oldJsUI.wrapperElement;
             Element newRoot = newJsUI.wrapperElement == null
-                    ? newJsUI.getElement() : newJsUI.wrapperElement;
+                    ? newJsUI.getElement()
+                    : newJsUI.wrapperElement;
 
-            oldRoot.getChildren()
-                    .collect(Collectors.toList()).forEach(element -> {
-                element.removeFromTree();
-                newRoot.appendChild(element);
-            });
+            oldRoot.getChildren().collect(Collectors.toList())
+                    .forEach(element -> {
+                        element.removeFromTree();
+                        newRoot.appendChild(element);
+                    });
         }
 
         private JavaScriptBootstrapUI castToJavaScriptUI(UI ui) {
