@@ -29,7 +29,6 @@ import com.vaadin.client.bootstrap.ErrorMessage;
 public class ApplicationConfiguration {
     private String applicationId;
     private String contextRootUrl;
-    private String frontendRootUrl;
     private String serviceUrl;
     private int uiId;
     private ErrorMessage sessionExpiredError;
