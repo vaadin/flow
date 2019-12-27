@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.server.startup;
 
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -23,9 +26,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -62,10 +62,7 @@ import com.vaadin.flow.server.InitialPageSettings;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.PageConfigurator;
-import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinServletContext;
-import com.vaadin.flow.theme.AbstractTheme;
-import com.vaadin.flow.theme.Theme;
 
 /**
  * Unit tests for RouteRegistryInitializer and RouteRegistry.
@@ -83,12 +80,13 @@ public class RouteRegistryInitializerTest {
         registry = new TestRouteRegistry();
         servletContext = Mockito.mock(ServletContext.class);
         vaadinContext = new VaadinServletContext(servletContext);
-        registry = ApplicationRouteRegistry
-                .getInstance(vaadinContext);
+        registry = ApplicationRouteRegistry.getInstance(vaadinContext);
 
         Mockito.when(vaadinContext.getAttribute(
                 ApplicationRouteRegistry.ApplicationRouteRegistryWrapper.class))
-                .thenReturn(new ApplicationRouteRegistry.ApplicationRouteRegistryWrapper(registry));
+                .thenReturn(
+                        new ApplicationRouteRegistry.ApplicationRouteRegistryWrapper(
+                                registry));
     }
 
     @Rule
@@ -1228,150 +1226,6 @@ public class RouteRegistryInitializerTest {
                 routeAliases.get(3).getParentLayout());
         Assert.assertEquals("Sort order was not the one expected",
                 MiddleParent.class, routeAliases.get(4).getParentLayout());
-    }
-
-    /* Theme tests */
-    public static class MyTheme implements AbstractTheme {
-
-        @Override
-        public String getBaseUrl() {
-            return "src/";
-        }
-
-        @Override
-        public String getThemeUrl() {
-            return "theme/myTheme/";
-        }
-    }
-
-    @Route("single")
-    @Tag(Tag.DIV)
-    @Theme(MyTheme.class)
-    public static class ThemeSingleNavigationTarget extends Component {
-    }
-
-    @Tag(Tag.DIV)
-    public static class ThemeParent extends Component implements RouterLayout {
-    }
-
-    @Tag(Tag.DIV)
-    @ParentLayout(ThemeParent.class)
-    @Theme(MyTheme.class)
-    public static class ThemeMiddleParentLayout extends Component
-            implements RouterLayout {
-    }
-
-    @Tag(Tag.DIV)
-    @ParentLayout(ThemeMiddleParentLayout.class)
-    @Theme(MyTheme.class)
-    public static class ThemeMultiMiddleParentLayout extends Component
-            implements RouterLayout {
-    }
-
-    @Route(value = "", layout = ThemeParent.class)
-    @Tag(Tag.DIV)
-    public static class ThemeRootWithParent extends Component {
-    }
-
-    @Route(value = "", layout = ThemeParent.class)
-    @Tag(Tag.DIV)
-    @Theme(MyTheme.class)
-    public static class ThemeRootViewportWithParent extends Component {
-    }
-
-    @Route(value = "", layout = ThemeMiddleParentLayout.class)
-    @Tag(Tag.DIV)
-    public static class ThemeRootWithParents extends Component {
-    }
-
-    @Route(value = "", layout = ThemeMultiMiddleParentLayout.class)
-    @Tag(Tag.DIV)
-    public static class ThemeMultiViewport extends Component {
-    }
-
-    @Route("")
-    @RouteAlias(value = "alias", layout = ThemeParent.class)
-    @Tag(Tag.DIV)
-    @Theme(MyTheme.class)
-    public static class ThemeFailingAliasView extends Component {
-    }
-
-    @Route("")
-    @RouteAlias(value = "alias", layout = ThemeParent.class)
-    @Tag(Tag.DIV)
-    public static class ThemeAliasView extends Component {
-    }
-
-    @Test
-    public void onStartUp_wrong_position_theme_view_layout_throws()
-            throws ServletException {
-        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
-        expectedEx.expectMessage(String.format(
-                "Theme annotation should be on the top most route layout '%s'. Offending class: '%s'",
-                ThemeParent.class.getName(),
-                ThemeMiddleParentLayout.class.getName()));
-
-        routeRegistryInitializer.onStartup(Stream.of(ThemeRootWithParents.class)
-                .collect(Collectors.toSet()), servletContext);
-    }
-
-    @Test
-    public void onStartUp_check_only_one_theme_in_route_chain()
-            throws ServletException {
-        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
-        expectedEx.expectMessage(
-                "Only one Theme annotation is supported for navigation chain and should be on the top most level. Offending classes in chain: "
-                        + ThemeMultiMiddleParentLayout.class.getName() + ", "
-                        + ThemeMiddleParentLayout.class.getName());
-
-        routeRegistryInitializer.onStartup(
-                Stream.of(ThemeMultiViewport.class).collect(Collectors.toSet()),
-                servletContext);
-    }
-
-    @Test
-    public void onStartUp_route_can_not_contain_theme_if_has_parent()
-            throws ServletException {
-        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
-        expectedEx.expectMessage(String.format(
-                "Theme annotation needs to be on the top parent layout '%s' not on '%s'",
-                ThemeParent.class.getName(),
-                ThemeRootViewportWithParent.class.getName()));
-
-        routeRegistryInitializer
-                .onStartup(Stream.of(ThemeRootViewportWithParent.class)
-                        .collect(Collectors.toSet()), servletContext);
-    }
-
-    @Test
-    public void onStartUp_one_theme_in_chain_and_one_for_route_passes()
-            throws ServletException {
-        routeRegistryInitializer.onStartup(
-                Stream.of(ThemeSingleNavigationTarget.class,
-                        ThemeRootWithParent.class).collect(Collectors.toSet()),
-                servletContext);
-    }
-
-    @Test
-    public void onStartUp_check_also_faulty_theme_alias_route()
-            throws ServletException {
-        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
-        expectedEx.expectMessage(String.format(
-                "Theme annotation needs to be on the top parent layout '%s' not on '%s'",
-                ThemeParent.class.getName(),
-                ThemeFailingAliasView.class.getName()));
-
-        routeRegistryInitializer.onStartup(Stream
-                .of(ThemeFailingAliasView.class).collect(Collectors.toSet()),
-                servletContext);
-    }
-
-    @Test
-    public void onStartUp_valid_theme_alias_does_not_throw()
-            throws ServletException {
-        routeRegistryInitializer.onStartup(
-                Stream.of(ThemeAliasView.class).collect(Collectors.toSet()),
-                servletContext);
     }
 
     @Route("ignored")

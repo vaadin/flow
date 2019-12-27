@@ -46,8 +46,6 @@ import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
-import com.vaadin.flow.theme.Theme;
-import com.vaadin.flow.theme.ThemeDefinition;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -83,13 +81,6 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
             WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
                     .getInstance(getRequest().getService().getContext());
             return registry.getEmbeddedApplicationAnnotation(annotationType);
-        }
-
-        @Override
-        protected Optional<ThemeDefinition> getTheme() {
-            Optional<Theme> optionalTheme = getPageConfigurationAnnotation(
-                    Theme.class);
-            return optionalTheme.map(ThemeDefinition::new);
         }
 
         @Override

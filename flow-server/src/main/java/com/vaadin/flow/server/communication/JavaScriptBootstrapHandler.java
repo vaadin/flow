@@ -22,7 +22,6 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
-import java.util.Optional;
 import java.util.function.Function;
 
 import com.vaadin.flow.component.PushConfiguration;
@@ -39,7 +38,6 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.ApplicationConstants;
-import com.vaadin.flow.theme.ThemeDefinition;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -72,10 +70,6 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
                     callback);
         }
 
-        @Override
-        protected Optional<ThemeDefinition> getTheme() {
-            return Optional.empty();
-        }
     }
 
     /**
