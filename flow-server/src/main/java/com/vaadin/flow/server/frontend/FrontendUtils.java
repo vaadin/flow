@@ -777,30 +777,7 @@ public class FrontendUtils {
      *            project root folder.
      */
     public static void ensurePnpm(String baseDir) {
-        final List<String> pnpm = getPnpmExecutable(baseDir, false);
-        boolean installPnpmLocally = true;
-        if (!pnpm.isEmpty()) {
-            // Check if (globally or locally installed) pnpm is new enough. If
-            // not, install a supported version locally.
-            try {
-                List<String> versionCmd = new ArrayList<>(pnpm);
-                versionCmd.add("--version");
-                FrontendVersion pnpmVersion = getVersion("pnpm", versionCmd);
-                if (isVersionAtLeast(pnpmVersion, SUPPORTED_PNPM_VERSION)) {
-                    installPnpmLocally = false;
-                } else {
-                    getLogger().warn(String.format(
-                            "installed pnpm ('%s', version %s) is too old, installing supported version locally",
-                            String.join(" ", pnpm),
-                            pnpmVersion.getFullVersion()));
-                }
-            } catch (UnknownVersionException e) {
-                getLogger().warn(
-                        "Error checking pnpm version, installing pnpm locally",
-                        e);
-            }
-        }
-        if (installPnpmLocally) {
+        if (isPnpmTooOldOrAbsent(baseDir)) {
             // copy the current content of package.json file to a temporary
             // location
             File packageJson = new File(baseDir, "package.json");
@@ -835,6 +812,31 @@ public class FrontendUtils {
                 tempFile.delete();
             }
         }
+    }
+
+    private static boolean isPnpmTooOldOrAbsent(String baseDir) {
+        final List<String> pnpmCommand = getPnpmExecutable(baseDir, false);
+        if (!pnpmCommand.isEmpty()) {
+            // check whether globally or locally installed pnpm is new enough
+            try {
+                List<String> versionCmd = new ArrayList<>(pnpmCommand);
+                versionCmd.add("--version");
+                FrontendVersion pnpmVersion = getVersion("pnpm", versionCmd);
+                if (isVersionAtLeast(pnpmVersion, SUPPORTED_PNPM_VERSION)) {
+                    return false;
+                } else {
+                    getLogger().warn(String.format(
+                            "installed pnpm ('%s', version %s) is too old, installing supported version locally",
+                            String.join(" ", pnpmCommand),
+                            pnpmVersion.getFullVersion()));
+                }
+            } catch (UnknownVersionException e) {
+                getLogger().warn(
+                        "Error checking pnpm version, installing pnpm locally",
+                        e);
+            }
+        }
+        return true;
     }
 
     static void checkForFaultyNpmVersion(FrontendVersion npmVersion) {
