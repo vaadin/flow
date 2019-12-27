@@ -59,7 +59,7 @@ public class BootstrapHandlerDependenciesTest {
     @StyleSheet(value = "lazy.css", loadMode = LoadMode.LAZY)
     @StyleSheet(value = "inline.css", loadMode = LoadMode.INLINE)
     @StyleSheet("context://eager-relative.css")
-    @StyleSheet("eager.css")
+    @StyleSheet("./eager.css")
     private static class UIAnnotated_LoadingOrderTest extends TestUI {
     }
 
@@ -70,9 +70,9 @@ public class BootstrapHandlerDependenciesTest {
             getPage().addStyleSheet("lazy.css", LoadMode.LAZY);
             getPage().addJavaScript("inline.js", LoadMode.INLINE);
             getPage().addStyleSheet("inline.css", LoadMode.INLINE);
-            getPage().addJavaScript("eager.js");
+            getPage().addJavaScript("./eager.js");
             getPage().addStyleSheet("context://eager-relative.css");
-            getPage().addStyleSheet("eager.css");
+            getPage().addStyleSheet("./eager.css");
         }
     }
 
@@ -231,14 +231,12 @@ public class BootstrapHandlerDependenciesTest {
         service = mocks.getService();
         TestVaadinServlet servlet = mocks.getServlet();
         for (String type : new String[] { "js", "css" }) {
-            servlet.addServletContextResource("/frontend/inline." + type,
-                    "/frontend/inline." + type);
-            servlet.addServletContextResource("/frontend/1." + type,
-                    "/frontend/1." + type);
-            servlet.addServletContextResource("/frontend/2." + type,
-                    "/frontend/2." + type);
+            servlet.addServletContextResource("inline." + type,
+                    "/inline." + type);
+            servlet.addServletContextResource("1." + type, "/1." + type);
+            servlet.addServletContextResource("2." + type, "/2." + type);
         }
-        servlet.addServletContextResource("/frontend/new.js");
+        servlet.addServletContextResource("new.js");
     }
 
     @After
@@ -277,10 +275,10 @@ public class BootstrapHandlerDependenciesTest {
         Consumer<Document> uiPageTestingMethod = page -> {
             Element head = page.head();
 
-            assertCssElementLoadedEagerly(head, "./frontend/eager.css");
+            assertCssElementLoadedEagerly(head, "./eager.css");
             assertCssElementLoadedEagerly(head, "./eager-relative.css");
 
-            assertCssElementInlined(head, "/frontend/inline.css");
+            assertCssElementInlined(head, "/inline.css");
 
             assertElementLazyLoaded(head, "./lazy.css");
         };
@@ -292,12 +290,12 @@ public class BootstrapHandlerDependenciesTest {
         Consumer<Document> uiPageTestingMethod = page -> {
             Element head = page.head();
 
-            assertJavaScriptElementLoadedEagerly(head, "./frontend/eager.js");
-            assertCssElementLoadedEagerly(head, "./frontend/eager.css");
+            assertJavaScriptElementLoadedEagerly(head, "./eager.js");
+            assertCssElementLoadedEagerly(head, "./eager.css");
             assertCssElementLoadedEagerly(head, "./eager-relative.css");
 
-            assertCssElementInlined(head, "/frontend/inline.css");
-            assertJavaScriptElementInlined(head, "/frontend/inline.js");
+            assertCssElementInlined(head, "/inline.css");
+            assertJavaScriptElementInlined(head, "/inline.js");
 
             assertElementLazyLoaded(head, "./lazy.js");
             assertElementLazyLoaded(head, "./lazy.css");

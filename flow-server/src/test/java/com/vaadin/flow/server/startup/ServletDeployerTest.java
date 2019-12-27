@@ -168,17 +168,6 @@ public class ServletDeployerTest {
         assertMappingsCount(0, 0);
     }
 
-    @Test
-    public void servletIsNotRegisteredWhenAnotherHasTheSamePathMapping_frontendServlet()
-            throws Exception {
-        deployer.contextInitialized(getContextEvent(true, true,
-                getServletRegistration("test", TestServlet.class,
-                        singletonList("/frontend/*"), Collections.emptyMap())));
-
-        assertMappingsCount(1, 1);
-        assertMappingIsRegistered(ServletDeployer.class.getName(), "/*");
-    }
-
     private void assertMappingsCount(int numServlets, int numMappings) {
         assertEquals(String.format(
                 "Expected to have exactly '%d' servlets, but got '%d': '%s'",

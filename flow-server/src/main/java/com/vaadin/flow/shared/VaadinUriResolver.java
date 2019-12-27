@@ -36,10 +36,6 @@ public abstract class VaadinUriResolver implements Serializable {
      * <ul>
      * <li><code>{@value com.vaadin.flow.shared.ApplicationConstants#CONTEXT_PROTOCOL_PREFIX}</code>
      * resolves to the application context root</li>
-     * <li><code>{@value com.vaadin.flow.shared.ApplicationConstants#FRONTEND_PROTOCOL_PREFIX}</code>
-     * - resolves to the build path where web components were compiled. Browsers
-     * supporting ES6 can receive different, more optimized files than browsers
-     * that only support ES5.</li>
      * <li><code>{@value com.vaadin.flow.shared.ApplicationConstants#BASE_PROTOCOL_PREFIX}</code>
      * - resolves to the base URI of the page</li>
      * </ul>
@@ -48,28 +44,19 @@ public abstract class VaadinUriResolver implements Serializable {
      *
      * @param uri
      *            the URI to resolve
-     * @param frontendUrl
-     *            the URL pointing to the path where the frontend files can be
-     *            found. It is expected that different browsers receive
-     *            different files depending on their capabilities. Can use the
-     *            other protocols.
      * @param servletToContextRoot
      *            the relative path from the servlet path (used as base path in
      *            the client) to the context root
      * @return the resolved URI
      */
-    protected String resolveVaadinUri(String uri, String frontendUrl,
-            String servletToContextRoot) {
+    protected String resolveVaadinUri(String uri, String servletToContextRoot) {
         if (uri == null) {
             return null;
         }
 
         String processedUri = processProtocol(
-                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX, frontendUrl,
-                uri);
-        processedUri = processProtocol(
                 ApplicationConstants.CONTEXT_PROTOCOL_PREFIX,
-                servletToContextRoot, processedUri);
+                servletToContextRoot, uri);
         processedUri = processProtocol(
                 ApplicationConstants.BASE_PROTOCOL_PREFIX, "", processedUri);
 

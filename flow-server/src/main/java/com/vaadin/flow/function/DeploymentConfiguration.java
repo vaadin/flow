@@ -246,40 +246,6 @@ public interface DeploymentConfiguration extends Serializable {
     String getClassLoaderName();
 
     /**
-     * Gets the URL from which frontend resources should be loaded during
-     * development, unless explicitly configured to use the production es6 and
-     * es5 URLs.
-     *
-     * @return the development resource URL
-     */
-    default String getDevelopmentFrontendPrefix() {
-        return Constants.FRONTEND_URL_DEV_DEFAULT;
-    }
-
-    /**
-     * Gets the URL from which frontend resources should be loaded in NPM mode.
-     *
-     * @return the NPM resource URL
-     */
-    default String getNpmFrontendPrefix() {
-        return getDevelopmentFrontendPrefix();
-    }
-
-    /**
-     * Determines if Flow should use compiled or original frontend resources.
-     *
-     * User can explicitly disable bundled resources usage by setting the
-     * {@link Constants#USE_ORIGINAL_FRONTEND_RESOURCES} property to
-     * {@code true}.
-     *
-     * @return {@code true} if Flow should use compiled frontend resources.
-     */
-    default boolean useCompiledFrontendResources() {
-        return isProductionMode() && !getBooleanProperty(
-                Constants.USE_ORIGINAL_FRONTEND_RESOURCES, false);
-    }
-
-    /**
      * Determines if Flow should automatically register servlets. For more
      * information on the servlets registered, refer to
      * {@link com.vaadin.flow.server.startup.ServletDeployer} javadoc.

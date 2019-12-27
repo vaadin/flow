@@ -32,7 +32,7 @@ public class UrlUtil {
     /**
      * checks if the given url is an external URL (e.g. staring with http:// or
      * https://) or not.
-     * 
+     *
      * @param url
      *            is the url to be checked.
      * @return true if the url is external otherwise false.
@@ -43,7 +43,6 @@ public class UrlUtil {
         }
         return url.contains("://") && !(url
                 .startsWith(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX)
-                || url.startsWith(ApplicationConstants.FRONTEND_PROTOCOL_PREFIX)
                 || url.startsWith(ApplicationConstants.BASE_PROTOCOL_PREFIX));
     }
 }

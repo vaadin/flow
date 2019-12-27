@@ -186,7 +186,6 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
                 // fix for windows
                 .replace("\r", "");
         assertContains(output, true,
-                "changing 'frontend://frontend-p3-template.js' to './frontend-p3-template.js'",
                 "Use the './' prefix for files in JAR files: 'ExampleConnector.js'",
                 "Use the './' prefix for files in the '"
                         + frontendDirectory.getPath()
@@ -195,9 +194,6 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
         // Using regex match because of the ➜ character in TC
         assertContains(output, true,
                 "Failed to find the following imports in the `node_modules` tree:\n      - unresolved/component");
-
-        assertContains(output, false,
-                "changing 'frontend://foo-dir/javascript-lib.js' to './foo-dir/javascript-lib.js'");
     }
 
     @Test

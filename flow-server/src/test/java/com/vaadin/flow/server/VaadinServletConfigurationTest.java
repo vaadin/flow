@@ -45,8 +45,6 @@ public class VaadinServletConfigurationTest {
     @Test
     public void testValuesFromAnnotation() throws ServletException {
         Properties servletInitParams = new Properties();
-        servletInitParams.setProperty(Constants.USE_ORIGINAL_FRONTEND_RESOURCES,
-                Boolean.TRUE.toString());
 
         TestServlet servlet = new TestServlet();
         servlet.init(new MockServletConfig(servletInitParams));
@@ -77,8 +75,6 @@ public class VaadinServletConfigurationTest {
         servletInitParams.setProperty(
                 Constants.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
                 Integer.toString(expectedInt));
-        servletInitParams.setProperty(Constants.USE_ORIGINAL_FRONTEND_RESOURCES,
-                Boolean.TRUE.toString());
 
         TestServlet servlet = new TestServlet();
         servlet.init(new MockServletConfig(servletInitParams));

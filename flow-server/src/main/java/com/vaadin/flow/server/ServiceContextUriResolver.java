@@ -29,18 +29,16 @@ public class ServiceContextUriResolver extends VaadinUriResolver
         implements Serializable {
 
     /**
-     * Resolves the given uri using the given frontend location, to a path which
-     * can be used with {@link VaadinService#getResource(String, WebBrowser)}
-     * and {@link VaadinService#getResourceAsStream(String, WebBrowser)}.
+     * Resolves the given uri to a path which can be used with
+     * {@link VaadinService#getResource(String, WebBrowser)} and
+     * {@link VaadinService#getResourceAsStream(String, WebBrowser)}.
      *
      * @param uri
      *            the URI to resolve
-     * @param frontendUrl
-     *            the location of the <code>frontend</code> folder
      * @return the URI resolved to be relative to the context root
      */
-    public String resolveVaadinUri(String uri, String frontendUrl) {
-        return super.resolveVaadinUri(uri, frontendUrl, "/");
+    public String resolveVaadinUri(String uri) {
+        return super.resolveVaadinUri(uri, "/");
     }
 
 }

@@ -45,7 +45,7 @@ import com.vaadin.flow.server.frontend.NodeTestComponents.LocalP3Template;
 import com.vaadin.flow.server.frontend.NodeTestComponents.LocalTemplate;
 import com.vaadin.flow.server.frontend.NodeTestComponents.LumoTest;
 import com.vaadin.flow.server.frontend.NodeTestComponents.MainLayout;
-import com.vaadin.flow.server.frontend.NodeTestComponents.VaadinBowerComponent;
+import com.vaadin.flow.server.frontend.NodeTestComponents.VaadinJsComponent;
 import com.vaadin.flow.server.frontend.NodeTestComponents.VaadinElementMixin;
 import com.vaadin.flow.server.frontend.NodeTestComponents.VaadinMixedComponent;
 import com.vaadin.flow.server.frontend.NodeTestComponents.VaadinNpmComponent;
@@ -207,10 +207,7 @@ public class FullDependenciesScannerTest {
         Assert.assertTrue(scripts.contains("javascript/c.js"));
 
         Assert.assertTrue(scripts.contains("ExampleConnector.js"));
-        Assert.assertTrue(
-                scripts.contains("frontend://foo-dir/javascript-lib.js"));
-
-        Assert.assertEquals(5, scripts.size());
+        Assert.assertEquals(4, scripts.size());
 
         List<String> orderedJs = scripts.stream()
                 .filter(script -> script.startsWith("javascript"))
@@ -221,9 +218,7 @@ public class FullDependenciesScannerTest {
 
         Set<String> visitedClasses = scanner.getClasses();
         Assert.assertTrue(
-                visitedClasses.contains(VaadinBowerComponent.class.getName()));
-        Assert.assertTrue(
-                visitedClasses.contains(VaadinNpmComponent.class.getName()));
+                visitedClasses.contains(VaadinJsComponent.class.getName()));
         Assert.assertTrue(
                 visitedClasses.contains(JavaScriptOrder.class.getName()));
     }
@@ -267,7 +262,7 @@ public class FullDependenciesScannerTest {
                 JsModule.class);
         List<String> modules = scanner.getModules();
 
-        Assert.assertEquals(18, modules.size());
+        Assert.assertEquals(17, modules.size());
 
         assertJsModules(modules);
 
@@ -320,7 +315,7 @@ public class FullDependenciesScannerTest {
                 });
 
         List<String> modules = scanner.getModules();
-        Assert.assertEquals(24, modules.size());
+        Assert.assertEquals(23, modules.size());
         assertJsModules(modules);
 
         // Theme modules should be included now
@@ -433,8 +428,6 @@ public class FullDependenciesScannerTest {
         Assert.assertTrue(modules.contains("./local-template.js"));
         Assert.assertTrue(modules.contains("3rdparty/component.js"));
         Assert.assertTrue(modules.contains("./local-p3-template.js"));
-        Assert.assertTrue(
-                modules.contains("frontend://frontend-p3-template.js"));
         Assert.assertTrue(modules.contains("unresolved/component"));
         Assert.assertTrue(modules.contains("./foo.js"));
         Assert.assertTrue(modules.contains(
@@ -481,7 +474,7 @@ public class FullDependenciesScannerTest {
         Assert.assertTrue(
                 classes.contains(NodeTestComponents.ICON_COMPONENT_FQN));
         Assert.assertTrue(
-                classes.contains(VaadinBowerComponent.class.getName()));
+                classes.contains(VaadinJsComponent.class.getName()));
         Assert.assertTrue(classes.contains(VaadinElementMixin.class.getName()));
         Assert.assertTrue(classes.contains(VaadinNpmComponent.class.getName()));
         Assert.assertTrue(

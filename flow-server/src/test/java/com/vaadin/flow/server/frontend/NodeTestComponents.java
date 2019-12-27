@@ -56,7 +56,7 @@ public class NodeTestComponents extends NodeUpdateTestUtil {
     @JsModule("@vaadin/vaadin-date-picker/src/vaadin-date-picker.js")
     @JsModule("@vaadin/vaadin-date-picker/src/vaadin-month-calendar.js")
     @JavaScript("ExampleConnector.js")
-    public static class VaadinBowerComponent extends Component {
+    public static class VaadinJsComponent extends Component {
     }
 
     @NpmPackage(value = "@vaadin/vaadin-element-mixin", version = "1.1.2")
@@ -65,7 +65,6 @@ public class NodeTestComponents extends NodeUpdateTestUtil {
     }
 
     @JsModule("./foo-dir/vaadin-npm-component.js")
-    @JavaScript("frontend://foo-dir/javascript-lib.js")
     public static class VaadinNpmComponent extends Component {
     }
 
@@ -83,7 +82,6 @@ public class NodeTestComponents extends NodeUpdateTestUtil {
     public static class LocalP3Template extends Component {
     }
 
-    @JsModule("frontend://frontend-p3-template.js")
     @JsModule("unresolved/component")
     public static class FrontendP3Template extends Component {
     }
@@ -122,7 +120,7 @@ public class NodeTestComponents extends NodeUpdateTestUtil {
     public static class MainView extends Component {
         ButtonComponent buttonComponent;
         IconComponent iconComponent;
-        VaadinBowerComponent vaadinBowerComponent;
+        VaadinJsComponent vaadinBowerComponent;
         VaadinElementMixin vaadinElementMixin;
         VaadinNpmComponent vaadinNpmComponent;
         VaadinMixedComponent vaadinMixedComponent;

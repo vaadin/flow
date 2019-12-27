@@ -17,8 +17,6 @@ package com.vaadin.flow.server;
 
 import java.io.Serializable;
 
-import com.vaadin.flow.shared.ApplicationConstants;
-
 /**
  * Constants used by the server side framework.
  *
@@ -79,29 +77,6 @@ public final class Constants implements Serializable {
     public static final String SERVLET_PARAMETER_BROTLI = "brotli";
 
     /**
-     * Configuration name for loading the ES5 adapters.
-     */
-    public static final String LOAD_ES5_ADAPTERS = "load.es5.adapters";
-
-    /**
-     * Default frontend URL prefix for ES6.
-     */
-    public static final String FRONTEND_URL_ES6_DEFAULT_VALUE = ApplicationConstants.CONTEXT_PROTOCOL_PREFIX
-            + "frontend-es6/";
-
-    /**
-     * Default frontend URL prefix for development.
-     */
-    public static final String FRONTEND_URL_DEV_DEFAULT = ApplicationConstants.CONTEXT_PROTOCOL_PREFIX
-            + "frontend/";
-
-    /**
-     * Configuration name for the parameter that determines if Flow should use
-     * bundled fragments or not.
-     */
-    public static final String USE_ORIGINAL_FRONTEND_RESOURCES = "original.frontend.resources";
-
-    /**
      * I18N provider property.
      */
     public static final String I18N_PROVIDER = "i18n.provider";
@@ -145,8 +120,7 @@ public final class Constants implements Serializable {
     public static final String PACKAGE_JSON = "package.json";
 
     /**
-     * Location for the frontend resources in jar files for compatibility mode
-     * (also obsolete but supported for NPM mode).
+     * Obsolete location for the frontend resources in jar files.
      */
     public static final String COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT = "META-INF/resources/frontend";
 

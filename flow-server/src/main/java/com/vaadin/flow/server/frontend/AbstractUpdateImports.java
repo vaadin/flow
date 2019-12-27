@@ -47,7 +47,6 @@ import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
-import static com.vaadin.flow.shared.ApplicationConstants.FRONTEND_PROTOCOL_PREFIX;
 
 /**
  * Common logic for generate import file JS content.
@@ -251,18 +250,6 @@ abstract class AbstractUpdateImports implements Runnable {
     protected String resolveResource(String importPath, boolean isJsModule) {
         String resolved = importPath;
         if (!importPath.startsWith("@")) {
-
-            if (importPath.startsWith(FRONTEND_PROTOCOL_PREFIX)) {
-                resolved = importPath.replaceFirst(FRONTEND_PROTOCOL_PREFIX,
-                        "./");
-                if (isJsModule) {
-                    // Remove this when all flow components annotated with
-                    // @JsModule have the './' prefix instead of 'frontend://'
-                    getLogger().warn(
-                            "Do not use the '{}' protocol in '@JsModule', changing '{}' to '{}', please update your component.",
-                            FRONTEND_PROTOCOL_PREFIX, importPath, resolved);
-                }
-            }
 
             // We only should check here those paths starting with './' when all
             // flow components

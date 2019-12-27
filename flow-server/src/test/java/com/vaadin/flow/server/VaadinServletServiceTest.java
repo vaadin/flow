@@ -3,14 +3,12 @@ package com.vaadin.flow.server;
 import javax.servlet.http.HttpServletRequest;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -70,58 +68,20 @@ public class VaadinServletServiceTest {
                 service.resolveResource("", mocks.getBrowser()));
         Assert.assertEquals("foo",
                 service.resolveResource("foo", mocks.getBrowser()));
-        Assert.assertEquals("/frontend/foo",
-                service.resolveResource("frontend://foo", mocks.getBrowser()));
         Assert.assertEquals("/foo",
                 service.resolveResource("context://foo", mocks.getBrowser()));
     }
 
     @Test
-    public void resolveResourceNPM_production() {
+    public void resolveResource_production() {
         mocks.setProductionMode(true);
 
         Assert.assertEquals("",
                 service.resolveResource("", mocks.getBrowser()));
         Assert.assertEquals("foo",
                 service.resolveResource("foo", mocks.getBrowser()));
-        Assert.assertEquals("/frontend/foo",
-                service.resolveResource("frontend://foo", mocks.getBrowser()));
         Assert.assertEquals("/foo",
                 service.resolveResource("context://foo", mocks.getBrowser()));
-    }
-
-    private void testGetResourceAndGetResourceAsStream(
-            String expectedServletContextResource, String untranslatedUrl,
-            WebBrowser browser) throws IOException {
-
-        if (expectedServletContextResource == null) {
-            Assert.assertNull(service.getResource(untranslatedUrl, browser));
-            Assert.assertNull(
-                    service.getResourceAsStream(untranslatedUrl, browser));
-        } else {
-            URL expectedUrl = new URL(
-                    "file://" + expectedServletContextResource);
-            Assert.assertEquals(expectedUrl,
-                    service.getResource(untranslatedUrl, browser));
-            String contents = IOUtils.toString(
-                    service.getResourceAsStream(untranslatedUrl, browser),
-                    StandardCharsets.UTF_8);
-            Assert.assertEquals("This is " + expectedServletContextResource,
-                    contents);
-        }
-    }
-
-    @Test
-    public void getResource() throws IOException {
-        WebBrowser browser = mocks.getBrowser();
-        mocks.getServlet().addServletContextResource("/frontend/foo.txt");
-
-        testGetResourceAndGetResourceAsStream("/frontend/foo.txt",
-                "/frontend/foo.txt", browser);
-        testGetResourceAndGetResourceAsStream("/frontend/foo.txt",
-                "frontend://foo.txt", browser);
-        testGetResourceAndGetResourceAsStream(null, "frontend://bar.txt",
-                browser);
     }
 
     @Test

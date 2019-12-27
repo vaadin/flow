@@ -219,11 +219,7 @@ public class VaadinServletService extends VaadinService {
         Objects.requireNonNull(url, "Url cannot be null");
         Objects.requireNonNull(browser, "Browser cannot be null");
 
-        String frontendRootUrl;
-        DeploymentConfiguration config = getDeploymentConfiguration();
-        frontendRootUrl = config.getNpmFrontendPrefix();
-
-        return contextResolver.resolveVaadinUri(url, frontendRootUrl);
+        return contextResolver.resolveVaadinUri(url);
     }
 
     @Override

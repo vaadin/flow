@@ -17,7 +17,6 @@ package com.vaadin.flow.server;
 
 import java.util.Properties;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.is;
@@ -133,28 +132,6 @@ public class DefaultDeploymentConfigurationTest {
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 initParameters);
         assertThat(config.getPushURL(), is("foo"));
-    }
-
-    @Test
-    public void bundleIsEnabledInProduction() {
-        Properties initParameters = new Properties();
-        initParameters.setProperty(Constants.SERVLET_PARAMETER_PRODUCTION_MODE,
-                "true");
-        DefaultDeploymentConfiguration config = createDeploymentConfig(
-                initParameters);
-        Assert.assertTrue(config.useCompiledFrontendResources());
-    }
-
-    @Test
-    public void bundleCanBeDisabled() {
-        Properties initParameters = new Properties();
-        initParameters.setProperty(Constants.SERVLET_PARAMETER_PRODUCTION_MODE,
-                "true");
-        initParameters.setProperty(Constants.USE_ORIGINAL_FRONTEND_RESOURCES,
-                "true");
-        DefaultDeploymentConfiguration config = createDeploymentConfig(
-                initParameters);
-        Assert.assertFalse(config.useCompiledFrontendResources());
     }
 
 }

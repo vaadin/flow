@@ -18,7 +18,7 @@ package com.vaadin.flow.server.frontend.scanner.samples;
 
 import com.vaadin.flow.component.dependency.CssImport;
 
-@CssImport("frontend://styles/interface.css")
+@CssImport("styles/interface.css")
 public interface RouteInterface {
 
     default void doSomething() {
