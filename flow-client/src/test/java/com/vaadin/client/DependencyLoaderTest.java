@@ -196,12 +196,11 @@ public class DependencyLoaderTest {
         String jsContents2 = "/2.js";
         String cssContents1 = "/1.css";
         String cssContents2 = "/2.css";
-        String htmlContents1 = "/1.html";
-        String htmlContents2 = "/2.html";
 
         new DependencyLoader(registry).loadDependencies(createDependenciesMap(
                 createInlineDependency(Dependency.Type.JAVASCRIPT, jsContents1),
-                createInlineDependency(Dependency.Type.JAVASCRIPT, jsContents2),
+                createInlineDependency(Dependency.Type.JAVASsCRIPT,
+                        jsContents2),
                 createInlineDependency(Dependency.Type.STYLESHEET,
                         cssContents1),
                 createInlineDependency(Dependency.Type.STYLESHEET,
@@ -217,10 +216,6 @@ public class DependencyLoaderTest {
                 Arrays.asList(cssContents1, cssContents2),
                 mockResourceLoader.loadingStyles);
 
-        assertEquals(
-                "htmlContents1 should come before htmlContents2, because it was added earlier",
-                Arrays.asList(htmlContents1, htmlContents2),
-                mockResourceLoader.loadingHtml);
     }
 
     private JsMap<LoadMode, JsonArray> createDependenciesMap(
