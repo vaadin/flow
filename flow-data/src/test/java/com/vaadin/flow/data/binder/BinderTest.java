@@ -520,8 +520,23 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
         binding.setAsRequiredEnabled(false);
         assertFalse(textField.isRequiredIndicatorVisible());
+        textField.setValue("");
+        assertFalse(textField.isInvalid());
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void beanvalidation_isValid_throws_with_readBean() {
+        TestTextField textField = new TestTextField();
+
+        BindingBuilder<Person, String> bindingBuilder = binder.forField(textField);
+        Binding<Person, String> binding = bindingBuilder.bind(Person::getFirstName, Person::setFirstName);
+
+        binder.readBean(item);
+
+        // TextField input is not set required, this should trigger IllegalStateExceptipon
+        binding.setAsRequiredEnabled(false);
+    }    
+    
     @Test
     public void readNullBeanRemovesError() {
         TestTextField textField = new TestTextField();
