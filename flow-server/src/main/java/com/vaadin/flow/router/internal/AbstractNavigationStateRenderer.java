@@ -443,7 +443,7 @@ public abstract class AbstractNavigationStateRenderer
                 .getUrlBase(targetType)
                 .orElseThrow(() -> new IllegalStateException(String.format(
                         "The target component '%s' has no registered route",
-                        targetType))));
+                        targetType))), event.getLocation().getQueryParameters());
 
         if (beforeNavigation.hasForwardTarget()) {
             List<String> segments = new ArrayList<>(location.getSegments());

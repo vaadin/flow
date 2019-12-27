@@ -19,9 +19,9 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -784,7 +784,12 @@ public class Element extends Node<Element> {
         verifySetPropertyName(name);
 
         if ("innerHTML".equals(name)) {
-            removeAllChildren();
+            Serializable oldValue = getStateProvider()
+                    .getProperty(getNode(), name);
+            if(!Objects.equals(value, oldValue)) {
+                // Only remove all children for value change
+                removeAllChildren();
+            }
         }
         getStateProvider().setProperty(getNode(), name, value, true);
 
@@ -1800,41 +1805,8 @@ public class Element extends Node<Element> {
     public Element setEnabled(final boolean enabled) {
         getNode().setEnabled(enabled);
 
-        Optional<Component> componentOptional = getComponent();
-        if (componentOptional.isPresent()) {
-            Component component = componentOptional.get();
-            component.onEnabledStateChanged(enabled);
-            informChildrenOfStateChange(enabled, component);
-        }
+        informEnabledStateChange(enabled, this);
         return getSelf();
-    }
-
-    private void informChildrenOfStateChange(boolean enabled,
-            Component component) {
-        component.getChildren().forEach(child -> {
-            child.onEnabledStateChanged(
-                    enabled ? child.getElement().isEnabled() : false);
-            informChildrenOfStateChange(enabled, child);
-        });
-        if (component.getElement().getNode()
-                .hasFeature(VirtualChildrenList.class)) {
-            component.getElement().getNode()
-                    .getFeatureIfInitialized(VirtualChildrenList.class)
-                    .ifPresent(list -> {
-                        final Consumer<Component> stateChangeInformer = virtual -> {
-                            virtual.onEnabledStateChanged(
-                                    enabled ? virtual.getElement().isEnabled()
-                                            : false);
-
-                            informChildrenOfStateChange(enabled, virtual);
-                        };
-                        final Consumer<StateNode> childNodeConsumer = childNode -> Element
-                                .get(childNode).getComponent()
-                                .ifPresent(stateChangeInformer);
-
-                        list.forEachChild(childNodeConsumer);
-                    });
-        }
     }
 
     /**
@@ -1853,6 +1825,28 @@ public class Element extends Node<Element> {
     @Override
     protected Element getSelf() {
         return this;
+    }
+
+    private void informEnabledStateChange(boolean enabled, Element element) {
+        Optional<Component> componentOptional = element.getComponent();
+        if (componentOptional.isPresent()) {
+            Component component = componentOptional.get();
+            component.onEnabledStateChanged(
+                    enabled ? element.isEnabled() : false);
+        }
+        informChildrenOfStateChange(enabled, element);
+    }
+
+    private void informChildrenOfStateChange(boolean enabled, Element element) {
+        element.getChildren().forEach(child -> {
+            informEnabledStateChange(enabled, child);
+        });
+        if (element.getNode().hasFeature(VirtualChildrenList.class)) {
+            element.getNode().getFeatureIfInitialized(VirtualChildrenList.class)
+                    .ifPresent(list -> list.forEachChild(
+                            node -> informEnabledStateChange(enabled,
+                                    Element.get(node))));
+        }
     }
 
 }

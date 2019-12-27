@@ -61,7 +61,6 @@ import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
-import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.internal.UsageStatistics.UsageEntry;
 import com.vaadin.flow.server.BootstrapUtils.ThemeSettings;
@@ -79,9 +78,9 @@ import com.vaadin.flow.theme.ThemeDefinition;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+import elemental.json.JsonType;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
-
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -119,6 +118,13 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static final String ES6_COLLECTIONS = "//<![CDATA[\n"
             + readResource("es6-collections.js") + "//]]>";
     private static final String CSS_TYPE_ATTRIBUTE_VALUE = "text/css";
+
+    /**
+     * Safari 10.1 script nomodule fix. This is only needed for Safari <= 10.1
+     * See https://gist.github.com/samthor/64b114e4a4f539915a95b91ffd340acc
+     */
+    static final String SAFARI_10_1_SCRIPT_NOMODULE_FIX = "//<![CDATA[\n"
+            + readResource("safari-10-1-script-nomodule.js") + "//]]>";
 
     private static final String CAPTION = "caption";
     private static final String MESSAGE = "message";
@@ -581,11 +587,17 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             if (devMode != null) {
                 String errorMsg = devMode.getFailedOutput();
                 if (errorMsg != null) {
+                    Element errorElement = document.createElement("div");
+                    errorElement.setBaseUri("");
+                    errorElement.attr("class", "v-system-error");
+                    errorElement.attr("onclick",
+                            "this.parentElement.removeChild(this)");
+                    errorElement
+                            .html("<h3 style=\"display:inline;\">Webpack Error</h3>"
+                                    + "<h6 style=\"display:inline; padding-left:10px;\">Click to close</h6>"
+                                    + "<pre>" + errorMsg + "</pre>");
                     document.body()
-                            .appendChild(new Element(Tag.valueOf("div"), "")
-                                    .attr("class", "v-system-error")
-                                    .html("<h3>Webpack Error</h3><pre>"
-                                            + errorMsg + "</pre>"));
+                            .appendChild(errorElement);
                 }
             }
         }
@@ -869,6 +881,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 conf.getPolyfills().forEach(
                         polyfill -> head.appendChild(createJavaScriptElement(
                                 "./" + VAADIN_MAPPING + polyfill, false)));
+
+                // #6817
+                appendSafari10ScriptNoModuleFix(head, context);
+
                 try {
                     appendNpmBundle(head, service, context);
                 } catch (IOException e) {
@@ -898,21 +914,41 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             }
             JsonObject chunks = Json.parse(content);
             for (String key : chunks.keys()) {
+                String chunkName;
+                if(chunks.get(key).getType().equals(JsonType.ARRAY)) {
+                    chunkName = getArrayChunkName(chunks, key);
+                } else {
+                    chunkName = chunks.getString(key);
+                }
                 if (key.endsWith(".es5")) {
                     Element script = createJavaScriptElement(
-                            "./" + VAADIN_MAPPING + chunks.getString(key));
+                            "./" + VAADIN_MAPPING + chunkName);
                     head.appendChild(
                             script.attr("nomodule", true).attr("data-app-id",
                                     context.getUI().getInternals().getAppId()));
                 } else {
                     Element script = createJavaScriptElement(
-                            "./" + VAADIN_MAPPING + chunks.getString(key),
+                            "./" + VAADIN_MAPPING + chunkName,
                             false);
-                    head.appendChild(
-                            script.attr("type", "module").attr("data-app-id",
-                                    context.getUI().getInternals().getAppId()));
+                    head.appendChild(script.attr("type", "module")
+                            .attr("data-app-id",
+                                    context.getUI().getInternals().getAppId())
+                            // Fixes basic auth in Safari #6560
+                            .attr("crossorigin", true));
                 }
             }
+        }
+
+        private String getArrayChunkName(JsonObject chunks, String key) {
+            JsonArray chunkArray = chunks.getArray(key);
+
+            for(int i = 0; i <chunkArray.length(); i++) {
+                String chunkName = chunkArray.getString(0);
+                if(chunkName.endsWith(".js")){
+                    return chunkName;
+                }
+            }
+            return "";
         }
 
         private String getClientEngineUrl(BootstrapContext context) {
@@ -945,6 +981,18 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             if (!context.getSession().getBrowser().isEs6Supported()) {
                 head.appendChild(
                         createInlineJavaScriptElement(ES6_COLLECTIONS));
+            }
+        }
+
+        private void appendSafari10ScriptNoModuleFix(Element head,
+                BootstrapContext context) {
+            if (context.getSession().getBrowser().isSafari()
+                    && context.getSession().getBrowser()
+                            .getBrowserMajorVersion() == 10
+                    && context.getSession().getBrowser()
+                            .getBrowserMinorVersion() <= 1) {
+                head.appendChild(createInlineJavaScriptElement(
+                        SAFARI_10_1_SCRIPT_NOMODULE_FIX));
             }
         }
 
@@ -1138,12 +1186,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                         !inlineElement);
                 break;
             case JS_MODULE:
-                if (url != null && UrlUtil.isExternal(url)) {
-                    dependencyElement = createJavaScriptElement(url, false,
-                            "module");
-                } else {
-                    dependencyElement = null;
-                }
+                dependencyElement = createJavaScriptElement(url, false,
+                        "module");
                 break;
             case HTML_IMPORT:
                 dependencyElement = createHtmlImportElement(url);
@@ -1153,10 +1197,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                         "Unsupported dependency type: " + type);
             }
 
-            if (inlineElement && dependencyElement != null) {
+            if (inlineElement) {
                 dependencyElement.appendChild(new DataNode(
-                        dependency.getString(Dependency.KEY_CONTENTS),
-                        dependencyElement.baseUri()));
+                        dependency.getString(Dependency.KEY_CONTENTS)));
             }
 
             return dependencyElement;

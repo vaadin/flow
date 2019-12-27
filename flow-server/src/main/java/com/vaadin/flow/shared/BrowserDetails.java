@@ -567,7 +567,9 @@ public class BrowserDetails implements Serializable {
      * Tests if the browser is run in iOS.
      *
      * @return true if run in iOS, false otherwise
+     * @deprecated isIOS will return the wrong value for iOS 13 and later
      */
+    @Deprecated
     public boolean isIOS() {
         return os == OperatingSystem.IOS;
     }

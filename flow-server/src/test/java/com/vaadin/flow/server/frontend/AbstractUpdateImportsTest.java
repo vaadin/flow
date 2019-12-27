@@ -62,7 +62,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DI
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -84,6 +83,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     private boolean useMockLog;
 
     private Logger logger = Mockito.mock(Logger.class);
+
+    private static final String ERROR_MSG = "foo-bar-baz";
 
     private class UpdateImports extends AbstractUpdateImports {
 
@@ -153,6 +154,11 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 Mockito.doCallRealMethod().when(updater).log();
                 return updater.log();
             }
+        }
+
+        @Override
+        protected String getImportsNotFoundMessage() {
+            return ERROR_MSG;
         }
     }
 
@@ -225,15 +231,11 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
         Mockito.verify(logger).info(captor.capture());
 
-        Assert.assertThat(captor.getValue(), CoreMatchers.allOf(
-                CoreMatchers.containsString(
-                        "@vaadin/vaadin-lumo-styles/spacing.js"),
-                CoreMatchers.containsString(
-                        "If the build fails, check that npm packages are installed."),
-                CoreMatchers.containsString(
-                        "To fix the build remove `package-lock.json` and `node_modules` directory to reset modules."),
-                CoreMatchers.containsString(
-                        "In addition you may run `npm install` to fix `node_modules` tree structure.")));
+        Assert.assertThat(captor.getValue(),
+                CoreMatchers.allOf(
+                        CoreMatchers.containsString(
+                                "@vaadin/vaadin-lumo-styles/spacing.js"),
+                        CoreMatchers.containsString(ERROR_MSG)));
     }
 
     @Test
@@ -428,7 +430,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
     @Test
     public void assertFullSortOrder() throws MalformedURLException {
-        Class[] testClasses = { MainView.class, NodeTestComponents.TranslatedImports.class,
+        Class[] testClasses = { MainView.class,
+                NodeTestComponents.TranslatedImports.class,
                 NodeTestComponents.LocalP3Template.class,
                 NodeTestComponents.JavaScriptOrder.class };
         ClassFinder classFinder = getClassFinder(testClasses);
@@ -446,12 +449,19 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         List<String> expectedImports = new ArrayList<>();
         expectedImports.addAll(updater.getThemeLines());
 
-        getAnntotationsAsStream(JsModule.class, testClasses).map(JsModule::value).map(this::updateToImport).sorted().forEach(expectedImports::add);
-        getAnntotationsAsStream(JavaScript.class, testClasses).map(JavaScript::value).map(this::updateToImport).sorted().forEach(expectedImports::add);
+        getAnntotationsAsStream(JsModule.class, testClasses)
+                .map(JsModule::value).map(this::updateToImport).sorted()
+                .forEach(expectedImports::add);
+        getAnntotationsAsStream(JavaScript.class, testClasses)
+                .map(JavaScript::value).map(this::updateToImport).sorted()
+                .forEach(expectedImports::add);
 
-        List<String> internals = expectedImports.stream().filter(importValue -> importValue.contains(FrontendUtils.WEBPACK_PREFIX_ALIAS)).sorted().collect(
-                Collectors.toList());
-        updater.getGeneratedModules().stream().map(this::updateToImport).forEach(expectedImports::add);
+        List<String> internals = expectedImports.stream()
+                .filter(importValue -> importValue
+                        .contains(FrontendUtils.WEBPACK_PREFIX_ALIAS))
+                .sorted().collect(Collectors.toList());
+        updater.getGeneratedModules().stream().map(this::updateToImport)
+                .forEach(expectedImports::add);
         // Remove internals from the full list
         expectedImports.removeAll(internals);
         // Add internals to end of list
@@ -460,16 +470,18 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         Assert.assertEquals(expectedImports, updater.resultingLines);
     }
 
-    private <T extends Annotation> Stream<T> getAnntotationsAsStream(Class<T> annotation, Class<?>... classes) {
+    private <T extends Annotation> Stream<T> getAnntotationsAsStream(
+            Class<T> annotation, Class<?>... classes) {
         Stream<T> stream = Stream.empty();
-        for(Class<?> clazz : classes) {
-            stream = Stream.concat(stream, Stream.of(clazz.getAnnotationsByType(annotation)));
+        for (Class<?> clazz : classes) {
+            stream = Stream.concat(stream,
+                    Stream.of(clazz.getAnnotationsByType(annotation)));
         }
         return stream;
     }
 
     private String updateToImport(String value) {
-        if(value.startsWith("./")) {
+        if (value.startsWith("./")) {
             value = value.replace("./", FrontendUtils.WEBPACK_PREFIX_ALIAS);
         }
         return String.format("import '%s';", value);

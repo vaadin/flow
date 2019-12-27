@@ -18,6 +18,7 @@ package com.vaadin.flow.server.webcomponent;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -29,7 +30,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
@@ -252,11 +252,13 @@ public class WebComponentConfigurationRegistryTest {
     protected Set<WebComponentConfiguration<? extends Component>> createConfigurations(
             Class<? extends WebComponentExporter<? extends Component>>... exporters) {
         WebComponentExporter.WebComponentConfigurationFactory factory = new WebComponentExporter.WebComponentConfigurationFactory();
-        return (Set<WebComponentConfiguration<? extends Component>>) Stream
-                .of(exporters)
-                .map(clazz -> new DefaultWebComponentExporterFactory(clazz)
-                        .create())
-                .map(factory::create).collect(Collectors.toSet());
+
+        Set<WebComponentConfiguration<? extends Component>> configurations = new HashSet<>();
+        for (Class<? extends WebComponentExporter<? extends Component>> exporter : exporters)
+            configurations.add(factory
+                    .create(new DefaultWebComponentExporterFactory(exporter)
+                            .create()));
+        return configurations;
     }
 
     protected class MyComponent extends Component {

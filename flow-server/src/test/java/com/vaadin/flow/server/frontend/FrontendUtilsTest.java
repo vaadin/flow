@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Before;
@@ -280,14 +281,34 @@ public class FrontendUtilsTest {
                 FrontendUtils.getPnpmExecutable(baseDir, false));
     }
 
+    /**
+     * This test doesn't do anything if pnpm is already installed (globally)
+     * which is true e.g. for or CI servers (TC/bender).
+     */
     @Test
-    public void ensurePnpm_requestInstall() {
+    public void ensurePnpm_requestInstall_keepPackageJson_removePackageLock_ignoredPnpmExists_localPnpmIsRemoved()
+            throws IOException {
         List<String> executable = FrontendUtils.getPnpmExecutable(baseDir,
                 false);
         if (executable.isEmpty()) {
+            File packageJson = new File(baseDir, "package.json");
+            FileUtils.writeStringToFile(packageJson, "{}",
+                    StandardCharsets.UTF_8);
+
+            File packageLockJson = new File(baseDir, "package-lock.json");
+            FileUtils.writeStringToFile(packageLockJson, "{}",
+                    StandardCharsets.UTF_8);
+
             FrontendUtils.ensurePnpm(baseDir, true);
             Assert.assertFalse(
                     FrontendUtils.getPnpmExecutable(baseDir, false).isEmpty());
+
+            // locally installed pnpm (via npm/pnpm) is removed
+            Assert.assertFalse(new File("node_modules/pnpm").exists());
+
+            Assert.assertEquals("{}", FileUtils.readFileToString(packageJson,
+                    StandardCharsets.UTF_8));
+            Assert.assertFalse(packageLockJson.exists());
         }
     }
 

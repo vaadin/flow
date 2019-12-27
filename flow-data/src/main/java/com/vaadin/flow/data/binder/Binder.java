@@ -1467,6 +1467,20 @@ public class Binder<BEAN> implements Serializable {
     }
 
     /**
+     * Creates a new binder that uses reflection based on the provided bean type
+     * to resolve bean properties.
+     *
+     * @param beanType
+     *            the bean type to use, not {@code null}
+     * @param scanNestedDefinitions
+     *            if {@code true}, scan for nested property definitions as well
+     */
+    public Binder(Class<BEAN> beanType, boolean scanNestedDefinitions) {
+        this(BeanPropertySet.get(beanType, scanNestedDefinitions,
+                PropertyFilterDefinition.getDefaultFilter()));
+    }
+
+    /**
      * Creates a binder using a custom {@link PropertySet} implementation for
      * finding and resolving property names for
      * {@link #bindInstanceFields(Object)}, {@link #bind(HasValue, String)} and
@@ -1508,20 +1522,6 @@ public class Binder<BEAN> implements Serializable {
         } else {
             binding.validate();
         }
-    }
-
-    /**
-     * Creates a new binder that uses reflection based on the provided bean type
-     * to resolve bean properties.
-     *
-     * @param beanType
-     *            the bean type to use, not {@code null}
-     * @param scanNestedDefinitions
-     *            if {@code true}, scan for nested property definitions as well
-     */
-    public Binder(Class<BEAN> beanType, boolean scanNestedDefinitions) {
-        this(BeanPropertySet.get(beanType, scanNestedDefinitions,
-                PropertyFilterDefinition.getDefaultFilter()));
     }
 
     /**
