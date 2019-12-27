@@ -76,27 +76,6 @@ public abstract class AbstractDnDUnitTest {
     }
 
     @Test
-    public void testExtension_staticApiInCompatibilityMode_connectorDependencyAddedDynamically() {
-        compatibilityMode = true;
-        ui.getInternals().getDependencyList().clearPendingSendToClient();
-
-        RouterLink component = new RouterLink();
-        ui.add(component);
-        runStaticCreateMethodForExtension(component);
-
-        DependencyList dependencyList = ui.getInternals().getDependencyList();
-        Collection<Dependency> pendingSendToClient = dependencyList
-                .getPendingSendToClient();
-
-        Assert.assertEquals("No dependency added", 1,
-                pendingSendToClient.size());
-
-        Dependency dependency = pendingSendToClient.iterator().next();
-        Assert.assertEquals("Wrong dependency loaded",
-                "frontend://dndConnector.js", dependency.getUrl());
-    }
-
-    @Test
     public void testExtension_staticApiNotIosNotCompatibilityMode_connectorDependencyAndPolyfillNotAddedDynamically() {
         ui.getInternals().getDependencyList().clearPendingSendToClient();
 
