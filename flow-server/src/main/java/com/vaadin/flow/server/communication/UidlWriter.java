@@ -92,8 +92,6 @@ public class UidlWriter implements Serializable {
          *            the service which is resolving
          * @param browser
          *            the browser
-         * @param theme
-         *            the theme, or <code>null</code> for no theme
          */
         public ResolveContext(VaadinService service, WebBrowser browser) {
             this.service = Objects.requireNonNull(service);
