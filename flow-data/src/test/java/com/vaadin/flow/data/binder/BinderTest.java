@@ -525,7 +525,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     }
 
     @Test(expected = IllegalStateException.class)
-    public void beanvalidation_isValid_throws_with_readBean() {
+    public void settingAsRequiredEnabledFalseWhenNoAsRequired() {
         TestTextField textField = new TestTextField();
 
         BindingBuilder<Person, String> bindingBuilder = binder.forField(textField);
