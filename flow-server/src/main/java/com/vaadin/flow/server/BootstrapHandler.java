@@ -370,7 +370,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      * The URI resolver used in the bootstrap process.
      */
     public static class BootstrapUriResolver extends VaadinUriResolver {
-        private String frontendRootUrl;
         private String servletPathToContextRoot;
 
         /**
@@ -418,8 +417,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          * @return the resolved URI
          */
         public String resolveVaadinUri(String uri) {
-            return super.resolveVaadinUri(uri, frontendRootUrl,
-                    servletPathToContextRoot);
+            return super.resolveVaadinUri(uri, servletPathToContextRoot);
         }
 
     }
