@@ -227,8 +227,7 @@ public class ComponentMetaData {
 
     /**
      * Gets the dependencies, defined using annotations ({@link JsModule},
-     * {@link HtmlImport}, {@link JavaScript}, {@link StyleSheet} and
-     * {@link Uses}).
+     * {@link JavaScript}, {@link StyleSheet} and {@link Uses}).
      * <p>
      * Framework internal data, thus package-private.
      *

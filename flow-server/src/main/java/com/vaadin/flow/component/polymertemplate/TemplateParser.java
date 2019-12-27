@@ -25,7 +25,7 @@ import com.vaadin.flow.server.VaadinService;
  * It returns a JSOUP element representing the content of template for the given
  * template class.
  *
- * @see DefaultTemplateParser
+ * @see NpmTemplateParser
  *
  * @author Vaadin Ltd
  * @since 1.0

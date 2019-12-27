@@ -119,7 +119,6 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
                 set(URIResolver.class, new URIResolver(this));
                 ApplicationConfiguration appConf = new ApplicationConfiguration();
                 appConf.setContextRootUrl("../");
-                appConf.setFrontendRootUrl("/frontend/");
                 set(ApplicationConfiguration.class, appConf);
             }
         };

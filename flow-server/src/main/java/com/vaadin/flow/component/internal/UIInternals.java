@@ -779,8 +779,8 @@ public class UIInternals implements Serializable {
     }
 
     /**
-     * Adds the dependencies defined using {@link StyleSheet},
-     * {@link JavaScript} or {@link HtmlImport} on the given Component class.
+     * Adds the dependencies defined using {@link StyleSheet} or
+     * {@link JavaScript} on the given Component class.
      *
      * @param componentClass
      *            the component class to read annotations from
