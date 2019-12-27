@@ -45,10 +45,6 @@ public class URIResolver extends VaadinUriResolver {
      * <ul>
      * <li><code>{@value ApplicationConstants#CONTEXT_PROTOCOL_PREFIX}</code> -
      * resolves to the application context root</li>
-     * <li><code>{@value ApplicationConstants#FRONTEND_PROTOCOL_PREFIX}</code> -
-     * resolves to the build path where web components were compiled. Browsers
-     * supporting ES6 can receive different, more optimized files than browsers
-     * that only support ES5.</li>
      * <li><code>{@value ApplicationConstants#BASE_PROTOCOL_PREFIX}</code> -
      * resolves to the base URI of the page</li>
      * </ul>
