@@ -240,7 +240,6 @@
                 <module>test-memory-leaks</module>
                 <module>test-servlet</module>
                 <module>test-themes</module>
-                <module>test-themes/pom-npm.xml</module>
                 <module>test-lumo-theme</module>
                 <module>test-material-theme</module>
                 <module>servlet-containers</module>
@@ -332,12 +331,6 @@
             <properties>
                 <test.excludegroup>com.vaadin.flow.testcategory.IgnoreIE11</test.excludegroup>
             </properties>
-        </profile>
-        <profile>
-            <id>npm</id>
-            <modules>
-                <module>test-root-context/pom-npm.xml</module>
-            </modules>
         </profile>
     </profiles>
 
