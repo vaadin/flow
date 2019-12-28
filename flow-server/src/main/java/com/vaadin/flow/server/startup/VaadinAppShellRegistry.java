@@ -33,6 +33,7 @@ import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.component.page.VaadinAppShell;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.server.AppShellSettings;
 import com.vaadin.flow.server.InvalidApplicationConfigurationException;
 import com.vaadin.flow.server.VaadinContext;
@@ -69,12 +70,8 @@ public class VaadinAppShellRegistry implements Serializable {
     private static final String ERROR_MULTIPLE_SHELL =
             "%nUnable to find a single class implementing `VaadinAppShell` from the following candidates:%n  %s%n  %s%n";
 
-    private static final String ERROR_MULTIPLE_VIEWPORT =
-            "%nViewport is not a repeatable annotation type.%n";
-    private static final String TYPE = "type";
-
-    private static final String ERROR_MULTIPLE_BODYSIZE =
-            "%nBodySize is not a repeatable annotation type.%n";
+    private static final String ERROR_MULTIPLE_ANNOTATION =
+            "%n%s is not a repeatable annotation type.%n";
 
     private Class<? extends VaadinAppShell> shell;
     private VaadinAppShell appShell;
@@ -204,17 +201,24 @@ public class VaadinAppShellRegistry implements Serializable {
         List<Viewport> viewPorts = getAnnotations(Viewport.class);
         if(viewPorts.size() > 1) {
             throw new InvalidApplicationConfigurationException(
-                    VaadinAppShellRegistry.ERROR_MULTIPLE_VIEWPORT);
+                    String.format(VaadinAppShellRegistry.ERROR_MULTIPLE_ANNOTATION, Viewport.class.getSimpleName()));
         } else if(!viewPorts.isEmpty()) {
             settings.setViewport(viewPorts.get(0).value());
         }
         List<BodySize> bodySizes = getAnnotations(BodySize.class);
         if(bodySizes.size() > 1) {
             throw new InvalidApplicationConfigurationException(
-                    VaadinAppShellRegistry.ERROR_MULTIPLE_BODYSIZE);
+                    String.format(VaadinAppShellRegistry.ERROR_MULTIPLE_ANNOTATION, BodySize.class.getSimpleName()));
         } else if(!bodySizes.isEmpty()) {
             settings.setBodySize(bodySizes.get(0).width(),
                     bodySizes.get(0).height());
+        }
+        List<PageTitle> pageTitles = getAnnotations(PageTitle.class);
+        if(pageTitles.size() > 1) {
+            throw new InvalidApplicationConfigurationException(
+                    String.format(VaadinAppShellRegistry.ERROR_MULTIPLE_ANNOTATION, PageTitle.class.getSimpleName()));
+        } else if(!pageTitles.isEmpty()) {
+            settings.setPageTitle(pageTitles.get(0).value());
         }
         getAnnotations(Inline.class).forEach(inline -> {
             settings.addInline(inline);
@@ -241,9 +245,9 @@ public class VaadinAppShellRegistry implements Serializable {
         }
 
         settings.getElements(Position.PREPEND)
-                .forEach(elm -> document.head().appendChild(elm));
-        settings.getElements(Position.APPEND)
                 .forEach(elm -> document.head().prependChild(elm));
+        settings.getElements(Position.APPEND)
+                .forEach(elm -> document.head().appendChild(elm));
 
         settings.getInlineElements(request, TargetElement.HEAD, Position.PREPEND).stream()
                 .forEach(element -> insertElements(element,

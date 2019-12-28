@@ -44,7 +44,7 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWithMultipleAnnotations;
+import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.*;
 import com.vaadin.flow.server.startup.VaadinAppShellRegistry;
 import com.vaadin.flow.server.startup.VaadinAppShellRegistry.VaadinAppShellRegistryWrapper;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
@@ -387,6 +387,27 @@ public class IndexHtmlRequestHandlerTest {
         Elements bodyInlineElements = document.body().getElementsByTag("script");
         assertEquals(3, bodyInlineElements.size());
         assertEquals("text/javascript", bodyInlineElements.get(0).attr("type"));
+    }
+
+
+    @Test
+    public void should_add_elements_when_appShellWithConfigurator() throws Exception {
+        // Set class in context and do not call initializer
+        VaadinAppShellRegistry registry = new VaadinAppShellRegistry();
+        registry.setShell(MyAppShellWithConfigurator.class);
+        Mockito.when(mocks.getServletContext()
+                .getAttribute(VaadinAppShellRegistryWrapper.class.getName()))
+                .thenReturn(new VaadinAppShellRegistryWrapper(registry));
+
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+
+        String indexHtml = responseOutput
+                .toString(StandardCharsets.UTF_8.name());
+        Document document = Jsoup.parse(indexHtml);
+
+        System.err.println(indexHtml);
+
     }
 
     @After

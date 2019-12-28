@@ -69,7 +69,7 @@ public class AppShellSettings implements Serializable {
             this(ann.target(), ann.position(), ann.wrapping(), ann.value(), null);
         }
 
-        private Element createElement(VaadinRequest request) {
+        private Element element(VaadinRequest request) {
             final Element element;
 
             if (content == null) {
@@ -86,14 +86,12 @@ public class AppShellSettings implements Serializable {
 
             switch (type) {
             case STYLESHEET:
-                element = new Element(Tag.valueOf("style"), "").attr("type",
+                element = createElement("style", content).attr("type",
                         "text/css");
-                element.appendChild(new DataNode(content));
                 break;
             case JAVASCRIPT:
-                element = new Element(Tag.valueOf("script"), "").attr("type",
+                element = createElement("script", content).attr("type",
                         "text/javascript");
-                element.appendChild(new DataNode(content));
                 break;
             default:
                 element = Jsoup.parse(content, "", Parser.xmlParser());
@@ -101,7 +99,6 @@ public class AppShellSettings implements Serializable {
             return element;
         }
     }
-
 
     private final List<InlineElement> inlines = new ArrayList<>();
 
@@ -168,6 +165,15 @@ public class AppShellSettings implements Serializable {
         addInline(TargetElement.HEAD, Position.APPEND, Wrapping.STYLESHEET,
                 null, "body,#outlet{" + "width:" + width + ";" + "height:"
                         + height + ";}");
+    }
+
+    /**
+     * Set the page title
+     *
+     * @param title title
+     */
+    public void setPageTitle(String title) {
+        getElements(Position.APPEND).add(createElement("title", title));
     }
 
     /**
@@ -312,9 +318,7 @@ public class AppShellSettings implements Serializable {
      *         location of the linked document
      */
     public void addLink(Position position, String rel, String href) {
-        Element link = new Element(Tag.valueOf("link"), "").attr("href", href);
-        link.attr("rel", rel);
-        getElements(position).add(link);
+        getElements(position).add(new Element(Tag.valueOf("link"), "").attr("href", href).attr("rel", rel));
     }
 
     /**
@@ -345,10 +349,8 @@ public class AppShellSettings implements Serializable {
      */
     public void addFavIcon(Position position, String rel, String href,
                            String sizes) {
-        Element link = new Element(Tag.valueOf("link"), "").attr("href", href);
-        link.attr("rel", rel);
-        link.attr("sizes", sizes);
-        getElements(position).add(link);
+        getElements(position).add(new Element(Tag.valueOf("link"), "")
+                .attr("href", href).attr("rel", rel).attr("sizes", sizes));
     }
 
     /**
@@ -432,7 +434,15 @@ public class AppShellSettings implements Serializable {
         return inlines.stream()
                 .filter(inline -> inline.target == target
                         && inline.position == position)
-                .map(inline -> inline.createElement(request))
+                .map(inline -> inline.element(request))
                 .collect(Collectors.toList());
+    }
+
+    private static Element createElement(String tag, String content) {
+        Element elm = new Element(Tag.valueOf(tag), "");
+        if (content != null && !content.isEmpty()) {
+            elm.appendChild(new DataNode(content));
+        }
+        return elm;
     }
 }
