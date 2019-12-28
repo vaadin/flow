@@ -7,7 +7,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -27,9 +26,8 @@ import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.component.page.VaadinAppShell;
 import com.vaadin.flow.component.page.Viewport;
+import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.server.AppShellSettings;
-import com.vaadin.flow.server.AppShellSettings.Position;
-import com.vaadin.flow.server.AppShellSettings.WrapMode;
 import com.vaadin.flow.server.InitialPageSettings;
 import com.vaadin.flow.server.InvalidApplicationConfigurationException;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
@@ -41,7 +39,6 @@ import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.VaadinAppShellRegistry.VaadinAppShellRegistryWrapper;
-import com.vaadin.flow.shared.communication.PushMode;
 
 import static com.vaadin.flow.server.DevModeHandler.getDevModeHandler;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -62,6 +59,7 @@ public class VaadinAppShellInitializerTest {
     @Inline(wrapping = Inline.Wrapping.JAVASCRIPT, position = Inline.Position.APPEND, target = TargetElement.BODY, value = "inline.js")
     @Viewport(Viewport.DEVICE_DIMENSIONS)
     @BodySize(height = "50vh", width = "50vw")
+    @PageTitle("my-title")
     public static class MyAppShellWithMultipleAnnotations implements VaadinAppShell {
     }
 
@@ -72,6 +70,7 @@ public class VaadinAppShellInitializerTest {
     @Inline(wrapping = Inline.Wrapping.JAVASCRIPT, position = Inline.Position.APPEND, target = TargetElement.BODY, value = "inline.css")
     @Viewport(Viewport.DEVICE_DIMENSIONS)
     @BodySize(height = "50vh", width = "50vw")
+    @PageTitle("my-title")
     public static class OffendingClass {
     }
 
@@ -79,56 +78,52 @@ public class VaadinAppShellInitializerTest {
         @Override
         public void configurePage(AppShellSettings settings) {
             settings.setViewport("foo-viewport");
-            settings.addFavIcon("icon1", "icon1.png", "1x1");
-            settings.addFavIcon("icon2", "icon2.png", "2x2");
-
-            settings.addInlineWithContents(Position.PREPEND,
-                    "window.messages = window.messages || [];\n"
-                            + "window.messages.push(\"content script\");",
-                    WrapMode.JAVASCRIPT);
-
-            settings.addInlineFromFile(Position.PREPEND, "inline.js",
-                    WrapMode.JAVASCRIPT);
-
-            settings.addInlineFromFile("inline.js", WrapMode.JAVASCRIPT);
-            settings.addInlineFromFile("inline.html", WrapMode.NONE);
-            settings.addInlineFromFile("inline.css", WrapMode.STYLESHEET);
-
-            settings.addLink("icons/favicon.ico",
-                    new LinkedHashMap<String, String>() {
-                        {
-                            put("rel", "shortcut icon");
-                        }
-                    });
-            settings.addLink("icons/icon-192.png",
-                    new LinkedHashMap<String, String>() {
-                        {
-                            put("rel", "icon");
-                            put("sizes", "192x192");
-                        }
-                    });
-
-            settings.addLink("shortcut icon", "icons/favicon.ico");
-
-            settings.addFavIcon("icon", "icons/icon-192.png", "192x192");
-            settings.addFavIcon("icon", "icons/icon-200.png", "2");
-
-            settings.addMetaTag(Position.PREPEND, "theme-color", "#227aef");
-            settings.addMetaTag(Position.APPEND, "back-color", "#227aef");
-
-            settings.addInlineWithContents(
-                    "body {width: 100vw; height:100vh; margin:0;}",
-                    WrapMode.STYLESHEET);
-
-            settings.getLoadingIndicatorConfiguration().get()
-                    .setApplyDefaultTheme(false);
-            settings.getLoadingIndicatorConfiguration().get()
-                    .setSecondDelay(700000);
-
-            settings.getPushConfiguration().get().setPushMode(PushMode.MANUAL);
-
-            settings.getReconnectDialogConfiguration().get()
-                    .setDialogModal(true);
+            settings.setPageTitle("my-title");
+//            settings.addFavIcon("icon1", "icon1.png", "1x1");
+//            settings.addFavIcon("icon2", "icon2.png", "2x2");
+//
+//            settings.addInlineWithContents(Position.PREPEND,
+//                    "window.messages = window.messages || [];\n"
+//                            + "window.messages.push(\"content script\");",
+//                            Wrapping.JAVASCRIPT);
+//
+//            settings.addInlineFromFile(Position.PREPEND, "inline.js",
+//                    Wrapping.JAVASCRIPT);
+//
+//            settings.addInlineFromFile("inline.js", Wrapping.JAVASCRIPT);
+//            settings.addInlineFromFile("inline.html", Wrapping.NONE);
+//            settings.addInlineFromFile("inline.css", Wrapping.STYLESHEET);
+//
+//            settings.addLink("icons/favicon.ico",
+//                    new LinkedHashMap<String, String>() {
+//                        {
+//                            put("rel", "shortcut icon");
+//                        }
+//                    });
+//            settings.addLink("icons/icon-192.png",
+//                    new LinkedHashMap<String, String>() {
+//                        {
+//                            put("rel", "icon");
+//                            put("sizes", "192x192");
+//                        }
+//                    });
+//
+//            settings.addLink("shortcut icon", "icons/favicon.ico");
+//
+//            settings.addFavIcon("icon", "icons/icon-192.png", "192x192");
+//            settings.addFavIcon("icon", "icons/icon-200.png", "2");
+//
+//            settings.addMetaTag(Position.PREPEND, "theme-color", "#227aef");
+//            settings.addMetaTag(Position.APPEND, "back-color", "#227aef");
+//
+//            settings.addInlineWithContents(
+//                    "body {width: 100vw; height:100vh; margin:0;}",
+//                    Wrapping.STYLESHEET);
+//
+//            settings.getLoadingIndicatorConfiguration().ifPresent(indicator -> indicator.setApplyDefaultTheme(false));
+//            settings.getLoadingIndicatorConfiguration().ifPresent(indicator -> indicator.setSecondDelay(700000));
+//            settings.getPushConfiguration().ifPresent(push -> push.setPushMode(PushMode.MANUAL));
+//            settings.getReconnectDialogConfiguration().ifPresent(dialog -> dialog.setDialogModal(true));
         }
     }
 
@@ -227,9 +222,9 @@ public class VaadinAppShellInitializerTest {
                 createVaadinRequest("/"));
 
         List<Element> elements = document.head().children();
-        assertEquals(6, elements.size());
-        assertEquals("text/css", elements.get(4).attr("type"));
-        assertEquals("body,#outlet{width:50vw;height:50vh;}", elements.get(4).childNode(0).toString());
+        assertEquals(7, elements.size());
+        assertEquals("text/css", elements.get(5).attr("type"));
+        assertEquals("body,#outlet{width:50vw;height:50vh;}", elements.get(5).childNode(0).toString());
     }
 
     @Test
@@ -243,29 +238,30 @@ public class VaadinAppShellInitializerTest {
                         createVaadinRequest("/"));
 
         List<Element> headElements = document.head().children();
-        assertEquals(6, headElements.size());
+        assertEquals(7, headElements.size());
         assertEquals("text/css", headElements.get(0).attr("type"));
         assertEquals("style", headElements.get(0).tagName());
         assertTrue(headElements.get(0).outerHtml().contains("#preloadedDiv"));
-        assertEquals("viewport", headElements.get(1).attr("name"));
+        assertEquals("foo", headElements.get(1).attr("name"));
         assertEquals("lorem", headElements.get(2).attr("name"));
-        assertEquals("foo", headElements.get(3).attr("name"));
+        assertEquals("viewport", headElements.get(3).attr("name"));
+        assertEquals("title", headElements.get(4).tagName());
+        assertEquals("my-title", headElements.get(4).childNode(0).toString());
 
-        assertEquals("text/css", headElements.get(4).attr("type"));
-        assertEquals("style", headElements.get(4).tagName());
-        assertTrue(headElements.get(4).outerHtml().contains("width:50vw"));
-        assertTrue(headElements.get(4).outerHtml().contains("height:50vh"));
+        assertEquals("text/css", headElements.get(5).attr("type"));
+        assertEquals("style", headElements.get(5).tagName());
+        assertTrue(headElements.get(5).outerHtml().contains("width:50vw"));
+        assertTrue(headElements.get(5).outerHtml().contains("height:50vh"));
 
-        assertEquals("text/javascript", headElements.get(5).attr("type"));
-        assertEquals("script", headElements.get(5).tagName());
-        assertTrue(headElements.get(5).outerHtml().contains("might not yet be accessible"));
+        assertEquals("text/javascript", headElements.get(6).attr("type"));
+        assertEquals("script", headElements.get(6).tagName());
+        assertTrue(headElements.get(6).outerHtml().contains("might not yet be accessible"));
 
         List<Element> bodyElements = document.body().children();
         assertEquals(1, bodyElements.size());
         assertEquals("text/javascript", bodyElements.get(0).attr("type"));
         assertEquals("script", bodyElements.get(0).tagName());
         assertTrue(bodyElements.get(0).outerHtml().contains("window.messages.push"));
-
     }
 
     @Test
@@ -293,7 +289,7 @@ public class VaadinAppShellInitializerTest {
 
         List<Element> elements = document.head().children();
 
-        assertEquals(6, elements.size());
+        assertEquals(7, elements.size());
     }
 
     @Test
@@ -302,7 +298,7 @@ public class VaadinAppShellInitializerTest {
         exception.expectMessage(
                 containsString("Found app shell configuration annotations in non"));
         exception.expectMessage(
-                containsString("- @Meta, @PWA, @Inline, @Viewport, @BodySize from"));
+                containsString("- @Meta, @PWA, @Inline, @Viewport, @BodySize, @PageTitle from"));
         classes.add(MyAppShellWithoutAnnotations.class);
         classes.add(OffendingClass.class);
         initializer.onStartup(classes, servletContext);
