@@ -29,7 +29,6 @@
         <module>flow-tests</module>
         <module>flow-server-production-mode</module>
         <module>flow-component-demo-helpers</module>
-        <module>flow-migration</module>
         <module>flow-maven-plugin</module>
         <module>flow-test-generic</module>
         <module>flow-bom</module>
