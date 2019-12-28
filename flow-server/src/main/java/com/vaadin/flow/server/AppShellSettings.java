@@ -57,21 +57,21 @@ public class AppShellSettings implements Serializable {
         private String content;
         private String file;
 
-        private InlineElement(TargetElement target, Position position, Wrapping type, String file, String content) {
+        private InlineElement(TargetElement target, Position position,
+                Wrapping type, String file, String content) {
             this.target = target;
             this.position = position;
             this.content = content;
             this.file = file;
-            this.type = type ;
+            this.type = type;
         }
 
         private InlineElement(Inline ann) {
-            this(ann.target(), ann.position(), ann.wrapping(), ann.value(), null);
+            this(ann.target(), ann.position(), ann.wrapping(), ann.value(),
+                    null);
         }
 
         private Element element(VaadinRequest request) {
-            final Element element;
-
             if (content == null) {
                 content = BootstrapUtils.getDependencyContents(request, file);
             }
@@ -83,20 +83,14 @@ public class AppShellSettings implements Serializable {
                     type = Wrapping.JAVASCRIPT;
                 }
             }
-
-            switch (type) {
-            case STYLESHEET:
-                element = createElement("style", content).attr("type",
-                        "text/css");
-                break;
-            case JAVASCRIPT:
-                element = createElement("script", content).attr("type",
-                        "text/javascript");
-                break;
-            default:
-                element = Jsoup.parse(content, "", Parser.xmlParser());
+            if (type == Wrapping.STYLESHEET) {
+                return createElement("style", content, "type", "text/css");
             }
-            return element;
+            if (type == Wrapping.JAVASCRIPT) {
+                return createElement("script", content, "type",
+                        "text/javascript");
+            }
+            return Jsoup.parse(content, "", Parser.xmlParser());
         }
     }
 
@@ -109,11 +103,11 @@ public class AppShellSettings implements Serializable {
      * Create new initial page settings object.
      *
      * @param request
-     *         initial request
+     *            initial request
      * @param ui
-     *         target ui
+     *            target ui
      * @param browser
-     *         browser information
+     *            browser information
      */
     public AppShellSettings() {
     }
@@ -149,7 +143,7 @@ public class AppShellSettings implements Serializable {
      * Set the viewport value.
      *
      * @param viewport
-     *         viewport value to set
+     *            viewport value to set
      */
     public void setViewport(String viewport) {
         addMetaTag(Position.APPEND, "viewport", viewport);
@@ -158,8 +152,10 @@ public class AppShellSettings implements Serializable {
     /**
      * Set the body size.
      *
-     * @param bodyWidth body with
-     * @param bodyWidth body height
+     * @param bodyWidth
+     *            body with
+     * @param bodyWidth
+     *            body height
      */
     public void setBodySize(String width, String height) {
         addInline(TargetElement.HEAD, Position.APPEND, Wrapping.STYLESHEET,
@@ -170,7 +166,8 @@ public class AppShellSettings implements Serializable {
     /**
      * Set the page title
      *
-     * @param title title
+     * @param title
+     *            title
      */
     public void setPageTitle(String title) {
         getElements(Position.APPEND).add(createElement("title", title));
@@ -180,9 +177,9 @@ public class AppShellSettings implements Serializable {
      * Inline contents from classpath file to append to head of initial page.
      *
      * @param file
-     *         dependency file to read and write to head
+     *            dependency file to read and write to head
      * @param type
-     *         dependency type
+     *            dependency type
      */
     public void addInlineFromFile(String file, Wrapping type) {
         addInlineFromFile(Position.APPEND, file, type);
@@ -192,11 +189,11 @@ public class AppShellSettings implements Serializable {
      * Inline contents from classpath file to head of initial page.
      *
      * @param position
-     *         prepend or append
+     *            prepend or append
      * @param file
-     *         dependency file to read and write to head
+     *            dependency file to read and write to head
      * @param type
-     *         dependency type
+     *            dependency type
      */
     public void addInlineFromFile(Position position, String file,
             Wrapping type) {
@@ -207,9 +204,9 @@ public class AppShellSettings implements Serializable {
      * Add content to append to head of initial page.
      *
      * @param contents
-     *         inline content to be added to the page
+     *            inline content to be added to the page
      * @param type
-     *         type of content which can be JavaScript or Stylesheet (CSS)
+     *            type of content which can be JavaScript or Stylesheet (CSS)
      */
     public void addInlineWithContents(String contents, Wrapping type) {
         addInlineWithContents(Position.APPEND, contents, type);
@@ -219,28 +216,29 @@ public class AppShellSettings implements Serializable {
      * Add content to head of initial page.
      *
      * @param position
-     *         prepend or append
+     *            prepend or append
      * @param contents
-     *         inline content to be added to the page
+     *            inline content to be added to the page
      * @param type
-     *         type of content which can be JavaScript or Stylesheet (CSS)
+     *            type of content which can be JavaScript or Stylesheet (CSS)
      */
     public void addInlineWithContents(Position position, String contents,
             Wrapping type) {
         addInline(TargetElement.HEAD, position, type, null, contents);
     }
 
-
     /**
      * Add an element based on an {@link Inline} annotation.
      *
-     * @param inline the  annotation
+     * @param inline
+     *            the annotation
      */
     public void addInline(Inline inline) {
         inlines.add(new InlineElement(inline));
     }
 
-    private void addInline(TargetElement target, Position position, Wrapping type, String file, String content) {
+    private void addInline(TargetElement target, Position position,
+            Wrapping type, String file, String content) {
         inlines.add(new InlineElement(target, position, type, file, content));
     }
 
@@ -248,7 +246,7 @@ public class AppShellSettings implements Serializable {
      * Add a link to be appended to initial page head.
      *
      * @param href
-     *         link href
+     *            link href
      */
     public void addLink(String href) {
         addLink(Position.APPEND, href);
@@ -258,9 +256,9 @@ public class AppShellSettings implements Serializable {
      * Add a link to initial page head.
      *
      * @param position
-     *         prepend or append
+     *            prepend or append
      * @param href
-     *         link href
+     *            link href
      */
     public void addLink(Position position, String href) {
         addLink(position, href, new HashMap<>());
@@ -270,9 +268,9 @@ public class AppShellSettings implements Serializable {
      * Append a link to initial page head.
      *
      * @param href
-     *         location of the linked document
+     *            location of the linked document
      * @param attributes
-     *         map of attributes for link element
+     *            map of attributes for link element
      */
     public void addLink(String href, Map<String, String> attributes) {
         addLink(Position.APPEND, href, attributes);
@@ -282,15 +280,15 @@ public class AppShellSettings implements Serializable {
      * Add a link to initial page head.
      *
      * @param position
-     *         prepend or append
+     *            prepend or append
      * @param href
-     *         location of the linked document
+     *            location of the linked document
      * @param attributes
-     *         map of attributes for link element
+     *            map of attributes for link element
      */
     public void addLink(Position position, String href,
-                        Map<String, String> attributes) {
-        Element link = new Element(Tag.valueOf("link"), "").attr("href", href);
+            Map<String, String> attributes) {
+        Element link = createElement("link", null, "href", href);
         attributes.forEach((key, value) -> link.attr(key, value));
         getElements(position).add(link);
     }
@@ -299,9 +297,9 @@ public class AppShellSettings implements Serializable {
      * Append a link to initial page head.
      *
      * @param rel
-     *         link relationship
+     *            link relationship
      * @param href
-     *         location of the linked document
+     *            location of the linked document
      */
     public void addLink(String rel, String href) {
         addLink(Position.APPEND, rel, href);
@@ -311,25 +309,26 @@ public class AppShellSettings implements Serializable {
      * Add a link to initial page head.
      *
      * @param position
-     *         prepend or append
+     *            prepend or append
      * @param rel
-     *         link relationship
+     *            link relationship
      * @param href
-     *         location of the linked document
+     *            location of the linked document
      */
     public void addLink(Position position, String rel, String href) {
-        getElements(position).add(new Element(Tag.valueOf("link"), "").attr("href", href).attr("rel", rel));
+        getElements(position)
+                .add(createElement("link", null, "href", href, "rel", rel));
     }
 
     /**
      * Append a fav icon link to initial page head.
      *
      * @param rel
-     *         link relationship
+     *            link relationship
      * @param href
-     *         location of the fav icon
+     *            location of the fav icon
      * @param sizes
-     *         size of the linked fav icon
+     *            size of the linked fav icon
      */
     public void addFavIcon(String rel, String href, String sizes) {
         addFavIcon(Position.APPEND, rel, href, sizes);
@@ -339,27 +338,27 @@ public class AppShellSettings implements Serializable {
      * Append a fav icon link to initial page head.
      *
      * @param position
-     *         prepend or append
+     *            prepend or append
      * @param rel
-     *         link relationship
+     *            link relationship
      * @param href
-     *         location of the fav icon
+     *            location of the fav icon
      * @param sizes
-     *         size of the linked fav icon
+     *            size of the linked fav icon
      */
     public void addFavIcon(Position position, String rel, String href,
-                           String sizes) {
-        getElements(position).add(new Element(Tag.valueOf("link"), "")
-                .attr("href", href).attr("rel", rel).attr("sizes", sizes));
+            String sizes) {
+        getElements(position).add(createElement("link", null, "href", href,
+                "rel", rel, "sizes", sizes));
     }
 
     /**
      * Add a meta tag to be appended to initial page head.
      *
      * @param name
-     *         meta tag name
+     *            meta tag name
      * @param content
-     *         meta tag content
+     *            meta tag content
      */
     public void addMetaTag(String name, String content) {
         addMetaTag(Position.APPEND, name, content);
@@ -369,15 +368,15 @@ public class AppShellSettings implements Serializable {
      * Add a meta tag to initial page head.
      *
      * @param position
-     *         prepend or append
+     *            prepend or append
      * @param name
-     *         meta tag name
+     *            meta tag name
      * @param content
-     *         meta tag content
+     *            meta tag content
      */
     public void addMetaTag(Position position, String name, String content) {
-        Element meta = new Element(Tag.valueOf("meta"), "").attr("name", name)
-                .attr("content", content);
+        Element meta = createElement("meta", null, "name", name, "content",
+                content);
         getElements(position).add(meta);
     }
 
@@ -409,8 +408,8 @@ public class AppShellSettings implements Serializable {
     }
 
     /**
-     * Get the list of elements excluding inline ones to add to the head in
-     * the given position.
+     * Get the list of elements excluding inline ones to add to the head in the
+     * given position.
      *
      * @param position
      *            prepend or append
@@ -429,8 +428,8 @@ public class AppShellSettings implements Serializable {
      *            position in the target
      * @return the list of dom elements to add.
      */
-    public List<Element> getInlineElements(VaadinRequest request, TargetElement target,
-            Position position) {
+    public List<Element> getInlineElements(VaadinRequest request,
+            TargetElement target, Position position) {
         return inlines.stream()
                 .filter(inline -> inline.target == target
                         && inline.position == position)
@@ -438,10 +437,14 @@ public class AppShellSettings implements Serializable {
                 .collect(Collectors.toList());
     }
 
-    private static Element createElement(String tag, String content) {
+    private static Element createElement(String tag, String content,
+            String... attrs) {
         Element elm = new Element(Tag.valueOf(tag), "");
         if (content != null && !content.isEmpty()) {
             elm.appendChild(new DataNode(content));
+        }
+        for (int i = 0; i < attrs.length - 1; i += 2) {
+            elm.attr(attrs[i], attrs[i + 1]);
         }
         return elm;
     }
