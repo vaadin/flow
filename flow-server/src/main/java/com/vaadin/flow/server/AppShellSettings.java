@@ -22,19 +22,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Element;
+import org.jsoup.parser.Parser;
 import org.jsoup.parser.Tag;
 
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.ReconnectDialogConfiguration;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.Inline;
+import com.vaadin.flow.component.page.Inline.Position;
+import com.vaadin.flow.component.page.Inline.Wrapping;
 import com.vaadin.flow.component.page.LoadingIndicatorConfiguration;
-import com.vaadin.flow.shared.ui.Dependency;
-import com.vaadin.flow.shared.ui.LoadMode;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
+import com.vaadin.flow.component.page.TargetElement;
 
 /**
  * Initial page settings class for modifying the bootstrap page.
@@ -42,28 +45,66 @@ import elemental.json.JsonObject;
  * @since 3.0
  */
 public class AppShellSettings implements Serializable {
+    public static final String KEY_RESOURCE = "file";
 
     /**
-     * Append position enum.
+     * A class representing an InlineElement.
      */
-    public enum Position {
-        PREPEND, APPEND
+    private static final class InlineElement {
+        private Position position;
+        private Wrapping type;
+        private TargetElement target;
+        private String content;
+        private String file;
+
+        private InlineElement(TargetElement target, Position position, Wrapping type, String file, String content) {
+            this.target = target;
+            this.position = position;
+            this.content = content;
+            this.file = file;
+            this.type = type ;
+        }
+
+        private InlineElement(Inline ann) {
+            this(ann.target(), ann.position(), ann.wrapping(), ann.value(), null);
+        }
+
+        private Element createElement(VaadinRequest request) {
+            final Element element;
+
+            if (content == null) {
+                content = BootstrapUtils.getDependencyContents(request, file);
+            }
+
+            if (type == Wrapping.AUTOMATIC) {
+                if (file.toLowerCase().endsWith(".css")) {
+                    type = Wrapping.STYLESHEET;
+                } else if (file.toLowerCase().endsWith(".js")) {
+                    type = Wrapping.JAVASCRIPT;
+                }
+            }
+
+            switch (type) {
+            case STYLESHEET:
+                element = new Element(Tag.valueOf("style"), "").attr("type",
+                        "text/css");
+                element.appendChild(new DataNode(content));
+                break;
+            case JAVASCRIPT:
+                element = new Element(Tag.valueOf("script"), "").attr("type",
+                        "text/javascript");
+                element.appendChild(new DataNode(content));
+                break;
+            default:
+                element = Jsoup.parse(content, "", Parser.xmlParser());
+            }
+            return element;
+        }
     }
 
-    /**
-     * Content wrapping mode enum.
-     */
-    public enum WrapMode {
-        NONE, JAVASCRIPT, STYLESHEET
-    }
 
-    private final VaadinRequest request;
+    private final List<InlineElement> inlines = new ArrayList<>();
 
-    /* Initial page values */
-    private String viewport;
-
-    private final Map<Position, List<JsonObject>> inline = new EnumMap<>(
-            Position.class);
     private final Map<Position, List<Element>> elements = new EnumMap<>(
             Position.class);
 
@@ -77,17 +118,16 @@ public class AppShellSettings implements Serializable {
      * @param browser
      *         browser information
      */
-    public AppShellSettings(VaadinRequest request) {
-        this.request = request;
+    public AppShellSettings() {
     }
 
     /**
-     * Get the initial request for the settings.
+     * Get the current request.
      *
      * @return used request
      */
     public VaadinRequest getRequest() {
-        return request;
+        return VaadinRequest.getCurrent();
     }
 
     /**
@@ -115,19 +155,19 @@ public class AppShellSettings implements Serializable {
      *         viewport value to set
      */
     public void setViewport(String viewport) {
-        this.viewport = viewport;
+        addMetaTag(Position.APPEND, "viewport", viewport);
     }
 
     /**
-     * Get the currently set viewport setting for this settings object.
-     * <p>
-     * Note! this will not reflect any setting made using
-     * {@link com.vaadin.flow.component.page.Viewport}
+     * Set the body size.
      *
-     * @return current viewport setting or null if nothing setﬁ
+     * @param bodyWidth body with
+     * @param bodyWidth body height
      */
-    protected String getViewport() {
-        return viewport;
+    public void setBodySize(String width, String height) {
+        addInline(TargetElement.HEAD, Position.APPEND, Wrapping.STYLESHEET,
+                null, "body,#outlet{" + "width:" + width + ";" + "height:"
+                        + height + ";}");
     }
 
     /**
@@ -138,7 +178,7 @@ public class AppShellSettings implements Serializable {
      * @param type
      *         dependency type
      */
-    public void addInlineFromFile(String file, WrapMode type) {
+    public void addInlineFromFile(String file, Wrapping type) {
         addInlineFromFile(Position.APPEND, file, type);
     }
 
@@ -153,11 +193,8 @@ public class AppShellSettings implements Serializable {
      *         dependency type
      */
     public void addInlineFromFile(Position position, String file,
-                                  WrapMode type) {
-        JsonObject prepend = createInlineObject(type);
-        prepend.put(Dependency.KEY_CONTENTS,
-                BootstrapUtils.getDependencyContents(request, file));
-        getInline(position).add(prepend);
+            Wrapping type) {
+        addInline(TargetElement.HEAD, position, type, KEY_RESOURCE, file);
     }
 
     /**
@@ -168,7 +205,7 @@ public class AppShellSettings implements Serializable {
      * @param type
      *         type of content which can be JavaScript or Stylesheet (CSS)
      */
-    public void addInlineWithContents(String contents, WrapMode type) {
+    public void addInlineWithContents(String contents, Wrapping type) {
         addInlineWithContents(Position.APPEND, contents, type);
     }
 
@@ -183,32 +220,22 @@ public class AppShellSettings implements Serializable {
      *         type of content which can be JavaScript or Stylesheet (CSS)
      */
     public void addInlineWithContents(Position position, String contents,
-                                      WrapMode type) {
-        JsonObject prepend = createInlineObject(type);
-        prepend.put(Dependency.KEY_CONTENTS, contents);
-        getInline(position).add(prepend);
+            Wrapping type) {
+        addInline(TargetElement.HEAD, position, type, null, contents);
     }
 
-    /**
-     * Get the list of inline objects to append to head.
-     *
-     * @param position
-     *         prepend or append
-     * @return current list of inline objects
-     */
-    protected List<JsonObject> getInline(Position position) {
-        return inline.computeIfAbsent(position, key -> new ArrayList<>());
-    }
 
     /**
-     * Get the list of links to append to head.
+     * Add an element based on an {@link Inline} annotation.
      *
-     * @param position
-     *         prepend or append
-     * @return current list of links
+     * @param inline the  annotation
      */
-    protected List<Element> getElement(Position position) {
-        return elements.computeIfAbsent(position, key -> new ArrayList<>());
+    public void addInline(Inline inline) {
+        inlines.add(new InlineElement(inline));
+    }
+
+    private void addInline(TargetElement target, Position position, Wrapping type, String file, String content) {
+        inlines.add(new InlineElement(target, position, type, file, content));
     }
 
     /**
@@ -259,7 +286,7 @@ public class AppShellSettings implements Serializable {
                         Map<String, String> attributes) {
         Element link = new Element(Tag.valueOf("link"), "").attr("href", href);
         attributes.forEach((key, value) -> link.attr(key, value));
-        getElement(position).add(link);
+        getElements(position).add(link);
     }
 
     /**
@@ -287,7 +314,7 @@ public class AppShellSettings implements Serializable {
     public void addLink(Position position, String rel, String href) {
         Element link = new Element(Tag.valueOf("link"), "").attr("href", href);
         link.attr("rel", rel);
-        getElement(position).add(link);
+        getElements(position).add(link);
     }
 
     /**
@@ -321,7 +348,7 @@ public class AppShellSettings implements Serializable {
         Element link = new Element(Tag.valueOf("link"), "").attr("href", href);
         link.attr("rel", rel);
         link.attr("sizes", sizes);
-        getElement(position).add(link);
+        getElements(position).add(link);
     }
 
     /**
@@ -349,7 +376,7 @@ public class AppShellSettings implements Serializable {
     public void addMetaTag(Position position, String name, String content) {
         Element meta = new Element(Tag.valueOf("meta"), "").attr("name", name)
                 .attr("content", content);
-        getElement(position).add(meta);
+        getElements(position).add(meta);
     }
 
     /**
@@ -379,10 +406,33 @@ public class AppShellSettings implements Serializable {
         return getUi().map(UI::getPushConfiguration);
     }
 
-    private JsonObject createInlineObject(WrapMode type) {
-        JsonObject prepend = Json.createObject();
-        prepend.put(Dependency.KEY_TYPE, type.toString());
-        prepend.put("LoadMode", LoadMode.INLINE.toString());
-        return prepend;
+    /**
+     * Get the list of elements excluding inline ones to add to the head in
+     * the given position.
+     *
+     * @param position
+     *            prepend or append
+     * @return a list of dom elements to add
+     */
+    public List<Element> getElements(Position position) {
+        return elements.computeIfAbsent(position, key -> new ArrayList<>());
+    }
+
+    /**
+     * Get the list of inline elements to add to a specific target and position.
+     *
+     * @param target
+     *            target element
+     * @param position
+     *            position in the target
+     * @return the list of dom elements to add.
+     */
+    public List<Element> getInlineElements(VaadinRequest request, TargetElement target,
+            Position position) {
+        return inlines.stream()
+                .filter(inline -> inline.target == target
+                        && inline.position == position)
+                .map(inline -> inline.createElement(request))
+                .collect(Collectors.toList());
     }
 }

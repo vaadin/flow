@@ -27,7 +27,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.server.AppShellSettings;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -78,24 +77,16 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         VaadinContext context = session.getService().getContext();
         VaadinAppShellRegistry registry = VaadinAppShellRegistry.getInstance(context);
 
-        // modify the page based on the page config annotations (@Meta, etc)
-        registry.modifyIndexHtmlResponse(indexDocument);
-
         // modify the page based on the @PWA annotation
         setupPwa(indexDocument, session.getService());
 
-        // modify the page based on the @Inline annotation
-        registry.modifyIndexHtmlResponeWithInline(indexDocument, session, request);
+        // modify the page based on the @Meta, @ViewPort, @BodySize and @Inline annotations
+        // and on the AppShellConfigurator
+        registry.modifyIndexHtml(indexDocument, session, request);
 
         // modify the page based on registered IndexHtmlRequestListener:s
         request.getService().modifyIndexHtmlResponse(
                 new IndexHtmlResponse(request, response, indexDocument));
-
-        // modify the page based on the AppShellConfigurator class
-        registry.getAppShell().ifPresent(conf -> {
-            AppShellSettings settings = new AppShellSettings(request);
-            conf.configurePage(settings);
-        });
 
         try {
             response.getOutputStream()

@@ -47,6 +47,7 @@ import static com.vaadin.flow.server.DevModeHandler.getDevModeHandler;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class VaadinAppShellInitializerTest {
 
@@ -56,8 +57,9 @@ public class VaadinAppShellInitializerTest {
     @Meta(name = "foo", content = "bar")
     @Meta(name = "lorem", content = "ipsum")
     @PWA(name = "my-pwa", shortName = "pwa")
-    @Inline(wrapping = Inline.Wrapping.STYLESHEET, position = Inline.Position.APPEND, target = TargetElement.HEAD, value = "")
-    @Inline(wrapping = Inline.Wrapping.JAVASCRIPT, position = Inline.Position.PREPEND, target = TargetElement.BODY, value = "")
+    @Inline("inline.html")
+    @Inline(position = Inline.Position.PREPEND, value = "inline.css")
+    @Inline(wrapping = Inline.Wrapping.JAVASCRIPT, position = Inline.Position.APPEND, target = TargetElement.BODY, value = "inline.js")
     @Viewport(Viewport.DEVICE_DIMENSIONS)
     @BodySize(height = "50vh", width = "50vw")
     public static class MyAppShellWithMultipleAnnotations implements VaadinAppShell {
@@ -66,8 +68,8 @@ public class VaadinAppShellInitializerTest {
     @Meta(name = "offending-foo", content = "bar")
     @Meta(name = "offending-lorem", content = "ipsum")
     @PWA(name = "offending-my-pwa", shortName = "pwa")
-    @Inline(wrapping = Inline.Wrapping.STYLESHEET, position = Inline.Position.PREPEND, target = TargetElement.HEAD, value = "")
-    @Inline(wrapping = Inline.Wrapping.JAVASCRIPT, position = Inline.Position.APPEND, target = TargetElement.BODY, value = "")
+    @Inline(wrapping = Inline.Wrapping.STYLESHEET, position = Inline.Position.PREPEND, target = TargetElement.HEAD, value = "inline.js")
+    @Inline(wrapping = Inline.Wrapping.JAVASCRIPT, position = Inline.Position.APPEND, target = TargetElement.BODY, value = "inline.css")
     @Viewport(Viewport.DEVICE_DIMENSIONS)
     @BodySize(height = "50vh", width = "50vw")
     public static class OffendingClass {
@@ -198,7 +200,8 @@ public class VaadinAppShellInitializerTest {
         classes.add(MyAppShellWithoutAnnotations.class);
         initializer.onStartup(classes, servletContext);
         VaadinAppShellRegistry.getInstance(context)
-                .modifyIndexHtmlResponse(document);
+                .modifyIndexHtml(document, session,
+                        createVaadinRequest("/"));
         assertEquals(0, document.head().children().size());
         assertEquals(0, document.body().children().size());
     }
@@ -220,18 +223,13 @@ public class VaadinAppShellInitializerTest {
         initializer.onStartup(classes, servletContext);
 
         VaadinAppShellRegistry.getInstance(context)
-                .modifyIndexHtmlResponse(document);
+        .modifyIndexHtml(document, session,
+                createVaadinRequest("/"));
 
         List<Element> elements = document.head().children();
-        assertEquals(4, elements.size());
-        assertEquals("foo", elements.get(0).attr("name"));
-        assertEquals("bar", elements.get(0).attr("content"));
-        assertEquals("lorem", elements.get(1).attr("name"));
-        assertEquals("ipsum", elements.get(1).attr("content"));
-        assertEquals("viewport", elements.get(2).attr("name"));
-        assertEquals(Viewport.DEVICE_DIMENSIONS, elements.get(2).attr("content"));
-        assertEquals("text/css", elements.get(3).attr("type"));
-        assertEquals("body,#outlet{height:50vh;width:50vw;}", elements.get(3).childNode(0).toString());
+        assertEquals(6, elements.size());
+        assertEquals("text/css", elements.get(4).attr("type"));
+        assertEquals("body,#outlet{width:50vw;height:50vh;}", elements.get(4).childNode(0).toString());
     }
 
     @Test
@@ -239,25 +237,43 @@ public class VaadinAppShellInitializerTest {
         classes.add(MyAppShellWithMultipleAnnotations.class);
 
         initializer.onStartup(classes, servletContext);
-        VaadinRequest request = createVaadinRequest("/");
-        VaadinAppShellRegistry.getInstance(context).modifyIndexHtmlResponeWithInline(document, session, request);
+
+        VaadinAppShellRegistry.getInstance(context)
+                .modifyIndexHtml(document, session,
+                        createVaadinRequest("/"));
 
         List<Element> headElements = document.head().children();
-        assertEquals(1, headElements.size());
+        assertEquals(6, headElements.size());
         assertEquals("text/css", headElements.get(0).attr("type"));
         assertEquals("style", headElements.get(0).tagName());
+        assertTrue(headElements.get(0).outerHtml().contains("#preloadedDiv"));
+        assertEquals("viewport", headElements.get(1).attr("name"));
+        assertEquals("lorem", headElements.get(2).attr("name"));
+        assertEquals("foo", headElements.get(3).attr("name"));
+
+        assertEquals("text/css", headElements.get(4).attr("type"));
+        assertEquals("style", headElements.get(4).tagName());
+        assertTrue(headElements.get(4).outerHtml().contains("width:50vw"));
+        assertTrue(headElements.get(4).outerHtml().contains("height:50vh"));
+
+        assertEquals("text/javascript", headElements.get(5).attr("type"));
+        assertEquals("script", headElements.get(5).tagName());
+        assertTrue(headElements.get(5).outerHtml().contains("might not yet be accessible"));
 
         List<Element> bodyElements = document.body().children();
         assertEquals(1, bodyElements.size());
         assertEquals("text/javascript", bodyElements.get(0).attr("type"));
         assertEquals("script", bodyElements.get(0).tagName());
+        assertTrue(bodyElements.get(0).outerHtml().contains("window.messages.push"));
+
     }
 
     @Test
     public void should_not_haveMetas_when_not_callingInitializer()
             throws Exception {
         VaadinAppShellRegistry.getInstance(context)
-                .modifyIndexHtmlResponse(document);
+                .modifyIndexHtml(document, session,
+                        createVaadinRequest("/"));
         List<Element> elements = document.head().children();
         assertEquals(0, elements.size());
     }
@@ -271,20 +287,13 @@ public class VaadinAppShellInitializerTest {
         registry.setShell(MyAppShellWithMultipleAnnotations.class);
         context.setAttribute(new VaadinAppShellRegistryWrapper(registry));
 
+        VaadinRequest request = createVaadinRequest("/");
         VaadinAppShellRegistry.getInstance(context)
-                .modifyIndexHtmlResponse(document);
+                .modifyIndexHtml(document, session, request);
 
         List<Element> elements = document.head().children();
 
-        assertEquals(4, elements.size());
-        assertEquals("foo", elements.get(0).attr("name"));
-        assertEquals("bar", elements.get(0).attr("content"));
-        assertEquals("lorem", elements.get(1).attr("name"));
-        assertEquals("ipsum", elements.get(1).attr("content"));
-        assertEquals("viewport", elements.get(2).attr("name"));
-        assertEquals(Viewport.DEVICE_DIMENSIONS, elements.get(2).attr("content"));
-        assertEquals("text/css", elements.get(3).attr("type"));
-        assertEquals("body,#outlet{height:50vh;width:50vw;}", elements.get(3).childNode(0).toString());
+        assertEquals(6, elements.size());
     }
 
     @Test
@@ -306,7 +315,8 @@ public class VaadinAppShellInitializerTest {
         initializer.onStartup(classes, servletContext);
 
         VaadinAppShellRegistry.getInstance(context)
-                .modifyIndexHtmlResponse(document);
+                .modifyIndexHtml(document, session,
+                        createVaadinRequest("/"));
 
         List<Element> elements = document.head().children();
         assertEquals(0, elements.size());

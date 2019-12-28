@@ -67,7 +67,7 @@ import elemental.json.JsonObject;
  *
  * @since 1.0
  */
-class BootstrapUtils {
+public class BootstrapUtils {
 
     static class ThemeSettings {
         private List<JsonObject> headContents;
@@ -277,7 +277,7 @@ class BootstrapUtils {
      *            target file to read contents for
      * @return file contents as a {@link String}
      */
-    static String getDependencyContents(VaadinRequest request, String file) {
+    public static String getDependencyContents(VaadinRequest request, String file) {
         Charset requestCharset = Optional
                 .ofNullable(request.getCharacterEncoding())
                 .filter(string -> !string.isEmpty()).map(Charset::forName)
