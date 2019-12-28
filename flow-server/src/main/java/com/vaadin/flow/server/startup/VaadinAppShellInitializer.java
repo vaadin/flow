@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -144,9 +143,6 @@ public class VaadinAppShellInitializer implements ServletContainerInitializer,
             }
         }
 
-        Optional<VaadinAppShell> appShell = registry.getAppShell();
-        String shellName = appShell.map(s -> s.getClass().getName()).orElse(null);
-
         List<String> classesImplementingPageConfigurator = classes.stream()
                 .filter(clz -> PageConfigurator.class.isAssignableFrom(clz))
                 .map(Class::getName).collect(Collectors.toList());
@@ -154,9 +150,9 @@ public class VaadinAppShellInitializer implements ServletContainerInitializer,
         if (!classesImplementingPageConfigurator.isEmpty()) {
             String message = classesImplementingPageConfigurator.stream()
                     .collect(Collectors.joining("\n  - "));
-            if (appShell.isPresent()) {
+            if (registry.getShell() != null) {
                 message = String.format(ERROR_HEADER_OFFENDING_CONFIGURATOR,
-                        shellName, message);
+                        registry.getShell().getName(), message);
                 throw new InvalidApplicationConfigurationException(message);
             } else {
                 message = String.format(ERROR_HEADER_NO_APP_CONFIGURATOR, message);

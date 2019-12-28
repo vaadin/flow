@@ -20,17 +20,8 @@ import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Consumer;
 
-import com.vaadin.flow.component.page.Inline;
-import com.vaadin.flow.internal.ReflectTools;
-import com.vaadin.flow.internal.UrlUtil;
-import com.vaadin.flow.server.*;
-import com.vaadin.flow.shared.ui.Dependency;
-import elemental.json.JsonObject;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Parser;
@@ -38,11 +29,15 @@ import org.jsoup.parser.Tag;
 
 import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
+import com.vaadin.flow.component.page.Inline.Position;
 import com.vaadin.flow.component.page.Meta;
+import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.component.page.VaadinAppShell;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.InlineTargets;
+import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.server.AppShellSettings;
 import com.vaadin.flow.server.InvalidApplicationConfigurationException;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
@@ -78,17 +73,14 @@ public class VaadinAppShellRegistry implements Serializable {
             + "%nPlease, configure the page in %s, and remove the `PageConfigurator` from: %n - %s%n";
 
     private static final String ERROR_LINE = "  - %s from %s";
-<<<<<<< HEAD
-    private static final String ERROR_MULTIPLE_SHELL = "%nUnable to find a single class extending `VaadinAppShell` from the following candidates:%n  %s%n  %s%n";
-=======
     private static final String ERROR_MULTIPLE_SHELL =
             "%nUnable to find a single class implementing `VaadinAppShell` from the following candidates:%n  %s%n  %s%n";
->>>>>>> CCDM: convert VaadinAppShell to interface to get rid of AppShellConfigurator
 
-    private static final String ERROR_MULTIPLE_VIEWPORT = "%nViewport is not a repeatable annotation type.%n";
     private static final String CSS_TYPE_ATTRIBUTE_VALUE = "text/css";
     private static final String SCRIPT_TAG = "script";
     private static final String DEFER_ATTRIBUTE = "defer";
+    private static final String ERROR_MULTIPLE_VIEWPORT =
+            "%nViewport is not a repeatable annotation type.%n";
     private static final String TYPE = "type";
 
     private static final String ERROR_MULTIPLE_BODYSIZE = "%nBodySize is not a repeatable annotation type.%n";
@@ -160,6 +152,7 @@ public class VaadinAppShellRegistry implements Serializable {
         }
         this.shell = shell;
         this.appShell = ReflectTools.createInstance(shell);
+
     }
 
     /**
@@ -211,56 +204,36 @@ public class VaadinAppShellRegistry implements Serializable {
         return error;
     }
 
-    /**
-     * Modifies the `index.html` document based on the {@link VaadinAppShell}
-     * annotations.
-     *
-     * @param document
-     *            a JSoup document for the index.html page
-     */
-    public void modifyIndexHtmlResponse(Document document) {
-        getAnnotations(Meta.class).forEach(meta -> {
-            Element elem = new Element("meta");
-            elem.attr("name", meta.name());
-            elem.attr("content", meta.content());
-            document.head().appendChild(elem);
-        });
+    private AppShellSettings createDefaultSettings() {
+        AppShellSettings settings = new AppShellSettings();
 
-        if (getAnnotations(Viewport.class).size() > 1) {
+        getAnnotations(Meta.class).forEach(meta -> {
+            settings.addMetaTag(meta.name(), meta.content());
+        });
+        List<Viewport> viewPorts = getAnnotations(Viewport.class);
+        if(viewPorts.size() > 1) {
             throw new InvalidApplicationConfigurationException(
                     VaadinAppShellRegistry.ERROR_MULTIPLE_VIEWPORT);
-        } else if (!getAnnotations(Viewport.class).isEmpty()) {
-            Element metaViewportElement = document.head()
-                    .selectFirst("meta[name=viewport]");
-            if (metaViewportElement == null) {
-                metaViewportElement = new Element("meta");
-                metaViewportElement.attr("name", "viewport");
-                document.head().appendChild(metaViewportElement);
-            }
-            metaViewportElement.attr("content",
-                    getAnnotations(Viewport.class).get(0).value());
+        } else if(!viewPorts.isEmpty()) {
+            settings.setViewport(viewPorts.get(0).value());
         }
-
-        if (getAnnotations(BodySize.class).size() > 1) {
+        List<BodySize> bodySizes = getAnnotations(BodySize.class);
+        if(bodySizes.size() > 1) {
             throw new InvalidApplicationConfigurationException(
                     VaadinAppShellRegistry.ERROR_MULTIPLE_BODYSIZE);
-        } else if (!getAnnotations(BodySize.class).isEmpty()) {
-            String strBodySizeHeight = "height:"
-                    + getAnnotations(BodySize.class).get(0).height();
-            String strBodySizeWidth = "width:"
-                    + getAnnotations(BodySize.class).get(0).width();
-            Element elemStyle = new Element("style");
-            elemStyle.attr(TYPE, CSS_TYPE_ATTRIBUTE_VALUE);
-            String strContent = "body,#outlet{" + strBodySizeHeight + ";"
-                    + strBodySizeWidth + ";" + "}";
-            elemStyle.append(strContent);
-            document.head().appendChild(elemStyle);
+        } else if(!bodySizes.isEmpty()) {
+            settings.setBodySize(bodySizes.get(0).width(),
+                    bodySizes.get(0).height());
         }
+        getAnnotations(Inline.class).forEach(inline -> {
+            settings.addInline(inline);
+        });
+        return settings;
     }
 
     /**
      * Modifies the `index.html` document based on the {@link VaadinAppShell}
-     * annotations.
+     * annotations or {@link VaadinAppShell#configurePage(AppShellSettings)} method.
      *
      * @param document
      *            a JSoup document for the index.html page
@@ -269,95 +242,31 @@ public class VaadinAppShellRegistry implements Serializable {
      * @param request
      *            The request to handle
      */
-    public void modifyIndexHtmlResponeWithInline(Document document,
+    public void modifyIndexHtml(Document document,
             VaadinSession session, VaadinRequest request) {
-        getInlineTargets(request)
-                .ifPresent(targets -> handleInlineTargets(session, request,
-                        document.head(), document.body(), targets));
-    }
 
-    private Element createInlineDependencyElement(VaadinSession session,
-            VaadinRequest request, JsonObject dependencyJson) {
-        String type = dependencyJson.getString(Dependency.KEY_TYPE);
-        if (Dependency.Type.contains(type)) {
-            Dependency.Type dependencyType = Dependency.Type.valueOf(type);
-            return createInlineDependencyElement(session, request,
-                    dependencyJson, dependencyType);
-        }
-        return Jsoup.parse(dependencyJson.getString(Dependency.KEY_CONTENTS),
-                "", Parser.xmlParser());
-    }
-
-    /**
-     * Return the {@link VaadinAppShell} used in the application.
-     *
-     * @return the instance
-     */
-    public Optional<VaadinAppShell> getAppShell() {
-        return Optional.ofNullable(appShell);
-    }
-
-    private Element createInlineDependencyElement(VaadinSession session,
-            VaadinRequest request, JsonObject dependency,
-            Dependency.Type type) {
-        String url = dependency.hasKey(Dependency.KEY_URL)
-                ? request.getService().resolveResource(
-                        dependency.getString(Dependency.KEY_URL))
-                : null;
-
-        final Element dependencyElement;
-        switch (type) {
-        case STYLESHEET:
-            dependencyElement = createStylesheetElement(url);
-            break;
-        case JAVASCRIPT:
-            dependencyElement = createJavaScriptElement(url, false, null);
-            break;
-        case JS_MODULE:
-            if (url != null && UrlUtil.isExternal(url)) {
-                dependencyElement = createJavaScriptElement(url, false,
-                        "module");
-            } else
-                dependencyElement = null;
-            break;
-        default:
-            throw new IllegalStateException(
-                    "Unsupported dependency type: " + type);
+        AppShellSettings settings = createDefaultSettings();
+        if (appShell != null) {
+            appShell.configurePage(settings);
         }
 
-        if (dependencyElement != null) {
-            dependencyElement.appendChild(new DataNode(
-                    dependency.getString(Dependency.KEY_CONTENTS)));
-        }
+        settings.getElements(Position.PREPEND)
+                .forEach(elm -> document.head().appendChild(elm));
+        settings.getElements(Position.APPEND)
+                .forEach(elm -> document.head().prependChild(elm));
 
-        return dependencyElement;
-    }
-
-    private Element createStylesheetElement(String url) {
-        final Element cssElement;
-        if (url != null) {
-            cssElement = new Element(Tag.valueOf("link"), "")
-                    .attr("rel", "stylesheet")
-                    .attr(TYPE, CSS_TYPE_ATTRIBUTE_VALUE).attr("href", url);
-        } else {
-            cssElement = new Element(Tag.valueOf("style"), "").attr(TYPE,
-                    CSS_TYPE_ATTRIBUTE_VALUE);
-        }
-        return cssElement;
-    }
-
-    private static Element createJavaScriptElement(String sourceUrl,
-            boolean defer, String type) {
-        if (type == null) {
-            type = "text/javascript";
-        }
-
-        Element jsElement = new Element(Tag.valueOf(SCRIPT_TAG), "")
-                .attr(TYPE, type).attr(DEFER_ATTRIBUTE, defer);
-        if (sourceUrl != null) {
-            jsElement = jsElement.attr("src", sourceUrl);
-        }
-        return jsElement;
+        settings.getInlineElements(request, TargetElement.HEAD, Position.PREPEND).stream()
+                .forEach(element -> insertElements(element,
+                        document.head()::prependChild));
+        settings.getInlineElements(request, TargetElement.HEAD, Position.APPEND).stream()
+                .forEach(element -> insertElements(element,
+                        document.head()::appendChild));
+        settings.getInlineElements(request, TargetElement.BODY, Position.PREPEND).stream()
+                .forEach(element -> insertElements(element,
+                        document.body()::prependChild));
+        settings.getInlineElements(request, TargetElement.BODY, Position.APPEND).stream()
+                .forEach(element -> insertElements(element,
+                        document.body()::appendChild));
     }
 
     private void insertElements(Element element, Consumer<Element> action) {
@@ -368,43 +277,6 @@ public class VaadinAppShellRegistry implements Serializable {
                     .forEach(action::accept);
         } else if (element != null) {
             action.accept(element);
-        }
-    }
-
-    private void handleInlineTargets(VaadinSession session,
-            VaadinRequest request, Element head, Element body,
-            InlineTargets targets) {
-        targets.getInlineHead(Inline.Position.PREPEND).stream()
-                .map(dependency -> createInlineDependencyElement(session,
-                        request, dependency))
-                .forEach(
-                        element -> insertElements(element, head::prependChild));
-        targets.getInlineHead(Inline.Position.APPEND).stream()
-                .map(dependency -> createInlineDependencyElement(session,
-                        request, dependency))
-                .forEach(element -> insertElements(element, head::appendChild));
-
-        targets.getInlineBody(Inline.Position.PREPEND).stream()
-                .map(dependency -> createInlineDependencyElement(session,
-                        request, dependency))
-                .forEach(
-                        element -> insertElements(element, body::prependChild));
-        targets.getInlineBody(Inline.Position.APPEND).stream()
-                .map(dependency -> createInlineDependencyElement(session,
-                        request, dependency))
-                .forEach(element -> insertElements(element, body::appendChild));
-    }
-
-    private Optional<InlineTargets> getInlineTargets(VaadinRequest request) {
-        List<Inline> inlineAnnotations = getAnnotations(Inline.class);
-
-        if (inlineAnnotations.isEmpty()) {
-            return Optional.empty();
-        } else {
-            InlineTargets inlines = new InlineTargets();
-            inlineAnnotations.forEach(
-                    inline -> inlines.addInlineDependency(inline, request));
-            return Optional.of(inlines);
         }
     }
 
