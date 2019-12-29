@@ -50,7 +50,7 @@ public class AppShellSettings implements Serializable {
     /**
      * A class representing an InlineElement.
      */
-    private static final class InlineElement {
+    private static final class InlineElement implements Serializable {
         private Position position;
         private Wrapping type;
         private TargetElement target;

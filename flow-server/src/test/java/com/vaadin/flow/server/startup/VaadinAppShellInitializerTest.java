@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -22,6 +23,8 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
+import com.vaadin.flow.component.page.Inline.Position;
+import com.vaadin.flow.component.page.Inline.Wrapping;
 import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.component.page.VaadinAppShell;
@@ -39,6 +42,7 @@ import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.VaadinAppShellRegistry.VaadinAppShellRegistryWrapper;
+import com.vaadin.flow.shared.communication.PushMode;
 
 import static com.vaadin.flow.server.DevModeHandler.getDevModeHandler;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -79,51 +83,53 @@ public class VaadinAppShellInitializerTest {
         public void configurePage(AppShellSettings settings) {
             settings.setViewport("foo-viewport");
             settings.setPageTitle("my-title");
-//            settings.addFavIcon("icon1", "icon1.png", "1x1");
-//            settings.addFavIcon("icon2", "icon2.png", "2x2");
-//
-//            settings.addInlineWithContents(Position.PREPEND,
-//                    "window.messages = window.messages || [];\n"
-//                            + "window.messages.push(\"content script\");",
-//                            Wrapping.JAVASCRIPT);
-//
-//            settings.addInlineFromFile(Position.PREPEND, "inline.js",
-//                    Wrapping.JAVASCRIPT);
-//
-//            settings.addInlineFromFile("inline.js", Wrapping.JAVASCRIPT);
-//            settings.addInlineFromFile("inline.html", Wrapping.NONE);
-//            settings.addInlineFromFile("inline.css", Wrapping.STYLESHEET);
-//
-//            settings.addLink("icons/favicon.ico",
-//                    new LinkedHashMap<String, String>() {
-//                        {
-//                            put("rel", "shortcut icon");
-//                        }
-//                    });
-//            settings.addLink("icons/icon-192.png",
-//                    new LinkedHashMap<String, String>() {
-//                        {
-//                            put("rel", "icon");
-//                            put("sizes", "192x192");
-//                        }
-//                    });
-//
-//            settings.addLink("shortcut icon", "icons/favicon.ico");
-//
-//            settings.addFavIcon("icon", "icons/icon-192.png", "192x192");
-//            settings.addFavIcon("icon", "icons/icon-200.png", "2");
-//
-//            settings.addMetaTag(Position.PREPEND, "theme-color", "#227aef");
-//            settings.addMetaTag(Position.APPEND, "back-color", "#227aef");
-//
-//            settings.addInlineWithContents(
-//                    "body {width: 100vw; height:100vh; margin:0;}",
-//                    Wrapping.STYLESHEET);
-//
-//            settings.getLoadingIndicatorConfiguration().ifPresent(indicator -> indicator.setApplyDefaultTheme(false));
-//            settings.getLoadingIndicatorConfiguration().ifPresent(indicator -> indicator.setSecondDelay(700000));
-//            settings.getPushConfiguration().ifPresent(push -> push.setPushMode(PushMode.MANUAL));
-//            settings.getReconnectDialogConfiguration().ifPresent(dialog -> dialog.setDialogModal(true));
+            settings.addMetaTag("foo", "bar");
+            settings.addMetaTag("lorem", "ipsum");
+            settings.addFavIcon("icon1", "icon1.png", "1x1");
+            settings.addFavIcon("icon2", "icon2.png", "2x2");
+
+            settings.addInlineWithContents(Position.PREPEND,
+                    "window.messages = window.messages || [];\n"
+                            + "window.messages.push(\"content script\");",
+                            Wrapping.JAVASCRIPT);
+
+            settings.addInlineFromFile(Position.PREPEND, "inline.js",
+                    Wrapping.JAVASCRIPT);
+
+            settings.addInlineFromFile("inline.js", Wrapping.JAVASCRIPT);
+            settings.addInlineFromFile("inline.html", Wrapping.NONE);
+            settings.addInlineFromFile("inline.css", Wrapping.STYLESHEET);
+
+            settings.addLink("icons/favicon.ico",
+                    new LinkedHashMap<String, String>() {
+                        {
+                            put("rel", "shortcut icon");
+                        }
+                    });
+            settings.addLink("icons/icon-192.png",
+                    new LinkedHashMap<String, String>() {
+                        {
+                            put("rel", "icon");
+                            put("sizes", "192x192");
+                        }
+                    });
+
+            settings.addLink("shortcut icon", "icons/favicon.ico");
+
+            settings.addFavIcon("icon", "icons/icon-192.png", "192x192");
+            settings.addFavIcon("icon", "icons/icon-200.png", "2");
+
+            settings.addMetaTag(Position.PREPEND, "theme-color", "#227aef");
+            settings.addMetaTag(Position.APPEND, "back-color", "#227aef");
+
+            settings.addInlineWithContents(
+                    "body {width: 100vw; height:100vh; margin:0;}",
+                    Wrapping.STYLESHEET);
+
+            settings.getLoadingIndicatorConfiguration().ifPresent(indicator -> indicator.setApplyDefaultTheme(false));
+            settings.getLoadingIndicatorConfiguration().ifPresent(indicator -> indicator.setSecondDelay(700000));
+            settings.getPushConfiguration().ifPresent(push -> push.setPushMode(PushMode.MANUAL));
+            settings.getReconnectDialogConfiguration().ifPresent(dialog -> dialog.setDialogModal(true));
         }
     }
 
