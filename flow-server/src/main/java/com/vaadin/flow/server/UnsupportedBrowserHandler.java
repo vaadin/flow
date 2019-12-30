@@ -31,23 +31,47 @@ public class UnsupportedBrowserHandler extends SynchronizedRequestHandler {
 
     public static final String CLOSING_BRACKET = "    }";
 
+    // @formatter:off
     private static final String UNSUPPORTED_PAGE_HEAD_CONTENT = "<head>"
-            + "  <style>" + "    html {" + "      background: #fff;"
+            + "  <style>"
+            + "    html {"
+            + "      background: #fff;"
             + "      color: #444;"
             + "      font: 400 1em/1.5 \"Helvetica Neue\", Roboto, \"Segoe UI\", sans-serif;"
-            + "      padding: 2em;" + CLOSING_BRACKET + "    body {"
-            + "      margin: 2em auto;" + "      width: 28em;"
-            + "      max-width: 100%;" + CLOSING_BRACKET + "    h1 {"
-            + "      line-height: 1.1;" + "      margin: 2em 0 1em;"
-            + "      color: #000;" + "      font-weight: 400;" + CLOSING_BRACKET
-            + "    p {" + "      margin: 0.5em 0 0;" + CLOSING_BRACKET
-            + "    a {" + "      text-decoration: none;"
-            + "      color: #007df0;" + CLOSING_BRACKET + "    sub {"
-            + "      display: block;" + "      margin-top: 2.5em;"
-            + "      text-align: center;" + "      border-top: 1px solid #eee;"
-            + "      padding-top: 2em;" + CLOSING_BRACKET + "    sub,"
-            + "    small {" + "      color: #999;" + CLOSING_BRACKET
-            + "  </style>" + "</head>";
+            + "      padding: 2em;"
+            + CLOSING_BRACKET
+            + "    body {"
+            + "      margin: 2em auto;"
+            + "      width: 28em;"
+            + "      max-width: 100%;"
+            + CLOSING_BRACKET
+            + "    h1 {"
+            + "      line-height: 1.1;"
+            + "      margin: 2em 0 1em;"
+            + "      color: #000;"
+            + "      font-weight: 400;"
+            + CLOSING_BRACKET
+            + "    p {"
+            + "      margin: 0.5em 0 0;"
+            + CLOSING_BRACKET
+            + "    a {"
+            + "      text-decoration: none;"
+            + "      color: #007df0;"
+            + CLOSING_BRACKET
+            + "    sub {"
+            + "      display: block;"
+            + "      margin-top: 2.5em;"
+            + "      text-align: center;"
+            + "      border-top: 1px solid #eee;"
+            + "      padding-top: 2em;"
+            + CLOSING_BRACKET
+            + "    sub,"
+            + "    small {"
+            + "      color: #999;"
+            + CLOSING_BRACKET
+            + "  </style>"
+            + "</head>";
+    // @formatter:on
 
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
