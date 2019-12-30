@@ -47,11 +47,6 @@
                 <configuration>
                     <systemProperties>
                         <systemProperty>
-                            <!--  re-use the test resources already present in es6 folder -->
-                            <name>vaadin.frontend.url.es5</name>
-                            <value>context://frontend-es6/</value>
-                        </systemProperty>
-                        <systemProperty>
                             <name>vaadin.clientSideMode</name>
                             <value>${vaadin.clientSideMode}</value>
                         </systemProperty>
