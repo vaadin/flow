@@ -374,7 +374,8 @@ public class ExtendedClientDetails implements Serializable {
             return navigatorPlatform.startsWith("iPad");
         }
         WebBrowser browser = VaadinSession.getCurrent().getBrowser();
-        return browser.isIPad() || (browser.isMacOSX() && isTouchDevice());
+        return browser.getBrowserApplication().contains("ipad")
+                || (browser.isMacOSX() && isTouchDevice());
     }
 
     /**

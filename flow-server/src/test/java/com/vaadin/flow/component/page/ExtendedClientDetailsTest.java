@@ -58,7 +58,7 @@ public class ExtendedClientDetailsTest {
         WebBrowser browser = Mockito.mock(WebBrowser.class);
         Mockito.when(session.getBrowser()).thenReturn(browser);
 
-        Mockito.when(browser.isIPad()).thenReturn(true);
+        Mockito.when(browser.getBrowserApplication()).thenReturn("...ipad...");
         Mockito.when(browser.isMacOSX()).thenReturn(false);
 
         detailsBuilder.setNavigatorPlatform(null);
@@ -66,7 +66,8 @@ public class ExtendedClientDetailsTest {
 
         Assert.assertTrue("No platform on with iPad is iPad", details.isIPad());
 
-        Mockito.when(browser.isIPad()).thenReturn(false);
+        Mockito.when(browser.getBrowserApplication())
+                .thenReturn("...no i p a d...");
         Assert.assertFalse(
                 "No platform and ipad false on linux should not be an iPad",
                 details.isIPad());

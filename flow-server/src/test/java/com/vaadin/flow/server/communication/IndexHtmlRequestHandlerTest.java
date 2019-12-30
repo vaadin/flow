@@ -24,6 +24,18 @@ import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 import com.sun.net.httpserver.HttpServer;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
+import com.vaadin.flow.server.AppShellRegistry;
+import com.vaadin.flow.server.DevModeHandler;
+import com.vaadin.flow.server.MockServletServiceSessionSetup;
+import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinServletRequest;
+import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWithConfigurator;
+import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWithMultipleAnnotations;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
@@ -35,27 +47,12 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
-import com.vaadin.flow.server.AppShellRegistry;
-import com.vaadin.flow.server.AppShellRegistry.AppShellRegistryWrapper;
-import com.vaadin.flow.server.DevModeHandler;
-import com.vaadin.flow.server.MockServletServiceSessionSetup;
-import com.vaadin.flow.server.VaadinResponse;
-import com.vaadin.flow.server.VaadinServletRequest;
-import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWithConfigurator;
-import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWithMultipleAnnotations;
-import com.vaadin.tests.util.MockDeploymentConfiguration;
-
 import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
 import static com.vaadin.flow.server.DevModeHandlerTest.createStubWebpackTcpListener;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubWebpackServer;
 import static org.junit.Assert.assertEquals;
 
 public class IndexHtmlRequestHandlerTest {
-
     private MockServletServiceSessionSetup mocks;
     private MockServletServiceSessionSetup.TestVaadinServletService service;
     private VaadinSession session;

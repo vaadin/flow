@@ -49,34 +49,6 @@ public class ResponseWriter implements Serializable {
     private final boolean brotliEnabled;
 
     /**
-     * Create a response writer with buffer size equal to
-     * {@link ResponseWriter#DEFAULT_BUFFER_SIZE}.
-     *
-     * @deprecated Use {@link #ResponseWriter(DeploymentConfiguration)} instead.
-     */
-    @Deprecated
-    public ResponseWriter() {
-        this(DEFAULT_BUFFER_SIZE);
-    }
-
-    /**
-     * Creates a response writer with custom buffer size.
-     * <p>
-     * This will always mark us as compatibility mode and not accept loading
-     * resources from the classpath. To enable compressed resources use
-     * {@link #ResponseWriter(DeploymentConfiguration)}.
-     *
-     * @param bufferSize
-     *            custom buffer size
-     * @deprecated This constructor is never used internally and might be
-     *             removed.
-     */
-    @Deprecated
-    public ResponseWriter(int bufferSize) {
-        this(bufferSize, false);
-    }
-
-    /**
      * Create a response writer with the given deployment configuration.
      *
      * @param deploymentConfiguration

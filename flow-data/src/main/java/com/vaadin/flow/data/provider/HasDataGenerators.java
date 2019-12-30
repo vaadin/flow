@@ -40,17 +40,4 @@ public interface HasDataGenerators<T> extends Serializable {
      * @return a registration that can be used to remove the data generator
      */
     Registration addDataGenerator(DataGenerator<T> generator);
-
-    /**
-     * Removes the given data generator.
-     *
-     * @deprecated Use the registration returned from
-     *             {@link #addDataGenerator(DataGenerator)} instead.
-     *
-     * @param generator
-     *            the data generator to remove
-     */
-    @Deprecated
-    void removeDataGenerator(DataGenerator<T> generator);
-
 }

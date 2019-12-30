@@ -57,23 +57,6 @@ public abstract class BeforeEvent extends EventObject {
      *            NavigationEvent that is on-going
      * @param navigationTarget
      *            Navigation target
-     * @deprecated Use {@link #BeforeEvent(NavigationEvent, Class, List)}
-     *             instead.
-     */
-    @Deprecated
-    public BeforeEvent(NavigationEvent event, Class<?> navigationTarget) {
-        this(event.getSource(), event.getTrigger(), event.getLocation(),
-                navigationTarget, event.getUI());
-
-    }
-
-    /**
-     * Construct event from a NavigationEvent.
-     *
-     * @param event
-     *            NavigationEvent that is on-going
-     * @param navigationTarget
-     *            Navigation target
      * @param layouts
      *            Navigation layout chain
      */
@@ -82,31 +65,6 @@ public abstract class BeforeEvent extends EventObject {
         this(event.getSource(), event.getTrigger(), event.getLocation(),
                 navigationTarget, event.getUI(), layouts);
 
-    }
-
-    /**
-     * Constructs a new BeforeNavigation Event.
-     *
-     * @param router
-     *            the router that triggered the change, not {@code null}
-     * @param trigger
-     *            the type of user action that triggered this location change,
-     *            not <code>null</code>
-     * @param location
-     *            the new location, not {@code null}
-     * @param navigationTarget
-     *            navigation target class
-     * @param ui
-     *            the UI related to the navigation
-     * @deprecated Use
-     *             {@link #BeforeEvent(Router, NavigationTrigger, Location, Class, UI, List)}
-     *             instead.
-     */
-    @Deprecated
-    public BeforeEvent(Router router, NavigationTrigger trigger,
-            Location location, Class<?> navigationTarget, UI ui) {
-        this(router, trigger, location, navigationTarget, ui,
-                Collections.emptyList());
     }
 
     /**
