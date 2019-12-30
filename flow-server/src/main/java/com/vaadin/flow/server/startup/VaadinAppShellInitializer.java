@@ -60,7 +60,8 @@ import static com.vaadin.flow.server.VaadinAppShellRegistry.ERROR_HEADER_OFFENDI
  * @since 3.0
  */
 @HandlesTypes({ VaadinAppShell.class, Meta.class, Meta.Container.class,
-        PWA.class, Inline.class, Inline.Container.class, Viewport.class, BodySize.class, PageTitle.class})
+        PWA.class, Inline.class, Inline.Container.class, Viewport.class,
+        BodySize.class, PageTitle.class, PageConfigurator.class })
 @WebListener
 public class VaadinAppShellInitializer implements ServletContainerInitializer,
         Serializable {
@@ -150,8 +151,7 @@ public class VaadinAppShellInitializer implements ServletContainerInitializer,
                 .map(Class::getName).collect(Collectors.toList());
 
         if (!classesImplementingPageConfigurator.isEmpty()) {
-            String message = classesImplementingPageConfigurator.stream()
-                    .collect(Collectors.joining("\n  - "));
+            String message = String.join("\n - ", classesImplementingPageConfigurator);
             if (registry.getShell() != null) {
                 message = String.format(ERROR_HEADER_OFFENDING_CONFIGURATOR,
                         registry.getShell().getName(), message);

@@ -38,14 +38,14 @@ import com.vaadin.flow.component.page.Inline.Position;
 import com.vaadin.flow.component.page.Inline.Wrapping;
 import com.vaadin.flow.component.page.LoadingIndicatorConfiguration;
 import com.vaadin.flow.component.page.TargetElement;
+import com.vaadin.flow.component.page.Viewport;
 
 /**
- * Initial page settings class for modifying the bootstrap page.
+ * Initial page settings class for modifying the bootstrap application shell.
  *
  * @since 3.0
  */
 public class VaadinAppShellSettings implements Serializable {
-    public static final String KEY_RESOURCE = "file";
 
     /**
      * A class representing an InlineElement.
@@ -96,7 +96,7 @@ public class VaadinAppShellSettings implements Serializable {
 
     private final List<InlineElement> inlines = new ArrayList<>();
 
-    private final Map<Position, List<Element>> elements = new EnumMap<>(
+    private final transient Map<Position, List<Element>> elements = new EnumMap<>(
             Position.class);
 
     /**
@@ -127,7 +127,10 @@ public class VaadinAppShellSettings implements Serializable {
     }
 
     /**
-     * Set the viewport value.
+     * Set the viewport value. Since viewport can be set only once per page,
+     * call to this method will have preference over the {@link Viewport}
+     * annotation. If the method is called multiple times, the last one will be
+     * used.
      *
      * @param viewport
      *            viewport value to set
@@ -137,7 +140,8 @@ public class VaadinAppShellSettings implements Serializable {
     }
 
     /**
-     * Set the body size.
+     * Set the body size. If the method is called multiple times, the last one
+     * will be used.
      *
      * @param width
      *            body with
@@ -151,7 +155,8 @@ public class VaadinAppShellSettings implements Serializable {
     }
 
     /**
-     * Set the page title
+     * Set the page title. If the method is called multiple times, the last one
+     * will be used.
      *
      * @param title
      *            title
@@ -231,13 +236,7 @@ public class VaadinAppShellSettings implements Serializable {
         addInline(TargetElement.HEAD, position, type, null, contents);
     }
 
-    /**
-     * Add an element based on an {@link Inline} annotation.
-     *
-     * @param inline
-     *            the annotation
-     */
-    public void addInline(Inline inline) {
+    void addInline(Inline inline) {
         inlines.add(new InlineElement(inline));
     }
 
@@ -293,7 +292,7 @@ public class VaadinAppShellSettings implements Serializable {
     public void addLink(Position position, String href,
             Map<String, String> attributes) {
         Element link = createElement("link", null, "href", href);
-        attributes.forEach((key, value) -> link.attr(key, value));
+        attributes.forEach(link::attr);
         getHeadElements(position).add(link);
     }
 

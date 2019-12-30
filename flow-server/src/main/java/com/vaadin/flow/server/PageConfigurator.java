@@ -34,6 +34,10 @@ public interface PageConfigurator extends Serializable {
      *
      * @param settings
      *            initial page settings
+     * @deprecated use
+     *             {@link VaadinAppShell#configurePage(VaadinAppShellSettings)}
+     *             instead
      */
+    @Deprecated
     void configurePage(InitialPageSettings settings);
 }

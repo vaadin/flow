@@ -428,12 +428,20 @@ public class IndexHtmlRequestHandlerTest {
 
         Elements elements = document.head().getElementsByTag("meta");
         assertEquals(4, elements.size());
+        // already in the index.html used as template
+        assertEquals("UTF-8", elements.get(0).attr("charset"));
+
+        // replaced ones in the index.html template by configurator ones
         assertEquals("viewport", elements.get(1).attr("name"));
         assertEquals("my-viewport", elements.get(1).attr("content"));
+
+        // added by configurator
         assertEquals("foo", elements.get(2).attr("name"));
         assertEquals("bar", elements.get(2).attr("content"));
         assertEquals("lorem", elements.get(3).attr("name"));
         assertEquals("ipsum", elements.get(3).attr("content"));
+
+        assertEquals("my-title", document.head().getElementsByTag("title").get(0).childNode(0).toString());
 
         Elements headInlineAndStyleElements = document.head().getElementsByTag("style");
         assertEquals(3, headInlineAndStyleElements.size());
