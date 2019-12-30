@@ -765,24 +765,6 @@ public class UIInternals implements Serializable {
     }
 
     /**
-     * Set the Theme to use for HTML import theme translations.
-     * <p>
-     * Note! The set theme will be overridden for each call to
-     * {@link #showRouteTarget(Location, String, Component, List)} if the new
-     * theme is not the same as the set theme.
-     * <p>
-     * This method is intended for managed internal use only.
-     *
-     * @param theme
-     *            theme implementation to set
-     * @deprecated use {@link #setTheme(Class)} instead
-     */
-    @Deprecated
-    public void setTheme(AbstractTheme theme) {
-        this.theme = theme;
-    }
-
-    /**
      * Sets the theme using its {@code themeClass}.
      * <p>
      * Note! The set theme will be overridden for each call to
@@ -791,17 +773,15 @@ public class UIInternals implements Serializable {
      * <p>
      * This method is intended for managed internal use only.
      *
-     * @see #setTheme(AbstractTheme)
-     *
      * @param themeClass
      *            theme class to set, may be {@code null}
      */
     public void setTheme(Class<? extends AbstractTheme> themeClass) {
         if (themeClass == null) {
-            setTheme((AbstractTheme) null);
+            theme = null;
         } else {
             if (theme == null || !theme.getClass().equals(themeClass)) {
-                setTheme(Instantiator.get(getUI()).getOrCreate(themeClass));
+                theme = Instantiator.get(getUI()).getOrCreate(themeClass);
             }
         }
     }
@@ -950,7 +930,7 @@ public class UIInternals implements Serializable {
                 .forEach(js -> page.addJavaScript(js.value(), js.loadMode()));
         dependency.getJsModules().stream()
                 .filter(js -> UrlUtil.isExternal(js.value()))
-                .forEach(js -> page.addJsModule(js.value(), js.loadMode()));
+                .forEach(js -> page.addJsModule(js.value()));
     }
 
     private void addHtmlImport(HtmlImportDependency dependency, Page page) {

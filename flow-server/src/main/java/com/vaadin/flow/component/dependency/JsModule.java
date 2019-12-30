@@ -82,19 +82,6 @@ public @interface JsModule {
     String value();
 
     /**
-     * Determines the dependency load mode. Refer to {@link LoadMode} for the
-     * details.
-     *
-     * @return load mode for the dependency
-     * @deprecated {@code LoadMode} does not function with JavaScript modules.
-     *             If the module is local, it is included into the frontend
-     *             resource bundle. If the module is external, it is loaded as
-     *             deferred due to {@code type=module} in {@code scrip} tag.
-     */
-    @Deprecated
-    LoadMode loadMode() default LoadMode.EAGER;
-
-    /**
      * Internal annotation to enable use of multiple {@link JsModule}
      * annotations.
      */

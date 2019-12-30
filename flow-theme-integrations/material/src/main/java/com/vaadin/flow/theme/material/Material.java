@@ -58,12 +58,6 @@ public class Material implements AbstractTheme {
     }
 
     @Override
-    @Deprecated
-    public Map<String, String> getBodyAttributes(String variant) {
-        return getHtmlAttributes(variant);
-    }
-
-    @Override
     public Map<String, String> getHtmlAttributes(String variant) {
         switch (variant) {
         case LIGHT:

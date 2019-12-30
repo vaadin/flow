@@ -42,6 +42,7 @@ import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.Dependency.Type;
 import com.vaadin.flow.shared.ui.LoadMode;
+
 import elemental.json.JsonObject;
 import elemental.json.JsonType;
 import elemental.json.JsonValue;
@@ -107,7 +108,7 @@ public class Page implements Serializable {
         private final ResizeEventReceiver receiver;
 
         private ResizeRegistration(ResizeEventReceiver receiver,
-                Registration origin) {
+                                   Registration origin) {
             this.origin = origin;
             this.receiver = receiver;
         }
@@ -126,25 +127,6 @@ public class Page implements Serializable {
     }
 
     private ResizeEventReceiver resizeReceiver;
-
-    /**
-     * Callback method for canceling executable javascript set with
-     * {@link Page#executeJs(String, Serializable...)}.
-     *
-     * @deprecated superseded by {@link PendingJavaScriptResult}
-     */
-    @FunctionalInterface
-    @Deprecated
-    public interface ExecutionCanceler extends Serializable {
-        /**
-         * Cancel the javascript execution, if it was not yet sent to the
-         * browser for execution.
-         *
-         * @return <code>true</code> if the execution was canceled,
-         *         <code>false</code> if not
-         */
-        boolean cancelExecution();
-    }
 
     private final UI ui;
     private final History history;
@@ -286,31 +268,6 @@ public class Page implements Serializable {
     }
 
     /**
-     * Adds the given external JavaScript module to the page and ensures that it
-     * is loaded successfully.
-     * <p>
-     * If the JavaScript modules do not need to be added dynamically, you should
-     * use the {@link JsModule @JsModule} annotation instead.
-     *
-     * @param url
-     *            the URL to load the JavaScript module from, not
-     *            <code>null</code>
-     * @param loadMode
-     *            this argument is ignored and the <code>loadMode</code> will
-     *            always be {@link LoadMode#EAGER} since {@link LoadMode}
-     *            doesn't work with {@link Type#JS_MODULE}. See Deprecated
-     *            section for more details.
-     * @deprecated {@code LoadMode} is not functional with external JavaScript
-     *             modules, as those are loaded as deferred due to
-     *             {@code type=module} in {@code scrip} tag. Use
-     *             {@link #addJsModule(String)} instead.
-     */
-    @Deprecated
-    public void addJsModule(String url, LoadMode loadMode) {
-        addJsModule(url);
-    }
-
-    /**
      * In compatibility mode (or Flow 1.x), adds the given HTML import to the
      * page and ensures that it is loaded successfully. In normal mode (Flow 2.x
      * with npm support), throws an {@code UnsupportedOperationException}.
@@ -381,42 +338,6 @@ public class Page implements Serializable {
 
     // When updating JavaDocs here, keep in sync with Element.executeJavaScript
     /**
-     * Asynchronously runs the given JavaScript expression in the browser. The
-     * given parameters will be available to the expression as variables named
-     * <code>$0</code>, <code>$1</code>, and so on. Supported parameter types
-     * are:
-     * <ul>
-     * <li>{@link String}
-     * <li>{@link Integer}
-     * <li>{@link Double}
-     * <li>{@link Boolean}
-     * <li>{@link JsonValue}
-     * <li>{@link Element} (will be sent as <code>null</code> if the server-side
-     * element instance is not attached when the invocation is sent to the
-     * client)
-     * </ul>
-     * Note that the parameter variables can only be used in contexts where a
-     * JavaScript variable can be used. You should for instance do
-     * <code>'prefix' + $0</code> instead of <code>'prefix$0'</code> and
-     * <code>value[$0]</code> instead of <code>value.$0</code> since JavaScript
-     * variables aren't evaluated inside strings or property names.
-     *
-     * @param expression
-     *            the JavaScript expression to invoke
-     * @param parameters
-     *            parameters to pass to the expression
-     * @return a callback for canceling the execution if not yet sent to browser
-     * @deprecated Use {@link #executeJs(String,Serializable...)} instead since
-     *             it also allows getting return value back.
-     */
-    @Deprecated
-    public ExecutionCanceler executeJavaScript(String expression,
-            Serializable... parameters) {
-        return executeJs(expression, parameters);
-    }
-
-    // When updating JavaDocs here, keep in sync with Element.executeJavaScript
-    /**
      * Asynchronously runs the given JavaScript expression in the browser.
      * <p>
      * The returned <code>PendingJavaScriptResult</code> can be used to retrieve
@@ -450,7 +371,7 @@ public class Page implements Serializable {
      *         the expression
      */
     public PendingJavaScriptResult executeJs(String expression,
-            Serializable... parameters) {
+                                             Serializable... parameters) {
         JavaScriptInvocation invocation = new JavaScriptInvocation(expression,
                 parameters);
 
@@ -556,7 +477,7 @@ public class Page implements Serializable {
      *            the name of the window.
      */
     public void open(String url, String windowName) {
-        executeJavaScript("window.open($0, $1)", url, windowName);
+        executeJs("window.open($0, $1)", url, windowName);
     }
 
     /**
@@ -595,9 +516,9 @@ public class Page implements Serializable {
         private static String readJS() {
             try (InputStream stream = Page.class
                     .getResourceAsStream(JS_FILE_NAME);
-                    BufferedReader bf = new BufferedReader(
-                            new InputStreamReader(stream,
-                                    StandardCharsets.UTF_8))) {
+                 BufferedReader bf = new BufferedReader(
+                         new InputStreamReader(stream,
+                                 StandardCharsets.UTF_8))) {
                 StringBuilder builder = new StringBuilder();
                 bf.lines().forEach(builder::append);
                 return builder.toString();

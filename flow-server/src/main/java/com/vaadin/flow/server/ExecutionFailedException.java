@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server;
 
+import com.vaadin.flow.server.frontend.FallibleCommand;
+
 /**
  * Thrown by {@link FallibleCommand} if it's unable to complete its execution.
  *

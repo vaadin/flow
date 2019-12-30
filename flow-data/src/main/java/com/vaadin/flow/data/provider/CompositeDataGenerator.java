@@ -75,11 +75,8 @@ public class CompositeDataGenerator<T>
      * @param generator
      *            the data generator to remove
      */
-    @Override
-    public void removeDataGenerator(DataGenerator<T> generator) {
-        assert generator != null : "generator should not be null";
+    private void removeDataGenerator(DataGenerator<T> generator) {
         generator.destroyAllData();
         dataGenerators.remove(generator);
     }
-
 }

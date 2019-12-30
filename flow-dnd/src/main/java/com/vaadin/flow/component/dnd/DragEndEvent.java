@@ -79,22 +79,6 @@ public class DragEndEvent<T extends Component> extends ComponentEvent<T> {
      * <em>NOTE:</em> For Edge, Safari and IE11 this method will <b>always
      * report <code>false</code></b> due to bugs in the browsers!
      * 
-     * @deprecated replaced with {@link #isSuccessful()} since 2.1 (v14.1), this
-     *             method will be removed later.
-     * @return {@code true} if the drop event succeeded, {@code false}
-     *         otherwise.
-     */
-    @Deprecated
-    public boolean isSuccesful() {
-        return isSuccessful();
-    }
-
-    /**
-     * Returns whether the drop event succesful or was it cancelled or didn't
-     * succeed. This is a shorthand for {@code dropEffect != NONE}.
-     * <em>NOTE:</em> For Edge, Safari and IE11 this method will <b>always
-     * report <code>false</code></b> due to bugs in the browsers!
-     * 
      * @return {@code true} if the drop event succeeded, {@code false}
      *         otherwise.
      * @since 2.1

@@ -488,45 +488,6 @@ public class VaadinServlet extends HttpServlet {
     }
 
     /**
-     * Escapes characters to html entities. An exception is made for some "safe
-     * characters" to keep the text somewhat readable.
-     *
-     * @param unsafe
-     *            non-escaped string
-     * @return a safe string to be added inside an html tag
-     *
-     * @deprecated As of 7.0. Will likely change or be removed in a future
-     *             version
-     */
-    @Deprecated
-    public static String safeEscapeForHtml(String unsafe) {
-        if (null == unsafe) {
-            return null;
-        }
-        StringBuilder safe = new StringBuilder();
-        char[] charArray = unsafe.toCharArray();
-        for (char c : charArray) {
-            if (isSafe(c)) {
-                safe.append(c);
-            } else {
-                safe.append("&#");
-                safe.append((int) c);
-                safe.append(";");
-            }
-        }
-
-        return safe.toString();
-    }
-
-    private static boolean isSafe(char c) {
-        return //
-        c > 47 && c < 58 || // alphanum
-                c > 64 && c < 91 || // A-Z
-                c > 96 && c < 123 // a-z
-        ;
-    }
-
-    /**
      * Gets the web jar server.
      *
      * @return the web jar server or an empty optional if no web jar server is

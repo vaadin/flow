@@ -593,18 +593,6 @@ public class BrowserDetails implements Serializable {
     }
 
     /**
-     * Tests if the browser is run on iPad.
-     *
-     * @return true if run on iPad, false otherwise
-     *
-     * @deprecated isIPad will return the wrong value for iOS 13 and later
-     */
-    @Deprecated
-    public boolean isIPad() {
-        return isIPad;
-    }
-
-    /**
      * Returns the major version of the operating system. Currently only
      * supported for mobile devices (iOS/Android)
      *

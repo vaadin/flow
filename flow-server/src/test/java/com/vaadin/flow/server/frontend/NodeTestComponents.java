@@ -169,12 +169,6 @@ public class NodeTestComponents extends NodeUpdateTestUtil {
         }
 
         @Override
-        @Deprecated
-        public Map<String, String> getBodyAttributes(String variant) {
-            return getHtmlAttributes(variant);
-        }
-
-        @Override
         public Map<String, String> getHtmlAttributes(String variant) {
             if (variant.isEmpty()) {
                 return Collections.emptyMap();
