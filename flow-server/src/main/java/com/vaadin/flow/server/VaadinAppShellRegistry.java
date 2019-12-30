@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server.startup;
+package com.vaadin.flow.server;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
@@ -34,11 +34,7 @@ import com.vaadin.flow.component.page.VaadinAppShell;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.server.AppShellSettings;
-import com.vaadin.flow.server.InvalidApplicationConfigurationException;
-import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.startup.AbstractAnnotationValidator;
 
 import static com.vaadin.flow.server.startup.VaadinAppShellInitializer.getValidAnnotations;
 
@@ -50,19 +46,19 @@ import static com.vaadin.flow.server.startup.VaadinAppShellInitializer.getValidA
  */
 public class VaadinAppShellRegistry implements Serializable {
 
-    static final String ERROR_HEADER_NO_SHELL =
+    public static final String ERROR_HEADER_NO_SHELL =
             "%n%nFound app shell configuration annotations in non `VaadinAppShell` classes."
             + "%nPlease create a custom class implementing `VaadinAppShell` and move the following annotations to it:%n  %s%n";
 
-    static final String ERROR_HEADER_OFFENDING =
+    public static final String ERROR_HEADER_OFFENDING =
             "%n%nFound app shell configuration annotations in non `VaadinAppShell` classes."
             + "%nThe following annotations must be either removed or moved to the '%s' class:%n  %s%n";
 
-    static final String ERROR_HEADER_NO_APP_CONFIGURATOR =
+    public static final String ERROR_HEADER_NO_APP_CONFIGURATOR =
             "%n%nThe `PageConfigurator` interface is deprecated since Vaadin 15 and has no effect."
             + "%nPlease, create a class implementing `VaadinAppShell`, and remove `PageConfigurator` from: %n  - %s%n";
 
-    static final String ERROR_HEADER_OFFENDING_CONFIGURATOR =
+    public static final String ERROR_HEADER_OFFENDING_CONFIGURATOR =
             "%n%nThe `PageConfigurator` interface is deprecated since Vaadin 15 and has no effect."
             + "%nPlease, configure the page in %s, and remove the `PageConfigurator` from: %n - %s%n";
 
@@ -72,6 +68,10 @@ public class VaadinAppShellRegistry implements Serializable {
 
     private static final String ERROR_MULTIPLE_ANNOTATION =
             "%n%s is not a repeatable annotation type.%n";
+
+    // There must be no more than one of the following elements per document
+    private static final String[] UNIQUE_ELEMENTS = { "meta[name=viewport]",
+            "meta[name=charset]", "meta[name=description]", "title", "base" };
 
     private Class<? extends VaadinAppShell> shell;
     private VaadinAppShell appShell;
@@ -192,8 +192,8 @@ public class VaadinAppShellRegistry implements Serializable {
         return error;
     }
 
-    private AppShellSettings createDefaultSettings() {
-        AppShellSettings settings = new AppShellSettings();
+    private VaadinAppShellSettings createSettings() {
+        VaadinAppShellSettings settings = new VaadinAppShellSettings();
 
         getAnnotations(Meta.class).forEach(meta -> {
             settings.addMetaTag(meta.name(), meta.content());
@@ -228,7 +228,7 @@ public class VaadinAppShellRegistry implements Serializable {
 
     /**
      * Modifies the `index.html` document based on the {@link VaadinAppShell}
-     * annotations or {@link VaadinAppShell#configurePage(AppShellSettings)} method.
+     * annotations or {@link VaadinAppShell#configurePage(VaadinAppShellSettings)} method.
      *
      * @param document a JSoup document for the index.html page
      * @param session
@@ -239,38 +239,53 @@ public class VaadinAppShellRegistry implements Serializable {
     public void modifyIndexHtml(Document document,
             VaadinSession session, VaadinRequest request) {
 
-        AppShellSettings settings = createDefaultSettings();
+        VaadinAppShellSettings settings = createSettings();
         if (appShell != null) {
             appShell.configurePage(settings);
         }
 
-        settings.getElements(Position.PREPEND)
-                .forEach(elm -> document.head().prependChild(elm));
-        settings.getElements(Position.APPEND)
-                .forEach(elm -> document.head().appendChild(elm));
+        settings.getHeadElements(Position.PREPEND).forEach(
+                elm -> insertElement(elm, document.head()::prependChild));
+        settings.getHeadElements(Position.APPEND).forEach(
+                elm -> insertElement(elm, document.head()::appendChild));
 
-        settings.getInlineElements(request, TargetElement.HEAD, Position.PREPEND).stream()
-                .forEach(element -> insertElements(element,
+        settings.getInlineElements(request, TargetElement.HEAD,
+                Position.PREPEND).stream()
+                .forEach(elm -> insertInlineElement(elm,
                         document.head()::prependChild));
-        settings.getInlineElements(request, TargetElement.HEAD, Position.APPEND).stream()
-                .forEach(element -> insertElements(element,
+        settings.getInlineElements(request, TargetElement.HEAD, Position.APPEND)
+                .stream().forEach(elm -> insertInlineElement(elm,
                         document.head()::appendChild));
-        settings.getInlineElements(request, TargetElement.BODY, Position.PREPEND).stream()
-                .forEach(element -> insertElements(element,
+        settings.getInlineElements(request, TargetElement.BODY,
+                Position.PREPEND).stream()
+                .forEach(elm -> insertInlineElement(elm,
                         document.body()::prependChild));
-        settings.getInlineElements(request, TargetElement.BODY, Position.APPEND).stream()
-                .forEach(element -> insertElements(element,
+        settings.getInlineElements(request, TargetElement.BODY, Position.APPEND)
+                .stream().forEach(elm -> insertInlineElement(elm,
                         document.body()::appendChild));
     }
 
-    private void insertElements(Element element, Consumer<Element> action) {
-        if (element instanceof Document) {
-            element.getAllElements().stream()
+    private void insertElement(Element elm, Consumer<Element> action) {
+        action.accept(elm);
+        for (String cssQuery : UNIQUE_ELEMENTS) {
+            if (elm.is(cssQuery)) {
+                Element first = elm.parent().selectFirst(cssQuery);
+                if (first != elm && first != null) {
+                    first.replaceWith(elm);
+                }
+                break;
+            }
+        }
+    }
+
+    private void insertInlineElement(Element elm, Consumer<Element> action) {
+        if (elm instanceof Document) {
+            elm.getAllElements().stream()
                     .filter(item -> !(item instanceof Document)
-                            && element.equals(item.parent()))
+                            && elm.equals(item.parent()))
                     .forEach(action::accept);
-        } else if (element != null) {
-            action.accept(element);
+        } else if (elm != null) {
+            action.accept(elm);
         }
     }
 

@@ -67,7 +67,7 @@ import elemental.json.JsonObject;
  *
  * @since 1.0
  */
-public class BootstrapUtils {
+class BootstrapUtils {
 
     static class ThemeSettings {
         private List<JsonObject> headContents;
@@ -180,7 +180,6 @@ public class BootstrapUtils {
     private static InitialPageSettings createInitialPageSettingsObject(
             BootstrapHandler.BootstrapContext context) {
         UI ui = context.getUI();
-
         VaadinRequest request = context.getRequest();
         WebBrowser browser = context.getSession().getBrowser();
 
@@ -277,7 +276,7 @@ public class BootstrapUtils {
      *            target file to read contents for
      * @return file contents as a {@link String}
      */
-    public static String getDependencyContents(VaadinRequest request, String file) {
+    static String getDependencyContents(VaadinRequest request, String file) {
         Charset requestCharset = Optional
                 .ofNullable(request.getCharacterEncoding())
                 .filter(string -> !string.isEmpty()).map(Charset::forName)

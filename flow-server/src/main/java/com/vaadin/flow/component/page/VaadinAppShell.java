@@ -17,7 +17,7 @@ package com.vaadin.flow.component.page;
 
 import java.io.Serializable;
 
-import com.vaadin.flow.server.AppShellSettings;
+import com.vaadin.flow.server.VaadinAppShellSettings;
 
 /**
  * A marker class to configure the index.hml page when using client-side
@@ -57,6 +57,6 @@ public interface VaadinAppShell extends Serializable {
      * @param settings
      *            initial page settings
      */
-    default void configurePage(AppShellSettings settings) {
+    default void configurePage(VaadinAppShellSettings settings) {
     };
 }

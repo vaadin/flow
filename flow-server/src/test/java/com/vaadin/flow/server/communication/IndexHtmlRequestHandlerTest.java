@@ -40,14 +40,14 @@ import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
+import com.vaadin.flow.server.VaadinAppShellRegistry;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.VaadinAppShellRegistry.VaadinAppShellRegistryWrapper;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWithConfigurator;
 import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWithMultipleAnnotations;
-import com.vaadin.flow.server.startup.VaadinAppShellRegistry;
-import com.vaadin.flow.server.startup.VaadinAppShellRegistry.VaadinAppShellRegistryWrapper;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
@@ -365,13 +365,9 @@ public class IndexHtmlRequestHandlerTest {
         Document document = Jsoup.parse(indexHtml);
 
         Elements elements = document.head().getElementsByTag("meta");
-        assertEquals(8, elements.size());
-        assertEquals("viewport", elements.get(7).attr("name"));
-        assertEquals(Viewport.DEVICE_DIMENSIONS, elements.get(7).attr("content"));
-        assertEquals("foo", elements.get(5).attr("name"));
-        assertEquals("bar", elements.get(5).attr("content"));
-        assertEquals("lorem", elements.get(6).attr("name"));
-        assertEquals("ipsum", elements.get(6).attr("content"));
+        assertEquals(7, elements.size());
+        assertEquals("viewport", elements.get(1).attr("name"));
+        assertEquals("my-viewport", elements.get(1).attr("content"));
         assertEquals("apple-mobile-web-app-capable", elements.get(2).attr("name"));
         assertEquals("yes", elements.get(2).attr("content"));
         assertEquals("theme-color", elements.get(3).attr("name"));
@@ -379,10 +375,15 @@ public class IndexHtmlRequestHandlerTest {
         assertEquals("apple-mobile-web-app-status-bar-style", elements.get(4).attr("name"));
         assertEquals("#ffffff", elements.get(4).attr("content"));
 
+        assertEquals("foo", elements.get(5).attr("name"));
+        assertEquals("bar", elements.get(5).attr("content"));
+        assertEquals("lorem", elements.get(6).attr("name"));
+        assertEquals("ipsum", elements.get(6).attr("content"));
+
         Elements headInlineAndStyleElements = document.head().getElementsByTag("style");
         assertEquals(3, headInlineAndStyleElements.size());
         assertEquals("text/css", headInlineAndStyleElements.get(2).attr("type"));
-        assertEquals("body,#outlet{width:50vw;height:50vh;}", headInlineAndStyleElements.get(2).childNode(0).toString());
+        assertEquals("body,#outlet{width:my-width;height:my-height;}", headInlineAndStyleElements.get(2).childNode(0).toString());
 
         Elements bodyInlineElements = document.body().getElementsByTag("script");
         assertEquals(3, bodyInlineElements.size());
@@ -405,26 +406,21 @@ public class IndexHtmlRequestHandlerTest {
         Document document = Jsoup.parse(indexHtml);
 
         Elements elements = document.head().getElementsByTag("meta");
-        assertEquals(7, elements.size());
-        assertEquals("viewport", elements.get(3).attr("name"));
-        assertEquals("foo-viewport", elements.get(3).attr("content"));
-        assertEquals("foo", elements.get(4).attr("name"));
-        assertEquals("bar", elements.get(4).attr("content"));
-        assertEquals("lorem", elements.get(5).attr("name"));
-        assertEquals("ipsum", elements.get(5).attr("content"));
-        assertEquals("theme-color", elements.get(0).attr("name"));
-        assertEquals("#227aef", elements.get(0).attr("content"));
-        assertEquals("back-color", elements.get(6).attr("name"));
-        assertEquals("#227aef", elements.get(6).attr("content"));
+        assertEquals(4, elements.size());
+        assertEquals("viewport", elements.get(1).attr("name"));
+        assertEquals("my-viewport", elements.get(1).attr("content"));
+        assertEquals("foo", elements.get(2).attr("name"));
+        assertEquals("bar", elements.get(2).attr("content"));
+        assertEquals("lorem", elements.get(3).attr("name"));
+        assertEquals("ipsum", elements.get(3).attr("content"));
 
         Elements headInlineAndStyleElements = document.head().getElementsByTag("style");
         assertEquals(3, headInlineAndStyleElements.size());
         assertEquals("text/css", headInlineAndStyleElements.get(2).attr("type"));
-        assertEquals("body {width: 100vw; height:100vh; margin:0;}", headInlineAndStyleElements.get(2).childNode(0).toString());
+        assertEquals("body,#outlet{width:my-width;height:my-height;}", headInlineAndStyleElements.get(2).childNode(0).toString());
 
         Elements bodyInlineElements = document.body().getElementsByTag("script");
-        assertEquals(1, bodyInlineElements.size());
-
+        assertEquals(2, bodyInlineElements.size());
     }
 
     @After
