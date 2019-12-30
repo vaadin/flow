@@ -30,19 +30,19 @@ import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.component.page.VaadinAppShell;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.server.VaadinAppShellSettings;
 import com.vaadin.flow.server.InitialPageSettings;
 import com.vaadin.flow.server.InvalidApplicationConfigurationException;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.PageConfigurator;
 import com.vaadin.flow.server.VaadinAppShellRegistry;
+import com.vaadin.flow.server.VaadinAppShellRegistry.VaadinAppShellRegistryWrapper;
+import com.vaadin.flow.server.VaadinAppShellSettings;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.VaadinAppShellRegistry.VaadinAppShellRegistryWrapper;
 import com.vaadin.flow.shared.communication.PushMode;
 
 import static com.vaadin.flow.server.DevModeHandler.getDevModeHandler;
@@ -145,10 +145,8 @@ public class VaadinAppShellInitializerTest {
     private Set<Class<?>> classes;
     private Document document;
     private Map<String, Object> attributeMap = new HashMap<>();
-    private VaadinResponse response;
     private MockServletServiceSessionSetup mocks;
     private MockServletServiceSessionSetup.TestVaadinServletService service;
-    private VaadinSession session;
 
     @Before
     public void setup() throws Exception {
@@ -157,8 +155,6 @@ public class VaadinAppShellInitializerTest {
         servletContext = Mockito.mock(ServletContext.class);
         mocks = new MockServletServiceSessionSetup();
         service = mocks.getService();
-        session = mocks.getSession();
-        response = Mockito.mock(VaadinResponse.class);
         Mockito.when(servletContext.getAttribute(Mockito.anyString())).then(invocationOnMock -> attributeMap.get(invocationOnMock.getArguments()[0].toString()));
         Mockito.doAnswer(invocationOnMock -> attributeMap.put(
                 invocationOnMock.getArguments()[0].toString(),
@@ -195,8 +191,7 @@ public class VaadinAppShellInitializerTest {
         classes.add(MyAppShellWithoutAnnotations.class);
         initializer.onStartup(classes, servletContext);
         VaadinAppShellRegistry.getInstance(context)
-                .modifyIndexHtml(document, session,
-                        createVaadinRequest("/"));
+                .modifyIndexHtml(document, createVaadinRequest("/"));
         assertEquals(0, document.head().children().size());
         assertEquals(0, document.body().children().size());
     }
@@ -218,8 +213,7 @@ public class VaadinAppShellInitializerTest {
         initializer.onStartup(classes, servletContext);
 
         VaadinAppShellRegistry.getInstance(context)
-        .modifyIndexHtml(document, session,
-                createVaadinRequest("/"));
+        .modifyIndexHtml(document, createVaadinRequest("/"));
 
         List<Element> elements = document.head().children();
         assertEquals(7, elements.size());
@@ -234,8 +228,7 @@ public class VaadinAppShellInitializerTest {
         initializer.onStartup(classes, servletContext);
 
         VaadinAppShellRegistry.getInstance(context)
-                .modifyIndexHtml(document, session,
-                        createVaadinRequest("/"));
+                .modifyIndexHtml(document, createVaadinRequest("/"));
 
         List<Element> headElements = document.head().children();
         assertEquals(7, headElements.size());
@@ -268,8 +261,7 @@ public class VaadinAppShellInitializerTest {
     public void should_not_haveMetas_when_not_callingInitializer()
             throws Exception {
         VaadinAppShellRegistry.getInstance(context)
-                .modifyIndexHtml(document, session,
-                        createVaadinRequest("/"));
+                .modifyIndexHtml(document, createVaadinRequest("/"));
         List<Element> elements = document.head().children();
         assertEquals(0, elements.size());
     }
@@ -285,7 +277,7 @@ public class VaadinAppShellInitializerTest {
 
         VaadinRequest request = createVaadinRequest("/");
         VaadinAppShellRegistry.getInstance(context)
-                .modifyIndexHtml(document, session, request);
+                .modifyIndexHtml(document, request);
 
         List<Element> elements = document.head().children();
 
@@ -311,8 +303,7 @@ public class VaadinAppShellInitializerTest {
         initializer.onStartup(classes, servletContext);
 
         VaadinAppShellRegistry.getInstance(context)
-                .modifyIndexHtml(document, session,
-                        createVaadinRequest("/"));
+                .modifyIndexHtml(document, createVaadinRequest("/"));
 
         List<Element> elements = document.head().children();
         assertEquals(0, elements.size());

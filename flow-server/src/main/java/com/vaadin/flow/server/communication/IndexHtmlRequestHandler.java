@@ -87,7 +87,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         // modify the page based on the @Meta, @ViewPort, @BodySize and @Inline annotations
         // and on the AppShellConfigurator
-        registry.modifyIndexHtml(indexDocument, session, request);
+        registry.modifyIndexHtml(indexDocument, request);
 
         // modify the page based on registered IndexHtmlRequestListener:s
         request.getService().modifyIndexHtmlResponse(indexHtmlResponse);

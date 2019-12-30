@@ -45,7 +45,6 @@ import com.vaadin.flow.component.page.TargetElement;
  * @since 3.0
  */
 public class VaadinAppShellSettings implements Serializable {
-    public static final String KEY_RESOURCE = "file";
 
     /**
      * A class representing an InlineElement.
@@ -96,7 +95,7 @@ public class VaadinAppShellSettings implements Serializable {
 
     private final List<InlineElement> inlines = new ArrayList<>();
 
-    private final Map<Position, List<Element>> elements = new EnumMap<>(
+    private transient final Map<Position, List<Element>> elements = new EnumMap<>(
             Position.class);
 
     /**
@@ -151,7 +150,7 @@ public class VaadinAppShellSettings implements Serializable {
     }
 
     /**
-     * Set the page title
+     * Set the page title.
      *
      * @param title
      *            title
@@ -293,7 +292,7 @@ public class VaadinAppShellSettings implements Serializable {
     public void addLink(Position position, String href,
             Map<String, String> attributes) {
         Element link = createElement("link", null, "href", href);
-        attributes.forEach((key, value) -> link.attr(key, value));
+        attributes.forEach(link::attr);
         getHeadElements(position).add(link);
     }
 

@@ -150,8 +150,7 @@ public class VaadinAppShellInitializer implements ServletContainerInitializer,
                 .map(Class::getName).collect(Collectors.toList());
 
         if (!classesImplementingPageConfigurator.isEmpty()) {
-            String message = classesImplementingPageConfigurator.stream()
-                    .collect(Collectors.joining("\n  - "));
+            String message = String.join("\n - ", classesImplementingPageConfigurator);
             if (registry.getShell() != null) {
                 message = String.format(ERROR_HEADER_OFFENDING_CONFIGURATOR,
                         registry.getShell().getName(), message);

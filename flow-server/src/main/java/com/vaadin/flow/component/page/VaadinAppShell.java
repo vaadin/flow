@@ -17,21 +17,28 @@ package com.vaadin.flow.component.page;
 
 import java.io.Serializable;
 
+import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.VaadinAppShellSettings;
 
 /**
- * A marker class to configure the index.hml page when using client-side
+ * A marker interface to configure the index.hml page when using client-side
  * bootstrapping. This class supports the following annotations that affect the
- * generated index.html page:
+ * generated index.html page (also known as 'application shell'):
  *
  * <ul>
  * <li>{@link Meta}: appends an HTML {@code <meta>} tag to the bottom of the
  * {@code <head>} element</li>
+ * <li>{@link Inline}: inlines a static content in any point of the
+ * document</li>
+ * <li>{@link Viewport}: defines the viewport tag of the page</li>
+ * <li>{@link BodySize}: configures the size of the body</li>
+ * <li>{@link PageTitle}: establishes the page title</li>
+ * <li>{@link PWA}: Defines application PWA properties</li>
  * </ul>
- *
  * <p>
- * There should be at max one class extending {@link VaadinAppShell} in the
- * application.
+ * There is a single application shell for the Vaadin entire application, and
+ * therefore it should be at max one class implementing {@link VaadinAppShell}.
  * </p>
  *
  * <p>
@@ -43,20 +50,24 @@ import com.vaadin.flow.server.VaadinAppShellSettings;
  *
  * <code>
  * &#64;Meta(name = "Author", content = "Donald Duck")
+ * &#64;PWA(name = "My Fun Application", shortName = "fun-app")
+ * &#64;Inline("my-custom-javascript.js")
+ * &#64;Viewport("width=device-width, initial-scale=1")
+ * &#64;BodySize(height = "100vh", width = "100vw")
+ * &#64;PageTitle("my-title")
  * public class AppShell implements VaadinAppShell {
  * }
  * </code>
- *
  * @since 3.0
  */
 public interface VaadinAppShell extends Serializable {
 
     /**
-     * Configure the initial page settings when called.
+     * Configure the initial application shell settings when called.
      *
      * @param settings
-     *            initial page settings
+     *            initial application shell settings
      */
     default void configurePage(VaadinAppShellSettings settings) {
-    };
+    }
 }
