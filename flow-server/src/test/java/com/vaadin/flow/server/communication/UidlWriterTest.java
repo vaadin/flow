@@ -132,14 +132,6 @@ public class UidlWriterTest {
     public static class ComponentWithAllDependencyTypes extends Component {
     }
 
-    @Tag("test")
-    @JavaScript(value = ApplicationConstants.FRONTEND_PROTOCOL_PREFIX
-            + "inline.js", loadMode = LoadMode.INLINE)
-    @StyleSheet(value = ApplicationConstants.FRONTEND_PROTOCOL_PREFIX
-            + "inline.css", loadMode = LoadMode.INLINE)
-    public static class ComponentWithFrontendProtocol extends Component {
-    }
-
     @Tag("base")
     @Route(value = "", layout = ParentClass.class)
     public static class BaseClass extends Component {
@@ -263,40 +255,19 @@ public class UidlWriterTest {
 
         JsonObject eagerDependency = eagerDependencies.get(0);
         assertEquals("eager.css",
-                eagerDependency.getString(Dependency.KEY_URL)
-                        .substring(ApplicationConstants.FRONTEND_PROTOCOL_PREFIX
-                                .length()));
+                eagerDependency.getString(Dependency.KEY_URL));
         assertEquals(Dependency.Type.STYLESHEET, Dependency.Type
                 .valueOf(eagerDependency.getString(Dependency.KEY_TYPE)));
 
         List<JsonObject> lazyDependencies = dependenciesMap.get(LoadMode.LAZY);
         JsonObject lazyDependency = lazyDependencies.get(0);
-        assertEquals("lazy.css",
-                lazyDependency.getString(Dependency.KEY_URL)
-                        .substring(ApplicationConstants.FRONTEND_PROTOCOL_PREFIX
-                                .length()));
+        assertEquals("lazy.css", lazyDependency.getString(Dependency.KEY_URL));
         assertEquals(Dependency.Type.STYLESHEET, Dependency.Type
                 .valueOf(lazyDependency.getString(Dependency.KEY_TYPE)));
 
         List<JsonObject> inlineDependencies = dependenciesMap
                 .get(LoadMode.INLINE);
-        assertInlineDependencies(inlineDependencies, "/frontend/");
-    }
-
-    @Test
-    public void checkAllTypesOfDependencies_uriResolverResolvesFrontendProtocol_npmMode()
-            throws Exception {
-        UI ui = initializeUIForDependenciesTest(new TestUI());
-        UidlWriter uidlWriter = new UidlWriter();
-        addInitialComponentDependencies(ui, uidlWriter);
-
-        ui.add(new ComponentWithFrontendProtocol());
-        JsonObject response = uidlWriter.createUidl(ui, false);
-        List<JsonObject> inlineDependencies = JsonUtils
-                .<JsonObject> stream(response.getArray(LoadMode.INLINE.name()))
-                .collect(Collectors.toList());
-
-        assertInlineDependencies(inlineDependencies, "/frontend/");
+        assertInlineDependencies(inlineDependencies);
     }
 
     @Test
@@ -312,8 +283,7 @@ public class UidlWriterTest {
                 response.getBoolean(ApplicationConstants.RESYNCHRONIZE_ID));
     }
 
-    private void assertInlineDependencies(List<JsonObject> inlineDependencies,
-            String expectedPrefix) {
+    private void assertInlineDependencies(List<JsonObject> inlineDependencies) {
         assertThat("Should have an inline dependency", inlineDependencies,
                 hasSize(1));
         assertThat("Eager dependencies should not have urls",
@@ -325,12 +295,7 @@ public class UidlWriterTest {
         JsonObject inlineDependency = inlineDependencies.get(0);
 
         String url = inlineDependency.getString(Dependency.KEY_CONTENTS);
-        if (!url.startsWith(expectedPrefix)) {
-            throw new AssertionError(
-                    url + " should have the prefix " + expectedPrefix);
-        }
-        String normalizedUrl = url.substring(expectedPrefix.length());
-        assertEquals("inline.css", normalizedUrl);
+        assertEquals("inline.css", url);
         assertEquals(Dependency.Type.STYLESHEET, Dependency.Type
                 .valueOf(inlineDependency.getString(Dependency.KEY_TYPE)));
     }
@@ -350,8 +315,8 @@ public class UidlWriterTest {
         });
 
         for (String type : new String[] { "html", "js", "css" }) {
-            mocks.getServlet().addServletContextResource(
-                    "/frontend/inline." + type, "/frontend/inline." + type);
+            mocks.getServlet().addServletContextResource("inline." + type,
+                    "inline." + type);
         }
 
         HttpServletRequest servletRequestMock = mock(HttpServletRequest.class);
@@ -401,7 +366,6 @@ public class UidlWriterTest {
 
     private void assertDependency(String url, String type,
             Map<String, JsonObject> dependenciesMap) {
-        url = ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + url;
         JsonObject jsonValue = dependenciesMap.get(url);
         assertNotNull(
                 "Expected dependencies map to have dependency with key=" + url,
