@@ -48,6 +48,7 @@ public class PageTest {
         page.addJavaScript(null);
     }
 
+    @Test
     public void testSetTitle_nullTitle_clearsPendingJsExecution() {
         page.setTitle("foobar");
 
