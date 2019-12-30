@@ -19,9 +19,6 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.shared.ApplicationConstants;
-import com.vaadin.flow.shared.util.SharedUtil;
-
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
@@ -65,10 +62,6 @@ public class Dependency implements Serializable {
      * Creates a new dependency of the given type, to be loaded from the given
      * URL.
      * <p>
-     * A relative URL is expanded to use the {@code frontend://} prefix. URLs
-     * with a defined protocol and absolute URLs without a protocol are used
-     * as-is.
-     * <p>
      * The URL is passed through the translation mechanism before loading, so
      * custom protocols, specified at
      * {@link com.vaadin.flow.shared.VaadinUriResolver} can be used.
@@ -87,12 +80,7 @@ public class Dependency implements Serializable {
         }
         this.type = Objects.requireNonNull(type);
 
-        if (type.equals(Type.JS_MODULE) || type.equals(Type.DYNAMIC_IMPORT)) {
-            this.url = url;
-        } else {
-            this.url = SharedUtil.prefixIfRelative(url,
-                    ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
-        }
+        this.url = url;
         this.loadMode = loadMode;
     }
 
