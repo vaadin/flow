@@ -108,7 +108,7 @@ public class Page implements Serializable {
         private final ResizeEventReceiver receiver;
 
         private ResizeRegistration(ResizeEventReceiver receiver,
-                Registration origin) {
+                                   Registration origin) {
             this.origin = origin;
             this.receiver = receiver;
         }
@@ -319,7 +319,7 @@ public class Page implements Serializable {
      *         the expression
      */
     public PendingJavaScriptResult executeJs(String expression,
-            Serializable... parameters) {
+                                             Serializable... parameters) {
         JavaScriptInvocation invocation = new JavaScriptInvocation(expression,
                 parameters);
 
@@ -464,9 +464,9 @@ public class Page implements Serializable {
         private static String readJS() {
             try (InputStream stream = Page.class
                     .getResourceAsStream(JS_FILE_NAME);
-                    BufferedReader bf = new BufferedReader(
-                            new InputStreamReader(stream,
-                                    StandardCharsets.UTF_8))) {
+                 BufferedReader bf = new BufferedReader(
+                         new InputStreamReader(stream,
+                                 StandardCharsets.UTF_8))) {
                 StringBuilder builder = new StringBuilder();
                 bf.lines().forEach(builder::append);
                 return builder.toString();
