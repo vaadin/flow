@@ -15,10 +15,13 @@
  */
 package com.vaadin.flow.server.communication;
 
+import com.vaadin.flow.component.UI;
 import org.jsoup.nodes.Document;
 
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
+
+import java.util.Optional;
 
 /**
  * This represents the state of a Index HTML response being generated. The Index
@@ -33,6 +36,25 @@ public class IndexHtmlResponse {
     private final Document document;
 
     /**
+     * Create a response object in clientSideMode with UI.
+     *
+     * @param vaadinRequest
+     *            the vaadin request which is handling
+     * @param vaadinResponse
+     *            the corresponding vaadin response
+     * @param document
+     *            the {@link Document} object of the response page
+     * @param ui
+     *            the UI for the bootstrap
+     */
+    public IndexHtmlResponse(VaadinRequest vaadinRequest,
+                             VaadinResponse vaadinResponse, Document document, UI ui) {
+        this.vaadinRequest = vaadinRequest;
+        this.vaadinResponse = vaadinResponse;
+        this.document = document;
+    }
+
+    /**
      * Create a response object in clientSideMode.
      *
      * @param vaadinRequest
@@ -43,7 +65,7 @@ public class IndexHtmlResponse {
      *            the {@link Document} object of the response page
      */
     public IndexHtmlResponse(VaadinRequest vaadinRequest,
-            VaadinResponse vaadinResponse, Document document) {
+                             VaadinResponse vaadinResponse, Document document) {
         this.vaadinRequest = vaadinRequest;
         this.vaadinResponse = vaadinResponse;
         this.document = document;
@@ -75,5 +97,19 @@ public class IndexHtmlResponse {
      */
     public Document getDocument() {
         return document;
+    }
+
+    /**
+     * Gets the UI that will be displayed on the generated HTML page.
+     *
+     * @return the UI
+     */
+    public Optional<UI> getUI() {
+        if(!this.vaadinRequest.getService()
+                .getDeploymentConfiguration().isEagerServerLoad()) {
+            return Optional.empty();
+        } else {
+            return Optional.ofNullable(UI.getCurrent());
+        }
     }
 }

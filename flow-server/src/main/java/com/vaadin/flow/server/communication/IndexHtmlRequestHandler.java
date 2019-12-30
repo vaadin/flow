@@ -48,6 +48,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
     private static final Pattern PATH_WITH_EXTENSION = Pattern
             .compile("\\.[A-z][A-z\\d]+$");
+    private transient IndexHtmlResponse indexHtmlResponse;
 
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
@@ -60,9 +61,13 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 .includeInitialUidl(request)) {
             includeInitialUidl(session, request, response, indexDocument);
 
+            indexHtmlResponse = new IndexHtmlResponse(request, response, indexDocument, UI.getCurrent());
+
             // App might be using classic server-routing, which is true
             // unless we detect a call to JavaScriptBootstrapUI.connectClient
             session.setAttribute(SERVER_ROUTING, Boolean.TRUE);
+        } else {
+            indexHtmlResponse = new IndexHtmlResponse(request, response, indexDocument);
         }
 
         configureErrorDialogStyles(indexDocument);
@@ -84,8 +89,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 .modifyIndexHtmlResponeWithInline(indexDocument, session, request);
 
         // modify the page based on registered IndexHtmlRequestListener:s
-        request.getService().modifyIndexHtmlResponse(
-                new IndexHtmlResponse(request, response, indexDocument));
+        request.getService().modifyIndexHtmlResponse(indexHtmlResponse);
 
         try {
             response.getOutputStream()
@@ -159,5 +163,9 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
     private static Logger getLogger() {
         return LoggerFactory.getLogger(IndexHtmlRequestHandler.class);
+    }
+
+    protected IndexHtmlResponse getIndexHtmlResponse() {
+        return this.indexHtmlResponse;
     }
 }
