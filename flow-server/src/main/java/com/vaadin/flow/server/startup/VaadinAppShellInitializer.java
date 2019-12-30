@@ -25,8 +25,8 @@ import javax.servlet.annotation.WebListener;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -164,35 +164,44 @@ public class VaadinAppShellInitializer implements ServletContainerInitializer,
     }
 
     /**
-     * Return the set of valid annotations in a {@link VaadinAppShell} class.
-     * This method is thought to be called from external plugins to decouple
-     * them.
+     * Return the list of annotations handled by this class. This method is
+     * thought to be called from external plugins (e.g. Vaadin Spring) that
+     * would need to override the <code>@HandlesTypes</code>-based classpath
+     * scanning.
      *
-     * @return
+     * @return list of annotations handled by
+     *  {@link VaadinAppShellInitializer#init(Set, ServletContext, DeploymentConfiguration)}
      */
     @SuppressWarnings("unchecked")
     public static List<Class<? extends Annotation>> getValidAnnotations() {
-        HandlesTypes annotation = VaadinAppShellInitializer.class
-                .getAnnotation(HandlesTypes.class);
-        assert annotation != null;
-        List<Class<? extends Annotation>> ret = new ArrayList<>();
-        for (Class<?> clazz : annotation.value()) {
-            if (clazz.isAnnotation()) {
-                ret.add((Class<? extends Annotation>) clazz);
-            }
-        }
-        return ret;
+        return Arrays.stream(getHandledTypes())
+                .filter(Class::isAnnotation)
+                .map(clz -> (Class<? extends Annotation>) clz)
+                .collect(Collectors.toList());
     }
 
     /**
-     * Return the {@link VaadinAppShell} class. This method is thought to be
-     * called from external plugins to decouple them.
+     * Return the list of super classes handled by this class. This method is
+     * thought to be called from external plugins (e.g. Vaadin Spring) that
+     * would need to override the <code>@HandlesTypes</code>-based classpath
+     * scanning.
      *
-     * @return
+     * @return list of super classes handled by
+     *  {@link VaadinAppShellInitializer#init(Set, ServletContext, DeploymentConfiguration)}
      */
     public static List<Class<?>> getValidSupers() {
-        return Collections.singletonList(VaadinAppShell.class);
+        return Arrays.stream(getHandledTypes())
+                .filter(clz -> !clz.isAnnotation())
+                .collect(Collectors.toList());
     }
+
+    private static Class<?>[] getHandledTypes() {
+        HandlesTypes annotation = VaadinAppShellInitializer.class
+                .getAnnotation(HandlesTypes.class);
+        assert annotation != null;
+        return annotation.value();
+    }
+
 
     private static Logger getLogger() {
         return LoggerFactory.getLogger(VaadinAppShellInitializer.class);
