@@ -45,7 +45,8 @@ public class NodeUpdateTestUtil {
                 NodeTestComponents.class.getDeclaredClasses());
     }
 
-    static ClassFinder getClassFinder(Class<?>... classes) throws MalformedURLException {
+    static ClassFinder getClassFinder(Class<?>... classes)
+            throws MalformedURLException {
         return new DefaultClassFinder(new URLClassLoader(getClassPath()),
                 classes);
     }
@@ -84,8 +85,7 @@ public class NodeUpdateTestUtil {
                     "process.argv[2] == '--version' && console.log('5.6.0');",
                     StandardCharsets.UTF_8);
 
-            File ppmCli = new File(baseDir,
-                    "node_modules/pnpm/bin/pnpm.js");
+            File ppmCli = new File(baseDir, "node_modules/pnpm/bin/pnpm.js");
             FileUtils.forceMkdirParent(ppmCli);
             FileUtils.writeStringToFile(ppmCli,
                     "process.argv[2] == '--version' && console.log('4.1.0');",
@@ -158,9 +158,7 @@ public class NodeUpdateTestUtil {
                 "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-something-else.js",
                 "./theme/lumo/vaadin-custom-themed-component.js",
                 "@vaadin/flow-frontend/ExampleConnector.js",
-                "3rdparty/component.js", "./foo-dir/javascript-lib.js",
-                "./frontend-p3-template.js", "./local-p3-template.js",
-                "./foo.js",
+                "3rdparty/component.js", "./local-p3-template.js", "./foo.js",
                 "./vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
                 "./local-template.js", "./foo-dir/vaadin-npm-component.js",
                 "./foo.css", "@vaadin/vaadin-mixed-component/bar.css",
