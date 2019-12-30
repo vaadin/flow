@@ -38,7 +38,7 @@ public class TestComponents {
 
     @JsModule("@vaadin/vaadin-date-picker/src/vaadin-date-picker.js")
     @JsModule("@vaadin/vaadin-date-picker/src/vaadin-month-calendar.js")
-    @JavaScript("frontend://ExampleConnector.js")
+    @JavaScript("./ExampleConnector.js")
     @JavaScript("https://foo.com/bar.js")
     @JavaScript("//foo.com/bar.js")
     public static class VaadinBowerComponent extends Component {
@@ -65,10 +65,6 @@ public class TestComponents {
     public static class LocalP3Template extends Component {
     }
 
-    @JsModule("frontend://frontend-p3-template.js")
-    public static class FrontendP3Template extends Component {
-    }
-
     @JsModule("./foo.js")
     public static class FlatImport extends Component {
     }
@@ -90,7 +86,6 @@ public class TestComponents {
         VaadinMixedComponent vaadinMixedComponent;
         LocalTemplate localP2Template;
         LocalP3Template localP3Template;
-        FrontendP3Template frontendP3Template;
         FlatImport flatImport;
         TranslatedImports translatedImports;
     }

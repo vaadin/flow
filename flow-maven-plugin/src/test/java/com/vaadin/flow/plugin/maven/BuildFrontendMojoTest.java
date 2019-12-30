@@ -229,7 +229,7 @@ public class BuildFrontendMojoTest {
         assertContainsImports(true, expectedLines.toArray(new String[0]));
 
         Assert.assertTrue(
-                new File(flowResourcesFolder, "ExampleConnector.js").exists());
+                new File(flowResourcesFolder, "/ExampleConnector.js").exists());
     }
 
     @Test
@@ -488,8 +488,7 @@ public class BuildFrontendMojoTest {
                 "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
                 "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-something-else.js",
                 "@vaadin/flow-frontend/ExampleConnector.js",
-                "./frontend-p3-template.js", "./local-p3-template.js",
-                "./foo.js",
+                "./local-p3-template.js", "./foo.js",
                 "./vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
                 "./local-template.js", "./foo-dir/vaadin-npm-component.js");
     }
