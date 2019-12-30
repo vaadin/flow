@@ -21,7 +21,6 @@ import com.google.gwt.core.client.Scheduler;
 
 import com.vaadin.client.ApplicationConfiguration;
 import com.vaadin.client.ApplicationConnection;
-import com.vaadin.client.BrowserInfo;
 import com.vaadin.client.Console;
 import com.vaadin.client.Profiler;
 import com.vaadin.client.ValueMap;
@@ -127,8 +126,8 @@ public class Bootstrapper implements EntryPoint {
         String serviceUrl = jsoConfiguration
                 .getConfigString(ApplicationConstants.SERVICE_URL);
 
-        conf.setWebComponentMode(
-                jsoConfiguration.getConfigBoolean(ApplicationConstants.APP_WC_MODE));
+        conf.setWebComponentMode(jsoConfiguration
+                .getConfigBoolean(ApplicationConstants.APP_WC_MODE));
 
         if (serviceUrl == null) {
             conf.setServiceUrl(WidgetUtil.getAbsoluteUrl("."));
@@ -142,13 +141,8 @@ public class Bootstrapper implements EntryPoint {
                             ApplicationConstants.CONTEXT_ROOT_URL)));
         }
 
-        if (BrowserInfo.get().isEs6Supported()) {
-            conf.setFrontendRootUrl(jsoConfiguration
-                    .getConfigString(ApplicationConstants.FRONTEND_URL_ES6));
-        } else {
-            conf.setFrontendRootUrl(jsoConfiguration
-                    .getConfigString(ApplicationConstants.FRONTEND_URL_ES5));
-        }
+        conf.setFrontendRootUrl(jsoConfiguration
+                .getConfigString(ApplicationConstants.FRONTEND_URL_ES6));
 
         conf.setUIId(jsoConfiguration
                 .getConfigInteger(ApplicationConstants.UI_ID_PARAMETER)

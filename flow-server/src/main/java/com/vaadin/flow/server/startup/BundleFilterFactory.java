@@ -33,7 +33,6 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.WebBrowser;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 import elemental.json.Json;
@@ -62,37 +61,31 @@ public class BundleFilterFactory implements Serializable {
      */
     public Stream<BundleDependencyFilter> createFilters(VaadinService service) {
         if (!service.getDeploymentConfiguration().isCompatibilityMode()
-                || !service.getDeploymentConfiguration().useCompiledFrontendResources()) {
+                || !service.getDeploymentConfiguration()
+                        .useCompiledFrontendResources()) {
             return Stream.empty();
         }
 
-        return Stream
-                .of(createBundleFilterForBrowser(FakeBrowser.getEs6(), service),
-                        createBundleFilterForBrowser(FakeBrowser.getEs5(),
-                                service))
-                .flatMap(maybeFilter -> maybeFilter.map(Stream::of)
-                        .orElseGet(Stream::empty));
+        return createBundleFilter(service).map(Stream::of)
+                .orElseGet(Stream::empty);
     }
 
-    private Optional<BundleDependencyFilter> createBundleFilterForBrowser(
-            WebBrowser browser, VaadinService service) {
-        return readBundleManifest(browser, service)
-                .flatMap(bundleData -> createDependencyFilter(browser,
-                        bundleData, service));
-    }
-
-    private Optional<JsonObject> readBundleManifest(WebBrowser browser,
+    private Optional<BundleDependencyFilter> createBundleFilter(
             VaadinService service) {
+        return readBundleManifest(service).flatMap(
+                bundleData -> createDependencyFilter(bundleData, service));
+    }
+
+    private Optional<JsonObject> readBundleManifest(VaadinService service) {
         try (InputStream bundleManifestStream = service
-                .getResourceAsStream(FLOW_BUNDLE_MANIFEST, browser, null)) {
+                .getResourceAsStream(FLOW_BUNDLE_MANIFEST, null)) {
             if (bundleManifestStream == null) {
                 throw new IllegalArgumentException(String.format(
-                        "Failed to find the bundle manifest file '%s' in the servlet context for '%s' browsers."
+                        "Failed to find the bundle manifest file '%s' in the servlet context for 'ES6' browsers."
                                 + " If you are running a dev-mode servlet container in maven e.g. `jetty:run` change it to `jetty:run-exploded`."
                                 + " If you are not compiling frontend resources, include the 'vaadin-maven-plugin' in your build script."
                                 + " Otherwise, you can skip this error either by disabling production mode, or by setting the servlet parameter '%s=true'.",
                         FLOW_BUNDLE_MANIFEST,
-                        browser.isEs6Supported() ? "ES6" : "ES5",
                         Constants.USE_ORIGINAL_FRONTEND_RESOURCES));
             }
             return Optional.of(Json.parse(IOUtils.toString(bundleManifestStream,
@@ -105,16 +98,14 @@ public class BundleFilterFactory implements Serializable {
     }
 
     private Optional<BundleDependencyFilter> createDependencyFilter(
-            WebBrowser browser, JsonObject bundlesToUrlsContained,
-            VaadinService service) {
+            JsonObject bundlesToUrlsContained, VaadinService service) {
         Map<String, Set<String>> importToBundle = new HashMap<>();
         String mainBundle = null;
 
         for (String bundlePath : bundlesToUrlsContained.keys()) {
             String frontendBundlePath = ApplicationConstants.FRONTEND_PROTOCOL_PREFIX
                     + bundlePath;
-            if (!service.isResourceAvailable(frontendBundlePath, browser,
-                    null)) {
+            if (!service.isResourceAvailable(frontendBundlePath, null)) {
                 throw new IllegalArgumentException(String.format(
                         "Failed to find bundle '%s', specified in manifest '%s'. Remove file reference from the manifest to disable bundle usage or add the bundle to the path specified.",
                         frontendBundlePath, FLOW_BUNDLE_MANIFEST));
@@ -149,8 +140,8 @@ public class BundleFilterFactory implements Serializable {
                         "Flow bundle manifest '%s' contains no main bundle: the single file prefixed with '%s' and having common code for all the fragments",
                         FLOW_BUNDLE_MANIFEST, MAIN_BUNDLE_NAME_PREFIX));
             }
-            return Optional.of(new BundleDependencyFilter(browser, mainBundle,
-                    importToBundle));
+            return Optional
+                    .of(new BundleDependencyFilter(mainBundle, importToBundle));
         }
     }
 

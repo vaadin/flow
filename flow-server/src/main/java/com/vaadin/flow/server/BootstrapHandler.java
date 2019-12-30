@@ -114,18 +114,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             + "/client.nocache.js";
     private static final String BOOTSTRAP_JS = readResource(
             "BootstrapHandler.js");
-    private static final String BABEL_HELPERS_JS = readResource(
-            "babel-helpers.min.js");
-    private static final String ES6_COLLECTIONS = "//<![CDATA[\n"
-            + readResource("es6-collections.js") + "//]]>";
     private static final String CSS_TYPE_ATTRIBUTE_VALUE = "text/css";
-
-    /**
-     * Safari 10.1 script nomodule fix. This is only needed for Safari <= 10.1
-     * See https://gist.github.com/samthor/64b114e4a4f539915a95b91ffd340acc
-     */
-    static final String SAFARI_10_1_SCRIPT_NOMODULE_FIX = "//<![CDATA[\n"
-            + readResource("safari-10-1-script-nomodule.js") + "//]]>";
 
     private static final String CAPTION = "caption";
     private static final String MESSAGE = "message";
@@ -425,11 +414,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             servletPathToContextRoot = contextRootRelatiePath;
             DeploymentConfiguration config = session.getConfiguration();
             if (config.isCompatibilityMode()) {
-                if (session.getBrowser().isEs6Supported()) {
-                    frontendRootUrl = config.getEs6FrontendPrefix();
-                } else {
-                    frontendRootUrl = config.getEs5FrontendPrefix();
-                }
+                frontendRootUrl = config.getEs6FrontendPrefix();
             } else {
                 frontendRootUrl = config.getNpmFrontendPrefix();
             }
@@ -445,8 +430,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          * - resolves to the application context root</li>
          * <li><code>{@value ApplicationConstants#FRONTEND_PROTOCOL_PREFIX}</code>
          * - resolves to the build path where web components were compiled.
-         * Browsers supporting ES6 can receive different, more optimized files
-         * than browsers that only support ES5.</li>
          * <li><code>{@value ApplicationConstants#BASE_PROTOCOL_PREFIX}</code> -
          * resolves to the base URI of the page</li>
          * </ul>
@@ -856,15 +839,11 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             DeploymentConfiguration conf = service.getDeploymentConfiguration();
 
             if (conf.isCompatibilityMode()) {
-                inlineEs6Collections(head, context);
                 appendWebComponentsPolyfills(head, context);
             } else {
                 conf.getPolyfills().forEach(
                         polyfill -> head.appendChild(createJavaScriptElement(
                                 "./" + VAADIN_MAPPING + polyfill, false)));
-
-                // #6817
-                appendSafari10ScriptNoModuleFix(head, context);
 
                 try {
                     appendNpmBundle(head, service, context);
@@ -897,36 +876,27 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             JsonObject chunks = Json.parse(content);
             for (String key : chunks.keys()) {
                 String chunkName;
-                if(chunks.get(key).getType().equals(JsonType.ARRAY)) {
+                if (chunks.get(key).getType().equals(JsonType.ARRAY)) {
                     chunkName = getArrayChunkName(chunks, key);
                 } else {
                     chunkName = chunks.getString(key);
                 }
-                if (key.endsWith(".es5")) {
-                    Element script = createJavaScriptElement(
-                            "./" + VAADIN_MAPPING + chunkName);
-                    head.appendChild(
-                            script.attr("nomodule", true).attr("data-app-id",
-                                    context.getUI().getInternals().getAppId()));
-                } else {
-                    Element script = createJavaScriptElement(
-                            "./" + VAADIN_MAPPING + chunkName,
-                            false);
-                    head.appendChild(script.attr("type", "module")
-                            .attr("data-app-id",
-                                    context.getUI().getInternals().getAppId())
-                            // Fixes basic auth in Safari #6560
-                            .attr("crossorigin", true));
-                }
+                Element script = createJavaScriptElement(
+                        "./" + VAADIN_MAPPING + chunkName, false);
+                head.appendChild(script.attr("type", "module")
+                        .attr("data-app-id",
+                                context.getUI().getInternals().getAppId())
+                        // Fixes basic auth in Safari #6560
+                        .attr("crossorigin", true));
             }
         }
 
         private String getArrayChunkName(JsonObject chunks, String key) {
             JsonArray chunkArray = chunks.getArray(key);
 
-            for(int i = 0; i <chunkArray.length(); i++) {
+            for (int i = 0; i < chunkArray.length(); i++) {
                 String chunkName = chunkArray.getString(0);
-                if(chunkName.endsWith(".js")){
+                if (chunkName.endsWith(".js")) {
                     return chunkName;
                 }
             }
@@ -956,26 +926,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             }
             return context.getUriResolver()
                     .resolveVaadinUri("context://" + getClientEngine());
-        }
-
-        private void inlineEs6Collections(Element head,
-                BootstrapContext context) {
-            if (!context.getSession().getBrowser().isEs6Supported()) {
-                head.appendChild(
-                        createInlineJavaScriptElement(ES6_COLLECTIONS));
-            }
-        }
-
-        private void appendSafari10ScriptNoModuleFix(Element head,
-                BootstrapContext context) {
-            if (context.getSession().getBrowser().isSafari()
-                    && context.getSession().getBrowser()
-                            .getBrowserMajorVersion() == 10
-                    && context.getSession().getBrowser()
-                            .getBrowserMinorVersion() <= 1) {
-                head.appendChild(createInlineJavaScriptElement(
-                        SAFARI_10_1_SCRIPT_NOMODULE_FIX));
-            }
         }
 
         private void setupCss(Element head, BootstrapContext context) {
@@ -1019,39 +969,18 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
         private void setupPwa(Document document, BootstrapContext context) {
-            BootstrapHandler.setupPwa(document, context.getPwaRegistry().orElse(null));
+            BootstrapHandler.setupPwa(document,
+                    context.getPwaRegistry().orElse(null));
         }
 
         private void appendWebComponentsPolyfills(Element head,
                 BootstrapContext context) {
             VaadinSession session = context.getSession();
-            DeploymentConfiguration config = session.getConfiguration();
 
-            String es5AdapterUrl = "frontend://bower_components/webcomponentsjs/custom-elements-es5-adapter.js";
             VaadinService service = session.getService();
-            if (!service.isResourceAvailable(POLYFILLS_JS, session.getBrowser(),
-                    null)) {
+            if (!service.isResourceAvailable(POLYFILLS_JS, null)) {
                 // No webcomponents polyfill, load nothing
                 return;
-            }
-
-            boolean loadEs5Adapter = config
-                    .getBooleanProperty(Constants.LOAD_ES5_ADAPTERS, true);
-            if (loadEs5Adapter && !session.getBrowser().isEs6Supported()) {
-                // This adapter is required since lots of our current customers
-                // use polymer-cli to transpile sources,
-                // this tool adds babel-helpers dependency into each file, see:
-                // https://github.com/Polymer/polymer-cli/blob/master/src/build/build.ts#L64
-                // and
-                // https://github.com/Polymer/polymer-cli/blob/master/src/build/optimize-streams.ts#L119
-                head.appendChild(
-                        createInlineJavaScriptElement(BABEL_HELPERS_JS));
-
-                if (session.getBrowser().isEs5AdapterNeeded()) {
-                    head.appendChild(
-                            createJavaScriptElement(context.getUriResolver()
-                                    .resolveVaadinUri(es5AdapterUrl), false));
-                }
             }
 
             String resolvedUrl = context.getUriResolver()
@@ -1075,8 +1004,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return createJavaScriptElement(sourceUrl, defer, "text/javascript");
         }
 
-        private static Element createJavaScriptElement(String sourceUrl, boolean defer,
-                String type) {
+        private static Element createJavaScriptElement(String sourceUrl,
+                boolean defer, String type) {
             Element jsElement = new Element(Tag.valueOf(SCRIPT_TAG), "")
                     .attr("type", type).attr(DEFER_ATTRIBUTE, defer);
             if (sourceUrl != null) {
@@ -1256,8 +1185,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
             appConfig.put(ApplicationConstants.FRONTEND_URL_ES6,
                     deploymentConfiguration.getEs6FrontendPrefix());
-            appConfig.put(ApplicationConstants.FRONTEND_URL_ES5,
-                    deploymentConfiguration.getEs5FrontendPrefix());
 
             if (!productionMode) {
                 JsonObject versionInfo = Json.createObject();
@@ -1523,13 +1450,12 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     }
 
-
     /**
      * Generates the initial UIDL message which is included in the initial
      * bootstrap page.
      *
      * @param ui
-     *         the UI for which the UIDL should be generated
+     *            the UI for which the UIDL should be generated
      * @return a JSON object with the initial UIDL message
      */
     protected static JsonObject getInitialUidl(UI ui) {
@@ -1546,15 +1472,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         return json;
     }
 
-
     /**
      * Writes the push id (and generates one if needed) to the given JSON
      * object.
      *
      * @param response
-     *         the response JSON object to write security key into
+     *            the response JSON object to write security key into
      * @param session
-     *         the vaadin session to which the security key belongs
+     *            the vaadin session to which the security key belongs
      */
     private static void writePushIdUIDL(JsonObject response,
             VaadinSession session) {
@@ -1563,13 +1488,13 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     /**
-     * Writes the security key (and generates one if needed) to the given
-     * JSON object.
+     * Writes the security key (and generates one if needed) to the given JSON
+     * object.
      *
      * @param response
-     *         the response JSON object to write security key into
+     *            the response JSON object to write security key into
      * @param ui
-     *         the UI to which the security key belongs
+     *            the UI to which the security key belongs
      */
     private static void writeSecurityKeyUIDL(JsonObject response, UI ui) {
         String seckey = ui.getCsrfToken();

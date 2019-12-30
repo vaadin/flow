@@ -191,9 +191,4 @@ public class ApplicationConstants implements Serializable {
      */
     public static final String FRONTEND_URL_ES6 = "frontendUrlEs6";
 
-    /**
-     * Configuration parameter for the build URL of ES5 web components.
-     */
-    public static final String FRONTEND_URL_ES5 = "frontendUrlEs5";
-
 }

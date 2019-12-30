@@ -27,7 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.DependencyFilter;
-import com.vaadin.flow.server.WebBrowser;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
@@ -42,13 +42,10 @@ import com.vaadin.flow.shared.ui.LoadMode;
 public class BundleDependencyFilter implements DependencyFilter {
     private final String mainBundlePath;
     private final Map<String, Set<String>> importContainedInBundles;
-    private boolean isES6;
 
     /**
      * Creates a filter with the required information.
      *
-     * @param browser
-     *            Type of browser handled by this filter
      * @param mainBundlePath
      *            path to the main bundle that contains common code of the app,
      *            not {@code null}
@@ -56,23 +53,18 @@ public class BundleDependencyFilter implements DependencyFilter {
      *            a map that is used to look up the bundles that imports are
      *            contained in, not {@code null}
      */
-    public BundleDependencyFilter(WebBrowser browser, String mainBundlePath,
+    public BundleDependencyFilter(String mainBundlePath,
             Map<String, Set<String>> importContainedInBundles) {
         this.mainBundlePath = Objects.requireNonNull(mainBundlePath,
                 "Main bundle name cannot be null");
         this.importContainedInBundles = Objects.requireNonNull(
                 importContainedInBundles,
                 "Import to bundle mapping cannot be null");
-        this.isES6 = browser.isEs6Supported();
     }
 
     @Override
     public List<Dependency> filter(List<Dependency> dependencies,
-            FilterContext filterContext) {
-        if (filterContext.getBrowser().isEs6Supported() != this.isES6) {
-            return dependencies;
-        }
-
+            VaadinService service) {
         Collection<Dependency> fragments = new LinkedHashSet<>(
                 dependencies.size());
         Collection<Dependency> notFragments = new LinkedHashSet<>(

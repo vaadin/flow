@@ -21,8 +21,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
-import java.nio.file.Path;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -243,8 +243,7 @@ public class FrontendUtilsTest {
         String statsAssetsByChunkName = FrontendUtils
                 .getStatsAssetsByChunkName(service);
 
-        Assert.assertEquals("{" + "\"index\": \"build/index-1111.cache.js\","
-                + "\"index.es5\": \"build/index.es5-2222.cache.js\"" + "}",
+        Assert.assertEquals("{" + "\"index\": \"build/index-1111.cache.js\"}",
                 statsAssetsByChunkName);
     }
 
@@ -256,8 +255,7 @@ public class FrontendUtilsTest {
         String statsAssetsByChunkName = FrontendUtils
                 .getStatsAssetsByChunkName(service);
 
-        Assert.assertEquals("{" + "\"index\": \"build/index-1111.cache.js\","
-                + "\"index.es5\": \"build/index.es5-2222.cache.js\"" + "}",
+        Assert.assertEquals("{" + "\"index\": \"build/index-1111.cache.js\"}",
                 statsAssetsByChunkName);
     }
 

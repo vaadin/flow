@@ -77,7 +77,6 @@ import com.vaadin.flow.server.communication.UidlRequestHandler;
 import com.vaadin.flow.server.communication.WebComponentBootstrapHandler;
 import com.vaadin.flow.server.communication.WebComponentProvider;
 import com.vaadin.flow.server.startup.BundleFilterFactory;
-import com.vaadin.flow.server.startup.FakeBrowser;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
@@ -315,11 +314,9 @@ public abstract class VaadinService implements Serializable {
 
         htmlImportDependencyCache = new DependencyTreeCache<>(path -> {
             List<String> dependencies = new ArrayList<>();
-            WebBrowser browser = FakeBrowser.getEs6();
             HtmlImportParser.parseImports(path,
-                    resourcePath -> getResourceAsStream(resourcePath, browser,
-                            null),
-                    resourcePath -> resolveResource(resourcePath, browser),
+                    resourcePath -> getResourceAsStream(resourcePath, null),
+                    resourcePath -> resolveResource(resourcePath),
                     dependency -> {
                         if (!dependency.startsWith(
                                 "frontend://bower_components/polymer/")) {
@@ -1780,9 +1777,8 @@ public abstract class VaadinService implements Serializable {
      *            {@code null}, body will be used
      * @return A JSON string to be sent to the client
      */
-    public static String createCriticalNotificationJSON(
-            String caption, String message, String details, String url,
-            String querySelector) {
+    public static String createCriticalNotificationJSON(String caption,
+            String message, String details, String url, String querySelector) {
         try {
             JsonObject appError = Json.createObject();
             putValueOrJsonNull(appError, "caption", caption);
@@ -2266,26 +2262,19 @@ public abstract class VaadinService implements Serializable {
      *
      * @param url
      *            the untranslated Vaadin URL for the resource
-     * @param browser
-     *            the web browser to resolve for, relevant for es5 vs es6
-     *            resolving
      * @param theme
      *            the theme to use for translating the URL or <code>null</code>
      *            if no theme is used
      * @return the resource located at the named path, or <code>null</code> if
      *         there is no resource at that path
      */
-    public abstract URL getResource(String url, WebBrowser browser,
-            AbstractTheme theme);
+    public abstract URL getResource(String url, AbstractTheme theme);
 
     /**
      * Opens a stream to to the resource at the given Vaadin URI.
      *
      * @param url
      *            the untranslated Vaadin URL for the resource
-     * @param browser
-     *            the web browser to resolve for, relevant for es5 vs es6
-     *            resolving
      * @param theme
      *            the theme to use for translating the URL or <code>null</code>
      *            if no theme is used
@@ -2293,42 +2282,35 @@ public abstract class VaadinService implements Serializable {
      *         exists at the specified path
      */
     public abstract InputStream getResourceAsStream(String url,
-            WebBrowser browser, AbstractTheme theme);
+            AbstractTheme theme);
 
     /**
      * Checks if a resource is available at the given Vaadin URI.
      *
      * @param url
      *            the untranslated Vaadin URL for the resource
-     * @param browser
-     *            the web browser to resolve for, relevant for es5 vs es6
-     *            resolving
      * @param theme
      *            the theme to use for translating the URL or <code>null</code>
      *            if no theme is used
      * @return <code>true</code> if a resource is found and can be read using
-     *         {@link #getResourceAsStream(String, WebBrowser, AbstractTheme)},
+     *         {@link #getResourceAsStream(String, AbstractTheme)},
      *         <code>false</code> if it is not found
      */
-    public boolean isResourceAvailable(String url, WebBrowser browser,
-            AbstractTheme theme) {
-        return getResource(url, browser, theme) != null;
+    public boolean isResourceAvailable(String url, AbstractTheme theme) {
+        return getResource(url, theme) != null;
     }
 
     /**
      * Resolves the given {@code url} resource to be useful for
-     * {@link #getResource(String, WebBrowser, AbstractTheme)} and
-     * {@link #getResourceAsStream(String, WebBrowser, AbstractTheme)}.
+     * {@link #getResource(String, AbstractTheme)} and
+     * {@link #getResourceAsStream(String, AbstractTheme)}.
      *
      * @param url
      *            the resource to resolve, not <code>null</code>
-     * @param browser
-     *            the web browser to resolve for, relevant for es5 vs es6
-     *            resolving
      * @return the resolved URL or the same as the input url if no translation
      *         was performed
      */
-    public abstract String resolveResource(String url, WebBrowser browser);
+    public abstract String resolveResource(String url);
 
     /**
      * Checks if the given URL has a themed version. If it does, returns the
@@ -2336,8 +2318,6 @@ public abstract class VaadinService implements Serializable {
      *
      * @param url
      *            the URL to lookup
-     * @param browser
-     *            the browser to use for lookup
      * @param theme
      *            the theme to check
      * @return an optional containing the untranslated (containing vaadin
@@ -2345,7 +2325,7 @@ public abstract class VaadinService implements Serializable {
      *         optional if the given resource has no themed version
      */
     public abstract Optional<String> getThemedUrl(String url,
-            WebBrowser browser, AbstractTheme theme);
+            AbstractTheme theme);
 
     /**
      * Gets the HTML import dependency cache that is used by this service.

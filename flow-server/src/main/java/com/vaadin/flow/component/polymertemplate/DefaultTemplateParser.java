@@ -34,10 +34,7 @@ import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.server.DependencyFilter;
-import com.vaadin.flow.server.DependencyFilter.FilterContext;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.WebBrowser;
-import com.vaadin.flow.server.startup.FakeBrowser;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.Dependency.Type;
 
@@ -76,7 +73,6 @@ public final class DefaultTemplateParser implements TemplateParser {
             Class<? extends PolymerTemplate<?>> clazz, String tag,
             VaadinService service) {
         boolean logEnabled = LOG_CACHE.get(clazz).compareAndSet(false, true);
-        WebBrowser browser = FakeBrowser.getEs6();
 
         List<Dependency> dependencies = AnnotationReader
                 .getAnnotationsFor(clazz, HtmlImport.class).stream()
@@ -84,10 +80,9 @@ public final class DefaultTemplateParser implements TemplateParser {
                         htmlImport.value(), htmlImport.loadMode()))
                 .collect(Collectors.toList());
 
-        FilterContext filterContext = new FilterContext(service, browser);
         for (DependencyFilter filter : service.getDependencyFilters()) {
             dependencies = filter.filter(new ArrayList<>(dependencies),
-                    filterContext);
+                    service);
         }
 
         for (Dependency dependency : dependencies) {
@@ -96,8 +91,7 @@ public final class DefaultTemplateParser implements TemplateParser {
             }
 
             String url = dependency.getUrl();
-            try (InputStream content = service.getResourceAsStream(url, browser,
-                    null)) {
+            try (InputStream content = service.getResourceAsStream(url, null)) {
                 if (content == null) {
                     throw new IllegalStateException(
                             String.format("Can't find resource '%s' "

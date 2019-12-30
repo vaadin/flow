@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.server.startup;
 
-import static com.vaadin.flow.server.startup.BundleFilterFactory.MAIN_BUNDLE_NAME_PREFIX;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -30,10 +28,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import com.vaadin.flow.server.DependencyFilter.FilterContext;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.Dependency.Type;
 import com.vaadin.flow.shared.ui.LoadMode;
+
+import static com.vaadin.flow.server.startup.BundleFilterFactory.MAIN_BUNDLE_NAME_PREFIX;
 
 public class BundleDependencyFilterTest {
     private static final String NON_HASHED_BUNDLE_NAME = MAIN_BUNDLE_NAME_PREFIX
@@ -43,13 +42,11 @@ public class BundleDependencyFilterTest {
     public ExpectedException expectedException = ExpectedException.none();
 
     private BundleDependencyFilter dependencyFilter;
-    private FilterContext filterContext;
 
     @Before
     public void init() {
-        dependencyFilter = new BundleDependencyFilter(
-                FakeBrowser.getEs6(), NON_HASHED_BUNDLE_NAME, createTestMapping());
-        filterContext = new FilterContext(null, FakeBrowser.getEs6());
+        dependencyFilter = new BundleDependencyFilter(NON_HASHED_BUNDLE_NAME,
+                createTestMapping());
     }
 
     @Test
@@ -57,7 +54,7 @@ public class BundleDependencyFilterTest {
         expectedException.expect(NullPointerException.class);
         expectedException.expectMessage("bundle mapping");
 
-        new BundleDependencyFilter(FakeBrowser.getEs6(), NON_HASHED_BUNDLE_NAME, null);
+        new BundleDependencyFilter(NON_HASHED_BUNDLE_NAME, null);
     }
 
     @Test
@@ -65,7 +62,7 @@ public class BundleDependencyFilterTest {
         expectedException.expect(NullPointerException.class);
         expectedException.expectMessage("Main bundle name");
 
-        new BundleDependencyFilter(FakeBrowser.getEs6(), null, Collections.emptyMap());
+        new BundleDependencyFilter(null, Collections.emptyMap());
     }
 
     @Test
@@ -74,7 +71,7 @@ public class BundleDependencyFilterTest {
                 .singletonList(createDependency("in fragment 1"));
 
         List<Dependency> filteredFragmentDependency = dependencyFilter
-                .filter(dependencyWhichIsInFragment, filterContext);
+                .filter(dependencyWhichIsInFragment, null);
 
         Assert.assertEquals(
                 "Should contain the main bundle as the first dependency and fragment as second.",
@@ -90,7 +87,7 @@ public class BundleDependencyFilterTest {
                 createDependency("also in main bundle"));
 
         List<Dependency> filteredTwoMainBundleImports = dependencyFilter
-                .filter(twoImportsThatAreInTheMainBundle, filterContext);
+                .filter(twoImportsThatAreInTheMainBundle, null);
 
         Assert.assertEquals(
                 Collections.singletonList(createMainBundleDependency()),
@@ -104,8 +101,7 @@ public class BundleDependencyFilterTest {
                 createDependency("in fragment 2"),
                 createDependency("in main bundle"));
 
-        List<Dependency> filtered = dependencyFilter.filter(toFilter,
-                filterContext);
+        List<Dependency> filtered = dependencyFilter.filter(toFilter, null);
 
         Assert.assertEquals(3, filtered.size());
         Assert.assertEquals(createMainBundleDependency(), filtered.get(0));
@@ -117,8 +113,7 @@ public class BundleDependencyFilterTest {
                 createDependency("in main bundle"),
                 createDependency("in fragment 1"));
 
-        List<Dependency> filtered = dependencyFilter.filter(toFilter,
-                filterContext);
+        List<Dependency> filtered = dependencyFilter.filter(toFilter, null);
 
         Assert.assertEquals(Arrays.asList(createMainBundleDependency(),
                 createDependency("fragment 1")), filtered);
@@ -129,8 +124,7 @@ public class BundleDependencyFilterTest {
         List<Dependency> toFilter = Collections
                 .singletonList(createDependency("not in bundle map"));
 
-        List<Dependency> filtered = dependencyFilter.filter(toFilter,
-                filterContext);
+        List<Dependency> filtered = dependencyFilter.filter(toFilter, null);
 
         Assert.assertEquals(
                 "Dependencies not mapped in any import to bundle mapping should be passed through as is.",
@@ -145,8 +139,7 @@ public class BundleDependencyFilterTest {
                 createDependency("in fragment 1"), dependencyNotInFragment,
                 createDependency("in fragment 2"));
 
-        List<Dependency> filtered = dependencyFilter.filter(toFilter,
-                filterContext);
+        List<Dependency> filtered = dependencyFilter.filter(toFilter, null);
 
         Assert.assertEquals(
                 "When dependency from any fragment is returned after filtering, main bundle should be also returned even if not explicitly mentioned",

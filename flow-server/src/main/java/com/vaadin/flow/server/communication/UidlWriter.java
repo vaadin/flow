@@ -53,7 +53,6 @@ import com.vaadin.flow.internal.nodefeature.ComponentMapping;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelMap;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
 import com.vaadin.flow.server.DependencyFilter;
-import com.vaadin.flow.server.DependencyFilter.FilterContext;
 import com.vaadin.flow.server.SystemMessages;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
@@ -162,7 +161,8 @@ public class UidlWriter implements Serializable {
         getLogger().debug("* Creating response to client");
 
         int syncId = service.getDeploymentConfiguration().isSyncIdCheckEnabled()
-                ? uiInternals.getServerSyncId() : -1;
+                ? uiInternals.getServerSyncId()
+                : -1;
 
         response.put(ApplicationConstants.SERVER_SYNC_ID, syncId);
         if (resync) {
@@ -230,13 +230,10 @@ public class UidlWriter implements Serializable {
         Collection<Dependency> pendingSendToClient = dependencyList
                 .getPendingSendToClient();
 
-        FilterContext filterContext = new FilterContext(context.getService(),
-                context.getBrowser());
-
         for (DependencyFilter filter : context.getService()
                 .getDependencyFilters()) {
             pendingSendToClient = filter.filter(
-                    new ArrayList<>(pendingSendToClient), filterContext);
+                    new ArrayList<>(pendingSendToClient), context.getService());
         }
 
         if (!pendingSendToClient.isEmpty()) {
@@ -284,18 +281,15 @@ public class UidlWriter implements Serializable {
     private static InputStream getInlineResourceStream(String url,
             ResolveContext context) {
         VaadinService service = context.getService();
-        WebBrowser browser = context.getBrowser();
-        InputStream stream = service.getResourceAsStream(url, browser,
+        InputStream stream = service.getResourceAsStream(url,
                 context.getTheme());
 
         if (stream == null) {
-            String resolvedPath = service.resolveResource(url, browser);
-            getLogger().warn(
-                    "The path '{}' for inline resource "
-                            + "has been resolved to '{}'. "
-                            + "But resource is not available via the servlet context. "
-                            + "Trying to load '{}' as a URL",
-                    url, resolvedPath, url);
+            String resolvedPath = service.resolveResource(url);
+            getLogger().warn("The path '{}' for inline resource "
+                    + "has been resolved to '{}'. "
+                    + "But resource is not available via the servlet context. "
+                    + "Trying to load '{}' as a URL", url, resolvedPath, url);
             try {
                 stream = new URL(url).openConnection().getInputStream();
             } catch (MalformedURLException exception) {
@@ -308,7 +302,7 @@ public class UidlWriter implements Serializable {
                         COULD_NOT_READ_URL_CONTENTS_ERROR_MESSAGE, url), e);
             }
         } else if (getLogger().isDebugEnabled()) {
-            String resolvedPath = service.resolveResource(url, browser);
+            String resolvedPath = service.resolveResource(url);
             getLogger().debug(
                     "The path '{}' for inline resource has been successfully "
                             + "resolved to resource URL '{}'",

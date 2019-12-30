@@ -22,8 +22,6 @@ import java.util.Set;
 
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.WebBrowser;
-import com.vaadin.flow.server.startup.FakeBrowser;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.util.SharedUtil;
 
@@ -60,7 +58,6 @@ public class HtmlDependencyParser implements Serializable {
                 ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
 
         SerializableConsumer<String> dependencyWalker = new SerializableConsumer<String>() {
-            private final WebBrowser browser = FakeBrowser.getEs6();
 
             @Override
             public void accept(String uri) {
@@ -69,9 +66,8 @@ public class HtmlDependencyParser implements Serializable {
                 }
                 dependencies.add(uri);
                 HtmlImportParser.parseImports(uri,
-                        path -> service.getResourceAsStream(path, browser,
-                                null),
-                        path -> service.resolveResource(path, browser), this);
+                        path -> service.getResourceAsStream(path, null),
+                        path -> service.resolveResource(path), this);
             }
         };
 

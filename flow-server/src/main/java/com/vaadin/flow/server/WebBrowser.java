@@ -338,36 +338,4 @@ public class WebBrowser implements Serializable {
         return browserDetails.isTooOldToFunctionProperly();
     }
 
-    /**
-     * Checks if the browser supports ECMAScript 6, based on the user agent. Web
-     * components must be compiled to ECMAScript 5 when running on browsers
-     * without support to ECMAScript 6.
-     *
-     * @return <code>true</code> if the browser supports ES6, <code>false</code>
-     *         otherwise.
-     */
-    public boolean isEs6Supported() {
-        if (browserDetails == null) {
-            // Don't know, so assume it is not supported
-            return false;
-        }
-
-        return browserDetails.isEs6Supported();
-    }
-
-    /**
-     * Checks if the browser needs `custom-elements-es5-adapter.js` to be
-     * loaded.
-     *
-     * @return <code>true</code> if the browser needs the adapter,
-     *         <code>false</code> otherwise.
-     */
-    public boolean isEs5AdapterNeeded() {
-        if (browserDetails == null) {
-            // Don't know, so assume we don't need to provide an adapter
-            return false;
-        }
-        return browserDetails.isEs5AdapterNeeded();
-    }
-
 }

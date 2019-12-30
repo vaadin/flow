@@ -91,31 +91,15 @@ public final class Constants implements Serializable {
     public static final String SERVLET_PARAMETER_BROTLI = "brotli";
 
     /**
-     * Configuration name for loading the ES5 adapters.
-     */
-    public static final String LOAD_ES5_ADAPTERS = "load.es5.adapters";
-
-    /**
      * Configuration name for the frontend URL prefix for ES6.
      */
     public static final String FRONTEND_URL_ES6 = "frontend.url.es6";
-
-    /**
-     * Configuration name for the frontend URL prefix for ES5.
-     */
-    public static final String FRONTEND_URL_ES5 = "frontend.url.es5";
 
     /**
      * Default frontend URL prefix for ES6.
      */
     public static final String FRONTEND_URL_ES6_DEFAULT_VALUE = ApplicationConstants.CONTEXT_PROTOCOL_PREFIX
             + "frontend-es6/";
-
-    /**
-     * Default frontend URL prefix for ES.
-     */
-    public static final String FRONTEND_URL_ES5_DEFAULT_VALUE = ApplicationConstants.CONTEXT_PROTOCOL_PREFIX
-            + "frontend-es5/";
 
     /**
      * Default frontend URL prefix for development.

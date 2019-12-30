@@ -56,8 +56,7 @@ public abstract class AbstractDnDUnitTest {
         Mockito.when(browser.isIOS()).then(invocation -> iOS);
 
         VaadinService service = Mockito.mock(VaadinService.class);
-        Mockito.when(service.resolveResource(Mockito.anyString(),
-                Mockito.any(WebBrowser.class))).thenReturn("");
+        Mockito.when(service.resolveResource(Mockito.anyString())).thenReturn("");
 
         VaadinSession session = Mockito.mock(VaadinSession.class);
         Mockito.when(session.getConfiguration()).thenReturn(configuration);
