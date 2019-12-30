@@ -228,7 +228,7 @@
             <modules>
                 <module>test-pwa</module>
 
-                <module>test-mixed</module>
+                <!--module>test-mixed</module>
                 <module>test-mixed/pom-npm.xml</module>
 
                 <module>test-dev-mode</module>
@@ -241,23 +241,23 @@
                 <module>test-themes</module>
                 <module>test-lumo-theme</module>
                 <module>test-material-theme</module>
-                <module>servlet-containers</module>
+                <module>servlet-containers</module-->
 
                 <!-- web component embedding -->
-                <module>test-embedding</module>
+                <!--module>test-embedding</module-->
 
                 <!-- tests running in both modes -->
-                <module>test-misc</module>
+                <!--module>test-misc</module-->
 
-                <module>test-mixed/pom-pnpm-production.xml</module>
+                <!--module>test-mixed/pom-pnpm-production.xml</module>
                 <module>test-mixed/pom-npm-production.xml</module>
                 <module>test-npm-only-features</module>
                 <module>test-multi-war</module>
                 <module>test-ccdm</module>
-                <module>test-ccdm/pom-production.xml</module>                
+                <module>test-ccdm/pom-production.xml</module-->                
 
                 <!-- This test fails in local -->
-                <module>test-root-context</module>
+                <!--module>test-root-context</module-->
             </modules>
         </profile>
         <profile>
