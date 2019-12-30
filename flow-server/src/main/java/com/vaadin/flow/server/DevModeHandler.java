@@ -313,7 +313,7 @@ public final class DevModeHandler {
      */
     public boolean isDevModeRequest(HttpServletRequest request) {
         return request.getPathInfo() != null
-                && request.getPathInfo().matches("/" + VAADIN_MAPPING + ".+\\.js");
+                && request.getPathInfo().startsWith("/" + VAADIN_MAPPING);
     }
 
     /**
