@@ -34,7 +34,7 @@ public class DefaultSystemMessagesProvider implements SystemMessagesProvider {
     @Override
     public SystemMessages getSystemMessages(
             SystemMessagesInfo systemMessagesInfo) {
-        return ServletHelper.DEFAULT_SYSTEM_MESSAGES;
+        return HandlerHelper.DEFAULT_SYSTEM_MESSAGES;
     }
 
     /**

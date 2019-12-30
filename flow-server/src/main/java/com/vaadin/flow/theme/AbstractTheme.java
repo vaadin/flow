@@ -67,23 +67,6 @@ public interface AbstractTheme extends Serializable {
     }
 
     /**
-     * Gets the attributes that should be set on the {@code <body>} element when
-     * the Theme variant is applied.
-     *
-     * @param variant
-     *            the variant defined in the {@link Theme} annotation, not
-     *            <code>null</code>
-     * @return a Map with the attributes (keys and values) that should be set in
-     *         the body, or an empty Map if nothing should be set for the given
-     *         variant.
-     * @deprecated use {@link #getHtmlAttributes(String)} instead
-     */
-    @Deprecated
-    default Map<String, String> getBodyAttributes(String variant) {
-        return Collections.emptyMap();
-    }
-
-    /**
      * Gets the attributes that should be set on the {@code <html>} element when
      * the Theme variant is applied.
      *
@@ -95,7 +78,7 @@ public interface AbstractTheme extends Serializable {
      *         variant.
      */
     default Map<String, String> getHtmlAttributes(String variant) {
-        return getBodyAttributes(variant);
+        return Collections.emptyMap();
     }
 
     /**

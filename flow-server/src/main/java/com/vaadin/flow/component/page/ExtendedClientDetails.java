@@ -95,7 +95,8 @@ public class ExtendedClientDetails implements Serializable {
             String bodyClientWidth, String bodyClientHeight, String tzOffset,
             String rawTzOffset, String dstShift, String dstInEffect,
             String tzId, String curDate, String touchDevice,
-            String devicePixelRatio, String windowName, String navigatorPlatform) {
+            String devicePixelRatio, String windowName,
+            String navigatorPlatform) {
         if (screenWidth != null) {
             try {
                 this.screenWidth = Integer.parseInt(screenWidth);
@@ -337,7 +338,9 @@ public class ExtendedClientDetails implements Serializable {
 
     /**
      * Gets the device pixel ratio, {@code window.devicePixelRatio}. See more
-     * from <a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio">MDN web docs</a>.
+     * from <a href=
+     * "https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio">MDN
+     * web docs</a>.
      * <p>
      * A value of -1 indicates that the value was not reported by the browser
      * correctly.
@@ -371,6 +374,7 @@ public class ExtendedClientDetails implements Serializable {
             return navigatorPlatform.startsWith("iPad");
         }
         WebBrowser browser = VaadinSession.getCurrent().getBrowser();
-        return browser.isIPad() || (browser.isMacOSX() && isTouchDevice());
+        return browser.getBrowserApplication().contains("ipad")
+                || (browser.isMacOSX() && isTouchDevice());
     }
 }

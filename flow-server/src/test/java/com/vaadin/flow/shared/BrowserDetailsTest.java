@@ -158,7 +158,6 @@ public class BrowserDetailsTest extends TestCase {
         assertBrowserMinorVersion(bd, 0);
         assertEngineVersion(bd, 533.17f);
         assertIOS(bd, 4, 3);
-        assertIPad(bd);
         assertEs5(bd);
     }
 
@@ -746,12 +745,6 @@ public class BrowserDetailsTest extends TestCase {
 
     private void assertIPhone(BrowserDetails browserDetails) {
         assertTrue(browserDetails.isIPhone());
-        assertFalse(browserDetails.isIPad());
-    }
-
-    private void assertIPad(BrowserDetails browserDetails) {
-        assertFalse(browserDetails.isIPhone());
-        assertTrue(browserDetails.isIPad());
     }
 
     private void assertWindows(BrowserDetails browserDetails) {

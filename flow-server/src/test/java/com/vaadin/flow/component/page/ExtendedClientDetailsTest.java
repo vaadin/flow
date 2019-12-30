@@ -12,7 +12,8 @@ public class ExtendedClientDetailsTest {
 
     @Test
     public void initializeWithClientValues_gettersReturnExpectedValues() {
-        final ExtendedClientDetails details = new ExtendBuilder().buildDetails();
+        final ExtendedClientDetails details = new ExtendBuilder()
+                .buildDetails();
 
         Assert.assertEquals(2560, details.getScreenWidth());
         Assert.assertEquals(1450, details.getScreenHeight());
@@ -51,7 +52,7 @@ public class ExtendedClientDetailsTest {
         WebBrowser browser = Mockito.mock(WebBrowser.class);
         Mockito.when(session.getBrowser()).thenReturn(browser);
 
-        Mockito.when(browser.isIPad()).thenReturn(true);
+        Mockito.when(browser.getBrowserApplication()).thenReturn("...ipad...");
         Mockito.when(browser.isMacOSX()).thenReturn(false);
 
         detailsBuilder.setNavigatorPlatform(null);
@@ -59,22 +60,26 @@ public class ExtendedClientDetailsTest {
 
         Assert.assertTrue("No platform on with iPad is iPad", details.isIPad());
 
-        Mockito.when(browser.isIPad()).thenReturn(false);
-        Assert.assertFalse("No platform and ipad false on linux should not be an iPad", details.isIPad());
+        Mockito.when(browser.getBrowserApplication())
+                .thenReturn("...no i p a d...");
+        Assert.assertFalse(
+                "No platform and ipad false on linux should not be an iPad",
+                details.isIPad());
 
         Mockito.when(browser.isMacOSX()).thenReturn(true);
-        Assert.assertFalse("No platform MacOSX, but not touch is not an iPad", details.isIPad());
+        Assert.assertFalse("No platform MacOSX, but not touch is not an iPad",
+                details.isIPad());
 
         detailsBuilder.setTouchDevice("true");
         details = detailsBuilder.buildDetails();
-        Assert.assertTrue("No platform on MacOSX with touch is an iPad", details.isIPad());
+        Assert.assertTrue("No platform on MacOSX with touch is an iPad",
+                details.isIPad());
 
         CurrentInstance.clearAll();
     }
 
     /**
-     * Builder to create modified extended details.
-     * Default values apply.
+     * Builder to create modified extended details. Default values apply.
      */
     private class ExtendBuilder {
         private String screenWidth = "2560";
@@ -84,7 +89,8 @@ public class ExtendedClientDetailsTest {
         private String bodyClientWidth = "1600";
         private String bodyClientHeight = "1360";
         private String timezoneOffset = "-270"; // minutes from UTC
-        private String rawTimezoneOffset = "-210"; // minutes from UTC without DST
+        private String rawTimezoneOffset = "-210"; // minutes from UTC without
+                                                   // DST
         private String dstSavings = "60"; // dist shift amount
         private String dstInEffect = "true";
         private String timeZoneId = "Asia/Tehran";

@@ -39,6 +39,7 @@ import com.vaadin.flow.server.WebBrowser;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.FakeBrowser;
 import com.vaadin.flow.shared.ui.Dependency;
+import com.vaadin.flow.shared.ui.LoadMode;
 
 import elemental.json.JsonObject;
 
@@ -82,8 +83,8 @@ public class NpmTemplateParser implements TemplateParser {
 
         List<Dependency> dependencies = AnnotationReader
                 .getAnnotationsFor(clazz, JsModule.class).stream()
-                .map(htmlImport -> new Dependency(Dependency.Type.JS_MODULE,
-                        htmlImport.value(), htmlImport.loadMode()))
+                .map(jsModule -> new Dependency(Dependency.Type.JS_MODULE,
+                        jsModule.value(), LoadMode.LAZY))
                 .collect(Collectors.toList());
 
         DependencyFilter.FilterContext filterContext = new DependencyFilter.FilterContext(

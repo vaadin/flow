@@ -32,8 +32,8 @@ import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.DevModeHandler;
-import com.vaadin.flow.server.ServletHelper;
-import com.vaadin.flow.server.ServletHelper.RequestType;
+import com.vaadin.flow.server.HandlerHelper;
+import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
@@ -86,8 +86,7 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
-        return !request.getService().getDeploymentConfiguration().isCompatibilityMode()
-                && ServletHelper.isRequestType(request, RequestType.INIT);
+        return HandlerHelper.isRequestType(request, RequestType.INIT);
     }
 
     protected String getRequestUrl(VaadinRequest request) {
@@ -163,7 +162,7 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
 
-        ServletHelper.setResponseNoCacheHeaders(response::setHeader,
+        HandlerHelper.setResponseNoCacheHeaders(response::setHeader,
                 response::setDateHeader);
 
         writeResponse(response, getInitialJson(request, response, session));
@@ -187,7 +186,7 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
              * path segment in pathInfo (i.e. the part of the requested path
              * that comes after the servlet mapping)
              */
-            return ServletHelper.getCancelingRelativePath(pathInfo);
+            return HandlerHelper.getCancelingRelativePath(pathInfo);
         }
     }
 

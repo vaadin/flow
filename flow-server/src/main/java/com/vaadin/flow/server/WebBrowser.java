@@ -274,19 +274,6 @@ public class WebBrowser implements Serializable {
     }
 
     /**
-     * Tests if the browser is run on IPad.
-     *
-     * @return true if run on IPad false if the user is not using IPad or if no
-     *         information on the browser is present
-     * @deprecated isIPad will return the wrong value for iOS 13 and later. Use
-     *             instead {@link ExtendedClientDetails#isIPad()}
-     */
-    @Deprecated
-    public boolean isIPad() {
-        return browserDetails.isIPad();
-    }
-
-    /**
      * Tests if the browser is run on ChromeOS (e.g. a Chromebook).
      *
      * @return true if run on ChromeOS false if the user is not using ChromeOS

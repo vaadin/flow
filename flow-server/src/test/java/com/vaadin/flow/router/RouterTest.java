@@ -1499,42 +1499,6 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test
-    public void basic_url_resolving()
-            throws InvalidRouteConfigurationException {
-        setNavigationTargets(RootNavigationTarget.class,
-                FooNavigationTarget.class, FooBarNavigationTarget.class);
-
-        Assert.assertEquals("", router.getUrl(RootNavigationTarget.class));
-        Assert.assertEquals("foo", router.getUrl(FooNavigationTarget.class));
-        Assert.assertEquals("foo/bar",
-                router.getUrl(FooBarNavigationTarget.class));
-    }
-
-    @Test
-    public void nested_layouts_url_resolving()
-            throws InvalidRouteConfigurationException {
-        setNavigationTargets(RouteChild.class, LoneRoute.class);
-
-        Assert.assertEquals("parent/child", router.getUrl(RouteChild.class));
-        Assert.assertEquals("single", router.getUrl(LoneRoute.class));
-    }
-
-    @Test
-    public void layout_with_url_parameter_url_resolving()
-            throws InvalidRouteConfigurationException {
-        setNavigationTargets(GreetingNavigationTarget.class,
-                OtherGreetingNavigationTarget.class);
-
-        Assert.assertEquals("greeting/my_param",
-                router.getUrl(GreetingNavigationTarget.class, "my_param"));
-        Assert.assertEquals("greeting/true",
-                router.getUrl(GreetingNavigationTarget.class, "true"));
-
-        Assert.assertEquals("greeting/other",
-                router.getUrl(GreetingNavigationTarget.class, "other"));
-    }
-
-    @Test
     public void reroute_with_url_parameter()
             throws InvalidRouteConfigurationException {
         RouteWithParameter.events.clear();
@@ -1817,91 +1781,6 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test
-    public void url_resolves_correctly_for_optional_and_wild_parameters()
-            throws InvalidRouteConfigurationException, NotFoundException {
-        setNavigationTargets(OptionalParameter.class, WildParameter.class);
-
-        Assert.assertEquals(
-                "Optional value should be able to return even without any parameters",
-                "optional", router.getUrl(OptionalParameter.class));
-
-        Assert.assertEquals(
-                "Wildcard value should be able to return even without any parameters",
-                "wild", router.getUrl(WildParameter.class));
-
-        Assert.assertEquals("optional/my_param",
-                router.getUrl(OptionalParameter.class, "my_param"));
-
-        Assert.assertEquals("wild/true",
-                router.getUrl(WildParameter.class, "true"));
-
-        Assert.assertEquals("wild/there/are/many/of/us",
-                router.getUrl(WildParameter.class, "there/are/many/of/us"));
-    }
-
-    @Test
-    public void root_navigation_target_with_wildcard_parameter()
-            throws InvalidRouteConfigurationException {
-        WildRootParameter.events.clear();
-        WildRootParameter.param = null;
-        setNavigationTargets(WildRootParameter.class);
-
-        router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
-
-        Assert.assertEquals("Expected event amount was wrong", 1,
-                WildRootParameter.events.size());
-        Assert.assertEquals("Parameter should be empty", "",
-                WildRootParameter.param);
-
-        router.navigate(ui, new Location("my/wild"),
-                NavigationTrigger.PROGRAMMATIC);
-
-        Assert.assertEquals("Expected event amount was wrong", 2,
-                WildRootParameter.events.size());
-        Assert.assertEquals("Parameter should be empty", "my/wild",
-                WildRootParameter.param);
-
-        Assert.assertEquals("", router.getUrl(WildRootParameter.class));
-        Assert.assertEquals("wild",
-                router.getUrl(WildRootParameter.class, "wild"));
-
-        List<String> params = Arrays.asList("", null);
-        Assert.assertEquals("",
-                router.getUrl(WildRootParameter.class, params.get(1)));
-    }
-
-    @Test
-    public void root_navigation_target_with_optional_parameter()
-            throws InvalidRouteConfigurationException {
-        OptionalRootParameter.events.clear();
-        OptionalRootParameter.param = null;
-        setNavigationTargets(OptionalRootParameter.class);
-
-        router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
-
-        Assert.assertEquals("Expected event amount was wrong", 1,
-                OptionalRootParameter.events.size());
-        Assert.assertNull("Parameter should be empty",
-                OptionalRootParameter.param);
-
-        router.navigate(ui, new Location("optional"),
-                NavigationTrigger.PROGRAMMATIC);
-
-        Assert.assertEquals("Expected event amount was wrong", 2,
-                OptionalRootParameter.events.size());
-        Assert.assertEquals("Parameter should be empty", "optional",
-                OptionalRootParameter.param);
-
-        Assert.assertEquals("", router.getUrl(OptionalRootParameter.class));
-        Assert.assertEquals("optional",
-                router.getUrl(OptionalRootParameter.class, "optional"));
-
-        List<String> params = Arrays.asList("", null);
-        Assert.assertEquals("",
-                router.getUrl(OptionalRootParameter.class, params.get(1)));
-    }
-
-    @Test
     public void root_navigation_target_with_required_parameter()
             throws InvalidRouteConfigurationException {
         RootParameter.events.clear();
@@ -1955,21 +1834,6 @@ public class RouterTest extends RoutingTestBase {
                 BooleanParameter.events.size());
         Assert.assertEquals("Parameter should be empty", true,
                 BooleanParameter.param);
-    }
-
-    @Test
-    public void getUrl_for_has_url_with_supported_parameters()
-            throws InvalidRouteConfigurationException {
-        setNavigationTargets(IntegerParameter.class, LongParameter.class,
-                BooleanParameter.class);
-
-        Assert.assertEquals("integer/5",
-                router.getUrl(IntegerParameter.class, 5));
-
-        Assert.assertEquals("long/5", router.getUrl(LongParameter.class, 5l));
-
-        Assert.assertEquals("boolean/false",
-                router.getUrl(BooleanParameter.class, false));
     }
 
     @Test
@@ -2581,63 +2445,6 @@ public class RouterTest extends RoutingTestBase {
 
     }
 
-    @Test // 3519
-    public void getUrl_throws_for_required_parameter()
-            throws InvalidRouteConfigurationException {
-        expectedEx.expect(IllegalArgumentException.class);
-        expectedEx.expectMessage(String.format(
-                "Navigation target '%s' requires a parameter and can not be resolved. "
-                        + "Use 'public <T, C extends Component & HasUrlParameter<T>> "
-                        + "String getUrl(Class<? extends C> navigationTarget, T parameter)' "
-                        + "instead",
-                RouteWithParameter.class.getName()));
-        setNavigationTargets(RouteWithParameter.class);
-
-        router.getUrl(RouteWithParameter.class);
-    }
-
-    @Test // 3519
-    public void getUrl_returns_url_if_parameter_is_wildcard_or_optional()
-            throws InvalidRouteConfigurationException {
-        setNavigationTargets(RouteWithMultipleParameters.class,
-                OptionalParameter.class);
-
-        String url = router.getUrl(RouteWithMultipleParameters.class);
-
-        Assert.assertEquals("Returned url didn't match Wildcard parameter",
-                RouteWithMultipleParameters.class.getAnnotation(Route.class)
-                        .value(),
-                url);
-        url = router.getUrl(OptionalParameter.class);
-
-        Assert.assertEquals("Returned url didn't match Optional parameter",
-                OptionalParameter.class.getAnnotation(Route.class).value(),
-                url);
-    }
-
-    @Test // 3519
-    public void getUrlBase_returns_url_without_parameter_even_for_required_parameters()
-            throws InvalidRouteConfigurationException {
-        setNavigationTargets(RouteWithParameter.class,
-                RouteWithMultipleParameters.class, OptionalParameter.class,
-                FooNavigationTarget.class);
-
-        Assert.assertEquals("Required parameter didn't match url base.",
-                RouteWithParameter.class.getAnnotation(Route.class).value(),
-                router.getUrlBase(RouteWithParameter.class));
-        Assert.assertEquals("Wildcard parameter didn't match url base.",
-                RouteWithMultipleParameters.class.getAnnotation(Route.class)
-                        .value(),
-                router.getUrlBase(RouteWithMultipleParameters.class));
-        Assert.assertEquals("Optional parameter didn't match url base.",
-                OptionalParameter.class.getAnnotation(Route.class).value(),
-                router.getUrlBase(OptionalParameter.class));
-        Assert.assertEquals("Non parameterized url didn't match url base.",
-                FooNavigationTarget.class.getAnnotation(Route.class).value(),
-                router.getUrlBase(FooNavigationTarget.class));
-
-    }
-
     @Test
     public void proceedRightAfterPostpone_navigationIsDone()
             throws InvalidRouteConfigurationException {
@@ -2705,32 +2512,6 @@ public class RouterTest extends RoutingTestBase {
                         + AfterNavigationEvent.class.getSimpleName(),
                 AfterNavigationEvent.class,
                 AfterNavigationWithinSameParent.events.get(0).getClass());
-    }
-
-    @Test
-    public void routerLinkInParent_updatesWhenNavigating()
-            throws InvalidRouteConfigurationException {
-        setNavigationTargets(LoneRoute.class, RouteChild.class);
-
-        ui.navigate(router.getUrl(LoneRoute.class));
-
-        RouteParent routeParent = (RouteParent) ui.getInternals()
-                .getActiveRouterTargetsChain().get(1);
-        RouterLink loneLink = routeParent.loneLink;
-
-        Assert.assertTrue("Link should be attached",
-                loneLink.getUI().isPresent());
-        Assert.assertTrue(
-                "Link should be highlighted when navigated to link target",
-                loneLink.getElement().hasAttribute("highlight"));
-
-        ui.navigate(router.getUrl(RouteChild.class));
-
-        Assert.assertTrue("Link should be attached",
-                loneLink.getUI().isPresent());
-        Assert.assertFalse(
-                "Link should not be highlighted when navigated to other target",
-                loneLink.getElement().hasAttribute("highlight"));
     }
 
     @Test // #2754

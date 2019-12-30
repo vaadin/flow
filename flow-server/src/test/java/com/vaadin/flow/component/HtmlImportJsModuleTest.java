@@ -165,7 +165,7 @@ public class HtmlImportJsModuleTest {
     }
 
     @HtmlImport(value = "frontend://bower_components/vaadin-ordered-layout/src/vaadin-vertical-layout.html", loadMode = LoadMode.EAGER)
-    @JsModule(value = "/node_modules/@vaadin/vaadin-ordered-layout/src/vaadin-vertical-layout.js", loadMode = LoadMode.INLINE)
+    @JsModule(value = "/node_modules/@vaadin/vaadin-ordered-layout/src/vaadin-vertical-layout.js")
     private class HtmlImportJsModuleComponent extends Component {
 
     }

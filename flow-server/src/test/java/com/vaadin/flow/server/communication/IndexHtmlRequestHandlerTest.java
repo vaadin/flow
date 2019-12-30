@@ -24,6 +24,8 @@ import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 
 import com.sun.net.httpserver.HttpServer;
+
+import com.vaadin.flow.component.page.VaadinAppShell;
 import com.vaadin.flow.component.page.Viewport;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -55,7 +57,6 @@ import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubWebpa
 import static org.junit.Assert.assertEquals;
 
 public class IndexHtmlRequestHandlerTest {
-
     private MockServletServiceSessionSetup mocks;
     private MockServletServiceSessionSetup.TestVaadinServletService service;
     private VaadinSession session;
