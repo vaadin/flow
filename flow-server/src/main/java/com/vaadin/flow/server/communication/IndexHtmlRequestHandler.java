@@ -27,12 +27,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.server.VaadinAppShellRegistry;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.startup.VaadinAppShellRegistry;
 
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;

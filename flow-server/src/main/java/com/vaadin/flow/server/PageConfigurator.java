@@ -17,11 +17,13 @@ package com.vaadin.flow.server;
 
 import java.io.Serializable;
 
+import com.vaadin.flow.component.page.VaadinAppShell;
+
 /**
  * Configures the initial page contents.
  *
  * @since 1.0
- * @deprecated since 3.0 use {@link AppShellConfigurator}
+ * @deprecated since 3.0 use {@link VaadinAppShell}
  */
 @FunctionalInterface
 @Deprecated

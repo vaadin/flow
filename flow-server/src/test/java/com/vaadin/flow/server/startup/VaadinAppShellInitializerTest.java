@@ -30,18 +30,19 @@ import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.component.page.VaadinAppShell;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.server.AppShellSettings;
+import com.vaadin.flow.server.VaadinAppShellSettings;
 import com.vaadin.flow.server.InitialPageSettings;
 import com.vaadin.flow.server.InvalidApplicationConfigurationException;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.PageConfigurator;
+import com.vaadin.flow.server.VaadinAppShellRegistry;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.startup.VaadinAppShellRegistry.VaadinAppShellRegistryWrapper;
+import com.vaadin.flow.server.VaadinAppShellRegistry.VaadinAppShellRegistryWrapper;
 import com.vaadin.flow.shared.communication.PushMode;
 
 import static com.vaadin.flow.server.DevModeHandler.getDevModeHandler;
@@ -59,46 +60,46 @@ public class VaadinAppShellInitializerTest {
     @Meta(name = "lorem", content = "ipsum")
     @PWA(name = "my-pwa", shortName = "pwa")
     @Inline("inline.html")
-    @Inline(position = Inline.Position.PREPEND, value = "inline.css")
-    @Inline(wrapping = Inline.Wrapping.JAVASCRIPT, position = Inline.Position.APPEND, target = TargetElement.BODY, value = "inline.js")
-    @Viewport(Viewport.DEVICE_DIMENSIONS)
-    @BodySize(height = "50vh", width = "50vw")
+    @Inline(position = Position.PREPEND, value = "inline.css")
+    @Inline(wrapping = Wrapping.JAVASCRIPT, position = Position.APPEND, target = TargetElement.BODY, value = "inline.js")
+    @Viewport("my-viewport")
+    @BodySize(height = "my-height", width = "my-width")
     @PageTitle("my-title")
     public static class MyAppShellWithMultipleAnnotations implements VaadinAppShell {
     }
 
-    @Meta(name = "offending-foo", content = "bar")
-    @Meta(name = "offending-lorem", content = "ipsum")
-    @PWA(name = "offending-my-pwa", shortName = "pwa")
-    @Inline(wrapping = Inline.Wrapping.STYLESHEET, position = Inline.Position.PREPEND, target = TargetElement.HEAD, value = "inline.js")
-    @Inline(wrapping = Inline.Wrapping.JAVASCRIPT, position = Inline.Position.APPEND, target = TargetElement.BODY, value = "inline.css")
-    @Viewport(Viewport.DEVICE_DIMENSIONS)
-    @BodySize(height = "50vh", width = "50vw")
+    @Meta(name = "foo", content = "bar")
+    @Meta(name = "lorem", content = "ipsum")
+    @PWA(name = "my-pwa", shortName = "pwa")
+    @Inline("inline.html")
+    @Inline(position = Position.PREPEND, value = "inline.css")
+    @Inline(wrapping = Wrapping.JAVASCRIPT, position = Position.APPEND, target = TargetElement.BODY, value = "inline.js")
+    @Viewport("my-viewport")
+    @BodySize(height = "my-height", width = "my-width")
     @PageTitle("my-title")
     public static class OffendingClass {
     }
 
     public static class MyAppShellWithConfigurator implements VaadinAppShell {
         @Override
-        public void configurePage(AppShellSettings settings) {
-            settings.setViewport("foo-viewport");
+        public void configurePage(VaadinAppShellSettings settings) {
+            settings.setViewport("my-viewport");
             settings.setPageTitle("my-title");
             settings.addMetaTag("foo", "bar");
             settings.addMetaTag("lorem", "ipsum");
+            settings.addInlineFromFile("inline.html", Wrapping.AUTOMATIC);
+            settings.addInlineFromFile(Position.PREPEND, "inline.css", Wrapping.AUTOMATIC);
+            settings.addInlineFromFile(TargetElement.BODY, Position.APPEND, "inline.js", Wrapping.JAVASCRIPT);
+            settings.setBodySize("my-width", "my-height");
+
             settings.addFavIcon("icon1", "icon1.png", "1x1");
             settings.addFavIcon("icon2", "icon2.png", "2x2");
-
             settings.addInlineWithContents(Position.PREPEND,
                     "window.messages = window.messages || [];\n"
                             + "window.messages.push(\"content script\");",
                             Wrapping.JAVASCRIPT);
-
             settings.addInlineFromFile(Position.PREPEND, "inline.js",
                     Wrapping.JAVASCRIPT);
-
-            settings.addInlineFromFile("inline.js", Wrapping.JAVASCRIPT);
-            settings.addInlineFromFile("inline.html", Wrapping.NONE);
-            settings.addInlineFromFile("inline.css", Wrapping.STYLESHEET);
 
             settings.addLink("icons/favicon.ico",
                     new LinkedHashMap<String, String>() {
@@ -118,13 +119,6 @@ public class VaadinAppShellInitializerTest {
 
             settings.addFavIcon("icon", "icons/icon-192.png", "192x192");
             settings.addFavIcon("icon", "icons/icon-200.png", "2");
-
-            settings.addMetaTag(Position.PREPEND, "theme-color", "#227aef");
-            settings.addMetaTag(Position.APPEND, "back-color", "#227aef");
-
-            settings.addInlineWithContents(
-                    "body {width: 100vw; height:100vh; margin:0;}",
-                    Wrapping.STYLESHEET);
 
             settings.getLoadingIndicatorConfiguration().ifPresent(indicator -> indicator.setApplyDefaultTheme(false));
             settings.getLoadingIndicatorConfiguration().ifPresent(indicator -> indicator.setSecondDelay(700000));
@@ -230,7 +224,7 @@ public class VaadinAppShellInitializerTest {
         List<Element> elements = document.head().children();
         assertEquals(7, elements.size());
         assertEquals("text/css", elements.get(5).attr("type"));
-        assertEquals("body,#outlet{width:50vw;height:50vh;}", elements.get(5).childNode(0).toString());
+        assertEquals("body,#outlet{width:my-width;height:my-height;}", elements.get(5).childNode(0).toString());
     }
 
     @Test
@@ -256,8 +250,8 @@ public class VaadinAppShellInitializerTest {
 
         assertEquals("text/css", headElements.get(5).attr("type"));
         assertEquals("style", headElements.get(5).tagName());
-        assertTrue(headElements.get(5).outerHtml().contains("width:50vw"));
-        assertTrue(headElements.get(5).outerHtml().contains("height:50vh"));
+        assertTrue(headElements.get(5).outerHtml().contains("width:my-width"));
+        assertTrue(headElements.get(5).outerHtml().contains("height:my-height"));
 
         assertEquals("text/javascript", headElements.get(6).attr("type"));
         assertEquals("script", headElements.get(6).tagName());

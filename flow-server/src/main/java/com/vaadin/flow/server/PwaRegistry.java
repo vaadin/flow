@@ -37,7 +37,6 @@ import java.util.stream.Collectors;
 
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
-import com.vaadin.flow.server.startup.VaadinAppShellRegistry;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -77,7 +76,7 @@ public class PwaRegistry implements Serializable {
 
     /**
      * Creates a new PwaRegistry instance.
-     * 
+     *
      * @param pwa
      *            the pwa annotation
      * @param servletContext

@@ -44,14 +44,15 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.server.InvalidApplicationConfigurationException;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.PageConfigurator;
+import com.vaadin.flow.server.VaadinAppShellRegistry;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
 
-import static com.vaadin.flow.server.startup.VaadinAppShellRegistry.ERROR_HEADER_NO_APP_CONFIGURATOR;
-import static com.vaadin.flow.server.startup.VaadinAppShellRegistry.ERROR_HEADER_NO_SHELL;
-import static com.vaadin.flow.server.startup.VaadinAppShellRegistry.ERROR_HEADER_OFFENDING;
-import static com.vaadin.flow.server.startup.VaadinAppShellRegistry.ERROR_HEADER_OFFENDING_CONFIGURATOR;
+import static com.vaadin.flow.server.VaadinAppShellRegistry.ERROR_HEADER_NO_APP_CONFIGURATOR;
+import static com.vaadin.flow.server.VaadinAppShellRegistry.ERROR_HEADER_NO_SHELL;
+import static com.vaadin.flow.server.VaadinAppShellRegistry.ERROR_HEADER_OFFENDING;
+import static com.vaadin.flow.server.VaadinAppShellRegistry.ERROR_HEADER_OFFENDING_CONFIGURATOR;
 
 /**
  * Servlet initializer visiting {@link VaadinAppShell} configuration.

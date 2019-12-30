@@ -111,8 +111,17 @@ public abstract class AbstractAnnotationValidator implements Serializable {
         return getClassAnnotations(clazz, getAnnotations());
     }
 
+    /**
+     * Returns annotations declared for the {@code clazz}.
+     *
+     * @param clazz
+     *            the type
+     * @param annotations
+     *            the annotation list
+     * @return a comma separated string with the annotation names
+     */
     @SuppressWarnings("unchecked")
-    protected static String getClassAnnotations(Class<?> clazz,
+    public static String getClassAnnotations(Class<?> clazz,
             List<Class<?>> annotations) {
         return annotations.stream()
                 .filter(ann -> clazz

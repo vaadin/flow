@@ -44,7 +44,7 @@ import com.vaadin.flow.component.page.TargetElement;
  *
  * @since 3.0
  */
-public class AppShellSettings implements Serializable {
+public class VaadinAppShellSettings implements Serializable {
     public static final String KEY_RESOURCE = "file";
 
     /**
@@ -76,7 +76,7 @@ public class AppShellSettings implements Serializable {
                 content = BootstrapUtils.getDependencyContents(request, file);
             }
 
-            if (type == Wrapping.AUTOMATIC) {
+            if (type == Wrapping.AUTOMATIC && file != null) {
                 if (file.toLowerCase().endsWith(".css")) {
                     type = Wrapping.STYLESHEET;
                 } else if (file.toLowerCase().endsWith(".js")) {
@@ -98,19 +98,6 @@ public class AppShellSettings implements Serializable {
 
     private final Map<Position, List<Element>> elements = new EnumMap<>(
             Position.class);
-
-    /**
-     * Create new initial page settings object.
-     *
-     * @param request
-     *            initial request
-     * @param ui
-     *            target ui
-     * @param browser
-     *            browser information
-     */
-    public AppShellSettings() {
-    }
 
     /**
      * Get the current request.
@@ -152,9 +139,9 @@ public class AppShellSettings implements Serializable {
     /**
      * Set the body size.
      *
-     * @param bodyWidth
+     * @param width
      *            body with
-     * @param bodyWidth
+     * @param height
      *            body height
      */
     public void setBodySize(String width, String height) {
@@ -170,7 +157,7 @@ public class AppShellSettings implements Serializable {
      *            title
      */
     public void setPageTitle(String title) {
-        getElements(Position.APPEND).add(createElement("title", title));
+        getHeadElements(Position.APPEND).add(createElement("title", title));
     }
 
     /**
@@ -197,7 +184,24 @@ public class AppShellSettings implements Serializable {
      */
     public void addInlineFromFile(Position position, String file,
             Wrapping type) {
-        addInline(TargetElement.HEAD, position, type, KEY_RESOURCE, file);
+        addInlineFromFile(TargetElement.HEAD, position, file, type);
+    }
+
+    /**
+     * Inline contents from classpath file to head of initial page.
+     *
+     * @param target
+     *            head of body
+     * @param position
+     *            prepend or append
+     * @param file
+     *            dependency file to read and write to head
+     * @param type
+     *            dependency type
+     */
+    public void addInlineFromFile(TargetElement target, Position position, String file,
+            Wrapping type) {
+        addInline(target, position, type, file, null);
     }
 
     /**
@@ -290,7 +294,7 @@ public class AppShellSettings implements Serializable {
             Map<String, String> attributes) {
         Element link = createElement("link", null, "href", href);
         attributes.forEach((key, value) -> link.attr(key, value));
-        getElements(position).add(link);
+        getHeadElements(position).add(link);
     }
 
     /**
@@ -316,7 +320,7 @@ public class AppShellSettings implements Serializable {
      *            location of the linked document
      */
     public void addLink(Position position, String rel, String href) {
-        getElements(position)
+        getHeadElements(position)
                 .add(createElement("link", null, "href", href, "rel", rel));
     }
 
@@ -348,7 +352,7 @@ public class AppShellSettings implements Serializable {
      */
     public void addFavIcon(Position position, String rel, String href,
             String sizes) {
-        getElements(position).add(createElement("link", null, "href", href,
+        getHeadElements(position).add(createElement("link", null, "href", href,
                 "rel", rel, "sizes", sizes));
     }
 
@@ -377,7 +381,7 @@ public class AppShellSettings implements Serializable {
     public void addMetaTag(Position position, String name, String content) {
         Element meta = createElement("meta", null, "name", name, "content",
                 content);
-        getElements(position).add(meta);
+        getHeadElements(position).add(meta);
     }
 
     /**
@@ -415,7 +419,7 @@ public class AppShellSettings implements Serializable {
      *            prepend or append
      * @return a list of dom elements to add
      */
-    public List<Element> getElements(Position position) {
+    List<Element> getHeadElements(Position position) {
         return elements.computeIfAbsent(position, key -> new ArrayList<>());
     }
 
@@ -428,7 +432,7 @@ public class AppShellSettings implements Serializable {
      *            position in the target
      * @return the list of dom elements to add.
      */
-    public List<Element> getInlineElements(VaadinRequest request,
+    List<Element> getInlineElements(VaadinRequest request,
             TargetElement target, Position position) {
         return inlines.stream()
                 .filter(inline -> inline.target == target
