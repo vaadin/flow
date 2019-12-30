@@ -10,5 +10,5 @@ import com.vaadin.flow.server.PWA;
 @PWA(name = "My App", shortName = "app")
 @Viewport(Viewport.DEVICE_DIMENSIONS)
 @BodySize(height = "50vh", width = "50vw")
-public class AppShell extends VaadinAppShell {
+public class AppShell implements VaadinAppShell {
 }

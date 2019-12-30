@@ -24,8 +24,6 @@ import java.util.function.Consumer;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.parser.Parser;
-import org.jsoup.parser.Tag;
 
 import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
@@ -34,18 +32,8 @@ import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.component.page.VaadinAppShell;
 import com.vaadin.flow.component.page.Viewport;
-import com.vaadin.flow.internal.UrlUtil;
-import com.vaadin.flow.server.InlineTargets;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.server.VaadinAppShellSettings;
-import com.vaadin.flow.server.InvalidApplicationConfigurationException;
-import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.shared.ui.Dependency;
-
-import elemental.json.JsonObject;
 import com.vaadin.flow.server.startup.AbstractAnnotationValidator;
 
 import static com.vaadin.flow.server.startup.VaadinAppShellInitializer.getValidAnnotations;
