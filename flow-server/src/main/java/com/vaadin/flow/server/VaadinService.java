@@ -77,7 +77,6 @@ import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
-import com.vaadin.flow.theme.AbstractTheme;
 
 import elemental.json.Json;
 import elemental.json.JsonException;
@@ -2243,8 +2242,8 @@ public abstract class VaadinService implements Serializable {
      * @param url
      *            the untranslated Vaadin URL for the resource
      * @return <code>true</code> if a resource is found and can be read using
-     *         {@link #getResourceAsStream(String, AbstractTheme)},
-     *         <code>false</code> if it is not found
+     *         {@link #getResourceAsStream(String)}, <code>false</code> if it is
+     *         not found
      */
     public boolean isResourceAvailable(String url) {
         return getResource(url) != null;
