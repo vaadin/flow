@@ -45,7 +45,6 @@ import com.vaadin.flow.component.page.TargetElement;
  * @since 3.0
  */
 public class VaadinAppShellSettings implements Serializable {
-    public static final String KEY_RESOURCE = "file";
 
     /**
      * A class representing an InlineElement.
