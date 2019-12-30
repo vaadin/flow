@@ -43,7 +43,6 @@ import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
-import static com.vaadin.flow.shared.ApplicationConstants.FRONTEND_PROTOCOL_PREFIX;
 import static elemental.json.impl.JsonUtil.stringify;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -93,7 +92,6 @@ public abstract class NodeUpdater implements FallibleCommand {
      * Base directory for flow generated files.
      */
     protected final File generatedFolder;
-
 
     /**
      * Base directory for flow dependencies coming from jars.
@@ -167,18 +165,6 @@ public abstract class NodeUpdater implements FallibleCommand {
         String resolved = importPath;
         if (!importPath.startsWith("@")) {
 
-            if (importPath.startsWith(FRONTEND_PROTOCOL_PREFIX)) {
-                resolved = importPath.replaceFirst(FRONTEND_PROTOCOL_PREFIX,
-                        "./");
-                if (isJsModule) {
-                    // Remove this when all flow components annotated with
-                    // @JsModule have the './' prefix instead of 'frontend://'
-                    log().warn(
-                            "Do not use the '{}' protocol in '@JsModule', changing '{}' to '{}', please update your component.",
-                            FRONTEND_PROTOCOL_PREFIX, importPath, resolved);
-                }
-            }
-
             // We only should check here those paths starting with './' when all
             // flow components
             // have the './' prefix
@@ -216,7 +202,8 @@ public abstract class NodeUpdater implements FallibleCommand {
     }
 
     JsonObject getResourcesPackageJson() throws IOException {
-        JsonObject packageJson = getJsonFileContent(new File(flowResourcesFolder, PACKAGE_JSON));
+        JsonObject packageJson = getJsonFileContent(
+                new File(flowResourcesFolder, PACKAGE_JSON));
         if (packageJson == null) {
             packageJson = Json.createObject();
             packageJson.put(DEP_NAME_KEY, DEP_NAME_FLOW_JARS);
@@ -257,7 +244,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     static Map<String, String> getDefaultDependencies() {
         Map<String, String> defaults = new HashMap<>();
 
-        defaults.put("@vaadin/router","^1.6.0");
+        defaults.put("@vaadin/router", "^1.6.0");
 
         defaults.put("@polymer/polymer", POLYMER_VERSION);
         defaults.put("@webcomponents/webcomponentsjs", "^2.2.10");
@@ -270,7 +257,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         defaults.put("html-webpack-plugin", "3.2.0");
         defaults.put("script-ext-html-webpack-plugin", "2.1.4");
-        defaults.put("typescript","3.5.3");
+        defaults.put("typescript", "3.5.3");
         defaults.put("awesome-typescript-loader", "5.2.1");
 
         defaults.put("webpack", "4.30.0");
@@ -295,7 +282,7 @@ public abstract class NodeUpdater implements FallibleCommand {
      */
     boolean updateDefaultDependencies(JsonObject packageJson) {
         int added = 0;
-        
+
         for (Map.Entry<String, String> entry : getDefaultDependencies()
                 .entrySet()) {
             added += addDependency(packageJson, DEPENDENCIES, entry.getKey(),
@@ -318,7 +305,6 @@ public abstract class NodeUpdater implements FallibleCommand {
         Objects.requireNonNull(json, "Json object need to be given");
         Objects.requireNonNull(key, "Json sub object needs to be give.");
         Objects.requireNonNull(pkg, "dependency package needs to be defined");
-
 
         JsonObject vaadinDeps = json.getObject(VAADIN_DEP_KEY);
         if (!json.hasKey(key)) {
@@ -343,7 +329,6 @@ public abstract class NodeUpdater implements FallibleCommand {
         }
         return 0;
     }
-
 
     private int handleExistingVaadinDep(JsonObject json, String pkg,
             String version, JsonObject vaadinDeps) {
@@ -385,7 +370,8 @@ public abstract class NodeUpdater implements FallibleCommand {
         return writePackageFile(packageJson, new File(npmFolder, PACKAGE_JSON));
     }
 
-    String writeResourcesPackageFile(JsonObject packageJson) throws IOException {
+    String writeResourcesPackageFile(JsonObject packageJson)
+            throws IOException {
         return writePackageFile(packageJson,
                 new File(flowResourcesFolder, PACKAGE_JSON));
     }
