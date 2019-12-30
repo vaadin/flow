@@ -36,8 +36,6 @@ public abstract class VaadinUriResolver implements Serializable {
      * <ul>
      * <li><code>{@value com.vaadin.flow.shared.ApplicationConstants#CONTEXT_PROTOCOL_PREFIX}</code>
      * resolves to the application context root</li>
-     * <li><code>{@value com.vaadin.flow.shared.ApplicationConstants#FRONTEND_PROTOCOL_PREFIX}</code>
-     * - resolves to the build path where web components were compiled.</li>
      * <li><code>{@value com.vaadin.flow.shared.ApplicationConstants#BASE_PROTOCOL_PREFIX}</code>
      * - resolves to the base URI of the page</li>
      * </ul>
