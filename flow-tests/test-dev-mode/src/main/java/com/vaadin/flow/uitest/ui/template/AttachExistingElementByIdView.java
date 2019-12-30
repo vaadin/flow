@@ -15,23 +15,14 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
-import com.vaadin.flow.uitest.ui.AbstractDivView;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.uitest.ui.AbstractDivView;
+import com.vaadin.flow.uitest.ui.template.AttachExistingElementByIdView.AttachExistingElementByIdTemplate;
 
 @Route("com.vaadin.flow.uitest.ui.template.AttachExistingElementByIdView")
 public class AttachExistingElementByIdView extends AbstractDivView {
-
-    @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/AttachExistingElementById.html")
-    @Tag("existing-element")
-    public static class AttachExistingElementByIdTemplate
-            extends AbstractAttachExistingElementByIdTemplate {
-
-        AttachExistingElementByIdTemplate() {
-            super("simple-path");
-        }
-    }
 
     @HtmlImport("context://frontend/com/vaadin/flow/uitest/ui/template/ContextAttachExistingElementById.html")
     @Tag("context-existing-element")

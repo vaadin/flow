@@ -21,13 +21,11 @@ import com.vaadin.flow.component.AbstractField;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
 
 @JsModule("./src/Dependency.js")
-@HtmlImport("frontend://Dependency.html")
 public class ClientSelectComponent extends Div {
     private Span message = new Span();
     private Select select;
