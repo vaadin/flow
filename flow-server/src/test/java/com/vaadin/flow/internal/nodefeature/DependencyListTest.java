@@ -137,15 +137,7 @@ public class DependencyListTest {
         assertUrlUnchanged("ftp://some.host/some/where");
         assertUrlUnchanged("https://some.host/some/where");
         assertUrlUnchanged("//same.protocol.some.host/some/where");
-        assertFrontendPrefixed("foo?bar");
-        assertFrontendPrefixed("foo?bar=http://yah");
-        assertFrontendPrefixed("foo/baz?bar=http://some.thing");
-        assertFrontendPrefixed("foo/baz?bar=http://some.thing&ftp://bar");
         assertUrlUnchanged("context://foo?bar=frontend://baz");
-    }
-
-    private void assertFrontendPrefixed(String url) {
-        assertDependencyUrl("frontend://" + url, url);
     }
 
     private void assertUrlUnchanged(String url) {
@@ -163,20 +155,11 @@ public class DependencyListTest {
     public void urlAddedOnlyOnce() {
         addSimpleDependency("foo/bar.js");
         addSimpleDependency("foo/bar.js");
-        addSimpleDependency("frontend://foo/bar.js");
         assertEquals(1, deps.getPendingSendToClient().size());
         deps.clearPendingSendToClient();
 
         addSimpleDependency("foo/bar.js");
         assertEquals(0, deps.getPendingSendToClient().size());
-    }
-
-    @Test
-    public void relativeUrlBecomesFrontend() {
-        addSimpleDependency("foo.js");
-
-        Dependency dependency = deps.getPendingSendToClient().iterator().next();
-        assertEquals("frontend://foo.js", dependency.getUrl());
     }
 
     private void addSimpleDependency(String foo) {

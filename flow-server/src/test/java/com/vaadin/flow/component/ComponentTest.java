@@ -1208,12 +1208,12 @@ public class ComponentTest {
 
     private void assertDependency(Dependency.Type type, String url,
             Map<String, Dependency> pendingDependencies) {
-        Dependency dependency = pendingDependencies.get("frontend://" + url);
+        Dependency dependency = pendingDependencies.get(url);
         Assert.assertNotNull(
                 "Could not locate a dependency object for url=" + url,
                 dependency);
         Assert.assertEquals(type, dependency.getType());
-        Assert.assertEquals("frontend://" + url, dependency.getUrl());
+        Assert.assertEquals(url, dependency.getUrl());
     }
 
     private Map<String, Dependency> getDependenciesMap(
