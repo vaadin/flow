@@ -33,11 +33,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.component.HasComponents;
-import com.vaadin.flow.component.Text;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -1316,14 +1316,12 @@ public class RouterTest extends RoutingTestBase {
         }
     }
 
-    @Route(value = "event/twig", layout = ProcessEventsBranch.class)
-    @ParentLayout(ProcessEventsBranch.class)
-    public static class ProcessEventsTwig extends ProcessEventsBase {
+    @Route(value = "event/flower", layout = ProcessEventsBranch.class)
+    public static class ProcessEventsFlower extends ProcessEventsBase {
 
     }
 
     @Route(value = "event/leaf", layout = ProcessEventsBranch.class)
-    @ParentLayout(ProcessEventsBranch.class)
     public static class ProcessEventsLeaf extends ProcessEventsBase
             implements HasUrlParameter<String> {
 
@@ -1331,6 +1329,34 @@ public class RouterTest extends RoutingTestBase {
         public void setParameter(BeforeEvent event, String parameter) {
             super.setParameter(event, parameter);
         }
+    }
+
+    @ParentLayout(ProcessEventsTrunk.class)
+    public static class ProcessEventsRotten extends ProcessEventsBase
+            implements RouterLayout {
+
+        public ProcessEventsRotten() {
+        }
+
+        @Override
+        public void beforeEnter(BeforeEnterEvent event) {
+            super.beforeEnter(event);
+
+            event.rerouteTo("event/flower");
+        }
+    }
+
+    @ParentLayout(ProcessEventsRotten.class)
+    public static class ProcessEventsStick extends ProcessEventsBase
+            implements RouterLayout {
+
+        public ProcessEventsStick() {
+        }
+    }
+
+    @Route(value = "event/twig", layout = ProcessEventsStick.class)
+    public static class ProcessEventsTwig extends ProcessEventsBase {
+
     }
 
     @Override
@@ -3340,36 +3366,63 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test // #4595
-    public void navigation_event_listeners_are_invoked_starting_with_parent_component()
+    public void event_listeners_are_invoked_starting_with_parent_component()
             throws InvalidRouteConfigurationException {
-        setNavigationTargets(ProcessEventsTwig.class);
+        setNavigationTargets(ProcessEventsFlower.class);
+
+        router.navigate(ui, new Location("event/flower"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        assertInitialEventOrder(
+                getProcessEventsBranchChainNames("ProcessEventsFlower"));
+    }
+
+    @Test // #4595
+    public void parent_layouts_are_reused_when_change_url()
+            throws InvalidRouteConfigurationException {
+        setNavigationTargets(ProcessEventsFlower.class,
+                ProcessEventsLeaf.class);
+
+        router.navigate(ui, new Location("event/flower"),
+                NavigationTrigger.PROGRAMMATIC);
+        
+        ProcessEventsBase.clear();
+
+        final String parameter = "green";
+        router.navigate(ui, new Location("event/leaf/" + parameter),
+                NavigationTrigger.PROGRAMMATIC);
+        
+        assertEventOrder(Arrays.asList("ProcessEventsLeaf"),
+                getProcessEventsBranchChainNames("ProcessEventsFlower"),
+                getProcessEventsBranchChainNames("ProcessEventsLeaf", parameter),
+                getProcessEventsBranchChainNames("ProcessEventsLeaf"));
+    }
+
+    @Test // #4595
+    public void components_are_not_created_when_parent_layout_redirects()
+            throws InvalidRouteConfigurationException {
+        setNavigationTargets(ProcessEventsFlower.class,
+                ProcessEventsTwig.class);
 
         router.navigate(ui, new Location("event/twig"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        List<String> expected = Arrays.asList("ProcessEventsRoot", "rootChild1",
-                "rootChild11", "rootChild2", "ProcessEventsTrunk",
-                "ProcessEventsBranch", "branchChild1", "branchChild2",
-                "branchChild21", "ProcessEventsTwig");
-
-        Assert.assertEquals(
-                "Component initialization is done in incorrect order",
-                expected, ProcessEventsBase.init);
-
-        Assert.assertTrue("There should be no before leave events triggered",
-                ProcessEventsBase.beforeLeave.isEmpty());
+        // This is expected after reroute.
+        final List<String> expectedOnReroute = getProcessEventsBranchChainNames(
+                "ProcessEventsFlower");
         
-        Assert.assertEquals(
-                "Before enter events aren't triggered in correct order",
-                expected, ProcessEventsBase.beforeEnter);
-
-        Assert.assertEquals(
-                "After navigation events aren't triggered in correct order",
-                expected, ProcessEventsBase.afterNavigation);
+        // This is expected on init and BeforeEnter since the ProcessEventsRotten
+        // parent of ProcessEventsTwig will reroute, so ProcessEventsTwig and
+        // ProcessEventsStick won't be created.
+        final List<String> expected = Stream
+                .concat(getProcessEventsTrunkChainNames("ProcessEventsRotten")
+                        .stream(), expectedOnReroute.stream())
+                .collect(Collectors.toList());
+        assertEventOrder(expected, null, expected, expectedOnReroute);
     }
 
     @Test // #4595
-    public void navigation_url_parameter_is_invoked_after_before_enter_events()
+    public void url_parameter_is_invoked_after_before_enter_events()
             throws InvalidRouteConfigurationException {
         setNavigationTargets(ProcessEventsLeaf.class);
 
@@ -3380,6 +3433,56 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertEquals("Parameter should be the last invoked.", parameter,
                 ProcessEventsBase.beforeEnter
                         .get(ProcessEventsBase.beforeEnter.size() - 1));
+    }
+
+    private List<String> getProcessEventsTrunkChainNames(String... leafs) {
+        final List<String> chainNames = new ArrayList<>(
+                Arrays.asList("ProcessEventsRoot", "rootChild1", "rootChild11",
+                        "rootChild2", "ProcessEventsTrunk"));
+
+        chainNames.addAll(Arrays.asList(leafs));
+
+        return chainNames;
+    }
+
+    private List<String> getProcessEventsBranchChainNames(String... leafs) {
+        final List<String> chainNames = getProcessEventsTrunkChainNames(
+                "ProcessEventsBranch", "branchChild1", "branchChild2",
+                "branchChild21");
+
+        chainNames.addAll(Arrays.asList(leafs));
+
+        return chainNames;
+    }
+
+    private void assertInitialEventOrder(List<String> expected) {
+        assertEventOrder(expected, null, expected, expected);
+    }
+    
+    private void assertEventOrder(List<String> expectedInit,
+            List<String> expectedBeforeLeave, List<String> expectedBeforeEnter,
+            List<String> expectedAfterNavigation) {
+
+        Assert.assertEquals(
+                "Component initialization is done in incorrect order",
+                expectedInit, ProcessEventsBase.init);
+
+        if (expectedBeforeLeave == null) {
+            Assert.assertTrue("There should be no before leave events triggered",
+                    ProcessEventsBase.beforeLeave.isEmpty());
+        } else {
+            Assert.assertEquals(
+                    "BeforeLeave events aren't triggered in correct order",
+                    expectedBeforeLeave, ProcessEventsBase.beforeLeave);
+        }
+
+        Assert.assertEquals(
+                "BeforeEnter events aren't triggered in correct order",
+                expectedBeforeEnter, ProcessEventsBase.beforeEnter);
+
+        Assert.assertEquals(
+                "AfterNavigation events aren't triggered in correct order",
+                expectedAfterNavigation, ProcessEventsBase.afterNavigation);
     }
 
     private void setNavigationTargets(
