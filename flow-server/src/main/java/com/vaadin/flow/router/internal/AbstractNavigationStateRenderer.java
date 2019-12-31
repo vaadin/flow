@@ -214,8 +214,7 @@ public abstract class AbstractNavigationStateRenderer
                 event, routeTargetType, routeLayoutTypes);
 
         TransitionOutcome transitionOutcome = createChainIfEmptyAndExecuteBeforeEnterNavigation(
-                beforeNavigationActivating, event, chain,
-                ui.getInternals().getActiveRouterTargetsChain());
+                beforeNavigationActivating, event, chain);
 
         Optional<Integer> result = handleTransactionOutcome(transitionOutcome, event,
                 beforeNavigationActivating);
@@ -424,13 +423,11 @@ public abstract class AbstractNavigationStateRenderer
      *            the chain of {@link HasElement} instances which will be
      *            rendered. In case this is empty it'll be populated with
      *            instances according with the navigation event's location.
-     * @param oldChain
-     *            the old navigation chain.
      * @return result of observer events
      */
     private TransitionOutcome createChainIfEmptyAndExecuteBeforeEnterNavigation(
             BeforeEnterEvent beforeNavigation, NavigationEvent event,
-            List<HasElement> chain, List<HasElement> oldChain) {
+            List<HasElement> chain) {
 
         // Always send the beforeNavigation event first to the registered
         // listeners
@@ -444,6 +441,9 @@ public abstract class AbstractNavigationStateRenderer
             return transitionOutcome.get();
         }
 
+        List<HasElement> oldChain = event.getUI().getInternals()
+                .getActiveRouterTargetsChain();
+                
         if (chain.isEmpty()) {
             // Create the chain components if missing.
             List<Class<? extends HasElement>> typesChain = createTypesChain(
