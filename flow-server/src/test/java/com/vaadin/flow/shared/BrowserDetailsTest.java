@@ -134,7 +134,6 @@ public class BrowserDetailsTest extends TestCase {
         assertEngineVersion(bd, 536.26f);
         assertIOS(bd, 6, 1);
         assertIPhone(bd);
-
     }
 
     public void testIPhoneIOS5() {
@@ -146,7 +145,6 @@ public class BrowserDetailsTest extends TestCase {
         assertEngineVersion(bd, 534.46f);
         assertIOS(bd, 5, 1);
         assertIPhone(bd);
-
     }
 
     public void testIPhoneIOS4() {
@@ -158,7 +156,6 @@ public class BrowserDetailsTest extends TestCase {
         assertEngineVersion(bd, 532.9f);
         assertIOS(bd, 4, 0);
         assertIPhone(bd);
-
     }
 
     public void testIPadIOS4() {
@@ -179,7 +176,6 @@ public class BrowserDetailsTest extends TestCase {
         assertBrowserMinorVersion(bd, 0);
         assertEngineVersion(bd, 530.17f);
         assertAndroid(bd, 2, 1);
-
     }
 
     public void testAndroid22() {
@@ -190,7 +186,6 @@ public class BrowserDetailsTest extends TestCase {
         assertBrowserMinorVersion(bd, 0);
         assertEngineVersion(bd, 533.1f);
         assertAndroid(bd, 2, 2);
-
     }
 
     public void testAndroid30() {
@@ -201,7 +196,6 @@ public class BrowserDetailsTest extends TestCase {
         assertBrowserMinorVersion(bd, 0);
         assertEngineVersion(bd, 534.13f);
         assertAndroid(bd, 3, 0);
-
     }
 
     public void testAndroid40Chrome() {
@@ -213,7 +207,6 @@ public class BrowserDetailsTest extends TestCase {
         assertBrowserMinorVersion(bd, 0);
         assertEngineVersion(bd, 535.19f);
         assertAndroid(bd, 4, 0);
-
     }
 
     private void assertOSMajorVersion(BrowserDetails bd, int i) {
@@ -232,7 +225,6 @@ public class BrowserDetailsTest extends TestCase {
         assertBrowserMinorVersion(bd, 0);
         assertEngineVersion(bd, 532.0f);
         assertMacOSX(bd);
-
     }
 
     public void testChrome4() {
@@ -243,7 +235,6 @@ public class BrowserDetailsTest extends TestCase {
         assertBrowserMinorVersion(bd, 0);
         assertEngineVersion(bd, 532.5f);
         assertWindows(bd);
-
     }
 
     public void testChromeIOS() {
@@ -254,7 +245,6 @@ public class BrowserDetailsTest extends TestCase {
         assertBrowserMinorVersion(bd, 0);
         assertEngineVersion(bd, 601.1f);
         assertIOS(bd, 9, 2);
-
     }
 
     public void testChromeChromeOS() {
@@ -265,7 +255,6 @@ public class BrowserDetailsTest extends TestCase {
         assertBrowserMinorVersion(bd, 0);
         assertEngineVersion(bd, 537.36f);
         assertChromeOS(bd, 6457, 31);
-
     }
 
     public void testFirefox3() {
@@ -284,7 +273,6 @@ public class BrowserDetailsTest extends TestCase {
         assertBrowserMinorVersion(bd, 0);
         assertEngineVersion(bd, 1.9f);
         assertLinux(bd);
-
     }
 
     public void testFirefox33Android() {
@@ -294,7 +282,6 @@ public class BrowserDetailsTest extends TestCase {
         assertBrowserMajorVersion(bd, 33);
         assertBrowserMinorVersion(bd, 0);
         assertAndroid(bd, -1, -1);
-
     }
 
     public void testFirefox35() {
@@ -305,7 +292,6 @@ public class BrowserDetailsTest extends TestCase {
         assertBrowserMinorVersion(bd, 5);
         assertEngineVersion(bd, 1.9f);
         assertWindows(bd);
-
     }
 
     public void testFirefox36() {
@@ -316,7 +302,6 @@ public class BrowserDetailsTest extends TestCase {
         assertBrowserMinorVersion(bd, 6);
         assertEngineVersion(bd, 1.9f);
         assertWindows(bd);
-
     }
 
     public void testFirefox30b5() {
@@ -327,7 +312,6 @@ public class BrowserDetailsTest extends TestCase {
         assertBrowserMinorVersion(bd, 0);
         assertEngineVersion(bd, 1.9f);
         assertMacOSX(bd);
-
     }
 
     public void testFirefox40b11() {
@@ -338,7 +322,6 @@ public class BrowserDetailsTest extends TestCase {
         assertBrowserMinorVersion(bd, 0);
         assertEngineVersion(bd, 2.0f);
         assertWindows(bd);
-
     }
 
     public void testFirefox40b7() {
@@ -349,7 +332,6 @@ public class BrowserDetailsTest extends TestCase {
         assertBrowserMinorVersion(bd, 0);
         assertEngineVersion(bd, 2.0f);
         assertWindows(bd);
-
     }
 
     public void testKonquerorLinux() {
@@ -366,7 +348,6 @@ public class BrowserDetailsTest extends TestCase {
         assertBrowserMinorVersion(bd, 6);
         assertEngineVersion(bd, 1.9f);
         assertMacOSX(bd);
-
     }
 
     public void testOpera964() {
@@ -376,7 +357,6 @@ public class BrowserDetailsTest extends TestCase {
         assertBrowserMajorVersion(bd, 9);
         assertBrowserMinorVersion(bd, 64);
         assertWindows(bd);
-
     }
 
     public void testOpera1010() {
@@ -386,7 +366,6 @@ public class BrowserDetailsTest extends TestCase {
         assertBrowserMajorVersion(bd, 10);
         assertBrowserMinorVersion(bd, 10);
         assertWindows(bd);
-
     }
 
     public void testOpera1050() {
@@ -396,7 +375,6 @@ public class BrowserDetailsTest extends TestCase {
         assertBrowserMajorVersion(bd, 10);
         assertBrowserMinorVersion(bd, 50);
         assertWindows(bd);
-
     }
 
     public void testIE6() {
@@ -406,7 +384,6 @@ public class BrowserDetailsTest extends TestCase {
         assertBrowserMajorVersion(bd, 6);
         assertBrowserMinorVersion(bd, 0);
         assertWindows(bd);
-
     }
 
     public void testIE7() {
@@ -416,7 +393,6 @@ public class BrowserDetailsTest extends TestCase {
         assertBrowserMajorVersion(bd, 7);
         assertBrowserMinorVersion(bd, 0);
         assertWindows(bd);
-
     }
 
     public void testIE8() {
@@ -427,7 +403,6 @@ public class BrowserDetailsTest extends TestCase {
         assertBrowserMajorVersion(bd, 8);
         assertBrowserMinorVersion(bd, 0);
         assertWindows(bd);
-
     }
 
     public void testIE9() {
@@ -438,7 +413,6 @@ public class BrowserDetailsTest extends TestCase {
         assertBrowserMajorVersion(bd, 9);
         assertBrowserMinorVersion(bd, 0);
         assertWindows(bd);
-
     }
 
     public void testIE9InIE7CompatibilityMode() {
@@ -452,7 +426,6 @@ public class BrowserDetailsTest extends TestCase {
         assertBrowserMinorVersion(bd, 0);
 
         assertWindows(bd);
-
     }
 
     public void testIE9InIE8CompatibilityMode() {
@@ -470,7 +443,6 @@ public class BrowserDetailsTest extends TestCase {
         assertBrowserMinorVersion(bd, 0);
 
         assertWindows(bd);
-
     }
 
     public void testIE10() {
@@ -481,7 +453,6 @@ public class BrowserDetailsTest extends TestCase {
         assertBrowserMajorVersion(bd, 10);
         assertBrowserMinorVersion(bd, 0);
         assertWindows(bd);
-
     }
 
     public void testIE11() {
@@ -492,7 +463,6 @@ public class BrowserDetailsTest extends TestCase {
         assertBrowserMajorVersion(bd, 11);
         assertBrowserMinorVersion(bd, 0);
         assertWindows(bd);
-
     }
 
     public void testIE11Windows7CompatibilityViewIE7() {
@@ -503,7 +473,6 @@ public class BrowserDetailsTest extends TestCase {
         assertBrowserMajorVersion(bd, 11);
         assertBrowserMinorVersion(bd, 0);
         assertWindows(bd);
-
     }
 
     public void testIE11Windows10CompatibilityViewIE7() {
@@ -514,7 +483,6 @@ public class BrowserDetailsTest extends TestCase {
         assertBrowserMajorVersion(bd, 11);
         assertBrowserMinorVersion(bd, 0);
         assertWindows(bd);
-
     }
 
     public void testIE11LaunchDayWindows10CompatibilityViewIE7() {
@@ -532,7 +500,6 @@ public class BrowserDetailsTest extends TestCase {
         assertBrowserMajorVersion(bd, 11);
         assertBrowserMinorVersion(bd, 0);
         assertWindows(bd);
-
     }
 
     public void testIE11WindowsPhone81Update() {
@@ -543,7 +510,6 @@ public class BrowserDetailsTest extends TestCase {
         assertBrowserMajorVersion(bd, 11);
         assertBrowserMinorVersion(bd, 0);
         assertWindows(bd, true);
-
     }
 
     public void testEdgeWindows10() {
@@ -552,7 +518,6 @@ public class BrowserDetailsTest extends TestCase {
         assertBrowserMajorVersion(bd, 12);
         assertBrowserMinorVersion(bd, 10240);
         assertWindows(bd, false);
-
     }
 
     public void testEclipseMac_safari91() {
@@ -563,7 +528,6 @@ public class BrowserDetailsTest extends TestCase {
         assertBrowserMinorVersion(bd, 1);
         assertEngineVersion(bd, 601.5f);
         assertMacOSX(bd);
-
     }
 
     public void testEclipseMac_safari90() {
@@ -574,7 +538,6 @@ public class BrowserDetailsTest extends TestCase {
         assertBrowserMinorVersion(bd, 0);
         assertEngineVersion(bd, 601.4f);
         assertMacOSX(bd);
-
     }
 
     public void testHeadlessChrome() {
@@ -586,7 +549,6 @@ public class BrowserDetailsTest extends TestCase {
         assertBrowserMinorVersion(bd, 0);
         assertEngineVersion(bd, 537.36f);
         assertLinux(bd);
-
     }
 
     public void testIos11FacebookBrowser() {
@@ -594,7 +556,6 @@ public class BrowserDetailsTest extends TestCase {
         assertWebKit(bd);
         assertEngineVersion(bd, 605.1f);
         assertIOS(bd, 11, 3);
-
     }
 
     public void testIos11Firefox() {
@@ -602,7 +563,6 @@ public class BrowserDetailsTest extends TestCase {
         assertWebKit(bd);
         assertEngineVersion(bd, 604.3f);
         assertIOS(bd, 11, 1);
-
     }
 
     /*

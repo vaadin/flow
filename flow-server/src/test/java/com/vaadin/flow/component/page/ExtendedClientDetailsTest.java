@@ -154,7 +154,7 @@ public class ExtendedClientDetailsTest {
         private String bodyClientHeight = "1360";
         private String timezoneOffset = "-270"; // minutes from UTC
         private String rawTimezoneOffset = "-210"; // minutes from UTC without
-        // DST
+                                                   // DST
         private String dstSavings = "60"; // dist shift amount
         private String dstInEffect = "true";
         private String timeZoneId = "Asia/Tehran";
