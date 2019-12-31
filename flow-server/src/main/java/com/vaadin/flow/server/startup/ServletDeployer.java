@@ -51,11 +51,6 @@ import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
  * The servlet won't be registered, if any {@link VaadinServlet} is registered
  * already or if there are no classes annotated with {@link Route}
  * annotation.</li>
- * <li>Frontend files servlet, mapped to '/frontend/*' <br>
- * The servlet is registered when the application is started in the development
- * mode or has
- * {@link com.vaadin.flow.server.Constants#USE_ORIGINAL_FRONTEND_RESOURCES}
- * parameter set to {@code true}.</li>
  * <li>Static files servlet, mapped to '/VAADIN/static' responsible to resolve
  * files placed in the '[webcontext]/VAADIN/static' folder or in the
  * '[classpath]/META-INF/static' location. It prevents sensible files like

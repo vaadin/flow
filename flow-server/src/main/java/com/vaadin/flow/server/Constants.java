@@ -77,12 +77,6 @@ public final class Constants implements Serializable {
     public static final String SERVLET_PARAMETER_BROTLI = "brotli";
 
     /**
-     * Configuration name for the parameter that determines if Flow should use
-     * bundled fragments or not.
-     */
-    public static final String USE_ORIGINAL_FRONTEND_RESOURCES = "original.frontend.resources";
-
-    /**
      * I18N provider property.
      */
     public static final String I18N_PROVIDER = "i18n.provider";
