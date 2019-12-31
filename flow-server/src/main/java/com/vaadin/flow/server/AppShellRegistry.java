@@ -47,16 +47,16 @@ import static com.vaadin.flow.server.startup.VaadinAppShellInitializer.getValidA
 public class AppShellRegistry implements Serializable {
 
     public static final String ERROR_HEADER_NO_SHELL =
-            "%n%nFound app shell configuration annotations in non `VaadinAppShell` classes."
-            + "%nPlease create a custom class implementing `VaadinAppShell` and move the following annotations to it:%n  %s%n";
+            "%n%nFound app shell configuration annotations in non `AppShellConfigurator` classes."
+            + "%nPlease create a custom class implementing `AppShellConfigurator` and move the following annotations to it:%n  %s%n";
 
     public static final String ERROR_HEADER_OFFENDING =
-            "%n%nFound app shell configuration annotations in non `VaadinAppShell` classes."
+            "%n%nFound app shell configuration annotations in non `AppShellConfigurator` classes."
             + "%nThe following annotations must be either removed or moved to the '%s' class:%n  %s%n";
 
     public static final String ERROR_HEADER_NO_APP_CONFIGURATOR =
             "%n%nThe `PageConfigurator` interface is deprecated since Vaadin 15 and has no effect."
-            + "%nPlease, create a class implementing `VaadinAppShell`, and remove `PageConfigurator` from: %n  - %s%n";
+            + "%nPlease, create a class implementing `AppShellConfigurator`, and remove `PageConfigurator` from: %n  - %s%n";
 
     public static final String ERROR_HEADER_OFFENDING_CONFIGURATOR =
             "%n%nThe `PageConfigurator` interface is deprecated since Vaadin 15 and has no effect."
@@ -64,7 +64,7 @@ public class AppShellRegistry implements Serializable {
 
     private static final String ERROR_LINE = "  - %s from %s";
     private static final String ERROR_MULTIPLE_SHELL =
-            "%nUnable to find a single class implementing `VaadinAppShell` from the following candidates:%n  %s%n  %s%n";
+            "%n%nUnable to find a single class implementing `AppShellConfigurator` from the following candidates:%n  %s%n  %s%n";
 
     private static final String ERROR_MULTIPLE_ANNOTATION =
             "%n%s is not a repeatable annotation type.%n";
@@ -80,7 +80,7 @@ public class AppShellRegistry implements Serializable {
      * A wrapper class for storing the {@link AppShellRegistry} instance
      * in the servlet context.
      */
-    public static class VaadinAppShellRegistryWrapper implements Serializable {
+    public static class AppShellRegistryWrapper implements Serializable {
         private final AppShellRegistry registry;
 
         /**
@@ -89,7 +89,7 @@ public class AppShellRegistry implements Serializable {
          * @param registry
          *            the app shell registry
          */
-        public VaadinAppShellRegistryWrapper(AppShellRegistry registry) {
+        public AppShellRegistryWrapper(AppShellRegistry registry) {
             this.registry = registry;
         }
     }
@@ -104,10 +104,10 @@ public class AppShellRegistry implements Serializable {
      */
     public static AppShellRegistry getInstance(VaadinContext context) {
         synchronized (context) { // NOSONAR
-            VaadinAppShellRegistryWrapper attribute = context
-                    .getAttribute(VaadinAppShellRegistryWrapper.class);
+            AppShellRegistryWrapper attribute = context
+                    .getAttribute(AppShellRegistryWrapper.class);
             if (attribute == null) {
-                attribute = new VaadinAppShellRegistryWrapper(
+                attribute = new AppShellRegistryWrapper(
                         new AppShellRegistry());
                 context.setAttribute(attribute);
             }

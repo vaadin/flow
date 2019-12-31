@@ -36,13 +36,11 @@ import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.PageConfigurator;
 import com.vaadin.flow.server.AppShellRegistry;
-import com.vaadin.flow.server.AppShellRegistry.VaadinAppShellRegistryWrapper;
+import com.vaadin.flow.server.AppShellRegistry.AppShellRegistryWrapper;
 import com.vaadin.flow.server.AppShellSettings;
 import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletRequest;
-import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.communication.PushMode;
 
 import static com.vaadin.flow.server.DevModeHandler.getDevModeHandler;
@@ -273,7 +271,7 @@ public class VaadinAppShellInitializerTest {
         // Set class in context and do not call initializer
         AppShellRegistry registry = new AppShellRegistry();
         registry.setShell(MyAppShellWithMultipleAnnotations.class);
-        context.setAttribute(new VaadinAppShellRegistryWrapper(registry));
+        context.setAttribute(new AppShellRegistryWrapper(registry));
 
         VaadinRequest request = createVaadinRequest("/");
         AppShellRegistry.getInstance(context)
