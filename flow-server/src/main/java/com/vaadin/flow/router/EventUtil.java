@@ -126,11 +126,11 @@ public final class EventUtil {
             Collection<? extends HasElement> chain,
             Collection<? extends HasElement> childrenExclusions) {
 
-        return chain.stream().flatMap(chainRoot -> {
-            return collectBeforeEnterObserversStream(
-                    ((HasElement) chainRoot).getElement(),
-                    getElements(childrenExclusions));
-        }).collect(Collectors.toList());
+        return chain.stream()
+                .flatMap(chainRoot -> collectBeforeEnterObserversStream(
+                        chainRoot.getElement(),
+                        getElements(childrenExclusions)))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -157,9 +157,8 @@ public final class EventUtil {
             Element element,
             Collection<Element> childrenExclusions) {
 
-        Predicate<Element> currentRootAndNonRoots = input -> {
-            return input.equals(element) || !childrenExclusions.contains(input);
-        };
+        Predicate<Element> currentRootAndNonRoots = input -> input
+                .equals(element) || !childrenExclusions.contains(input);
 
         return getImplementingComponents(
                 flattenDescendants(element, currentRootAndNonRoots),

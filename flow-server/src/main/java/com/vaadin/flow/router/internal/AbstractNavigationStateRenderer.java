@@ -181,7 +181,6 @@ public abstract class AbstractNavigationStateRenderer
         }
 
         final ArrayList<HasElement> chain;
-        final List<Class<? extends HasElement>> chainClasses;
 
         final boolean preserveOnRefreshTarget = isPreserveOnRefreshTarget(
                 routeTargetType, routeLayoutTypes);
@@ -336,22 +335,6 @@ public abstract class AbstractNavigationStateRenderer
         return Optional.empty();
     }
     
-    // The first element in the returned list is always a Component
-    private ArrayList<HasElement> createChain(NavigationEvent event) {
-        final Class<? extends Component> routeTargetType = navigationState
-                .getNavigationTarget();
-        final List<Class<? extends RouterLayout>> routeLayoutTypes =
-                getRouterLayoutTypes(routeTargetType,
-                        event.getUI().getRouter());
-
-        final ArrayList<HasElement> chain = new ArrayList<>();
-        chain.add(getRouteTarget(routeTargetType, event));
-        for (Class<? extends RouterLayout> parentType : routeLayoutTypes) {
-            chain.add(getRouteTarget(parentType, event));
-        }
-        return chain;
-    }
-
     // The last element in the returned list is always a Component class
     private List<Class<? extends HasElement>> createTypesChain(NavigationEvent event) {
         final Class<? extends Component> routeTargetType = navigationState
@@ -667,10 +650,9 @@ public abstract class AbstractNavigationStateRenderer
         if (extendedClientDetails == null) {
             // We need first to retrieve the window name in order to cache the
             // component chain for later potential refreshes.
-            ui.getPage().retrieveExtendedClientDetails(details -> {
-                setPreservedChain(session, details.getWindowName(), location,
-                        chain);
-            });
+            ui.getPage().retrieveExtendedClientDetails(
+                    details -> setPreservedChain(session,
+                            details.getWindowName(), location, chain));
 
         } else {
             final String windowName = extendedClientDetails.getWindowName();
