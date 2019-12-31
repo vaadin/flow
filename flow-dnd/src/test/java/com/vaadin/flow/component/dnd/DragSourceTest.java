@@ -70,7 +70,7 @@ public class DragSourceTest extends AbstractDnDUnitTest {
         Assert.assertEquals(endEvent, endEvent2);
         Assert.assertNull(UI.getCurrent().getActiveDragSourceComponent());
         Assert.assertEquals(DropEffect.MOVE, endEvent2.getDropEffect());
-        Assert.assertTrue(endEvent2.isSuccesful());
+        Assert.assertTrue(endEvent2.isSuccessful());
         Assert.assertFalse(endEvent2.isFromClient());
     }
 
@@ -164,7 +164,7 @@ public class DragSourceTest extends AbstractDnDUnitTest {
         Assert.assertEquals(endEvent, endEvent2);
         Assert.assertNull(UI.getCurrent().getActiveDragSourceComponent());
         Assert.assertEquals(DropEffect.MOVE, endEvent2.getDropEffect());
-        Assert.assertTrue(endEvent2.isSuccesful());
+        Assert.assertTrue(endEvent2.isSuccessful());
         Assert.assertFalse(endEvent2.isFromClient());
 
         endEvent = new DragEndEvent<RouterLink>(component, true, "None");
@@ -174,7 +174,7 @@ public class DragSourceTest extends AbstractDnDUnitTest {
         Assert.assertEquals(endEvent, endEvent2);
         Assert.assertNull(UI.getCurrent().getActiveDragSourceComponent());
         Assert.assertEquals(DropEffect.NONE, endEvent2.getDropEffect());
-        Assert.assertFalse(endEvent2.isSuccesful());
+        Assert.assertFalse(endEvent2.isSuccessful());
         Assert.assertTrue(endEvent2.isFromClient());
     }
 
