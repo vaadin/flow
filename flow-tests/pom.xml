@@ -232,8 +232,8 @@
                 
                 <module>test-pwa</module>
 
-                <!-- module>test-dev-mode</module>
-                <module>test-root-ui-context</module>
+                <module>test-dev-mode</module>
+                <!--  module>test-root-ui-context</module>
                 <module>test-router-custom-context</module>
                 <module>test-subcontext</module>
                 <module>test-scalability</module>
