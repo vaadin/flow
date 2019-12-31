@@ -13,6 +13,8 @@ import mock from 'xhr-mock';
 const $wnd = window as any;
 const flowRoot = window.document.body as any;
 
+const stubVaadinPushSrc = '/src/test/frontend/stubVaadinPush.js';
+
 // A `changes` array that adds a div with 'Foo' text to body
 const changesResponse = `[
   {
@@ -64,7 +66,7 @@ const changesResponse = `[
   }
 ]`;
 
-function createInitResponse(appId: string, changes = '[]'): string {
+function createInitResponse(appId: string, changes = '[]', pushScript?: string): string {
   return `
       {
         "appConfig": {
@@ -85,6 +87,7 @@ function createInitResponse(appId: string, changes = '[]'): string {
             "changes": ${changes}
           }
         }
+        ${pushScript !== undefined ? `, "pushScript": "${pushScript}"` : ''}
       }
     `;
 };
@@ -139,6 +142,9 @@ suite("Flow", () => {
         assert.isDefined($wnd.Vaadin.Flow.clients.FooBar.resolveUri);
         assert.isFalse($wnd.Vaadin.Flow.clients.FooBar.isActive());
 
+        // Check that pushScript is not initialized
+        assert.isUndefined($wnd.vaadinPush);
+
         // Check server added a div content with `Foo` text
         assert.equal("Foo", document.body.lastElementChild.textContent);
       });
@@ -165,6 +171,9 @@ suite("Flow", () => {
         // Check that flowClient was initialized
         assert.isDefined($wnd.Vaadin.Flow.clients.FooBar.resolveUri);
         assert.isFalse($wnd.Vaadin.Flow.clients.FooBar.isActive());
+
+        // Check that pushScript is not initialized
+        assert.isUndefined($wnd.vaadinPush);
 
         // Check that Flow.ts doesn't inject appId script if config.imports is undefined
         const appIdScript = document.querySelector('script[type="module"][data-app-id]');
@@ -198,6 +207,9 @@ suite("Flow", () => {
           // Check that flowClient was initialized
           assert.isDefined($wnd.Vaadin.Flow.clients.FooBar.resolveUri);
           assert.isFalse($wnd.Vaadin.Flow.clients.FooBar.isActive());
+
+          // Check that pushScript is not initialized
+          assert.isUndefined($wnd.vaadinPush);
 
           // Check that Flow.ts inject appId script
           const appIdScript = document.body.querySelector('script[type="module"][data-app-id]');
@@ -250,6 +262,9 @@ suite("Flow", () => {
         // Check that flowClient was initialized
         assert.isDefined($wnd.Vaadin.Flow.clients.foobar.resolveUri);
         assert.isFalse($wnd.Vaadin.Flow.clients.foobar.isActive());
+
+        // Check that pushScript is not initialized
+        assert.isUndefined($wnd.vaadinPush);
 
         // Assert that element was created amd put in flowRoot so as server can find it
         assert.isDefined(flowRoot.$);
@@ -446,6 +461,54 @@ suite("Flow", () => {
       });
   });
 
+  test("should load pushScript on init", async() => {
+    stubServerRemoteFunction('foobar-1111111');
+    mockInitResponse('foobar-1111111', undefined, stubVaadinPushSrc);
+
+    const flow = new Flow();
+
+    const route = flow.serverSideRoutes[0];
+    await route.action({pathname: "Foo/Bar.baz"});
+
+    assert.isDefined($wnd.vaadinPush);
+    assert.isTrue($wnd.vaadinPush.isStub);
+  });
+
+  test("should load pushScript on flowInit(true) with initial response", async() => {
+    const initial = createInitResponse('FooBar-12345');
+    $wnd.Vaadin = {Flow: {initial: JSON.parse(initial)}};
+    $wnd.Vaadin.Flow.initial.pushScript = stubVaadinPushSrc;
+
+    const flow = new Flow();
+    await (flow as any).flowInit(true);
+
+    assert.isDefined($wnd.vaadinPush);
+    assert.isTrue($wnd.vaadinPush.isStub);
+  });
+
+  test("should load pushScript on flowInit(true) with server response", async() => {
+    stubServerRemoteFunction('FooBar-12345');
+    mockInitResponse('FooBar-12345', undefined, stubVaadinPushSrc);
+
+    const flow = new Flow();
+    await (flow as any).flowInit(true);
+
+    assert.isDefined($wnd.vaadinPush);
+    assert.isTrue($wnd.vaadinPush.isStub);
+  });
+
+  test("should load pushScript on route action", async() => {
+    stubServerRemoteFunction('foobar-1111111');
+    mockInitResponse('foobar-1111111', undefined, stubVaadinPushSrc);
+
+    const flow = new Flow();
+
+    const route = flow.serverSideRoutes[0];
+    await route.action({pathname: "Foo/Bar.baz"});
+
+    assert.isDefined($wnd.vaadinPush);
+    assert.isTrue($wnd.vaadinPush.isStub);
+  });
 });
 
 function stubServerRemoteFunction(id: string, cancel: boolean = false, routeRegex?: RegExp) {
@@ -488,13 +551,13 @@ function stubServerRemoteFunction(id: string, cancel: boolean = false, routeRege
   };
 }
 
-function mockInitResponse(appId: string, changes = '[]') {
+function mockInitResponse(appId: string, changes = '[]', pushScript?: string) {
   // Configure a valid server initialization response
   mock.get(/^.*\?v-r=init.*/, (req, res) => {
     assert.equal('GET', req.method());
     return res
       .status(200)
       .header("content-type","application/json")
-      .body(createInitResponse(appId, changes));
+      .body(createInitResponse(appId, changes, pushScript));
   });
 }

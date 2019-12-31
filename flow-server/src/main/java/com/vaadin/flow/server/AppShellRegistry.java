@@ -267,7 +267,7 @@ public class AppShellRegistry implements Serializable {
 
     /**
      * Modifies PushConfiguration instance based on the {@link Push}
-     * annotation on {@link AppShellConfigurator}
+     * annotation on {@link AppShellConfigurator}.
      *
      * @param pushConfiguration the PushConfigration instance to modify
      */
