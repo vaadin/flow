@@ -242,8 +242,15 @@ public class DevModeHandlerTest {
 
     @Test
     public void shouldNot_HandleOtherRequests() {
-        HttpServletRequest request = prepareRequest("/VAADIN//foo.bar");
+        HttpServletRequest request = prepareRequest("/foo/VAADIN//foo.bar");
         assertFalse(DevModeHandler.start(configuration, npmFolder)
+                .isDevModeRequest(request));
+    }
+
+    @Test
+    public void should_HandleAnyAssetInVaadin() {
+        HttpServletRequest request = prepareRequest("/VAADIN/foo.bar");
+        assertTrue(DevModeHandler.start(configuration, npmFolder)
                 .isDevModeRequest(request));
     }
 

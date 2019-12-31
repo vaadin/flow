@@ -312,8 +312,8 @@ public final class DevModeHandler {
      * @return true if the request should be forwarded to webpack
      */
     public boolean isDevModeRequest(HttpServletRequest request) {
-        return request.getPathInfo() != null && request.getPathInfo()
-                .matches("/" + VAADIN_MAPPING + ".+\\.js");
+          return request.getPathInfo() != null
+                && request.getPathInfo().startsWith("/" + VAADIN_MAPPING);
     }
 
     /**
