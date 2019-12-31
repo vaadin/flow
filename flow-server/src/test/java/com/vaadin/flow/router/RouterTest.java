@@ -3435,22 +3435,22 @@ public class RouterTest extends RoutingTestBase {
                         .get(ProcessEventsBase.beforeEnter.size() - 1));
     }
 
-    private List<String> getProcessEventsTrunkChainNames(String... leafs) {
+    private List<String> getProcessEventsTrunkChainNames(String... leaf) {
         final List<String> chainNames = new ArrayList<>(
                 Arrays.asList("ProcessEventsRoot", "rootChild1", "rootChild11",
                         "rootChild2", "ProcessEventsTrunk"));
 
-        chainNames.addAll(Arrays.asList(leafs));
+        chainNames.addAll(Arrays.asList(leaf));
 
         return chainNames;
     }
 
-    private List<String> getProcessEventsBranchChainNames(String... leafs) {
+    private List<String> getProcessEventsBranchChainNames(String... leaf) {
         final List<String> chainNames = getProcessEventsTrunkChainNames(
                 "ProcessEventsBranch", "branchChild1", "branchChild2",
                 "branchChild21");
 
-        chainNames.addAll(Arrays.asList(leafs));
+        chainNames.addAll(Arrays.asList(leaf));
 
         return chainNames;
     }
@@ -3468,7 +3468,7 @@ public class RouterTest extends RoutingTestBase {
                 expectedInit, ProcessEventsBase.init);
 
         if (expectedBeforeLeave == null) {
-            Assert.assertTrue("There should be no before leave events triggered",
+            Assert.assertTrue("There should be no BeforeLeave events triggered",
                     ProcessEventsBase.beforeLeave.isEmpty());
         } else {
             Assert.assertEquals(
