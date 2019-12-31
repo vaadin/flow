@@ -30,7 +30,7 @@ import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Inline.Position;
 import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.TargetElement;
-import com.vaadin.flow.component.page.VaadinAppShell;
+import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.PageTitle;
@@ -39,12 +39,12 @@ import com.vaadin.flow.server.startup.AbstractAnnotationValidator;
 import static com.vaadin.flow.server.startup.VaadinAppShellInitializer.getValidAnnotations;
 
 /**
- * The registry class for {@link VaadinAppShell} annotations.
+ * The registry class for {@link AppShellConfigurator} annotations.
  *
  * @since 3.0
  *
  */
-public class VaadinAppShellRegistry implements Serializable {
+public class AppShellRegistry implements Serializable {
 
     public static final String ERROR_HEADER_NO_SHELL =
             "%n%nFound app shell configuration annotations in non `VaadinAppShell` classes."
@@ -73,15 +73,15 @@ public class VaadinAppShellRegistry implements Serializable {
     private static final String[] UNIQUE_ELEMENTS = { "meta[name=viewport]",
             "meta[name=description]", "title", "base" };
 
-    private Class<? extends VaadinAppShell> appShellClass;
-    private VaadinAppShell appShellInstance;
+    private Class<? extends AppShellConfigurator> appShellClass;
+    private AppShellConfigurator appShellInstance;
 
     /**
-     * A wrapper class for storing the {@link VaadinAppShellRegistry} instance
+     * A wrapper class for storing the {@link AppShellRegistry} instance
      * in the servlet context.
      */
     public static class VaadinAppShellRegistryWrapper implements Serializable {
-        private final VaadinAppShellRegistry registry;
+        private final AppShellRegistry registry;
 
         /**
          * Construct a wraper for an app-shell registry.
@@ -89,7 +89,7 @@ public class VaadinAppShellRegistry implements Serializable {
          * @param registry
          *            the app shell registry
          */
-        public VaadinAppShellRegistryWrapper(VaadinAppShellRegistry registry) {
+        public VaadinAppShellRegistryWrapper(AppShellRegistry registry) {
             this.registry = registry;
         }
     }
@@ -102,13 +102,13 @@ public class VaadinAppShellRegistry implements Serializable {
      *            servlet context
      * @return the registry instance
      */
-    public static VaadinAppShellRegistry getInstance(VaadinContext context) {
+    public static AppShellRegistry getInstance(VaadinContext context) {
         synchronized (context) { // NOSONAR
             VaadinAppShellRegistryWrapper attribute = context
                     .getAttribute(VaadinAppShellRegistryWrapper.class);
             if (attribute == null) {
                 attribute = new VaadinAppShellRegistryWrapper(
-                        new VaadinAppShellRegistry());
+                        new AppShellRegistry());
                 context.setAttribute(attribute);
             }
             return attribute.registry;
@@ -125,16 +125,16 @@ public class VaadinAppShellRegistry implements Serializable {
     }
 
     /**
-     * Sets the {@link VaadinAppShell} class in the application. Pass a null to
+     * Sets the {@link AppShellConfigurator} class in the application. Pass a null to
      * reset the previous one when reusing the instance.
      *
      * @param shell
      *            the class extending VaadinAppShell class.
      */
-    public void setShell(Class<? extends VaadinAppShell> shell) {
+    public void setShell(Class<? extends AppShellConfigurator> shell) {
         if (this.appShellClass != null && shell != null) {
             throw new InvalidApplicationConfigurationException(
-                    String.format(VaadinAppShellRegistry.ERROR_MULTIPLE_SHELL,
+                    String.format(AppShellRegistry.ERROR_MULTIPLE_SHELL,
                             this.appShellClass.getName(), shell.getName()));
         }
         this.appShellClass = shell;
@@ -144,27 +144,27 @@ public class VaadinAppShellRegistry implements Serializable {
     }
 
     /**
-     * Returns the {@link VaadinAppShell} class in the application.
+     * Returns the {@link AppShellConfigurator} class in the application.
      *
      * @return the app shell class
      */
-    public Class<? extends VaadinAppShell> getShell() {
+    public Class<? extends AppShellConfigurator> getShell() {
         return appShellClass;
     }
 
     /**
-     * Checks whether the class is extending {@link VaadinAppShell}.
+     * Checks whether the class is extending {@link AppShellConfigurator}.
      *
      * @param clz
      *            the class to check.
-     * @return true if the class extends {@link VaadinAppShell}.
+     * @return true if the class extends {@link AppShellConfigurator}.
      */
     public boolean isShell(Class<?> clz) {
         assert clz != null;
         try {
             // Use the same class-loader for the checking
             return clz.getClassLoader()
-                    .loadClass(VaadinAppShell.class.getName())
+                    .loadClass(AppShellConfigurator.class.getName())
                     .isAssignableFrom(clz);
         } catch (ClassNotFoundException e) {
             throw new IllegalArgumentException(e);
@@ -173,7 +173,7 @@ public class VaadinAppShellRegistry implements Serializable {
 
     /**
      * Checks whether a class have annotations that should only be in
-     * {@link VaadinAppShell} classes.
+     * {@link AppShellConfigurator} classes.
      *
      * @param clz
      *            the class to check.
@@ -186,14 +186,14 @@ public class VaadinAppShellRegistry implements Serializable {
         String annotations = AbstractAnnotationValidator
                 .getClassAnnotations(clz, (List) getValidAnnotations());
         if (!annotations.isEmpty()) {
-            error = String.format(VaadinAppShellRegistry.ERROR_LINE,
+            error = String.format(AppShellRegistry.ERROR_LINE,
                     annotations, clz.getName());
         }
         return error;
     }
 
-    private VaadinAppShellSettings createSettings() {
-        VaadinAppShellSettings settings = new VaadinAppShellSettings();
+    private AppShellSettings createSettings() {
+        AppShellSettings settings = new AppShellSettings();
 
         getAnnotations(Meta.class).forEach(
                 meta -> settings.addMetaTag(meta.name(), meta.content()));
@@ -201,14 +201,14 @@ public class VaadinAppShellRegistry implements Serializable {
         List<Viewport> viewPorts = getAnnotations(Viewport.class);
         if(viewPorts.size() > 1) {
             throw new InvalidApplicationConfigurationException(
-                    String.format(VaadinAppShellRegistry.ERROR_MULTIPLE_ANNOTATION, Viewport.class.getSimpleName()));
+                    String.format(AppShellRegistry.ERROR_MULTIPLE_ANNOTATION, Viewport.class.getSimpleName()));
         } else if(!viewPorts.isEmpty()) {
             settings.setViewport(viewPorts.get(0).value());
         }
         List<BodySize> bodySizes = getAnnotations(BodySize.class);
         if(bodySizes.size() > 1) {
             throw new InvalidApplicationConfigurationException(
-                    String.format(VaadinAppShellRegistry.ERROR_MULTIPLE_ANNOTATION, BodySize.class.getSimpleName()));
+                    String.format(AppShellRegistry.ERROR_MULTIPLE_ANNOTATION, BodySize.class.getSimpleName()));
         } else if(!bodySizes.isEmpty()) {
             settings.setBodySize(bodySizes.get(0).width(),
                     bodySizes.get(0).height());
@@ -216,7 +216,7 @@ public class VaadinAppShellRegistry implements Serializable {
         List<PageTitle> pageTitles = getAnnotations(PageTitle.class);
         if(pageTitles.size() > 1) {
             throw new InvalidApplicationConfigurationException(
-                    String.format(VaadinAppShellRegistry.ERROR_MULTIPLE_ANNOTATION, PageTitle.class.getSimpleName()));
+                    String.format(AppShellRegistry.ERROR_MULTIPLE_ANNOTATION, PageTitle.class.getSimpleName()));
         } else if(!pageTitles.isEmpty()) {
             settings.setPageTitle(pageTitles.get(0).value());
         }
@@ -225,8 +225,8 @@ public class VaadinAppShellRegistry implements Serializable {
     }
 
     /**
-     * Modifies the `index.html` document based on the {@link VaadinAppShell}
-     * annotations or {@link VaadinAppShell#configurePage(VaadinAppShellSettings)} method.
+     * Modifies the `index.html` document based on the {@link AppShellConfigurator}
+     * annotations or {@link AppShellConfigurator#configurePage(AppShellSettings)} method.
      *
      * @param document
      *            a JSoup document for the index.html page
@@ -234,7 +234,7 @@ public class VaadinAppShellRegistry implements Serializable {
      *            The request to handle
      */
     public void modifyIndexHtml(Document document, VaadinRequest request) {
-        VaadinAppShellSettings settings = createSettings();
+        AppShellSettings settings = createSettings();
         if (appShellInstance != null) {
             appShellInstance.configurePage(settings);
         }

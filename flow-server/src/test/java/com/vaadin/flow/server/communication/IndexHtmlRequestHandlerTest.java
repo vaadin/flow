@@ -41,11 +41,11 @@ import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
-import com.vaadin.flow.server.VaadinAppShellRegistry;
+import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.VaadinAppShellRegistry.VaadinAppShellRegistryWrapper;
+import com.vaadin.flow.server.AppShellRegistry.VaadinAppShellRegistryWrapper;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWithConfigurator;
 import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWithMultipleAnnotations;
@@ -372,7 +372,7 @@ public class IndexHtmlRequestHandlerTest {
     @Test
     public void should_add_metaAndPwa_Inline_Elements_when_appShellPresent() throws Exception {
         // Set class in context and do not call initializer
-        VaadinAppShellRegistry registry = new VaadinAppShellRegistry();
+        AppShellRegistry registry = new AppShellRegistry();
         registry.setShell(MyAppShellWithMultipleAnnotations.class);
         Mockito.when(mocks.getServletContext()
                 .getAttribute(VaadinAppShellRegistryWrapper.class.getName()))
@@ -413,7 +413,7 @@ public class IndexHtmlRequestHandlerTest {
     @Test
     public void should_add_elements_when_appShellWithConfigurator() throws Exception {
         // Set class in context and do not call initializer
-        VaadinAppShellRegistry registry = new VaadinAppShellRegistry();
+        AppShellRegistry registry = new AppShellRegistry();
         registry.setShell(MyAppShellWithConfigurator.class);
         Mockito.when(mocks.getServletContext()
                 .getAttribute(VaadinAppShellRegistryWrapper.class.getName()))

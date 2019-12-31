@@ -41,11 +41,11 @@ import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.component.page.Viewport;
 
 /**
- * Initial page settings class for modifying the bootstrap application shell.
+ * Initial page settings class for modifying the application shell.
  *
  * @since 3.0
  */
-public class VaadinAppShellSettings implements Serializable {
+public class AppShellSettings implements Serializable {
 
     /**
      * A class representing an InlineElement.
@@ -233,7 +233,24 @@ public class VaadinAppShellSettings implements Serializable {
      */
     public void addInlineWithContents(Position position, String contents,
             Wrapping type) {
-        addInline(TargetElement.HEAD, position, type, null, contents);
+        addInlineWithContents(TargetElement.HEAD, position, contents, type);
+    }
+
+    /**
+     * Add content to the specified target of initial page.
+     *
+     * @param target
+     *            head of body
+     * @param position
+     *            prepend or append
+     * @param contents
+     *            inline content to be added to the page
+     * @param type
+     *            type of content which can be JavaScript or Stylesheet (CSS)
+     */
+    public void addInlineWithContents(TargetElement target, Position position,
+            String contents, Wrapping type) {
+        addInline(target, position, type, null, contents);
     }
 
     void addInline(Inline inline) {

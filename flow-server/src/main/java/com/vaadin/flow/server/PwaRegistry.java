@@ -286,7 +286,7 @@ public class PwaRegistry implements Serializable {
                         servletContext);
 
                 // Try first if there is an AppShell for the project
-                Class<?> clazz = VaadinAppShellRegistry.getInstance(context)
+                Class<?> clazz = AppShellRegistry.getInstance(context)
                         .getShell();
 
                 // Otherwise use the class reported by router

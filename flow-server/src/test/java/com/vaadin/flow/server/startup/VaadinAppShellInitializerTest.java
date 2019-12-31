@@ -27,7 +27,7 @@ import com.vaadin.flow.component.page.Inline.Position;
 import com.vaadin.flow.component.page.Inline.Wrapping;
 import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.TargetElement;
-import com.vaadin.flow.component.page.VaadinAppShell;
+import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.server.InitialPageSettings;
@@ -35,9 +35,9 @@ import com.vaadin.flow.server.InvalidApplicationConfigurationException;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.PageConfigurator;
-import com.vaadin.flow.server.VaadinAppShellRegistry;
-import com.vaadin.flow.server.VaadinAppShellRegistry.VaadinAppShellRegistryWrapper;
-import com.vaadin.flow.server.VaadinAppShellSettings;
+import com.vaadin.flow.server.AppShellRegistry;
+import com.vaadin.flow.server.AppShellRegistry.VaadinAppShellRegistryWrapper;
+import com.vaadin.flow.server.AppShellSettings;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletContext;
@@ -53,7 +53,7 @@ import static org.junit.Assert.assertTrue;
 
 public class VaadinAppShellInitializerTest {
 
-    public static class MyAppShellWithoutAnnotations implements VaadinAppShell {
+    public static class MyAppShellWithoutAnnotations implements AppShellConfigurator {
     }
 
     @Meta(name = "foo", content = "bar")
@@ -65,7 +65,7 @@ public class VaadinAppShellInitializerTest {
     @Viewport("my-viewport")
     @BodySize(height = "my-height", width = "my-width")
     @PageTitle("my-title")
-    public static class MyAppShellWithMultipleAnnotations implements VaadinAppShell {
+    public static class MyAppShellWithMultipleAnnotations implements AppShellConfigurator {
     }
 
     @Meta(name = "foo", content = "bar")
@@ -80,9 +80,9 @@ public class VaadinAppShellInitializerTest {
     public static class OffendingClass {
     }
 
-    public static class MyAppShellWithConfigurator implements VaadinAppShell {
+    public static class MyAppShellWithConfigurator implements AppShellConfigurator {
         @Override
-        public void configurePage(VaadinAppShellSettings settings) {
+        public void configurePage(AppShellSettings settings) {
             settings.setViewport("my-viewport");
             settings.setPageTitle("my-title");
             settings.addMetaTag("foo", "bar");
@@ -183,14 +183,14 @@ public class VaadinAppShellInitializerTest {
 
     @After
     public void teardown() throws Exception {
-        VaadinAppShellRegistry.getInstance(context).reset();
+        AppShellRegistry.getInstance(context).reset();
     }
 
     @Test
     public void should_not_modifyDocument_when_noAnnotatedAppShell() throws Exception {
         classes.add(MyAppShellWithoutAnnotations.class);
         initializer.onStartup(classes, servletContext);
-        VaadinAppShellRegistry.getInstance(context)
+        AppShellRegistry.getInstance(context)
                 .modifyIndexHtml(document, createVaadinRequest("/"));
         assertEquals(0, document.head().children().size());
         assertEquals(0, document.body().children().size());
@@ -212,7 +212,7 @@ public class VaadinAppShellInitializerTest {
 
         initializer.onStartup(classes, servletContext);
 
-        VaadinAppShellRegistry.getInstance(context)
+        AppShellRegistry.getInstance(context)
         .modifyIndexHtml(document, createVaadinRequest("/"));
 
         List<Element> elements = document.head().children();
@@ -227,7 +227,7 @@ public class VaadinAppShellInitializerTest {
 
         initializer.onStartup(classes, servletContext);
 
-        VaadinAppShellRegistry.getInstance(context)
+        AppShellRegistry.getInstance(context)
                 .modifyIndexHtml(document, createVaadinRequest("/"));
 
         List<Element> headElements = document.head().children();
@@ -260,7 +260,7 @@ public class VaadinAppShellInitializerTest {
     @Test
     public void should_not_haveMetas_when_not_callingInitializer()
             throws Exception {
-        VaadinAppShellRegistry.getInstance(context)
+        AppShellRegistry.getInstance(context)
                 .modifyIndexHtml(document, createVaadinRequest("/"));
         List<Element> elements = document.head().children();
         assertEquals(0, elements.size());
@@ -271,12 +271,12 @@ public class VaadinAppShellInitializerTest {
             throws Exception {
 
         // Set class in context and do not call initializer
-        VaadinAppShellRegistry registry = new VaadinAppShellRegistry();
+        AppShellRegistry registry = new AppShellRegistry();
         registry.setShell(MyAppShellWithMultipleAnnotations.class);
         context.setAttribute(new VaadinAppShellRegistryWrapper(registry));
 
         VaadinRequest request = createVaadinRequest("/");
-        VaadinAppShellRegistry.getInstance(context)
+        AppShellRegistry.getInstance(context)
                 .modifyIndexHtml(document, request);
 
         List<Element> elements = document.head().children();
@@ -302,7 +302,7 @@ public class VaadinAppShellInitializerTest {
         classes.add(OffendingClass.class);
         initializer.onStartup(classes, servletContext);
 
-        VaadinAppShellRegistry.getInstance(context)
+        AppShellRegistry.getInstance(context)
                 .modifyIndexHtml(document, createVaadinRequest("/"));
 
         List<Element> elements = document.head().children();

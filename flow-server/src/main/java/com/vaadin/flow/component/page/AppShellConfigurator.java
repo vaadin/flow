@@ -19,7 +19,7 @@ import java.io.Serializable;
 
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.server.PWA;
-import com.vaadin.flow.server.VaadinAppShellSettings;
+import com.vaadin.flow.server.AppShellSettings;
 
 /**
  * A marker interface to configure the index.hml page when using client-side
@@ -38,7 +38,7 @@ import com.vaadin.flow.server.VaadinAppShellSettings;
  * </ul>
  * <p>
  * There is a single application shell for the entire Vaadin application, and
- * therefore there can be at max one class implementing {@link VaadinAppShell}.
+ * therefore there can be at max one class implementing {@link AppShellConfigurator}.
  * </p>
  *
  * <p>
@@ -61,7 +61,7 @@ import com.vaadin.flow.server.VaadinAppShellSettings;
  *
  * @since 3.0
  */
-public interface VaadinAppShell extends Serializable {
+public interface AppShellConfigurator extends Serializable {
 
     /**
      * Configure the initial application shell settings when called.
@@ -69,6 +69,6 @@ public interface VaadinAppShell extends Serializable {
      * @param settings
      *            initial application shell settings
      */
-    default void configurePage(VaadinAppShellSettings settings) {
+    default void configurePage(AppShellSettings settings) {
     }
 }

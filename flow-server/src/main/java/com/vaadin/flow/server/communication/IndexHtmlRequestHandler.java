@@ -27,7 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.server.VaadinAppShellRegistry;
+import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -80,7 +80,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
 
         VaadinContext context = session.getService().getContext();
-        VaadinAppShellRegistry registry = VaadinAppShellRegistry.getInstance(context);
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
 
         // modify the page based on the @PWA annotation
         setupPwa(indexDocument, session.getService());
