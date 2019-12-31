@@ -319,48 +319,6 @@ public class FrontendUtilsTest {
                 executable.stream().anyMatch(cmd -> cmd.contains("pnpm")));
     }
 
-    // #7219
-    @Test
-    public void ensurePnpm_globalPnpmIsTooOld_localPnpmIsInstalled()
-            throws IOException {
-        // this unit test must be run on a Unix-like OS
-        Assume.assumeFalse(FrontendUtils.isWindows());
-
-        FrontendToolsLocator defaultFrontendToolsLocator = FrontendUtils.frontendToolsLocator;
-        try {
-            // given: an existing globally installed version of pnpm that is too
-            // old
-            FrontendUtils.frontendToolsLocator = new FrontendToolsLocator() {
-                private final Path oldPnpm = Files.createTempFile("pnpm", "old",
-                        PosixFilePermissions.asFileAttribute(
-                                PosixFilePermissions.fromString("rwxrwxrwx")));
-                {
-                    Files.write(oldPnpm, Arrays.asList("#!/bin/sh",
-                            "if [ $1 = '--version' ]; then echo '3.8.1'; fi"),
-                            StandardCharsets.UTF_8);
-                }
-
-                public Optional<File> tryLocateTool(String toolName) {
-                    return "pnpm".equals(toolName)
-                            ? Optional.of(oldPnpm.toFile())
-                            : super.tryLocateTool(toolName);
-                }
-            };
-
-            // when
-            FrontendUtils.ensurePnpm(baseDir);
-
-            // then: pnpm is installed locally
-            List<String> pnpmExecutable = FrontendUtils
-                    .getPnpmExecutable(baseDir, false);
-            Assert.assertTrue(pnpmExecutable.size() > 1);
-            Assert.assertTrue(
-                    pnpmExecutable.get(1).contains(PNPM_INSTALL_LOCATION));
-        } finally {
-            FrontendUtils.frontendToolsLocator = defaultFrontendToolsLocator;
-        }
-    }
-
     private VaadinService setupStatsAssetMocks(String statsFile)
             throws IOException {
         String stats = IOUtils.toString(FrontendUtilsTest.class.getClassLoader()
