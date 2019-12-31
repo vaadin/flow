@@ -16,6 +16,7 @@
 package com.vaadin.flow.ccdmtest;
 
 import java.util.Optional;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
@@ -572,5 +573,19 @@ public class IndexHtmlRequestHandlerIT extends ChromeBrowserTest {
                 expectedUrl,
                 currentUrl
         );
+    }
+
+    @Test
+    public void should_loadPushScript_When_FlowStarts() {
+        openTestUrl("/");
+        waitForElementPresent(By.id("button2"));
+        findElement(By.id("button2")).click();
+        waitForElementPresent(By.id("div2"));
+
+        Assert.assertEquals("Should have window.vaadinPush", "object",
+                (String) executeScript("return typeof window.vaadinPush"));
+        Assert.assertEquals("Should have window.vaadinPush.atmosphere",
+                "object", (String) executeScript(
+                        "return typeof window.vaadinPush" + ".atmosphere"));
     }
 }

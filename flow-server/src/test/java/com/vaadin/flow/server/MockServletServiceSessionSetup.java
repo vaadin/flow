@@ -7,7 +7,6 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -46,6 +45,7 @@ public class MockServletServiceSessionSetup {
         private Router router;
         private List<BootstrapListener> bootstrapListeners = new ArrayList<>();
         private List<IndexHtmlRequestListener> indexHtmlRequestListeners = new ArrayList<>();
+        private VaadinContext context;
 
         public TestVaadinServletService(TestVaadinServlet testVaadinServlet,
                 DeploymentConfiguration deploymentConfiguration) {
@@ -112,6 +112,18 @@ public class MockServletServiceSessionSetup {
                     listener -> listener.modifyIndexHtmlResponse(response));
 
             super.modifyIndexHtmlResponse(response);
+        }
+
+        @Override
+        public VaadinContext getContext() {
+            if (context != null) {
+                return context;
+            }
+            return super.getContext();
+        }
+
+        public void setContext(VaadinContext context) {
+            this.context = context;
         }
     }
 
@@ -259,6 +271,10 @@ public class MockServletServiceSessionSetup {
     private TestVaadinServlet servlet;
     private TestVaadinServletService service;
     private MockDeploymentConfiguration deploymentConfiguration = new MockDeploymentConfiguration();
+    @Mock
+    private VaadinServletContext context;
+    @Mock
+    private AppShellRegistry appShellRegistry;
 
     public MockServletServiceSessionSetup() throws Exception {
         this(true);
@@ -310,6 +326,13 @@ public class MockServletServiceSessionSetup {
         }
 
         Mockito.when(request.getServletPath()).thenReturn("");
+
+        AppShellRegistry.AppShellRegistryWrapper attribute = new AppShellRegistry.AppShellRegistryWrapper(
+                appShellRegistry);
+        Mockito.when(context
+                .getAttribute(AppShellRegistry.AppShellRegistryWrapper.class))
+                .thenReturn(attribute);
+        service.setContext(context);
     }
 
     public TestVaadinServletService getService() {
@@ -342,6 +365,10 @@ public class MockServletServiceSessionSetup {
 
     public MockDeploymentConfiguration getDeploymentConfiguration() {
         return deploymentConfiguration;
+    }
+
+    public AppShellRegistry getAppShellRegistry() {
+        return appShellRegistry;
     }
 
     public WebBrowser getBrowser() {

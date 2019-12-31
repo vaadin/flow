@@ -19,29 +19,33 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.component.PushConfiguration;
+import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Inline.Position;
 import com.vaadin.flow.component.page.Inline.Wrapping;
 import com.vaadin.flow.component.page.Meta;
+import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.TargetElement;
-import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.server.AppShellRegistry;
+import com.vaadin.flow.server.AppShellRegistry.AppShellRegistryWrapper;
+import com.vaadin.flow.server.AppShellSettings;
 import com.vaadin.flow.server.InitialPageSettings;
 import com.vaadin.flow.server.InvalidApplicationConfigurationException;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.PageConfigurator;
-import com.vaadin.flow.server.AppShellRegistry;
-import com.vaadin.flow.server.AppShellRegistry.AppShellRegistryWrapper;
-import com.vaadin.flow.server.AppShellSettings;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.shared.communication.PushMode;
+import com.vaadin.flow.shared.ui.Transport;
 
 import static com.vaadin.flow.server.DevModeHandler.getDevModeHandler;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -63,6 +67,7 @@ public class VaadinAppShellInitializerTest {
     @Viewport("my-viewport")
     @BodySize(height = "my-height", width = "my-width")
     @PageTitle("my-title")
+    @Push(value = PushMode.MANUAL, transport = Transport.WEBSOCKET)
     public static class MyAppShellWithMultipleAnnotations implements AppShellConfigurator {
     }
 
@@ -75,6 +80,7 @@ public class VaadinAppShellInitializerTest {
     @Viewport("my-viewport")
     @BodySize(height = "my-height", width = "my-width")
     @PageTitle("my-title")
+    @Push(value = PushMode.MANUAL, transport = Transport.WEBSOCKET)
     public static class OffendingClass {
     }
 
@@ -120,7 +126,7 @@ public class VaadinAppShellInitializerTest {
 
             settings.getLoadingIndicatorConfiguration().ifPresent(indicator -> indicator.setApplyDefaultTheme(false));
             settings.getLoadingIndicatorConfiguration().ifPresent(indicator -> indicator.setSecondDelay(700000));
-            settings.getPushConfiguration().ifPresent(push -> push.setPushMode(PushMode.MANUAL));
+            settings.getPushConfiguration().ifPresent(push -> push.setPushMode(PushMode.AUTOMATIC));
             settings.getReconnectDialogConfiguration().ifPresent(dialog -> dialog.setDialogModal(true));
         }
     }
@@ -145,6 +151,9 @@ public class VaadinAppShellInitializerTest {
     private Map<String, Object> attributeMap = new HashMap<>();
     private MockServletServiceSessionSetup mocks;
     private MockServletServiceSessionSetup.TestVaadinServletService service;
+
+    @Mock
+    private PushConfiguration pushConfiguration;
 
     @Before
     public void setup() throws Exception {
@@ -192,6 +201,18 @@ public class VaadinAppShellInitializerTest {
                 .modifyIndexHtml(document, createVaadinRequest("/"));
         assertEquals(0, document.head().children().size());
         assertEquals(0, document.body().children().size());
+    }
+
+    @Test
+    public void should_not_modifyPushConfiguration_when_noAnnotatedAppShell() throws Exception {
+        classes.add(MyAppShellWithoutAnnotations.class);
+        initializer.onStartup(classes, servletContext);
+
+        AppShellRegistry.getInstance(context)
+                .modifyPushConfiguration(pushConfiguration);
+
+        Mockito.verify(pushConfiguration, Mockito.never())
+                .setPushMode(Mockito.any(PushMode.class));
     }
 
     @Test
@@ -256,12 +277,35 @@ public class VaadinAppShellInitializerTest {
     }
 
     @Test
+    public void should_modifyPushConfiguration_when_annotatedAppShell()
+            throws Exception {
+        classes.add(MyAppShellWithMultipleAnnotations.class);
+        initializer.onStartup(classes, servletContext);
+
+        AppShellRegistry.getInstance(context)
+                .modifyPushConfiguration(pushConfiguration);
+
+        Mockito.verify(pushConfiguration).setPushMode(PushMode.MANUAL);
+        Mockito.verify(pushConfiguration).setTransport(Transport.WEBSOCKET);
+    }
+
+    @Test
     public void should_not_haveMetas_when_not_callingInitializer()
             throws Exception {
         AppShellRegistry.getInstance(context)
                 .modifyIndexHtml(document, createVaadinRequest("/"));
         List<Element> elements = document.head().children();
         assertEquals(0, elements.size());
+    }
+
+    @Test
+    public void should_not_modifyPushConfiguration_when_not_callingInitializer()
+            throws Exception {
+        AppShellRegistry.getInstance(context)
+                .modifyPushConfiguration(pushConfiguration);
+
+        Mockito.verify(pushConfiguration, Mockito.never())
+                .setPushMode(Mockito.any(PushMode.class));
     }
 
     @Test

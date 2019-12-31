@@ -24,15 +24,20 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
+import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.dom.NodeVisitor.ElementType;
 import com.vaadin.flow.dom.TestNodeVisitor;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
+import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletResponse;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.shared.communication.PushMode;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -47,6 +52,10 @@ public class JavaScriptBootstrapHandlerTest {
     private TestVaadinServletResponse response;
     private VaadinSession session;
     private JavaScriptBootstrapHandler jsInitHandler;
+
+    @Push
+    static public class PushAppShell implements AppShellConfigurator {
+    }
 
     @Before
     public void setup() throws Exception {
@@ -98,9 +107,7 @@ public class JavaScriptBootstrapHandlerTest {
                 json.getObject("appConfig").get("serviceUrl"));
         Assert.assertEquals("http://localhost:8888/foo/", json.getObject("appConfig").getString("requestURL"));
 
-        // Using regex, because version depends on the build
-        Assert.assertTrue(json.getObject("appConfig").getString("pushScript")
-                .matches("^\\./VAADIN/static/push/vaadinPush\\.js\\?v=[\\w\\.\\-]+$"));
+        Assert.assertFalse(json.hasKey("pushScript"));
     }
 
     @Test
@@ -154,6 +161,57 @@ public class JavaScriptBootstrapHandlerTest {
                         ElementType.REGULAR));
 
         Mockito.verify(session, Mockito.times(1)).setAttribute(SERVER_ROUTING, Boolean.TRUE);
+    }
+
+    @Test
+    public void should_respondPushScript_when_enabledInDeploymentConfiguration()
+            throws Exception {
+        mocks.getDeploymentConfiguration().setPushMode(PushMode.AUTOMATIC);
+
+        VaadinRequest request = mocks.createRequest(mocks,
+                "/foo/?v-r=init&foo");
+        jsInitHandler.handleRequest(session, request, response);
+
+        Assert.assertEquals(200, response.getErrorCode());
+        Assert.assertEquals("application/json", response.getContentType());
+        JsonObject json = Json.parse(response.getPayload());
+
+        // Using regex, because version depends on the build
+        Assert.assertTrue(json.getString("pushScript").matches(
+                "^\\./VAADIN/static/push/vaadinPush\\.js\\?v=[\\w\\.\\-]+$"));
+    }
+
+    @Test
+    public void should_invoke_modifyPushConfiguration()
+            throws Exception {
+        VaadinRequest request = mocks.createRequest(mocks,
+                "/foo/?v-r=init&foo");
+        jsInitHandler.handleRequest(session, request, response);
+
+        Mockito.verify(mocks.getAppShellRegistry())
+                .modifyPushConfiguration(Mockito.any(PushConfiguration.class));
+    }
+
+    @Test
+    public void should_respondPushScript_when_annotatedInAppShell()
+            throws Exception {
+        AppShellRegistry registry = mocks.getAppShellRegistry();
+        Mockito.doCallRealMethod().when(registry).setShell(PushAppShell.class);
+        registry.setShell(PushAppShell.class);
+        Mockito.doCallRealMethod().when(registry).getShell();
+        Mockito.doCallRealMethod().when(registry)
+                .modifyPushConfiguration(Mockito.any(PushConfiguration.class));
+
+        VaadinRequest request = mocks.createRequest(mocks, "/foo/?v-r=init&foo");
+        jsInitHandler.handleRequest(session, request, response);
+
+        Assert.assertEquals(200, response.getErrorCode());
+        Assert.assertEquals("application/json", response.getContentType());
+        JsonObject json = Json.parse(response.getPayload());
+
+        // Using regex, because version depends on the build
+        Assert.assertTrue(json.getString("pushScript").matches(
+                "^\\./VAADIN/static/push/vaadinPush\\.js\\?v=[\\w\\.\\-]+$"));
     }
 
     private boolean hasNodeTag(TestNodeVisitor visitor, String htmContent, ElementType type) {

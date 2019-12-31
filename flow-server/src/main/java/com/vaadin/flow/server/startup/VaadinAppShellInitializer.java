@@ -38,6 +38,7 @@ import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.PageTitle;
@@ -61,7 +62,7 @@ import static com.vaadin.flow.server.AppShellRegistry.ERROR_HEADER_OFFENDING_CON
  */
 @HandlesTypes({ AppShellConfigurator.class, Meta.class, Meta.Container.class,
         PWA.class, Inline.class, Inline.Container.class, Viewport.class,
-        BodySize.class, PageTitle.class, PageConfigurator.class })
+        BodySize.class, PageTitle.class, PageConfigurator.class, Push.class })
 @WebListener
 public class VaadinAppShellInitializer implements ServletContainerInitializer,
         Serializable {
