@@ -15,6 +15,7 @@
     "experimentalDecorators": true,
     "outDir": "target/classes/META-INF/resources/frontend",
     "declaration": true
+    "skipLibCheck": true
   },
   "include": [
     "src/main/resources/META-INF/resources/frontend/**/*.ts"
