@@ -270,7 +270,7 @@ public class TreeDataProviderTest
                 && !item.getValue().equals("Xyz"));
 
         assertEquals(
-                "Previous filter should be replaced when setting a new one", 6,
+                "Previous filter should be replaced when setting a new one", 14,
                 sizeWithUnfilteredQuery());
 
         getDataProvider().setFilter(null);
@@ -283,7 +283,7 @@ public class TreeDataProviderTest
     public void addFilter() {
         getDataProvider().addFilter(item -> item.getId() <= 10);
         getDataProvider().addFilter(item -> item.getId() >= 5);
-        assertEquals(5, sizeWithUnfilteredQuery());
+        assertEquals(8, sizeWithUnfilteredQuery());
     }
 
     @Override
@@ -296,7 +296,7 @@ public class TreeDataProviderTest
                         .size(new HierarchicalQuery<>("Xyz", null)));
         assertEquals("No item should match 'Zyx'", 0, strFilterDataProvider
                 .size(new HierarchicalQuery<>("Zyx", null)));
-        assertEquals("Unexpected number of matches for 'Foo'", 3,
+        assertEquals("Unexpected number of matches for 'Foo'", 4,
                 strFilterDataProvider
                         .size(new HierarchicalQuery<>("Foo", null)));
         assertEquals("No items should've been filtered out", rootData.size(),
@@ -326,7 +326,7 @@ public class TreeDataProviderTest
         configurableFilterDataProvider
                 .setFilter(bean -> bean.getValue().contains("Foo"));
 
-        assertEquals("Unexpected number of matches for 'Foo'", 3,
+        assertEquals("Unexpected number of matches for 'Foo'", 4,
                 configurableFilterDataProvider.size(
                         new HierarchicalQuery<StrBean, Void>(null, null)));
 
@@ -346,7 +346,7 @@ public class TreeDataProviderTest
         assertEquals("No item should match 'Zyx'", 0,
                 dataProvider.size(new HierarchicalQuery<>(
                         strBean -> strBean.getValue().contains("Zyx"), null)));
-        assertEquals("Unexpected number of matches for 'Foo'", 3,
+        assertEquals("Unexpected number of matches for 'Foo'", 4,
                 getDataProvider()
                         .size(new HierarchicalQuery<>(fooFilter, null)));
     }
