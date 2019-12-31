@@ -7,14 +7,11 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import com.vaadin.flow.component.page.Viewport;
-import com.vaadin.flow.component.page.BodySize;
 
-import com.vaadin.flow.component.page.*;
-import com.vaadin.flow.server.*;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.junit.After;
@@ -24,37 +21,116 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.server.startup.VaadinAppShellRegistry.VaadinAppShellRegistryWrapper;
+import com.vaadin.flow.component.page.BodySize;
+import com.vaadin.flow.component.page.Inline;
+import com.vaadin.flow.component.page.Inline.Position;
+import com.vaadin.flow.component.page.Inline.Wrapping;
+import com.vaadin.flow.component.page.Meta;
+import com.vaadin.flow.component.page.TargetElement;
+import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.component.page.Viewport;
+import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.server.InitialPageSettings;
+import com.vaadin.flow.server.InvalidApplicationConfigurationException;
+import com.vaadin.flow.server.MockServletServiceSessionSetup;
+import com.vaadin.flow.server.PWA;
+import com.vaadin.flow.server.PageConfigurator;
+import com.vaadin.flow.server.AppShellRegistry;
+import com.vaadin.flow.server.AppShellRegistry.AppShellRegistryWrapper;
+import com.vaadin.flow.server.AppShellSettings;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinServletContext;
+import com.vaadin.flow.server.VaadinServletRequest;
+import com.vaadin.flow.shared.communication.PushMode;
 
 import static com.vaadin.flow.server.DevModeHandler.getDevModeHandler;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class VaadinAppShellInitializerTest {
 
-    public static class MyAppShellWithoutAnnotations extends VaadinAppShell {
+    public static class MyAppShellWithoutAnnotations implements AppShellConfigurator {
     }
 
     @Meta(name = "foo", content = "bar")
     @Meta(name = "lorem", content = "ipsum")
     @PWA(name = "my-pwa", shortName = "pwa")
-    @Inline(wrapping = Inline.Wrapping.STYLESHEET, position = Inline.Position.APPEND, target = TargetElement.HEAD, value = "")
-    @Inline(wrapping = Inline.Wrapping.JAVASCRIPT, position = Inline.Position.PREPEND, target = TargetElement.BODY, value = "")
-    @Viewport(Viewport.DEVICE_DIMENSIONS)
-    @BodySize(height = "50vh", width = "50vw")
-    public static class MyAppShellWithMultipleAnnotations extends VaadinAppShell {
+    @Inline("inline.html")
+    @Inline(position = Position.PREPEND, value = "inline.css")
+    @Inline(wrapping = Wrapping.JAVASCRIPT, position = Position.APPEND, target = TargetElement.BODY, value = "inline.js")
+    @Viewport("my-viewport")
+    @BodySize(height = "my-height", width = "my-width")
+    @PageTitle("my-title")
+    public static class MyAppShellWithMultipleAnnotations implements AppShellConfigurator {
     }
 
-    @Meta(name = "offending-foo", content = "bar")
-    @Meta(name = "offending-lorem", content = "ipsum")
-    @PWA(name = "offending-my-pwa", shortName = "pwa")
-    @Inline(wrapping = Inline.Wrapping.STYLESHEET, position = Inline.Position.PREPEND, target = TargetElement.HEAD, value = "")
-    @Inline(wrapping = Inline.Wrapping.JAVASCRIPT, position = Inline.Position.APPEND, target = TargetElement.BODY, value = "")
-    @Viewport(Viewport.DEVICE_DIMENSIONS)
-    @BodySize(height = "50vh", width = "50vw")
+    @Meta(name = "foo", content = "bar")
+    @Meta(name = "lorem", content = "ipsum")
+    @PWA(name = "my-pwa", shortName = "pwa")
+    @Inline("inline.html")
+    @Inline(position = Position.PREPEND, value = "inline.css")
+    @Inline(wrapping = Wrapping.JAVASCRIPT, position = Position.APPEND, target = TargetElement.BODY, value = "inline.js")
+    @Viewport("my-viewport")
+    @BodySize(height = "my-height", width = "my-width")
+    @PageTitle("my-title")
     public static class OffendingClass {
     }
+
+    public static class MyAppShellWithConfigurator implements AppShellConfigurator {
+        @Override
+        public void configurePage(AppShellSettings settings) {
+            settings.setViewport("my-viewport");
+            settings.setPageTitle("my-title");
+            settings.addMetaTag("foo", "bar");
+            settings.addMetaTag("lorem", "ipsum");
+            settings.addInlineFromFile("inline.html", Wrapping.AUTOMATIC);
+            settings.addInlineFromFile(Position.PREPEND, "inline.css", Wrapping.AUTOMATIC);
+            settings.addInlineFromFile(TargetElement.BODY, Position.APPEND, "inline.js", Wrapping.JAVASCRIPT);
+            settings.setBodySize("my-width", "my-height");
+
+            settings.addFavIcon("icon1", "icon1.png", "1x1");
+            settings.addFavIcon("icon2", "icon2.png", "2x2");
+            settings.addInlineWithContents(Position.PREPEND,
+                    "window.messages = window.messages || [];\n"
+                            + "window.messages.push(\"content script\");",
+                            Wrapping.JAVASCRIPT);
+            settings.addInlineFromFile(Position.PREPEND, "inline.js",
+                    Wrapping.JAVASCRIPT);
+
+            settings.addLink("icons/favicon.ico",
+                    new LinkedHashMap<String, String>() {
+                        {
+                            put("rel", "shortcut icon");
+                        }
+                    });
+            settings.addLink("icons/icon-192.png",
+                    new LinkedHashMap<String, String>() {
+                        {
+                            put("rel", "icon");
+                            put("sizes", "192x192");
+                        }
+                    });
+
+            settings.addLink("shortcut icon", "icons/favicon.ico");
+
+            settings.addFavIcon("icon", "icons/icon-192.png", "192x192");
+            settings.addFavIcon("icon", "icons/icon-200.png", "2");
+
+            settings.getLoadingIndicatorConfiguration().ifPresent(indicator -> indicator.setApplyDefaultTheme(false));
+            settings.getLoadingIndicatorConfiguration().ifPresent(indicator -> indicator.setSecondDelay(700000));
+            settings.getPushConfiguration().ifPresent(push -> push.setPushMode(PushMode.MANUAL));
+            settings.getReconnectDialogConfiguration().ifPresent(dialog -> dialog.setDialogModal(true));
+        }
+    }
+
+    public static class OffendingClassWithConfigurator implements PageConfigurator {
+        @Override
+        public void configurePage(InitialPageSettings settings) {
+        }
+    }
+
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
@@ -67,10 +143,8 @@ public class VaadinAppShellInitializerTest {
     private Set<Class<?>> classes;
     private Document document;
     private Map<String, Object> attributeMap = new HashMap<>();
-    private VaadinResponse response;
     private MockServletServiceSessionSetup mocks;
     private MockServletServiceSessionSetup.TestVaadinServletService service;
-    private VaadinSession session;
 
     @Before
     public void setup() throws Exception {
@@ -79,8 +153,6 @@ public class VaadinAppShellInitializerTest {
         servletContext = Mockito.mock(ServletContext.class);
         mocks = new MockServletServiceSessionSetup();
         service = mocks.getService();
-        session = mocks.getSession();
-        response = Mockito.mock(VaadinResponse.class);
         Mockito.when(servletContext.getAttribute(Mockito.anyString())).then(invocationOnMock -> attributeMap.get(invocationOnMock.getArguments()[0].toString()));
         Mockito.doAnswer(invocationOnMock -> attributeMap.put(
                 invocationOnMock.getArguments()[0].toString(),
@@ -109,15 +181,15 @@ public class VaadinAppShellInitializerTest {
 
     @After
     public void teardown() throws Exception {
-        VaadinAppShellRegistry.getInstance(context).reset();
+        AppShellRegistry.getInstance(context).reset();
     }
 
     @Test
     public void should_not_modifyDocument_when_noAnnotatedAppShell() throws Exception {
         classes.add(MyAppShellWithoutAnnotations.class);
         initializer.onStartup(classes, servletContext);
-        VaadinAppShellRegistry.getInstance(context)
-                .modifyIndexHtmlResponse(document);
+        AppShellRegistry.getInstance(context)
+                .modifyIndexHtml(document, createVaadinRequest("/"));
         assertEquals(0, document.head().children().size());
         assertEquals(0, document.body().children().size());
     }
@@ -138,19 +210,13 @@ public class VaadinAppShellInitializerTest {
 
         initializer.onStartup(classes, servletContext);
 
-        VaadinAppShellRegistry.getInstance(context)
-                .modifyIndexHtmlResponse(document);
+        AppShellRegistry.getInstance(context)
+        .modifyIndexHtml(document, createVaadinRequest("/"));
 
         List<Element> elements = document.head().children();
-        assertEquals(4, elements.size());
-        assertEquals("foo", elements.get(0).attr("name"));
-        assertEquals("bar", elements.get(0).attr("content"));
-        assertEquals("lorem", elements.get(1).attr("name"));
-        assertEquals("ipsum", elements.get(1).attr("content"));
-        assertEquals("viewport", elements.get(2).attr("name"));
-        assertEquals(Viewport.DEVICE_DIMENSIONS, elements.get(2).attr("content"));
-        assertEquals("text/css", elements.get(3).attr("type"));
-        assertEquals("body,#outlet{height:50vh;width:50vw;}", elements.get(3).childNode(0).toString());
+        assertEquals(7, elements.size());
+        assertEquals("text/css", elements.get(5).attr("type"));
+        assertEquals("body,#outlet{width:my-width;height:my-height;}", elements.get(5).childNode(0).toString());
     }
 
     @Test
@@ -158,25 +224,42 @@ public class VaadinAppShellInitializerTest {
         classes.add(MyAppShellWithMultipleAnnotations.class);
 
         initializer.onStartup(classes, servletContext);
-        VaadinRequest request = createVaadinRequest("/");
-        VaadinAppShellRegistry.getInstance(context).modifyIndexHtmlResponeWithInline(document, session, request);
+
+        AppShellRegistry.getInstance(context)
+                .modifyIndexHtml(document, createVaadinRequest("/"));
 
         List<Element> headElements = document.head().children();
-        assertEquals(1, headElements.size());
+        assertEquals(7, headElements.size());
         assertEquals("text/css", headElements.get(0).attr("type"));
         assertEquals("style", headElements.get(0).tagName());
+        assertTrue(headElements.get(0).outerHtml().contains("#preloadedDiv"));
+        assertEquals("foo", headElements.get(1).attr("name"));
+        assertEquals("lorem", headElements.get(2).attr("name"));
+        assertEquals("viewport", headElements.get(3).attr("name"));
+        assertEquals("title", headElements.get(4).tagName());
+        assertEquals("my-title", headElements.get(4).childNode(0).toString());
+
+        assertEquals("text/css", headElements.get(5).attr("type"));
+        assertEquals("style", headElements.get(5).tagName());
+        assertTrue(headElements.get(5).outerHtml().contains("width:my-width"));
+        assertTrue(headElements.get(5).outerHtml().contains("height:my-height"));
+
+        assertEquals("text/javascript", headElements.get(6).attr("type"));
+        assertEquals("script", headElements.get(6).tagName());
+        assertTrue(headElements.get(6).outerHtml().contains("might not yet be accessible"));
 
         List<Element> bodyElements = document.body().children();
         assertEquals(1, bodyElements.size());
         assertEquals("text/javascript", bodyElements.get(0).attr("type"));
         assertEquals("script", bodyElements.get(0).tagName());
+        assertTrue(bodyElements.get(0).outerHtml().contains("window.messages.push"));
     }
 
     @Test
     public void should_not_haveMetas_when_not_callingInitializer()
             throws Exception {
-        VaadinAppShellRegistry.getInstance(context)
-                .modifyIndexHtmlResponse(document);
+        AppShellRegistry.getInstance(context)
+                .modifyIndexHtml(document, createVaadinRequest("/"));
         List<Element> elements = document.head().children();
         assertEquals(0, elements.size());
     }
@@ -186,24 +269,17 @@ public class VaadinAppShellInitializerTest {
             throws Exception {
 
         // Set class in context and do not call initializer
-        VaadinAppShellRegistry registry = new VaadinAppShellRegistry();
+        AppShellRegistry registry = new AppShellRegistry();
         registry.setShell(MyAppShellWithMultipleAnnotations.class);
-        context.setAttribute(new VaadinAppShellRegistryWrapper(registry));
+        context.setAttribute(new AppShellRegistryWrapper(registry));
 
-        VaadinAppShellRegistry.getInstance(context)
-                .modifyIndexHtmlResponse(document);
+        VaadinRequest request = createVaadinRequest("/");
+        AppShellRegistry.getInstance(context)
+                .modifyIndexHtml(document, request);
 
         List<Element> elements = document.head().children();
 
-        assertEquals(4, elements.size());
-        assertEquals("foo", elements.get(0).attr("name"));
-        assertEquals("bar", elements.get(0).attr("content"));
-        assertEquals("lorem", elements.get(1).attr("name"));
-        assertEquals("ipsum", elements.get(1).attr("content"));
-        assertEquals("viewport", elements.get(2).attr("name"));
-        assertEquals(Viewport.DEVICE_DIMENSIONS, elements.get(2).attr("content"));
-        assertEquals("text/css", elements.get(3).attr("type"));
-        assertEquals("body,#outlet{height:50vh;width:50vw;}", elements.get(3).childNode(0).toString());
+        assertEquals(7, elements.size());
     }
 
     @Test
@@ -212,7 +288,7 @@ public class VaadinAppShellInitializerTest {
         exception.expectMessage(
                 containsString("Found app shell configuration annotations in non"));
         exception.expectMessage(
-                containsString("- @Meta, @PWA, @Inline, @Viewport, @BodySize from"));
+                containsString("- @Meta, @PWA, @Inline, @Viewport, @BodySize, @PageTitle from"));
         classes.add(MyAppShellWithoutAnnotations.class);
         classes.add(OffendingClass.class);
         initializer.onStartup(classes, servletContext);
@@ -224,8 +300,8 @@ public class VaadinAppShellInitializerTest {
         classes.add(OffendingClass.class);
         initializer.onStartup(classes, servletContext);
 
-        VaadinAppShellRegistry.getInstance(context)
-                .modifyIndexHtmlResponse(document);
+        AppShellRegistry.getInstance(context)
+                .modifyIndexHtml(document, createVaadinRequest("/"));
 
         List<Element> elements = document.head().children();
         assertEquals(0, elements.size());
@@ -238,6 +314,26 @@ public class VaadinAppShellInitializerTest {
 
         classes.add(MyAppShellWithoutAnnotations.class);
         classes.add(MyAppShellWithMultipleAnnotations.class);
+        initializer.onStartup(classes, servletContext);
+    }
+
+    @Test
+    public void should_throw_when_offendingClassWithConfigurator() throws Exception {
+        exception.expect(InvalidApplicationConfigurationException.class);
+        exception.expectMessage(
+                containsString("The `PageConfigurator` interface is deprecated since Vaadin 15 and has no effect."));
+        exception.expectMessage(
+                containsString(MyAppShellWithoutAnnotations.class.getName()));
+        exception.expectMessage(
+                containsString("- " + OffendingClassWithConfigurator.class.getName()));
+        classes.add(MyAppShellWithoutAnnotations.class);
+        classes.add(OffendingClassWithConfigurator.class);
+        initializer.onStartup(classes, servletContext);
+    }
+
+    @Test
+    public void should_not_throw_when_noAppShell_and_classWithPageConfigurator() throws Exception {
+        classes.add(OffendingClassWithConfigurator.class);
         initializer.onStartup(classes, servletContext);
     }
 

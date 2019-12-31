@@ -25,33 +25,43 @@ import javax.servlet.annotation.WebListener;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-import com.vaadin.flow.component.page.Inline;
-import com.vaadin.flow.component.page.Viewport;
-import com.vaadin.flow.component.page.BodySize;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.page.BodySize;
+import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Meta;
-import com.vaadin.flow.component.page.VaadinAppShell;
+import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.server.InvalidApplicationConfigurationException;
 import com.vaadin.flow.server.PWA;
+import com.vaadin.flow.server.PageConfigurator;
+import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
 
+import static com.vaadin.flow.server.AppShellRegistry.ERROR_HEADER_NO_APP_CONFIGURATOR;
+import static com.vaadin.flow.server.AppShellRegistry.ERROR_HEADER_NO_SHELL;
+import static com.vaadin.flow.server.AppShellRegistry.ERROR_HEADER_OFFENDING;
+import static com.vaadin.flow.server.AppShellRegistry.ERROR_HEADER_OFFENDING_CONFIGURATOR;
+
 /**
- * Servlet initializer visiting {@link VaadinAppShell} configuration.
+ * Servlet initializer visiting {@link AppShellConfigurator} configuration.
  *
  * @since 3.0
  */
-@HandlesTypes({ VaadinAppShell.class, Meta.class, Meta.Container.class,
-        PWA.class, Inline.class, Inline.Container.class, Viewport.class, BodySize.class})
+@HandlesTypes({ AppShellConfigurator.class, Meta.class, Meta.Container.class,
+        PWA.class, Inline.class, Inline.Container.class, Viewport.class,
+        BodySize.class, PageTitle.class, PageConfigurator.class })
 @WebListener
 public class VaadinAppShellInitializer implements ServletContainerInitializer,
         Serializable {
@@ -74,7 +84,7 @@ public class VaadinAppShellInitializer implements ServletContainerInitializer,
     }
 
     /**
-     * Initializes the {@link VaadinAppShellRegistry} for the application.
+     * Initializes the {@link AppShellRegistry} for the application.
      *
      * @param classes
      *            a set of classes that matches the {@link HandlesTypes} set in
@@ -92,7 +102,7 @@ public class VaadinAppShellInitializer implements ServletContainerInitializer,
             return;
         }
 
-        VaadinAppShellRegistry registry = VaadinAppShellRegistry
+        AppShellRegistry registry = AppShellRegistry
                 .getInstance(new VaadinServletContext(context));
         registry.reset();
 
@@ -109,7 +119,7 @@ public class VaadinAppShellInitializer implements ServletContainerInitializer,
                 .forEach(clz -> {
                     if (registry.isShell(clz)) {
                         registry.setShell(
-                                (Class<? extends VaadinAppShell>) clz);
+                                (Class<? extends AppShellConfigurator>) clz);
                         getLogger().info(
                                 "Using {} class for configuring `index.html` response",
                                 clz.getName());
@@ -124,49 +134,74 @@ public class VaadinAppShellInitializer implements ServletContainerInitializer,
         if (!offendingAnnotations.isEmpty()) {
             if (registry.getShell() == null) {
                 String message = String.format(
-                        VaadinAppShellRegistry.ERROR_HEADER_NO_SHELL,
+                        ERROR_HEADER_NO_SHELL,
                         String.join("\n  ", offendingAnnotations));
                 getLogger().error(message);
             } else {
                 String message = String.format(
-                        VaadinAppShellRegistry.ERROR_HEADER_OFFENDING,
+                        ERROR_HEADER_OFFENDING,
                         registry.getShell(),
                         String.join("\n  ", offendingAnnotations));
                 throw new InvalidApplicationConfigurationException(message);
             }
         }
+
+        List<String> classesImplementingPageConfigurator = classes.stream()
+                .filter(clz -> PageConfigurator.class.isAssignableFrom(clz))
+                .map(Class::getName).collect(Collectors.toList());
+
+        if (!classesImplementingPageConfigurator.isEmpty()) {
+            String message = String.join("\n - ", classesImplementingPageConfigurator);
+            if (registry.getShell() != null) {
+                message = String.format(ERROR_HEADER_OFFENDING_CONFIGURATOR,
+                        registry.getShell().getName(), message);
+                throw new InvalidApplicationConfigurationException(message);
+            } else {
+                message = String.format(ERROR_HEADER_NO_APP_CONFIGURATOR, message);
+                getLogger().error(message);
+            }
+        }
     }
 
     /**
-     * Return the set of valid annotations in a {@link VaadinAppShell} class.
-     * This method is thought to be called from external plugins to decouple
-     * them.
+     * Return the list of annotations handled by this class. This method is
+     * thought to be called from external plugins (e.g. Vaadin Spring) that
+     * would need to override the <code>@HandlesTypes</code>-based classpath
+     * scanning.
      *
-     * @return
+     * @return list of annotations handled by
+     *  {@link VaadinAppShellInitializer#init(Set, ServletContext, DeploymentConfiguration)}
      */
     @SuppressWarnings("unchecked")
     public static List<Class<? extends Annotation>> getValidAnnotations() {
-        HandlesTypes annotation = VaadinAppShellInitializer.class
-                .getAnnotation(HandlesTypes.class);
-        assert annotation != null;
-        List<Class<? extends Annotation>> ret = new ArrayList<>();
-        for (Class<?> clazz : annotation.value()) {
-            if (clazz.isAnnotation()) {
-                ret.add((Class<? extends Annotation>) clazz);
-            }
-        }
-        return ret;
+        return Arrays.stream(getHandledTypes())
+                .filter(Class::isAnnotation)
+                .map(clz -> (Class<? extends Annotation>) clz)
+                .collect(Collectors.toList());
     }
 
     /**
-     * Return the {@link VaadinAppShell} class. This method is thought to be
-     * called from external plugins to decouple them.
+     * Return the list of super classes handled by this class. This method is
+     * thought to be called from external plugins (e.g. Vaadin Spring) that
+     * would need to override the <code>@HandlesTypes</code>-based classpath
+     * scanning.
      *
-     * @return
+     * @return list of super classes handled by
+     *  {@link VaadinAppShellInitializer#init(Set, ServletContext, DeploymentConfiguration)}
      */
     public static List<Class<?>> getValidSupers() {
-        return Collections.singletonList(VaadinAppShell.class);
+        return Arrays.stream(getHandledTypes())
+                .filter(clz -> !clz.isAnnotation())
+                .collect(Collectors.toList());
     }
+
+    private static Class<?>[] getHandledTypes() {
+        HandlesTypes annotation = VaadinAppShellInitializer.class
+                .getAnnotation(HandlesTypes.class);
+        assert annotation != null;
+        return annotation.value();
+    }
+
 
     private static Logger getLogger() {
         return LoggerFactory.getLogger(VaadinAppShellInitializer.class);

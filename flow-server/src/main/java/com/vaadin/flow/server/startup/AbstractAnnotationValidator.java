@@ -25,7 +25,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.page.VaadinAppShell;
+import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
@@ -111,8 +111,17 @@ public abstract class AbstractAnnotationValidator implements Serializable {
         return getClassAnnotations(clazz, getAnnotations());
     }
 
+    /**
+     * Returns annotations declared for the {@code clazz}.
+     *
+     * @param clazz
+     *            the type
+     * @param annotations
+     *            the annotation list
+     * @return a comma separated string with the annotation names
+     */
     @SuppressWarnings("unchecked")
-    protected static String getClassAnnotations(Class<?> clazz,
+    public static String getClassAnnotations(Class<?> clazz,
             List<Class<?>> annotations) {
         return annotations.stream()
                 .filter(ann -> clazz
@@ -142,7 +151,7 @@ public abstract class AbstractAnnotationValidator implements Serializable {
                     offendingAnnotations.add(String.format(NON_PARENT_ALIAS,
                             clazz.getName(), getClassAnnotations(clazz)));
                 }
-            } else if (VaadinAppShell.class.isAssignableFrom(clazz)) {
+            } else if (AppShellConfigurator.class.isAssignableFrom(clazz)) {
                 // Annotations on the app shell classes are validated in
                 // VaadinAppShellInitializer
             } else if (!RouterLayout.class.isAssignableFrom(clazz)) {

@@ -25,7 +25,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 import com.sun.net.httpserver.HttpServer;
-import com.vaadin.flow.component.page.Viewport;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
@@ -41,13 +40,14 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
+import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.AppShellRegistry.AppShellRegistryWrapper;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWithConfigurator;
 import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWithMultipleAnnotations;
-import com.vaadin.flow.server.startup.VaadinAppShellRegistry;
-import com.vaadin.flow.server.startup.VaadinAppShellRegistry.VaadinAppShellRegistryWrapper;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
@@ -371,11 +371,11 @@ public class IndexHtmlRequestHandlerTest {
     @Test
     public void should_add_metaAndPwa_Inline_Elements_when_appShellPresent() throws Exception {
         // Set class in context and do not call initializer
-        VaadinAppShellRegistry registry = new VaadinAppShellRegistry();
+        AppShellRegistry registry = new AppShellRegistry();
         registry.setShell(MyAppShellWithMultipleAnnotations.class);
         Mockito.when(mocks.getServletContext()
-                .getAttribute(VaadinAppShellRegistryWrapper.class.getName()))
-                .thenReturn(new VaadinAppShellRegistryWrapper(registry));
+                .getAttribute(AppShellRegistryWrapper.class.getName()))
+                .thenReturn(new AppShellRegistryWrapper(registry));
 
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
@@ -387,27 +387,68 @@ public class IndexHtmlRequestHandlerTest {
         Elements elements = document.head().getElementsByTag("meta");
         assertEquals(7, elements.size());
         assertEquals("viewport", elements.get(1).attr("name"));
-        assertEquals(Viewport.DEVICE_DIMENSIONS, elements.get(1).attr("content"));
+        assertEquals("my-viewport", elements.get(1).attr("content"));
+        assertEquals("apple-mobile-web-app-capable", elements.get(2).attr("name"));
+        assertEquals("yes", elements.get(2).attr("content"));
+        assertEquals("theme-color", elements.get(3).attr("name"));
+        assertEquals("#ffffff", elements.get(3).attr("content"));
+        assertEquals("apple-mobile-web-app-status-bar-style", elements.get(4).attr("name"));
+        assertEquals("#ffffff", elements.get(4).attr("content"));
+
+        assertEquals("foo", elements.get(5).attr("name"));
+        assertEquals("bar", elements.get(5).attr("content"));
+        assertEquals("lorem", elements.get(6).attr("name"));
+        assertEquals("ipsum", elements.get(6).attr("content"));
+
+        Elements headInlineAndStyleElements = document.head().getElementsByTag("style");
+        assertEquals(3, headInlineAndStyleElements.size());
+        assertEquals("text/css", headInlineAndStyleElements.get(2).attr("type"));
+        assertEquals("body,#outlet{width:my-width;height:my-height;}", headInlineAndStyleElements.get(2).childNode(0).toString());
+
+        Elements bodyInlineElements = document.body().getElementsByTag("script");
+        assertEquals(3, bodyInlineElements.size());
+    }
+
+    @Test
+    public void should_add_elements_when_appShellWithConfigurator() throws Exception {
+        // Set class in context and do not call initializer
+        AppShellRegistry registry = new AppShellRegistry();
+        registry.setShell(MyAppShellWithConfigurator.class);
+        Mockito.when(mocks.getServletContext()
+                .getAttribute(AppShellRegistryWrapper.class.getName()))
+                .thenReturn(new AppShellRegistryWrapper(registry));
+
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+
+        String indexHtml = responseOutput
+                .toString(StandardCharsets.UTF_8.name());
+        Document document = Jsoup.parse(indexHtml);
+
+        Elements elements = document.head().getElementsByTag("meta");
+        assertEquals(4, elements.size());
+        // already in the index.html used as template
+        assertEquals("UTF-8", elements.get(0).attr("charset"));
+
+        // replaced ones in the index.html template by configurator ones
+        assertEquals("viewport", elements.get(1).attr("name"));
+        assertEquals("my-viewport", elements.get(1).attr("content"));
+
+        // added by configurator
         assertEquals("foo", elements.get(2).attr("name"));
         assertEquals("bar", elements.get(2).attr("content"));
         assertEquals("lorem", elements.get(3).attr("name"));
         assertEquals("ipsum", elements.get(3).attr("content"));
-        assertEquals("apple-mobile-web-app-capable", elements.get(4).attr("name"));
-        assertEquals("yes", elements.get(4).attr("content"));
-        assertEquals("theme-color", elements.get(5).attr("name"));
-        assertEquals("#ffffff", elements.get(5).attr("content"));
-        assertEquals("apple-mobile-web-app-status-bar-style", elements.get(6).attr("name"));
-        assertEquals("#ffffff", elements.get(6).attr("content"));
+
+        assertEquals("my-title", document.head().getElementsByTag("title").get(0).childNode(0).toString());
 
         Elements headInlineAndStyleElements = document.head().getElementsByTag("style");
         assertEquals(3, headInlineAndStyleElements.size());
-        assertEquals("text/css", headInlineAndStyleElements.get(1).attr("type"));
-        assertEquals("body,#outlet{height:50vh;width:50vw;}", headInlineAndStyleElements.get(1).childNode(0).toString());
         assertEquals("text/css", headInlineAndStyleElements.get(2).attr("type"));
+        assertEquals("body,#outlet{width:my-width;height:my-height;}", headInlineAndStyleElements.get(2).childNode(0).toString());
 
         Elements bodyInlineElements = document.body().getElementsByTag("script");
-        assertEquals(3, bodyInlineElements.size());
-        assertEquals("text/javascript", bodyInlineElements.get(0).attr("type"));
+        assertEquals(2, bodyInlineElements.size());
     }
 
     @After
