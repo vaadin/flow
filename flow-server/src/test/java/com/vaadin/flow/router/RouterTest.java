@@ -3368,6 +3368,8 @@ public class RouterTest extends RoutingTestBase {
     @Test // #4595
     public void event_listeners_are_invoked_starting_with_parent_component()
             throws InvalidRouteConfigurationException {
+        ProcessEventsBase.clear();
+
         setNavigationTargets(ProcessEventsFlower.class);
 
         router.navigate(ui, new Location("event/flower"),
@@ -3380,6 +3382,8 @@ public class RouterTest extends RoutingTestBase {
     @Test // #4595
     public void parent_layouts_are_reused_when_change_url()
             throws InvalidRouteConfigurationException {
+        ProcessEventsBase.clear();
+
         setNavigationTargets(ProcessEventsFlower.class,
                 ProcessEventsLeaf.class);
 
@@ -3401,6 +3405,8 @@ public class RouterTest extends RoutingTestBase {
     @Test // #4595
     public void components_are_not_created_when_parent_layout_redirects()
             throws InvalidRouteConfigurationException {
+        ProcessEventsBase.clear();
+
         setNavigationTargets(ProcessEventsFlower.class,
                 ProcessEventsTwig.class);
 
@@ -3424,6 +3430,8 @@ public class RouterTest extends RoutingTestBase {
     @Test // #4595
     public void url_parameter_is_invoked_after_before_enter_events()
             throws InvalidRouteConfigurationException {
+        ProcessEventsBase.clear();
+
         setNavigationTargets(ProcessEventsLeaf.class);
 
         final String parameter = "red";
