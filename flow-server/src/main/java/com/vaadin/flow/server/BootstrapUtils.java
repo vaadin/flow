@@ -25,13 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
-
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.parser.Parser;
 
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
@@ -50,12 +44,6 @@ import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.server.BootstrapHandler.BootstrapUriResolver;
-import com.vaadin.flow.shared.ui.Dependency;
-import com.vaadin.flow.shared.ui.LoadMode;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 /**
  * Utility methods used by the BootstrapHandler.
@@ -272,68 +260,6 @@ class BootstrapUtils {
                     file));
         }
         return stream;
-    }
-
-    private static StringBuilder createHeaderInjectionCall(String content) {
-        StringBuilder inlineContent = new StringBuilder();
-        Document document = Jsoup.parse(content, "", Parser.xmlParser());
-        for (Element element : document.children()) {
-            String tagName = element.tagName();
-            inlineContent.append("_inlineHeader('");
-            inlineContent.append(tagName).append("',");
-            inlineContent.append(makeJsString(element.html()));
-            inlineContent.append(");\n");
-        }
-        return inlineContent;
-    }
-
-    /**
-     * Makes a JS string from the {@code value}.
-     *
-     * @param value
-     *            a string
-     * @return a JS literal representing the {@code value}
-     */
-    private static String makeJsString(String value) {
-        // We are using single quote for the string
-        StringBuilder builder = new StringBuilder("'");
-        if (value.indexOf('\'') == -1) {
-            // if there are not quotes in the string just wrap it
-            builder.append(value);
-        } else if (!value.contains("\\'")) {
-            // if ther are no escaped single quotes then just replace quotes
-            // inside string to \x27
-            builder.append(value.replace("'", "\\x27"));
-        } else {
-            // Now there are escaped quotes, they should be preserved as is,
-            // don't want to parse it. Let's just replace escaped quotes to some
-            // unique token, replace un-escaped quotes and return escaped quotes
-            // back via replacing the token.
-            String unique;
-            do {
-                unique = UUID.randomUUID().toString();
-            } while (value.contains(unique));
-            String modified = value.replace("\\'", unique);
-            modified = modified.replace("'", "\\x27");
-            builder.append(modified.replace(unique, "\\'"));
-        }
-        builder.append("'");
-        return builder.toString();
-    }
-
-    private static String createImportLink(
-            BootstrapUriResolver bootstrapUriResolver, String href) {
-        String resolvedLink = bootstrapUriResolver.resolveVaadinUri(href);
-        return "<link rel=\"import\" href=\"" + resolvedLink + "\">";
-
-    }
-
-    private static JsonObject createInlineDependencyObject(String content) {
-        JsonObject dependency = Json.createObject();
-        dependency.put(Dependency.KEY_TYPE, "none");
-        dependency.put("LoadMode", LoadMode.INLINE.toString());
-        dependency.put(Dependency.KEY_CONTENTS, content);
-        return dependency;
     }
 
     /**

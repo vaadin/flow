@@ -71,9 +71,6 @@ public class VaadinServlet extends HttpServlet {
             throw new ServletException("Could not initialize VaadinServlet", e);
         }
 
-        DeploymentConfiguration deploymentConfiguration = servletService
-                .getDeploymentConfiguration();
-
         staticFileHandler = createStaticFileHandler(servletService);
 
         // Sets current service even though there are no request and response
