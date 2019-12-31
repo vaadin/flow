@@ -34,8 +34,10 @@ import com.vaadin.flow.server.AppShellSettings;
  * <li>{@link Viewport}: defines the viewport tag of the page</li>
  * <li>{@link BodySize}: configures the size of the body</li>
  * <li>{@link PageTitle}: establishes the page title</li>
- * <li>{@link PWA}: Defines application PWA properties</li>
+ * <li>{@link Push}: configures automatic server push</li>
+ * <li>{@link PWA}: defines application PWA properties</li>
  * </ul>
+ *
  * <p>
  * There is a single application shell for the entire Vaadin application, and
  * therefore there can be at max one class implementing {@link AppShellConfigurator}.
@@ -55,6 +57,7 @@ import com.vaadin.flow.server.AppShellSettings;
  * &#64;Viewport("width=device-width, initial-scale=1")
  * &#64;BodySize(height = "100vh", width = "100vw")
  * &#64;PageTitle("my-title")
+ * &#67;Push(value = PushMode.AUTOMATIC, transport = Transport.WEBSOCKET_XHR)
  * public class AppShell implements VaadinAppShell {
  * }
  * </code>

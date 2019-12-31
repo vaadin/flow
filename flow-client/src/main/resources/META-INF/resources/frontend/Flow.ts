@@ -3,14 +3,15 @@ export interface FlowConfig {
 }
 
 interface AppConfig {
-  productionMode: boolean,
-  appId: string,
-  uidl: object,
-  webComponentMode: boolean
+  productionMode: boolean;
+  appId: string;
+  uidl: object;
+  webComponentMode: boolean;
 }
 
 interface AppInitResponse {
   appConfig: AppConfig;
+  pushScript?: string;
 }
 
 interface HTMLRouterContainer extends HTMLElement {
@@ -178,13 +179,20 @@ export class Flow {
       // Enable or disable server side routing
       this.response.appConfig.webComponentMode = !serverSideRouting;
 
+      const {pushScript, appConfig} = this.response;
+
+      if (typeof pushScript === 'string') {
+        await this.loadScript(pushScript);
+      }
+      const {appId} = appConfig;
+
       // Load bootstrap script with server side parameters
       const bootstrapMod = await import('./FlowBootstrap');
       await bootstrapMod.init(this.response);
 
       // Load custom modules defined by user
       if (typeof this.config.imports === 'function') {
-        this.injectAppIdScript(this.response);
+        this.injectAppIdScript(appId);
         await this.config.imports();
       }
 
@@ -194,11 +202,10 @@ export class Flow {
 
       // When client-side router, create a container for server views
       if (!serverSideRouting) {
-        const id = this.response.appConfig.appId;
         // we use a custom tag for the flow app container
-        const tag = `flow-container-${id.toLowerCase()}`;
-        this.container = this.flowRoot.$[id] = document.createElement(tag);
-        this.container.id = id;
+        const tag = `flow-container-${appId.toLowerCase()}`;
+        this.container = this.flowRoot.$[appId] = document.createElement(tag);
+        this.container.id = appId;
 
         // It might be that components created from server expect that their content has been rendered.
         // Appending eagerly the container we avoid these kind of errors.
@@ -210,8 +217,17 @@ export class Flow {
     return this.response;
   }
 
-  private injectAppIdScript(response: AppInitResponse) {
-    const appId = response.appConfig.appId;
+  private async loadScript(url: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.onload = () => resolve();
+      script.onerror = reject;
+      script.src = url;
+      document.body.appendChild(script);
+    });
+  }
+
+  private injectAppIdScript(appId: string) {
     const appIdWithoutHashCode = appId.substring(0, appId.lastIndexOf('-'));
     const scriptAppId = document.createElement('script');
     scriptAppId.type = 'module';
