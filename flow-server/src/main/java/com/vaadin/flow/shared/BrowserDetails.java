@@ -638,7 +638,7 @@ public class BrowserDetails implements Serializable {
         // Safari 11.1+
         if (isSafari() && (getBrowserMajorVersion() < 11
                 || getBrowserMajorVersion() == 11
-                        && getBrowserMinorVersion() <= 1)) {
+                        && getBrowserMinorVersion() < 1)) {
             return true;
         }
         // Firefox 43+ for now
