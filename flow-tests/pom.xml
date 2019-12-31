@@ -228,8 +228,8 @@
             <modules>
                 <module>test-pwa</module>
 
-                <module>test-mixed</module>
-                <!-- module>test-mixed/pom-npm.xml</module>
+                <!-- module>test-mixed</module>
+                <module>test-mixed/pom-npm.xml</module>
 
                 <module>test-dev-mode</module>
                 <module>test-root-ui-context</module>
