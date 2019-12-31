@@ -98,7 +98,6 @@ public class DefaultDeploymentConfiguration
     public static final boolean DEFAULT_SEND_URLS_AS_PARAMETERS = true;
 
     private boolean productionMode;
-    private boolean compatibilityMode;
     private boolean clientSideMode;
     private boolean xsrfProtectionEnabled;
     private int heartbeatInterval;

@@ -161,7 +161,7 @@ public abstract class NodeUpdater implements FallibleCommand {
                 .collect(Collectors.toSet());
     }
 
-    String resolveResource(String importPath, boolean isJsModule) {
+    String resolveResource(String importPath) {
         String resolved = importPath;
         if (!importPath.startsWith("@")) {
 
