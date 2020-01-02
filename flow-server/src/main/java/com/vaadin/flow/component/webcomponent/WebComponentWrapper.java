@@ -62,8 +62,8 @@ public class WebComponentWrapper extends Component {
         super(rootElement);
         Objects.requireNonNull(binding, "Parameter 'binding' must not be null!");
 
-        this.webComponentBinding = binding;
-        this.child = webComponentBinding.getComponent();
+        webComponentBinding = binding;
+        child = webComponentBinding.getComponent();
         getElement().appendChild(child.getElement());
     }
 
@@ -121,6 +121,7 @@ public class WebComponentWrapper extends Component {
                                 .getLastHeartbeatTimestamp()
                                 - disconnect > timeout) {
                             ElementUtil.removeVirtualChildFromParent(getElement());
+                            disconnectRegistration.remove();
                         }
                     });
         }
