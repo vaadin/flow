@@ -22,13 +22,19 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermissions;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -61,6 +67,11 @@ public class FrontendUtilsTest {
     public static final String NPM_CLI_STRING = Stream
             .of("node", "node_modules", "npm", "bin", "npm-cli.js")
             .collect(Collectors.joining(File.separator));
+
+    public static final String PNPM_INSTALL_LOCATION = Stream
+            .of("node_modules","pnpm","bin","pnpm.js")
+            .collect(Collectors.joining(File.separator));
+
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
@@ -270,17 +281,6 @@ public class FrontendUtilsTest {
         Assert.assertNull(statsAssetsByChunkName);
     }
 
-    @Test
-    public void ensurePnpm_doNotEnsure() {
-        List<String> executable = FrontendUtils.getPnpmExecutable(baseDir,
-                false);
-
-        FrontendUtils.ensurePnpm(baseDir, false);
-
-        Assert.assertEquals(executable,
-                FrontendUtils.getPnpmExecutable(baseDir, false));
-    }
-
     /**
      * This test doesn't do anything if pnpm is already installed (globally)
      * which is true e.g. for or CI servers (TC/bender).
@@ -288,28 +288,26 @@ public class FrontendUtilsTest {
     @Test
     public void ensurePnpm_requestInstall_keepPackageJson_removePackageLock_ignoredPnpmExists_localPnpmIsRemoved()
             throws IOException {
-        List<String> executable = FrontendUtils.getPnpmExecutable(baseDir,
-                false);
-        if (executable.isEmpty()) {
-            File packageJson = new File(baseDir, "package.json");
-            FileUtils.writeStringToFile(packageJson, "{}",
-                    StandardCharsets.UTF_8);
+        Assume.assumeTrue(FrontendUtils.getPnpmExecutable(baseDir,
+                false).isEmpty());
+        File packageJson = new File(baseDir, "package.json");
+        FileUtils.writeStringToFile(packageJson, "{}",
+                StandardCharsets.UTF_8);
 
-            File packageLockJson = new File(baseDir, "package-lock.json");
-            FileUtils.writeStringToFile(packageLockJson, "{}",
-                    StandardCharsets.UTF_8);
+        File packageLockJson = new File(baseDir, "package-lock.json");
+        FileUtils.writeStringToFile(packageLockJson, "{}",
+                StandardCharsets.UTF_8);
 
-            FrontendUtils.ensurePnpm(baseDir, true);
-            Assert.assertFalse(
-                    FrontendUtils.getPnpmExecutable(baseDir, false).isEmpty());
+        FrontendUtils.ensurePnpm(baseDir);
+        Assert.assertFalse(
+                FrontendUtils.getPnpmExecutable(baseDir, false).isEmpty());
 
-            // locally installed pnpm (via npm/pnpm) is removed
-            Assert.assertFalse(new File("node_modules/pnpm").exists());
+        // locally installed pnpm (via npm/pnpm) is removed
+        Assert.assertFalse(new File("node_modules/pnpm").exists());
 
-            Assert.assertEquals("{}", FileUtils.readFileToString(packageJson,
-                    StandardCharsets.UTF_8));
-            Assert.assertFalse(packageLockJson.exists());
-        }
+        Assert.assertEquals("{}", FileUtils.readFileToString(packageJson,
+                StandardCharsets.UTF_8));
+        Assert.assertFalse(packageLockJson.exists());
     }
 
     @Test

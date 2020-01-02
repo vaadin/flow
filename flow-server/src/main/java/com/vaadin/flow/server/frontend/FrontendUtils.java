@@ -201,18 +201,20 @@ public class FrontendUtils {
      */
     public static final String PARAM_TOKEN_FILE = "vaadin.frontend.token.file";
 
-    public static final String INSTALL_NODE_LOCALLY = "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.7.6:install-node-and-npm -DnodeVersion=\"v12.13.0\" ";
+    public static final String INSTALL_NODE_LOCALLY = "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.7.6:install-node-and-npm -DnodeVersion=\"v12.14.0\" ";
     public static final String DISABLE_CHECK = "%nYou can disable the version check using -D%s=true";
 
     private static final String NO_CONNECTION = "Webpack-dev-server couldn't be reached for %s.%n"
             + "Check the startup logs for exceptions in running webpack-dev-server.%n"
             + "If server should be running in production mode check that production mode flag is set correctly.";
 
-    private static final String NOT_FOUND = "%n%n======================================================================================================"
-            + "%nFailed to determine '%s' tool." + "%nPlease install it either:"
-            + "%n  - by following the https://nodejs.org/en/download/ guide to install it globally"
-            + "%n  - or by running the frontend-maven-plugin goal to install it in this project:"
+    private static final String NODE_NOT_FOUND = "%n%n======================================================================================================"
+            + "%nVaadin requires node.js & npm to be installed. Please install the latest LTS version of node.js (with npm) either by:"
+            + "%n  1) following the https://nodejs.org/en/download/ guide to install it globally. This is the recommended way."
+            + "%n  2) running the following Maven plugin goal to install it in this project:"
             + INSTALL_NODE_LOCALLY
+            + "%n%nNote that in case you don't install it globally, you'll need to install it again for another Vaadin project."
+            + "%nIn case you have just installed node.js globally, it was not discovered, so you need to restart your system to get the path variables updated."
             + "%n======================================================================================================%n";
 
     private static final String SHOULD_WORK = "%n%n======================================================================================================"
@@ -261,6 +263,10 @@ public class FrontendUtils {
     private static final FrontendVersion SHOULD_WORK_NPM_VERSION = new FrontendVersion(
             Constants.SHOULD_WORK_NPM_MAJOR_VERSION,
             Constants.SHOULD_WORK_NPM_MINOR_VERSION);
+
+    private static final FrontendVersion SUPPORTED_PNPM_VERSION = new FrontendVersion(
+            Constants.SUPPORTED_PNPM_MAJOR_VERSION,
+            Constants.SUPPORTED_PNPM_MINOR_VERSION);
 
     private static FrontendToolsLocator frontendToolsLocator = new FrontendToolsLocator();
 
@@ -350,8 +356,12 @@ public class FrontendUtils {
      * @see #getPnpmExecutable(String, boolean)
      */
     public static List<String> getPnpmExecutable(String baseDir) {
-        ensurePnpm(baseDir, true);
-        return getPnpmExecutable(baseDir, true);
+        ensurePnpm(baseDir);
+        List<String> pnpmCommand = getPnpmExecutable(baseDir, true);
+        if (!pnpmCommand.isEmpty()) {
+            pnpmCommand.add("--shamefully-hoist=true");
+        }
+        return pnpmCommand;
     }
 
     /**
@@ -390,9 +400,6 @@ public class FrontendUtils {
                         .map(File::getPath).map(Collections::singletonList)
                         .orElse(Collections.emptyList()));
             }
-        }
-        if (!returnCommand.isEmpty()) {
-            returnCommand.add("--shamefully-hoist=true");
         }
         return returnCommand;
     }
@@ -436,7 +443,7 @@ public class FrontendUtils {
             // There are IOException coming from process fork
         }
         if (file == null) {
-            throw new IllegalStateException(String.format(NOT_FOUND, cmd));
+            throw new IllegalStateException(String.format(NODE_NOT_FOUND));
         }
         return file;
     }
@@ -742,7 +749,7 @@ public class FrontendUtils {
         try {
             List<String> nodeVersionCommand = new ArrayList<>();
             nodeVersionCommand.add(FrontendUtils.getNodeExecutable(baseDir));
-            nodeVersionCommand.add("--version");
+            nodeVersionCommand.add("--version"); //NOSONAR
             FrontendVersion nodeVersion = getVersion("node",
                     nodeVersionCommand);
             validateToolVersion("node", nodeVersion, SUPPORTED_NODE_VERSION,
@@ -754,7 +761,7 @@ public class FrontendUtils {
         try {
             List<String> npmVersionCommand = new ArrayList<>(
                     FrontendUtils.getNpmExecutable(baseDir));
-            npmVersionCommand.add("--version");
+            npmVersionCommand.add("--version"); //NOSONAR
             FrontendVersion npmVersion = getVersion("npm", npmVersionCommand);
             validateToolVersion("npm", npmVersion, SUPPORTED_NPM_VERSION,
                     SHOULD_WORK_NPM_VERSION);
@@ -770,11 +777,9 @@ public class FrontendUtils {
      *
      * @param baseDir
      *            project root folder.
-     * @param ensure
-     *            whether pnpm tool should be installed if it's absent
      */
-    public static void ensurePnpm(String baseDir, boolean ensure) {
-        if (ensure && getPnpmExecutable(baseDir, false).isEmpty()) {
+    public static void ensurePnpm(String baseDir) {
+        if (isPnpmTooOldOrAbsent(baseDir)) {
             // copy the current content of package.json file to a temporary
             // location
             File packageJson = new File(baseDir, "package.json");
@@ -809,6 +814,31 @@ public class FrontendUtils {
                 tempFile.delete();
             }
         }
+    }
+
+    private static boolean isPnpmTooOldOrAbsent(String baseDir) {
+        final List<String> pnpmCommand = getPnpmExecutable(baseDir, false);
+        if (!pnpmCommand.isEmpty()) {
+            // check whether globally or locally installed pnpm is new enough
+            try {
+                List<String> versionCmd = new ArrayList<>(pnpmCommand);
+                versionCmd.add("--version"); //NOSONAR
+                FrontendVersion pnpmVersion = getVersion("pnpm", versionCmd);
+                if (isVersionAtLeast(pnpmVersion, SUPPORTED_PNPM_VERSION)) {
+                    return false;
+                } else {
+                    getLogger().warn(String.format(
+                            "installed pnpm ('%s', version %s) is too old, installing supported version locally",
+                            String.join(" ", pnpmCommand),
+                            pnpmVersion.getFullVersion()));
+                }
+            } catch (UnknownVersionException e) {
+                getLogger().warn(
+                        "Error checking pnpm version, installing pnpm locally",
+                        e);
+            }
+        }
+        return true;
     }
 
     static void checkForFaultyNpmVersion(FrontendVersion npmVersion) {

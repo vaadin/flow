@@ -267,6 +267,9 @@ public final class Constants implements Serializable {
     public static final int SHOULD_WORK_NPM_MAJOR_VERSION = 5;
     public static final int SHOULD_WORK_NPM_MINOR_VERSION = 5;
 
+    public static final int SUPPORTED_PNPM_MAJOR_VERSION = 4;
+    public static final int SUPPORTED_PNPM_MINOR_VERSION = 4;
+
     /**
      * Property boolean for marking stats.json to be fetched from external
      * location.

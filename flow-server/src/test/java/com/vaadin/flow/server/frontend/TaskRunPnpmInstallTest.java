@@ -25,8 +25,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     @Before
     public void setUp() throws IOException {
         super.setUp();
-        FrontendUtils.ensurePnpm(getNodeUpdater().npmFolder.getAbsolutePath(),
-                true);
+        FrontendUtils.ensurePnpm(getNodeUpdater().npmFolder.getAbsolutePath());
     }
 
     @Override
