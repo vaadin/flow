@@ -518,7 +518,7 @@ public class NodeTasks implements FallibleCommand {
                             finder -> getFallbackScanner(builder, finder),
                             builder.npmFolder, builder.generatedFolder,
                             builder.frontendDirectory, builder.tokenFile,
-                            builder.tokenFileData));
+                            builder.tokenFileData, builder.disablePnpm));
         }
     }
 

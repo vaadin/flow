@@ -284,6 +284,8 @@ abstract class AbstractUpdateImports implements Runnable {
         lines.addAll(Arrays.asList(content.split("\\R")));
     }
 
+    protected abstract String getImportsNotFoundMessage();
+
     private void collectModules(List<String> lines) {
         Set<String> modules = new LinkedHashSet<>();
         modules.addAll(resolveModules(getModules(), true));
@@ -370,9 +372,7 @@ abstract class AbstractUpdateImports implements Runnable {
         if (!npmNotFound.isEmpty() && getLogger().isInfoEnabled()) {
             getLogger().info(notFoundMessage(npmNotFound,
                     "Failed to find the following imports in the `node_modules` tree:",
-                    "If the build fails, check that npm packages are installed.\n\n"
-                            + "  To fix the build remove `package-lock.json` and `node_modules` directory to reset modules.\n"
-                            + "  In addition you may run `npm install` to fix `node_modules` tree structure."));
+                    getImportsNotFoundMessage()));
         }
 
         return es6ImportPaths;

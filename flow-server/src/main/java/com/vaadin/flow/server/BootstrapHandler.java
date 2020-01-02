@@ -81,7 +81,6 @@ import elemental.json.JsonObject;
 import elemental.json.JsonType;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
-
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
