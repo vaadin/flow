@@ -1264,8 +1264,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 name -> commands.push(getSyncPropertyCommand(name, context)));
 
         Consumer<String> sendCommand = debouncePhase -> {
-            synchronizeProperties
-                    .forEach(name -> syncPropertyIfNeeded(name, context));
+            commands.forEach(Runnable::run);
 
             sendEventToServer(node, type, eventData, debouncePhase);
         };
