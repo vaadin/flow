@@ -264,6 +264,10 @@ public class FrontendUtils {
             Constants.SHOULD_WORK_NPM_MAJOR_VERSION,
             Constants.SHOULD_WORK_NPM_MINOR_VERSION);
 
+    private static final FrontendVersion SUPPORTED_PNPM_VERSION = new FrontendVersion(
+            Constants.SUPPORTED_PNPM_MAJOR_VERSION,
+            Constants.SUPPORTED_PNPM_MINOR_VERSION);
+
     private static FrontendToolsLocator frontendToolsLocator = new FrontendToolsLocator();
 
     private static String operatingSystem = null;
@@ -352,8 +356,12 @@ public class FrontendUtils {
      * @see #getPnpmExecutable(String, boolean)
      */
     public static List<String> getPnpmExecutable(String baseDir) {
-        ensurePnpm(baseDir, true);
-        return getPnpmExecutable(baseDir, true);
+        ensurePnpm(baseDir);
+        List<String> pnpmCommand = getPnpmExecutable(baseDir, true);
+        if (!pnpmCommand.isEmpty()) {
+            pnpmCommand.add("--shamefully-hoist=true");
+        }
+        return pnpmCommand;
     }
 
     /**
@@ -392,9 +400,6 @@ public class FrontendUtils {
                         .map(File::getPath).map(Collections::singletonList)
                         .orElse(Collections.emptyList()));
             }
-        }
-        if (!returnCommand.isEmpty()) {
-            returnCommand.add("--shamefully-hoist=true");
         }
         return returnCommand;
     }
@@ -744,7 +749,7 @@ public class FrontendUtils {
         try {
             List<String> nodeVersionCommand = new ArrayList<>();
             nodeVersionCommand.add(FrontendUtils.getNodeExecutable(baseDir));
-            nodeVersionCommand.add("--version");
+            nodeVersionCommand.add("--version"); //NOSONAR
             FrontendVersion nodeVersion = getVersion("node",
                     nodeVersionCommand);
             validateToolVersion("node", nodeVersion, SUPPORTED_NODE_VERSION,
@@ -756,7 +761,7 @@ public class FrontendUtils {
         try {
             List<String> npmVersionCommand = new ArrayList<>(
                     FrontendUtils.getNpmExecutable(baseDir));
-            npmVersionCommand.add("--version");
+            npmVersionCommand.add("--version"); //NOSONAR
             FrontendVersion npmVersion = getVersion("npm", npmVersionCommand);
             validateToolVersion("npm", npmVersion, SUPPORTED_NPM_VERSION,
                     SHOULD_WORK_NPM_VERSION);
@@ -772,11 +777,9 @@ public class FrontendUtils {
      *
      * @param baseDir
      *            project root folder.
-     * @param ensure
-     *            whether pnpm tool should be installed if it's absent
      */
-    public static void ensurePnpm(String baseDir, boolean ensure) {
-        if (ensure && getPnpmExecutable(baseDir, false).isEmpty()) {
+    public static void ensurePnpm(String baseDir) {
+        if (isPnpmTooOldOrAbsent(baseDir)) {
             // copy the current content of package.json file to a temporary
             // location
             File packageJson = new File(baseDir, "package.json");
@@ -811,6 +814,31 @@ public class FrontendUtils {
                 tempFile.delete();
             }
         }
+    }
+
+    private static boolean isPnpmTooOldOrAbsent(String baseDir) {
+        final List<String> pnpmCommand = getPnpmExecutable(baseDir, false);
+        if (!pnpmCommand.isEmpty()) {
+            // check whether globally or locally installed pnpm is new enough
+            try {
+                List<String> versionCmd = new ArrayList<>(pnpmCommand);
+                versionCmd.add("--version"); //NOSONAR
+                FrontendVersion pnpmVersion = getVersion("pnpm", versionCmd);
+                if (isVersionAtLeast(pnpmVersion, SUPPORTED_PNPM_VERSION)) {
+                    return false;
+                } else {
+                    getLogger().warn(String.format(
+                            "installed pnpm ('%s', version %s) is too old, installing supported version locally",
+                            String.join(" ", pnpmCommand),
+                            pnpmVersion.getFullVersion()));
+                }
+            } catch (UnknownVersionException e) {
+                getLogger().warn(
+                        "Error checking pnpm version, installing pnpm locally",
+                        e);
+            }
+        }
+        return true;
     }
 
     static void checkForFaultyNpmVersion(FrontendVersion npmVersion) {

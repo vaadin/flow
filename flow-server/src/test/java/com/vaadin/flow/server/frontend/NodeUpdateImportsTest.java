@@ -112,7 +112,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 finder -> new FrontendDependenciesScannerFactory()
                         .createScanner(true, finder, true),
                 tmpRoot, generatedPath, frontendDirectory, tokenFile,
-                fallBackData) {
+                fallBackData, false) {
             @Override
             Logger log() {
                 return logger;
@@ -230,7 +230,8 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                         classFinder, true),
                 finder -> new FrontendDependenciesScannerFactory()
                         .createScanner(true, finder, true),
-                tmpRoot, generatedPath, frontendDirectory, tokenFile, null) {
+                tmpRoot, generatedPath, frontendDirectory, tokenFile, null,
+                false) {
             @Override
             Logger log() {
                 return logger;
@@ -299,7 +300,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 new FrontendDependenciesScannerFactory().createScanner(false,
                         classFinder, true),
                 finder -> null, tmpRoot, generatedPath, frontendDirectory,
-                tokenFile, null) {
+                tokenFile, null, false) {
             @Override
             Logger log() {
                 return logger;
@@ -344,7 +345,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 new FrontendDependenciesScannerFactory().createScanner(false,
                         classFinder, true),
                 finder -> null, tmpRoot, generatedPath, frontendDirectory,
-                tokenFile, null) {
+                tokenFile, null, false) {
             @Override
             Logger log() {
                 return logger;
