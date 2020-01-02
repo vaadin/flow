@@ -183,6 +183,7 @@ public class LocalDateRenderer<SOURCE>
         }
 
         this.formatter = formatter;
+        this.nullRepresentation = nullRepresentation;
     }
 
     @Override
