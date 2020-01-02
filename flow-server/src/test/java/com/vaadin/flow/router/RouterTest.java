@@ -15,11 +15,7 @@
  */
 package com.vaadin.flow.router;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.startsWith;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-
+import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,19 +31,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.servlet.http.HttpServletResponse;
-
-import com.vaadin.flow.component.HasComponents;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.mockito.Mockito;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Tag;
@@ -74,8 +60,19 @@ import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.tests.util.MockUI;
-
 import net.jcip.annotations.NotThreadSafe;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.mockito.Mockito;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.startsWith;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 @NotThreadSafe
 public class RouterTest extends RoutingTestBase {
@@ -677,13 +674,9 @@ public class RouterTest extends RoutingTestBase {
     @Route(value = "child", layout = RouteParent.class)
     @Tag(Tag.DIV)
     public static class RouteChild extends Component
-            implements HasComponents, BeforeLeaveObserver, BeforeEnterObserver {
+            implements BeforeLeaveObserver, BeforeEnterObserver {
 
         static List<EventObject> events = new ArrayList<>();
-
-        public RouteChild() {
-            add("child target");
-        }
 
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
@@ -724,13 +717,9 @@ public class RouterTest extends RoutingTestBase {
     @Route(value = "single", layout = RouteParent.class, absolute = true)
     @Tag(Tag.DIV)
     public static class LoneRoute extends Component
-            implements HasComponents, BeforeEnterObserver {
+            implements BeforeEnterObserver {
 
         static List<EventObject> events = new ArrayList<>();
-
-        public LoneRoute() {
-            add("lone target");
-        }
 
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
