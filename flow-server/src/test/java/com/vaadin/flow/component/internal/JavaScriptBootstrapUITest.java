@@ -20,6 +20,7 @@ import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.router.BeforeLeaveEvent;
 import com.vaadin.flow.router.BeforeLeaveObserver;
 import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinRequest;
@@ -69,6 +70,7 @@ public class JavaScriptBootstrapUITest  {
 
     @Route("product")
     @Tag(Tag.SPAN)
+    @PageTitle("my-product")
     public static class ProductView extends Component implements HasComponents {
         public ProductView() {
             // this should be ignored
@@ -285,6 +287,14 @@ public class JavaScriptBootstrapUITest  {
 
         assertEquals(CLIENT_PUSHSTATE_TO, execJs.getValue());
         assertEquals("dirty", execArg.getValue());
+    }
+
+    @Test
+    public void should_updatePageTitle_when_serverNavigation() {
+        ui.navigate("empty");
+        assertNull(ui.getInternals().getTitle());
+        ui.navigate("product");
+        assertEquals("my-product", ui.getInternals().getTitle());
     }
 
 }
