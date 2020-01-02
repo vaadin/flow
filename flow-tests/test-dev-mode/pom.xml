@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-tests</artifactId>
-        <version>2.2-SNAPSHOT</version>
+        <version>3.0-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-dev-mode</artifactId>
     <name>Flow tests for dev mode</name>
@@ -60,6 +60,10 @@
                             <!--  re-use the test resources already present in es6 folder -->
                             <name>vaadin.frontend.url.es5</name>
                             <value>context://frontend-es6/</value>
+                        </systemProperty>
+                        <systemProperty>
+                            <name>vaadin.clientSideMode</name>
+                            <value>${vaadin.clientSideMode}</value>
                         </systemProperty>
                     </systemProperties>
                 </configuration>

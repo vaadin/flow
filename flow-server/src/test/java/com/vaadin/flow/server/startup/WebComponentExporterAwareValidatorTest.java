@@ -143,7 +143,7 @@ public class WebComponentExporterAwareValidatorTest {
         expectedEx.expectMessage(ERROR_HINT);
         expectedEx.expectMessage(String.format(NON_PARENT,
                 ThemeViewportWithParent.class.getName(),
-                Theme.class.getSimpleName()));
+                "@" + Theme.class.getSimpleName()));
 
         annotationValidator.onStartup(Stream.of(ThemeViewportWithParent.class)
                 .collect(Collectors.toSet()), servletContext);
@@ -172,7 +172,7 @@ public class WebComponentExporterAwareValidatorTest {
         expectedEx.expectMessage(ERROR_HINT);
         expectedEx.expectMessage(String.format(NON_PARENT_ALIAS,
                 ThemeViewportWithAliasParent.class.getName(),
-                Theme.class.getSimpleName()));
+                "@" + Theme.class.getSimpleName()));
 
         annotationValidator
                 .onStartup(Stream.of(ThemeViewportWithAliasParent.class)
@@ -195,7 +195,7 @@ public class WebComponentExporterAwareValidatorTest {
         expectedEx.expectMessage(ERROR_HINT);
         expectedEx.expectMessage(String.format(MIDDLE_ROUTER_LAYOUT,
                 MiddleThemeLayout.class.getName(),
-                Theme.class.getSimpleName()));
+                "@" + Theme.class.getSimpleName()));
 
         annotationValidator.onStartup(
                 Stream.of(MiddleThemeLayout.class).collect(Collectors.toSet()),
@@ -210,7 +210,7 @@ public class WebComponentExporterAwareValidatorTest {
         expectedEx.expectMessage(String.format(
                 "Class '%s' contains '%s', but it is not a router "
                         + "layout/top level route/web component.",
-                clazz.getName(), annotationType.getSimpleName()));
+                clazz.getName(), "@" + annotationType.getSimpleName()));
 
         annotationValidator.onStartup(
                 Stream.of(clazz).collect(Collectors.toSet()), servletContext);
@@ -219,7 +219,7 @@ public class WebComponentExporterAwareValidatorTest {
     private void assertClassReport(String msg, Class<?> clazz) {
         Assert.assertThat("Exception was missing Theme exception", msg,
                 CoreMatchers.containsString(String.format(NON_PARENT,
-                        clazz.getName(), Theme.class.getSimpleName())));
+                        clazz.getName(), "@" + Theme.class.getSimpleName())));
     }
 
     private void assertHint(String msg,

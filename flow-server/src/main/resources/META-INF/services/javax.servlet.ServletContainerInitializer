@@ -1,3 +1,4 @@
+com.vaadin.flow.server.startup.ConnectServicesValidator
 com.vaadin.flow.server.startup.ServletVerifier
 com.vaadin.flow.server.startup.RouteRegistryInitializer
 com.vaadin.flow.server.startup.ErrorNavigationTargetInitializer
@@ -5,3 +6,4 @@ com.vaadin.flow.server.startup.AnnotationValidator
 com.vaadin.flow.server.startup.WebComponentExporterAwareValidator
 com.vaadin.flow.server.startup.WebComponentConfigurationRegistryInitializer
 com.vaadin.flow.server.startup.DevModeInitializer
+com.vaadin.flow.server.startup.VaadinAppShellInitializer

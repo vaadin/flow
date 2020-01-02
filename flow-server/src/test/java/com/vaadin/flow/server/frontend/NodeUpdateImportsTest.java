@@ -47,6 +47,7 @@ import elemental.json.JsonObject;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_D_TS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static org.junit.Assert.assertTrue;
@@ -60,6 +61,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
     public ExpectedException exception = ExpectedException.none();
 
     private File importsFile;
+    private File importsDefinitionFile;
     private File fallBackImportsFile;
     private File generatedPath;
     private File frontendDirectory;
@@ -78,6 +80,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         nodeModulesPath = new File(tmpRoot, NODE_MODULES);
         generatedPath = new File(tmpRoot, DEFAULT_GENERATED_DIR);
         importsFile = new File(generatedPath, IMPORTS_NAME);
+        importsDefinitionFile = new File(generatedPath, IMPORTS_D_TS_NAME);
         fallBackImportsFile = new File(generatedPath,
                 FrontendUtils.FALLBACK_IMPORTS_NAME);
         File webpackDir = temporaryFolder.newFolder();
@@ -128,11 +131,11 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         // ============== check main generated imports file ============
         // Contains theme lines
-        Assert.assertThat(mainContent, CoreMatchers
-                .containsString("const div = document.createElement('div');"));
+        Assert.assertThat(mainContent, CoreMatchers.containsString(
+                "export const addCssBlock = function(block, before = false) {"));
 
         Assert.assertThat(mainContent, CoreMatchers.containsString(
-                "div.innerHTML = '<custom-style><style include=\"lumo-color lumo-typography\"></style></custom-style>';"));
+                "addCssBlock('<custom-style><style include=\"lumo-color lumo-typography\"></style></custom-style>', true);"));
 
         // Contains CSS import lines
         Assert.assertThat(mainContent, CoreMatchers.containsString(
@@ -186,6 +189,10 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 CoreMatchers.not(CoreMatchers.containsString(
                         "import $css_0 from '@vaadin/vaadin-mixed-component/bar.css';")));
 
+        // Contain lines to import exported modules from main file
+        Assert.assertThat(fallBackContent, CoreMatchers.containsString(
+                "export const addCssBlock = function(block, before = false) {"));
+
         // Contains CSS import lines from CP not discovered by byte scanner
         Assert.assertThat(fallBackContent, CoreMatchers.containsString(
                 "import $css_0 from 'Frontend/extra-css.css';"));
@@ -216,6 +223,16 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         assertTokenFileWithFallBack(object);
         assertTokenFileWithFallBack(fallBackData);
+
+        // ============== check definition file ============
+
+        assertTrue(importsDefinitionFile.exists());
+
+        String definitionContent = FileUtils.readFileToString(importsDefinitionFile,
+                Charset.defaultCharset());
+
+        Assert.assertThat(definitionContent, CoreMatchers
+                .containsString("export declare const addCssBlock: (block: string, before?: boolean) => void;"));
     }
 
     @Test
@@ -249,10 +266,10 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         // Contains theme lines
         Assert.assertThat(mainContent, CoreMatchers
-                .containsString("const div = document.createElement('div');"));
+                .containsString("export const addCssBlock = function(block, before = false) {"));
 
         Assert.assertThat(mainContent, CoreMatchers.containsString(
-                "div.innerHTML = '<custom-style>foo</custom-style>';"));
+                "addCssBlock('<custom-style>foo</custom-style>', true);"));
 
         // fallback chunk load function is generated
         Assert.assertThat(mainContent, CoreMatchers.containsString(

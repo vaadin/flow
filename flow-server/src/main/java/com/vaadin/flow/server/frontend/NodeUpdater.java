@@ -54,6 +54,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @since 2.0
  */
 public abstract class NodeUpdater implements FallibleCommand {
+
     /**
      * Relative paths of generated should be prefixed with this value, so they
      * can be correctly separated from {projectDir}/frontend files.
@@ -69,6 +70,12 @@ public abstract class NodeUpdater implements FallibleCommand {
     private static final String DEP_LICENSE_DEFAULT = "UNLICENSED";
     private static final String DEP_NAME_KEY = "name";
     private static final String DEP_NAME_DEFAULT = "no-name";
+    private static final String DEP_MAIN_KEY = "main";
+    protected static final String DEP_NAME_FLOW_DEPS = "@vaadin/flow-deps";
+    protected static final String DEP_NAME_FLOW_JARS = "@vaadin/flow-frontend";
+    private static final String DEP_MAIN_FLOW_JARS = "Flow";
+    private static final String DEP_VERSION_KEY = "version";
+    private static final String DEP_VERSION_DEFAULT = "1.0.0";
     protected static final String POLYMER_VERSION = "3.2.0";
 
     /**
@@ -87,13 +94,19 @@ public abstract class NodeUpdater implements FallibleCommand {
      */
     protected final File generatedFolder;
 
+
+    /**
+     * Base directory for flow dependencies coming from jars.
+     */
+    protected final File flowResourcesFolder;
+
     /**
      * The {@link FrontendDependencies} object representing the application
      * dependencies.
      */
     protected final FrontendDependenciesScanner frontDeps;
 
-    private final ClassFinder finder;
+    final ClassFinder finder;
 
     boolean modified;
 
@@ -108,15 +121,18 @@ public abstract class NodeUpdater implements FallibleCommand {
      *            folder with the `package.json` file
      * @param generatedPath
      *            folder where flow generated files will be placed.
+     * @param flowResourcesPath
+     *            folder where flow dependencies will be copied to.
      */
     protected NodeUpdater(ClassFinder finder,
             FrontendDependenciesScanner frontendDependencies, File npmFolder,
-            File generatedPath) {
+            File generatedPath, File flowResourcesPath) {
         this.frontDeps = frontendDependencies;
         this.finder = finder;
         this.npmFolder = npmFolder;
         this.nodeModulesFolder = new File(npmFolder, NODE_MODULES);
         this.generatedFolder = generatedPath;
+        this.flowResourcesFolder = flowResourcesPath;
     }
 
     private File getPackageJsonFile() {
@@ -199,6 +215,18 @@ public abstract class NodeUpdater implements FallibleCommand {
         return packageJson;
     }
 
+    JsonObject getResourcesPackageJson() throws IOException {
+        JsonObject packageJson = getJsonFileContent(new File(flowResourcesFolder, PACKAGE_JSON));
+        if (packageJson == null) {
+            packageJson = Json.createObject();
+            packageJson.put(DEP_NAME_KEY, DEP_NAME_FLOW_JARS);
+            packageJson.put(DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT);
+            packageJson.put(DEP_MAIN_KEY, DEP_MAIN_FLOW_JARS);
+            packageJson.put(DEP_VERSION_KEY, DEP_VERSION_DEFAULT);
+        }
+        return packageJson;
+    }
+
     static JsonObject getJsonFileContent(File packageFile) throws IOException {
         JsonObject jsonContent = null;
         if (packageFile.exists()) {
@@ -229,6 +257,8 @@ public abstract class NodeUpdater implements FallibleCommand {
     static Map<String, String> getDefaultDependencies() {
         Map<String, String> defaults = new HashMap<>();
 
+        defaults.put("@vaadin/router","^1.6.0");
+
         defaults.put("@polymer/polymer", POLYMER_VERSION);
         defaults.put("@webcomponents/webcomponentsjs", "^2.2.10");
 
@@ -237,6 +267,11 @@ public abstract class NodeUpdater implements FallibleCommand {
 
     static Map<String, String> getDefaultDevDependencies() {
         Map<String, String> defaults = new HashMap<>();
+
+        defaults.put("html-webpack-plugin", "3.2.0");
+        defaults.put("script-ext-html-webpack-plugin", "2.1.4");
+        defaults.put("typescript","3.5.3");
+        defaults.put("awesome-typescript-loader", "5.2.1");
 
         defaults.put("webpack", "4.30.0");
         defaults.put("webpack-cli", "3.3.10");
@@ -260,12 +295,13 @@ public abstract class NodeUpdater implements FallibleCommand {
      */
     boolean updateDefaultDependencies(JsonObject packageJson) {
         int added = 0;
-
+        
         for (Map.Entry<String, String> entry : getDefaultDependencies()
                 .entrySet()) {
             added += addDependency(packageJson, DEPENDENCIES, entry.getKey(),
                     entry.getValue());
         }
+
         for (Map.Entry<String, String> entry : getDefaultDevDependencies()
                 .entrySet()) {
             added += addDependency(packageJson, DEV_DEPENDENCIES,
@@ -282,6 +318,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         Objects.requireNonNull(json, "Json object need to be given");
         Objects.requireNonNull(key, "Json sub object needs to be give.");
         Objects.requireNonNull(pkg, "dependency package needs to be defined");
+
 
         JsonObject vaadinDeps = json.getObject(VAADIN_DEP_KEY);
         if (!json.hasKey(key)) {
@@ -307,13 +344,14 @@ public abstract class NodeUpdater implements FallibleCommand {
         return 0;
     }
 
+
     private int handleExistingVaadinDep(JsonObject json, String pkg,
             String version, JsonObject vaadinDeps) {
         boolean added = false;
-        FrontendVersion newVersion = new FrontendVersion(version);
-        FrontendVersion vaadinVersion = toVersion(vaadinDeps, pkg);
         if (json.hasKey(pkg)) {
             FrontendVersion packageVersion = toVersion(json, pkg);
+            FrontendVersion newVersion = new FrontendVersion(version);
+            FrontendVersion vaadinVersion = toVersion(vaadinDeps, pkg);
             // Vaadin and package.json versions are the same, but dependency
             // updates (can be up or down)
             if (vaadinVersion.isEqualTo(packageVersion)
@@ -347,9 +385,14 @@ public abstract class NodeUpdater implements FallibleCommand {
         return writePackageFile(packageJson, new File(npmFolder, PACKAGE_JSON));
     }
 
+    String writeResourcesPackageFile(JsonObject packageJson) throws IOException {
+        return writePackageFile(packageJson,
+                new File(flowResourcesFolder, PACKAGE_JSON));
+    }
+
     String writePackageFile(JsonObject json, File packageFile)
             throws IOException {
-        log().info("Updated npm {}.", packageFile.getAbsolutePath());
+        log().info("writing file {}.", packageFile.getAbsolutePath());
         FileUtils.forceMkdirParent(packageFile);
         String content = stringify(json, 2) + "\n";
         FileUtils.writeStringToFile(packageFile, content, UTF_8.name());
@@ -357,7 +400,6 @@ public abstract class NodeUpdater implements FallibleCommand {
     }
 
     Logger log() {
-        // Using short prefix so as npm output is more readable
-        return LoggerFactory.getLogger("dev-updater");
+        return LoggerFactory.getLogger(this.getClass());
     }
 }

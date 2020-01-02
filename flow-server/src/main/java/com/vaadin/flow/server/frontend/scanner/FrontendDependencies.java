@@ -369,9 +369,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         }
     }
 
-    private static Logger log() {
-        // Using short prefix so as npm output is more readable
-        return LoggerFactory.getLogger("dev-updater");
+    private Logger log() {
+        return LoggerFactory.getLogger(this.getClass());
     }
 
     /**

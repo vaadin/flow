@@ -83,6 +83,13 @@ public class NodeUpdateTestUtil {
             FileUtils.writeStringToFile(npmCli,
                     "process.argv[2] == '--version' && console.log('5.6.0');",
                     StandardCharsets.UTF_8);
+
+            File ppmCli = new File(baseDir,
+                    "node_modules/pnpm/bin/pnpm.js");
+            FileUtils.forceMkdirParent(ppmCli);
+            FileUtils.writeStringToFile(ppmCli,
+                    "process.argv[2] == '--version' && console.log('4.1.0');",
+                    StandardCharsets.UTF_8);
         }
         if (stubNode) {
             File node = new File(baseDir,

@@ -78,10 +78,14 @@ public class BuildFrontendMojoTest {
     private File importsFile;
     private File generatedFolder;
     private File nodeModulesPath;
-    private File flowPackagPath;
+    private File flowResourcesFolder;
     private File projectFrontendResourcesDirectory;
     private String packageJson;
     private String webpackConfig;
+    private File defaultJavaSource;
+    private String openApiJsonFile;
+    private File generatedTsFolder;
+
 
     private File tokenFile;
 
@@ -100,7 +104,7 @@ public class BuildFrontendMojoTest {
         generatedFolder = new File(npmFolder, DEFAULT_GENERATED_DIR);
         importsFile = new File(generatedFolder, IMPORTS_NAME);
         nodeModulesPath = new File(npmFolder, NODE_MODULES);
-        flowPackagPath = new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME);
+        flowResourcesFolder = new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME);
         File frontendDirectory = new File(npmFolder, DEFAULT_FRONTEND_DIR);
 
         packageJson = new File(npmFolder, PACKAGE_JSON).getAbsolutePath();
@@ -108,6 +112,12 @@ public class BuildFrontendMojoTest {
 
         projectFrontendResourcesDirectory = new File(npmFolder,
                 "flow_resources");
+
+        defaultJavaSource = new File(".", "src/test/java");
+        openApiJsonFile = new File(npmFolder,
+                "target/generated-resources/openapi.json").getAbsolutePath();
+        generatedTsFolder = new File(npmFolder, "frontend/generated");
+
 
         Assert.assertTrue("Failed to create a test project resources",
                 projectFrontendResourcesDirectory.mkdirs());
@@ -133,7 +143,20 @@ public class BuildFrontendMojoTest {
                 "false");
         ReflectionUtils.setVariableValueInObject(mojo, "optimizeBundle", true);
 
-        flowPackagPath.mkdirs();
+        ReflectionUtils.setVariableValueInObject(mojo, "openApiJsonFile",
+                new File(npmFolder,
+                        "target/generated-resources/openapi.json"));
+        ReflectionUtils.setVariableValueInObject(mojo, "applicationProperties",
+                new File(npmFolder,
+                        "src/main/resources/application.properties"));
+        ReflectionUtils.setVariableValueInObject(mojo, "javaSourceFolder",
+                defaultJavaSource);
+        ReflectionUtils.setVariableValueInObject(mojo, "generatedTsFolder",
+                generatedTsFolder);
+        ReflectionUtils.setVariableValueInObject(mojo, "flowResourcesFolder",
+                flowResourcesFolder);
+
+        flowResourcesFolder.mkdirs();
         generatedFolder.mkdirs();
 
         setProject(mojo, npmFolder);
@@ -196,10 +219,14 @@ public class BuildFrontendMojoTest {
         Assert.assertFalse(importsFile.exists());
 
         List<String> expectedLines = new ArrayList<>(Arrays.asList(
-                "const div = document.createElement('div');",
-                "div.innerHTML = '<custom-style><style include=\"lumo-color lumo-typography\"></style></custom-style>';",
-                "document.head.insertBefore(div.firstElementChild, document.head.firstChild);",
+                "export const addCssBlock = function(block, before = false) {",
+                " const tpl = document.createElement('template');",
+                " tpl.innerHTML = block;",
+                " document.head[before ? 'insertBefore' : 'appendChild'](tpl.content, document.head.firstChild);",
+                "};",
+                "addCssBlock('<custom-style><style include=\"lumo-color lumo-typography\"></style></custom-style>', true);",
                 "document.body.setAttribute('theme', 'dark');"));
+
         expectedLines.addAll(getExpectedImports());
 
         mojo.execute();
@@ -207,7 +234,7 @@ public class BuildFrontendMojoTest {
         assertContainsImports(true, expectedLines.toArray(new String[0]));
 
         Assert.assertTrue(
-                new File(flowPackagPath, "ExampleConnector.js").exists());
+                new File(flowResourcesFolder, "ExampleConnector.js").exists());
     }
 
     @Test
@@ -359,6 +386,37 @@ public class BuildFrontendMojoTest {
         mojo.execute();
 
         Assert.assertFalse(tokenFile.exists());
+    }
+
+    @Test
+    public void mavenGoal_generateOpenApiJson_when_itIsInClientSideMode()
+            throws Exception {
+        Assert.assertFalse(FileUtils.fileExists(openApiJsonFile));
+        mojo.execute();
+        Assert.assertTrue(FileUtils.fileExists(openApiJsonFile));
+    }
+
+    @Test
+    public void mavenGoal_notGenerateOpenApiJson_when_itIsNotInClientSideMode()
+            throws Exception {
+        ReflectionUtils.setVariableValueInObject(mojo, "clientSideMode",
+                "false");
+        Assert.assertFalse(FileUtils.fileExists(openApiJsonFile));
+        mojo.execute();
+        Assert.assertFalse(FileUtils.fileExists(openApiJsonFile));
+    }
+
+    @Test
+    public void mavenGoal_generateTsFiles_when_enabled()
+            throws Exception {
+        File connectClientApi = new File(generatedTsFolder, "connect-client.default.ts");
+        File serviceClientApi = new File(generatedTsFolder, "MyVaadinServices.ts");
+
+        Assert.assertFalse(connectClientApi.exists());
+        Assert.assertFalse(serviceClientApi.exists());
+        mojo.execute();
+        Assert.assertTrue(connectClientApi.exists());
+        Assert.assertTrue(serviceClientApi.exists());
     }
 
     static void assertContainsPackage(JsonObject dependencies,

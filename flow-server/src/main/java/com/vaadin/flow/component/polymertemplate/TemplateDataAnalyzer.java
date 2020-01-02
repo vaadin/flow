@@ -314,7 +314,6 @@ public class TemplateDataAnalyzer {
      * {@link org.jsoup.nodes.Element} children of the {@code parent} ignoring
      * "style" elements.
      * <p>
-     * "style" elements are handled differently depending on ES5/ES6. Also
      * "style" tag can be moved on the top in the resulting client side DOM
      * regardless of its initial position (e.g. Chrome does this).
      *

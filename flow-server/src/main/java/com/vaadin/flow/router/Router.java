@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.router;
 
+import javax.servlet.http.HttpServletResponse;
+
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -24,8 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
-import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.LoggerFactory;
 
@@ -86,9 +86,22 @@ public class Router implements Serializable {
     public void initializeUI(UI ui, VaadinRequest initRequest) {
         Location location = getLocationForRequest(initRequest.getPathInfo(),
                 initRequest.getParameterMap());
+        initializeUI(ui, location);
+    }
+
+    /**
+     * Enables navigation for a new UI instance. This initializes the UI content
+     * based on the location used for loading the UI and sets up the UI to be
+     * updated when the user navigates to some other location.
+     *
+     * @param ui
+     *            the UI that navigation should be set up for
+     * @param location
+     *            the location object of the route
+     */
+    public void initializeUI(UI ui, Location location) {
         ui.getPage().getHistory().setHistoryStateChangeHandler(
                 e -> navigate(ui, e.getLocation(), e.getTrigger()));
-
         int statusCode = navigate(ui, location, NavigationTrigger.PAGE_LOAD);
 
         VaadinResponse response = VaadinService.getCurrentResponse();
@@ -96,6 +109,7 @@ public class Router implements Serializable {
             response.setStatus(statusCode);
         }
     }
+
 
     private Location getLocationForRequest(String pathInfo,
             Map<String, String[]> parameterMap) {
@@ -150,6 +164,19 @@ public class Router implements Serializable {
     public Optional<NavigationState> resolveNavigationTarget(String pathInfo,
             Map<String, String[]> parameterMap) {
         Location location = getLocationForRequest(pathInfo, parameterMap);
+        return resolveNavigationTarget(location);
+    }
+
+    /**
+     * Resolve the navigation target for given {@link Location} using the router
+     * routeResolver.
+     *
+     * @param location
+     *            the location object of the route
+     * @return NavigationTarget for the given location if found
+     */
+    public Optional<NavigationState> resolveNavigationTarget(
+            Location location) {
         NavigationState resolve = null;
         try {
             resolve = getRouteResolver()
@@ -157,9 +184,27 @@ public class Router implements Serializable {
         } catch (NotFoundException nfe) {
             LoggerFactory.getLogger(Router.class.getName()).warn(
                     "Failed to resolve navigation target for path: {}",
-                    pathInfo, nfe);
+                    location.getPath(), nfe);
         }
         return Optional.ofNullable(resolve);
+    }
+
+    /**
+     * Resolve a navigation target with an empty {@link NotFoundException}.
+     *
+     * @return an instance of {@link NavigationState} for NotFoundException or
+     *         empty if there is none in the application.
+     */
+    public Optional<NavigationState> resolveRouteNotFoundNavigationTarget() {
+        Optional<ErrorTargetEntry> errorTargetEntry = getErrorNavigationTarget(
+                new NotFoundException());
+        NavigationState result = null;
+        if (errorTargetEntry.isPresent()) {
+            result = new NavigationStateBuilder(this)
+                    .withTarget(errorTargetEntry.get().getNavigationTarget())
+                    .build();
+        }
+        return Optional.ofNullable(result);
     }
 
     /**

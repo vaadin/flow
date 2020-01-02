@@ -295,6 +295,7 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
             validatePwa(route);
 
             Route routeAnnotation = route.getAnnotation(Route.class);
+
             if (!UI.class.equals(routeAnnotation.layout())) {
                 Class<? extends RouterLayout> topParentLayout = RouteUtil
                         .getTopParentLayout(route,

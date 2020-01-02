@@ -1,22 +1,18 @@
 package com.vaadin.flow.shared;
 
-import static org.junit.Assert.assertEquals;
-
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.server.WebBrowser;
+
+import static org.junit.Assert.assertEquals;
 
 public class VaadinUriResolverTest {
 
     private final class TestVaadinUriResolver extends VaadinUriResolver {
         public String resolveVaadinUri(String uri) {
             String frontendUrl;
-            if (browser.isEs6Supported()) {
-                frontendUrl = "context://es6/";
-            } else {
-                frontendUrl = "context://es5/";
-            }
+            frontendUrl = "context://es6/";
             return super.resolveVaadinUri(uri, frontendUrl,
                     "http://someplace/");
         }
@@ -30,11 +26,7 @@ public class VaadinUriResolverTest {
 
         TestVaadinUriResolver resolver = new TestVaadinUriResolver();
 
-        Mockito.when(browser.isEs6Supported()).thenReturn(true);
         assertEquals("http://someplace/es6/my-component.html",
-                resolver.resolveVaadinUri("frontend://my-component.html"));
-        Mockito.when(browser.isEs6Supported()).thenReturn(false);
-        assertEquals("http://someplace/es5/my-component.html",
                 resolver.resolveVaadinUri("frontend://my-component.html"));
     }
 

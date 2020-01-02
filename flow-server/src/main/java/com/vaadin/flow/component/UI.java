@@ -28,6 +28,7 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.internal.UIInternalUpdater;
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.component.page.LoadingIndicatorConfiguration;
 import com.vaadin.flow.component.page.Page;
@@ -113,7 +114,7 @@ public class UI extends Component
 
     private Locale locale = Locale.getDefault();
 
-    private final UIInternals internals = new UIInternals(this);
+    private final UIInternals internals;
 
     private final Page page = new Page(this);
 
@@ -129,7 +130,20 @@ public class UI extends Component
      * Creates a new empty UI.
      */
     public UI() {
+        this(new UIInternalUpdater() {
+        });
+    }
+
+    /**
+     * Create a new empty UI with a custom {@link UIInternalUpdater}
+     * implementation.
+     * 
+     * @param internalsHandler
+     *            an implementation of UIInternalsHandler.
+     */
+    protected UI(UIInternalUpdater internalsHandler) {
         super(null);
+        internals = new UIInternals(this, internalsHandler);
         getNode().getFeature(ElementData.class).setTag("body");
         Component.setElement(this, Element.get(getNode()));
         pushConfiguration = new PushConfigurationImpl(this);

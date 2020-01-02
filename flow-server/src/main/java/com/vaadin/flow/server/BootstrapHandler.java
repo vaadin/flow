@@ -113,18 +113,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             + "/client.nocache.js";
     private static final String BOOTSTRAP_JS = readResource(
             "BootstrapHandler.js");
-    private static final String BABEL_HELPERS_JS = readResource(
-            "babel-helpers.min.js");
-    private static final String ES6_COLLECTIONS = "//<![CDATA[\n"
-            + readResource("es6-collections.js") + "//]]>";
     private static final String CSS_TYPE_ATTRIBUTE_VALUE = "text/css";
-
-    /**
-     * Safari 10.1 script nomodule fix. This is only needed for Safari <= 10.1
-     * See https://gist.github.com/samthor/64b114e4a4f539915a95b91ffd340acc
-     */
-    static final String SAFARI_10_1_SCRIPT_NOMODULE_FIX = "//<![CDATA[\n"
-            + readResource("safari-10-1-script-nomodule.js") + "//]]>";
 
     private static final String CAPTION = "caption";
     private static final String MESSAGE = "message";
@@ -424,11 +413,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             servletPathToContextRoot = contextRootRelatiePath;
             DeploymentConfiguration config = session.getConfiguration();
             if (config.isCompatibilityMode()) {
-                if (session.getBrowser().isEs6Supported()) {
-                    frontendRootUrl = config.getEs6FrontendPrefix();
-                } else {
-                    frontendRootUrl = config.getEs5FrontendPrefix();
-                }
+                frontendRootUrl = config.getEs6FrontendPrefix();
             } else {
                 frontendRootUrl = config.getNpmFrontendPrefix();
             }
@@ -444,8 +429,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          * - resolves to the application context root</li>
          * <li><code>{@value ApplicationConstants#FRONTEND_PROTOCOL_PREFIX}</code>
          * - resolves to the build path where web components were compiled.
-         * Browsers supporting ES6 can receive different, more optimized files
-         * than browsers that only support ES5.</li>
          * <li><code>{@value ApplicationConstants#BASE_PROTOCOL_PREFIX}</code> -
          * resolves to the base URI of the page</li>
          * </ul>
@@ -566,7 +549,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             setupPwa(document, context);
 
             if (!config.isCompatibilityMode() && !config.isProductionMode()) {
-                checkWebpackStatus(document);
+                showWebpackErrors(document);
             }
 
             BootstrapPageResponse response = new BootstrapPageResponse(
@@ -580,26 +563,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         private String getClientEngine() {
             return clientEngineFile.get();
-        }
-
-        private void checkWebpackStatus(Document document) {
-            DevModeHandler devMode = DevModeHandler.getDevModeHandler();
-            if (devMode != null) {
-                String errorMsg = devMode.getFailedOutput();
-                if (errorMsg != null) {
-                    Element errorElement = document.createElement("div");
-                    errorElement.setBaseUri("");
-                    errorElement.attr("class", "v-system-error");
-                    errorElement.attr("onclick",
-                            "this.parentElement.removeChild(this)");
-                    errorElement
-                            .html("<h3 style=\"display:inline;\">Webpack Error</h3>"
-                                    + "<h6 style=\"display:inline; padding-left:10px;\">Click to close</h6>"
-                                    + "<pre>" + errorMsg + "</pre>");
-                    document.body()
-                            .appendChild(errorElement);
-                }
-            }
         }
 
         private void exportBowerUsageStatistics(Document document) {
@@ -875,15 +838,11 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             DeploymentConfiguration conf = service.getDeploymentConfiguration();
 
             if (conf.isCompatibilityMode()) {
-                inlineEs6Collections(head, context);
                 appendWebComponentsPolyfills(head, context);
             } else {
                 conf.getPolyfills().forEach(
                         polyfill -> head.appendChild(createJavaScriptElement(
                                 "./" + VAADIN_MAPPING + polyfill, false)));
-
-                // #6817
-                appendSafari10ScriptNoModuleFix(head, context);
 
                 try {
                     appendNpmBundle(head, service, context);
@@ -894,7 +853,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             }
 
             if (context.getPushMode().isEnabled()) {
-                head.appendChild(getPushScript(context));
+                head.appendChild(
+                        createJavaScriptElement(getPushScript(context)));
             }
 
             head.appendChild(getBootstrapScript(initialUIDL, context));
@@ -915,36 +875,27 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             JsonObject chunks = Json.parse(content);
             for (String key : chunks.keys()) {
                 String chunkName;
-                if(chunks.get(key).getType().equals(JsonType.ARRAY)) {
+                if (chunks.get(key).getType().equals(JsonType.ARRAY)) {
                     chunkName = getArrayChunkName(chunks, key);
                 } else {
                     chunkName = chunks.getString(key);
                 }
-                if (key.endsWith(".es5")) {
-                    Element script = createJavaScriptElement(
-                            "./" + VAADIN_MAPPING + chunkName);
-                    head.appendChild(
-                            script.attr("nomodule", true).attr("data-app-id",
-                                    context.getUI().getInternals().getAppId()));
-                } else {
-                    Element script = createJavaScriptElement(
-                            "./" + VAADIN_MAPPING + chunkName,
-                            false);
-                    head.appendChild(script.attr("type", "module")
-                            .attr("data-app-id",
-                                    context.getUI().getInternals().getAppId())
-                            // Fixes basic auth in Safari #6560
-                            .attr("crossorigin", true));
-                }
+                Element script = createJavaScriptElement(
+                        "./" + VAADIN_MAPPING + chunkName, false);
+                head.appendChild(script.attr("type", "module")
+                        .attr("data-app-id",
+                                context.getUI().getInternals().getAppId())
+                        // Fixes basic auth in Safari #6560
+                        .attr("crossorigin", true));
             }
         }
 
         private String getArrayChunkName(JsonObject chunks, String key) {
             JsonArray chunkArray = chunks.getArray(key);
 
-            for(int i = 0; i <chunkArray.length(); i++) {
+            for (int i = 0; i < chunkArray.length(); i++) {
                 String chunkName = chunkArray.getString(0);
-                if(chunkName.endsWith(".js")){
+                if (chunkName.endsWith(".js")) {
                     return chunkName;
                 }
             }
@@ -976,26 +927,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     .resolveVaadinUri("context://" + getClientEngine());
         }
 
-        private void inlineEs6Collections(Element head,
-                BootstrapContext context) {
-            if (!context.getSession().getBrowser().isEs6Supported()) {
-                head.appendChild(
-                        createInlineJavaScriptElement(ES6_COLLECTIONS));
-            }
-        }
-
-        private void appendSafari10ScriptNoModuleFix(Element head,
-                BootstrapContext context) {
-            if (context.getSession().getBrowser().isSafari()
-                    && context.getSession().getBrowser()
-                            .getBrowserMajorVersion() == 10
-                    && context.getSession().getBrowser()
-                            .getBrowserMinorVersion() <= 1) {
-                head.appendChild(createInlineJavaScriptElement(
-                        SAFARI_10_1_SCRIPT_NOMODULE_FIX));
-            }
-        }
-
         private void setupCss(Element head, BootstrapContext context) {
             Element styles = head.appendElement("style").attr("type",
                     CSS_TYPE_ATTRIBUTE_VALUE);
@@ -1006,22 +937,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
             // Basic reconnect and system error dialog styles just to make them
             // visible and outside of normal flow
-            styles.appendText(".v-reconnect-dialog, .v-system-error {" // @formatter:off
-                    +   "position: absolute;"
-                    +   "color: black;"
-                    +   "background: white;"
-                    +   "top: 1em;"
-                    +   "right: 1em;"
-                    +   "border: 1px solid black;"
-                    +   "padding: 1em;"
-                    +   "z-index: 10000;"
-                    +   "max-width: calc(100vw - 4em);"
-                    +   "max-height: calc(100vh - 4em);"
-                    +   "overflow: auto;"
-                    + "} .v-system-error {"
-                    +   "color: red;"
-                    +   "pointer-events: auto;"
-                    + "}"); // @formatter:on
+            setupErrorDialogs(styles);
         }
 
         private void setupMetaAndTitle(Element head, BootstrapContext context) {
@@ -1052,84 +968,18 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
         private void setupPwa(Document document, BootstrapContext context) {
-            PwaRegistry registry = context.getPwaRegistry().orElse(null);
-            if (registry == null) {
-                return;
-            }
-
-            PwaConfiguration config = registry.getPwaConfiguration();
-
-            if (config.isEnabled()) {
-                // Add header injections
-                Element head = document.head();
-
-                // Describe PWA capability for iOS devices
-                head.appendElement(META_TAG)
-                        .attr("name", "apple-mobile-web-app-capable")
-                        .attr(CONTENT_ATTRIBUTE, "yes");
-
-                // Theme color
-                head.appendElement(META_TAG).attr("name", "theme-color")
-                        .attr(CONTENT_ATTRIBUTE, config.getThemeColor());
-                head.appendElement(META_TAG)
-                        .attr("name", "apple-mobile-web-app-status-bar-style")
-                        .attr(CONTENT_ATTRIBUTE, config.getThemeColor());
-
-                // Add manifest
-                head.appendElement("link").attr("rel", "manifest").attr("href",
-                        config.getManifestPath());
-
-                // Add icons
-                for (PwaIcon icon : registry.getHeaderIcons()) {
-                    head.appendChild(icon.asElement());
-                }
-
-                // Add service worker initialization
-                head.appendElement(SCRIPT_TAG)
-                        .text("if ('serviceWorker' in navigator) {\n"
-                                + "  window.addEventListener('load', function() {\n"
-                                + "    navigator.serviceWorker.register('"
-                                + config.getServiceWorkerPath() + "');\n"
-                                + "  });\n" + "}");
-
-                // add body injections
-                if (config.isInstallPromptEnabled()) {
-                    // PWA Install prompt html/js
-                    document.body().append(registry.getInstallPrompt());
-                }
-            }
+            BootstrapHandler.setupPwa(document,
+                    context.getPwaRegistry().orElse(null));
         }
 
         private void appendWebComponentsPolyfills(Element head,
                 BootstrapContext context) {
             VaadinSession session = context.getSession();
-            DeploymentConfiguration config = session.getConfiguration();
 
-            String es5AdapterUrl = "frontend://bower_components/webcomponentsjs/custom-elements-es5-adapter.js";
             VaadinService service = session.getService();
-            if (!service.isResourceAvailable(POLYFILLS_JS, session.getBrowser(),
-                    null)) {
+            if (!service.isResourceAvailable(POLYFILLS_JS, null)) {
                 // No webcomponents polyfill, load nothing
                 return;
-            }
-
-            boolean loadEs5Adapter = config
-                    .getBooleanProperty(Constants.LOAD_ES5_ADAPTERS, true);
-            if (loadEs5Adapter && !session.getBrowser().isEs6Supported()) {
-                // This adapter is required since lots of our current customers
-                // use polymer-cli to transpile sources,
-                // this tool adds babel-helpers dependency into each file, see:
-                // https://github.com/Polymer/polymer-cli/blob/master/src/build/build.ts#L64
-                // and
-                // https://github.com/Polymer/polymer-cli/blob/master/src/build/optimize-streams.ts#L119
-                head.appendChild(
-                        createInlineJavaScriptElement(BABEL_HELPERS_JS));
-
-                if (session.getBrowser().isEs5AdapterNeeded()) {
-                    head.appendChild(
-                            createJavaScriptElement(context.getUriResolver()
-                                    .resolveVaadinUri(es5AdapterUrl), false));
-                }
             }
 
             String resolvedUrl = context.getUriResolver()
@@ -1148,13 +998,13 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return wrapper;
         }
 
-        private Element createJavaScriptElement(String sourceUrl,
+        private static Element createJavaScriptElement(String sourceUrl,
                 boolean defer) {
             return createJavaScriptElement(sourceUrl, defer, "text/javascript");
         }
 
-        private Element createJavaScriptElement(String sourceUrl, boolean defer,
-                String type) {
+        private static Element createJavaScriptElement(String sourceUrl,
+                boolean defer, String type) {
             Element jsElement = new Element(Tag.valueOf(SCRIPT_TAG), "")
                     .attr("type", type).attr(DEFER_ATTRIBUTE, defer);
             if (sourceUrl != null) {
@@ -1163,7 +1013,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return jsElement;
         }
 
-        private Element createJavaScriptElement(String sourceUrl) {
+        private static Element createJavaScriptElement(String sourceUrl) {
             return createJavaScriptElement(sourceUrl, true);
         }
 
@@ -1234,28 +1084,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         private void setupDocumentBody(Document document) {
             document.body().appendElement("noscript").append(
                     "You have to enable javascript in your browser to use this web site.");
-        }
-
-        private Element getPushScript(BootstrapContext context) {
-            VaadinRequest request = context.getRequest();
-
-            // Parameter appended to JS to bypass caches after version upgrade.
-            String versionQueryParam = "?v=" + Version.getFullVersion();
-
-            // Load client-side dependencies for push support
-            String pushJSPath = context.getRequest().getService()
-                    .getContextRootRelativePath(request);
-
-            if (request.getService().getDeploymentConfiguration()
-                    .isProductionMode()) {
-                pushJSPath += ApplicationConstants.VAADIN_PUSH_JS;
-            } else {
-                pushJSPath += ApplicationConstants.VAADIN_PUSH_DEBUG_JS;
-            }
-
-            pushJSPath += versionQueryParam;
-
-            return createJavaScriptElement(pushJSPath);
         }
 
         private Element getBootstrapScript(JsonValue initialUIDL,
@@ -1356,8 +1184,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
             appConfig.put(ApplicationConstants.FRONTEND_URL_ES6,
                     deploymentConfiguration.getEs6FrontendPrefix());
-            appConfig.put(ApplicationConstants.FRONTEND_URL_ES5,
-                    deploymentConfiguration.getEs5FrontendPrefix());
 
             if (!productionMode) {
                 JsonObject versionInfo = Json.createObject();
@@ -1467,6 +1293,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     protected BootstrapContext createAndInitUI(Class<? extends UI> uiClass,
             VaadinRequest request, VaadinResponse response,
             VaadinSession session) {
+
         UI ui = ReflectTools.createInstance(uiClass);
         ui.getInternals().setContextRoot(
                 request.getService().getContextRootRelativePath(request));
@@ -1499,11 +1326,15 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         // After init and adding UI to session fire init listeners.
         session.getService().fireUIInitListeners(ui);
 
+        initializeUIWithRouter(request, ui);
+
+        return context;
+    }
+
+    protected void initializeUIWithRouter(VaadinRequest request, UI ui) {
         if (ui.getRouter() != null) {
             ui.getRouter().initializeUI(ui, request);
         }
-
-        return context;
     }
 
     /**
@@ -1616,5 +1447,168 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return null;
         }
 
+    }
+
+    /**
+     * Generates the initial UIDL message which is included in the initial
+     * bootstrap page.
+     *
+     * @param ui
+     *            the UI for which the UIDL should be generated
+     * @return a JSON object with the initial UIDL message
+     */
+    protected static JsonObject getInitialUidl(UI ui) {
+        JsonObject json = new UidlWriter().createUidl(ui, false);
+
+        VaadinSession session = ui.getSession();
+        if (session.getConfiguration().isXsrfProtectionEnabled()) {
+            writeSecurityKeyUIDL(json, ui);
+        }
+        writePushIdUIDL(json, session);
+        if (getLogger().isDebugEnabled()) {
+            getLogger().debug("Initial UIDL: {}", json.asString());
+        }
+        return json;
+    }
+
+    /**
+     * Writes the push id (and generates one if needed) to the given JSON
+     * object.
+     *
+     * @param response
+     *            the response JSON object to write security key into
+     * @param session
+     *            the vaadin session to which the security key belongs
+     */
+    private static void writePushIdUIDL(JsonObject response,
+            VaadinSession session) {
+        String pushId = session.getPushId();
+        response.put(ApplicationConstants.UIDL_PUSH_ID, pushId);
+    }
+
+    /**
+     * Writes the security key (and generates one if needed) to the given JSON
+     * object.
+     *
+     * @param response
+     *            the response JSON object to write security key into
+     * @param ui
+     *            the UI to which the security key belongs
+     */
+    private static void writeSecurityKeyUIDL(JsonObject response, UI ui) {
+        String seckey = ui.getCsrfToken();
+        response.put(ApplicationConstants.UIDL_SECURITY_TOKEN_ID, seckey);
+    }
+
+    protected static String getPushScript(BootstrapContext context) {
+        VaadinRequest request = context.getRequest();
+        // Parameter appended to JS to bypass caches after version upgrade.
+        String versionQueryParam = "?v=" + Version.getFullVersion();
+        // Load client-side dependencies for push support
+        String pushJSPath = context.getRequest().getService()
+                .getContextRootRelativePath(request);
+
+        if (request.getService().getDeploymentConfiguration()
+                .isProductionMode()) {
+            pushJSPath += ApplicationConstants.VAADIN_PUSH_JS;
+        } else {
+            pushJSPath += ApplicationConstants.VAADIN_PUSH_DEBUG_JS;
+        }
+
+        pushJSPath += versionQueryParam;
+        return pushJSPath;
+    }
+
+    protected static void showWebpackErrors(Document document) {
+        DevModeHandler devMode = DevModeHandler.getDevModeHandler();
+        if (devMode != null) {
+            String errorMsg = devMode.getFailedOutput();
+            if (errorMsg != null) {
+                document.body()
+                        .appendChild(new Element(Tag.valueOf("div"), "")
+                                .attr("class", "v-system-error")
+                                .html("<h3>Webpack Error</h3><pre>" + errorMsg
+                                        // Make error lines more prominent
+                                        .replaceAll("(ERROR.+?\n)", "<b>$1</b>")
+                                        + "</pre>"));
+            }
+        }
+    }
+
+    protected static void setupErrorDialogs(Element style) {
+        // @formatter:off
+        style.appendText(
+                ".v-reconnect-dialog," +
+                ".v-system-error {" +
+                "position: absolute;" +
+                "color: black;" +
+                "background: white;" +
+                "top: 1em;" +
+                "right: 1em;" +
+                "border: 1px solid black;" +
+                "padding: 1em;" +
+                "z-index: 10000;" +
+                "max-width: calc(100vw - 4em);" +
+                "max-height: calc(100vh - 4em);" +
+                "overflow: auto;" +
+                "} .v-system-error {" +
+                "color: indianred;" +
+                "pointer-events: auto;" +
+                "} .v-system-error h3, .v-system-error b {" +
+                "color: red;" +
+                "}");
+     // @formatter:on
+    }
+
+    protected static void setupPwa(Document document, VaadinService service) {
+        setupPwa(document, service.getPwaRegistry());
+    }
+
+    private static void setupPwa(Document document, PwaRegistry registry) {
+        if (registry == null) {
+            return;
+        }
+
+        PwaConfiguration config = registry.getPwaConfiguration();
+
+        if (config.isEnabled()) {
+            // Add header injections
+            Element head = document.head();
+
+            // Describe PWA capability for iOS devices
+            head.appendElement(META_TAG)
+                    .attr("name", "apple-mobile-web-app-capable")
+                    .attr(CONTENT_ATTRIBUTE, "yes");
+
+            // Theme color
+            head.appendElement(META_TAG).attr("name", "theme-color")
+                    .attr(CONTENT_ATTRIBUTE, config.getThemeColor());
+            head.appendElement(META_TAG)
+                    .attr("name", "apple-mobile-web-app-status-bar-style")
+                    .attr(CONTENT_ATTRIBUTE, config.getThemeColor());
+
+            // Add manifest
+            head.appendElement("link").attr("rel", "manifest").attr("href",
+                    config.getManifestPath());
+
+            // Add icons
+            for (PwaIcon icon : registry.getHeaderIcons()) {
+                head.appendChild(icon.asElement());
+            }
+
+            // Add service worker initialization
+            head.appendElement(SCRIPT_TAG)
+                    .text("if ('serviceWorker' in navigator) {\n"
+                            + "  window.addEventListener('load', function() {\n"
+                            + "    navigator.serviceWorker.register('"
+                            + config.getServiceWorkerPath() + "');\n"
+                            + "  });\n" + "}");
+
+            // add body injections
+            if (registry.getPwaConfiguration().isInstallPromptEnabled()) {
+                // PWA Install prompt html/js
+                document.body().append(registry.getInstallPrompt());
+            }
+        }
     }
 }

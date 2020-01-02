@@ -447,6 +447,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         // - Generated webcompoents
         // - JsModules (internal e.g. in frontend/)
         List<String> expectedImports = new ArrayList<>();
+        expectedImports.addAll(updater.getExportLines());
         expectedImports.addAll(updater.getThemeLines());
 
         getAnntotationsAsStream(JsModule.class, testClasses)

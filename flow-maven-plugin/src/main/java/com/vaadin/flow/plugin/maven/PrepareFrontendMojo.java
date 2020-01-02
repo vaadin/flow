@@ -43,12 +43,17 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
 import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFinder;
+import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
+import static com.vaadin.flow.server.Constants.CONNECT_GENERATED_TS_DIR_TOKEN;
+import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
+import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
 import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.GENERATED_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_CLIENT_SIDE_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_INITIAL_UIDL;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
 /**
@@ -84,13 +89,6 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
     private MavenProject project;
 
     /**
-     * The folder where `package.json` file is located. Default is project root
-     * dir.
-     */
-    @Parameter(defaultValue = "${project.basedir}")
-    private File npmFolder;
-
-    /**
      * Copy the `webapp.config.js` from the specified URL if missing. Default is
      * the template provided by this plugin. Set it to empty string to disable
      * the feature.
@@ -106,21 +104,8 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
     @Parameter(defaultValue = FrontendUtils.WEBPACK_GENERATED)
     private String webpackGeneratedTemplate;
 
-    /**
-     * The folder where flow will put generated files that will be used by
-     * webpack.
-     */
-    @Parameter(defaultValue = "${project.build.directory}/" + FRONTEND)
-    private File generatedFolder;
-
     @Component
     private BuildContext buildContext; // m2eclipse integration
-
-    /**
-     * A directory with project's frontend source files.
-     */
-    @Parameter(defaultValue = "${project.basedir}/frontend")
-    private File frontendDirectory;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -154,6 +139,8 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
                     generatedFolder, frontendDirectory)
                             .withWebpack(webpackOutputDirectory,
                                     webpackTemplate, webpackGeneratedTemplate)
+                            .enableClientSideMode(isClientSideMode())
+                            .withFlowResourcesFolder(flowResourcesFolder)
                             .createMissingPackageJson(true)
                             .enableImportsUpdate(false)
                             .enablePackagesUpdate(false).runNpmInstall(false);
@@ -181,9 +168,20 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         JsonObject buildInfo = Json.createObject();
         buildInfo.put(SERVLET_PARAMETER_COMPATIBILITY_MODE, compatibility);
         buildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, productionMode);
+        buildInfo.put(SERVLET_PARAMETER_CLIENT_SIDE_MODE, isClientSideMode());
+        buildInfo.put(SERVLET_PARAMETER_INITIAL_UIDL, eagerServerLoad);
         buildInfo.put(NPM_TOKEN, npmFolder.getAbsolutePath());
         buildInfo.put(GENERATED_TOKEN, generatedFolder.getAbsolutePath());
         buildInfo.put(FRONTEND_TOKEN, frontendDirectory.getAbsolutePath());
+        buildInfo.put(CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
+                javaSourceFolder.getAbsolutePath());
+        buildInfo.put(CONNECT_APPLICATION_PROPERTIES_TOKEN,
+                applicationProperties.getAbsolutePath());
+        buildInfo.put(CONNECT_OPEN_API_FILE_TOKEN,
+                openApiJsonFile.getAbsolutePath());
+        buildInfo.put(CONNECT_GENERATED_TS_DIR_TOKEN,
+                generatedTsFolder.getAbsolutePath());
+
         try {
             FileUtils.forceMkdir(token.getParentFile());
             FileUtils.write(token, JsonUtil.stringify(buildInfo, 2) + "\n",

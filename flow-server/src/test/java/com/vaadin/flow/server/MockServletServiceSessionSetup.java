@@ -1,20 +1,13 @@
 package com.vaadin.flow.server;
 
-import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.internal.ResponseWriterTest.CapturingServletOutputStream;
-import com.vaadin.flow.router.Router;
-import com.vaadin.flow.router.TestRouteRegistry;
-import com.vaadin.tests.util.MockDeploymentConfiguration;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,6 +21,21 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.ResponseWriterTest.CapturingServletOutputStream;
+import com.vaadin.flow.router.Router;
+import com.vaadin.flow.router.TestRouteRegistry;
+import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
+import com.vaadin.flow.server.communication.IndexHtmlResponse;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 public class MockServletServiceSessionSetup {
 
@@ -37,6 +45,7 @@ public class MockServletServiceSessionSetup {
         private TestRouteRegistry routeRegistry;
         private Router router;
         private List<BootstrapListener> bootstrapListeners = new ArrayList<>();
+        private List<IndexHtmlRequestListener> indexHtmlRequestListeners = new ArrayList<>();
 
         public TestVaadinServletService(TestVaadinServlet testVaadinServlet,
                 DeploymentConfiguration deploymentConfiguration) {
@@ -84,12 +93,25 @@ public class MockServletServiceSessionSetup {
             bootstrapListeners.add(listener);
         }
 
+        public void addIndexHtmlRequestListener(
+                IndexHtmlRequestListener listener) {
+            indexHtmlRequestListeners.add(listener);
+        }
+
         @Override
         public void modifyBootstrapPage(BootstrapPageResponse response) {
             bootstrapListeners.forEach(
                     listener -> listener.modifyBootstrapPage(response));
 
             super.modifyBootstrapPage(response);
+        }
+
+        @Override
+        public void modifyIndexHtmlResponse(IndexHtmlResponse response) {
+            indexHtmlRequestListeners.forEach(
+                    listener -> listener.modifyIndexHtmlResponse(response));
+
+            super.modifyIndexHtmlResponse(response);
         }
     }
 
@@ -171,6 +193,10 @@ public class MockServletServiceSessionSetup {
             extends VaadinServletResponse {
         private int errorCode;
 
+        private CapturingServletOutputStream output = new CapturingServletOutputStream();
+
+        private String type;
+
         private TestVaadinServletResponse(HttpServletResponse response,
                 VaadinServletService vaadinService) {
             super(response, vaadinService);
@@ -189,6 +215,30 @@ public class MockServletServiceSessionSetup {
 
         public int getErrorCode() {
             return errorCode;
+        }
+
+        @Override
+        public void setStatus(int sc) {
+            errorCode = sc;
+        }
+
+        @Override
+        public ServletOutputStream getOutputStream() throws IOException {
+            return output;
+        }
+
+        public String getPayload() {
+            return new String(output.getOutput());
+        }
+
+        @Override
+        public void setContentType(String type) {
+            this.type = type;
+        }
+
+        @Override
+        public String getContentType() {
+            return type;
         }
     }
 
@@ -220,7 +270,8 @@ public class MockServletServiceSessionSetup {
         servlet = new TestVaadinServlet();
 
         deploymentConfiguration.setXsrfProtectionEnabled(false);
-        Mockito.doAnswer(invocation -> servletContext.getClass().getClassLoader())
+        Mockito.doAnswer(
+                invocation -> servletContext.getClass().getClassLoader())
                 .when(servletContext).getClassLoader();
         Mockito.when(servletConfig.getServletContext())
                 .thenReturn(servletContext);
@@ -259,7 +310,6 @@ public class MockServletServiceSessionSetup {
         }
 
         Mockito.when(request.getServletPath()).thenReturn("");
-        Mockito.when(browser.isEs6Supported()).thenReturn(true);
     }
 
     public TestVaadinServletService getService() {
@@ -306,10 +356,6 @@ public class MockServletServiceSessionSetup {
         deploymentConfiguration.setProductionMode(productionMode);
     }
 
-    public void setBrowserEs6(boolean browserEs6) {
-        Mockito.when(browser.isEs6Supported()).thenReturn(browserEs6);
-    }
-
     public TestVaadinServletResponse createResponse() throws IOException {
         HttpServletResponse httpServletResponse = Mockito
                 .mock(HttpServletResponse.class);
@@ -317,5 +363,41 @@ public class MockServletServiceSessionSetup {
         Mockito.when(httpServletResponse.getOutputStream()).thenReturn(out);
         return new TestVaadinServletResponse(httpServletResponse, getService());
 
+    }
+
+    public VaadinRequest createRequest(MockServletServiceSessionSetup mocks,
+            String path) {
+        HttpServletRequest httpServletRequest = Mockito
+                .mock(HttpServletRequest.class);
+        return new VaadinServletRequest(httpServletRequest,
+                mocks.getService()) {
+            @Override
+            public String getPathInfo() {
+                return path.replaceFirst("\\?.*$", "");
+            }
+
+            @Override
+            public String getServletPath() {
+                return "";
+            }
+
+            @Override
+            public ServletContext getServletContext() {
+                return mocks.getServletContext();
+            }
+
+            @Override
+            public String getParameter(String name) {
+                Pattern p = Pattern.compile("^.*[\\?&]" + name + "=([^&]+).*$");
+                Matcher m = p.matcher(path);
+                return m.find() ? m.group(1) : null;
+            }
+
+            @Override
+            public StringBuffer getRequestURL() {
+                return new StringBuffer(
+                        "http://localhost:8888" + getPathInfo());
+            }
+        };
     }
 }

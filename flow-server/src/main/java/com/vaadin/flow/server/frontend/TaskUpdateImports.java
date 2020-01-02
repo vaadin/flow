@@ -48,6 +48,8 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.FALLBACK_IMPORTS_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_D_TS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 
 /**
@@ -61,9 +63,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
  */
 public class TaskUpdateImports extends NodeUpdater {
 
-    private static final String THEME_PREPARE = "const div = document.createElement('div');";
-    private static final String THEME_LINE_TPL = "div.innerHTML = '%s';%n"
-            + "document.head.insertBefore(div.firstElementChild, document.head.firstChild);";
+    private static final String THEME_LINE_TPL = "addCssBlock('%s', true);";
     private static final String THEME_VARIANT_TPL = "document.body.setAttribute('%s', '%s');";
     // Trim and remove new lines.
     private static final Pattern NEW_LINE_TRIM = Pattern
@@ -71,7 +71,6 @@ public class TaskUpdateImports extends NodeUpdater {
 
     private final File frontendDirectory;
     private final FrontendDependenciesScanner fallbackScanner;
-    private final ClassFinder finder;
     private final File tokenFile;
     private final JsonObject tokenFileData;
 
@@ -79,7 +78,14 @@ public class TaskUpdateImports extends NodeUpdater {
 
     private class UpdateMainImportsFile extends AbstractUpdateImports {
 
+        private static final String LOAD_FALLBACK =
+                "\nwindow.Vaadin.Flow.loadFallback = () => import('./"  + FALLBACK_IMPORTS_NAME + "');";
+
+        private static final String EXPORT_MODULES_DEF =
+                "export declare const addCssBlock: (block: string, before?: boolean) => void;";
+
         private final File generatedFlowImports;
+        private final File generatedFlowDefinitions;
         private final File fallBackImports;
         private final ClassFinder finder;
 
@@ -88,6 +94,7 @@ public class TaskUpdateImports extends NodeUpdater {
                 File fallBackImports) {
             super(frontendDirectory, npmDirectory, generatedDirectory);
             generatedFlowImports = new File(generatedDirectory, IMPORTS_NAME);
+            generatedFlowDefinitions = new File(generatedDirectory, IMPORTS_D_TS_NAME);
             finder = classFinder;
             this.fallBackImports = fallBackImports;
         }
@@ -125,6 +132,7 @@ public class TaskUpdateImports extends NodeUpdater {
             }
             try {
                 updateImportsFile(generatedFlowImports, lines);
+                updateImportsFile(generatedFlowDefinitions, getDefinitionLines());
             } catch (IOException e) {
                 throw new IllegalStateException(String.format(
                         "Failed to update the Flow imports file '%s'",
@@ -139,7 +147,7 @@ public class TaskUpdateImports extends NodeUpdater {
             ThemeDefinition themeDef = getThemeDefinition();
             if (theme != null) {
                 if (!theme.getHeaderInlineContents().isEmpty()) {
-                    lines.add(THEME_PREPARE);
+                    lines.add("");
                     theme.getHeaderInlineContents()
                             .forEach(html -> addLines(lines,
                                     String.format(THEME_LINE_TPL, NEW_LINE_TRIM
@@ -200,10 +208,15 @@ public class TaskUpdateImports extends NodeUpdater {
         protected String getImportsNotFoundMessage() {
             return getAbsentPackagesMessage();
         }
+
+        protected List<String> getDefinitionLines() {
+            List<String> lines = new ArrayList<>();
+            addLines(lines, EXPORT_MODULES_DEF);
+            return lines;
+        }
     }
 
     private class UpdateFallBackImportsFile extends AbstractUpdateImports {
-
         private final File generatedFallBack;
         private final ClassFinder finder;
 
@@ -349,10 +362,9 @@ public class TaskUpdateImports extends NodeUpdater {
             SerializableFunction<ClassFinder, FrontendDependenciesScanner> fallBackScannerProvider,
             File npmFolder, File generatedPath, File frontendDirectory,
             File tokenFile, JsonObject tokenFileData, boolean disablePnpm) {
-        super(finder, frontendDepScanner, npmFolder, generatedPath);
+        super(finder, frontendDepScanner, npmFolder, generatedPath, null);
         this.frontendDirectory = frontendDirectory;
         fallbackScanner = fallBackScannerProvider.apply(finder);
-        this.finder = finder;
         this.tokenFile = tokenFile;
         this.tokenFileData = tokenFileData;
         this.disablePnpm = disablePnpm;

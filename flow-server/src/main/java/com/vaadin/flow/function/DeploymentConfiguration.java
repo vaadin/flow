@@ -27,6 +27,7 @@ import com.vaadin.flow.server.WrappedSession;
 import com.vaadin.flow.shared.communication.PushMode;
 
 import static com.vaadin.flow.server.Constants.POLYFILLS_DEFAULT_VALUE;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_CLIENT_SIDE_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_POLYFILLS;
 
 /**
@@ -66,6 +67,15 @@ public interface DeploymentConfiguration extends Serializable {
      */
     default boolean isCompatibilityMode() {
         return isBowerMode();
+    }
+
+    /**
+     * Returns whether Vaadin is running in clientSideMode.
+     *
+     * @return true if in clientSideMode, false otherwise.
+     */
+    default boolean isClientSideMode() {
+        return getBooleanProperty(SERVLET_PARAMETER_CLIENT_SIDE_MODE, true);
     }
 
     /**
@@ -260,8 +270,7 @@ public interface DeploymentConfiguration extends Serializable {
 
     /**
      * Gets the URL from which frontend resources should be loaded during
-     * development, unless explicitly configured to use the production es6 and
-     * es5 URLs.
+     * development, unless explicitly configured to use the production es6 URL.
      *
      * @return the development resource URL
      */
@@ -279,19 +288,6 @@ public interface DeploymentConfiguration extends Serializable {
         return useCompiledFrontendResources()
                 ? getStringProperty(Constants.FRONTEND_URL_ES6,
                         Constants.FRONTEND_URL_ES6_DEFAULT_VALUE)
-                : getDevelopmentFrontendPrefix();
-    }
-
-    /**
-     * Gets the URL from which frontend resources should be loaded in ES5
-     * compatible browsers.
-     *
-     * @return the ES5 resource URL
-     */
-    default String getEs5FrontendPrefix() {
-        return useCompiledFrontendResources()
-                ? getStringProperty(Constants.FRONTEND_URL_ES5,
-                        Constants.FRONTEND_URL_ES5_DEFAULT_VALUE)
                 : getDevelopmentFrontendPrefix();
     }
 
@@ -401,8 +397,8 @@ public interface DeploymentConfiguration extends Serializable {
     }
 
     /**
-     * Get if the stats.json file should be retrieved from an external service or
-     * through the classpath.
+     * Get if the stats.json file should be retrieved from an external service
+     * or through the classpath.
      *
      * @return true if stats.json is served from an external location
      */
@@ -411,13 +407,36 @@ public interface DeploymentConfiguration extends Serializable {
     }
 
     /**
-     * Get the url from where stats.json should be retrieved from.
-     * If not given this will default to '/vaadin-static/VAADIN/config/stats.json'
+     * Get the url from where stats.json should be retrieved from. If not given
+     * this will default to '/vaadin-static/VAADIN/config/stats.json'
      *
      * @return external stats.json location
      */
     default String getExternalStatsUrl() {
         return getStringProperty(Constants.EXTERNAL_STATS_URL,
                 Constants.DEFAULT_EXTERNAL_STATS_URL);
+    }
+
+    /**
+     * Get if the bootstrap page should include the initial UIDL fragment. This
+     * only makes sense for the client-side bootstrapping.
+     * <p>
+     * By default it is <code>false</code>.
+     * <p>
+     * Enabling this flag, it will make the initial application load a couple of
+     * seconds faster in very slow networks because of the extra round-trip to
+     * request the UIDL after the index.html is loaded.
+     * <p>
+     * Otherwise, keeping the flag as false is beneficial, specially in
+     * application that mix client and server side views, since the `index.html`
+     * can be cached and served by service workers in PWAs, as well as in the
+     * server side session and UI initialization is deferred until a server view
+     * is actually requested by the user, saving some server resources.
+     *
+     * @return true if initial UIDL should be included in page
+     */
+    default boolean isEagerServerLoad() {
+        return getBooleanProperty(Constants.SERVLET_PARAMETER_INITIAL_UIDL,
+                false);
     }
 }

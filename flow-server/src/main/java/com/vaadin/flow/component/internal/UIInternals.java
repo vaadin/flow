@@ -47,7 +47,6 @@ import com.vaadin.flow.component.internal.ComponentMetaData.HtmlImportDependency
 import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ConstantPool;
@@ -73,7 +72,6 @@ import com.vaadin.flow.router.internal.BeforeLeaveHandler;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.WebBrowser;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
@@ -170,6 +168,8 @@ public class UIInternals implements Serializable {
      */
     private final UI ui;
 
+    private final UIInternalUpdater internalsHandler;
+
     private String title;
 
     private PendingJavaScriptInvocation pendingTitleUpdateCanceler;
@@ -216,6 +216,20 @@ public class UIInternals implements Serializable {
      *            the UI to use
      */
     public UIInternals(UI ui) {
+        this(ui, new UIInternalUpdater() {
+        });
+    }
+
+    /**
+     * Creates a new instance for the given UI.
+     *
+     * @param ui
+     *            the UI to use
+     * @param internalsHandler
+     *            an implementation of {@link UIInternalUpdater}
+     */
+    public UIInternals(UI ui, UIInternalUpdater internalsHandler) {
+        this.internalsHandler = internalsHandler;
         this.ui = ui;
         stateTree = new StateTree(this, getRootNodeFeatures());
     }
@@ -533,7 +547,8 @@ public class UIInternals implements Serializable {
         List<E> registeredListeners = (List<E>) listeners
                 .computeIfAbsent(handler, key -> new ArrayList<>());
 
-        return Collections.unmodifiableList(new ArrayList<>(registeredListeners));
+        return Collections
+                .unmodifiableList(new ArrayList<>(registeredListeners));
     }
 
     /**
@@ -665,8 +680,6 @@ public class UIInternals implements Serializable {
 
         this.viewLocation = viewLocation;
 
-        Element uiElement = ui.getElement();
-
         // Assemble previous parent-child relationships to enable detecting
         // changes
         Map<RouterLayout, HasElement> oldChildren = new HashMap<>();
@@ -720,15 +733,17 @@ public class UIInternals implements Serializable {
                     "Root can't be null here since we know there's at least one item in the chain");
         }
 
-        Element rootElement = root.getElement();
+        internalsHandler.updateRoot(ui, oldRoot, root);
+    }
 
-        if (!uiElement.equals(rootElement.getParent())) {
-            if (oldRoot != null) {
-                oldRoot.getElement().removeFromParent();
-            }
-            rootElement.removeFromParent();
-            uiElement.appendChild(rootElement);
-        }
+    /**
+     * Move all the children of the other UI to this current UI.
+     *
+     * @param otherUI
+     *            the other UI to transfer content from.
+     */
+    public void moveElementsFrom(UI otherUI) {
+        internalsHandler.moveToNewUI(otherUI, ui);
     }
 
     private void updateTheme(Component target, String path) {
@@ -952,9 +967,8 @@ public class UIInternals implements Serializable {
     private String translateTheme(String importValue) {
         if (theme != null) {
             VaadinService service = session.getService();
-            WebBrowser browser = session.getBrowser();
             Optional<String> themedUrl = service.getThemedUrl(importValue,
-                    browser, theme);
+                    theme);
             return themedUrl.orElse(importValue);
         } else {
             Matcher componentMatcher = componentSource.matcher(importValue);

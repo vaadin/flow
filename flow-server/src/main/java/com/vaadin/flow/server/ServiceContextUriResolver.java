@@ -31,9 +31,9 @@ public class ServiceContextUriResolver extends VaadinUriResolver
     /**
      * Resolves the given uri using the given frontend location, to a path which
      * can be used with
-     * {@link VaadinService#getResource(String, WebBrowser, com.vaadin.flow.theme.AbstractTheme)}
+     * {@link VaadinService#getResource(String, com.vaadin.flow.theme.AbstractTheme)}
      * and
-     * {@link VaadinService#getResourceAsStream(String, WebBrowser, com.vaadin.flow.theme.AbstractTheme)}.
+     * {@link VaadinService#getResourceAsStream(String, com.vaadin.flow.theme.AbstractTheme)}.
      *
      * @param uri
      *            the URI to resolve

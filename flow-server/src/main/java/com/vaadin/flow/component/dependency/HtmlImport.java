@@ -46,8 +46,10 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * file, {@link CssImport} should be used. If you want to be able to use your
  * component in both compatibility mode and normal mode of Vaadin 14+ you need
  * to have @HtmlImport along with @JsModule and/or @CssImport annotations. See
- * <a href="https://vaadin.com/docs/v14/flow/v14-migration/v14-migration-guide.html#3-convert-polymer-2-to-polymer-3">Vaadin 14 Migration Guide</a>
- * for more information on how to migrate templates from Polymer 2 to Polymer 3.
+ * <a href=
+ * "https://vaadin.com/docs/v14/flow/v14-migration/v14-migration-guide.html#3-convert-polymer-2-to-polymer-3">Vaadin
+ * 14 Migration Guide</a> for more information on how to migrate templates from
+ * Polymer 2 to Polymer 3.
  * </p>
  *
  * @author Vaadin Ltd
@@ -69,10 +71,7 @@ public @interface HtmlImport {
      * {@code "MyComponent.html"}, the evaluated URL will be:
      * <ul>
      * <li>{@code context://frontend/MyComponent.html} during development;</li>
-     * <li>{@code context://frontend-es6/MyComponent.html} for ES6 capable
-     * browsers;</li>
-     * <li>{@code context://frontend-es5/MyComponent.html} for other
-     * browsers.</li>
+     * <li>{@code context://frontend-es6/MyComponent.html}
      * </ul>
      * <p>
      * Relative URLs are interpreted as relative to the configured

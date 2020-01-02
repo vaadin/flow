@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.communication.FaviconHandler;
+import com.vaadin.flow.server.communication.IndexHtmlRequestHandler;
 import com.vaadin.flow.server.communication.PushRequestHandler;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
@@ -82,7 +83,7 @@ public class VaadinServletService extends VaadinService {
             throws ServiceException {
         List<RequestHandler> handlers = super.createRequestHandlers();
         handlers.add(0, new FaviconHandler());
-        handlers.add(0, new BootstrapHandler());
+        addBootstrapHandler(handlers);
         if (isAtmosphereAvailable()) {
             try {
                 handlers.add(new PushRequestHandler(this));
@@ -96,6 +97,18 @@ public class VaadinServletService extends VaadinService {
             }
         }
         return handlers;
+    }
+
+    private void addBootstrapHandler(List<RequestHandler> handlers) {
+        if (getDeploymentConfiguration().isClientSideMode()) {
+            handlers.add(0, new IndexHtmlRequestHandler());
+            getLogger().debug("Using '{}' in clientSideMode",
+                    IndexHtmlRequestHandler.class.getName());
+        } else {
+            handlers.add(0, new BootstrapHandler());
+            getLogger().debug("Using '{}' in default mode",
+                    BootstrapHandler.class.getName());
+        }
     }
 
     /**
@@ -140,8 +153,10 @@ public class VaadinServletService extends VaadinService {
     }
 
     private boolean isOtherRequest(VaadinRequest request) {
-        return request.getParameter(
-                ApplicationConstants.REQUEST_TYPE_PARAMETER) == null;
+        String type = request
+                .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER);
+        return type == null
+                || ApplicationConstants.REQUEST_TYPE_INIT.equals(type);
     }
 
     public static HttpServletRequest getCurrentServletRequest() {
@@ -201,18 +216,13 @@ public class VaadinServletService extends VaadinService {
     }
 
     @Override
-    public String resolveResource(String url, WebBrowser browser) {
+    public String resolveResource(String url) {
         Objects.requireNonNull(url, "Url cannot be null");
-        Objects.requireNonNull(browser, "Browser cannot be null");
 
         String frontendRootUrl;
         DeploymentConfiguration config = getDeploymentConfiguration();
         if (config.isCompatibilityMode()) {
-            if (browser.isEs6Supported()) {
-                frontendRootUrl = config.getEs6FrontendPrefix();
-            } else {
-                frontendRootUrl = config.getEs5FrontendPrefix();
-            }
+            frontendRootUrl = config.getEs6FrontendPrefix();
         } else {
             frontendRootUrl = config.getNpmFrontendPrefix();
         }
@@ -231,24 +241,21 @@ public class VaadinServletService extends VaadinService {
     }
 
     @Override
-    public URL getResource(String path, WebBrowser browser,
-            AbstractTheme theme) {
+    public URL getResource(String path, AbstractTheme theme) {
         return getResourceInServletContextOrWebJar(
-                getThemedOrRawPath(path, browser, theme));
+                getThemedOrRawPath(path, theme));
     }
 
     @Override
-    public InputStream getResourceAsStream(String path, WebBrowser browser,
-            AbstractTheme theme) {
+    public InputStream getResourceAsStream(String path, AbstractTheme theme) {
         return getResourceInServletContextOrWebJarAsStream(
-                getThemedOrRawPath(path, browser, theme));
+                getThemedOrRawPath(path, theme));
     }
 
     @Override
-    public Optional<String> getThemedUrl(String url, WebBrowser browser,
-            AbstractTheme theme) {
-        if (theme != null && !resolveResource(url, browser)
-                .equals(getThemedOrRawPath(url, browser, theme))) {
+    public Optional<String> getThemedUrl(String url, AbstractTheme theme) {
+        if (theme != null && !resolveResource(url)
+                .equals(getThemedOrRawPath(url, theme))) {
             return Optional.of(theme.translateUrl(url));
         }
         return Optional.empty();
@@ -263,18 +270,14 @@ public class VaadinServletService extends VaadinService {
      *
      * @param url
      *            the untranslated URL to the resource to find
-     * @param browser
-     *            the web browser to resolve for, relevant for es5 vs es6
-     *            resolving
      * @param theme
      *            the theme to use for resolving, or <code>null</code> to not
      *            use a theme
      * @return the path to the themed resource if such exists, otherwise the
      *         resolved raw path
      */
-    private String getThemedOrRawPath(String url, WebBrowser browser,
-            AbstractTheme theme) {
-        String resourcePath = resolveResource(url, browser);
+    private String getThemedOrRawPath(String url, AbstractTheme theme) {
+        String resourcePath = resolveResource(url);
 
         Optional<String> themeResourcePath = getThemeResourcePath(resourcePath,
                 theme);

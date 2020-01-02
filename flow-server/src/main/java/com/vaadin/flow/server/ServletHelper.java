@@ -44,6 +44,12 @@ public class ServletHelper implements Serializable {
      */
     public enum RequestType {
 
+
+        /**
+         * INIT requests.
+         */
+        INIT(ApplicationConstants.REQUEST_TYPE_INIT),
+
         /**
          * UIDL requests.
          */

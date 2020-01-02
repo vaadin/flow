@@ -67,6 +67,9 @@ import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.HeartbeatHandler;
+import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
+import com.vaadin.flow.server.communication.IndexHtmlResponse;
+import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
 import com.vaadin.flow.server.communication.PwaHandler;
 import com.vaadin.flow.server.communication.SessionRequestHandler;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
@@ -74,7 +77,6 @@ import com.vaadin.flow.server.communication.UidlRequestHandler;
 import com.vaadin.flow.server.communication.WebComponentBootstrapHandler;
 import com.vaadin.flow.server.communication.WebComponentProvider;
 import com.vaadin.flow.server.startup.BundleFilterFactory;
-import com.vaadin.flow.server.startup.FakeBrowser;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
@@ -177,9 +179,13 @@ public abstract class VaadinService implements Serializable {
 
     private Iterable<BootstrapListener> bootstrapListeners;
 
+    private transient Iterable<IndexHtmlRequestListener> indexHtmlRequestListeners;
+
     private Iterable<DependencyFilter> dependencyFilters;
 
     private boolean atmosphereAvailable = checkAtmosphereSupport();
+
+    private BootstrapInitialPredicate bootstrapInitialPredicate;
 
     /**
      * Keeps track of whether a warning about missing push support has already
@@ -286,6 +292,10 @@ public abstract class VaadinService implements Serializable {
             bootstrapListeners = instantiator
                     .getBootstrapListeners(event.getAddedBootstrapListeners())
                     .collect(Collectors.toList());
+            indexHtmlRequestListeners = instantiator
+                    .getIndexHtmlRequestListeners(
+                            event.getAddedIndexHtmlRequestListeners())
+                    .collect(Collectors.toList());
         });
 
         DeploymentConfiguration configuration = getDeploymentConfiguration();
@@ -304,11 +314,9 @@ public abstract class VaadinService implements Serializable {
 
         htmlImportDependencyCache = new DependencyTreeCache<>(path -> {
             List<String> dependencies = new ArrayList<>();
-            WebBrowser browser = FakeBrowser.getEs6();
             HtmlImportParser.parseImports(path,
-                    resourcePath -> getResourceAsStream(resourcePath, browser,
-                            null),
-                    resourcePath -> resolveResource(resourcePath, browser),
+                    resourcePath -> getResourceAsStream(resourcePath, null),
+                    resourcePath -> resolveResource(resourcePath),
                     dependency -> {
                         if (!dependency.startsWith(
                                 "frontend://bower_components/polymer/")) {
@@ -363,6 +371,7 @@ public abstract class VaadinService implements Serializable {
     protected List<RequestHandler> createRequestHandlers()
             throws ServiceException {
         List<RequestHandler> handlers = new ArrayList<>();
+        handlers.add(new JavaScriptBootstrapHandler());
         handlers.add(new SessionRequestHandler());
         handlers.add(new HeartbeatHandler());
         handlers.add(new UidlRequestHandler());
@@ -624,10 +633,31 @@ public abstract class VaadinService implements Serializable {
      * @param response
      *            The object containing all relevant info needed by listeners to
      *            change the bootstrap page.
+     *
+     * @deprecated This API is deprecated in favor of
+     *             {@link VaadinService#modifyIndexHtmlResponse(IndexHtmlResponse)}
+     *             when using client-side bootstrapping
      */
+    @Deprecated
     public void modifyBootstrapPage(BootstrapPageResponse response) {
         bootstrapListeners
                 .forEach(listener -> listener.modifyBootstrapPage(response));
+    }
+
+    /**
+     * Fires the
+     * {@link IndexHtmlRequestListener#modifyIndexHtmlResponse(IndexHtmlResponse)}
+     * event to all registered {@link IndexHtmlRequestListener}. This is called
+     * internally when the Index HTML response is created, so listeners can
+     * intercept the creation and change the result HTML.
+     *
+     * @param response
+     *            The object containing all relevant info needed by listeners to
+     *            change the Index HTML response.
+     */
+    public void modifyIndexHtmlResponse(IndexHtmlResponse response) {
+        indexHtmlRequestListeners.forEach(
+                listener -> listener.modifyIndexHtmlResponse(response));
     }
 
     /**
@@ -1747,9 +1777,8 @@ public abstract class VaadinService implements Serializable {
      *            {@code null}, body will be used
      * @return A JSON string to be sent to the client
      */
-    public static String createCriticalNotificationJSON(
-            String caption, String message, String details, String url,
-            String querySelector) {
+    public static String createCriticalNotificationJSON(String caption,
+            String message, String details, String url, String querySelector) {
         try {
             JsonObject appError = Json.createObject();
             putValueOrJsonNull(appError, "caption", caption);
@@ -2233,26 +2262,19 @@ public abstract class VaadinService implements Serializable {
      *
      * @param url
      *            the untranslated Vaadin URL for the resource
-     * @param browser
-     *            the web browser to resolve for, relevant for es5 vs es6
-     *            resolving
      * @param theme
      *            the theme to use for translating the URL or <code>null</code>
      *            if no theme is used
      * @return the resource located at the named path, or <code>null</code> if
      *         there is no resource at that path
      */
-    public abstract URL getResource(String url, WebBrowser browser,
-            AbstractTheme theme);
+    public abstract URL getResource(String url, AbstractTheme theme);
 
     /**
      * Opens a stream to to the resource at the given Vaadin URI.
      *
      * @param url
      *            the untranslated Vaadin URL for the resource
-     * @param browser
-     *            the web browser to resolve for, relevant for es5 vs es6
-     *            resolving
      * @param theme
      *            the theme to use for translating the URL or <code>null</code>
      *            if no theme is used
@@ -2260,42 +2282,35 @@ public abstract class VaadinService implements Serializable {
      *         exists at the specified path
      */
     public abstract InputStream getResourceAsStream(String url,
-            WebBrowser browser, AbstractTheme theme);
+            AbstractTheme theme);
 
     /**
      * Checks if a resource is available at the given Vaadin URI.
      *
      * @param url
      *            the untranslated Vaadin URL for the resource
-     * @param browser
-     *            the web browser to resolve for, relevant for es5 vs es6
-     *            resolving
      * @param theme
      *            the theme to use for translating the URL or <code>null</code>
      *            if no theme is used
      * @return <code>true</code> if a resource is found and can be read using
-     *         {@link #getResourceAsStream(String, WebBrowser, AbstractTheme)},
+     *         {@link #getResourceAsStream(String, AbstractTheme)},
      *         <code>false</code> if it is not found
      */
-    public boolean isResourceAvailable(String url, WebBrowser browser,
-            AbstractTheme theme) {
-        return getResource(url, browser, theme) != null;
+    public boolean isResourceAvailable(String url, AbstractTheme theme) {
+        return getResource(url, theme) != null;
     }
 
     /**
      * Resolves the given {@code url} resource to be useful for
-     * {@link #getResource(String, WebBrowser, AbstractTheme)} and
-     * {@link #getResourceAsStream(String, WebBrowser, AbstractTheme)}.
+     * {@link #getResource(String, AbstractTheme)} and
+     * {@link #getResourceAsStream(String, AbstractTheme)}.
      *
      * @param url
      *            the resource to resolve, not <code>null</code>
-     * @param browser
-     *            the web browser to resolve for, relevant for es5 vs es6
-     *            resolving
      * @return the resolved URL or the same as the input url if no translation
      *         was performed
      */
-    public abstract String resolveResource(String url, WebBrowser browser);
+    public abstract String resolveResource(String url);
 
     /**
      * Checks if the given URL has a themed version. If it does, returns the
@@ -2303,8 +2318,6 @@ public abstract class VaadinService implements Serializable {
      *
      * @param url
      *            the URL to lookup
-     * @param browser
-     *            the browser to use for lookup
      * @param theme
      *            the theme to check
      * @return an optional containing the untranslated (containing vaadin
@@ -2312,7 +2325,7 @@ public abstract class VaadinService implements Serializable {
      *         optional if the given resource has no themed version
      */
     public abstract Optional<String> getThemedUrl(String url,
-            WebBrowser browser, AbstractTheme theme);
+            AbstractTheme theme);
 
     /**
      * Gets the HTML import dependency cache that is used by this service.
@@ -2361,5 +2374,34 @@ public abstract class VaadinService implements Serializable {
         } finally {
             setCurrent(null);
         }
+    }
+
+    /**
+     * Get the predicate for including the initial Uidl fragment in the
+     * bootstrap page.
+     * <p>
+     * By default it returns an instance that instruct to include the fragment
+     * in the case
+     *
+     * @return a non-null instance.
+     */
+    public BootstrapInitialPredicate getBootstrapInitialPredicate() {
+        if (bootstrapInitialPredicate == null) {
+            bootstrapInitialPredicate = request -> deploymentConfiguration
+                    .isEagerServerLoad();
+        }
+        return bootstrapInitialPredicate;
+    }
+
+    /**
+     * Set the predicate that decides whether to include the initial Uidl
+     * fragment in the bootstrap page.
+     *
+     * @param bootstrapInitialPredicate
+     *            the predicate.
+     */
+    public void setBootstrapInitialPredicate(
+            BootstrapInitialPredicate bootstrapInitialPredicate) {
+        this.bootstrapInitialPredicate = bootstrapInitialPredicate;
     }
 }

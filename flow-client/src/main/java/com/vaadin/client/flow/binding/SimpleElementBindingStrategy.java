@@ -343,6 +343,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
                         var props = Object.getOwnPropertyNames(changedProps);
                         var items = "items.";
+                        var i;
                         for(i=0; i<props.length; i++){
                             // There should be a property which starts with "items."
                             // and the next token is the index of changed item

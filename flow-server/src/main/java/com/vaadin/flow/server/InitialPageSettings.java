@@ -22,6 +22,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jsoup.nodes.Element;
+import org.jsoup.parser.Tag;
+
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.ReconnectDialogConfiguration;
 import com.vaadin.flow.component.UI;
@@ -29,16 +32,17 @@ import com.vaadin.flow.component.page.LoadingIndicatorConfiguration;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
+
 import elemental.json.Json;
 import elemental.json.JsonObject;
-import org.jsoup.nodes.Element;
-import org.jsoup.parser.Tag;
 
 /**
  * Initial page settings class for modifying the bootstrap page.
  *
  * @since 1.0
+ * @deprecated since 3.0 use {@link AppShellSettings}
  */
+@Deprecated
 public class InitialPageSettings implements Serializable {
 
     /**

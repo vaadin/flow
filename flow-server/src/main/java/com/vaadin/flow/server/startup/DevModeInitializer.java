@@ -37,6 +37,7 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -84,10 +85,19 @@ import com.vaadin.flow.theme.Theme;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
+import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
+import static com.vaadin.flow.server.Constants.CONNECT_GENERATED_TS_DIR_TOKEN;
+import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
+import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_APPLICATION_PROPERTIES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_GENERATED_TS_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_JAVA_SOURCE_FOLDER;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_OPENAPI_JSON_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
@@ -218,10 +228,13 @@ public class DevModeInitializer implements ServletContainerInitializer,
 
         String baseDir = config.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
                 System.getProperty("user.dir", "."));
+
         String generatedDir = System.getProperty(PARAM_GENERATED_DIR,
                 DEFAULT_GENERATED_DIR);
         String frontendFolder = config.getStringProperty(PARAM_FRONTEND_DIR,
                 System.getProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR));
+
+        File flowResourcesFolder = new File(baseDir, DEAULT_FLOW_RESOURCES_FOLDER);
 
         Builder builder = new NodeTasks.Builder(new DevModeClassFinder(classes),
                 new File(baseDir), new File(generatedDir),
@@ -251,6 +264,35 @@ public class DevModeInitializer implements ServletContainerInitializer,
                     FrontendUtils.WEBPACK_GENERATED);
         }
 
+        if (config.isClientSideMode()) {
+            builder.enableClientSideMode(config.isClientSideMode());
+            String connectJavaSourceFolder = config.getStringProperty(
+                    CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
+                    Paths.get(baseDir, DEFAULT_CONNECT_JAVA_SOURCE_FOLDER)
+                            .toString());
+            String connectApplicationProperties = config.getStringProperty(
+                    CONNECT_APPLICATION_PROPERTIES_TOKEN,
+                    Paths.get(baseDir, DEFAULT_CONNECT_APPLICATION_PROPERTIES)
+                            .toString());
+            String connectOpenApiJsonFile = config.getStringProperty(
+                    CONNECT_OPEN_API_FILE_TOKEN,
+                    Paths.get(baseDir, DEFAULT_CONNECT_OPENAPI_JSON_FILE)
+                            .toString());
+
+            String connectTsFolder = config.getStringProperty(
+                    CONNECT_GENERATED_TS_DIR_TOKEN,
+                    Paths.get(baseDir, DEFAULT_CONNECT_GENERATED_TS_DIR)
+                            .toString());
+
+            builder.withConnectJavaSourceFolder(
+                    new File(connectJavaSourceFolder))
+                    .withConnectApplicationProperties(
+                            new File(connectApplicationProperties))
+                    .withConnectGeneratedOpenApiJson(
+                            new File(connectOpenApiJsonFile))
+                    .withConnectClientTsApiFolder(new File(connectTsFolder));
+        }
+
         // If we are missing either the base or generated package json files
         // generate those
         if (!new File(builder.npmFolder, PACKAGE_JSON).exists()
@@ -275,6 +317,7 @@ public class DevModeInitializer implements ServletContainerInitializer,
         try {
             builder.enablePackagesUpdate(true)
                     .useByteCodeScanner(useByteCodeScanner)
+                    .withFlowResourcesFolder(flowResourcesFolder)
                     .copyResources(frontendLocations)
                     .copyLocalResources(new File(baseDir,
                             Constants.LOCAL_FRONTEND_RESOURCES_PATH))
