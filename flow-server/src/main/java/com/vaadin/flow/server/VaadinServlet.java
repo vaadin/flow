@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2019 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -429,8 +429,7 @@ public class VaadinServlet extends HttpServlet {
      *             if the application is denied access to the persistent data
      *             store represented by the given URL.
      *
-     * @deprecated As of 7.0. Will likely change or be removed in a future
-     *             version
+     * @deprecated As of 1.0. Will be removed in 3.0. 
      *
      * @return current application URL
      */
@@ -485,8 +484,8 @@ public class VaadinServlet extends HttpServlet {
      *            non-escaped string
      * @return a safe string to be added inside an html tag
      *
-     * @deprecated As of 7.0. Will likely change or be removed in a future
-     *             version
+     * @deprecated As of 1.0. Will be removed in 3.0. Use
+     * {@link org.jsoup.nodes.Entities#escape(String)} instead.
      */
     @Deprecated
     public static String safeEscapeForHtml(String unsafe) {
