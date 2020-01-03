@@ -71,31 +71,9 @@ public class ExtendedClientDetailsTest {
 
         VaadinSession session = Mockito.mock(VaadinSession.class);
         CurrentInstance.setCurrent(session);
-        WebBrowser browser = Mockito.mock(WebBrowser.class);
-        Mockito.when(session.getBrowser()).thenReturn(browser);
-
-        Mockito.when(browser.getBrowserApplication()).thenReturn("...ipad...");
-        Mockito.when(browser.isMacOSX()).thenReturn(false);
 
         detailsBuilder.setNavigatorPlatform(null);
         details = detailsBuilder.buildDetails();
-
-        Assert.assertTrue("No platform on with iPad is iPad", details.isIPad());
-
-        Mockito.when(browser.getBrowserApplication())
-                .thenReturn("...no i p a d...");
-        Assert.assertFalse(
-                "No platform and ipad false on linux should not be an iPad",
-                details.isIPad());
-
-        Mockito.when(browser.isMacOSX()).thenReturn(true);
-        Assert.assertFalse("No platform MacOSX, but not touch is not an iPad",
-                details.isIPad());
-
-        detailsBuilder.setTouchDevice("true");
-        details = detailsBuilder.buildDetails();
-        Assert.assertTrue("No platform on MacOSX with touch is an iPad",
-                details.isIPad());
 
         CurrentInstance.clearAll();
     }

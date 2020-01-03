@@ -27,6 +27,7 @@ import com.sun.net.httpserver.HttpServer;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
 import com.vaadin.flow.server.AppShellRegistry;
+import com.vaadin.flow.server.AppShellRegistry.AppShellRegistryWrapper;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinResponse;

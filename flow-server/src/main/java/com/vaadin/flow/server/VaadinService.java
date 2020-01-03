@@ -19,7 +19,6 @@ package com.vaadin.flow.server;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -82,7 +81,6 @@ import elemental.json.Json;
 import elemental.json.JsonException;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
-
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**

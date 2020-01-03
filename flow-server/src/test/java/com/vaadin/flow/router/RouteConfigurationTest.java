@@ -12,7 +12,6 @@ import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;

@@ -81,7 +81,8 @@ public class NpmTemplateParser implements TemplateParser {
         List<Dependency> dependencies = AnnotationReader
                 .getAnnotationsFor(clazz, JsModule.class).stream()
                 .map(jsModule -> new Dependency(Dependency.Type.JS_MODULE,
-                        jsModule.value(), LoadMode.LAZY))
+                        jsModule.value(),
+                        LoadMode.EAGER)) // load mode doesn't matter here
                 .collect(Collectors.toList());
 
         for (DependencyFilter filter : service.getDependencyFilters()) {
