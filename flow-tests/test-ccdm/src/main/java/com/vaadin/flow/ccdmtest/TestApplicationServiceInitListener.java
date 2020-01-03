@@ -26,24 +26,25 @@ public class TestApplicationServiceInitListener
         implements VaadinServiceInitListener {
     @Override
     public void serviceInit(ServiceInitEvent event) {
-        Element el = new Element("label");
-        el.text("Modified page");
-        event.addIndexHtmlRequestListener(
-                response -> response.getDocument().body().appendChild(el));
+        event.addIndexHtmlRequestListener(response -> {
+            Element el = new Element("label");
+            el.text("Modified page");
+            response.getDocument().body().appendChild(el);
+        });
 
-        Element meta = new Element("meta");
-        meta.attr("name", "og:image");
         event.addIndexHtmlRequestListener(indexHtmlResponse -> {
+            Element meta = new Element("meta");
+            meta.attr("name", "og:image");
             meta.attr("content",
                     getBaseUrl(indexHtmlResponse) + "/image/my_app.png");
             indexHtmlResponse.getDocument().head().appendChild(meta);
         });
 
-        Element styleElem = new Element("style");
-        meta.attr("type", "text/css");
-        styleElem.text("body,#outlet{height:50vh;width:50vw;}");
-        event.addIndexHtmlRequestListener(
-                response -> response.getDocument().head().appendChild(styleElem));
+        event.addIndexHtmlRequestListener(response -> {
+            Element styleElem = new Element("style");
+            styleElem.text("body,#outlet{height:50vh;width:50vw;}");
+            response.getDocument().head().appendChild(styleElem);
+        });
     }
 
     private static String getBaseUrl(IndexHtmlResponse indexHtmlResponse) {
