@@ -130,8 +130,7 @@ public class TaskUpdatePackages extends NodeUpdater {
         }
 
         if (added > 0) {
-            log().info("Added {} dependencies to '{}'", added,
-                    new File(generatedFolder, PACKAGE_JSON).getPath());
+            log().info("Added {} dependencies to main package.json", added);
         }
 
         // Remove obsolete dependencies
