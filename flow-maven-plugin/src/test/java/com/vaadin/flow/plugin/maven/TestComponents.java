@@ -41,7 +41,7 @@ public class TestComponents {
     @JavaScript("./ExampleConnector.js")
     @JavaScript("https://foo.com/bar.js")
     @JavaScript("//foo.com/bar.js")
-    public static class VaadinBowerComponent extends Component {
+    public static class VaadinComponent extends Component {
     }
 
     @NpmPackage(value = "@vaadin/vaadin-element-mixin", version = "0.0.0")
@@ -80,7 +80,7 @@ public class TestComponents {
     public static class MainView extends Component {
         ButtonComponent buttonComponent;
         IconComponent iconComponent;
-        VaadinBowerComponent vaadinBowerComponent;
+        VaadinComponent vaadinBowerComponent;
         VaadinElementMixin vaadinElementMixin;
         VaadinNpmComponent vaadinNpmComponent;
         VaadinMixedComponent vaadinMixedComponent;
