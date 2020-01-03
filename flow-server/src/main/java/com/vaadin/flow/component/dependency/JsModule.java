@@ -24,7 +24,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.shared.ui.LoadMode;
 
 /**
  * Annotation for defining JavaScript Module dependencies on a {@link Component}

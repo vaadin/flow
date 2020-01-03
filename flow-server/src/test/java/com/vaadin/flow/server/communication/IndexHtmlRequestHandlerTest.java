@@ -16,7 +16,6 @@
 package com.vaadin.flow.server.communication;
 
 import javax.servlet.http.HttpServletRequest;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -38,13 +37,13 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
+import com.vaadin.flow.server.AppShellRegistry;
+import com.vaadin.flow.server.AppShellRegistry.AppShellRegistryWrapper;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
-import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.AppShellRegistry.AppShellRegistryWrapper;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWithConfigurator;
 import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWithMultipleAnnotations;

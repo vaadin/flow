@@ -21,6 +21,11 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Properties;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.VaadinRequest;
@@ -29,10 +34,6 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.ApplicationConstants;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
 
 public class UidlRequestHandlerTest {
 
