@@ -22,8 +22,6 @@ import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.data.provider.CompositeDataGenerator;
-import com.vaadin.flow.data.provider.DataGenerator;
 import com.vaadin.flow.shared.Registration;
 
 import elemental.json.Json;

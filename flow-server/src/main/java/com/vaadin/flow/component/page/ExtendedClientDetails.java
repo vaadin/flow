@@ -20,7 +20,6 @@ import java.util.Date;
 import java.util.TimeZone;
 
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.WebBrowser;
 
 /**
  * Provides extended information about the web browser, such as screen
@@ -370,12 +369,8 @@ public class ExtendedClientDetails implements Serializable {
      *         information from the browser is present
      */
     public boolean isIPad() {
-        if (navigatorPlatform != null) {
-            return navigatorPlatform.startsWith("iPad");
-        }
-        WebBrowser browser = VaadinSession.getCurrent().getBrowser();
-        return browser.getBrowserApplication().contains("ipad")
-                || (browser.isMacOSX() && isTouchDevice());
+        return navigatorPlatform != null
+                && navigatorPlatform.startsWith("iPad");
     }
 
     /**
