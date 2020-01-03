@@ -133,6 +133,9 @@ module.exports = {
     // Transpile with babel, and produce different bundles per browser
     new BabelMultiTargetPlugin({
       babel: {
+        // workaround for Safari 10 scope issue (https://bugs.webkit.org/show_bug.cgi?id=159270)
+        plugins: ["@babel/plugin-transform-block-scoping"],
+
         presetOptions: {
           useBuiltIns: false // polyfills are provided from webcomponents-loader.js
         }

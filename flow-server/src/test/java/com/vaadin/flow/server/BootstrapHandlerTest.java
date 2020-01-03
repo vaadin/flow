@@ -1873,4 +1873,27 @@ public class BootstrapHandlerTest {
         Assert.assertTrue(
                 testUI.getReconnectDialogConfiguration().isDialogModal());
     }
+
+    @Test
+    public void safari_10_1_script_nomodule_fix_index_appended_to_head_in_npm()
+            throws InvalidRouteConfigurationException {
+        WebBrowser mockedWebBrowser = Mockito.mock(WebBrowser.class);
+        Mockito.when(session.getBrowser()).thenReturn(mockedWebBrowser);
+        Mockito.when(mockedWebBrowser.isEs6Supported()).thenReturn(true);
+        Mockito.when(mockedWebBrowser.isSafari()).thenReturn(true);
+        Mockito.when(mockedWebBrowser.getBrowserMajorVersion()).thenReturn(10);
+        Mockito.when(mockedWebBrowser.getBrowserMinorVersion()).thenReturn(1);
+
+        initUI(testUI, createVaadinRequest(),
+                Collections.singleton(MyThemeTest.class));
+
+        Document page = pageBuilder.getBootstrapPage(new BootstrapContext(
+                request, null, session, testUI, this::contextRootRelativePath));
+
+        Elements allElements = page.head().getAllElements();
+        Assert.assertTrue("fix for Safari 10.1 script nomodule should be added",
+                allElements.stream().map(Object::toString)
+                        .anyMatch(element -> element.contains(
+                                BootstrapHandler.SAFARI_10_1_SCRIPT_NOMODULE_FIX)));
+    }
 }
