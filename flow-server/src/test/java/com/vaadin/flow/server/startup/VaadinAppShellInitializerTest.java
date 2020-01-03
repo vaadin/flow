@@ -288,7 +288,7 @@ public class VaadinAppShellInitializerTest {
         exception.expectMessage(
                 containsString("Found app shell configuration annotations in non"));
         exception.expectMessage(
-                containsString("- @Meta, @PWA, @Inline, @Viewport, @BodySize, @PageTitle from"));
+                containsString("- @Meta, @PWA, @Inline, @Viewport, @BodySize from"));
         classes.add(MyAppShellWithoutAnnotations.class);
         classes.add(OffendingClass.class);
         initializer.onStartup(classes, servletContext);

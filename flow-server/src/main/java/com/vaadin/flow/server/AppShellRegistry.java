@@ -25,17 +25,17 @@ import java.util.function.Consumer;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
+import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Inline.Position;
 import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.TargetElement;
-import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.server.startup.AbstractAnnotationValidator;
 
+import static com.vaadin.flow.server.startup.AbstractAnnotationValidator.getClassAnnotations;
 import static com.vaadin.flow.server.startup.VaadinAppShellInitializer.getValidAnnotations;
 
 /**
@@ -182,12 +182,15 @@ public class AppShellRegistry implements Serializable {
      */
     public String validateClass(Class<?> clz) {
         String error = null;
-        @SuppressWarnings({ "unchecked", "rawtypes" })
-        String annotations = AbstractAnnotationValidator
-                .getClassAnnotations(clz, (List) getValidAnnotations());
-        if (!annotations.isEmpty()) {
-            error = String.format(AppShellRegistry.ERROR_LINE,
-                    annotations, clz.getName());
+
+        List<Class<?>> validOnlyForAppShell = (List) getValidAnnotations();
+        // PageTitle can be in AppShell and Views
+        validOnlyForAppShell.remove(PageTitle.class);
+
+        String offending = getClassAnnotations(clz, validOnlyForAppShell);
+        if (!offending.isEmpty()) {
+            error = String.format(AppShellRegistry.ERROR_LINE, offending,
+                    clz.getName());
         }
         return error;
     }
