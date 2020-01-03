@@ -60,6 +60,15 @@ public class IndexHtmlRequestHandlerIT extends ChromeBrowserTest {
     }
 
     @Test
+    public void should_accessVaadinService_getCurrent_inAppShellConstructor() {
+        openTestUrl("/");
+        waitForElementPresent(By.tagName("meta"));
+        WebElement meta = findElement(By.cssSelector("meta[name=test-resource-url]"));
+        Assert.assertNotNull(meta);
+        Assert.assertEquals("my-resource", meta.getAttribute("content"));
+    }
+
+    @Test
     public void should_show_pwaDialog() {
         openTestUrl("/");
         waitForElementPresent(By.id("pwa-ip"));

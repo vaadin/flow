@@ -74,7 +74,6 @@ public class AppShellRegistry implements Serializable {
             "meta[name=description]", "title", "base" };
 
     private Class<? extends AppShellConfigurator> appShellClass;
-    private AppShellConfigurator appShellInstance;
 
     /**
      * A wrapper class for storing the {@link AppShellRegistry} instance
@@ -121,7 +120,6 @@ public class AppShellRegistry implements Serializable {
      */
     public void reset() {
         this.appShellClass = null;
-        this.appShellInstance = null;
     }
 
     /**
@@ -138,9 +136,6 @@ public class AppShellRegistry implements Serializable {
                             this.appShellClass.getName(), shell.getName()));
         }
         this.appShellClass = shell;
-        this.appShellInstance = shell != null
-                ? ReflectTools.createInstance(shell)
-                : null;
     }
 
     /**
@@ -238,8 +233,9 @@ public class AppShellRegistry implements Serializable {
      */
     public void modifyIndexHtml(Document document, VaadinRequest request) {
         AppShellSettings settings = createSettings();
-        if (appShellInstance != null) {
-            appShellInstance.configurePage(settings);
+        if (appShellClass != null) {
+            ReflectTools.createInstance(appShellClass)
+                    .configurePage(settings);
         }
 
         settings.getHeadElements(Position.PREPEND).forEach(
