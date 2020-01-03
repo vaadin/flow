@@ -226,43 +226,38 @@
             </activation>
 
             <modules>
-                <module>test-pwa</module>
-
                 <module>test-mixed</module>
                 <module>test-mixed/pom-npm.xml</module>
+                
+                <!-- module>test-pwa</module>
 
                 <module>test-dev-mode</module>
                 <module>test-root-ui-context</module>
-                <module>test-frontend-production-custom-context</module>
                 <module>test-router-custom-context</module>
                 <module>test-subcontext</module>
                 <module>test-scalability</module>
                 <module>test-memory-leaks</module>
                 <module>test-servlet</module>
                 <module>test-themes</module>
-                <module>test-themes/pom-npm.xml</module>
                 <module>test-lumo-theme</module>
                 <module>test-material-theme</module>
-                <module>servlet-containers</module>
+                <module>servlet-containers</module-->
 
                 <!-- web component embedding -->
-                <module>test-embedding</module>
+                <!--module>test-embedding</module-->
 
                 <!-- tests running in both modes -->
-                <module>test-misc</module>
-                <module>test-misc/pom-bower.xml</module>
+                <!--module>test-misc</module-->
 
-                <module>test-mixed/pom-pnpm-production.xml</module>
+                <!--module>test-mixed/pom-pnpm-production.xml</module>
                 <module>test-mixed/pom-npm-production.xml</module>
-                <module>test-mixed/pom-bower-devmode.xml</module>
-                <module>test-mixed/pom-bower-production.xml</module>
                 <module>test-npm-only-features</module>
                 <module>test-multi-war</module>
                 <module>test-ccdm</module>
-                <module>test-ccdm/pom-production.xml</module>                
+                <module>test-ccdm/pom-production.xml</module-->                
 
                 <!-- This test fails in local -->
-                <module>test-root-context</module>
+                <!--module>test-root-context</module-->
             </modules>
         </profile>
         <profile>
@@ -335,12 +330,6 @@
             <properties>
                 <test.excludegroup>com.vaadin.flow.testcategory.IgnoreIE11</test.excludegroup>
             </properties>
-        </profile>
-        <profile>
-            <id>npm</id>
-            <modules>
-                <module>test-root-context/pom-npm.xml</module>
-            </modules>
         </profile>
     </profiles>
 

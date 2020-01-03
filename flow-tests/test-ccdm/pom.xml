@@ -51,7 +51,6 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <compatibilityMode>false</compatibilityMode>
                     <productionMode>false</productionMode>
                 </configuration>
             </plugin>

@@ -19,9 +19,6 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpSessionBindingEvent;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -41,9 +38,6 @@ import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
-import com.vaadin.flow.server.startup.BundleDependencyFilter;
-import com.vaadin.flow.shared.ApplicationConstants;
-import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import static org.hamcrest.CoreMatchers.containsString;
@@ -274,44 +268,11 @@ public class VaadinServiceTest {
         DependencyFilter applicationFilter = (dependencies,
                 service) -> dependencies;
 
-        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration() {
-            @Override
-            public boolean useCompiledFrontendResources() {
-                return true;
-            }
-
-            @Override
-            public boolean isCompatibilityMode() {
-                return true;
-            };
-        };
+        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
 
         // Service that pretends to have a proper bundle
         MockVaadinServletService service = new MockVaadinServletService(
-                configuration) {
-            @Override
-            public boolean isResourceAvailable(String url,
-                    AbstractTheme theme) {
-                if (url.equals("frontend://vaadin-flow-bundle-1.html")) {
-                    return true;
-                } else {
-                    return super.isResourceAvailable(url, theme);
-                }
-            }
-
-            @Override
-            public InputStream getResourceAsStream(String path,
-                    AbstractTheme theme) {
-                if (path.equals(ApplicationConstants.FRONTEND_PROTOCOL_PREFIX
-                        + "vaadin-flow-bundle-manifest.json")) {
-                    String data = "{\"vaadin-flow-bundle-1.html\": [\"file.html\"]}";
-                    return new ByteArrayInputStream(
-                            data.getBytes(StandardCharsets.UTF_8));
-                } else {
-                    return super.getResourceAsStream(path, theme);
-                }
-            }
-        };
+                configuration);
 
         service.init(new MockInstantiator(evt -> {
             evt.addDependencyFilter(applicationFilter);
@@ -320,11 +281,9 @@ public class VaadinServiceTest {
         List<DependencyFilter> filters = new ArrayList<>();
         service.getDependencyFilters().forEach(filters::add);
 
-        Assert.assertEquals(2, filters.size());
+        Assert.assertEquals(1, filters.size());
 
         Assert.assertSame(applicationFilter, filters.get(0));
-        Assert.assertSame(BundleDependencyFilter.class,
-                filters.get(1).getClass());
     }
 
     private static VaadinService createService() {

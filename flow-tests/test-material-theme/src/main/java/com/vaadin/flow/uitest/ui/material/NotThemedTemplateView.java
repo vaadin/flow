@@ -16,13 +16,13 @@
 package com.vaadin.flow.uitest.ui.material;
 
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
 @Tag("not-themed-template")
-@HtmlImport("frontend://bower_components/themed-template/src/NotThemedTemplate.html")
+@JsModule("./src/NotThemedTemplate.js")
 @Route(value = "com.vaadin.flow.uitest.ui.material.NotThemedTemplateView")
 public class NotThemedTemplateView extends PolymerTemplate<TemplateModel> {
 

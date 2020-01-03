@@ -25,16 +25,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Synchronize;
 import com.vaadin.flow.component.dependency.CssImport;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.StyleSheet;
@@ -43,9 +38,6 @@ import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.shared.ApplicationConstants;
-import com.vaadin.flow.shared.ui.LoadMode;
-import com.vaadin.flow.shared.util.SharedUtil;
 
 /**
  * Immutable meta data related to a component class.
@@ -55,30 +47,16 @@ import com.vaadin.flow.shared.util.SharedUtil;
  */
 public class ComponentMetaData {
 
-    private static final String HTML_IMPORT_WITHOUT_JS_MODULE_WARNING = System
-            .lineSeparator()
-            + "{} has only @HtmlImport annotation(s) which is ignored in Vaadin 14+. "
-            + "This annotation is only useful in compatibility mode. "
-            + "In order to use a Polymer template inside a component in Vaadin 14+, @JsModule annotation should be used. "
-            + "And to use a css file, {@link CssImport} should be used. "
-            + "If you want to be able to use your component in both compatibility mode and normal mode of Vaadin 14+ you need to have @HtmlImport along with @JsModule and/or @CssImport annotations."
-            + "Go to Vaadin 14 Migration Guide (https://vaadin.com/docs/v14/flow/v14-migration/v14-migration-guide.html#3-convert-polymer-2-to-polymer-3) to see how to migrate templates from Polymer 2 to Polymer 3.";
-
     /**
      * Dependencies defined for a {@link Component} class.
      * <p>
      * Framework internal class, thus package-private.
      */
     public static class DependencyInfo {
-        private final List<HtmlImportDependency> htmlImports = new ArrayList<>();
         private final List<JavaScript> javaScripts = new ArrayList<>();
         private final List<JsModule> jsModules = new ArrayList<>();
         private final List<StyleSheet> styleSheets = new ArrayList<>();
         private final List<CssImport> cssImports = new ArrayList<>();
-
-        List<HtmlImportDependency> getHtmlImports() {
-            return Collections.unmodifiableList(htmlImports);
-        }
 
         List<JavaScript> getJavaScripts() {
             return Collections.unmodifiableList(javaScripts);
@@ -94,27 +72,6 @@ public class ComponentMetaData {
 
         List<CssImport> getCssImports() {
             return Collections.unmodifiableList(cssImports);
-        }
-    }
-
-    public static class HtmlImportDependency {
-
-        private final Collection<String> uris;
-
-        private final LoadMode loadMode;
-
-        private HtmlImportDependency(Collection<String> uris,
-                LoadMode loadMode) {
-            this.uris = Collections.unmodifiableCollection(uris);
-            this.loadMode = loadMode;
-        }
-
-        public Collection<String> getUris() {
-            return uris;
-        }
-
-        public LoadMode getLoadMode() {
-            return loadMode;
         }
     }
 
@@ -164,10 +121,6 @@ public class ComponentMetaData {
         synchronizedProperties = findSynchronizedProperties(componentClass);
     }
 
-    private static Logger getLogger() {
-        return LoggerFactory.getLogger(ComponentMetaData.class.getName());
-    }
-
     /**
      * Finds all dependencies (JsModule, HTML, JavaScript, StyleSheet,
      * CssImport) for the class. Includes dependencies for all classes referred
@@ -192,30 +145,10 @@ public class ComponentMetaData {
 
         scannedClasses.add(componentClass);
 
-        if (service.getDeploymentConfiguration().isCompatibilityMode()) {
-            dependencyInfo.htmlImports
-                    .addAll(getHtmlImportDependencies(service, componentClass));
+        List<JsModule> jsModules = AnnotationReader
+                .getJsModuleAnnotations(componentClass);
 
-        } else {
-            List<JsModule> jsModules = AnnotationReader
-                    .getJsModuleAnnotations(componentClass);
-
-            // Ignore @HtmlImport(s) when @JsModule(s) present.
-            if (!jsModules.isEmpty()) {
-                dependencyInfo.jsModules.addAll(jsModules);
-            } else {
-                // Show a warning when @HtmlImport is present and there is no
-                // @JsModule or @CssImport.
-                if (!getHtmlImportDependencies(service, componentClass)
-                        .isEmpty()
-                        && AnnotationReader
-                                .getCssImportAnnotations(componentClass)
-                                .isEmpty()) {
-                    getLogger().error(HTML_IMPORT_WITHOUT_JS_MODULE_WARNING,
-                            componentClass.getName());
-                }
-            }
-        }
+        dependencyInfo.jsModules.addAll(jsModules);
 
         dependencyInfo.javaScripts.addAll(
                 AnnotationReader.getJavaScriptAnnotations(componentClass));
@@ -251,8 +184,7 @@ public class ComponentMetaData {
 
     /**
      * Gets the dependencies, defined using annotations ({@link JsModule},
-     * {@link HtmlImport}, {@link JavaScript}, {@link StyleSheet} and
-     * {@link Uses}).
+     * {@link JavaScript}, {@link StyleSheet} and {@link Uses}).
      * <p>
      * Framework internal data, thus package-private.
      *
@@ -267,27 +199,6 @@ public class ComponentMetaData {
                     event -> dependencyInfo.remove(service));
             return findDependencies(service, componentClass);
         });
-    }
-
-    private static Collection<HtmlImportDependency> getHtmlImportDependencies(
-            VaadinService service, Class<? extends Component> componentClass) {
-        return AnnotationReader.getHtmlImportAnnotations(componentClass)
-                .stream().map(htmlImport -> getHtmlImportDependencies(service,
-                        htmlImport))
-                .collect(Collectors.toList());
-    }
-
-    private static HtmlImportDependency getHtmlImportDependencies(
-            VaadinService service, HtmlImport htmlImport) {
-        String importPath = SharedUtil.prefixIfRelative(htmlImport.value(),
-                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
-
-        DependencyTreeCache<String> cache = service
-                .getHtmlImportDependencyCache();
-
-        Set<String> dependencies = cache.getDependencies(importPath);
-
-        return new HtmlImportDependency(dependencies, htmlImport.loadMode());
     }
 
     /**

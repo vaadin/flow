@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.google.gwt.core.client.impl.SchedulerImpl;
+
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsMap;
 import com.vaadin.flow.shared.ui.Dependency;
@@ -118,7 +119,6 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
                 set(URIResolver.class, new URIResolver(this));
                 ApplicationConfiguration appConf = new ApplicationConfiguration();
                 appConf.setContextRootUrl("../");
-                appConf.setFrontendRootUrl("/frontend/");
                 set(ApplicationConfiguration.class, appConf);
             }
         };
@@ -127,24 +127,18 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
 
     public void testAllEagerDependenciesAreLoadedFirst() {
         String eagerJsUrl = "https://foo.bar/eager_script.js";
-        String eagerHtmlUrl = "https://foo.bar/eager_page.html";
         String eagerCssUrl = "https://foo.bar/eager_style.css";
 
         String lazyJsUrl = "https://foo.bar/script.js";
-        String lazyHtmlUrl = "https://foo.bar/page.html";
         String lazyCssUrl = "https://foo.bar/style.css";
 
         new DependencyLoader(registry).loadDependencies(createDependenciesMap(
                 new Dependency(Dependency.Type.JAVASCRIPT, lazyJsUrl,
                         LoadMode.LAZY).toJson(),
-                new Dependency(Dependency.Type.HTML_IMPORT, lazyHtmlUrl,
-                        LoadMode.LAZY).toJson(),
                 new Dependency(Dependency.Type.STYLESHEET, lazyCssUrl,
                         LoadMode.LAZY).toJson(),
 
                 new Dependency(Dependency.Type.JAVASCRIPT, eagerJsUrl,
-                        LoadMode.EAGER).toJson(),
-                new Dependency(Dependency.Type.HTML_IMPORT, eagerHtmlUrl,
                         LoadMode.EAGER).toJson(),
                 new Dependency(Dependency.Type.STYLESHEET, eagerCssUrl,
                         LoadMode.EAGER).toJson()));
@@ -155,10 +149,6 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
         assertEquals("2 style files should be imported, eager first",
                 Arrays.asList(eagerCssUrl, lazyCssUrl),
                 mockResourceLoader.loadingStyles);
-
-        assertEquals("2 html files should be imported, eager first",
-                Arrays.asList(eagerHtmlUrl, lazyHtmlUrl),
-                mockResourceLoader.loadingHtml);
     }
 
     public void testEnsureLazyDependenciesLoadedInOrder() {
@@ -166,8 +156,6 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
         String jsUrl2 = "/2.js";
         String cssUrl1 = "/1.css";
         String cssUrl2 = "/2.css";
-        String htmlUrl1 = "/1.html";
-        String htmlUrl2 = "/2.html";
 
         new DependencyLoader(registry).loadDependencies(createDependenciesMap(
                 new Dependency(Dependency.Type.JAVASCRIPT, jsUrl1,
@@ -177,10 +165,6 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
                 new Dependency(Dependency.Type.STYLESHEET, cssUrl1,
                         LoadMode.LAZY).toJson(),
                 new Dependency(Dependency.Type.STYLESHEET, cssUrl2,
-                        LoadMode.LAZY).toJson(),
-                new Dependency(Dependency.Type.HTML_IMPORT, htmlUrl1,
-                        LoadMode.LAZY).toJson(),
-                new Dependency(Dependency.Type.HTML_IMPORT, htmlUrl2,
                         LoadMode.LAZY).toJson()));
 
         assertEquals(
@@ -192,11 +176,6 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
                 "cssUrl1 should come before cssUrl2, because it was added earlier",
                 Arrays.asList(cssUrl1, cssUrl2),
                 mockResourceLoader.loadingStyles);
-
-        assertEquals(
-                "htmlUrl1 should come before htmlUrl2, because it was added earlier",
-                Arrays.asList(htmlUrl1, htmlUrl2),
-                mockResourceLoader.loadingHtml);
     }
 
     public void testDependenciesWithAllLoadModesAreProcessed() {
@@ -207,10 +186,6 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
         String eagerCssUrl = "/eager.css";
         String lazyCssUrl = "/lazy.css";
         String inlineCssContents = "/inline.css";
-
-        String eagerHtmlUrl = "/eager.html";
-        String lazyHtmlUrl = "/lazy.html";
-        String inlineHtmlContents = "/inline.html";
 
         new DependencyLoader(registry).loadDependencies(createDependenciesMap(
                 createInlineDependency(Dependency.Type.JAVASCRIPT,
@@ -225,13 +200,6 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
                 new Dependency(Dependency.Type.STYLESHEET, lazyCssUrl,
                         LoadMode.LAZY).toJson(),
                 new Dependency(Dependency.Type.STYLESHEET, eagerCssUrl,
-                        LoadMode.EAGER).toJson(),
-
-                createInlineDependency(Dependency.Type.HTML_IMPORT,
-                        inlineHtmlContents),
-                new Dependency(Dependency.Type.HTML_IMPORT, lazyHtmlUrl,
-                        LoadMode.LAZY).toJson(),
-                new Dependency(Dependency.Type.HTML_IMPORT, eagerHtmlUrl,
                         LoadMode.EAGER).toJson()));
 
         // When multiple LoadModes are used, no guarantees on the order can be
@@ -247,11 +215,6 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
                 Stream.of(eagerCssUrl, inlineCssContents, lazyCssUrl)
                         .collect(Collectors.toSet()),
                 new HashSet<>(mockResourceLoader.loadingStyles));
-
-        assertEquals("All type of dependencies should be added",
-                Stream.of(eagerHtmlUrl, inlineHtmlContents, lazyHtmlUrl)
-                        .collect(Collectors.toSet()),
-                new HashSet<>(mockResourceLoader.loadingHtml));
     }
 
     private JsMap<LoadMode, JsonArray> createDependenciesMap(

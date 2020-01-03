@@ -42,6 +42,7 @@ import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.Dependency.Type;
 import com.vaadin.flow.shared.ui.LoadMode;
+
 import elemental.json.JsonObject;
 import elemental.json.JsonType;
 import elemental.json.JsonValue;
@@ -311,57 +312,6 @@ public class Page implements Serializable {
     }
 
     /**
-     * In compatibility mode (or Flow 1.x), adds the given HTML import to the
-     * page and ensures that it is loaded successfully. In normal mode (Flow 2.x
-     * with npm support), throws an {@code UnsupportedOperationException}.
-     * <p>
-     * Relative URLs are interpreted as relative to the configured
-     * {@code frontend} directory location. You can prefix the URL with
-     * {@code context://} to make it relative to the context path or use an
-     * absolute URL to refer to files outside the frontend directory.
-     * <p>
-     * Is is guaranteed that html import will be loaded before the first page
-     * load. For more options, refer to {@link #addHtmlImport(String, LoadMode)}
-     *
-     * @param url
-     *            the URL to load the HTML import from, not <code>null</code>
-     * @throws java.lang.UnsupportedOperationException
-     *             if called outside of compatibility mode.
-     */
-    public void addHtmlImport(String url) {
-        addHtmlImport(url, LoadMode.EAGER);
-    }
-
-    /**
-     * In compatibility mode (or Flow 1.x), adds the given HTML import to the
-     * page and ensures that it is loaded successfully. In normal mode (Flow 2.x
-     * with npm support), throws an {@code UnsupportedOperationException}.
-     * <p>
-     * Relative URLs are interpreted as relative to the configured
-     * {@code frontend} directory location. You can prefix the URL with
-     * {@code context://} to make it relative to the context path or use an
-     * absolute URL to refer to files outside the frontend directory.
-     *
-     * @param url
-     *            the URL to load the HTML import from, not <code>null</code>
-     * @param loadMode
-     *            determines dependency load mode, refer to {@link LoadMode} for
-     *            details
-     * @throws java.lang.UnsupportedOperationException
-     *             if called outside of compatibility mode.
-     */
-    public void addHtmlImport(String url, LoadMode loadMode) {
-        if (ui.getSession().getConfiguration().isCompatibilityMode()) {
-            addDependency(new Dependency(Type.HTML_IMPORT, url, loadMode));
-        } else {
-            throw new UnsupportedOperationException("Adding html imports is "
-                    + "only supported in compatibility mode. Either run the "
-                    + "application in compatibility mode or add the "
-                    + "dependency via annotation (@NpmPackage and @JsModule).");
-        }
-    }
-
-    /**
      * Adds a dynamic import using a JavaScript {@code expression} which is
      * supposed to return a JavaScript {@code Promise}.
      * <p>
@@ -371,7 +321,6 @@ public class Page implements Serializable {
      * {@link #addJsModule(String)}, etc.)
      *
      *
-     * @see #addHtmlImport(String)
      * @param expression
      *            the JavaScript expression which return a Promise
      */

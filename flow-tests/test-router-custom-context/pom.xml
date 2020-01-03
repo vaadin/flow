@@ -22,11 +22,6 @@
             <artifactId>flow-test-resources</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>flow-server-compatibility-mode</artifactId>
-            <version>${project.version}</version>
-        </dependency>
     </dependencies>
 
     <build>

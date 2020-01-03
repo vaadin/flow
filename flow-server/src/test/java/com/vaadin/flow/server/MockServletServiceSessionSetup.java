@@ -275,7 +275,7 @@ public class MockServletServiceSessionSetup {
                 .when(servletContext).getClassLoader();
         Mockito.when(servletConfig.getServletContext())
                 .thenReturn(servletContext);
-
+        deploymentConfiguration.setEnableDevServer(false);
         servlet.init(servletConfig);
 
         if (sessionAvailable) {

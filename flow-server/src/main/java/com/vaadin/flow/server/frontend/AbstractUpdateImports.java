@@ -47,7 +47,6 @@ import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
-import static com.vaadin.flow.shared.ApplicationConstants.FRONTEND_PROTOCOL_PREFIX;
 
 /**
  * Common logic for generate import file JS content.
@@ -188,10 +187,8 @@ abstract class AbstractUpdateImports implements Runnable {
      */
     protected abstract Logger getLogger();
 
-    List<String> resolveModules(Collection<String> modules,
-            boolean isJsModule) {
-        return modules.stream()
-                .map(module -> resolveResource(module, isJsModule)).sorted()
+    List<String> resolveModules(Collection<String> modules) {
+        return modules.stream().map(module -> resolveResource(module)).sorted()
                 .collect(Collectors.toList());
     }
 
@@ -248,21 +245,9 @@ abstract class AbstractUpdateImports implements Runnable {
         }
     }
 
-    protected String resolveResource(String importPath, boolean isJsModule) {
+    protected String resolveResource(String importPath) {
         String resolved = importPath;
         if (!importPath.startsWith("@")) {
-
-            if (importPath.startsWith(FRONTEND_PROTOCOL_PREFIX)) {
-                resolved = importPath.replaceFirst(FRONTEND_PROTOCOL_PREFIX,
-                        "./");
-                if (isJsModule) {
-                    // Remove this when all flow components annotated with
-                    // @JsModule have the './' prefix instead of 'frontend://'
-                    getLogger().warn(
-                            "Do not use the '{}' protocol in '@JsModule', changing '{}' to '{}', please update your component.",
-                            FRONTEND_PROTOCOL_PREFIX, importPath, resolved);
-                }
-            }
 
             // We only should check here those paths starting with './' when all
             // flow components
@@ -288,8 +273,8 @@ abstract class AbstractUpdateImports implements Runnable {
 
     private void collectModules(List<String> lines) {
         Set<String> modules = new LinkedHashSet<>();
-        modules.addAll(resolveModules(getModules(), true));
-        modules.addAll(resolveModules(getScripts(), false));
+        modules.addAll(resolveModules(getModules()));
+        modules.addAll(resolveModules(getScripts()));
 
         modules.addAll(getGeneratedModules());
 
@@ -453,7 +438,7 @@ abstract class AbstractUpdateImports implements Runnable {
 
     private boolean addCssLines(Collection<String> lines, CssData cssData,
             int i) {
-        String cssFile = resolveResource(cssData.getValue(), false);
+        String cssFile = resolveResource(cssData.getValue());
         boolean found = importedFileExists(cssFile);
         String cssImport = toValidBrowserImport(cssFile);
         String include = cssData.getInclude() != null

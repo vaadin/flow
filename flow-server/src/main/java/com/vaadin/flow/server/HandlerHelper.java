@@ -41,6 +41,11 @@ public class HandlerHelper implements Serializable {
     public enum RequestType {
 
         /**
+         * INIT requests.
+         */
+        INIT(ApplicationConstants.REQUEST_TYPE_INIT),
+
+        /**
          * UIDL requests.
          */
         UIDL(ApplicationConstants.REQUEST_TYPE_UIDL),

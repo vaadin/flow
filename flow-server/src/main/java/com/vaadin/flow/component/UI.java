@@ -64,10 +64,6 @@ import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.theme.NoTheme;
-import com.vaadin.flow.theme.Theme;
-import com.vaadin.flow.theme.ThemeDefinition;
-import com.vaadin.flow.theme.ThemeUtil;
 
 /**
  * The topmost component in any component hierarchy. There is one UI for every
@@ -137,7 +133,7 @@ public class UI extends Component
     /**
      * Create a new empty UI with a custom {@link UIInternalUpdater}
      * implementation.
-     * 
+     *
      * @param internalsHandler
      *            an implementation of UIInternalsHandler.
      */
@@ -787,31 +783,6 @@ public class UI extends Component
      */
     public Page getPage() {
         return page;
-    }
-
-    /**
-     * Gets the {@link ThemeDefinition} associated with the given navigation
-     * target, if any. The theme is defined by using the {@link Theme}
-     * annotation on the navigation target class.
-     * <p>
-     * If no {@link Theme} and {@link NoTheme} annotation are used, by default
-     * the {@code com.vaadin.flow.theme.lumo.Lumo} class is used (if present on
-     * the classpath).
-     *
-     * @param navigationTarget
-     *            the navigation target class
-     * @param path
-     *            the resolved route path so we can determine what the rendered
-     *            target is for
-     * @return the associated ThemeDefinition, or empty if none is defined and
-     *         the Lumo class is not in the classpath, or if the NoTheme
-     *         annotation is being used.
-     * @see ThemeUtil#findThemeForNavigationTarget(UI, Class, String)
-     */
-    public Optional<ThemeDefinition> getThemeFor(Class<?> navigationTarget,
-            String path) {
-        return Optional.ofNullable(ThemeUtil.findThemeForNavigationTarget(this,
-                navigationTarget, path));
     }
 
     /**

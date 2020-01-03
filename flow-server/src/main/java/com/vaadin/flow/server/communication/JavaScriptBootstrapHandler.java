@@ -22,7 +22,6 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
-import java.util.Optional;
 import java.util.function.Function;
 
 import com.vaadin.flow.component.PushConfiguration;
@@ -32,14 +31,13 @@ import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.DevModeHandler;
-import com.vaadin.flow.server.ServletHelper;
-import com.vaadin.flow.server.ServletHelper.RequestType;
+import com.vaadin.flow.server.HandlerHelper;
+import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.ApplicationConstants;
-import com.vaadin.flow.theme.ThemeDefinition;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -66,15 +64,12 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
      */
     private static class JavaScriptBootstrapContext extends BootstrapContext {
         private JavaScriptBootstrapContext(VaadinRequest request,
-                                             VaadinResponse response, UI ui,
-                                             Function<VaadinRequest, String> callback) {
-            super(request, response, ui.getInternals().getSession(), ui, callback);
+                VaadinResponse response, UI ui,
+                Function<VaadinRequest, String> callback) {
+            super(request, response, ui.getInternals().getSession(), ui,
+                    callback);
         }
 
-        @Override
-        protected Optional<ThemeDefinition> getTheme() {
-            return Optional.empty();
-        }
     }
 
     /**
@@ -86,21 +81,20 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
-        return !request.getService().getDeploymentConfiguration().isCompatibilityMode()
-                && ServletHelper.isRequestType(request, RequestType.INIT);
+        return HandlerHelper.isRequestType(request, RequestType.INIT);
     }
 
     protected String getRequestUrl(VaadinRequest request) {
-        return ((VaadinServletRequest)request).getRequestURL().toString();
+        return ((VaadinServletRequest) request).getRequestURL().toString();
     }
 
     @Override
-    protected BootstrapContext createAndInitUI(
-            Class<? extends UI> uiClass, VaadinRequest request,
-            VaadinResponse response, VaadinSession session) {
+    protected BootstrapContext createAndInitUI(Class<? extends UI> uiClass,
+            VaadinRequest request, VaadinResponse response,
+            VaadinSession session) {
 
-        BootstrapContext context = super.createAndInitUI(JavaScriptBootstrapUI.class,
-                request, response, session);
+        BootstrapContext context = super.createAndInitUI(
+                JavaScriptBootstrapUI.class, request, response, session);
         JsonObject config = context.getApplicationParameters();
 
         String requestURL = getRequestUrl(request);
@@ -135,10 +129,12 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
 
     @Override
     protected void initializeUIWithRouter(VaadinRequest request, UI ui) {
-        String route = request.getParameter(ApplicationConstants.REQUEST_LOCATION_PARAMETER);
+        String route = request
+                .getParameter(ApplicationConstants.REQUEST_LOCATION_PARAMETER);
         if (route != null) {
             try {
-                route = URLDecoder.decode(route, "UTF-8").replaceFirst("^/+", "");
+                route = URLDecoder.decode(route, "UTF-8").replaceFirst("^/+",
+                        "");
             } catch (UnsupportedEncodingException e) {
                 throw new IllegalArgumentException(e);
             }
@@ -163,7 +159,7 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
 
-        ServletHelper.setResponseNoCacheHeaders(response::setHeader,
+        HandlerHelper.setResponseNoCacheHeaders(response::setHeader,
                 response::setDateHeader);
 
         writeResponse(response, getInitialJson(request, response, session));
@@ -187,7 +183,7 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
              * path segment in pathInfo (i.e. the part of the requested path
              * that comes after the servlet mapping)
              */
-            return ServletHelper.getCancelingRelativePath(pathInfo);
+            return HandlerHelper.getCancelingRelativePath(pathInfo);
         }
     }
 
@@ -219,12 +215,13 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
         return errors.keys().length > 0 ? errors : Json.createNull();
     }
 
-    private void writeResponse(VaadinResponse response, JsonObject json) throws IOException {
+    private void writeResponse(VaadinResponse response, JsonObject json)
+            throws IOException {
         response.setContentType("application/json");
         response.setStatus(HttpURLConnection.HTTP_OK);
-        response.getOutputStream().write(JsonUtil.stringify(json).getBytes("UTF-8"));
+        response.getOutputStream()
+                .write(JsonUtil.stringify(json).getBytes("UTF-8"));
     }
-
 
     /**
      * Returns the JSON object with the application config and UIDL info that

@@ -18,8 +18,6 @@ package com.vaadin.flow.plugin.maven;
 import java.io.File;
 
 import org.apache.maven.plugin.AbstractMojo;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
 
 import com.vaadin.flow.server.Constants;
@@ -34,8 +32,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
  * @since 2.0
  */
 public abstract class FlowModeAbstractMojo extends AbstractMojo {
-    static final String VAADIN_COMPATIBILITY_MODE = "vaadin.compatibilityMode";
-
     /**
      * The folder where `package.json` file is located. Default is project root
      * dir.
@@ -56,18 +52,12 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
     @Parameter(defaultValue = "${project.basedir}/" + FRONTEND)
     public File frontendDirectory;
 
-
     /**
      * The directory where flow resources from jars will be copied to.
      */
-    @Parameter(defaultValue = "${project.basedir}/" + DEAULT_FLOW_RESOURCES_FOLDER)
+    @Parameter(defaultValue = "${project.basedir}/"
+            + DEAULT_FLOW_RESOURCES_FOLDER)
     public File flowResourcesFolder;
-
-    /**
-     * Whether or not we are running in compatibility mode.
-     */
-    @Parameter(defaultValue = "${vaadin.bowerMode}", alias = "bowerMode")
-    public String compatibilityMode;
 
     /**
      * Whether or not we are running in productionMode.
@@ -85,7 +75,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
     /**
      * Whether or not insert the initial Uidl object in the bootstrap index.html
      */
-    @Parameter(defaultValue = "${vaadin." + Constants.SERVLET_PARAMETER_INITIAL_UIDL + "}")
+    @Parameter(defaultValue = "${vaadin."
+            + Constants.SERVLET_PARAMETER_INITIAL_UIDL + "}")
     public boolean eagerServerLoad;
 
     /**
@@ -95,11 +86,6 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
     @Parameter(defaultValue = "${project.build.outputDirectory}/"
             + VAADIN_SERVLET_RESOURCES)
     protected File webpackOutputDirectory;
-
-    /**
-     * The actual compatibility mode boolean.
-     */
-    protected boolean compatibility;
 
     /**
      * Application properties file in Spring project.
@@ -125,17 +111,6 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
     @Parameter(defaultValue = "${project.basedir}/" + FRONTEND + "/generated")
     protected File generatedTsFolder;
 
-    @Override
-    public void execute() throws MojoExecutionException, MojoFailureException {
-        if (compatibilityMode == null) {
-            compatibilityMode = System.getProperty(VAADIN_COMPATIBILITY_MODE);
-        }
-        // Default mode for V14 is bower true
-        compatibility = compatibilityMode != null
-                ? Boolean.valueOf(compatibilityMode)
-                : isDefaultCompatibility();
-    }
-
     /**
      * Check if the plugin is running in `clientSideMode` or not. Default: true.
      *
@@ -148,5 +123,4 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
         return Boolean.parseBoolean(clientSideMode);
     }
 
-    abstract boolean isDefaultCompatibility();
 }

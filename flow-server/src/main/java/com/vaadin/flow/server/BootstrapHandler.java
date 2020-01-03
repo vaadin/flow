@@ -63,7 +63,6 @@ import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.internal.UsageStatistics.UsageEntry;
-import com.vaadin.flow.server.BootstrapUtils.ThemeSettings;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.PushConnectionFactory;
 import com.vaadin.flow.server.communication.UidlWriter;
@@ -73,7 +72,6 @@ import com.vaadin.flow.shared.VaadinUriResolver;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
-import com.vaadin.flow.theme.ThemeDefinition;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -92,8 +90,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @since 1.0
  */
 public class BootstrapHandler extends SynchronizedRequestHandler {
-
-    public static final String POLYFILLS_JS = "frontend://bower_components/webcomponentsjs/webcomponents-loader.js";
 
     private static final CharSequence GWT_STAT_EVENTS_JS = "if (typeof window.__gwtStatsEvent != 'function') {"
             + "window.Vaadin.Flow.gwtStatsEvents = [];"
@@ -355,18 +351,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
         /**
-         * Gets the {@link ThemeDefinition} associated with the
-         * pageConfigurationHolder of this context, if any.
-         *
-         * @return the theme definition, or empty if none is found, or
-         *         pageConfigurationHolder is <code>null</code>
-         * @see UI#getThemeFor(Class, String)
-         */
-        protected Optional<ThemeDefinition> getTheme() {
-            return ui.getThemeFor(pageConfigurationHolder, null);
-        }
-
-        /**
          * Gets a pwa registry instance.
          *
          * @return an optional pwa registry instance, or an empty optional if no
@@ -385,7 +369,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      * The URI resolver used in the bootstrap process.
      */
     public static class BootstrapUriResolver extends VaadinUriResolver {
-        private String frontendRootUrl;
         private String servletPathToContextRoot;
 
         /**
@@ -411,13 +394,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         public BootstrapUriResolver(String contextRootRelatiePath,
                 VaadinSession session) {
             servletPathToContextRoot = contextRootRelatiePath;
-            DeploymentConfiguration config = session.getConfiguration();
-            if (config.isCompatibilityMode()) {
-                frontendRootUrl = config.getEs6FrontendPrefix();
-            } else {
-                frontendRootUrl = config.getNpmFrontendPrefix();
-            }
-            assert frontendRootUrl.endsWith("/");
             assert servletPathToContextRoot.endsWith("/");
         }
 
@@ -426,9 +402,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          * The following URI schemes are supported:
          * <ul>
          * <li><code>{@value ApplicationConstants#CONTEXT_PROTOCOL_PREFIX}</code>
-         * - resolves to the application context root</li>
-         * <li><code>{@value ApplicationConstants#FRONTEND_PROTOCOL_PREFIX}</code>
-         * - resolves to the build path where web components were compiled.
+         * - resolves to the application context root</li> 
          * <li><code>{@value ApplicationConstants#BASE_PROTOCOL_PREFIX}</code> -
          * resolves to the base URI of the page</li>
          * </ul>
@@ -440,8 +414,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          * @return the resolved URI
          */
         public String resolveVaadinUri(String uri) {
-            return super.resolveVaadinUri(uri, frontendRootUrl,
-                    servletPathToContextRoot);
+            return super.resolveVaadinUri(uri, servletPathToContextRoot);
         }
 
     }
@@ -533,22 +506,13 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     initialPageSettings -> handleInitialPageSettings(context,
                             head, initialPageSettings));
 
-            if (config.isCompatibilityMode()) {
-                /* Append any theme elements to initial page. */
-                handleThemeContents(context, document);
-            }
-
             if (!config.isProductionMode()) {
-                if (config.isBowerMode()) {
-                    exportBowerUsageStatistics(document);
-                } else {
-                    exportNpmUsageStatistics(document);
-                }
+                exportNpmUsageStatistics(document);
             }
 
             setupPwa(document, context);
 
-            if (!config.isCompatibilityMode() && !config.isProductionMode()) {
+            if (!config.isProductionMode()) {
                 showWebpackErrors(document);
             }
 
@@ -563,23 +527,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         private String getClientEngine() {
             return clientEngineFile.get();
-        }
-
-        private void exportBowerUsageStatistics(Document document) {
-            String registerScript = UsageStatistics.getEntries().map(entry -> {
-                String json = createUsageStatisticsJson(entry);
-
-                String escapedName = Json.create(entry.getName()).toJson();
-
-                // Registers the entry in a way that is picked up as a Vaadin
-                // WebComponent by the usage stats gatherer
-                return String.format("window.Vaadin[%s]=%s;", escapedName,
-                        json);
-            }).collect(Collectors.joining("\n"));
-
-            if (!registerScript.isEmpty()) {
-                document.body().appendElement(SCRIPT_TAG).text(registerScript);
-            }
         }
 
         private void exportNpmUsageStatistics(Document document) {
@@ -604,39 +551,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             json.put("version", entry.getVersion());
 
             return json.toJson();
-        }
-
-        private void handleThemeContents(BootstrapContext context,
-                Document document) {
-            ThemeSettings themeSettings = BootstrapUtils
-                    .getThemeSettings(context);
-
-            if (themeSettings == null) {
-                // no theme configured for the application
-                return;
-            }
-
-            List<JsonObject> themeContents = themeSettings.getHeadContents();
-            if (themeContents != null) {
-                themeContents.stream()
-                        .map(dependency -> createDependencyElement(context,
-                                dependency))
-                        .forEach(element -> insertElements(element,
-                                document.head()::appendChild));
-            }
-
-            JsonObject themeContent = themeSettings.getHeadInjectedContent();
-            if (themeContent != null) {
-                Element dependency = createDependencyElement(context,
-                        themeContent);
-                insertElements(dependency, document.head()::appendChild);
-            }
-
-            if (themeSettings.getHtmlAttributes() != null) {
-                Element html = document.body().parent();
-                assert "html".equalsIgnoreCase(html.tagName());
-                themeSettings.getHtmlAttributes().forEach(html::attr);
-            }
         }
 
         private Element createDependencyElement(BootstrapContext context,
@@ -809,12 +723,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 Element dependencyElement = createDependencyElement(uriResolver,
                         loadMode, dependencyJson, dependencyType);
 
-                if (loadMode == LoadMode.INLINE
-                        && dependencyType == Dependency.Type.HTML_IMPORT) {
-                    dependenciesToInlineInBody.add(dependencyElement);
-                } else {
-                    head.appendChild(dependencyElement);
-                }
+                head.appendChild(dependencyElement);
             }
             return dependenciesToInlineInBody;
         }
@@ -837,19 +746,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             VaadinService service = context.getSession().getService();
             DeploymentConfiguration conf = service.getDeploymentConfiguration();
 
-            if (conf.isCompatibilityMode()) {
-                appendWebComponentsPolyfills(head, context);
-            } else {
-                conf.getPolyfills().forEach(
-                        polyfill -> head.appendChild(createJavaScriptElement(
-                                "./" + VAADIN_MAPPING + polyfill, false)));
-
-                try {
-                    appendNpmBundle(head, service, context);
-                } catch (IOException e) {
-                    throw new BootstrapException(
-                            "Unable to read webpack stats file.", e);
-                }
+            conf.getPolyfills().forEach(
+                    polyfill -> head.appendChild(createJavaScriptElement(
+                            "./" + VAADIN_MAPPING + polyfill, false)));
+            try {
+                appendNpmBundle(head, service, context);
+            } catch (IOException e) {
+                throw new BootstrapException(
+                        "Unable to read webpack stats file.", e);
             }
 
             if (context.getPushMode().isEnabled()) {
@@ -972,22 +876,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     context.getPwaRegistry().orElse(null));
         }
 
-        private void appendWebComponentsPolyfills(Element head,
-                BootstrapContext context) {
-            VaadinSession session = context.getSession();
-
-            VaadinService service = session.getService();
-            if (!service.isResourceAvailable(POLYFILLS_JS, null)) {
-                // No webcomponents polyfill, load nothing
-                return;
-            }
-
-            String resolvedUrl = context.getUriResolver()
-                    .resolveVaadinUri(POLYFILLS_JS);
-            head.appendChild(createJavaScriptElement(resolvedUrl, false));
-
-        }
-
         private Element createInlineJavaScriptElement(
                 String javaScriptContents) {
             // defer makes no sense without src:
@@ -1039,9 +927,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 dependencyElement = createJavaScriptElement(url, false,
                         "module");
                 break;
-            case HTML_IMPORT:
-                dependencyElement = createHtmlImportElement(url);
-                break;
             default:
                 throw new IllegalStateException(
                         "Unsupported dependency type: " + type);
@@ -1053,18 +938,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             }
 
             return dependencyElement;
-        }
-
-        private Element createHtmlImportElement(String url) {
-            final Element htmlImportElement;
-            if (url != null) {
-                htmlImportElement = new Element(Tag.valueOf("link"), "")
-                        .attr("rel", "import").attr("href", url);
-            } else {
-                htmlImportElement = new Element(Tag.valueOf("span"), "")
-                        .attr("hidden", true);
-            }
-            return htmlImportElement;
         }
 
         private Element createStylesheetElement(String url) {
@@ -1181,9 +1054,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     .isProductionMode();
 
             JsonObject appConfig = Json.createObject();
-
-            appConfig.put(ApplicationConstants.FRONTEND_URL_ES6,
-                    deploymentConfiguration.getEs6FrontendPrefix());
 
             if (!productionMode) {
                 JsonObject versionInfo = Json.createObject();

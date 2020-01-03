@@ -20,7 +20,6 @@
         <module>flow-server</module>
         <module>flow-push</module>
         <module>flow-data</module>
-        <module>flow-osgi</module>
         <module>flow-client</module>
         <module>flow-html-components</module>
         <module>flow-html-components-testbench</module>
@@ -29,9 +28,7 @@
         <module>flow-test-util</module>
         <module>flow-tests</module>
         <module>flow-server-production-mode</module>
-        <module>flow-server-compatibility-mode</module>
         <module>flow-component-demo-helpers</module>
-        <module>flow-migration</module>
         <module>flow-maven-plugin</module>
         <module>flow-test-generic</module>
         <module>flow-bom</module>
@@ -231,22 +228,6 @@
                 <groupId>javax.portlet</groupId>
                 <artifactId>portlet-api</artifactId>
                 <version>2.0</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.webjars.bowergithub.webcomponents</groupId>
-                <artifactId>webcomponentsjs</artifactId>
-                <version>1.2.6</version>
-            </dependency>
-            <dependency>
-                <groupId>org.webjars.bowergithub.webcomponents</groupId>
-                <artifactId>shadycss</artifactId>
-                <version>1.8.0</version>
-            </dependency>
-            <dependency>
-                <groupId>org.webjars.bowergithub.polymer</groupId>
-                <artifactId>polymer</artifactId>
-                <version>${polymer.version}</version>
             </dependency>
 
             <dependency>
