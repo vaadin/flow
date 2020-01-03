@@ -65,7 +65,6 @@ public class NodeTestComponents extends NodeUpdateTestUtil {
     }
 
     @JsModule("./foo-dir/vaadin-npm-component.js")
-    @JavaScript("frontend://foo-dir/javascript-lib.js")
     public static class VaadinNpmComponent extends Component {
     }
 
@@ -83,9 +82,8 @@ public class NodeTestComponents extends NodeUpdateTestUtil {
     public static class LocalP3Template extends Component {
     }
 
-    @JsModule("frontend://frontend-p3-template.js")
     @JsModule("unresolved/component")
-    public static class FrontendP3Template extends Component {
+    public static class UnresolvedComponent extends Component {
     }
 
     @JsModule("./foo.js")
@@ -128,7 +126,7 @@ public class NodeTestComponents extends NodeUpdateTestUtil {
         VaadinMixedComponent vaadinMixedComponent;
         LocalTemplate localP2Template;
         LocalP3Template localP3Template;
-        FrontendP3Template frontendP3Template;
+        UnresolvedComponent frontendP3Template;
         FlatImport flatImport;
         TranslatedImports translatedImports;
         JavaScriptOrder order;

@@ -18,19 +18,17 @@ package com.vaadin.flow.uitest.ui;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.NativeButton;
-import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.OrderedDependencyView", layout = ViewTestLayout.class)
 public class OrderedDependencyView extends AbstractDivView {
 
     @Tag("div")
-    @HtmlImport("/test-files/html/htmlimport1.html")
     @StyleSheet("/test-files/css/allred.css")
     static class HtmlComponent extends Component implements HasText {
 
@@ -40,7 +38,6 @@ public class OrderedDependencyView extends AbstractDivView {
     }
 
     @Tag("div")
-    @HtmlImport("/test-files/html/htmlimport2.html")
     @StyleSheet("/test-files/css/allblueimportant.css")
     static class Html2Component extends HtmlComponent {
 

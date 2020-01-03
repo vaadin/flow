@@ -15,13 +15,10 @@
  */
 package com.vaadin.flow.server;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpSessionBindingEvent;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -29,10 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpSessionBindingEvent;
-
+import net.jcip.annotations.NotThreadSafe;
 import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.Test;
@@ -44,12 +38,11 @@ import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
-import com.vaadin.flow.server.startup.BundleDependencyFilter;
-import com.vaadin.flow.shared.ApplicationConstants;
-import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
-import net.jcip.annotations.NotThreadSafe;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
 
 /**
  *
@@ -273,45 +266,13 @@ public class VaadinServiceTest {
     @Test
     public void dependencyFilterOrder_bundeFiltersAfterApplicationFilters() {
         DependencyFilter applicationFilter = (dependencies,
-                filterContext) -> dependencies;
+                service) -> dependencies;
 
-        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration() {
-            @Override
-            public boolean useCompiledFrontendResources() {
-                return true;
-            }
-            @Override
-            public boolean isCompatibilityMode() {
-                return true;
-            };
-        };
+        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
 
         // Service that pretends to have a proper bundle
         MockVaadinServletService service = new MockVaadinServletService(
-                configuration) {
-            @Override
-            public boolean isResourceAvailable(String url, WebBrowser browser,
-                    AbstractTheme theme) {
-                if (url.equals("frontend://vaadin-flow-bundle-1.html")) {
-                    return true;
-                } else {
-                    return super.isResourceAvailable(url, browser, theme);
-                }
-            }
-
-            @Override
-            public InputStream getResourceAsStream(String path,
-                    WebBrowser browser, AbstractTheme theme) {
-                if (path.equals(ApplicationConstants.FRONTEND_PROTOCOL_PREFIX
-                        + "vaadin-flow-bundle-manifest.json")) {
-                    String data = "{\"vaadin-flow-bundle-1.html\": [\"file.html\"]}";
-                    return new ByteArrayInputStream(
-                            data.getBytes(StandardCharsets.UTF_8));
-                } else {
-                    return super.getResourceAsStream(path, browser, theme);
-                }
-            }
-        };
+                configuration);
 
         service.init(new MockInstantiator(evt -> {
             evt.addDependencyFilter(applicationFilter);
@@ -320,13 +281,9 @@ public class VaadinServiceTest {
         List<DependencyFilter> filters = new ArrayList<>();
         service.getDependencyFilters().forEach(filters::add);
 
-        Assert.assertEquals(3, filters.size());
+        Assert.assertEquals(1, filters.size());
 
         Assert.assertSame(applicationFilter, filters.get(0));
-        Assert.assertSame(BundleDependencyFilter.class,
-                filters.get(1).getClass());
-        Assert.assertSame(BundleDependencyFilter.class,
-                filters.get(2).getClass());
     }
 
     private static VaadinService createService() {

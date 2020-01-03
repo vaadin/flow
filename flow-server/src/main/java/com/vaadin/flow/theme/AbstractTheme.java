@@ -56,7 +56,7 @@ public interface AbstractTheme extends Serializable {
      * "https://www.polymer-project.org/2.0/docs/api/elements/Polymer.CustomStyle">CustomStyle</a>
      * <p>
      * For importing theme files, use
-     * {@link com.vaadin.flow.component.dependency.HtmlImport} on the
+     * {@link com.vaadin.flow.component.dependency.JsModule} on the
      * corresponding theme subclass.
      *
      * @return list of string content to inline or empty list if nothing to

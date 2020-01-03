@@ -52,5 +52,11 @@ public enum NavigationTrigger {
      *
      * @see UI#navigate(String, QueryParameters)
      */
-    PROGRAMMATIC
+    PROGRAMMATIC,
+
+    /**
+     * Navigation was triggered by client-side.
+     * @see com.vaadin.flow.component.internal.JavaScriptBootstrapUI
+     */
+    CLIENT_SIDE
 }

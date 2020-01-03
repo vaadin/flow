@@ -15,12 +15,8 @@
  */
 package com.vaadin.flow.router;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.startsWith;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import javax.servlet.http.HttpServletResponse;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -34,8 +30,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import javax.servlet.http.HttpServletResponse;
-
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -50,8 +45,6 @@ import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
@@ -69,11 +62,12 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.theme.AbstractTheme;
-import com.vaadin.flow.theme.Theme;
 import com.vaadin.tests.util.MockUI;
 
-import net.jcip.annotations.NotThreadSafe;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.startsWith;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 @NotThreadSafe
 public class RouterTest extends RoutingTestBase {
@@ -1142,27 +1136,6 @@ public class RouterTest extends RoutingTestBase {
     public static class SubLayout extends Component {
     }
 
-    @HtmlImport("frontend://bower_components/vaadin-lumo-styles/color.html")
-    public static class MyTheme implements AbstractTheme {
-
-        @Override
-        public String getBaseUrl() {
-            return null;
-        }
-
-        @Override
-        public String getThemeUrl() {
-            return null;
-        }
-
-        @Override
-        public List<String> getHeaderInlineContents() {
-            return Arrays.asList(
-                    "<custom-style><style include=\"lumo-typography\"></style></custom-style>");
-        }
-    }
-
-    @Theme(MyTheme.class)
     @Tag(Tag.DIV)
     public static abstract class AbstractMain extends Component {
     }
@@ -2460,40 +2433,6 @@ public class RouterTest extends RoutingTestBase {
                 FooBarNavigationTarget.events.size());
     }
 
-    @Test // 3384
-    public void theme_is_gotten_from_the_super_class()
-            throws InvalidRouteConfigurationException, Exception {
-
-        // Feature enabled only for bower mode
-        Mockito.when(configuration.isCompatibilityMode()).thenReturn(true);
-
-        setNavigationTargets(ExtendingView.class);
-
-        router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
-
-        Field theme = UIInternals.class.getDeclaredField("theme");
-        theme.setAccessible(true);
-        Object themeObject = theme.get(ui.getInternals());
-
-        Assert.assertEquals(MyTheme.class, themeObject.getClass());
-    }
-
-
-    @Test
-    public void theme_is_not_gotten_from_the_super_class_when_in_npm_mode()
-            throws InvalidRouteConfigurationException, Exception {
-
-        setNavigationTargets(ExtendingView.class);
-
-        router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
-
-        Field theme = UIInternals.class.getDeclaredField("theme");
-        theme.setAccessible(true);
-        Object themeObject = theme.get(ui.getInternals());
-
-        Assert.assertNull(themeObject);
-    }
-
     @Test
     public void postpone_then_resume_with_multiple_listeners()
             throws InvalidRouteConfigurationException, InterruptedException {
@@ -3159,7 +3098,8 @@ public class RouterTest extends RoutingTestBase {
         RouteChildWithParameter.events.clear();
         ui.navigate(RouteChildWithParameter.class, "foobar");
 
-        BeforeEnterEvent beforeEnterEvent = (BeforeEnterEvent) RouteChildWithParameter.events.get(0);
+        BeforeEnterEvent beforeEnterEvent = (BeforeEnterEvent) RouteChildWithParameter.events
+                .get(0);
         Assert.assertEquals(
                 "There is not exactly one layout in the layout chain", 1,
                 beforeEnterEvent.getLayouts().size());
@@ -3169,7 +3109,8 @@ public class RouterTest extends RoutingTestBase {
         RouteChildWithParameter.events.clear();
         ui.navigate(LoneRoute.class);
 
-        BeforeLeaveEvent beforeLeaveEvent = (BeforeLeaveEvent) RouteChildWithParameter.events.get(0);
+        BeforeLeaveEvent beforeLeaveEvent = (BeforeLeaveEvent) RouteChildWithParameter.events
+                .get(0);
         Assert.assertEquals(
                 "There is not exactly one layout in the layout chain", 1,
                 beforeLeaveEvent.getLayouts().size());
@@ -3179,49 +3120,48 @@ public class RouterTest extends RoutingTestBase {
 
     @Test
     public void optional_parameter_non_existing_route()
-    throws InvalidRouteConfigurationException {
+            throws InvalidRouteConfigurationException {
         OptionalParameter.events.clear();
         Mockito.when(configuration.isProductionMode()).thenReturn(false);
         setNavigationTargets(OptionalParameter.class);
 
         String locationString = "optional/doesnotExist/parameter";
-        router.navigate(
-            ui, new Location(locationString), NavigationTrigger.PROGRAMMATIC);
+        router.navigate(ui, new Location(locationString),
+                NavigationTrigger.PROGRAMMATIC);
 
-        String exceptionText1 =
-             String.format("Could not navigate to '%s'", locationString);
+        String exceptionText1 = String.format("Could not navigate to '%s'",
+                locationString);
 
-        String exceptionText2 =
-            String.format("Reason: Couldn't find route for '%s'", locationString);
+        String exceptionText2 = String
+                .format("Reason: Couldn't find route for '%s'", locationString);
 
-        String exceptionText3 =
-            "<li><a href=\"optional\">optional (supports optional parameter)</a></li>";
+        String exceptionText3 = "<li><a href=\"optional\">optional (supports optional parameter)</a></li>";
 
-        assertExceptionComponent(
-            RouteNotFoundError.class, exceptionText1, exceptionText2, exceptionText3);
+        assertExceptionComponent(RouteNotFoundError.class, exceptionText1,
+                exceptionText2, exceptionText3);
     }
 
     @Test
     public void without_optional_parameter()
-    throws InvalidRouteConfigurationException {
+            throws InvalidRouteConfigurationException {
         OptionalParameter.events.clear();
         Mockito.when(configuration.isProductionMode()).thenReturn(false);
         setNavigationTargets(WithoutOptionalParameter.class);
 
         String locationString = "optional";
-        router.navigate(
-            ui, new Location(locationString), NavigationTrigger.PROGRAMMATIC);
+        router.navigate(ui, new Location(locationString),
+                NavigationTrigger.PROGRAMMATIC);
 
-        String exceptionText1 =
-             String.format("Could not navigate to '%s'", locationString);
+        String exceptionText1 = String.format("Could not navigate to '%s'",
+                locationString);
 
-        String exceptionText2 =
-            String.format("Reason: Couldn't find route for '%s'", locationString);
+        String exceptionText2 = String
+                .format("Reason: Couldn't find route for '%s'", locationString);
 
         String exceptionText3 = "<li>optional (requires parameter)</li>";
 
-        assertExceptionComponent(
-            RouteNotFoundError.class, exceptionText1, exceptionText2, exceptionText3);
+        assertExceptionComponent(RouteNotFoundError.class, exceptionText1,
+                exceptionText2, exceptionText3);
     }
 
     private void setNavigationTargets(

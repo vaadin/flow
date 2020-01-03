@@ -17,14 +17,8 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -45,6 +39,7 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 
 /**
  * Updates <code>package.json</code> by visiting {@link NpmPackage} annotations
@@ -61,24 +56,6 @@ public class TaskUpdatePackages extends NodeUpdater {
     private final boolean forceCleanUp;
     private final boolean disablePnpm;
 
-    private static class RemoveFileVisitor extends SimpleFileVisitor<Path>
-            implements Serializable {
-
-        @Override
-        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
-                throws IOException {
-            Files.delete(file);
-            return super.visitFile(file, attrs);
-        }
-
-        @Override
-        public FileVisitResult postVisitDirectory(Path dir, IOException exc)
-                throws IOException {
-            Files.delete(dir);
-            return super.postVisitDirectory(dir, exc);
-        }
-    }
-
     /**
      * Create an instance of the updater given all configurable parameters.
      *
@@ -90,6 +67,10 @@ public class TaskUpdatePackages extends NodeUpdater {
      *            folder with the `package.json` file
      * @param generatedPath
      *            folder where flow generated files will be placed.
+     * @param flowResourcesPath
+     *            folder where flow dependencies taken from resources files will
+     *            be placed.
+     *         folder where flow generated files will be placed.
      * @param forceCleanUp
      *            forces the clean up process to be run. If {@code false}, clean
      *            up will be performed when platform version update is detected.
@@ -99,8 +80,8 @@ public class TaskUpdatePackages extends NodeUpdater {
      */
     TaskUpdatePackages(ClassFinder finder,
             FrontendDependenciesScanner frontendDependencies, File npmFolder,
-            File generatedPath, boolean forceCleanUp, boolean disablePnpm) {
-        super(finder, frontendDependencies, npmFolder, generatedPath);
+            File generatedPath, File flowResourcesPath, boolean forceCleanUp, boolean disablePnpm) {
+        super(finder, frontendDependencies, npmFolder, generatedPath, flowResourcesPath);
         this.forceCleanUp = forceCleanUp;
         this.disablePnpm = disablePnpm;
     }
@@ -111,6 +92,8 @@ public class TaskUpdatePackages extends NodeUpdater {
             Map<String, String> deps = frontDeps.getPackages();
             JsonObject packageJson = getPackageJson();
             modified = updatePackageJsonDependencies(packageJson, deps);
+
+
             if (modified) {
                 writePackageFile(packageJson);
             }
@@ -123,6 +106,10 @@ public class TaskUpdatePackages extends NodeUpdater {
             Map<String, String> deps) throws IOException {
         int added = 0;
 
+        JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
+        // Update the dependency for the folder with resources
+        updateFrontendDependency(dependencies);
+
         // Add application dependencies
         for (Entry<String, String> dep : deps.entrySet()) {
             added += addDependency(packageJson, DEPENDENCIES, dep.getKey(),
@@ -134,7 +121,6 @@ public class TaskUpdatePackages extends NodeUpdater {
         }
 
         // Remove obsolete dependencies
-        JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
         List<String> dependencyCollection = Stream
                 .concat(deps.entrySet().stream(),
                         getDefaultDependencies().entrySet().stream())
@@ -172,6 +158,29 @@ public class TaskUpdatePackages extends NodeUpdater {
         packageJson.getObject(VAADIN_DEP_KEY).put(HASH_KEY, newHash);
 
         return added > 0 || removed > 0 || !oldHash.equals(newHash);
+    }
+
+
+    private int updateFrontendDependency(JsonObject json) {
+        if (flowResourcesFolder != null
+                // Skip if deps are copied directly to `node_modules` folder
+                && !flowResourcesFolder.toString().contains(NODE_MODULES)) {
+
+            String depsPkg = "./" + FrontendUtils.getUnixRelativePath(
+                    npmFolder.getAbsoluteFile().toPath(),
+                    flowResourcesFolder.getAbsoluteFile().toPath());
+            if (!json.hasKey(DEP_NAME_FLOW_JARS) || !depsPkg.equals(json.getString(DEP_NAME_FLOW_JARS))) {
+                json.put(DEP_NAME_FLOW_JARS, depsPkg);
+                return 1;
+            }
+        } else {
+            if (json.hasKey(DEP_NAME_FLOW_JARS)) {
+                json.remove(DEP_NAME_FLOW_JARS);
+                return 1;
+            }
+        }
+
+        return 0;
     }
 
     /**
@@ -230,18 +239,26 @@ public class TaskUpdatePackages extends NodeUpdater {
                         + "This file has been generated with a different platform version. Try to remove it manually.");
             }
         }
-        if (nodeModulesFolder.exists()) {
-            removeDir(nodeModulesFolder);
+
+        removeDir(nodeModulesFolder);
+
+        if (flowResourcesFolder != null && flowResourcesFolder.exists()) {
+            // Clean all files but `package.json`
+            for (File file: flowResourcesFolder.listFiles()) {
+                if (!file.getName().equals(PACKAGE_JSON)) {
+                    file.delete();
+                }
+            }
         }
-        File generatedNodeModules = new File(generatedFolder,
-                FrontendUtils.NODE_MODULES);
+
+        File generatedNodeModules = new File(generatedFolder, NODE_MODULES);
         if (generatedNodeModules.exists()) {
             removeDir(generatedNodeModules);
         }
     }
 
-    private void removeDir(File file) throws IOException {
-        Files.walkFileTree(file.toPath(), new RemoveFileVisitor());
+    private void removeDir(File folder) throws IOException {
+        FileUtils.deleteDirectory(folder);
     }
 
     private String getCurrentShrinkWrapVersion() throws IOException {

@@ -25,6 +25,9 @@ import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.shared.util.SharedUtil;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.YELLOW;
+import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
+import static com.vaadin.flow.server.frontend.FrontendUtils.console;
 
 /**
  * Run <code>npm install</code> after dependencies have been updated.
@@ -93,6 +96,9 @@ public class TaskRunNpmInstall implements FallibleCommand {
         List<String> command = new ArrayList<>(executable);
         command.add("install");
 
+        console(YELLOW, commandToString(
+                packageUpdater.npmFolder.getAbsolutePath(), command));
+
         ProcessBuilder builder = FrontendUtils.createProcessBuilder(command);
         builder.environment().put("ADBLOCK", "1");
         builder.directory(packageUpdater.npmFolder);
@@ -101,6 +107,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
         Process process = null;
         try {
+
             process = builder.inheritIO().start();
             int errorCode = process.waitFor();
             if (errorCode != 0) {

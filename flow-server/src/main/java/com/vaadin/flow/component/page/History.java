@@ -220,8 +220,8 @@ public class History implements Serializable {
     public void replaceState(JsonValue state, Location location) {
         // Second parameter is title which is currently ignored according to
         // https://developer.mozilla.org/en-US/docs/Web/API/History_API
-        ui.getPage().executeJs("history.replaceState($0, '', $1)",
-                state, location.getPathWithQueryParameters());
+        ui.getPage().executeJs("history.replaceState($0, '', $1)", state,
+                location.getPathWithQueryParameters());
     }
 
     /**

@@ -1,8 +1,7 @@
 {
   "hash": "64bb80639ef116681818",
   "assetsByChunkName" :{
-    "index": "build/index-1111.cache.js",
-    "index.es5": "build/index.es5-2222.cache.js"
+    "index": "build/index-1111.cache.js"
   },
   "modules": [
         {

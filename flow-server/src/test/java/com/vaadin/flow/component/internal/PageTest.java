@@ -48,16 +48,6 @@ public class PageTest {
         page.addJavaScript(null);
     }
 
-    public void testSetTitle_nullTitle_clearsPendingJsExecution() {
-        page.setTitle("foobar");
-
-        Assert.assertEquals(1, countPendingInvocations());
-
-        page.setTitle(null);
-
-        Assert.assertEquals(0, countPendingInvocations());
-    }
-
     @Test
     public void testJavasScriptExecutionCancel() {
         Assert.assertEquals(0, countPendingInvocations());

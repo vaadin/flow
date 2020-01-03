@@ -35,7 +35,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.dependency.Uses;
@@ -52,6 +51,7 @@ import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.MockUI;
 import com.vaadin.tests.util.TestUtil;
 
@@ -724,8 +724,10 @@ public class ComponentTest {
         ui.addAttachListener(e -> {
             initialAttach.set(e.isInitialAttach());
         });
-        ui.getInternals()
-                .setSession(new VaadinSession(new MockVaadinServletService()));
+
+        MockDeploymentConfiguration config = new MockDeploymentConfiguration();
+        ui.getInternals().setSession(
+                new VaadinSession(new MockVaadinServletService(config)));
         Assert.assertTrue(initialAttach.get());
         // UI is never detached and reattached
     }
@@ -1021,7 +1023,6 @@ public class ComponentTest {
     }
 
     @Tag("div")
-    @HtmlImport("html.html")
     @JavaScript("js.js")
     @StyleSheet("css.css")
     public static class ComponentWithDependencies extends Component {
@@ -1037,20 +1038,19 @@ public class ComponentTest {
 
     @Tag("span")
     @Uses(UsesComponentWithDependencies.class)
-    @HtmlImport("usesuses.html")
     public static class UsesUsesComponentWithDependencies extends Component {
 
     }
 
     @Tag("div")
-    @JavaScript("dep1.js")
+    @StyleSheet("css1.css")
     @Uses(CircularDependencies2.class)
     public static class CircularDependencies1 extends Component {
 
     }
 
     @Tag("div")
-    @JavaScript("dep2.js")
+    @StyleSheet("css2.css")
     @Uses(CircularDependencies1.class)
     public static class CircularDependencies2 extends Component {
 
@@ -1059,21 +1059,14 @@ public class ComponentTest {
     @Test
     public void usesComponent() {
         UI ui = UI.getCurrent();
-        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
 
         ui.getInternals()
                 .addComponentDependencies(UsesComponentWithDependencies.class);
 
         Map<String, Dependency> pendingDependencies = getDependenciesMap(
                 ui.getInternals().getDependencyList().getPendingSendToClient());
-        Assert.assertEquals(4, pendingDependencies.size());
+        Assert.assertEquals(1, pendingDependencies.size());
 
-        assertDependency(Dependency.Type.HTML_IMPORT, "html.html",
-                pendingDependencies);
-        assertDependency(Dependency.Type.JAVASCRIPT, "uses.js",
-                pendingDependencies);
-        assertDependency(Dependency.Type.JAVASCRIPT, "js.js",
-                pendingDependencies);
         assertDependency(Dependency.Type.STYLESHEET, "css.css",
                 pendingDependencies);
     }
@@ -1081,23 +1074,14 @@ public class ComponentTest {
     @Test
     public void usesChain() {
         UIInternals internals = UI.getCurrent().getInternals();
-        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
 
         internals.addComponentDependencies(
                 UsesUsesComponentWithDependencies.class);
 
         Map<String, Dependency> pendingDependencies = getDependenciesMap(
                 internals.getDependencyList().getPendingSendToClient());
-        Assert.assertEquals(5, pendingDependencies.size());
+        Assert.assertEquals(1, pendingDependencies.size());
 
-        assertDependency(Dependency.Type.HTML_IMPORT, "usesuses.html",
-                pendingDependencies);
-        assertDependency(Dependency.Type.HTML_IMPORT, "html.html",
-                pendingDependencies);
-        assertDependency(Dependency.Type.JAVASCRIPT, "uses.js",
-                pendingDependencies);
-        assertDependency(Dependency.Type.JAVASCRIPT, "js.js",
-                pendingDependencies);
         assertDependency(Dependency.Type.STYLESHEET, "css.css",
                 pendingDependencies);
     }
@@ -1106,16 +1090,15 @@ public class ComponentTest {
     public void circularDependencies() {
         UIInternals internals = new MockUI().getInternals();
         DependencyList dependencyList = internals.getDependencyList();
-        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
 
         internals.addComponentDependencies(CircularDependencies1.class);
         Map<String, Dependency> pendingDependencies = getDependenciesMap(
                 dependencyList.getPendingSendToClient());
         Assert.assertEquals(2, pendingDependencies.size());
 
-        assertDependency(Dependency.Type.JAVASCRIPT, "dep1.js",
+        assertDependency(Dependency.Type.STYLESHEET, "css1.css",
                 pendingDependencies);
-        assertDependency(Dependency.Type.JAVASCRIPT, "dep2.js",
+        assertDependency(Dependency.Type.STYLESHEET, "css2.css",
                 pendingDependencies);
 
         internals = new MockUI().getInternals();
@@ -1124,22 +1107,25 @@ public class ComponentTest {
         pendingDependencies = getDependenciesMap(
                 dependencyList.getPendingSendToClient());
         Assert.assertEquals(2, pendingDependencies.size());
-        assertDependency(Dependency.Type.JAVASCRIPT, "dep2.js",
+        assertDependency(Dependency.Type.STYLESHEET, "css1.css",
                 pendingDependencies);
-        assertDependency(Dependency.Type.JAVASCRIPT, "dep1.js",
+        assertDependency(Dependency.Type.STYLESHEET, "css2.css",
                 pendingDependencies);
 
     }
 
     @Test
-    public void inNpmModeNoJsDependenciesAreAdded() {
-        mocks.getDeploymentConfiguration().setCompatibilityMode(false);
+    public void noJsDependenciesAreAdded() {
         UIInternals internals = new MockUI().getInternals();
         DependencyList dependencyList = internals.getDependencyList();
 
-        internals.addComponentDependencies(CircularDependencies1.class);
+        internals.addComponentDependencies(ComponentWithDependencies.class);
 
-        Assert.assertTrue(dependencyList.getPendingSendToClient().isEmpty());
+        Map<String, Dependency> pendingDependencies = getDependenciesMap(
+                dependencyList.getPendingSendToClient());
+        Assert.assertEquals(1, pendingDependencies.size());
+        assertDependency(Dependency.Type.STYLESHEET, "css.css",
+                pendingDependencies);
     }
 
     @Test
@@ -1222,12 +1208,12 @@ public class ComponentTest {
 
     private void assertDependency(Dependency.Type type, String url,
             Map<String, Dependency> pendingDependencies) {
-        Dependency dependency = pendingDependencies.get("frontend://" + url);
+        Dependency dependency = pendingDependencies.get(url);
         Assert.assertNotNull(
                 "Could not locate a dependency object for url=" + url,
                 dependency);
         Assert.assertEquals(type, dependency.getType());
-        Assert.assertEquals("frontend://" + url, dependency.getUrl());
+        Assert.assertEquals(url, dependency.getUrl());
     }
 
     private Map<String, Dependency> getDependenciesMap(

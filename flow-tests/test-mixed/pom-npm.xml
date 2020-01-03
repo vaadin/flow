@@ -6,7 +6,7 @@
     <parent>
         <artifactId>flow-tests</artifactId>
         <groupId>com.vaadin</groupId>
-        <version>2.2-SNAPSHOT</version>
+        <version>3.0-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-npm-dev-mode</artifactId>
     <name>Flow tests in npm and development mode</name>
@@ -58,7 +58,6 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <compatibilityMode>false</compatibilityMode>
                     <productionMode>false</productionMode>
                 </configuration>
             </plugin>

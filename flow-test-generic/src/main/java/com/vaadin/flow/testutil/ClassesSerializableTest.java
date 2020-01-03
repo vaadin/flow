@@ -121,8 +121,10 @@ public abstract class ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.server\\.BootstrapHandler(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.BootstrapPageResponse",
                 "com\\.vaadin\\.flow\\.server\\.InlineTargets",
+                "com\\.vaadin\\.flow\\.server\\.communication\\.IndexHtmlResponse",
                 "com\\.vaadin\\.flow\\.server\\.communication\\.PushHandler(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.communication\\.PushRequestHandler(\\$.*)?",
+                "com\\.vaadin\\.flow\\.server\\.communication\\.JavaScriptBootstrapHandler(\\$.*)?",
                 "com\\.vaadin\\.flow\\.templatemodel\\.PathLookup",
                 "com\\.vaadin\\.flow\\.server\\.osgi\\.ServletContainerInitializerExtender",
                 "com\\.vaadin\\.flow\\.server\\.osgi\\.OSGiAccess",
@@ -173,6 +175,8 @@ public abstract class ClassesSerializableTest {
                 // only once
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.scanner\\..*",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.JarContentsManager",
+                // connect is stateless
+                "com\\.vaadin\\.flow\\.server\\.connect\\..*",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.AbstractUpdateImports",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.FallibleCommand",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.NodeTasks",
@@ -184,6 +188,13 @@ public abstract class ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskUpdateImports(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskUpdatePackages",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskUpdateWebpack",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.AbstractTaskConnectGenerator",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskGenerateConnect",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskGenerateOpenApi",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.AbstractTaskClientGenerator",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskGenerateTsConfig",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskGenerateIndexHtml",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskGenerateIndexTs",
 
                 // Various test classes
                 ".*\\.test(s)?\\..*", ".*Test.*",

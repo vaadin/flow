@@ -1,0 +1,26 @@
+{
+  "environments": [
+    {
+      "browserName": "chrome",
+      "chromeOptions": {
+        "args": [
+          "headless",
+          "disable-gpu",
+          "window-size=1024x768"
+        ]
+      },
+      "fixSessionCapabilities": "no-detect"
+    }
+  ],
+  "suites": "target/frontend-tests/*.spec.js",
+  "tunnelOptions": {
+    "version": "3.141.59",
+    "drivers": [
+      {"name": "chrome", "version": "78.0.3904.70"}
+    ]
+  },
+  "plugins": {
+    "script": "src/test/frontend/utils.js",
+    "useLoader": true
+  }
+}

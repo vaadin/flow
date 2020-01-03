@@ -28,6 +28,7 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.internal.UIInternalUpdater;
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.component.page.LoadingIndicatorConfiguration;
 import com.vaadin.flow.component.page.Page;
@@ -63,10 +64,6 @@ import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.theme.NoTheme;
-import com.vaadin.flow.theme.Theme;
-import com.vaadin.flow.theme.ThemeDefinition;
-import com.vaadin.flow.theme.ThemeUtil;
 
 /**
  * The topmost component in any component hierarchy. There is one UI for every
@@ -113,7 +110,7 @@ public class UI extends Component
 
     private Locale locale = Locale.getDefault();
 
-    private final UIInternals internals = new UIInternals(this);
+    private final UIInternals internals;
 
     private final Page page = new Page(this);
 
@@ -129,7 +126,20 @@ public class UI extends Component
      * Creates a new empty UI.
      */
     public UI() {
+        this(new UIInternalUpdater() {
+        });
+    }
+
+    /**
+     * Create a new empty UI with a custom {@link UIInternalUpdater}
+     * implementation.
+     *
+     * @param internalsHandler
+     *            an implementation of UIInternalsHandler.
+     */
+    protected UI(UIInternalUpdater internalsHandler) {
         super(null);
+        internals = new UIInternals(this, internalsHandler);
         getNode().getFeature(ElementData.class).setTag("body");
         Component.setElement(this, Element.get(getNode()));
         pushConfiguration = new PushConfigurationImpl(this);
@@ -773,31 +783,6 @@ public class UI extends Component
      */
     public Page getPage() {
         return page;
-    }
-
-    /**
-     * Gets the {@link ThemeDefinition} associated with the given navigation
-     * target, if any. The theme is defined by using the {@link Theme}
-     * annotation on the navigation target class.
-     * <p>
-     * If no {@link Theme} and {@link NoTheme} annotation are used, by default
-     * the {@code com.vaadin.flow.theme.lumo.Lumo} class is used (if present on
-     * the classpath).
-     *
-     * @param navigationTarget
-     *            the navigation target class
-     * @param path
-     *            the resolved route path so we can determine what the rendered
-     *            target is for
-     * @return the associated ThemeDefinition, or empty if none is defined and
-     *         the Lumo class is not in the classpath, or if the NoTheme
-     *         annotation is being used.
-     * @see ThemeUtil#findThemeForNavigationTarget(UI, Class, String)
-     */
-    public Optional<ThemeDefinition> getThemeFor(Class<?> navigationTarget,
-            String path) {
-        return Optional.ofNullable(ThemeUtil.findThemeForNavigationTarget(this,
-                navigationTarget, path));
     }
 
     /**

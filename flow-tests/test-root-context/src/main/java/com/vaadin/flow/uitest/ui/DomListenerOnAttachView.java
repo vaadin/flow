@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.dom.Element;
@@ -23,7 +22,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.DomListenerOnAttachView", layout = ViewTestLayout.class)
-@HtmlImport("frontend://com/vaadin/flow/uitest/ui/DomListenerOnAttach.html")
+// @HtmlImport("frontend://com/vaadin/flow/uitest/ui/DomListenerOnAttach.html")
 @JsModule("DomListenerOnAttach.js")
 public class DomListenerOnAttachView extends AbstractDivView {
     public DomListenerOnAttachView() {
