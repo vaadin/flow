@@ -37,6 +37,7 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 import elemental.json.Json;
@@ -116,12 +117,11 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
         PushConfiguration pushConfiguration = context.getUI()
                 .getPushConfiguration();
         pushConfiguration.setPushUrl(pushURL);
+        
+        AppShellRegistry registry = AppShellRegistry
+                .getInstance(session.getService().getContext());
+        registry.modifyPushConfiguration(pushConfiguration);
 
-        // TODO(manolo) this comment is left intentionally because we
-        // need to revise whether the info passed to client is valid
-        // when initialising push. Right now ccdm is not doing
-        // anything with push.
-        config.put("pushScript", getPushScript(context));
         config.put("requestURL", requestURL);
 
         return context;

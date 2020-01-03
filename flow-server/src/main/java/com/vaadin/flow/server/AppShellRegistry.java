@@ -25,11 +25,13 @@ import java.util.function.Consumer;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
+import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Inline.Position;
 import com.vaadin.flow.component.page.Meta;
+import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.internal.ReflectTools;
@@ -262,6 +264,26 @@ public class AppShellRegistry implements Serializable {
                 .forEach(elm -> insertInlineElement(elm,
                         document.body()::appendChild));
     }
+
+    /**
+     * Modifies PushConfiguration instance based on the {@link Push}
+     * annotation on {@link AppShellConfigurator}
+     *
+     * @param pushConfiguration the PushConfigration instance to modify
+     */
+    public void modifyPushConfiguration(PushConfiguration pushConfiguration) {
+        List<Push> pushAnnotations = getAnnotations(Push.class);
+        if (pushAnnotations.size() > 1) {
+            throw new InvalidApplicationConfigurationException(String.format(
+                    AppShellRegistry.ERROR_MULTIPLE_ANNOTATION,
+                    Push.class.getSimpleName()));
+        } else if (!pushAnnotations.isEmpty()) {
+            Push push = pushAnnotations.get(0);
+            pushConfiguration.setPushMode(push.value());
+            pushConfiguration.setTransport(push.transport());
+        }
+    }
+
 
     private void insertElement(Element elm, Consumer<Element> action) {
         action.accept(elm);

@@ -7,7 +7,6 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,6 +32,7 @@ import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.ResponseWriterTest.CapturingServletOutputStream;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.TestRouteRegistry;
+import com.vaadin.flow.server.AppShellRegistry.AppShellRegistryWrapper;
 import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
 import com.vaadin.flow.server.communication.IndexHtmlResponse;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
@@ -46,6 +46,7 @@ public class MockServletServiceSessionSetup {
         private Router router;
         private List<BootstrapListener> bootstrapListeners = new ArrayList<>();
         private List<IndexHtmlRequestListener> indexHtmlRequestListeners = new ArrayList<>();
+        private VaadinContext context;
 
         public TestVaadinServletService(TestVaadinServlet testVaadinServlet,
                 DeploymentConfiguration deploymentConfiguration) {
@@ -112,6 +113,18 @@ public class MockServletServiceSessionSetup {
                     listener -> listener.modifyIndexHtmlResponse(response));
 
             super.modifyIndexHtmlResponse(response);
+        }
+
+        @Override
+        public VaadinContext getContext() {
+            if (context != null) {
+                return context;
+            }
+            return super.getContext();
+        }
+
+        public void setContext(VaadinContext context) {
+            this.context = context;
         }
     }
 
@@ -354,6 +367,12 @@ public class MockServletServiceSessionSetup {
 
     public void setProductionMode(boolean productionMode) {
         deploymentConfiguration.setProductionMode(productionMode);
+    }
+
+    public void setAppShellRegistry(AppShellRegistry appShellRegistry) {
+        Mockito.when(servletContext
+                .getAttribute(AppShellRegistryWrapper.class.getName()))
+                .thenReturn(new AppShellRegistryWrapper(appShellRegistry));
     }
 
     public TestVaadinServletResponse createResponse() throws IOException {
