@@ -24,7 +24,7 @@ import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.material.Material;
 
 @Tag("material-themed-template")
-@JsModule("./src/MaterialThemedTemplate.html")
+@JsModule("./src/MaterialThemedTemplate.js")
 @Route(value = "com.vaadin.flow.uitest.ui.material.MaterialThemedTemplateView")
 @Theme(Material.class)
 public class MaterialThemedTemplateView extends PolymerTemplate<TemplateModel> {

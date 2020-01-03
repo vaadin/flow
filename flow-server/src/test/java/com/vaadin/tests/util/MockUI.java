@@ -70,7 +70,7 @@ public class MockUI extends UI {
         return configuration;
     }
 
-    public static MockUI createNpmModeUI() {
+    public static MockUI createUI() {
         DeploymentConfiguration configuration = createConfiguration();
         VaadinSession session = createSession();
         session.setConfiguration(configuration);

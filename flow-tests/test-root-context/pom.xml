@@ -94,16 +94,6 @@
             <plugin>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
-                <configuration>
-                    <systemProperties>
-                        <!--  We want to run tests against static bundle, but
-                              running vaadin in debug mode -->
-                        <systemProperty>
-                            <name>vaadin.disableDevServer</name>
-                            <value>true</value>
-                        </systemProperty>
-                    </systemProperties>
-                </configuration>
             </plugin>
         </plugins>
     </build>

@@ -22,7 +22,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
 @Tag("not-themed-template")
-@JsModule("./src/NotThemedTemplate.html")
+@JsModule("./src/NotThemedTemplate.js")
 @Route(value = "com.vaadin.flow.uitest.ui.material.NotThemedTemplateView")
 public class NotThemedTemplateView extends PolymerTemplate<TemplateModel> {
 

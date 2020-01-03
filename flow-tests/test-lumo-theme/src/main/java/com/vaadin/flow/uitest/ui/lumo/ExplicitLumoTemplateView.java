@@ -21,9 +21,10 @@ import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.templatemodel.TemplateModel;
 import com.vaadin.flow.theme.Theme;
+import com.vaadin.flow.theme.lumo.Lumo;
 
 @Tag("explicit-lumo-themed-template")
-@JsModule("./src/LumoThemedTemplate.html")
+@JsModule("./src/LumoThemedTemplate.js")
 @Route(value = "com.vaadin.flow.uitest.ui.lumo.ExplicitLumoTemplateView")
 @Theme(Lumo.class)
 public class ExplicitLumoTemplateView extends PolymerTemplate<TemplateModel> {

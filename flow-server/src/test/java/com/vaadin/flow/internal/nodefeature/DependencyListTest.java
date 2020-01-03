@@ -49,7 +49,7 @@ public class DependencyListTest {
 
     @Before
     public void before() {
-        ui = MockUI.createNpmModeUI();
+        ui = MockUI.createUI();
         deps = ui.getInternals().getDependencyList();
 
         assertEquals(0, deps.getPendingSendToClient().size());

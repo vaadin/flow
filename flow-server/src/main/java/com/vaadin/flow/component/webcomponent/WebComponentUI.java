@@ -17,7 +17,6 @@ package com.vaadin.flow.component.webcomponent;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -279,18 +278,6 @@ public class WebComponentUI extends UI {
     @Override
     public void navigate(String location, QueryParameters queryParameters) {
         throw new UnsupportedOperationException(NO_NAVIGATION);
-    }
-
-    private void addAttributes(String tag, Map<String, String> attributes) {
-        final StringBuilder builder = new StringBuilder();
-        builder.append("var elements = document.querySelectorAll('").append(tag)
-                .append("');")
-                .append("for (let i = 0; i < elements.length; i++) {");
-        attributes.forEach((attribute, value) -> builder
-                .append("elements[i].setAttribute('").append(attribute)
-                .append("', '").append(value).append("');"));
-        builder.append("}");
-        getPage().executeJs(builder.toString());
     }
 
     private WebComponentConfigurationRegistry getConfigurationRegistry() {

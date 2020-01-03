@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -182,9 +181,6 @@ public class UIInternals implements Serializable {
     private final DependencyList dependencyList = new DependencyList();
 
     private final ConstantPool constantPool = new ConstantPool();
-
-    private static final Pattern componentSource = Pattern
-            .compile(".*/src/vaadin-([\\w\\-]*).html");
 
     private byte[] lastProcessedMessageHash = null;
 
