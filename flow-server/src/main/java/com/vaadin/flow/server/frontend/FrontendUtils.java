@@ -498,7 +498,7 @@ public class FrontendUtils {
                  * common name is "Path").
                  */
                 pathEnvVar = environment.keySet().stream()
-                        .filter(s -> s.toUpperCase().equals("PATH")).findFirst()
+                        .filter(s -> s.equalsIgnoreCase("PATH")).findFirst()
                         .orElse("Path");
             } else {
                 pathEnvVar = "PATH";
