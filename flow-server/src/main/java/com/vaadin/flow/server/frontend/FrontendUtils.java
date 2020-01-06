@@ -488,15 +488,29 @@ public class FrontendUtils {
         File commandFile = new File(command.get(0));
         if (commandFile.isAbsolute()) {
             String commandPath = commandFile.getParent();
-
             Map<String, String> environment = processBuilder.environment();
-            String path = environment.get("PATH");
+
+            String pathEnvVar;
+            if (isWindows()) {
+                /*
+                 * Determine the name of the PATH environment variable on
+                 * Windows, as variables names are not case-sensitive (the
+                 * common name is "Path").
+                 */
+                pathEnvVar = environment.keySet().stream()
+                        .filter("PATH"::equalsIgnoreCase).findFirst()
+                        .orElse("Path");
+            } else {
+                pathEnvVar = "PATH";
+            }
+
+            String path = environment.get(pathEnvVar);
             if (path == null || path.isEmpty()) {
                 path = commandPath;
             } else if (!path.contains(commandPath)) {
                 path += File.pathSeparatorChar + commandPath;
             }
-            environment.put("PATH", path);
+            environment.put(pathEnvVar, path);
         }
 
         return processBuilder;
