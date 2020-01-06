@@ -66,25 +66,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 @Mojo(name = "prepare-frontend", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PROCESS_RESOURCES)
 public class PrepareFrontendMojo extends FlowModeAbstractMojo {
 
-    /**
-     * This goal checks that node and npm tools are installed, copies frontend
-     * resources available inside `.jar` dependencies to `node_modules`, and
-     * creates or updates `package.json` and `webpack.config.json` files.
-     *
-     * @deprecated use {@link PrepareFrontendMojo} instead
-     */
-    @Deprecated
-    @Mojo(name = "validate", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PROCESS_RESOURCES)
-    public static class VaildateMojo extends PrepareFrontendMojo {
-        @Override
-        public void execute()
-                throws MojoExecutionException, MojoFailureException {
-            getLog().warn(
-                    "\n\n   You are using the 'validate' goal which has been renamed to 'prepare-frontend', please update your 'pom.xml'.\n");
-            super.execute();
-        }
-    }
-
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
 

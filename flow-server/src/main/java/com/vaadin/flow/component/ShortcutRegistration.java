@@ -290,17 +290,6 @@ public class ShortcutRegistration implements Registration, Serializable {
     }
 
     /**
-     * Is the shortcut preventing default key behaviour.
-     *
-     * @return Prevents default behavior
-     * @deprecated Replaced by {@link #isBrowserDefaultAllowed} in 1.4
-     */
-    @Deprecated
-    public boolean preventsDefault() {
-        return !allowDefaultBehavior;
-    }
-
-    /**
      * Checks if the default key behaviour in the browser is allowed by the
      * shortcut. The default value is {@code false}.
      *
@@ -322,18 +311,6 @@ public class ShortcutRegistration implements Registration, Serializable {
             allowDefaultBehavior = browserDefaultAllowed;
             prepareForClientResponse();
         }
-    }
-
-    /**
-     * Is the shortcut stopping the keyboard event from propagating up the DOM
-     * tree.
-     *
-     * @return Stops propagation
-     * @deprecated Replaced by {@link #isEventPropagationAllowed()} in 1.4
-     */
-    @Deprecated
-    public boolean stopsPropagation() {
-        return !allowEventPropagation;
     }
 
     /**

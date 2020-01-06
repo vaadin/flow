@@ -65,7 +65,6 @@ public class InfoView extends Div {
 
         add(device, "Android", webBrowser.isAndroid());
         add(device, "iOS", webBrowser.isIOS());
-        add(device, "iPad", webBrowser.isIPad());
         add(device, "iPhone", webBrowser.isIPhone());
         add(device, "Windows Phone", webBrowser.isWindowsPhone());
 

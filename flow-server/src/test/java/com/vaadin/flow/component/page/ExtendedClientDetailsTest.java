@@ -1,3 +1,19 @@
+/*
+ * Copyright 2000-2019 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package com.vaadin.flow.component.page;
 
 import org.junit.After;
@@ -55,30 +71,9 @@ public class ExtendedClientDetailsTest {
 
         VaadinSession session = Mockito.mock(VaadinSession.class);
         CurrentInstance.setCurrent(session);
-        WebBrowser browser = Mockito.mock(WebBrowser.class);
-        Mockito.when(session.getBrowser()).thenReturn(browser);
-
-        Mockito.when(browser.isIPad()).thenReturn(true);
-        Mockito.when(browser.isMacOSX()).thenReturn(false);
 
         detailsBuilder.setNavigatorPlatform(null);
         details = detailsBuilder.buildDetails();
-
-        Assert.assertTrue("No platform on with iPad is iPad", details.isIPad());
-
-        Mockito.when(browser.isIPad()).thenReturn(false);
-        Assert.assertFalse(
-                "No platform and ipad false on linux should not be an iPad",
-                details.isIPad());
-
-        Mockito.when(browser.isMacOSX()).thenReturn(true);
-        Assert.assertFalse("No platform MacOSX, but not touch is not an iPad",
-                details.isIPad());
-
-        detailsBuilder.setTouchDevice("true");
-        details = detailsBuilder.buildDetails();
-        Assert.assertTrue("No platform on MacOSX with touch is an iPad",
-                details.isIPad());
 
         CurrentInstance.clearAll();
     }
@@ -137,7 +132,7 @@ public class ExtendedClientDetailsTest {
         private String bodyClientHeight = "1360";
         private String timezoneOffset = "-270"; // minutes from UTC
         private String rawTimezoneOffset = "-210"; // minutes from UTC without
-                                                   // DST
+        // DST
         private String dstSavings = "60"; // dist shift amount
         private String dstInEffect = "true";
         private String timeZoneId = "Asia/Tehran";

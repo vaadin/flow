@@ -20,7 +20,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -475,44 +474,5 @@ public class VaadinServlet extends HttpServlet {
         super.destroy();
         getService().destroy();
     }
-
-    /**
-     * Escapes characters to html entities. An exception is made for some "safe
-     * characters" to keep the text somewhat readable.
-     *
-     * @param unsafe
-     *            non-escaped string
-     * @return a safe string to be added inside an html tag
-     *
-     * @deprecated As of 1.0. Will be removed in 3.0. Use
-     * {@link org.jsoup.nodes.Entities#escape(String)} instead.
-     */
-    @Deprecated
-    public static String safeEscapeForHtml(String unsafe) {
-        if (null == unsafe) {
-            return null;
-        }
-        StringBuilder safe = new StringBuilder();
-        char[] charArray = unsafe.toCharArray();
-        for (char c : charArray) {
-            if (isSafe(c)) {
-                safe.append(c);
-            } else {
-                safe.append("&#");
-                safe.append((int) c);
-                safe.append(";");
-            }
-        }
-
-        return safe.toString();
-    }
-
-    private static boolean isSafe(char c) {
-        return //
-        c > 47 && c < 58 || // alphanum
-                c > 64 && c < 91 || // A-Z
-                c > 96 && c < 123 // a-z
-        ;
-    }
-
 }
+

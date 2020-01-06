@@ -19,7 +19,6 @@ package com.vaadin.flow.server;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -82,7 +81,6 @@ import elemental.json.Json;
 import elemental.json.JsonException;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
-
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -130,18 +128,6 @@ public abstract class VaadinService implements Serializable {
     // Use the old name.reinitializing value for backwards compatibility
     static final String PRESERVE_UNBOUND_SESSION_ATTRIBUTE = VaadinService.class
             .getName() + ".reinitializing";
-
-    /**
-     * @deprecated As of 7.0.
-     */
-    @Deprecated
-    public static final String URL_PARAMETER_RESTART_APPLICATION = "restartApplication";
-
-    /**
-     * @deprecated As of 7.0.
-     */
-    @Deprecated
-    public static final String URL_PARAMETER_CLOSE_APPLICATION = "closeApplication";
 
     private static final String REQUEST_START_TIME_ATTRIBUTE = "requestStartTime";
 
@@ -859,25 +845,7 @@ public abstract class VaadinService implements Serializable {
                 requestCanCreateSession);
 
         if (session != null) {
-            /*
-             * There is an existing session. We can use this as long as the user
-             * not specifically requested to close or restart it.
-             */
-
-            final boolean restartApplication = hasParameter(request,
-                    URL_PARAMETER_RESTART_APPLICATION);
-            final boolean closeApplication = hasParameter(request,
-                    URL_PARAMETER_CLOSE_APPLICATION);
-
-            if (closeApplication) {
-                closeSession(session, request.getWrappedSession(false));
-                return null;
-            } else if (restartApplication) {
-                closeSession(session, request.getWrappedSession(false));
-                return createAndRegisterSession(request);
-            } else {
-                return session;
-            }
+            return session;
         }
 
         // No existing session was found
