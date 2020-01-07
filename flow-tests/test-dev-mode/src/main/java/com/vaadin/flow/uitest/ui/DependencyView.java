@@ -15,10 +15,6 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
@@ -26,9 +22,6 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.InputStreamFactory;
-import com.vaadin.flow.server.StreamRegistration;
-import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
@@ -81,37 +74,6 @@ public class DependencyView extends AbstractDivView {
 
         getPage().addStyleSheet("/test-files/css/allred.css");
         getPage().addJavaScript("/test-files/js/body-click-listener.js");
-    }
-
-    public static StreamRegistration registerResource(UI ui, String name,
-            InputStreamFactory streamFactory) {
-        return ui.getSession().getResourceRegistry()
-                .registerResource(new StreamResource(name, streamFactory));
-    }
-
-    public static class JSStreamFactory implements InputStreamFactory {
-        private String name;
-        private int delay;
-
-        public JSStreamFactory(String name, int delay) {
-            this.name = name;
-            this.delay = delay;
-        }
-
-        @Override
-        public InputStream createInputStream() {
-            try {
-                Thread.sleep(delay);
-            } catch (InterruptedException e) {
-                // Ignore
-            }
-            return stringToStream("window.logMessage('" + name + " loaded');");
-        }
-
-        protected InputStream stringToStream(String jsString) {
-            byte[] bytes = jsString.getBytes(StandardCharsets.UTF_8);
-            return new ByteArrayInputStream(bytes);
-        }
     }
 
 }
