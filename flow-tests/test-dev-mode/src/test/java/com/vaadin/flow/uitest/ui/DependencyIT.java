@@ -15,18 +15,18 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import static org.junit.Assert.assertTrue;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import org.openqa.selenium.By;
+
+import static org.junit.Assert.assertTrue;
 
 public class DependencyIT extends ChromeBrowserTest {
 
@@ -63,44 +63,6 @@ public class DependencyIT extends ChromeBrowserTest {
         Assert.assertEquals(
                 "Second script loaded. Global variable (window.globalVar) is: 'Set by set-global-var.js'",
                 addedJsText);
-    }
-
-    @Test
-    public void htmlInjection() {
-        open();
-
-        // Initial HTML import logs a message on the page
-        List<String> messages = getMessages();
-
-        Assert.assertEquals(3, messages.size());
-        assertTrue(messages.contains("HTML import 4 companion JS loaded"));
-        assertTrue(messages.contains("Messagehandler initialized in HTML import 1"));
-        assertTrue(messages.contains("Messagehandler initialized in HTML import 4"));
-
-        // Inject html
-        findElementById("loadHtml").click();
-        messages = getMessages();
-
-        Assert.assertEquals(5, messages.size());
-        assertTrue(messages.contains("HTML import 2 loaded"));
-        assertTrue(messages.contains("HTML import 3 loaded"));
-    }
-
-    @Test
-    public void mixedHtmlAndJsInjection() {
-        open();
-        findElement(By.id("loadMixed")).click();
-
-        List<String> messages = getMessages();
-
-        Assert.assertEquals("script1 is loaded",
-                messages.get(messages.size() - 4));
-        Assert.assertEquals("Mixed HTML import 1 loaded",
-                messages.get(messages.size() - 3));
-        Assert.assertEquals("script2 is loaded",
-                messages.get(messages.size() - 2));
-        Assert.assertEquals("Mixed HTML import 2 loaded",
-                messages.get(messages.size() - 1));
     }
 
     @Test
