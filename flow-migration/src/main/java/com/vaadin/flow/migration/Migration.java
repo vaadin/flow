@@ -421,6 +421,7 @@ public class Migration {
             String successMsg, String exceptionMsg) {
         ProcessBuilder builder = FrontendUtils.createProcessBuilder(command);
         builder.directory(getTempMigrationFolder());
+        builder.environment().put("NO_UPDATE_NOTIFIER", "1");
 
         Process process = null;
         try {

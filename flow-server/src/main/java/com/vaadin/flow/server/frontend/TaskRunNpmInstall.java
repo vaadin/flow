@@ -95,6 +95,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
         ProcessBuilder builder = FrontendUtils.createProcessBuilder(command);
         builder.environment().put("ADBLOCK", "1");
+        builder.environment().put("NO_UPDATE_NOTIFIER", "1");
         builder.directory(packageUpdater.npmFolder);
 
         String toolName = disablePnpm ? "npm" : "pnpm";
