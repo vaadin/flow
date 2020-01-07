@@ -21,7 +21,6 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.html.Hr;
-import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
@@ -68,12 +67,7 @@ public class OrderedDependencyView extends AbstractDivView {
     protected void onShow() {
         Html2Component html2Component = new Html2Component();
         html2Component.setId("component");
-        add(html2Component, new Hr());
-
-        NativeButton scripts = new NativeButton("Add scripts",
-                event -> add(new Script2Component()));
-        scripts.setId("addJs");
-        add(scripts);
+        add(html2Component, new Hr(), new Script2Component());
     }
 
 }
