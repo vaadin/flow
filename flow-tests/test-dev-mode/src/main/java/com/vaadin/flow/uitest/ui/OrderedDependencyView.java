@@ -19,9 +19,9 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.html.Hr;
-import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
@@ -29,6 +29,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 public class OrderedDependencyView extends AbstractDivView {
 
     @Tag("div")
+    @JsModule("./test-files/js/module1.js")
     @StyleSheet("/test-files/css/allred.css")
     static class HtmlComponent extends Component implements HasText {
 
@@ -38,6 +39,7 @@ public class OrderedDependencyView extends AbstractDivView {
     }
 
     @Tag("div")
+    @JsModule("./test-files/js/module2.js")
     @StyleSheet("/test-files/css/allblueimportant.css")
     static class Html2Component extends HtmlComponent {
 
@@ -47,7 +49,7 @@ public class OrderedDependencyView extends AbstractDivView {
     }
 
     @Tag("div")
-    @JavaScript("/test-files/js/script1.js")
+    @JavaScript("./test-files/js/script1.js")
     static class ScriptComponent extends Component implements HasText {
 
         public ScriptComponent() {
@@ -56,7 +58,7 @@ public class OrderedDependencyView extends AbstractDivView {
     }
 
     @Tag("div")
-    @JavaScript("/test-files/js/script2.js")
+    @JavaScript("./test-files/js/script2.js")
     static class Script2Component extends ScriptComponent {
 
         public Script2Component() {
@@ -68,12 +70,7 @@ public class OrderedDependencyView extends AbstractDivView {
     protected void onShow() {
         Html2Component html2Component = new Html2Component();
         html2Component.setId("component");
-        add(html2Component, new Hr());
-
-        NativeButton scripts = new NativeButton("Add scripts",
-                event -> add(new Script2Component()));
-        scripts.setId("addJs");
-        add(scripts);
+        add(html2Component, new Hr(), new Script2Component());
     }
 
 }

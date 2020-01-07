@@ -18,6 +18,7 @@ package com.vaadin.flow.uitest.ui;
 import java.util.regex.Pattern;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
@@ -40,6 +41,8 @@ public class ClientSideExceptionHandlingIT extends ChromeBrowserTest {
     }
 
     @Test
+    @Ignore("Ignored because production mode is not activated by the servlet mapping , "
+            + "see https://github.com/vaadin/flow/issues/7281")
     public void productionModeExceptions() {
         openProduction();
         causeException();

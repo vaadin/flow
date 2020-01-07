@@ -27,26 +27,16 @@ public class TestingServiceInitListener implements VaadinServiceInitListener {
     @Override
     public void serviceInit(ServiceInitEvent event) {
         event.addDependencyFilter((dependencies, context) -> {
-            // used by DependencyFilterUI
+            // used by DependencyFilterView
             if (dependencies.stream().anyMatch(dependency -> dependency.getUrl()
-                    .startsWith("replaceme://"))) {
+                    .endsWith("non-existing.css"))) {
                 List<Dependency> newList = new ArrayList<>();
-                newList.add(new Dependency(Dependency.Type.HTML_IMPORT,
-                        "frontend://com/vaadin/flow/uitest/ui/dependencies/filtered.html",
-                        LoadMode.EAGER));
+                newList.add(new Dependency(Dependency.Type.STYLESHEET,
+                        "/filtered.css", LoadMode.EAGER));
                 dependencies.stream()
                         .filter(dependency -> !dependency.getUrl()
-                                .startsWith("replaceme://"))
+                                .endsWith("non-existing.css"))
                         .forEach(newList::add);
-                dependencies = newList;
-            }
-            // used by BundledTemplateInTemplateWithIdView
-            else if (dependencies.stream().anyMatch(dependency -> dependency
-                    .getUrl().startsWith("bundle://"))) {
-                List<Dependency> newList = new ArrayList<>();
-                newList.add(new Dependency(Dependency.Type.HTML_IMPORT,
-                        "frontend://com/vaadin/flow/uitest/ui/template/BundleIdTemplate.html",
-                        LoadMode.EAGER));
                 dependencies = newList;
             }
             return dependencies;
