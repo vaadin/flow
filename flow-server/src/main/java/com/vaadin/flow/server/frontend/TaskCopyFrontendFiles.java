@@ -42,7 +42,7 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
     /**
      * Scans the jar files given defined by {@code resourcesToScan}.
      *
-     * @param npmFolder
+     * @param targetDirectory
      *            target directory for the discovered files
      * @param resourcesToScan
      *            folders and jar files to scan.
