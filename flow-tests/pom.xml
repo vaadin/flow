@@ -238,8 +238,8 @@
                 -->
                 <module>test-scalability</module>
                 <module>test-memory-leaks</module>
-                <!--
                 <module>test-servlet</module>
+                <!--
                 <module>test-themes</module>
                 <module>test-lumo-theme</module>
                 <module>test-material-theme</module>
