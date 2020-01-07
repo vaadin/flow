@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -88,7 +87,8 @@ public class DependencyIT extends ChromeBrowserTest {
     }
 
     @Test
-    @Ignore
+    @Ignore("Ignored because production mode is not activated by the servlet mapping , "
+            + "see https://github.com/vaadin/flow/issues/7281")
     public void loadingUnavailableResourcesProduction() {
         openProduction();
         findElement(By.id("loadUnavailableResources")).click();

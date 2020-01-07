@@ -41,7 +41,8 @@ public class ClientSideExceptionHandlingIT extends ChromeBrowserTest {
     }
 
     @Test
-    @Ignore
+    @Ignore("Ignored because production mode is not activated by the servlet mapping , "
+            + "see https://github.com/vaadin/flow/issues/7281")
     public void productionModeExceptions() {
         openProduction();
         causeException();
