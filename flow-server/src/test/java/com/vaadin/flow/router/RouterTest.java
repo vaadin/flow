@@ -1220,6 +1220,14 @@ public class RouterTest extends RoutingTestBase {
         }
     }
 
+    /**
+     * This class is used as a based for some navigation chains. It will log
+     * into the static lists <code>init</code>, <code>beforeLeave</code>,
+     * <code>beforeEnter</code> and <code>afterNavigation</code> the respective
+     * events in the order they are triggered, where <code>init</code> is the
+     * constructor. The value logged is the <code>id</code> field of the class
+     * which by default is the class name.
+     */
     @Tag(Tag.DIV)
     public static class ProcessEventsBase extends Component
             implements BeforeLeaveObserver, BeforeEnterObserver,
@@ -1272,6 +1280,16 @@ public class RouterTest extends RoutingTestBase {
 
     }
 
+    /**
+     * This is the root layout of the navigation chain. It also adds some
+     * children components used in the assertion of the event order, as being
+     * children of the layout in the chain instead of being part of the layout
+     * chain itself.
+     * 
+     * So any children of an instance of this class should receive the
+     * navigation events right after the instance of this class receives them
+     * and in the order they are added.
+     */
     public static class ProcessEventsRoot extends ProcessEventsBase
             implements RouterLayout {
 
@@ -1285,12 +1303,19 @@ public class RouterTest extends RoutingTestBase {
         }
     }
 
+    /**
+     * Just a navigation chain layout.
+     */
     @ParentLayout(ProcessEventsRoot.class)
     public static class ProcessEventsTrunk extends ProcessEventsBase
             implements RouterLayout {
 
     }
 
+    /**
+     * Just another layout in the navigation chain. See
+     * {@link ProcessEventsRoot} for more details.
+     */
     @ParentLayout(ProcessEventsTrunk.class)
     public static class ProcessEventsBranch extends ProcessEventsBase
             implements RouterLayout {
@@ -1305,11 +1330,19 @@ public class RouterTest extends RoutingTestBase {
         }
     }
 
+    /**
+     * Simple navigation target.
+     */
     @Route(value = "event/flower", layout = ProcessEventsBranch.class)
     public static class ProcessEventsFlower extends ProcessEventsBase {
 
     }
 
+    /**
+     * Navigation target using one parameter. We want to assert whether the
+     * <code>setParameter</code> is triggered after <code>beforeEvent</code>
+     * does.
+     */
     @Route(value = "event/leaf", layout = ProcessEventsBranch.class)
     public static class ProcessEventsLeaf extends ProcessEventsBase
             implements HasUrlParameter<String> {
@@ -1320,6 +1353,11 @@ public class RouterTest extends RoutingTestBase {
         }
     }
 
+    /**
+     * A navigation layout used to redirect. This is used to assert that any
+     * following layouts and the navigation target won't be created when a
+     * redirect happens.
+     */
     @ParentLayout(ProcessEventsTrunk.class)
     public static class ProcessEventsRotten extends ProcessEventsBase
             implements RouterLayout {
@@ -1335,6 +1373,9 @@ public class RouterTest extends RoutingTestBase {
         }
     }
 
+    /**
+     * Just a navigation chain layout.
+     */
     @ParentLayout(ProcessEventsRotten.class)
     public static class ProcessEventsStick extends ProcessEventsBase
             implements RouterLayout {
@@ -1343,6 +1384,12 @@ public class RouterTest extends RoutingTestBase {
         }
     }
 
+    /**
+     * Navigating to this target will reroute from
+     * <code>ProcessEventsRotten</code> which is a class on the parent layout
+     * chain. So this class shouldn't even be initialized when navigating to
+     * it.
+     */
     @Route(value = "event/twig", layout = ProcessEventsStick.class)
     public static class ProcessEventsTwig extends ProcessEventsBase {
 

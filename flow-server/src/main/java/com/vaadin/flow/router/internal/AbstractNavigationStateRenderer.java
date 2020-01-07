@@ -144,7 +144,8 @@ public abstract class AbstractNavigationStateRenderer
         clearContinueNavigationAction(ui);
         checkForDuplicates(routeTargetType, routeLayoutTypes);
 
-        if (eventActionsSupported()) {
+        final boolean eventActionsSupported = eventActionsSupported();
+        if (eventActionsSupported) {
             BeforeLeaveEvent beforeNavigationDeactivating = new BeforeLeaveEvent(
                     event, routeTargetType, routeLayoutTypes);
 
@@ -164,10 +165,12 @@ public abstract class AbstractNavigationStateRenderer
             TransitionOutcome transitionOutcome = executeBeforeLeaveNavigation(
                     beforeNavigationDeactivating, leaveHandlers);
 
-            Optional<Integer> result = handleTransactionOutcome(transitionOutcome, event,
-                    beforeNavigationDeactivating);
-            if (result.isPresent()) {
-                return result.get();
+            if (eventActionsSupported) {
+                Optional<Integer> result = handleTransactionOutcome(transitionOutcome, event,
+                        beforeNavigationDeactivating);
+                if (result.isPresent()) {
+                    return result.get();
+                }
             }
 
             if (transitionOutcome == TransitionOutcome.POSTPONED) {
@@ -216,10 +219,12 @@ public abstract class AbstractNavigationStateRenderer
         TransitionOutcome transitionOutcome = createChainIfEmptyAndExecuteBeforeEnterNavigation(
                 beforeNavigationActivating, event, chain);
 
-        Optional<Integer> result = handleTransactionOutcome(transitionOutcome, event,
-                beforeNavigationActivating);
-        if (result.isPresent()) {
-            return result.get();
+        if (eventActionsSupported) {
+            Optional<Integer> result = handleTransactionOutcome(transitionOutcome, event,
+                    beforeNavigationActivating);
+            if (result.isPresent()) {
+                return result.get();
+            }
         }
 
         final Component componentInstance = (Component) chain.get(0);
@@ -232,12 +237,14 @@ public abstract class AbstractNavigationStateRenderer
         notifyNavigationTarget(componentInstance, event,
                 beforeNavigationActivating, locationChangeEvent);
 
-        result = handleTransactionOutcome(
-                getTransitionOutcome(beforeNavigationActivating)
-                        .orElse(TransitionOutcome.FINISHED),
-                event, beforeNavigationActivating);
-        if (result.isPresent()) {
-            return result.get();
+        if (eventActionsSupported) {
+            Optional<Integer> result = handleTransactionOutcome(
+                    getTransitionOutcome(beforeNavigationActivating)
+                            .orElse(TransitionOutcome.FINISHED),
+                    event, beforeNavigationActivating);
+            if (result.isPresent()) {
+                return result.get();
+            }
         }
 
         // Preserve the navigation chain if all went well and it's being shown
@@ -321,14 +328,12 @@ public abstract class AbstractNavigationStateRenderer
             TransitionOutcome transitionOutcome, NavigationEvent event,
             BeforeEvent beforeNavigation) {
 
-        if (eventActionsSupported()) {
-            if (TransitionOutcome.FORWARDED.equals(transitionOutcome)) {
-                return Optional.of(forward(event, beforeNavigation));
-            }
+        if (TransitionOutcome.FORWARDED.equals(transitionOutcome)) {
+            return Optional.of(forward(event, beforeNavigation));
+        }
 
-            if (TransitionOutcome.REROUTED.equals(transitionOutcome)) {
-                return Optional.of(reroute(event, beforeNavigation));
-            }
+        if (TransitionOutcome.REROUTED.equals(transitionOutcome)) {
+            return Optional.of(reroute(event, beforeNavigation));
         }
 
         return Optional.empty();
@@ -338,10 +343,12 @@ public abstract class AbstractNavigationStateRenderer
     private List<Class<? extends HasElement>> createTypesChain(NavigationEvent event) {
         final Class<? extends Component> routeTargetType = navigationState
                 .getNavigationTarget();
-        final List<Class<? extends RouterLayout>> routeLayoutTypes = reverse(
+
+        List<Class<? extends RouterLayout>> routeLayoutTypes = new ArrayList<>(
                 getRouterLayoutTypes(routeTargetType,
                         event.getUI().getRouter()));
-
+        Collections.reverse(routeLayoutTypes);
+        
         final ArrayList<Class<? extends HasElement>> chain = new ArrayList<>();
         for (Class<? extends RouterLayout> parentType : routeLayoutTypes) {
             chain.add(parentType);
@@ -789,12 +796,6 @@ public abstract class AbstractNavigationStateRenderer
                 }
             });
         }
-    }
-
-    private static <T> List<T> reverse(List<T> list) {
-        List<T> result = new ArrayList<>(list);
-        Collections.reverse(result);
-        return Collections.unmodifiableList(result);
     }
 
 
