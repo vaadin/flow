@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.router.internal;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,14 +28,13 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.servlet.http.HttpServletResponse;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.Mutable;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.AfterNavigationEvent;
@@ -214,8 +214,9 @@ public abstract class AbstractNavigationStateRenderer
         BeforeEnterEvent beforeNavigationActivating = new BeforeEnterEvent(
                 event, routeTargetType, routeLayoutTypes);
 
+        Mutable<LocationChangeEvent> locationChangeEventMutable = new Mutable<>();
         TransitionOutcome transitionOutcome = createChainIfEmptyAndExecuteBeforeEnterNavigation(
-                beforeNavigationActivating, event, chain);
+                beforeNavigationActivating, event, chain, locationChangeEventMutable);
 
         if (eventActionsSupported) {
             Optional<Integer> result = handleTransactionOutcome(
@@ -226,24 +227,6 @@ public abstract class AbstractNavigationStateRenderer
         }
 
         final Component componentInstance = (Component) chain.get(0);
-
-        LocationChangeEvent locationChangeEvent = new LocationChangeEvent(
-                event.getSource(), event.getUI(), event.getTrigger(),
-                event.getLocation(), chain);
-
-        // Notify the target itself after all chain received the event.
-        notifyNavigationTarget(componentInstance, event,
-                beforeNavigationActivating, locationChangeEvent);
-
-        if (eventActionsSupported) {
-            Optional<Integer> result = handleTransactionOutcome(
-                    getTransitionOutcome(beforeNavigationActivating)
-                            .orElse(TransitionOutcome.FINISHED),
-                    event, beforeNavigationActivating);
-            if (result.isPresent()) {
-                return result.get();
-            }
-        }
 
         // Preserve the navigation chain if all went well and it's being shown
         // on the UI.
@@ -261,6 +244,9 @@ public abstract class AbstractNavigationStateRenderer
                 routerLayouts);
 
         updatePageTitle(event, componentInstance);
+
+        LocationChangeEvent locationChangeEvent = locationChangeEventMutable
+                .getValue();
 
         int statusCode = locationChangeEvent.getStatusCode();
         validateStatusCode(statusCode, routeTargetType);
@@ -432,16 +418,17 @@ public abstract class AbstractNavigationStateRenderer
      */
     private TransitionOutcome createChainIfEmptyAndExecuteBeforeEnterNavigation(
             BeforeEnterEvent beforeNavigation, NavigationEvent event,
-            List<HasElement> chain) {
+            List<HasElement> chain,
+            Mutable<LocationChangeEvent> locationChangeEventMutable) {
 
         // Always send the beforeNavigation event first to the registered
         // listeners
-        List<BeforeEnterHandler> registeredRnterHandlers = new ArrayList<>(
+        List<BeforeEnterHandler> registeredEnterHandlers = new ArrayList<>(
                 beforeNavigation.getUI()
                         .getNavigationListeners(BeforeEnterHandler.class));
 
         Optional<TransitionOutcome> transitionOutcome = sendBeforeEnterEvent(
-                beforeNavigation, registeredRnterHandlers);
+                registeredEnterHandlers, event, beforeNavigation, null, null);
         if (transitionOutcome.isPresent()) {
             return transitionOutcome.get();
         }
@@ -463,8 +450,10 @@ public abstract class AbstractNavigationStateRenderer
                         EventUtil.collectBeforeEnterObserversFromChainElement(
                                 element, oldChain));
 
-                transitionOutcome = sendBeforeEnterEvent(
-                        beforeNavigation, chainEnterHandlers);
+                final boolean lastElement = chain.size() == typesChain.size();
+                transitionOutcome = sendBeforeEnterEvent(chainEnterHandlers,
+                        event, beforeNavigation, lastElement ? chain : null,
+                        lastElement ? locationChangeEventMutable : null);
                 if (transitionOutcome.isPresent()) {
                     
                     // Reverse the chain for consistency although it may not be
@@ -475,35 +464,93 @@ public abstract class AbstractNavigationStateRenderer
                 }
             }
 
-            // Reverse the chain to preserve backwards compatibility.
-            // The events were sent starting from parent layout and ending with
-            // the navigation target component.
-            // The chain ought to be output starting with the navigation target
-            // component as the first element.
+        } else {
+
+            // Reverse back the chain since it was stored reversed.
             Collections.reverse(chain);
 
-        } else {
             // Used when the chain already exists by being preserved on refresh.
             // See `isPreserveOnRefreshTarget` method implementation and usage.
             List<BeforeEnterHandler> chainEnterHandlers = new ArrayList<>(
                     EventUtil.collectBeforeEnterObserversFromChain(chain, oldChain));
             
-            transitionOutcome = sendBeforeEnterEvent(
-                    beforeNavigation, chainEnterHandlers);
+            transitionOutcome = sendBeforeEnterEvent(chainEnterHandlers, event,
+                    beforeNavigation, chain, locationChangeEventMutable);
             if (transitionOutcome.isPresent()) {
+
+                // Reverse the chain for consistency although it may not be
+                // used since the navigation has not been processed in full.
+                Collections.reverse(chain);
+
                 return transitionOutcome.get();
             }
         }
+
+        // Reverse the chain to preserve backwards compatibility.
+        // The events were sent starting from parent layout and ending with
+        // the navigation target component.
+        // The chain ought to be output starting with the navigation target
+        // component as the first element.
+        Collections.reverse(chain);
 
         return TransitionOutcome.FINISHED;
     }
 
     private Optional<TransitionOutcome> sendBeforeEnterEvent(
-            BeforeEnterEvent beforeNavigation,
-            List<BeforeEnterHandler> enterHandlers) {
+            List<BeforeEnterHandler> eventHandlers, NavigationEvent event,
+            BeforeEnterEvent beforeNavigation, List<HasElement> chain,
+            Mutable<LocationChangeEvent> locationChangeEventMutable) {
 
-        for (BeforeEnterHandler eventHandler : enterHandlers) {
-            Optional<TransitionOutcome> transitionOutcome = sendBeforeEnterEvent(beforeNavigation, eventHandler);
+        Component componentInstance = null;
+        LocationChangeEvent locationChangeEvent = null;
+        boolean notifyNavigationTarget = false;
+
+        if (chain != null) {
+            // Reverse the chain to the stored ordered, since that is different
+            // than the notification order.
+            chain = new ArrayList<>(chain);
+            Collections.reverse(chain);
+
+            // We aren't in reverse order here.
+            componentInstance = (Component) chain.get(0);
+            locationChangeEvent = new LocationChangeEvent(event.getSource(),
+                    event.getUI(), event.getTrigger(), event.getLocation(),
+                    chain);
+            locationChangeEventMutable.setValue(locationChangeEvent);
+            notifyNavigationTarget = true;
+        }
+
+        for (BeforeEnterHandler eventHandler : eventHandlers) {
+
+            // Notify the target itself, i.e. with the url parameter, before
+            // sending the event to the navigation target or any of its
+            // children.
+            if (notifyNavigationTarget
+                    && (isEqualsOrChild(eventHandler, componentInstance))) {
+
+                Optional<TransitionOutcome> transitionOutcome = notifyNavigationTarget(
+                        event, beforeNavigation, locationChangeEvent,
+                        componentInstance);
+                if (transitionOutcome.isPresent()) {
+                    return transitionOutcome;
+                }
+
+                notifyNavigationTarget = false;
+            }
+
+            Optional<TransitionOutcome> transitionOutcome = sendBeforeEnterEvent(
+                    beforeNavigation, eventHandler);
+            if (transitionOutcome.isPresent()) {
+                return transitionOutcome;
+            }
+        }
+
+        // Make sure notifyNavigationTarget is executed.
+        if (notifyNavigationTarget) {
+
+            Optional<TransitionOutcome> transitionOutcome = notifyNavigationTarget(
+                    event, beforeNavigation, locationChangeEvent,
+                    componentInstance);
             if (transitionOutcome.isPresent()) {
                 return transitionOutcome;
             }
@@ -512,13 +559,50 @@ public abstract class AbstractNavigationStateRenderer
         return Optional.empty();
     }
 
-    private Optional<TransitionOutcome> sendBeforeEnterEvent(BeforeEnterEvent beforeNavigation, BeforeEnterHandler eventHandler) {
+    private Optional<TransitionOutcome> sendBeforeEnterEvent(
+            BeforeEnterEvent beforeNavigation,
+            BeforeEnterHandler eventHandler) {
         eventHandler.beforeEnter(beforeNavigation);
         validateBeforeEvent(beforeNavigation);
         return getTransitionOutcome(beforeNavigation);
     }
 
-    private Optional<TransitionOutcome> getTransitionOutcome(BeforeEvent beforeEvent) {
+    private Optional<TransitionOutcome> notifyNavigationTarget(
+            NavigationEvent event, BeforeEnterEvent beforeNavigation,
+            LocationChangeEvent locationChangeEvent,
+            Component componentInstance) {
+
+        notifyNavigationTarget(componentInstance, event, beforeNavigation,
+                locationChangeEvent);
+
+        return getTransitionOutcome(beforeNavigation);
+    }
+
+    /*
+     * Check whether the eventHandler is the component itself ot a child of it.
+     */
+    private boolean isEqualsOrChild(BeforeEnterHandler eventHandler,
+            Component component) {
+        if (eventHandler instanceof HasElement) {
+            HasElement hasElement = (HasElement) eventHandler;
+
+            final Element componentElement = component.getElement();
+
+            Element element = hasElement.getElement();
+            while (element != null) {
+                if (element.equals(componentElement)) {
+                    return true;
+                }
+
+                element = element.getParent();
+            }
+        }
+
+        return false;
+    }
+
+    private Optional<TransitionOutcome> getTransitionOutcome(
+            BeforeEvent beforeEvent) {
         if (beforeEvent.hasForwardTarget()) {
             return Optional.of(TransitionOutcome.FORWARDED);
         }
@@ -526,7 +610,7 @@ public abstract class AbstractNavigationStateRenderer
         if (beforeEvent.hasRerouteTarget()) {
             return Optional.of(TransitionOutcome.REROUTED);
         }
-        
+
         return Optional.empty();
     }
 

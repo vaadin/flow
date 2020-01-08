@@ -788,13 +788,7 @@ public class RouterTest extends RoutingTestBase {
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
             events.add(event);
-        }
-
-        @Override
-        public int setErrorParameter(BeforeEnterEvent event, ErrorParameter<NotFoundException> parameter) {
-            final int result = super.setErrorParameter(event, parameter);
             message = ((Html) getChildren().findFirst().get()).getInnerHtml();
-            return result;
         }
 
     }
@@ -923,14 +917,18 @@ public class RouterTest extends RoutingTestBase {
     @Route("beforeToError/message")
     @Tag(Tag.DIV)
     public static class RerouteToErrorWithMessage extends Component
-            implements HasUrlParameter<String> {
+            implements BeforeEnterObserver, HasUrlParameter<String> {
 
         private String message;
 
         @Override
+        public void beforeEnter(BeforeEnterEvent event) {
+            event.rerouteToError(IllegalArgumentException.class, message);
+        }
+
+        @Override
         public void setParameter(BeforeEvent event, String parameter) {
             message = parameter;
-            event.rerouteToError(IllegalArgumentException.class, message);
         }
     }
 
@@ -1340,16 +1338,46 @@ public class RouterTest extends RoutingTestBase {
 
     /**
      * Navigation target using one parameter. We want to assert whether the
-     * <code>setParameter</code> is triggered after <code>beforeEvent</code>
-     * does.
+     * <code>setParameter</code> is triggered right before
+     * <code>beforeEvent</code> does.
      */
     @Route(value = "event/leaf", layout = ProcessEventsBranch.class)
     public static class ProcessEventsLeaf extends ProcessEventsBase
             implements HasUrlParameter<String> {
 
+        public ProcessEventsLeaf() {
+            // This child should get the last beforeEvent, after setParameter
+            // and this instance's beforeEvent.
+            add(new ProcessEventsBase("leafChild"));
+        }
+
         @Override
         public void setParameter(BeforeEvent event, String parameter) {
             super.setParameter(event, parameter);
+        }
+    }
+
+    /**
+     * Navigation target using one parameter. We want to assert whether
+     * <code>setParameter</code> is triggered before this component's child,
+     * considering it doesn't observe the event.
+     */
+    @Route(value = "event/needle", layout = ProcessEventsBranch.class)
+    @Tag(Tag.DIV)
+    public static class ProcessEventsNeedle extends Component
+            implements HasComponents, HasUrlParameter<String> {
+
+        public ProcessEventsNeedle() {
+            ProcessEventsBase.init.add(getClass().getSimpleName());
+
+            // This child should get the last beforeEvent, after setParameter
+            // and this instance's beforeEvent.
+            add(new ProcessEventsBase("needleChild"));
+        }
+
+        @Override
+        public void setParameter(BeforeEvent event, String parameter) {
+            ProcessEventsBase.beforeEnter.add(parameter);
         }
     }
 
@@ -3432,10 +3460,10 @@ public class RouterTest extends RoutingTestBase {
         router.navigate(ui, new Location("event/leaf/" + parameter),
                 NavigationTrigger.PROGRAMMATIC);
         
-        assertEventOrder(Arrays.asList("ProcessEventsLeaf"),
+        assertEventOrder(Arrays.asList("ProcessEventsLeaf", "leafChild"),
                 getProcessEventsBranchChainNames("ProcessEventsFlower"),
-                getProcessEventsBranchChainNames("ProcessEventsLeaf", parameter),
-                getProcessEventsBranchChainNames("ProcessEventsLeaf"));
+                getProcessEventsBranchChainNames(parameter, "ProcessEventsLeaf", "leafChild"),
+                getProcessEventsBranchChainNames("ProcessEventsLeaf", "leafChild"));
     }
 
     @Test // #4595
@@ -3464,7 +3492,7 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test // #4595
-    public void url_parameter_is_invoked_after_before_enter_events()
+    public void url_parameter_is_invoked_right_before_enter_events()
             throws InvalidRouteConfigurationException {
         ProcessEventsBase.clear();
 
@@ -3474,9 +3502,32 @@ public class RouterTest extends RoutingTestBase {
         router.navigate(ui, new Location("event/leaf/" + parameter),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("Parameter should be the last invoked.", parameter,
-                ProcessEventsBase.beforeEnter
-                        .get(ProcessEventsBase.beforeEnter.size() - 1));
+        System.out.println("ProcessEventsBase.beforeEnter: " + ProcessEventsBase.beforeEnter);
+        Assert.assertEquals(
+                "BeforeEnter events aren't triggered in correct order",
+                getProcessEventsBranchChainNames(parameter, "ProcessEventsLeaf",
+                        "leafChild"),
+                ProcessEventsBase.beforeEnter);
+    }
+
+    @Test // #4595
+    public void url_parameter_is_invoked_where_before_enter_is_not_observed()
+            throws InvalidRouteConfigurationException {
+        ProcessEventsBase.clear();
+
+        setNavigationTargets(ProcessEventsNeedle.class);
+
+        final String parameter = "green";
+        router.navigate(ui, new Location("event/needle/" + parameter),
+                NavigationTrigger.PROGRAMMATIC);
+
+        System.out.println("ProcessEventsBase.beforeEnter: " + ProcessEventsBase.beforeEnter);
+        Assert.assertEquals(
+                "BeforeEnter events aren't triggered in correct order",
+                getProcessEventsBranchChainNames(parameter,
+                        "needleChild"),
+                ProcessEventsBase.beforeEnter);
+
     }
 
     private List<String> getProcessEventsTrunkChainNames(String... leaf) {
