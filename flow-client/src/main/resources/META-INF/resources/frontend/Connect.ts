@@ -277,7 +277,10 @@ export class ConnectClient {
       'Content-Type': 'application/json'
     };
 
-    headers['X-Requested-With'] = 'Vaadin CCDM';
+    // @ts-ignore
+    const csrfToken = (typeof Vaadin !== 'undefined') && Vaadin.Flow && Vaadin.Flow.csrfToken || '';
+    headers['X-CSRF-Token'] = csrfToken;
+
     // helper to keep the undefined value in object after JSON.stringify
     const nullForUndefined = (obj: any): any => {
       for (const property in obj) {

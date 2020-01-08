@@ -39,6 +39,8 @@ import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_POLYFILLS;
  */
 public interface DeploymentConfiguration extends Serializable {
 
+    default boolean isCompatibilityMode() { return false; }
+
     /**
      * Returns whether Vaadin is in production mode.
      *

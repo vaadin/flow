@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
 import java.security.Principal;
 
+import com.vaadin.flow.server.VaadinSession;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -34,7 +35,7 @@ public class VaadinConnectAccessCheckerTest {
         checker = new VaadinConnectAccessChecker();
         requestMock = mock(HttpServletRequest.class);
         when(requestMock.getUserPrincipal()).thenReturn(mock(Principal.class));
-        when(requestMock.getHeader("X-Requested-With"))
+        when(requestMock.getHeader("X-CSRF-Token"))
                 .thenReturn("Vaadin CCDM");
         when(requestMock.isUserInRole("ROLE_USER")).thenReturn(true);
     }

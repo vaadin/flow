@@ -18,6 +18,7 @@ package com.vaadin.flow.server.communication;
 import java.io.IOException;
 import java.util.regex.Pattern;
 
+import elemental.json.Json;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
@@ -60,9 +61,12 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         prependBaseHref(request, indexDocument);
 
+        JsonObject flowJson = Json.createObject();
+        includeCsrfToken(session, flowJson);
+
         if (request.getService().getBootstrapInitialPredicate()
                 .includeInitialUidl(request)) {
-            includeInitialUidl(session, request, response, indexDocument);
+            includeInitialUidl(session, request, response, flowJson);
 
             indexHtmlResponse = new IndexHtmlResponse(request, response, indexDocument, UI.getCurrent());
 
@@ -72,6 +76,13 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         } else {
             indexHtmlResponse = new IndexHtmlResponse(request, response, indexDocument);
         }
+
+        Element elm = new Element("script");
+        elm.attr("initial", "");
+        elm.appendChild(new DataNode(
+                "window.Vaadin = {Flow: " + JsonUtil.stringify(flowJson) + "};"
+        ));
+        indexDocument.head().insertChildren(0, elm);
 
         configureErrorDialogStyles(indexDocument);
 
@@ -104,15 +115,16 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
     private void includeInitialUidl(VaadinSession session,
             VaadinRequest request, VaadinResponse response,
-            Document indexDocument) {
+            JsonObject flowJson) {
         JsonObject initial = getInitialJson(request, response, session);
+        flowJson.put("initial", initial);
+    }
 
-
-        Element elm = new Element("script");
-        elm.attr("initial", "");
-        elm.appendChild(new DataNode("window.Vaadin = {Flow : {initial: "
-                + JsonUtil.stringify(initial) + "}}"));
-        indexDocument.head().insertChildren(0, elm);
+    private void includeCsrfToken(VaadinSession session, JsonObject flowJson) {
+        String csrfToken = session.getCsrfToken();
+        if (csrfToken != null) {
+            flowJson.put("csrfToken", csrfToken);
+        }
     }
 
     @Override
