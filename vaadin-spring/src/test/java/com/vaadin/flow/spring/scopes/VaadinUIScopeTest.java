@@ -200,8 +200,6 @@ public class VaadinUIScopeTest extends AbstractScopeTest {
         when(service.getRouter()).thenReturn(router);
 
         Properties initParameters = new Properties();
-        initParameters.put(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                Boolean.FALSE.toString());
         when(service.getDeploymentConfiguration())
                 .thenReturn(new DefaultDeploymentConfiguration(getClass(),
                         initParameters));

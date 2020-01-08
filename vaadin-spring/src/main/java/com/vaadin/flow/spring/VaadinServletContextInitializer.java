@@ -287,8 +287,8 @@ public class VaadinServletContextInitializer
             DeploymentConfiguration config = SpringStubServletConfig
                     .createDeploymentConfiguration(this.getClass(), event, appContext);
 
-            if (config == null || config.isCompatibilityMode()
-                    || config.isProductionMode() || !config.enableDevServer()) {
+            if (config == null || config.isProductionMode() || !config
+                    .enableDevServer()) {
                 return;
             }
 
