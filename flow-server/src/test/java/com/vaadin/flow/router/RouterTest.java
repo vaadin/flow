@@ -790,7 +790,6 @@ public class RouterTest extends RoutingTestBase {
             events.add(event);
             message = ((Html) getChildren().findFirst().get()).getInnerHtml();
         }
-
     }
 
     public static final String EXCEPTION_TEXT = "My custom not found class!";
@@ -3502,7 +3501,6 @@ public class RouterTest extends RoutingTestBase {
         router.navigate(ui, new Location("event/leaf/" + parameter),
                 NavigationTrigger.PROGRAMMATIC);
 
-        System.out.println("ProcessEventsBase.beforeEnter: " + ProcessEventsBase.beforeEnter);
         Assert.assertEquals(
                 "BeforeEnter events aren't triggered in correct order",
                 getProcessEventsBranchChainNames(parameter, "ProcessEventsLeaf",
@@ -3521,7 +3519,6 @@ public class RouterTest extends RoutingTestBase {
         router.navigate(ui, new Location("event/needle/" + parameter),
                 NavigationTrigger.PROGRAMMATIC);
 
-        System.out.println("ProcessEventsBase.beforeEnter: " + ProcessEventsBase.beforeEnter);
         Assert.assertEquals(
                 "BeforeEnter events aren't triggered in correct order",
                 getProcessEventsBranchChainNames(parameter,
