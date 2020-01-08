@@ -247,7 +247,7 @@
                 <module>servlet-containers</module-->
 
                 <!-- web component embedding -->
-                <!--module>test-embedding</module-->
+                <module>test-embedding</module>
 
                 <!-- tests running in both modes -->
                 <module>test-misc</module>

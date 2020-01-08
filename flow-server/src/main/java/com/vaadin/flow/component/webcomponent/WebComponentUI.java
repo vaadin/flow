@@ -17,6 +17,7 @@ package com.vaadin.flow.component.webcomponent;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -41,6 +42,9 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
+import com.vaadin.flow.theme.AbstractTheme;
+import com.vaadin.flow.theme.Theme;
+import com.vaadin.flow.theme.ThemeDefinition;
 
 import elemental.json.JsonObject;
 
@@ -57,6 +61,7 @@ public class WebComponentUI extends UI {
     public void doInit(VaadinRequest request, int uiId) {
         super.doInit(request, uiId);
 
+        assignThemeVariant();
         getEventBus().addListener(WebComponentConnectEvent.class,
                 this::connectWebComponent);
     }
@@ -278,6 +283,35 @@ public class WebComponentUI extends UI {
     @Override
     public void navigate(String location, QueryParameters queryParameters) {
         throw new UnsupportedOperationException(NO_NAVIGATION);
+    }
+
+    private void assignThemeVariant() {
+        WebComponentConfigurationRegistry registry = getConfigurationRegistry();
+        Optional<Theme> theme = registry
+                .getEmbeddedApplicationAnnotation(Theme.class);
+        if (!theme.isPresent()) {
+            return;
+        }
+        AbstractTheme themeInstance = Instantiator.get(this)
+                .getOrCreate(theme.get().value());
+        ThemeDefinition definition = new ThemeDefinition(theme.get());
+        Map<String, String> attributes = themeInstance
+                .getHtmlAttributes(definition.getVariant());
+
+        registry.getConfigurations()
+                .forEach(config -> addAttributes(config.getTag(), attributes));
+    }
+
+    private void addAttributes(String tag, Map<String, String> attributes) {
+        final StringBuilder builder = new StringBuilder();
+        builder.append("var elements = document.querySelectorAll('").append(tag)
+                .append("');")
+                .append("for (let i = 0; i < elements.length; i++) {");
+        attributes.forEach((attribute, value) -> builder
+                .append("elements[i].setAttribute('").append(attribute)
+                .append("', '").append(value).append("');"));
+        builder.append("}");
+        getPage().executeJs(builder.toString());
     }
 
     private WebComponentConfigurationRegistry getConfigurationRegistry() {
