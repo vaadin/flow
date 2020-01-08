@@ -364,13 +364,6 @@
             </build>
             <modules>
                 <module>test-spring-common</module>
-
-                <!-- bower mode tests -->
-                <module>test-spring-boot/pom-bower-mode.xml</module>
-                <module>test-spring-boot-scan/pom-bower-mode.xml</module>
-                <module>test-spring-war/pom-bower-mode.xml</module>
-                <module>test-spring/pom-bower-mode.xml</module>
-                <module>test-spring-boot-contextpath/pom-bower-mode.xml</module>
             </modules>
         </profile>
         <profile>

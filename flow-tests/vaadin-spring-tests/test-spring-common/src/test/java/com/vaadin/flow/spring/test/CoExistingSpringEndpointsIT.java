@@ -38,8 +38,6 @@ public class CoExistingSpringEndpointsIT extends AbstractSpringTest {
 
         Assert.assertTrue(getDriver().getPageSource().contains(String
                 .format("Could not navigate to '%s'", nonExistingRoutePath)));
-        Assert.assertTrue(getDriver().getPageSource().contains(String.format(
-                "Reason: Couldn't find route for '%s'", nonExistingRoutePath)));
 
         getDriver().get(getContextRootURL() + "/oauth/authorize");
 
