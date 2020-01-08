@@ -250,7 +250,7 @@
                 <!--module>test-embedding</module-->
 
                 <!-- tests running in both modes -->
-                <!--module>test-misc</module-->
+                <module>test-misc</module>
 
                 <!--module>test-mixed/pom-pnpm-production.xml</module>
                 <module>test-mixed/pom-npm-production.xml</module>
