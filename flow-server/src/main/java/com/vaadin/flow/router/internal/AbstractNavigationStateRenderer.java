@@ -165,12 +165,10 @@ public abstract class AbstractNavigationStateRenderer
             TransitionOutcome transitionOutcome = executeBeforeLeaveNavigation(
                     beforeNavigationDeactivating, leaveHandlers);
 
-            if (eventActionsSupported) {
-                Optional<Integer> result = handleTransactionOutcome(transitionOutcome, event,
-                        beforeNavigationDeactivating);
-                if (result.isPresent()) {
-                    return result.get();
-                }
+            Optional<Integer> result = handleTransactionOutcome(
+                    transitionOutcome, event, beforeNavigationDeactivating);
+            if (result.isPresent()) {
+                return result.get();
             }
 
             if (transitionOutcome == TransitionOutcome.POSTPONED) {
@@ -220,8 +218,8 @@ public abstract class AbstractNavigationStateRenderer
                 beforeNavigationActivating, event, chain);
 
         if (eventActionsSupported) {
-            Optional<Integer> result = handleTransactionOutcome(transitionOutcome, event,
-                    beforeNavigationActivating);
+            Optional<Integer> result = handleTransactionOutcome(
+                    transitionOutcome, event, beforeNavigationActivating);
             if (result.isPresent()) {
                 return result.get();
             }
