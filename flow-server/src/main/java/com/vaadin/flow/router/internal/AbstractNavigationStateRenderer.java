@@ -414,6 +414,11 @@ public abstract class AbstractNavigationStateRenderer
      *            the chain of {@link HasElement} instances which will be
      *            rendered. In case this is empty it'll be populated with
      *            instances according with the navigation event's location.
+     * @param locationChangeEventMutable
+     *            an output argument for the LocationChangeEvent. This event is
+     *            created and used when the url parameter is sent, right before
+     *            the event is sent to the navigation target. It has to be used
+     *            as the same instance and not recreated.
      * @return result of observer events
      */
     private TransitionOutcome createChainIfEmptyAndExecuteBeforeEnterNavigation(
