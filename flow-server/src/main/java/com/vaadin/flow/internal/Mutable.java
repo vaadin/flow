@@ -16,13 +16,15 @@
 
 package com.vaadin.flow.internal;
 
+import java.io.Serializable;
+
 /**
  * Generic wrapper for any object with mutable feature.
  *
  * @author Vaadin Ltd
  * @since
  */
-public class Mutable<T> {
+public class Mutable<T extends Serializable> implements Serializable {
 
     private T value;
 
