@@ -38,6 +38,7 @@ import org.slf4j.Logger;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.CssData;
+import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
@@ -47,7 +48,6 @@ import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
-import static com.vaadin.flow.shared.ApplicationConstants.CONTEXT_PROTOCOL_PREFIX;
 
 /**
  * Common logic for generate import file JS content.
@@ -189,7 +189,11 @@ abstract class AbstractUpdateImports implements Runnable {
     protected abstract Logger getLogger();
 
     List<String> resolveModules(Collection<String> modules) {
-        return modules.stream().map(module -> resolveResource(module)).sorted()
+        return modules.stream().filter(module ->
+                !module.startsWith(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX)
+                        && !module
+                        .startsWith(ApplicationConstants.BASE_PROTOCOL_PREFIX))
+                .map(module -> resolveResource(module)).sorted()
                 .collect(Collectors.toList());
     }
 
@@ -261,8 +265,6 @@ abstract class AbstractUpdateImports implements Runnable {
                             importPath);
                 }
                 resolved = FLOW_NPM_PACKAGE_NAME + resource;
-            } else if(resource.startsWith(CONTEXT_PROTOCOL_PREFIX)) {
-                resolved = FLOW_NPM_PACKAGE_NAME + resource.substring(CONTEXT_PROTOCOL_PREFIX.length());
             }
         }
         return resolved;
