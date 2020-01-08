@@ -73,7 +73,7 @@ public class TaskRunNpmInstallTest {
         nodeUpdater.modified = false;
         task.execute();
 
-        Mockito.verify(logger).info(TaskRunNpmInstall.RUNNING_NPM_INSTALL);
+        Mockito.verify(logger).info(getRunningMsg());
     }
 
     @Test
@@ -97,7 +97,7 @@ public class TaskRunNpmInstallTest {
         nodeUpdater.modified = false;
         task.execute();
 
-        Mockito.verify(logger).info(TaskRunNpmInstall.RUNNING_NPM_INSTALL);
+        Mockito.verify(logger).info(getRunningMsg());
     }
 
     @Test
@@ -106,6 +106,13 @@ public class TaskRunNpmInstallTest {
         nodeUpdater.modified = true;
         task.execute();
 
-        Mockito.verify(logger).info(TaskRunNpmInstall.RUNNING_NPM_INSTALL);
+        Mockito.verify(logger).info(getRunningMsg());
     }
+
+    private String getRunningMsg() {
+        return "Running `npm install` to "
+                + "resolve and optionally download frontend dependencies. "
+                + "This may take a moment, please stand by...";
+    }
+
 }
