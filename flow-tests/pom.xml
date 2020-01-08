@@ -228,12 +228,11 @@
             <modules>
                 <module>test-mixed</module>
                 <module>test-mixed/pom-npm.xml</module>
-                
-                <module>test-pwa</module>
                 <module>test-dev-mode</module>
+                <module>test-pwa</module>
+                <module>test-subcontext</module>
                 <module>test-root-ui-context</module>
                 <module>test-router-custom-context</module>
-<!--                <module>test-subcontext</module>-->
 
                 <module>test-scalability</module>
                 <module>test-memory-leaks</module>
@@ -245,7 +244,7 @@
                 <module>servlet-containers</module-->
 
                 <!-- web component embedding -->
-                <!--module>test-embedding</module-->
+                <module>test-embedding</module>
 
                 <!-- tests running in both modes -->
                 <module>test-misc</module>
