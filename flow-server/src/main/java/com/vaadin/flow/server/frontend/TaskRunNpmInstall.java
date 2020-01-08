@@ -56,9 +56,9 @@ public class TaskRunNpmInstall implements FallibleCommand {
     public void execute() throws ExecutionFailedException {
         String toolName = disablePnpm ? "npm" : "pnpm";
         if (packageUpdater.modified || shouldRunNpmInstall()) {
-            packageUpdater.log().info("Running `" + toolName + "` to resolve "
-                    + "and optionally download frontend dependencies. This "
-                    + "may take a moment, please stand by...");
+            packageUpdater.log().info("Running `" + toolName + " install` to "
+                    + "resolve and optionally download frontend dependencies. "
+                    + "This may take a moment, please stand by...");
             runNpmInstall();
         } else {
             packageUpdater.log().info("Skipping `" + toolName + " install`.");
