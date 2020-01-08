@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.shared.util.SharedUtil;
@@ -55,7 +56,9 @@ public class TaskRunNpmInstall implements FallibleCommand {
     public void execute() throws ExecutionFailedException {
         String toolName = disablePnpm ? "npm" : "pnpm";
         if (packageUpdater.modified || shouldRunNpmInstall()) {
-            packageUpdater.log().info("Running `" + toolName + " install` ...");
+            packageUpdater.log().info("Running `" + toolName + " install` to "
+                    + "resolve and optionally download frontend dependencies. "
+                    + "This may take a moment, please stand by...");
             runNpmInstall();
         } else {
             packageUpdater.log().info("Skipping `" + toolName + " install`.");
@@ -102,13 +105,20 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
         Process process = null;
         try {
-            process = builder.inheritIO().start();
+            process = builder.redirectInput(ProcessBuilder.Redirect.INHERIT)
+                    .redirectError(ProcessBuilder.Redirect.INHERIT).start();
+
             int errorCode = process.waitFor();
             if (errorCode != 0) {
                 packageUpdater.log().error(
                         ">>> Dependency ERROR. Check that all required dependencies are "
                                 + "deployed in {} repositories.",
                         toolName);
+                String commandString = command.stream()
+                        .collect(Collectors.joining(" "));
+                final String toolOutput = FrontendUtils.streamToString(process.getInputStream());
+                packageUpdater.log().error("Output of `{}`:\n{}",
+                        commandString, toolOutput);
                 throw new ExecutionFailedException(
                         SharedUtil.capitalize(toolName)
                                 + " install has exited with non zero status. "
@@ -116,7 +126,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
                                 + toolName + " command output");
             } else {
                 packageUpdater.log().info(
-                        "package.json updated and dependencies are installed. ");
+                        "Frontend dependencies resolved successfully.");
             }
         } catch (InterruptedException | IOException e) {
             packageUpdater.log().error("Error when running `{} install`",

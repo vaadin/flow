@@ -109,7 +109,9 @@ public class TaskRunNpmInstallTest {
     }
 
     private String getRunningMsg() {
-        return "Running `" + getToolName() + " install` ...";
+        return"Running `" + getToolName() + " install` to "
+                + "resolve and optionally download frontend dependencies. "
+                + "This may take a moment, please stand by...";
     }
 
     protected NodeUpdater getNodeUpdater() {
