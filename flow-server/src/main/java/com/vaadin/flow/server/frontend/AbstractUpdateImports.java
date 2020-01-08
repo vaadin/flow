@@ -47,6 +47,7 @@ import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
+import static com.vaadin.flow.shared.ApplicationConstants.CONTEXT_PROTOCOL_PREFIX;
 
 /**
  * Common logic for generate import file JS content.
@@ -260,6 +261,8 @@ abstract class AbstractUpdateImports implements Runnable {
                             importPath);
                 }
                 resolved = FLOW_NPM_PACKAGE_NAME + resource;
+            } else if(resource.startsWith(CONTEXT_PROTOCOL_PREFIX)) {
+                resolved = FLOW_NPM_PACKAGE_NAME + resource.substring(CONTEXT_PROTOCOL_PREFIX.length());
             }
         }
         return resolved;
