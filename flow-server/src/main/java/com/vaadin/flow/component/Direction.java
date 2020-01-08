@@ -24,10 +24,6 @@ import java.util.Set;
 
 class Direction implements Serializable {
 
-    static void set(UI ui, Locale locale) {
-        ui.getElement().executeJs("document.querySelector('html').dir=$0", getDirectionForLocale(locale));
-    }
-
     private static final Set<String> rtlSet;
 
     static {
@@ -48,6 +44,19 @@ class Direction implements Serializable {
         rtlSet = Collections.unmodifiableSet(lang);
     }
 
+    static void set(UI ui, Locale locale) {
+        ui.getElement().executeJs("document.querySelector('html').dir=$0",
+                getDirectionForLocale(locale));
+    }
+
+    /**
+     * Returns direction string based on the locale provided.
+     *
+     * @param locale
+     *            the locale set for the UI
+     *
+     * @return the direction string
+     */
     public static String getDirectionForLocale(Locale locale) {
         return rtlSet.contains(locale.getLanguage()) ? "rtl" : "ltr";
     }
