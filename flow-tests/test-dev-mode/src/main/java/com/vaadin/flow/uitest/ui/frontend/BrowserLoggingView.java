@@ -26,8 +26,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.frontend.BrowserLoggingView", layout = ViewTestLayout.class)
 @Tag("div")
-// context://frontend/ instead of frontend:// to have the same URL in production
-@JavaScript(value = "context://frontend/com/vaadin/flow/uitest/ui/frontend/consoleLoggingProxy.js", loadMode = LoadMode.INLINE)
+@JavaScript(value = "./consoleLoggingProxy.js", loadMode = LoadMode.INLINE)
 public class BrowserLoggingView extends Div {
     public BrowserLoggingView() {
         Label label = new Label("Just a label");

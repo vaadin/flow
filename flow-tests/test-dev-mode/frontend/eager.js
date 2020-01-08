@@ -15,4 +15,6 @@ window.messages = {
   push: attachTestDiv
 };
 
+window.attachTestDiv=attachTestDiv;
+
 attachTestDiv("eager.js");
