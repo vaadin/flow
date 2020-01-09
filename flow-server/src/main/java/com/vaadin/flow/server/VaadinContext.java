@@ -55,20 +55,41 @@ public interface VaadinContext extends Serializable {
     }
 
     /**
+     * Sets the attribute value for the give type, overriding previously
+     * existing one. Values are based on exact type, meaning only one attribute
+     * of given type is possible at any given time.
+     *
+     * @param clazz
+     *            the type to associate the value with, not <code>null</code>
+     *
+     * @param value
+     *            the attribute value to set, or <code>null</code> to remove the
+     *            current value
+     * @since
+     */
+    <T> void setAttribute(Class<T> clazz, T value);
+
+    /**
      * Sets the attribute value, overriding previously existing one. Values are
      * based on exact type, meaning only one attribute of given type is possible
      * at any given time.
      *
      * @param value
-     *            Value of the attribute. May not be {@code null}.
+     *            attribute value, not {@code null}.
      * @see #removeAttribute(Class) for removing attributes.
      */
-    <T> void setAttribute(T value);
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    default void setAttribute(Object value) {
+        assert value != null;
+
+        Class clazz = value.getClass();
+        setAttribute(clazz, value);
+    }
 
     /**
      * Removes an attribute identified by the given type. If the attribute does
      * not exist, no action will be taken.
-     * 
+     *
      * @param clazz
      *            Attribute type.
      *
@@ -90,9 +111,9 @@ public interface VaadinContext extends Serializable {
      * the parameter does not exist.
      *
      * @param name
-     *         name of the parameter whose value is requested
+     *            name of the parameter whose value is requested
      * @return parameter value as <code>String</code> or <code>null</code> for
-     * no parameter
+     *         no parameter
      */
     String getContextParameter(String name);
 }

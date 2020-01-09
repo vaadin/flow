@@ -16,6 +16,7 @@
 package com.vaadin.flow.server;
 
 import javax.servlet.ServletContext;
+
 import java.util.Enumeration;
 import java.util.function.Supplier;
 
@@ -30,7 +31,9 @@ public class VaadinServletContext implements VaadinContext {
 
     /**
      * Creates an instance of this context with given {@link ServletContext}.
-     * @param context Context.
+     *
+     * @param context
+     *            the servlet context to use
      */
     public VaadinServletContext(ServletContext context) {
         this.context = context;
@@ -38,6 +41,7 @@ public class VaadinServletContext implements VaadinContext {
 
     /**
      * Returns the underlying context.
+     *
      * @return A non-null {@link ServletContext}.
      */
     public ServletContext getContext() {
@@ -48,10 +52,13 @@ public class VaadinServletContext implements VaadinContext {
      * Ensures there is a valid instance of {@link ServletContext}.
      */
     private void ensureServletContext() {
-        if(context == null && VaadinService.getCurrent() instanceof VaadinServletService) {
-            context = ((VaadinServletService)VaadinService.getCurrent()).getServlet().getServletContext();
-        } else if(context == null) {
-            throw new IllegalStateException("The underlying ServletContext of VaadinServletContext is null and there is no VaadinServletService to obtain it from.");
+        if (context == null
+                && VaadinService.getCurrent() instanceof VaadinServletService) {
+            context = ((VaadinServletService) VaadinService.getCurrent())
+                    .getServlet().getServletContext();
+        } else if (context == null) {
+            throw new IllegalStateException(
+                    "The underlying ServletContext of VaadinServletContext is null and there is no VaadinServletService to obtain it from.");
         }
     }
 
@@ -69,10 +76,13 @@ public class VaadinServletContext implements VaadinContext {
     }
 
     @Override
-    public <T> void setAttribute(T value) {
-        assert value != null;
-        ensureServletContext();
-        context.setAttribute(value.getClass().getName(), value);
+    public <T> void setAttribute(Class<T> clazz, T value) {
+        if (value == null) {
+            removeAttribute(clazz);
+        } else {
+            ensureServletContext();
+            context.setAttribute(clazz.getName(), value);
+        }
     }
 
     @Override
