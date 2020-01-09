@@ -4,11 +4,10 @@ import javax.annotation.security.DenyAll;
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.servlet.http.HttpServletRequest;
-
+import javax.servlet.http.HttpSession;
 import java.lang.reflect.Method;
 import java.security.Principal;
 
-import com.vaadin.flow.server.VaadinSession;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -34,6 +33,10 @@ public class VaadinConnectAccessCheckerTest {
     public void before() {
         checker = new VaadinConnectAccessChecker();
         requestMock = mock(HttpServletRequest.class);
+        final HttpSession sessionMock = mock(HttpSession.class);
+        when(sessionMock.getAttribute("vaadinCsrfToken"))
+                .thenReturn("Vaadin CCDM");
+        when(requestMock.getSession()).thenReturn(sessionMock);
         when(requestMock.getUserPrincipal()).thenReturn(mock(Principal.class));
         when(requestMock.getHeader("X-CSRF-Token"))
                 .thenReturn("Vaadin CCDM");
