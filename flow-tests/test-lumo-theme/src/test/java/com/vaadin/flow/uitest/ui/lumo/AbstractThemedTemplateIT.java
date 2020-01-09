@@ -15,23 +15,15 @@
  */
 package com.vaadin.flow.uitest.ui.lumo;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import org.junit.Assert;
-import org.junit.Test;
-
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
+import org.junit.Assert;
+import org.junit.Test;
 
 public abstract class AbstractThemedTemplateIT extends ChromeBrowserTest {
 
     @Test
-    public void themedUrlsAreAdded() {
+    public void lumoThemeUsed_themedTemplateAndLumoThemeResourcesLoaded() {
         open();
 
         // check that all imported templates are available in the DOM
@@ -41,32 +33,17 @@ public abstract class AbstractThemedTemplateIT extends ChromeBrowserTest {
 
         Assert.assertEquals("Lumo themed Template", div.getText());
 
-        TestBenchElement head = $("head").first();
-
-        List<String> hrefs = head.$("link").attribute("rel", "import").all()
-                .stream().map(element -> element.getAttribute("href"))
-                .collect(Collectors.toList());
-
-        Collection<String> expectedSuffices = new LinkedList<>(Arrays.asList(
-                getThemedTemplate(), "vaadin-lumo-styles/color.html",
-                "vaadin-lumo-styles/typography.html",
-                "vaadin-lumo-styles/sizing.html",
-                "vaadin-lumo-styles/spacing.html",
-                "vaadin-lumo-styles/style.html",
-                "vaadin-lumo-styles/icons.html"));
-
-        for (String href : hrefs) {
-            Optional<String> matched = expectedSuffices.stream()
-                    .filter(suffix -> href.endsWith(suffix)).findFirst();
-            if (matched.isPresent()) {
-                expectedSuffices.remove(matched.get());
-            }
-        }
-
-        if (!expectedSuffices.isEmpty()) {
-            Assert.fail("No imports found for the lumo specific HTML file(s) : "
-                    + expectedSuffices);
-        }
+        // this is silly, but a concrete way to test that the lumo files are
+        // imported by verifying that the lumo css variables introduced in the
+        // files work
+        Assert.assertEquals("color variables not applied", "rgba(255, 66, 56, 1)",
+                div.getCssValue("color"));
+        Assert.assertEquals("typography variables not applied","40px", div.getCssValue("font-size"));
+        Assert.assertEquals("sizing variables not applied","36px solid rgb(0, 0, 0)",
+                div.getCssValue("border"));
+        Assert.assertEquals("spacing variables not applied","12px 24px", div.getCssValue("margin"));
+        Assert.assertEquals("style variables not applied","20px", div.getCssValue("border-radius"));
+        Assert.assertEquals("icons variables not applied","lumo-icons", div.getCssValue("font-family"));
     }
 
     protected abstract String getTagName();

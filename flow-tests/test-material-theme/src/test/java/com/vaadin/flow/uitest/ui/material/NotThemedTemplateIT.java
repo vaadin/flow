@@ -15,20 +15,15 @@
  */
 package com.vaadin.flow.uitest.ui.material;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.hamcrest.CoreMatchers;
-import org.junit.Assert;
-import org.junit.Test;
-
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class NotThemedTemplateIT extends ChromeBrowserTest {
 
     @Test
-    public void no_anyThemedUrls() {
+    public void materialThemeUsed_noMaterialTemplateFile_srcBasedTemplateUsed() {
         open();
 
         // check that all imported templates are available in the DOM
@@ -37,19 +32,6 @@ public class NotThemedTemplateIT extends ChromeBrowserTest {
         TestBenchElement div = template.$("div").first();
 
         Assert.assertEquals("Template", div.getText());
-
-        TestBenchElement head = $("head").first();
-
-        List<String> hrefs = head.$("link").attribute("rel", "import").all()
-                .stream().map(element -> element.getAttribute("href"))
-                .collect(Collectors.toList());
-
-        for (String href : hrefs) {
-            Assert.assertThat(href,
-                    CoreMatchers.not(CoreMatchers.containsString("material")));
-            Assert.assertThat(href,
-                    CoreMatchers.not(CoreMatchers.containsString("lumo")));
-        }
     }
 
 }
