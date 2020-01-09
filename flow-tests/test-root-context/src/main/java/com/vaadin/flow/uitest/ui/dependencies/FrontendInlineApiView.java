@@ -35,8 +35,9 @@ public class FrontendInlineApiView extends PolymerTemplate<TemplateModel> {
                 "components/frontend-inline-api.html", Jsoup.parse(
                         "<dom-module id='frontend-inline-api'></dom-module>")));
         setId("template");
-        UI.getCurrent().getPage().addHtmlImport(
-                "components/frontend-inline-api.html", LoadMode.INLINE);
+        // TODO
+        // UI.getCurrent().getPage().addHtmlImport(
+        // "components/frontend-inline-api.html", LoadMode.INLINE);
         UI.getCurrent().getPage().addJavaScript("components/frontend-inline.js",
                 LoadMode.INLINE);
         UI.getCurrent().getPage().addStyleSheet(

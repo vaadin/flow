@@ -240,8 +240,7 @@
                 <module>test-themes</module>
                 <module>test-lumo-theme</module>
                 <module>test-material-theme</module>
-                <!--
-                <module>servlet-containers</module-->
+                <module>servlet-containers</module>
 
                 <!-- web component embedding -->
                 <module>test-embedding</module>
@@ -256,8 +255,7 @@
                 <module>test-ccdm</module>
                 <module>test-ccdm/pom-production.xml</module>                
 
-                <!-- This test fails in local -->
-<!--                <module>test-root-context</module>-->
+                <module>test-root-context</module>
             </modules>
         </profile>
         <profile>

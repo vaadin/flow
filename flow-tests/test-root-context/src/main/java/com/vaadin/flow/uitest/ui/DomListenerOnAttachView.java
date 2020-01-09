@@ -22,7 +22,6 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.DomListenerOnAttachView", layout = ViewTestLayout.class)
-// @HtmlImport("frontend://com/vaadin/flow/uitest/ui/DomListenerOnAttach.html")
 @JsModule("DomListenerOnAttach.js")
 public class DomListenerOnAttachView extends AbstractDivView {
     public DomListenerOnAttachView() {

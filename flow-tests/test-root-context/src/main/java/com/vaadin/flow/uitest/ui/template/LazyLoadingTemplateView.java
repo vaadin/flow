@@ -29,7 +29,6 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamRegistration;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
 
 @Route("com.vaadin.flow.uitest.ui.template.LazyLoadingTemplateView")
@@ -67,9 +66,10 @@ public class LazyLoadingTemplateView extends AbstractDivView {
         StreamRegistration registration = VaadinSession.getCurrent()
                 .getResourceRegistry()
                 .registerResource(getHtmlImportResource());
-        getPage().addHtmlImport(
-                "base://" + registration.getResourceUri().toString(),
-                LoadMode.LAZY);
+        // TODO
+        // getPage().addHtmlImport(
+        // "base://" + registration.getResourceUri().toString(),
+        // LoadMode.LAZY);
     }
 
     private StreamResource getHtmlImportResource() {
