@@ -34,7 +34,7 @@ public interface PageConfigurator extends Serializable {
      *
      * @param settings
      *            initial page settings
-     * @deprecated use
+     * @deprecated Since 3.0, use
      *             {@link AppShellConfigurator#configurePage(AppShellSettings)}
      *             instead
      */

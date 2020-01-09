@@ -22,7 +22,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 import com.vaadin.flow.dom.DomEvent;
-import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.ReflectionCache;
 
@@ -61,7 +60,7 @@ public class ComponentEventBusUtil {
 
     /**
      * Gets a map of event data expression (for
-     * {@link Element#addEventListener(String, com.vaadin.flow.dom.DomEventListener, String...)}
+     * {@link com.vaadin.flow.dom.DomListenerRegistration#addEventData(String)}
      * ) to Java type, with the same order as the parameters for the event
      * constructor (as returned by {@link #getEventConstructor(Class)}).
      * <p>
@@ -79,7 +78,7 @@ public class ComponentEventBusUtil {
 
     /**
      * Scans the event type and forms a map of event data expression (for
-     * {@link Element#addEventListener(String, com.vaadin.flow.dom.DomEventListener, String...)}
+     * {@link com.vaadin.flow.dom.DomListenerRegistration#addEventData(String)}
      * ) to Java type, with the same order as the parameters for the event
      * constructor (as returned by {@link #getEventConstructor(Class)}).
      *

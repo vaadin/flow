@@ -175,8 +175,7 @@ public class VaadinServletService extends VaadinService {
     public String getMainDivId(VaadinSession session, VaadinRequest request) {
         String appId = null;
         try {
-            @SuppressWarnings("deprecation")
-            URL appUrl = getServlet()
+            URL appUrl = VaadinServlet
                     .getApplicationUrl((VaadinServletRequest) request);
             appId = appUrl.getPath();
         } catch (MalformedURLException e) {

@@ -17,6 +17,7 @@ package com.vaadin.flow.component;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -949,8 +950,8 @@ public class ComponentTest {
             String... properties) {
         Set<String> expected = Stream.of(properties)
                 .collect(Collectors.toSet());
-        Set<String> actual = element.getSynchronizedProperties()
-                .collect(Collectors.toSet());
+        Set<String> actual = new HashSet<>(element.getStateProvider()
+                .getSynchronizedPropertyEvents(element.getNode()));
         Assert.assertEquals(expected, actual);
 
     }
@@ -958,8 +959,8 @@ public class ComponentTest {
     private void assertSynchronizedPropertiesEvents(Element element,
             String... events) {
         Set<String> expected = Stream.of(events).collect(Collectors.toSet());
-        Set<String> actual = element.getSynchronizedPropertyEvents()
-                .collect(Collectors.toSet());
+        Set<String> actual = new HashSet<>(element.getStateProvider()
+                .getSynchronizedPropertyEvents(element.getNode()));
         Assert.assertEquals(expected, actual);
 
     }
@@ -1005,16 +1006,6 @@ public class ComponentTest {
         Element element = component.getElement();
         assertSynchronizedProperties(element, "foo");
         assertSynchronizedPropertiesEvents(element, "blur", "input");
-    }
-
-    @Test
-    public void synchronizePropertyOverride() {
-        SynchronizePropertyOnChangeComponent component = new SynchronizePropertyOnChangeComponent();
-        component.getElement().removeSynchronizedProperty("foo");
-        component.getElement().removeSynchronizedPropertyEvent("change");
-        Element element = component.getElement();
-        assertSynchronizedProperties(element);
-        assertSynchronizedPropertiesEvents(element);
     }
 
     @Test(expected = IllegalStateException.class)

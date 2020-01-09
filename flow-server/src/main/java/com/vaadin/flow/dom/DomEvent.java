@@ -77,7 +77,6 @@ public class DomEvent extends EventObject {
      * @return The element on which the listener has been attached.
      *
      * @see Element#addEventListener(String, DomEventListener)
-     * @see Element#addEventListener(String, DomEventListener, String...)
      */
     @Override
     public Element getSource() {

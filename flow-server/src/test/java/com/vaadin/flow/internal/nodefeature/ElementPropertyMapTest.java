@@ -152,10 +152,11 @@ public class ElementPropertyMapTest {
         map.setUpdateFromClientFilter(name -> false);
         Assert.assertFalse(map.mayUpdateFromClient("foo", "bar"));
 
-        Element.get(map.getNode()).synchronizeProperty("foo", "event");
+        DomListenerRegistration domListenerRegistration = Element.get(map.getNode()).addPropertyChangeListener("foo", "event", event -> {
+        });
         Assert.assertTrue(map.mayUpdateFromClient("foo", "bar"));
 
-        Element.get(map.getNode()).removeSynchronizedProperty("foo");
+        domListenerRegistration.remove();
         Assert.assertFalse(map.mayUpdateFromClient("foo", "bar"));
 
         DomListenerRegistration registration = Element.get(map.getNode())

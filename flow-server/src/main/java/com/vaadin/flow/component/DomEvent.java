@@ -24,6 +24,7 @@ import java.lang.annotation.Target;
 
 import com.vaadin.flow.dom.DebouncePhase;
 import com.vaadin.flow.dom.DisabledUpdateMode;
+import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 
@@ -46,8 +47,7 @@ import com.vaadin.flow.dom.Element;
  * </ul>
  *
  * @see EventData
- * @see Element#addEventListener(String, com.vaadin.flow.dom.DomEventListener,
- *      String...)
+ * @see Element#addEventListener(String, DomEventListener)
  * @author Vaadin Ltd
  * @since 1.0
  */
