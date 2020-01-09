@@ -13,14 +13,23 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.spring.test;
+package com.vaadin.flow.connect;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.router.BeforeEvent;
+import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.WildcardParameter;
 
-@JsModule("./init-listener-component.js")
-@Tag("init-listener-component")
-public class ComponentAddedViaInitListenerView extends Component {
+@Route(value = "")
+public class VaadinView extends Div implements HasUrlParameter<String> {
 
+    public VaadinView() {
+        add(new TestComponent());
+    }
+
+    @Override
+    public void setParameter(BeforeEvent event, @WildcardParameter String parameter) {
+        // no op. Implement HasUrlParameter to test deeper levels of url.
+    }
 }

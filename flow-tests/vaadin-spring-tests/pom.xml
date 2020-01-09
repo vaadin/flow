@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>vaadin-spring-parent</artifactId>
-        <version>12.2-SNAPSHOT</version>
+        <version>13.0-SNAPSHOT</version>
     </parent>
     <artifactId>vaadin-spring-tests</artifactId>
     <name>Vaadin Spring tests</name>
@@ -325,6 +325,7 @@
                 <module>test-spring-war</module>
                 <!--        <module>test-spring</module>-->
                 <module>test-spring-boot-contextpath</module>
+                <module>test-ts-services</module>
 
                 <!-- nexus-staging-maven-plugin requires the last module to be not skipped for deployment -->
                 <module>dummy-module</module>
@@ -341,6 +342,10 @@
         </profile>
         <profile>
             <id>bower</id>
+            <properties>
+                <!-- V15 does not support bowerMode -->
+                <skipITs>true</skipITs>
+            </properties>
             <activation>
                 <property>
                     <name>bowerMode</name>
@@ -359,13 +364,6 @@
             </build>
             <modules>
                 <module>test-spring-common</module>
-
-                <!-- bower mode tests -->
-                <module>test-spring-boot/pom-bower-mode.xml</module>
-                <module>test-spring-boot-scan/pom-bower-mode.xml</module>
-                <module>test-spring-war/pom-bower-mode.xml</module>
-                <module>test-spring/pom-bower-mode.xml</module>
-                <module>test-spring-boot-contextpath/pom-bower-mode.xml</module>
             </modules>
         </profile>
         <profile>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2018 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -13,15 +13,31 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.spring.test;
+package com.vaadin.flow.connect;
 
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
-@JsModule("CustomElement.js")
-@Tag("custom-element")
-public class CustomElement extends PolymerTemplate<TemplateModel> {
+/**
+ * A Test Web Component.
+ */
+@Tag("test-component")
+@JsModule("./src/test-component.js")
+public class TestComponent extends PolymerTemplate<TemplateModel> {
 
+    @Id
+    NativeButton button;
+    @Id
+    Div content;
+
+    public TestComponent() {
+        button.addClickListener(e -> {
+            content.setText("Hello World");
+        });
+    }
 }
