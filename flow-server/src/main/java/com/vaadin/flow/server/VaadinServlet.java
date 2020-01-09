@@ -428,12 +428,9 @@ public class VaadinServlet extends HttpServlet {
      *             if the application is denied access to the persistent data
      *             store represented by the given URL.
      *
-     * @deprecated As of 1.0. Will be removed in 3.0. 
-     *
      * @return current application URL
      */
-    @Deprecated
-    protected URL getApplicationUrl(HttpServletRequest request)
+    static URL getApplicationUrl(HttpServletRequest request)
             throws MalformedURLException {
         final URL reqURL = new URL((request.isSecure() ? "https://" : "http://")
                 + request.getServerName()

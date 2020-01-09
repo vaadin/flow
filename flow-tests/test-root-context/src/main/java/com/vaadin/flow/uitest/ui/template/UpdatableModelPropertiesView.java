@@ -71,7 +71,8 @@ public class UpdatableModelPropertiesView extends
 
     @EventHandler
     private void syncAge() {
-        getElement().synchronizeProperty("age", "age-changed");
+        getElement().addPropertyChangeListener("age", "age-changed", event -> {
+        });
     }
 
     @ClientCallable

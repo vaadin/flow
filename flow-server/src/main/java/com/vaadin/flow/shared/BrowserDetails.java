@@ -232,7 +232,7 @@ public class BrowserDetails implements Serializable {
                 || userAgent.contains("mac os x")) {
             isIPad = userAgent.contains("ipad");
             isIPhone = userAgent.contains("iphone");
-            if (isIPad || userAgent.contains("ipod") || isIPhone) {
+            if (isIPad || isIPhone) {
                 os = OperatingSystem.IOS;
                 parseIOSVersion(userAgent);
             } else {
@@ -438,16 +438,6 @@ public class BrowserDetails implements Serializable {
     }
 
     /**
-     * Tests if the browser is Safari or runs on IOS (covering also Chrome on
-     * iOS).
-     *
-     * @return true if it is Safari or running on IOS, false otherwise
-     */
-    public boolean isSafariOrIOS() {
-        return isSafari() || isIOS();
-    }
-
-    /**
      * Tests if the browser is Chrome.
      *
      * @return true if it is Chrome, false otherwise
@@ -561,17 +551,6 @@ public class BrowserDetails implements Serializable {
      */
     public boolean isAndroid() {
         return os == OperatingSystem.ANDROID;
-    }
-
-    /**
-     * Tests if the browser is run in iOS.
-     *
-     * @return true if run in iOS, false otherwise
-     * @deprecated isIOS will return the wrong value for iOS 13 and later
-     */
-    @Deprecated
-    public boolean isIOS() {
-        return os == OperatingSystem.IOS;
     }
 
     /**

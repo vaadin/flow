@@ -42,7 +42,8 @@ public class AttachExistingDomElementByIdView
 
         input.setProperty("placeholder", "Foo");
         label.setText("bar");
-        input.synchronizeProperty("value", "change");
+        input.addPropertyChangeListener("value", "change", event -> {
+        });
     }
 
     @EventHandler

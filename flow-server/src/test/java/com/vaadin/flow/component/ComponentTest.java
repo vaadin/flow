@@ -29,12 +29,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import net.jcip.annotations.NotThreadSafe;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.dependency.Uses;
@@ -45,7 +39,6 @@ import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
-import com.vaadin.flow.internal.nodefeature.SynchronizedPropertiesList;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
@@ -54,6 +47,11 @@ import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.MockUI;
 import com.vaadin.tests.util.TestUtil;
+import net.jcip.annotations.NotThreadSafe;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import elemental.json.Json;
 
@@ -945,31 +943,22 @@ public class ComponentTest {
         }
     }
 
-    private void assertSynchronizedProperties(Element element,
+    private void assertSynchronizedProperties(String domEventName, Element element,
             String... properties) {
         Set<String> expected = Stream.of(properties)
                 .collect(Collectors.toSet());
-        Set<String> actual = element.getSynchronizedProperties()
-                .collect(Collectors.toSet());
-        Assert.assertEquals(expected, actual);
 
-    }
+        Set<String> expressions = element.getNode()
+                .getFeature(ElementListenerMap.class).getExpressions(domEventName);
 
-    private void assertSynchronizedPropertiesEvents(Element element,
-            String... events) {
-        Set<String> expected = Stream.of(events).collect(Collectors.toSet());
-        Set<String> actual = element.getSynchronizedPropertyEvents()
-                .collect(Collectors.toSet());
-        Assert.assertEquals(expected, actual);
-
+        Assert.assertEquals(expected, expressions);
     }
 
     @Test
     public void synchronizePropertyBasedOnGetterName() {
         SynchronizePropertyOnChangeComponent component = new SynchronizePropertyOnChangeComponent();
         Element element = component.getElement();
-        assertSynchronizedProperties(element, "foo");
-        assertSynchronizedPropertiesEvents(element, "change");
+        assertSynchronizedProperties("change", element, "}foo");
     }
 
     @Test
@@ -977,8 +966,7 @@ public class ComponentTest {
         SynchronizePropertyUsingElementConstructor component = new SynchronizePropertyUsingElementConstructor();
         component.customInit();
         Element element = component.getElement();
-        assertSynchronizedProperties(element, "foo");
-        assertSynchronizedPropertiesEvents(element, "change");
+        assertSynchronizedProperties("change", element, "}foo");
     }
 
     @Test
@@ -995,26 +983,15 @@ public class ComponentTest {
     public void synchronizePropertyWithPropertyName() {
         SynchronizePropertyOnChangeGivenPropertyComponent component = new SynchronizePropertyOnChangeGivenPropertyComponent();
         Element element = component.getElement();
-        assertSynchronizedProperties(element, "bar");
-        assertSynchronizedPropertiesEvents(element, "change");
+        assertSynchronizedProperties("change", element, "}bar");
     }
 
     @Test
     public void synchronizePropertyWithMultipleEvents() {
         SynchronizePropertyOnMultipleEventsComponent component = new SynchronizePropertyOnMultipleEventsComponent();
         Element element = component.getElement();
-        assertSynchronizedProperties(element, "foo");
-        assertSynchronizedPropertiesEvents(element, "blur", "input");
-    }
-
-    @Test
-    public void synchronizePropertyOverride() {
-        SynchronizePropertyOnChangeComponent component = new SynchronizePropertyOnChangeComponent();
-        component.getElement().removeSynchronizedProperty("foo");
-        component.getElement().removeSynchronizedPropertyEvent("change");
-        Element element = component.getElement();
-        assertSynchronizedProperties(element);
-        assertSynchronizedPropertiesEvents(element);
+        assertSynchronizedProperties("input", element, "}foo");
+        assertSynchronizedProperties("blur", element, "}foo");
     }
 
     @Test(expected = IllegalStateException.class)
@@ -1131,19 +1108,20 @@ public class ComponentTest {
     @Test
     public void declarativeSyncProperties_propertiesAreRegisteredWithProperDisabledUpdateMode() {
         TestDiv div = new TestDiv();
-        SynchronizedPropertiesList list = div.getElement().getNode()
-                .getFeature(SynchronizedPropertiesList.class);
 
-        Set<String> props = list.getSynchronizedProperties();
+        ElementListenerMap feature = div.getElement().getNode().getFeature(ElementListenerMap.class);
 
-        Assert.assertTrue(props.contains("bar"));
-        Assert.assertTrue(props.contains("baz"));
-        Assert.assertEquals(2, props.size());
-
-        Assert.assertEquals(DisabledUpdateMode.ONLY_WHEN_ENABLED,
-                list.getDisabledUpdateMode("bar"));
+        Set<String> props = feature.getExpressions("bar");
+        Assert.assertEquals(1, props.size());
+        Assert.assertTrue(props.contains("}baz"));
         Assert.assertEquals(DisabledUpdateMode.ALWAYS,
-                list.getDisabledUpdateMode("baz"));
+                feature.getPropertySynchronizationMode("baz"));
+
+        props = feature.getExpressions("foo");
+        Assert.assertEquals(1, props.size());
+        Assert.assertTrue(props.contains("}bar"));
+        Assert.assertEquals(DisabledUpdateMode.ONLY_WHEN_ENABLED,
+                feature.getPropertySynchronizationMode("bar"));
     }
 
     @Test

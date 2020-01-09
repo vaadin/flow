@@ -380,6 +380,8 @@ public class ExtendedClientDetails implements Serializable {
      *         using IOS or if no information from the browser is present
      */
     public boolean isIOS() {
-        return isIPad() || VaadinSession.getCurrent().getBrowser().isIOS();
+        return isIPad() || VaadinSession.getCurrent().getBrowser().isIPhone()
+                || (navigatorPlatform != null
+                        && navigatorPlatform.startsWith("iPod"));
     }
 }

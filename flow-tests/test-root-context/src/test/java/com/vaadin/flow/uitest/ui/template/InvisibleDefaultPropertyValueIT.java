@@ -16,6 +16,7 @@
 package com.vaadin.flow.uitest.ui.template;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.WebElement;
 
@@ -24,6 +25,9 @@ import com.vaadin.testbench.TestBenchElement;
 
 public class InvisibleDefaultPropertyValueIT extends ChromeBrowserTest {
 
+    @Ignore("Worked due to a side effect that was removed in 3.0 due to not all synchronized " +
+            "properties being updated for all sync-events. Also related (but not same): " +
+            "https://github.com/vaadin/flow/issues/3556")
     @Test
     public void clientDefaultPropertyValues_invisibleElement_propertiesAreNotSent() {
         open();

@@ -23,13 +23,11 @@ public class PropertiesUpdatedBeforeChangeEventsView extends AbstractDivView {
 
     public PropertiesUpdatedBeforeChangeEventsView() {
         PropertiesUpdatedBeforeChangeEvents template = new PropertiesUpdatedBeforeChangeEvents();
-        template.getElement().synchronizeProperty("firstProp",
-                "first-prop-changed");
-        template.getElement().synchronizeProperty("secondProp",
-                "second-prop-changed");
         template.getElement().addPropertyChangeListener("firstProp",
+                "first-prop-changed",
                 event -> template.getModel().setText(
-                        template.getElement().getProperty("secondProp")));
+                        template.getElement().getProperty("secondProp")))
+                .synchronizeProperty("secondProp");
         add(template);
     }
 }

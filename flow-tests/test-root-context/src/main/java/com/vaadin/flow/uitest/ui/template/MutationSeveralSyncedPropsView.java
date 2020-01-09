@@ -31,8 +31,12 @@ public class MutationSeveralSyncedPropsView
         extends PolymerTemplate<TemplateModel> {
 
     public MutationSeveralSyncedPropsView() {
-        getElement().synchronizeProperty("name", "name-changed");
-        getElement().synchronizeProperty("message", "message-changed");
+        getElement().addPropertyChangeListener("name", "name-changed",
+                event -> {
+                });
+        getElement().addPropertyChangeListener("message", "message-changed",
+                event -> {
+                });
 
         getElement().setProperty("name", "foo");
         getElement().setProperty("message", "msg");
