@@ -9,7 +9,7 @@
     "url": "https://github.com/vaadin/flow/issues"
   },
   "scripts": {
-    "lint": "eslint 'src/main/resources/META-INF/resources/frontend/*.js' && tslint 'src/main/resources/META-INF/resources/frontend/*.ts'",
+    "lint": "eslint \"src/main/resources/META-INF/resources/frontend/*.js\" && tslint --project .",
     "client": "node scripts/client.js",
     "webpack": "webpack --config=webpack.tests.config.js",
     "build": "npm run client && tsc",
