@@ -32,7 +32,7 @@ import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
  * 
  * @see ServiceInitEvent#addBootstrapListener(BootstrapListener)
  *
- * @deprecated This API is deprecated in favor of
+ * @deprecated Since 3.0, this API is deprecated in favor of
  *             {@link IndexHtmlRequestListener} when using client-side
  *             bootstrapping
  *

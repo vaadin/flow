@@ -16,14 +16,13 @@
 
 package com.vaadin.flow.component.page;
 
+import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.WebBrowser;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
-
-import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.WebBrowser;
 
 public class ExtendedClientDetailsTest {
 
@@ -79,6 +78,22 @@ public class ExtendedClientDetailsTest {
     }
 
     @Test
+    public void differentNavigatorPlatformDetails_Ipod_isIOSReturnsExpectedValue() {
+        ExtendedClientDetails details = new ExtendBuilder()
+                .setNavigatorPlatform("iPod ..").buildDetails();
+
+        VaadinSession session = Mockito.mock(VaadinSession.class);
+        CurrentInstance.setCurrent(session);
+        WebBrowser browser = Mockito.mock(WebBrowser.class);
+        Mockito.when(session.getBrowser()).thenReturn(browser);
+        Mockito.when(browser.isIPhone()).thenReturn(false);
+
+        Assert.assertTrue(details.isIOS());
+
+        CurrentInstance.clearAll();
+    }
+
+    @Test
     public void isIOS_isIPad_returnsTrue() {
         ExtendedClientDetails details = Mockito
                 .mock(ExtendedClientDetails.class);
@@ -89,7 +104,7 @@ public class ExtendedClientDetailsTest {
     }
 
     @Test
-    public void isIOS_notIPad_deprecatedIsIOS_returnsTrue() {
+    public void isIOS_notIPadIsIPhone_returnsTrue() {
         ExtendedClientDetails details = Mockito
                 .mock(ExtendedClientDetails.class);
         Mockito.doCallRealMethod().when(details).isIOS();
@@ -100,7 +115,7 @@ public class ExtendedClientDetailsTest {
         WebBrowser browser = Mockito.mock(WebBrowser.class);
         Mockito.when(session.getBrowser()).thenReturn(browser);
 
-        Mockito.when(browser.isIOS()).thenReturn(true);
+        Mockito.when(browser.isIPhone()).thenReturn(true);
 
         Assert.assertTrue(details.isIOS());
     }
