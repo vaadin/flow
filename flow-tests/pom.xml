@@ -252,9 +252,7 @@
                 <module>test-mixed/pom-pnpm-production.xml</module>
                 <module>test-mixed/pom-npm-production.xml</module>
                 <module>test-npm-only-features</module>
-                <!--
                 <module>test-multi-war</module>
-                -->
                 <module>test-ccdm</module>
                 <module>test-ccdm/pom-production.xml</module>                
 
