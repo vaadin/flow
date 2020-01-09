@@ -139,8 +139,6 @@ public abstract class AbstractScopeTest {
         when(session.getState()).thenReturn(VaadinSessionState.OPEN);
 
         final Properties initParameters = new Properties();
-        initParameters.setProperty(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                Boolean.FALSE.toString());
         when(session.getConfiguration())
                 .thenReturn(new DefaultDeploymentConfiguration(getClass(),
                         initParameters));

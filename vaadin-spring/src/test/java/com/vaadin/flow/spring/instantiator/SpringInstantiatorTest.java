@@ -189,8 +189,6 @@ public class SpringInstantiatorTest {
     public static Instantiator getInstantiator(ApplicationContext context)
             throws ServletException {
         Properties initParameters = new Properties();
-        initParameters.put(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                Boolean.FALSE.toString());
         return getService(context, initParameters).getInstantiator();
     }
 

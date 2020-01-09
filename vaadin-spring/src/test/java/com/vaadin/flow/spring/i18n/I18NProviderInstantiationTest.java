@@ -90,8 +90,6 @@ public class I18NProviderInstantiationTest {
         Properties properties = new Properties();
         properties.put(Constants.I18N_PROVIDER,
                 DefaultI18NTestProvider.class.getName());
-        properties.setProperty(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                Boolean.FALSE.toString());
         return SpringInstantiatorTest.getService(context, properties)
                 .getInstantiator();
     }
