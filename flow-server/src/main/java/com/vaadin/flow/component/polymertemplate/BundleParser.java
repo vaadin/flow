@@ -16,6 +16,7 @@
 package com.vaadin.flow.component.polymertemplate;
 
 import java.util.Optional;
+import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,7 +33,6 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonType;
-
 import static elemental.json.JsonType.ARRAY;
 import static elemental.json.JsonType.OBJECT;
 import static elemental.json.JsonType.STRING;
@@ -90,10 +90,12 @@ public final class BundleParser {
     private static final Pattern HASH_PATTERN = Pattern
             .compile("\"hash\"\\s*:\\s*\"([^\"]+)\"\\s*,");
 
-    private static final String TEMPLATE_TAG_NAME = "template";
+    /**
+     * Comment parser state enumeration.
+     */
+    private enum State {normal, inLineComment, inBlockComment, inString};
 
-    private static final Pattern COMMENTS_PATTERN = Pattern
-            .compile("(?:/\\*(?:[^*]|(?:\\*+[^*/]))*\\*+/)|(?://.*)");
+    private static final String TEMPLATE_TAG_NAME = "template";
 
     private BundleParser() {
     }
@@ -299,15 +301,57 @@ public final class BundleParser {
 
     /**
      * Removes comments (block comments and line comments) from the JS code.
-     * <p>
-     * Note that this is not really a correct way to do this: this will remove
-     * comments also if they are inside strings. But this is not important here
-     * in this class since we care only about import statements where this is
-     * fine.
      *
      * @return the code with removed comments
      */
-    private static String removeComments(String content) {
-        return COMMENTS_PATTERN.matcher(content).replaceAll("");
+    final static String removeComments(String code) {
+        State state = State.normal;
+        StringBuilder result = new StringBuilder();
+        Scanner scanner = new Scanner(code);
+        scanner.useDelimiter("");
+        while (scanner.hasNext()) {
+            String character = scanner.next();
+            switch (state) {
+            case normal:
+                if (character.equals("/") && scanner.hasNext()) {
+                    String nextCharacter = scanner.next();
+                    if (nextCharacter.equals("/"))
+                        state = State.inLineComment;
+                    else if (nextCharacter.equals("*")) {
+                        state = State.inBlockComment;
+                    } else {
+                        result.append(character).append(nextCharacter);
+                    }
+                } else {
+                    result.append(character);
+                    if (character.equals("\"")) {
+                        state = State.inString;
+                    }
+                }
+                break;
+            case inString:
+                result.append(character);
+                if (character.equals("\"")) {
+                    state = State.normal;
+                } else if (character.equals("\\") && scanner.hasNext()) {
+                    result.append(scanner.next());
+                }
+                break;
+            case inLineComment:
+                if (character.equals("\n")) {
+                    result.append(character);
+                    state = State.normal;
+                }
+                break;
+            case inBlockComment:
+                    if (character.equals("*") && scanner.hasNext() && scanner
+                        .next().equals("/")) {
+                    state = State.normal;
+                    break;
+                }
+            }
+        }
+        scanner.close();
+        return result.toString();
     }
 }
