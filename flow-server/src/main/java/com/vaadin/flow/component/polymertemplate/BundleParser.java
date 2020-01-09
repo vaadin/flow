@@ -93,7 +93,9 @@ public final class BundleParser {
     /**
      * Comment parser state enumeration.
      */
-    private enum State {normal, inLineComment, inBlockComment, inString};
+    private enum State {
+        NORMAL, IN_LINE_COMMENT, IN_BLOCK_COMMENT, IN_STRING
+    }
 
     private static final String TEMPLATE_TAG_NAME = "template";
 
@@ -305,48 +307,48 @@ public final class BundleParser {
      * @return the code with removed comments
      */
     final static String removeComments(String code) {
-        State state = State.normal;
+        State state = State.NORMAL;
         StringBuilder result = new StringBuilder();
         Scanner scanner = new Scanner(code);
         scanner.useDelimiter("");
         while (scanner.hasNext()) {
             String character = scanner.next();
             switch (state) {
-            case normal:
+            case NORMAL:
                 if (character.equals("/") && scanner.hasNext()) {
                     String nextCharacter = scanner.next();
                     if (nextCharacter.equals("/"))
-                        state = State.inLineComment;
+                        state = State.IN_LINE_COMMENT;
                     else if (nextCharacter.equals("*")) {
-                        state = State.inBlockComment;
+                        state = State.IN_BLOCK_COMMENT;
                     } else {
                         result.append(character).append(nextCharacter);
                     }
                 } else {
                     result.append(character);
                     if (character.equals("\"")) {
-                        state = State.inString;
+                        state = State.IN_STRING;
                     }
                 }
                 break;
-            case inString:
+            case IN_STRING:
                 result.append(character);
                 if (character.equals("\"")) {
-                    state = State.normal;
+                    state = State.NORMAL;
                 } else if (character.equals("\\") && scanner.hasNext()) {
                     result.append(scanner.next());
                 }
                 break;
-            case inLineComment:
+            case IN_LINE_COMMENT:
                 if (character.equals("\n")) {
                     result.append(character);
-                    state = State.normal;
+                    state = State.NORMAL;
                 }
                 break;
-            case inBlockComment:
+            case IN_BLOCK_COMMENT:
                     if (character.equals("*") && scanner.hasNext() && scanner
                         .next().equals("/")) {
-                    state = State.normal;
+                    state = State.NORMAL;
                     break;
                 }
             }
