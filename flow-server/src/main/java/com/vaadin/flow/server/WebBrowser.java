@@ -19,7 +19,6 @@ package com.vaadin.flow.server;
 import java.io.Serializable;
 import java.util.Locale;
 
-import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.shared.BrowserDetails;
 
 /**
@@ -248,19 +247,6 @@ public class WebBrowser implements Serializable {
      */
     public boolean isAndroid() {
         return browserDetails.isAndroid();
-    }
-
-    /**
-     * Tests if the browser is run in iOS.
-     *
-     * @return true if run in iOS false if the user is not using iOS or if no
-     *         information on the browser is present
-     * @deprecated isIOS will return the wrong value for iOS 13 and later. Use
-     *             instead {@link ExtendedClientDetails#isIOS()}
-     */
-    @Deprecated
-    public boolean isIOS() {
-        return browserDetails.isIOS();
     }
 
     /**

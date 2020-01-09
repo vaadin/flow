@@ -82,14 +82,6 @@ public final class NodeFeatures {
      */
     public static final int ELEMENT_STYLE_PROPERTIES = 12;
     /**
-     * Id for {@link SynchronizedPropertiesList}.
-     */
-    public static final int SYNCHRONIZED_PROPERTIES = 13;
-    /**
-     * Id for {@link SynchronizedPropertyEventsList}.
-     */
-    public static final int SYNCHRONIZED_PROPERTY_EVENTS = 14;
-    /**
      * Id for {@link ComponentMapping}.
      */
     public static final int COMPONENT_MAPPING = 15;
