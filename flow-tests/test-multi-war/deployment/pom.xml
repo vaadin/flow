@@ -24,6 +24,12 @@
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
                 <configuration>
+                    <systemProperties>
+                        <systemProperty>
+                            <name>vaadin.enableDevServer</name>
+                            <value>false</value>
+                        </systemProperty>
+                    </systemProperties>
                     <!-- Use war output directory to get the webpack files -->
                     <webAppConfig>
                         <allowDuplicateFragmentNames>true</allowDuplicateFragmentNames>
