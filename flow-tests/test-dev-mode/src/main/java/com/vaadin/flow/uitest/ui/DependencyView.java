@@ -73,7 +73,7 @@ public class DependencyView extends AbstractDivView {
         UI ui = attachEvent.getUI();
 
         getPage().addStyleSheet("/test-files/css/allred.css");
-        getPage().addJavaScript("/test-files/js/body-click-listener.js");
+        getPage().addJavaScript("/frontend/test-files/js/body-click-listener.js");
     }
 
 }

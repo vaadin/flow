@@ -38,6 +38,7 @@ import org.slf4j.Logger;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.CssData;
+import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
@@ -188,7 +189,11 @@ abstract class AbstractUpdateImports implements Runnable {
     protected abstract Logger getLogger();
 
     List<String> resolveModules(Collection<String> modules) {
-        return modules.stream().map(module -> resolveResource(module)).sorted()
+        return modules.stream().filter(module ->
+                !module.startsWith(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX)
+                        && !module
+                        .startsWith(ApplicationConstants.BASE_PROTOCOL_PREFIX))
+                .map(module -> resolveResource(module)).sorted()
                 .collect(Collectors.toList());
     }
 
