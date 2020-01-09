@@ -19,11 +19,6 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import jsinterop.annotations.JsFunction;
-
-import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.core.client.Scheduler;
-
 import com.vaadin.client.Command;
 import com.vaadin.client.Console;
 import com.vaadin.client.ExistingElementMap;
@@ -53,6 +48,10 @@ import com.vaadin.client.flow.util.NativeFunction;
 import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.shared.JsonConstants;
+import jsinterop.annotations.JsFunction;
+
+import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.Scheduler;
 
 import elemental.client.Browser;
 import elemental.css.CSSStyleDeclaration;
@@ -135,9 +134,6 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         private final JsMap<String, EventRemover> listenerRemovers = JsCollections
                 .map();
 
-        private final JsSet<EventRemover> synchronizedPropertyEventListeners = JsCollections
-                .set();
-
         private BindingContext(StateNode node, Node htmlNode,
                 BinderContext binderContext) {
             this.node = node;
@@ -217,7 +213,6 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
             // Flow's own event listeners
             listeners.push(bindDomEventListeners(context));
-            listeners.push(bindSynchronizedPropertyEvents(context));
 
             // Dom structure, shouldn't trigger observers synchronously
             listeners.push(bindVirtualChildren(context));
@@ -733,41 +728,6 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         WidgetUtil.updateAttribute(element, name, mapProperty.getValue());
     }
 
-    private EventRemover bindSynchronizedPropertyEvents(
-            BindingContext context) {
-        synchronizeEventTypesChanged(context);
-
-        NodeList propertyEvents = context.node
-                .getList(NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS);
-        return propertyEvents
-                .addSpliceListener(e -> synchronizeEventTypesChanged(context));
-    }
-
-    private void synchronizeEventTypesChanged(BindingContext context) {
-        NodeList propertyEvents = context.node
-                .getList(NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS);
-
-        // Remove all old listeners and add new ones
-        context.synchronizedPropertyEventListeners
-                .forEach(EventRemover::remove);
-        context.synchronizedPropertyEventListeners.clear();
-
-        for (int i = 0; i < propertyEvents.length(); i++) {
-            String eventType = propertyEvents.get(i).toString();
-            EventRemover remover = context.htmlNode.addEventListener(eventType,
-                    event -> handlePropertySyncDomEvent(context), false);
-            context.synchronizedPropertyEventListeners.add(remover);
-        }
-    }
-
-    private void handlePropertySyncDomEvent(BindingContext context) {
-        NodeList propertiesList = context.node
-                .getList(NodeFeatures.SYNCHRONIZED_PROPERTIES);
-        for (int i = 0; i < propertiesList.length(); i++) {
-            syncPropertyIfNeeded(propertiesList.get(i).toString(), context);
-        }
-    }
-
     /**
      * Synchronizes the given property if the value in the DOM does not match
      * the value in the StateTree.
@@ -1153,8 +1113,6 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         context.listenerRemovers.forEach((remover, name) -> remover.remove());
         listeners.forEach(EventRemover::remove);
-        context.synchronizedPropertyEventListeners
-                .forEach(EventRemover::remove);
 
         assert boundNodes != null;
         boundNodes.delete(context.node);

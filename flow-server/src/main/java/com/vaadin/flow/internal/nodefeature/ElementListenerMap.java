@@ -445,14 +445,14 @@ public class ElementListenerMap extends NodeMap {
      * Gets the event data expressions defined for the given event name. This
      * method is currently only provided to facilitate unit testing.
      *
-     * @param name
+     * @param eventName
      *            the name of the event, not <code>null</code>
      * @return an unmodifiable set of event data expressions, not
      *         <code>null</code>
      */
-    Set<String> getExpressions(String name) {
-        assert name != null;
-        return collectEventExpressions(name).keySet();
+    public Set<String> getExpressions(String eventName) {
+        assert eventName != null;
+        return collectEventExpressions(eventName).keySet();
     }
 
     /**

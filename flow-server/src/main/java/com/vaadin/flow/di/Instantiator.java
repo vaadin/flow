@@ -96,7 +96,7 @@ public interface Instantiator extends Serializable {
      *
      * @return a stream of all bootstrap listeners to use, not <code>null</code>
      *
-     * @deprecated This API is deprecated in favor of
+     * @deprecated Since 3.0, this API is deprecated in favor of
      *             {@link Instantiator#getIndexHtmlRequestListeners(Stream)}
      *             when using client-side bootstrapping
      */

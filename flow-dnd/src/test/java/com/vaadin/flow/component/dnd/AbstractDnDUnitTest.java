@@ -20,11 +20,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.dnd.internal.DnDUtilHelper;
 import com.vaadin.flow.component.internal.DependencyList;
@@ -35,21 +30,21 @@ import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.WebBrowser;
 import com.vaadin.flow.shared.ui.Dependency;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
 
 public abstract class AbstractDnDUnitTest {
 
     protected MockUI ui;
     protected boolean compatibilityMode;
-    protected boolean iOS;
 
     @Before
     public void setup() {
         DefaultDeploymentConfiguration configuration = new DefaultDeploymentConfiguration(
                 VaadinServlet.class, new Properties());
-        WebBrowser browser = Mockito.mock(WebBrowser.class);
-        Mockito.when(browser.isIOS()).then(invocation -> iOS);
 
         VaadinService service = Mockito.mock(VaadinService.class);
         Mockito.when(service.resolveResource(Mockito.anyString()))
@@ -57,7 +52,6 @@ public abstract class AbstractDnDUnitTest {
 
         VaadinSession session = Mockito.mock(VaadinSession.class);
         Mockito.when(session.getConfiguration()).thenReturn(configuration);
-        Mockito.when(session.getBrowser()).thenReturn(browser);
         Mockito.when(session.getService()).thenReturn(service);
 
         ui = new MockUI(session);
@@ -89,8 +83,7 @@ public abstract class AbstractDnDUnitTest {
     }
 
     @Test
-    public void testExtension_iOS_mobileDnDpolyfillScriptInjected() {
-        iOS = true;
+    public void testExtension_mobileDnDpolyfillScriptInjected() {
         ui.getInternals().dumpPendingJavaScriptInvocations();
 
         RouterLink component = new RouterLink();
