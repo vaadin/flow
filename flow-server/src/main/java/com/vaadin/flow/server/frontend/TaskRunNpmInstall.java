@@ -117,13 +117,15 @@ public class TaskRunNpmInstall implements FallibleCommand {
             process = builder.start();
 
             packageUpdater.log().debug("Output of `{}`:", commandString);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(
-                    process.getInputStream(), StandardCharsets.UTF_8));
-            String stdoutLine;
             StringBuilder toolOutput = new StringBuilder();
-            while ((stdoutLine = reader.readLine()) != null) {
-                packageUpdater.log().debug(stdoutLine);
-                toolOutput.append(stdoutLine);
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(process.getInputStream(),
+                            StandardCharsets.UTF_8))) {
+                String stdoutLine;
+                while ((stdoutLine = reader.readLine()) != null) {
+                    packageUpdater.log().debug(stdoutLine);
+                    toolOutput.append(stdoutLine);
+                }
             }
 
             int errorCode = process.waitFor();
