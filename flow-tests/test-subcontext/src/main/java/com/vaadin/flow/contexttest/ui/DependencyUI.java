@@ -50,7 +50,7 @@ public class DependencyUI extends UI {
         @Override
         protected void onAttach(AttachEvent attachEvent) {
             attachEvent.getUI().getPage().addJavaScript(
-                    "context://test-files/js/body-click-listener.js");
+                    "context://frontend/test-files/js/body-click-listener.js");
         }
     }
 
