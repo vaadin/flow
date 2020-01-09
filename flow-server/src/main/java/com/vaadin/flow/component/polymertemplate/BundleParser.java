@@ -16,7 +16,6 @@
 package com.vaadin.flow.component.polymertemplate;
 
 import java.util.Optional;
-import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,6 +26,7 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import elemental.json.Json;
@@ -89,13 +89,6 @@ public final class BundleParser {
 
     private static final Pattern HASH_PATTERN = Pattern
             .compile("\"hash\"\\s*:\\s*\"([^\"]+)\"\\s*,");
-
-    /**
-     * Comment parser state enumeration.
-     */
-    private enum State {
-        NORMAL, IN_LINE_COMMENT, IN_BLOCK_COMMENT, IN_STRING
-    }
 
     private static final String TEMPLATE_TAG_NAME = "template";
 
@@ -165,7 +158,7 @@ public final class BundleParser {
      */
     public static Element parseTemplateElement(String fileName, String source) {
         Document templateDocument = null;
-        String content = removeComments(source);
+        String content = StringUtil.removeComments(source);
         Matcher templateMatcher = TEMPLATE_PATTERN.matcher(content);
         Matcher noTemplateMatcher = NO_TEMPLATE_PATTERN.matcher(content);
 
@@ -299,61 +292,5 @@ public final class BundleParser {
         boolean validKey = o != null && o.hasKey(k)
                 && o.get(k).getType().equals(t);
         return validKey && (!t.equals(STRING) || !o.getString(k).isEmpty());
-    }
-
-    /**
-     * Removes comments (block comments and line comments) from the JS code.
-     *
-     * @return the code with removed comments
-     */
-    final static String removeComments(String code) {
-        State state = State.NORMAL;
-        StringBuilder result = new StringBuilder();
-        Scanner scanner = new Scanner(code);
-        scanner.useDelimiter("");
-        while (scanner.hasNext()) {
-            String character = scanner.next();
-            switch (state) {
-            case NORMAL:
-                if (character.equals("/") && scanner.hasNext()) {
-                    String nextCharacter = scanner.next();
-                    if (nextCharacter.equals("/"))
-                        state = State.IN_LINE_COMMENT;
-                    else if (nextCharacter.equals("*")) {
-                        state = State.IN_BLOCK_COMMENT;
-                    } else {
-                        result.append(character).append(nextCharacter);
-                    }
-                } else {
-                    result.append(character);
-                    if (character.equals("\"")) {
-                        state = State.IN_STRING;
-                    }
-                }
-                break;
-            case IN_STRING:
-                result.append(character);
-                if (character.equals("\"")) {
-                    state = State.NORMAL;
-                } else if (character.equals("\\") && scanner.hasNext()) {
-                    result.append(scanner.next());
-                }
-                break;
-            case IN_LINE_COMMENT:
-                if (character.equals("\n")) {
-                    result.append(character);
-                    state = State.NORMAL;
-                }
-                break;
-            case IN_BLOCK_COMMENT:
-                    if (character.equals("*") && scanner.hasNext() && scanner
-                        .next().equals("/")) {
-                    state = State.NORMAL;
-                    break;
-                }
-            }
-        }
-        scanner.close();
-        return result.toString();
     }
 }

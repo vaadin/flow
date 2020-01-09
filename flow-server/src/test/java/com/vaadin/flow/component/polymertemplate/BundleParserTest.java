@@ -78,29 +78,4 @@ public class BundleParserTest {
                 "nats://server:port", natsElement.attr("placeholder"));
 
     }
-
-    @Test
-    public void commentRemoval_handlesCommentsCorrectly() {
-        String singleLineBlock = BundleParser
-                .removeComments("return html'/* single line block comment*/';");
-
-        Assert.assertEquals("return html'';", singleLineBlock);
-
-        String blockComment = BundleParser.removeComments("return html'/* block with new lines\n"
-                + "* still in my/their block */';");
-        Assert.assertEquals("return html'';", blockComment);
-
-        String newLineSingleBlock = BundleParser.removeComments("return html'/* not here \n*/';");
-        Assert.assertEquals("return html'';", newLineSingleBlock);
-
-        String noComments = "<vaadin-text-field label=\"Nats Url(s)\" placeholder=\"nats://server:port\" id=\"natsUrlTxt\" style=\"width:100%\"></vaadin-text-field>`";
-        Assert.assertEquals(noComments, BundleParser.removeComments(noComments));
-
-        String lineComment = BundleParser.removeComments("return html'// this line comment\n';");
-        Assert.assertEquals("return html'\n';", lineComment);
-
-        String mixedComments = BundleParser.removeComments("return html'/* not here \n*/\nCode;// neither this\n"
-                + "/* this should // be fine\n* to remove / */';");
-        Assert.assertEquals("return html'\nCode;\n';", mixedComments);
-    }
 }
