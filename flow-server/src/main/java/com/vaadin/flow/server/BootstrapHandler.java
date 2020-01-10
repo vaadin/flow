@@ -63,6 +63,7 @@ import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.internal.UsageStatistics.UsageEntry;
+import com.vaadin.flow.internal.UsageStatisticsExporter;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.PushConnectionFactory;
 import com.vaadin.flow.server.communication.UidlWriter;
@@ -507,7 +508,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                             head, initialPageSettings));
 
             if (!config.isProductionMode()) {
-                exportUsageStatistics(document);
+                UsageStatisticsExporter.exportUsageStatisticsToDocument(document);
             }
 
             setupPwa(document, context);
@@ -527,30 +528,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         private String getClientEngine() {
             return clientEngineFile.get();
-        }
-
-        private void exportUsageStatistics(Document document) {
-            String entries = UsageStatistics.getEntries()
-                    .map(BootstrapPageBuilder::createUsageStatisticsJson)
-                    .collect(Collectors.joining(","));
-
-            if (!entries.isEmpty()) {
-                // Registers the entries in a way that is picked up as a Vaadin
-                // WebComponent by the usage stats gatherer
-                document.body().appendElement(SCRIPT_TAG).text(
-                        "window.Vaadin.registrations = window.Vaadin.registrations || [];\n"
-                                + "window.Vaadin.registrations.push(" + entries
-                                + ");");
-            }
-        }
-
-        private static String createUsageStatisticsJson(UsageEntry entry) {
-            JsonObject json = Json.createObject();
-
-            json.put("is", entry.getName());
-            json.put("version", entry.getVersion());
-
-            return json.toJson();
         }
 
         private Element createDependencyElement(BootstrapContext context,

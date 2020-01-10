@@ -483,7 +483,7 @@ public class IndexHtmlRequestHandlerTest {
                             + "window.Vaadin.registrations.push(" + entries
                             + ");");
 
-        assertEquals(StringUtil.normaliseWhitespace(expected), ((DataNode)bodyInlineElements.get(1).childNode(0)).getWholeData());
+        assertEquals(StringUtil.normaliseWhitespace(expected), bodyInlineElements.get(1).childNode(0).outerHtml());
     }
 
     @Test

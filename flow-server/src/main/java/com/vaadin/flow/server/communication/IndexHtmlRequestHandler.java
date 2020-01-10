@@ -17,9 +17,7 @@ package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
-import elemental.json.Json;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
@@ -30,8 +28,8 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.AppShellRegistry;
+import com.vaadin.flow.internal.UsageStatisticsExporter;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -55,8 +53,6 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
     private static final Pattern PATH_WITH_EXTENSION = Pattern
             .compile("\\.[A-z][A-z\\d]+$");
-
-    private static final String SCRIPT_TAG = "script";
 
     private transient IndexHtmlResponse indexHtmlResponse;
 
@@ -91,7 +87,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         DeploymentConfiguration config = session.getConfiguration();
         if (!config.isProductionMode()) {
-            exportUsageStatistics(indexDocument);
+            UsageStatisticsExporter.exportUsageStatisticsToDocument(indexDocument);
         }
 
         // modify the page based on the @PWA annotation
@@ -112,33 +108,6 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             return false;
         }
         return true;
-    }
-
-    private void exportUsageStatistics(Document document) {
-        String entries = UsageStatistics.getEntries()
-                .map(IndexHtmlRequestHandler::createUsageStatisticsJson)
-                .collect(Collectors.joining(","));
-
-        if (!entries.isEmpty()) {
-            // Registers the entries in a way that is picked up as a Vaadin
-            // WebComponent by the usage stats gatherer
-            StringBuilder builder = new StringBuilder();
-            builder.append("window.Vaadin = window.Vaadin || {};\n")
-                    .append("window.Vaadin.registrations = window.Vaadin.registrations || [];\n")
-                    .append("window.Vaadin.registrations.push(")
-                    .append(entries)
-                    .append(");");
-            document.body().appendElement(SCRIPT_TAG).text(builder.toString());
-        }
-    }
-
-    static String createUsageStatisticsJson(UsageStatistics.UsageEntry entry) {
-        JsonObject json = Json.createObject();
-
-        json.put("is", entry.getName());
-        json.put("version", entry.getVersion());
-
-        return json.toJson();
     }
 
     private void includeInitialUidl(VaadinSession session,
