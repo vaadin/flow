@@ -845,7 +845,25 @@ public abstract class VaadinService implements Serializable {
                 requestCanCreateSession);
 
         if (session != null) {
-            return session;
+            /*
+             * There is an existing session. We can use this as long as the user
+             * not specifically requested to close or restart it.
+             */
+
+            final boolean restartApplication = hasParameter(request,
+                    Constants.URL_PARAMETER_RESTART_APPLICATION);
+            final boolean closeApplication = hasParameter(request,
+                    Constants.URL_PARAMETER_CLOSE_APPLICATION);
+
+            if (closeApplication) {
+                closeSession(session, request.getWrappedSession(false));
+                return null;
+            } else if (restartApplication) {
+                closeSession(session, request.getWrappedSession(false));
+                return createAndRegisterSession(request);
+            } else {
+                return session;
+            }
         }
 
         // No existing session was found
