@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -41,8 +42,9 @@ import static org.junit.Assert.assertThat;
  * @see DependenciesLoadingPageApiView
  * @see DependenciesLoadingPageApiIT
  */
+@Ignore("Doesn't work in NPM mode, see https://github.com/vaadin/flow/issues/7328")
 public class DependenciesLoadingAnnotationsIT extends ChromeBrowserTest {
-    private static final String EAGER_PREFIX = "eager.";
+    private static final String EAGER_PREFIX = "eager";
     private static final String INLINE_PREFIX = "inline.";
     private static final String LAZY_PREFIX = "lazy.";
 
@@ -50,24 +52,26 @@ public class DependenciesLoadingAnnotationsIT extends ChromeBrowserTest {
     public void dependenciesLoadedAsExpectedWithAnnotationApi() {
         open();
 
-        waitUntil(input -> !input.findElements(By.className("dependenciesTest"))
+        waitUntil(input -> !input
+                .findElements(By.className("dependenciesTest" + getCssSuffix()))
                 .isEmpty());
 
         flowDependenciesShouldBeImportedBeforeUserDependenciesWithCorrectAttributes();
         checkInlinedCss();
 
-        WebElement preloadedDiv = findElement(By.id(PRELOADED_DIV_ID));
+        WebElement preloadedDiv = findElement(
+                By.id(PRELOADED_DIV_ID + getCssSuffix()));
         Assert.assertEquals(
                 "Lazy css should be loaded last: color should be blue",
                 "rgba(0, 0, 255, 1)", preloadedDiv.getCssValue("color"));
 
         List<String> testMessages = findElements(
-                By.className("dependenciesTest")).stream()
+                By.className("dependenciesTest" + getCssSuffix())).stream()
                         .map(WebElement::getText).collect(Collectors.toList());
 
         assertThat(
-                "7 elements are expected to be added: 2 for eager dependencies, 2 for inline dependencies, 1 for UI 'onAttach' method, 2 for lazy dependencies",
-                testMessages, hasSize(7));
+                "5 elements are expected to be added: 2 for eager dependencies, 2 for inline dependencies, 1 for UI 'onAttach' method, 2 for lazy dependencies",
+                testMessages, hasSize(5));
 
         List<String> inlineAndEagerMessages = testMessages.subList(0, 4);
 
@@ -80,23 +84,23 @@ public class DependenciesLoadingAnnotationsIT extends ChromeBrowserTest {
         List<String> inlineMessages = inlineAndEagerMessages.stream()
                 .filter(message -> message.startsWith(INLINE_PREFIX))
                 .collect(Collectors.toList());
-        assertThat("2 inline messages should be posted before lazy messages",
-                inlineMessages, hasSize(2));
+        assertThat("1 inline message should be posted before lazy messages",
+                inlineMessages, hasSize(1));
 
         Assert.assertTrue(
                 "Expected dom change to happen after eager dependencies loaded and before lazy dependencies have loaded, but got "
                         + testMessages.get(4),
-                testMessages.get(4).equals(DOM_CHANGE_TEXT));
+                testMessages.get(3).equals(DOM_CHANGE_TEXT));
 
-        List<String> lazyMessages = testMessages.subList(5, 7);
+        String lazyMessage = testMessages.get(testMessages.size() - 1);
         Assert.assertTrue(
                 "Lazy dependencies should be loaded after eager and inline, but got "
-                        + lazyMessages.get(0),
-                lazyMessages.get(0).startsWith(LAZY_PREFIX));
-        Assert.assertTrue(
-                "Lazy dependencies should be loaded after eager and inline, but got "
-                        + lazyMessages.get(1),
-                lazyMessages.get(1).startsWith(LAZY_PREFIX));
+                        + lazyMessage,
+                lazyMessage.startsWith(LAZY_PREFIX));
+    }
+
+    protected String getCssSuffix() {
+        return "";
     }
 
     private void checkInlinedCss() {
@@ -109,7 +113,8 @@ public class DependenciesLoadingAnnotationsIT extends ChromeBrowserTest {
                 inlinedCss.isPresent(), is(true));
 
         WebElement inlineCssTestDiv = findElement(
-                By.id(DependenciesLoadingBaseView.INLINE_CSS_TEST_DIV_ID));
+                By.id(DependenciesLoadingBaseView.INLINE_CSS_TEST_DIV_ID
+                        + getCssSuffix()));
         Assert.assertEquals(
                 "Incorrect color for the div that should be styled with inline.css",
                 "rgba(255, 255, 0, 1)", inlineCssTestDiv.getCssValue("color"));
@@ -143,7 +148,8 @@ public class DependenciesLoadingAnnotationsIT extends ChromeBrowserTest {
                         jsUrl, both(not(containsString("eager")))
                                 .and(not(containsString("lazy"))));
 
-                if (jsUrl.endsWith(".cache.js")) {
+                if (jsUrl.endsWith(".cache.js")
+                        && jsUrl.contains("static/client/client-")) {
                     foundClientEngine = true;
                 }
             }

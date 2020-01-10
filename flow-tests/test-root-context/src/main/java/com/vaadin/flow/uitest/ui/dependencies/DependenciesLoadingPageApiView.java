@@ -18,34 +18,15 @@ public class DependenciesLoadingPageApiView
         extends DependenciesLoadingBaseView {
 
     public DependenciesLoadingPageApiView() {
-        super();
+        super("WebRes");
         Page page = UI.getCurrent().getPage();
-        page.addJavaScript(
-                "frontend://com/vaadin/flow/uitest/ui/dependencies/inline.js",
-                LoadMode.INLINE);
-        page.addStyleSheet(
-                "frontend://com/vaadin/flow/uitest/ui/dependencies/inline.css",
-                LoadMode.INLINE);
-        // TODO
-        // page.addHtmlImport(
-        // "frontend://com/vaadin/flow/uitest/ui/dependencies/inline.html",
-        // LoadMode.INLINE);
-        page.addJavaScript(
-                "frontend://com/vaadin/flow/uitest/ui/dependencies/lazy.js",
-                LoadMode.LAZY);
-        page.addStyleSheet(
-                "frontend://com/vaadin/flow/uitest/ui/dependencies/lazy.css",
-                LoadMode.LAZY);
-        // TODO
-        // page.addHtmlImport(
-        // "frontend://com/vaadin/flow/uitest/ui/dependencies/lazy.html",
-        // LoadMode.LAZY);
-        page.addJavaScript(
-                "frontend://com/vaadin/flow/uitest/ui/dependencies/eager.js");
-        page.addStyleSheet(
-                "frontend://com/vaadin/flow/uitest/ui/dependencies/eager.css");
-        // TODO
-        // page.addHtmlImport(
-        // "frontend://com/vaadin/flow/uitest/ui/dependencies/eager.html");
+        page.addJavaScript("/dependencies/inline.js", LoadMode.INLINE);
+        page.addStyleSheet("/dependencies/inline.css", LoadMode.INLINE);
+        page.addJavaScript("/dependencies/lazy.js", LoadMode.LAZY);
+        page.addStyleSheet("/dependencies/lazy.css", LoadMode.LAZY);
+        page.addJavaScript("/dependencies/eager.js");
+        page.addStyleSheet("/dependencies/eager.css");
+        page.addJsModule("/dependencies/eager-module.js");
     }
+
 }

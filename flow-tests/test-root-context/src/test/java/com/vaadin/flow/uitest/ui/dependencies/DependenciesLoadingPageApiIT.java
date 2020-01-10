@@ -12,4 +12,9 @@ package com.vaadin.flow.uitest.ui.dependencies;
  */
 public class DependenciesLoadingPageApiIT
         extends DependenciesLoadingAnnotationsIT {
+
+    @Override
+    protected String getCssSuffix() {
+        return "WebRes";
+    }
 }
