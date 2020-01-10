@@ -165,7 +165,7 @@ public abstract class AbstractNavigationStateRenderer
                 leaveHandlers = new ArrayDeque<>(beforeLeaveHandlers);
             }
             TransitionOutcome transitionOutcome = executeBeforeLeaveNavigation(
-                    beforeNavigationDeactivating, event, leaveHandlers);
+                    beforeNavigationDeactivating, leaveHandlers);
 
             Optional<Integer> result = handleTransactionOutcome(
                     transitionOutcome, event, beforeNavigationDeactivating);
@@ -372,7 +372,6 @@ public abstract class AbstractNavigationStateRenderer
      */
     private TransitionOutcome executeBeforeLeaveNavigation(
             BeforeLeaveEvent beforeNavigation,
-            NavigationEvent event,
             Deque<BeforeLeaveHandler> leaveHandlers) {
         while (!leaveHandlers.isEmpty()) {
             BeforeLeaveHandler listener = leaveHandlers.remove();
@@ -381,7 +380,7 @@ public abstract class AbstractNavigationStateRenderer
             validateBeforeEvent(beforeNavigation);
 
             Optional<TransitionOutcome> transitionOutcome = getTransitionOutcome(
-                    beforeNavigation, event);
+                    beforeNavigation);
             if (transitionOutcome.isPresent()) {
                 return transitionOutcome.get();
             }
@@ -535,7 +534,7 @@ public abstract class AbstractNavigationStateRenderer
             }
 
             Optional<TransitionOutcome> transitionOutcome = sendBeforeEnterEvent(
-                    beforeNavigation, event, eventHandler);
+                    beforeNavigation, eventHandler);
             if (transitionOutcome.isPresent()) {
                 return transitionOutcome;
             }
@@ -556,11 +555,11 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     private Optional<TransitionOutcome> sendBeforeEnterEvent(
-            BeforeEnterEvent beforeNavigation, NavigationEvent event,
+            BeforeEnterEvent beforeNavigation,
             BeforeEnterHandler eventHandler) {
         eventHandler.beforeEnter(beforeNavigation);
         validateBeforeEvent(beforeNavigation);
-        return getTransitionOutcome(beforeNavigation, event);
+        return getTransitionOutcome(beforeNavigation);
     }
 
     private Optional<TransitionOutcome> notifyNavigationTarget(
@@ -571,7 +570,7 @@ public abstract class AbstractNavigationStateRenderer
         notifyNavigationTarget(componentInstance, event, beforeNavigation,
                 locationChangeEvent);
 
-        return getTransitionOutcome(beforeNavigation, event);
+        return getTransitionOutcome(beforeNavigation);
     }
 
     /*
@@ -598,7 +597,7 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     private Optional<TransitionOutcome> getTransitionOutcome(
-            BeforeEvent beforeEvent, NavigationEvent event) {
+            BeforeEvent beforeEvent) {
         if (beforeEvent.hasForwardTarget()
                 && !isSameNavigationState(beforeEvent.getForwardTargetType(),
                         beforeEvent.getForwardTargetParameters())) {
