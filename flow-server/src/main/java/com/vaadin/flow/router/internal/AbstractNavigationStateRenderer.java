@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
@@ -34,7 +35,6 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.internal.Mutable;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.AfterNavigationEvent;
@@ -79,6 +79,8 @@ public abstract class AbstractNavigationStateRenderer
     private final NavigationState navigationState;
 
     private Postpone postponed = null;
+
+    private LocationChangeEvent locationChangeEvent;
 
     /**
      * Creates a new renderer for the given navigation state.
@@ -163,7 +165,7 @@ public abstract class AbstractNavigationStateRenderer
                 leaveHandlers = new ArrayDeque<>(beforeLeaveHandlers);
             }
             TransitionOutcome transitionOutcome = executeBeforeLeaveNavigation(
-                    beforeNavigationDeactivating, leaveHandlers);
+                    beforeNavigationDeactivating, event, leaveHandlers);
 
             Optional<Integer> result = handleTransactionOutcome(
                     transitionOutcome, event, beforeNavigationDeactivating);
@@ -214,9 +216,8 @@ public abstract class AbstractNavigationStateRenderer
         BeforeEnterEvent beforeNavigationActivating = new BeforeEnterEvent(
                 event, routeTargetType, routeLayoutTypes);
 
-        Mutable<LocationChangeEvent> locationChangeEventMutable = new Mutable<>();
         TransitionOutcome transitionOutcome = createChainIfEmptyAndExecuteBeforeEnterNavigation(
-                beforeNavigationActivating, event, chain, locationChangeEventMutable);
+                beforeNavigationActivating, event, chain);
 
         if (eventActionsSupported) {
             Optional<Integer> result = handleTransactionOutcome(
@@ -244,9 +245,6 @@ public abstract class AbstractNavigationStateRenderer
                 routerLayouts);
 
         updatePageTitle(event, componentInstance);
-
-        LocationChangeEvent locationChangeEvent = locationChangeEventMutable
-                .getValue();
 
         int statusCode = locationChangeEvent.getStatusCode();
         validateStatusCode(statusCode, routeTargetType);
@@ -374,6 +372,7 @@ public abstract class AbstractNavigationStateRenderer
      */
     private TransitionOutcome executeBeforeLeaveNavigation(
             BeforeLeaveEvent beforeNavigation,
+            NavigationEvent event,
             Deque<BeforeLeaveHandler> leaveHandlers) {
         while (!leaveHandlers.isEmpty()) {
             BeforeLeaveHandler listener = leaveHandlers.remove();
@@ -382,7 +381,7 @@ public abstract class AbstractNavigationStateRenderer
             validateBeforeEvent(beforeNavigation);
 
             Optional<TransitionOutcome> transitionOutcome = getTransitionOutcome(
-                    beforeNavigation);
+                    beforeNavigation, event);
             if (transitionOutcome.isPresent()) {
                 return transitionOutcome.get();
             }
@@ -414,17 +413,11 @@ public abstract class AbstractNavigationStateRenderer
      *            the chain of {@link HasElement} instances which will be
      *            rendered. In case this is empty it'll be populated with
      *            instances according with the navigation event's location.
-     * @param locationChangeEventMutable
-     *            an output argument for the LocationChangeEvent. This event is
-     *            created and used when the url parameter is sent, right before
-     *            the event is sent to the navigation target. It has to be used
-     *            as the same instance and not recreated.
      * @return result of observer events
      */
     private TransitionOutcome createChainIfEmptyAndExecuteBeforeEnterNavigation(
             BeforeEnterEvent beforeNavigation, NavigationEvent event,
-            List<HasElement> chain,
-            Mutable<LocationChangeEvent> locationChangeEventMutable) {
+            List<HasElement> chain) {
 
         // Always send the beforeNavigation event first to the registered
         // listeners
@@ -433,7 +426,7 @@ public abstract class AbstractNavigationStateRenderer
                         .getNavigationListeners(BeforeEnterHandler.class));
 
         Optional<TransitionOutcome> transitionOutcome = sendBeforeEnterEvent(
-                registeredEnterHandlers, event, beforeNavigation, null, null);
+                registeredEnterHandlers, event, beforeNavigation, null);
         if (transitionOutcome.isPresent()) {
             return transitionOutcome.get();
         }
@@ -457,8 +450,7 @@ public abstract class AbstractNavigationStateRenderer
 
                 final boolean lastElement = chain.size() == typesChain.size();
                 transitionOutcome = sendBeforeEnterEvent(chainEnterHandlers,
-                        event, beforeNavigation, lastElement ? chain : null,
-                        lastElement ? locationChangeEventMutable : null);
+                        event, beforeNavigation, lastElement ? chain : null);
                 if (transitionOutcome.isPresent()) {
                     
                     // Reverse the chain for consistency although it may not be
@@ -480,7 +472,7 @@ public abstract class AbstractNavigationStateRenderer
                     EventUtil.collectBeforeEnterObserversFromChain(chain, oldChain));
             
             transitionOutcome = sendBeforeEnterEvent(chainEnterHandlers, event,
-                    beforeNavigation, chain, locationChangeEventMutable);
+                    beforeNavigation, chain);
             if (transitionOutcome.isPresent()) {
 
                 // Reverse the chain for consistency although it may not be
@@ -503,11 +495,9 @@ public abstract class AbstractNavigationStateRenderer
 
     private Optional<TransitionOutcome> sendBeforeEnterEvent(
             List<BeforeEnterHandler> eventHandlers, NavigationEvent event,
-            BeforeEnterEvent beforeNavigation, List<HasElement> chain,
-            Mutable<LocationChangeEvent> locationChangeEventMutable) {
+            BeforeEnterEvent beforeNavigation, List<HasElement> chain) {
 
         Component componentInstance = null;
-        LocationChangeEvent locationChangeEvent = null;
         boolean notifyNavigationTarget = false;
 
         if (chain != null) {
@@ -518,10 +508,11 @@ public abstract class AbstractNavigationStateRenderer
 
             // We aren't in reverse order here.
             componentInstance = (Component) chain.get(0);
+
             locationChangeEvent = new LocationChangeEvent(event.getSource(),
                     event.getUI(), event.getTrigger(), event.getLocation(),
                     chain);
-            locationChangeEventMutable.setValue(locationChangeEvent);
+
             notifyNavigationTarget = true;
         }
 
@@ -544,7 +535,7 @@ public abstract class AbstractNavigationStateRenderer
             }
 
             Optional<TransitionOutcome> transitionOutcome = sendBeforeEnterEvent(
-                    beforeNavigation, eventHandler);
+                    beforeNavigation, event, eventHandler);
             if (transitionOutcome.isPresent()) {
                 return transitionOutcome;
             }
@@ -565,11 +556,11 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     private Optional<TransitionOutcome> sendBeforeEnterEvent(
-            BeforeEnterEvent beforeNavigation,
+            BeforeEnterEvent beforeNavigation, NavigationEvent event,
             BeforeEnterHandler eventHandler) {
         eventHandler.beforeEnter(beforeNavigation);
         validateBeforeEvent(beforeNavigation);
-        return getTransitionOutcome(beforeNavigation);
+        return getTransitionOutcome(beforeNavigation, event);
     }
 
     private Optional<TransitionOutcome> notifyNavigationTarget(
@@ -580,7 +571,7 @@ public abstract class AbstractNavigationStateRenderer
         notifyNavigationTarget(componentInstance, event, beforeNavigation,
                 locationChangeEvent);
 
-        return getTransitionOutcome(beforeNavigation);
+        return getTransitionOutcome(beforeNavigation, event);
     }
 
     /*
@@ -607,16 +598,31 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     private Optional<TransitionOutcome> getTransitionOutcome(
-            BeforeEvent beforeEvent) {
-        if (beforeEvent.hasForwardTarget()) {
+            BeforeEvent beforeEvent, NavigationEvent event) {
+        if (beforeEvent.hasForwardTarget()
+                && !isSameNavigationState(beforeEvent.getForwardTargetType(),
+                        beforeEvent.getForwardTargetParameters())) {
+
             return Optional.of(TransitionOutcome.FORWARDED);
         }
 
-        if (beforeEvent.hasRerouteTarget()) {
+        if (beforeEvent.hasRerouteTarget()
+                && !isSameNavigationState(beforeEvent.getRerouteTargetType(),
+                        beforeEvent.getRerouteTargetParameters())) {
             return Optional.of(TransitionOutcome.REROUTED);
         }
 
         return Optional.empty();
+    }
+
+    private boolean isSameNavigationState(Class<? extends Component> targetType, List<String> targetParameters) {
+        final boolean sameTarget = navigationState.getNavigationTarget()
+                .equals(targetType);
+
+        final boolean sameParameters = targetParameters.equals(navigationState
+                .getUrlParameters().orElse(Collections.emptyList()));
+
+        return sameTarget && sameParameters;
     }
 
     private int forward(NavigationEvent event, BeforeEvent beforeNavigation) {
@@ -654,7 +660,7 @@ public abstract class AbstractNavigationStateRenderer
         if (beforeNavigation.hasForwardTarget()) {
             targetType = beforeNavigation.getForwardTargetType();
         } else {
-            targetType = beforeNavigation.getRouteTargetType();
+            targetType = beforeNavigation.getRerouteTargetType();
         }
 
         Location location = new Location(RouteConfiguration

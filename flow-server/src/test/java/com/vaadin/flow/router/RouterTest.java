@@ -1422,6 +1422,40 @@ public class RouterTest extends RoutingTestBase {
 
     }
 
+    /**
+     * Parent layout used to reroute to login when not logged in.
+     */
+    public static class SecurityParent extends ProcessEventsBase
+            implements RouterLayout {
+
+        @Override
+        public void beforeLeave(BeforeLeaveEvent event) {
+            super.beforeLeave(event);
+
+            // Only testing beforeLeave that same target redirect is not
+            // processed.
+            event.forwardTo("security/login");
+        }
+
+        @Override
+        public void beforeEnter(BeforeEnterEvent event) {
+            super.beforeEnter(event);
+
+            event.rerouteTo("security/login");
+        }
+
+    }
+
+    @Route(value = "security/login", layout = SecurityParent.class)
+    public static class SecurityLogin extends ProcessEventsBase  {
+
+    }
+
+    @Route(value = "security/document", layout = SecurityParent.class)
+    public static class SecurityDocument extends ProcessEventsBase {
+
+    }
+
     @Override
     @Before
     public void init() throws NoSuchFieldException, SecurityException,
@@ -3429,6 +3463,37 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test // #4595
+    public void reroute_and_forward_from_parent_layout() {
+        ProcessEventsBase.clear();
+
+        setNavigationTargets(SecurityDocument.class, SecurityLogin.class);
+
+        // On init and beforeEnter, SecurityParent is invoked twice, since on
+        // the initial request it reroutes.
+        final List<String> expectedInitially = Arrays.asList("SecurityParent",
+                "SecurityParent", "SecurityLogin");
+        final List<String> expected = Arrays.asList("SecurityParent",
+                "SecurityLogin");
+
+        // beforeEnter is going to reroute to login.
+        router.navigate(ui, new Location("security/document"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        assertEventOrder(expectedInitially, null, expectedInitially,
+                expected);
+
+        ProcessEventsBase.clear();
+
+        // beforeLeave is going to forward to same url.
+        router.navigate(ui, new Location("security/login"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        // Instances already exists from previous navigation, so expectedInit is
+        // null.
+        assertEventOrder(null, expected, expected, expected);
+    }
+
+    @Test // #4595
     public void event_listeners_are_invoked_starting_with_parent_component()
             throws InvalidRouteConfigurationException {
         ProcessEventsBase.clear();
@@ -3555,9 +3620,14 @@ public class RouterTest extends RoutingTestBase {
             List<String> expectedBeforeLeave, List<String> expectedBeforeEnter,
             List<String> expectedAfterNavigation) {
 
-        Assert.assertEquals(
-                "Component initialization is done in incorrect order",
-                expectedInit, ProcessEventsBase.init);
+        if (expectedInit == null) {
+            Assert.assertTrue("There should be no component initialization",
+                    ProcessEventsBase.init.isEmpty());
+        } else {
+            Assert.assertEquals(
+                    "Component initialization is done in incorrect order",
+                    expectedInit, ProcessEventsBase.init);
+        }
 
         if (expectedBeforeLeave == null) {
             Assert.assertTrue("There should be no BeforeLeave events triggered",

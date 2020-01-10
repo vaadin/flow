@@ -433,9 +433,30 @@ public abstract class BeforeEvent extends EventObject {
      * Get the route target for rerouting.
      *
      * @return route target
+     *
+     * @deprecated use {@link #getRerouteTargetType()} instead.
      */
     public Class<? extends Component> getRouteTargetType() {
+        return getRerouteTargetType();
+    }
+
+    /**
+     * Get the route target for rerouting.
+     *
+     * @return route target
+     */
+    public Class<? extends Component> getRerouteTargetType() {
         return rerouteTargetState.getNavigationTarget();
+    }
+
+    /**
+     * Get the URL parameters of the reroute target.
+     *
+     * @return URL parameters of reroute target
+     */
+    public List<String> getRerouteTargetParameters() {
+        return rerouteTargetState.getUrlParameters()
+                .orElse(Collections.emptyList());
     }
 
     /**
