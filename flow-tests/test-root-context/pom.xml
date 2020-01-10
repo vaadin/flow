@@ -14,9 +14,7 @@
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
         <exclude.it.tests>
-            DependenciesLoadingPageApiIT,
-            DependenciesLoadingAnnotationsIT, 
-            RouteNotFoundProdModeIT
+            DependenciesLoadingPageApiIT,DependenciesLoadingAnnotationsIT, RouteNotFoundProdModeIT
         </exclude.it.tests>
     </properties>
 

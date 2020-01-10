@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.uitest.ui.dependencies;
 
+import org.junit.Ignore;
+
 /**
  * The test for {@link AnnotatedContextInlineView}.
  * <p>
@@ -25,6 +27,7 @@ package com.vaadin.flow.uitest.ui.dependencies;
  * @since 1.0
  *
  */
+@Ignore("Doesn't work in NPM mode, see https://github.com/vaadin/flow/issues/7328")
 public class AnnotatedContextInlineIT extends AbstractContextInlineIT {
 
 }
