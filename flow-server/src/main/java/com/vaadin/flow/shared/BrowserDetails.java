@@ -17,6 +17,8 @@ package com.vaadin.flow.shared;
 
 import java.io.Serializable;
 
+import com.vaadin.flow.component.page.ExtendedClientDetails;
+
 /**
  * Parses the user agent string from the browser and provides information about
  * the browser.
@@ -440,9 +442,12 @@ public class BrowserDetails implements Serializable {
     /**
      * Tests if the browser is Safari or runs on IOS (covering also Chrome on
      * iOS).
-     *
+     * 
      * @return true if it is Safari or running on IOS, false otherwise
+     * @deprecated will return the wrong value for iOS 13 and later. Use
+     *             {@link ExtendedClientDetails#isIOS()} instead.
      */
+    @Deprecated
     public boolean isSafariOrIOS() {
         return isSafari() || isIOS();
     }
