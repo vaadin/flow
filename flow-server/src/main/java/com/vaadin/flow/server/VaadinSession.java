@@ -195,7 +195,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
             // it as soon as we acquire the lock.
             service.fireSessionDestroy(this);
         }
-        session.removeAttribute("vaadinCsrfToken");
         session = null;
     }
 
@@ -1015,7 +1014,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     public void refreshTransients(WrappedSession wrappedSession,
             VaadinService vaadinService) {
         session = wrappedSession;
-        session.setAttribute("vaadinCsrfToken", csrfToken);
         service = vaadinService;
         refreshLock();
     }
@@ -1041,5 +1039,4 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     public String getCsrfToken() {
         return csrfToken;
     }
-
 }

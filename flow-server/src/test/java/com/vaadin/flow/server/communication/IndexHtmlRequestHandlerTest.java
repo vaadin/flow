@@ -27,7 +27,6 @@ import com.sun.net.httpserver.HttpServer;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
 import com.vaadin.flow.server.AppShellRegistry;
-import com.vaadin.flow.server.AppShellRegistry.AppShellRegistryWrapper;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinResponse;
@@ -300,10 +299,10 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void should_have_csrfToken_when_initialize_session_through_service()
+    public void should_include_token_in_dom_when_return_not_null_csrfToken_in_session()
             throws IOException {
-        VaadinSession vaadinSession = new VaadinSession(service);
-        indexHtmlRequestHandler.synchronizedHandleRequest(vaadinSession,
+        Mockito.when(session.getCsrfToken()).thenReturn("foo");
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
 
         String indexHtml = responseOutput
@@ -312,12 +311,12 @@ public class IndexHtmlRequestHandlerTest {
 
         Elements scripts = document.head().getElementsByTag("script");
         Assert.assertEquals(1, scripts.size());
-        Assert.assertTrue(scripts.get(0).childNode(0).toString().contains("window.Vaadin = {Flow: {\"csrfToken\":"));
+        Assert.assertTrue(scripts.get(0).childNode(0).toString().contains("window.Vaadin = {Flow: {\"csrfToken\":\"foo\""));
         Assert.assertEquals("", scripts.get(0).attr("initial"));
     }
 
     @Test
-    public void should_not_have_csrfToken_when_initialize_session_through_mock()
+    public void should_not_include_token_in_dom_when_return_null_csrfToken_in_session()
             throws IOException {
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);

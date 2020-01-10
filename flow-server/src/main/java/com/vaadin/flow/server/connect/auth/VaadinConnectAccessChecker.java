@@ -16,6 +16,7 @@
 
 package com.vaadin.flow.server.connect.auth;
 
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 
@@ -135,7 +136,7 @@ public class VaadinConnectAccessChecker {
 
     private boolean requestForbidden(HttpServletRequest request) {
         String csrfToken = (String) request.getSession()
-                .getAttribute("vaadinCsrfToken");
+                .getAttribute(VaadinService.getCsrfTokenAttributeName());
         assert csrfToken != null;
         return !csrfToken.equals(request.getHeader("X-CSRF-Token"));
     }
