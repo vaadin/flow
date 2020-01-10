@@ -26,7 +26,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
@@ -501,7 +500,8 @@ public abstract class AbstractNavigationStateRenderer
 
         if (chain != null) {
             // Reverse the chain to the stored ordered, since that is different
-            // than the notification order.
+            // than the notification order, and also to keep
+            // LocationChangeEvent.getRouteTargetChain backward compatible.
             chain = new ArrayList<>(chain);
             Collections.reverse(chain);
 
@@ -601,7 +601,6 @@ public abstract class AbstractNavigationStateRenderer
         if (beforeEvent.hasForwardTarget()
                 && !isSameNavigationState(beforeEvent.getForwardTargetType(),
                         beforeEvent.getForwardTargetParameters())) {
-
             return Optional.of(TransitionOutcome.FORWARDED);
         }
 

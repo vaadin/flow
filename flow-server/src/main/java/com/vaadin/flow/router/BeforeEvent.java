@@ -436,6 +436,7 @@ public abstract class BeforeEvent extends EventObject {
      *
      * @deprecated use {@link #getRerouteTargetType()} instead.
      */
+    @deprecated
     public Class<? extends Component> getRouteTargetType() {
         return getRerouteTargetType();
     }
