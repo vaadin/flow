@@ -34,6 +34,9 @@ clientSource = `export function init() {
 ${clientSource}
 };`;
 
+// Convert CRLF to LF, needed for building on Windows
+clientSource = clientSource.replace(/\r\n/g, '\n');
+
 // Write to source
 fs.writeFileSync(toSourceDir + toFile, clientSource, 'utf8');
 
