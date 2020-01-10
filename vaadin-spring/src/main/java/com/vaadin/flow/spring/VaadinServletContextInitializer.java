@@ -22,6 +22,7 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
@@ -35,7 +36,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
@@ -44,6 +44,7 @@ import java.util.stream.Stream;
 import com.googlecode.gentyref.GenericTypeReflector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.boot.autoconfigure.AutoConfigurationPackages;
@@ -118,6 +119,32 @@ public class VaadinServletContextInitializer
     private List<String> customWhitelist;
 
     /**
+     * Class path scanner that reuses infrastructure from Spring while also
+     * considering abstract types.
+     */
+    private static class ClassPathScanner
+            extends ClassPathScanningCandidateComponentProvider {
+        private ClassPathScanner(ResourceLoader resourceLoader,
+                                 Collection<Class<? extends Annotation>> annotations,
+                                 Collection<Class<?>> types) {
+            super(false);
+            setResourceLoader(resourceLoader);
+
+            annotations.stream().map(AnnotationTypeFilter::new)
+                    .forEach(this::addIncludeFilter);
+            types.stream().map(AssignableTypeFilter::new)
+                    .forEach(this::addIncludeFilter);
+        }
+
+        @Override
+        protected boolean isCandidateComponent(
+                AnnotatedBeanDefinition beanDefinition) {
+            return super.isCandidateComponent(beanDefinition)
+                    || beanDefinition.getMetadata().isAbstract();
+        }
+    }
+
+     /*
      * A wrapper interface for {@link ServletContextListener} that allows not
      * running more listeners when one fails. This allows that user does not
      * wait until the last listener has been run.
@@ -314,33 +341,12 @@ public class VaadinServletContextInitializer
                     "Search for subclasses and classes with annotations took {} ms",
                     ms);
 
-            classes.addAll(getOtherRequiredTypes());
-
-            DevModeInitializer.initDevModeHandler(classes,
-                    event.getServletContext(), config);
-        }
-
-        private Collection<Class<?>> getOtherRequiredTypes() {
-            List<Class<?>> types = new ArrayList<>();
-
-            // DragSource and DropTarget, two interfaces in flow-dnd module that
-            // are essential for supporting drag and drop, are not scanned
-            // because Spring doesn't scan interfaces. So, we have to add them
-            // manually.
-            getClassByName("com.vaadin.flow.component.dnd.DragSource")
-                    .ifPresent(types::add);
-            getClassByName("com.vaadin.flow.component.dnd.DropTarget")
-                    .ifPresent(types::add);
-
-            return types;
-        }
-
-        private Optional<Class> getClassByName(String name) {
             try {
-                return Optional.of(Class
-                        .forName(name));
-            } catch (ClassNotFoundException e) {
-                return Optional.empty();
+                DevModeInitializer.initDevModeHandler(classes,
+                        event.getServletContext(), config);
+            } catch (ServletException e) {
+                throw new RuntimeException(
+                        "Unable to initialize Vaadin DevModeHandler", e);
             }
         }
 
@@ -543,13 +549,8 @@ public class VaadinServletContextInitializer
             Collection<String> packages, ResourceLoader loader,
             Collection<Class<? extends Annotation>> annotations,
             Collection<Class<?>> types) {
-        ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(
-                false);
-        scanner.setResourceLoader(loader);
-        annotations.forEach(annotation -> scanner
-                .addIncludeFilter(new AnnotationTypeFilter(annotation)));
-        types.forEach(type -> scanner
-                .addIncludeFilter(new AssignableTypeFilter(type)));
+        ClassPathScanner scanner = new ClassPathScanner(loader, annotations,
+                types);
         return packages.stream().map(scanner::findCandidateComponents)
                 .flatMap(Collection::stream).map(this::getBeanClass);
     }
@@ -692,10 +693,11 @@ public class VaadinServletContextInitializer
                         List<String> parents = rootPaths.stream()
                                 .filter(path::startsWith)
                                 .collect(Collectors.toList());
-                        if (parents.isEmpty())
+                        if (parents.isEmpty()) {
                             throw new IllegalStateException(String.format(
                                     "Parent resource of [%s] not found in the resources!",
                                     path));
+                        }
 
                         if (parents.stream()
                                 .anyMatch(parent -> shouldPathBeScanned(
@@ -817,9 +819,11 @@ public class VaadinServletContextInitializer
                         .createPropertyDeploymentConfiguration(servletClass,
                                 new VaadinServletConfig(servletConfig));
             } catch (VaadinConfigurationException e) {
-                throw new IllegalStateException(String.format(
-                        "Failed to get deployment configuration data for servlet with name '%s' and class '%s'",
-                        registration.getServletName(), servletClass), e);
+                throw new IllegalStateException(
+                        String.format(
+                                "Failed to get deployment configuration data for servlet with name '%s' and class '%s'",
+                                registration.getServletName(), servletClass),
+                        e);
             }
         }
     }
