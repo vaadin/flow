@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2019 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -36,7 +36,7 @@ public class StartupPerformanceIT {
 
         int npmInstallTime = measureLogEntryTimeDistance(
                 "dev-updater - Running `pnpm install`",
-                "dev-updater - package.json updated and dependencies are installed",
+                "dev-updater - Frontend dependencies resolved successfully",
                 false);
 
         int startupTimeWithoutNpmInstallTime = startupTime - npmInstallTime;

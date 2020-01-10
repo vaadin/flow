@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2019 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,11 +15,15 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.shared.util.SharedUtil;
@@ -55,7 +59,9 @@ public class TaskRunNpmInstall implements FallibleCommand {
     public void execute() throws ExecutionFailedException {
         String toolName = disablePnpm ? "npm" : "pnpm";
         if (packageUpdater.modified || shouldRunNpmInstall()) {
-            packageUpdater.log().info("Running `" + toolName + " install` ...");
+            packageUpdater.log().info("Running `" + toolName + " install` to "
+                    + "resolve and optionally download frontend dependencies. "
+                    + "This may take a moment, please stand by...");
             runNpmInstall();
         } else {
             packageUpdater.log().info("Skipping `" + toolName + " install`.");
@@ -95,15 +101,38 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
         ProcessBuilder builder = FrontendUtils.createProcessBuilder(command);
         builder.environment().put("ADBLOCK", "1");
+        builder.environment().put("NO_UPDATE_NOTIFIER", "1");
         builder.directory(packageUpdater.npmFolder);
+
+        builder.redirectInput(ProcessBuilder.Redirect.INHERIT);
+        builder.redirectError(ProcessBuilder.Redirect.INHERIT);
 
         String toolName = disablePnpm ? "npm" : "pnpm";
 
+        String commandString = command.stream()
+                .collect(Collectors.joining(" "));
+
         Process process = null;
         try {
-            process = builder.inheritIO().start();
+            process = builder.start();
+
+            packageUpdater.log().debug("Output of `{}`:", commandString);
+            StringBuilder toolOutput = new StringBuilder();
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(process.getInputStream(),
+                            StandardCharsets.UTF_8))) {
+                String stdoutLine;
+                while ((stdoutLine = reader.readLine()) != null) {
+                    packageUpdater.log().debug(stdoutLine);
+                    toolOutput.append(stdoutLine);
+                }
+            }
+
             int errorCode = process.waitFor();
             if (errorCode != 0) {
+                // Echo the stdout from pnpm/npm to error level log
+                packageUpdater.log().error("Command `{}` failed:\n{}",
+                        commandString, toolOutput);
                 packageUpdater.log().error(
                         ">>> Dependency ERROR. Check that all required dependencies are "
                                 + "deployed in {} repositories.",
@@ -115,7 +144,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
                                 + toolName + " command output");
             } else {
                 packageUpdater.log().info(
-                        "package.json updated and dependencies are installed. ");
+                        "Frontend dependencies resolved successfully.");
             }
         } catch (InterruptedException | IOException e) {
             packageUpdater.log().error("Error when running `{} install`",

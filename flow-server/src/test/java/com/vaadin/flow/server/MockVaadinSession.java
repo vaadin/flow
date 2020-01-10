@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2019 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,11 +15,12 @@
  */
 package com.vaadin.flow.server;
 
+import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.internal.CurrentInstance;
 
 /**
  *
@@ -39,6 +40,10 @@ public class MockVaadinSession extends VaadinSession {
 
     public MockVaadinSession(VaadinService service) {
         super(service);
+    }
+
+    public MockVaadinSession() {
+        this(new MockVaadinServletService());
     }
 
     @Override
@@ -71,4 +76,16 @@ public class MockVaadinSession extends VaadinSession {
     private int closeCount;
 
     private ReentrantLock lock = new ReentrantLock();
+
+    public <T> T runWithLock(Callable<T> action) throws Exception {
+        Map<Class<?>, CurrentInstance> previous = CurrentInstance
+                .setCurrent(this);
+        lock();
+        try {
+            return action.call();
+        } finally {
+            unlock();
+            CurrentInstance.restoreInstances(previous);
+        }
+    }
 }
