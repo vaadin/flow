@@ -9,11 +9,8 @@
     "url": "https://github.com/vaadin/flow/issues"
   },
   "scripts": {
-    "lint": "eslint 'src/main/resources/META-INF/resources/frontend/*.js' && tslint 'src/main/resources/META-INF/resources/frontend/*.ts'",
-    "_cp_to_src": "ncp target/classes/META-INF/resources/VAADIN/static/client/client-*.cache.js src/main/resources/META-INF/resources/frontend/FlowClient.js",
-    "_wrap_fnc": "replace-in-files --regex '(.+[\\s\\S]*)' --replacement 'const init = function(){\\n$1\\n};\\nexport {init};\\n' src/main/resources/META-INF/resources/frontend/FlowClient.js",
-    "_cp_to_tgt": "ncp src/main/resources/META-INF/resources/frontend/FlowClient.js target/classes/META-INF/resources/frontend/FlowClient.js",
-    "client": "npm run _cp_to_src && npm run _wrap_fnc && npm run _cp_to_tgt",
+    "lint": "eslint \"src/main/resources/META-INF/resources/frontend/*.js\" && tslint --project .",
+    "client": "node scripts/client.js",
     "webpack": "webpack --config=webpack.tests.config.js",
     "build": "npm run client && tsc",
     "compile": "npm run build && npm run lint",
