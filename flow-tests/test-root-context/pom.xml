@@ -13,9 +13,6 @@
     <packaging>war</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
-        <exclude.it.tests>
-             RouteNotFoundProdModeIT
-        </exclude.it.tests>
     </properties>
 
     <dependencies>
