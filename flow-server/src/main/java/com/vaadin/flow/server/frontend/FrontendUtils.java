@@ -66,7 +66,7 @@ import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
  */
 public class FrontendUtils {
 
-    private static final String DEFAULT_PNPM_VERSION = "4.5.0";
+    protected static final String DEFAULT_PNPM_VERSION = "4.5.0";
 
     private static final String PNMP_INSTALLED_BY_NPM_FOLDER = "node_modules/pnpm/";
 

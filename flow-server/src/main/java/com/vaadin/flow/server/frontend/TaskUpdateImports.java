@@ -47,7 +47,6 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
-
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 
 /**
@@ -490,7 +489,8 @@ public class TaskUpdateImports extends NodeUpdater {
         String command = disablePnpm ? "npm" : "pnpm";
         String note = "";
         if (!disablePnpm) {
-            note = "\nMake sure first that `pnpm` command is installed, otherwise you should install it using npm: `npm add -g pnpm@4.5.0`";
+            note = "\nMake sure first that `pnpm` command is installed, otherwise you should install it using npm: `npm add -g pnpm@"
+                    + FrontendUtils.DEFAULT_PNPM_VERSION + "`";
         }
         return String.format(
                 "If the build fails, check that npm packages are installed.\n\n"
