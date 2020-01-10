@@ -2304,7 +2304,7 @@ public abstract class VaadinService implements Serializable {
      *
      * @return the attribute name string
      */
-    static public String getCsrfTokenAttributeName() {
+    public static String getCsrfTokenAttributeName() {
         return VaadinSession.class.getName() + "." + ApplicationConstants.CSRF_TOKEN;
     }
 }

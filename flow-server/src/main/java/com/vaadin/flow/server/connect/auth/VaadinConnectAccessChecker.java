@@ -17,8 +17,6 @@
 package com.vaadin.flow.server.connect.auth;
 
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServletRequest;
-import com.vaadin.flow.server.VaadinSession;
 
 import javax.annotation.security.DenyAll;
 import javax.annotation.security.PermitAll;
