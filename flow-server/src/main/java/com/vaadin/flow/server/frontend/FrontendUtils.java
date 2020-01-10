@@ -15,10 +15,12 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -33,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
@@ -817,6 +820,7 @@ public class FrontendUtils {
                 pkgJson.put("name", "temp");
                 pkgJson.put("license", "UNLICENSED");
                 pkgJson.put("repository", "npm/npm");
+                pkgJson.put("description", "Temporary package for pnpm installation");
                 FileUtils.writeLines(packageJson,
                         Collections.singletonList(pkgJson.toJson()));
                 JsonObject lockJson = Json.createObject();
@@ -894,9 +898,23 @@ public class FrontendUtils {
         builder.environment().put("ADBLOCK", "1");
         builder.directory(new File(baseDir));
 
+        builder.redirectInput(ProcessBuilder.Redirect.INHERIT);
+        builder.redirectError(ProcessBuilder.Redirect.INHERIT);
+
         Process process = null;
         try {
-            process = builder.inheritIO().start();
+            process = builder.start();
+            getLogger().debug("Output of `{}`:", command.stream().collect(
+                    Collectors.joining(" ")));
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(process.getInputStream(),
+                            StandardCharsets.UTF_8))) {
+                String stdoutLine;
+                while ((stdoutLine = reader.readLine()) != null) {
+                    getLogger().debug(stdoutLine);
+                }
+            }
+
             int errorCode = process.waitFor();
             if (errorCode != 0) {
                 getLogger().error("Couldn't install 'pnpm'");
