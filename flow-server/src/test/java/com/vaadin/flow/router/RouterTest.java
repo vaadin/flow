@@ -40,6 +40,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.internal.UIInternals;
+import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
@@ -1332,6 +1333,15 @@ public class RouterTest extends RoutingTestBase {
      */
     @Route(value = "event/flower", layout = ProcessEventsBranch.class)
     public static class ProcessEventsFlower extends ProcessEventsBase {
+
+    }
+
+    /**
+     * Simple navigation target with preserve on refresh.
+     */
+    @Route(value = "event/fruit", layout = ProcessEventsBranch.class)
+    @PreserveOnRefresh
+    public static class ProcessEventsFruit extends ProcessEventsBase {
 
     }
 
@@ -3490,7 +3500,7 @@ public class RouterTest extends RoutingTestBase {
 
         // Instances already exists from previous navigation, so expectedInit is
         // null.
-        assertEventOrder(null, expected, expected, expected);
+        assertExistingChainEventOrder(expected);
     }
 
     @Test // #4595
@@ -3503,8 +3513,40 @@ public class RouterTest extends RoutingTestBase {
         router.navigate(ui, new Location("event/flower"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        assertInitialEventOrder(
+        assertInitialChainEventOrder(
                 getProcessEventsBranchChainNames("ProcessEventsFlower"));
+    }
+
+    @Test // #4595
+    public void event_listeners_are_invoked_starting_with_parent_component_when_preserved_on_refresh()
+            throws InvalidRouteConfigurationException {
+        ProcessEventsBase.clear();
+
+        // This is null by default.
+        ExtendedClientDetails previousClientDetails = ui.getInternals()
+                .getExtendedClientDetails();
+
+        // Used with PreserveOnRefresh.
+        ExtendedClientDetails clientDetails = Mockito.mock(ExtendedClientDetails.class);
+        ui.getInternals().setExtendedClientDetails(clientDetails);
+
+        Mockito.when(clientDetails.getWindowName()).thenReturn("mock");
+
+        setNavigationTargets(ProcessEventsFruit.class);
+
+        router.navigate(ui, new Location("event/fruit"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        ProcessEventsBase.clear();
+
+        router.navigate(ui, new Location("event/fruit"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        assertExistingChainEventOrder(
+                getProcessEventsBranchChainNames("ProcessEventsFruit"));
+
+        // Set back the previous client details.
+        ui.getInternals().setExtendedClientDetails(previousClientDetails);
     }
 
     @Test // #4595
@@ -3612,10 +3654,14 @@ public class RouterTest extends RoutingTestBase {
         return chainNames;
     }
 
-    private void assertInitialEventOrder(List<String> expected) {
+    private void assertInitialChainEventOrder(List<String> expected) {
         assertEventOrder(expected, null, expected, expected);
     }
-    
+
+    private void assertExistingChainEventOrder(List<String> expected) {
+        assertEventOrder(null, expected, expected, expected);
+    }
+
     private void assertEventOrder(List<String> expectedInit,
             List<String> expectedBeforeLeave, List<String> expectedBeforeEnter,
             List<String> expectedAfterNavigation) {

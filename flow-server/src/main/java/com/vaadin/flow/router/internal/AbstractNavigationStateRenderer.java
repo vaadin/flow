@@ -429,14 +429,27 @@ public abstract class AbstractNavigationStateRenderer
             return transitionOutcome.get();
         }
 
+        if (chain.isEmpty()) {
+            return sendBeforeEnterEventAndPopulateChain(beforeNavigation, event,
+                    chain);
+        } else {
+            return sendBeforeEnterEventToExistingChain(beforeNavigation, event,
+                    chain);
+        }
+    }
+
+    private TransitionOutcome sendBeforeEnterEventAndPopulateChain(
+            BeforeEnterEvent beforeNavigation, NavigationEvent event,
+            List<HasElement> chain) {
+        Optional<TransitionOutcome> transitionOutcome;
         List<HasElement> oldChain = event.getUI().getInternals()
                 .getActiveRouterTargetsChain();
-                
-        if (chain.isEmpty()) {
-            // Create the chain components if missing.
-            List<Class<? extends HasElement>> typesChain = createTypesChain(
-                    event);
 
+        // Create the chain components if missing.
+        List<Class<? extends HasElement>> typesChain = createTypesChain(
+                event);
+
+        try {
             for (Class<? extends HasElement> elementType : typesChain) {
                 HasElement element = getRouteTarget(elementType, event);
 
@@ -450,47 +463,51 @@ public abstract class AbstractNavigationStateRenderer
                 transitionOutcome = sendBeforeEnterEvent(chainEnterHandlers,
                         event, beforeNavigation, lastElement ? chain : null);
                 if (transitionOutcome.isPresent()) {
-                    
-                    // Reverse the chain for consistency although it may not be
-                    // used since the navigation has not been processed in full.
-                    Collections.reverse(chain);
-
                     return transitionOutcome.get();
                 }
             }
 
-        } else {
+            return TransitionOutcome.FINISHED;
 
-            // Reverse back the chain since it was stored reversed.
+        } finally {
+
+            // Reverse the chain to preserve backwards compatibility.
+            // The events were sent starting from parent layout and ending with
+            // the navigation target component.
+            // The chain ought to be output starting with the navigation target
+            // component as the first element.
             Collections.reverse(chain);
-
-            // Used when the chain already exists by being preserved on refresh.
-            // See `isPreserveOnRefreshTarget` method implementation and usage.
-            List<BeforeEnterHandler> chainEnterHandlers = new ArrayList<>(
-                    EventUtil.collectBeforeEnterObserversFromChain(chain, oldChain));
-            
-            transitionOutcome = sendBeforeEnterEvent(chainEnterHandlers, event,
-                    beforeNavigation, chain);
-            if (transitionOutcome.isPresent()) {
-
-                // Reverse the chain for consistency although it may not be
-                // used since the navigation has not been processed in full.
-                Collections.reverse(chain);
-
-                return transitionOutcome.get();
-            }
         }
+    }
 
-        // Reverse the chain to preserve backwards compatibility.
-        // The events were sent starting from parent layout and ending with
-        // the navigation target component.
-        // The chain ought to be output starting with the navigation target
-        // component as the first element.
+    private TransitionOutcome sendBeforeEnterEventToExistingChain(
+            BeforeEnterEvent beforeNavigation, NavigationEvent event,
+            List<HasElement> chain) {
+        Optional<TransitionOutcome> transitionOutcome;
+
+        // Reverse the chain so that the target is last.
+        chain = new ArrayList<>(chain);
         Collections.reverse(chain);
+
+        // Used when the chain already exists by being preserved on refresh.
+        // See `isPreserveOnRefreshTarget` method implementation and usage.
+        List<BeforeEnterHandler> chainEnterHandlers = new ArrayList<>(
+                EventUtil.collectBeforeEnterObserversFromChain(chain, event
+                        .getUI().getInternals().getActiveRouterTargetsChain()));
+
+        transitionOutcome = sendBeforeEnterEvent(chainEnterHandlers, event,
+                beforeNavigation, chain);
+
+        if (transitionOutcome.isPresent()) {
+            return transitionOutcome.get();
+        }
 
         return TransitionOutcome.FINISHED;
     }
 
+    /*
+     * Target component is expected to be the last in the chain.
+     */
     private Optional<TransitionOutcome> sendBeforeEnterEvent(
             List<BeforeEnterHandler> eventHandlers, NavigationEvent event,
             BeforeEnterEvent beforeNavigation, List<HasElement> chain) {
@@ -505,7 +522,6 @@ public abstract class AbstractNavigationStateRenderer
             chain = new ArrayList<>(chain);
             Collections.reverse(chain);
 
-            // We aren't in reverse order here.
             componentInstance = (Component) chain.get(0);
 
             locationChangeEvent = new LocationChangeEvent(event.getSource(),
