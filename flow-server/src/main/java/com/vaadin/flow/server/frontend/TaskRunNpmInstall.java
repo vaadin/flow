@@ -15,8 +15,11 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -91,21 +94,35 @@ public class TaskRunNpmInstall implements FallibleCommand {
         builder.environment().put("ADBLOCK", "1");
         builder.directory(packageUpdater.npmFolder);
 
+        builder.redirectInput(ProcessBuilder.Redirect.INHERIT);
+        builder.redirectError(ProcessBuilder.Redirect.INHERIT);
+
+        String commandString = command.stream()
+                .collect(Collectors.joining(" "));
+
         Process process = null;
         try {
-            process = builder.redirectInput(ProcessBuilder.Redirect.INHERIT)
-                    .redirectError(ProcessBuilder.Redirect.INHERIT).start();
+            process = builder.start();
+
+            packageUpdater.log().debug("Output of `{}`:", commandString);
+            StringBuilder toolOutput = new StringBuilder();
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(process.getInputStream(),
+                            StandardCharsets.UTF_8))) {
+                String stdoutLine;
+                while ((stdoutLine = reader.readLine()) != null) {
+                    packageUpdater.log().debug(stdoutLine);
+                    toolOutput.append(stdoutLine);
+                }
+            }
 
             int errorCode = process.waitFor();
             if (errorCode != 0) {
+                // Echo the stdout from pnpm/npm to error level log
+                packageUpdater.log().error("Command `{}` failed:\n{}",
+                        commandString, toolOutput);
                 packageUpdater.log().error(
                         ">>> Dependency ERROR. Check that all required dependencies are deployed in npm repositories.");
-                String commandString = command.stream()
-                        .collect(Collectors.joining(" "));
-                final String toolOutput = FrontendUtils
-                        .streamToString(process.getInputStream());
-                packageUpdater.log().error("Output of `{}`:\n{}", commandString,
-                        toolOutput);
                 throw new ExecutionFailedException(
                         "Npm install has exited with non zero status. "
                                 + "Some dependencies are not installed. Check npm command output");
