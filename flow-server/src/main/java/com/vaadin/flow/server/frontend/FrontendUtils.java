@@ -48,9 +48,9 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
 
+import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
-
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
@@ -62,6 +62,8 @@ import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
  * @since 2.0
  */
 public class FrontendUtils {
+
+    private static final String DEFAULT_PNPM_VERSION = "4.5.0";
 
     private static final String PNMP_INSTALLED_BY_NPM_FOLDER = "node_modules/pnpm/";
 
@@ -810,6 +812,23 @@ public class FrontendUtils {
                 }
                 packageJson.delete();
             }
+            try {
+                JsonObject pkgJson = Json.createObject();
+                pkgJson.put("name", "temp");
+                pkgJson.put("license", "UNLICENSED");
+                pkgJson.put("repository", "npm/npm");
+                FileUtils.writeLines(packageJson,
+                        Collections.singletonList(pkgJson.toJson()));
+                JsonObject lockJson = Json.createObject();
+                lockJson.put("lockfileVersion", 1);
+                FileUtils.writeLines(new File(baseDir, "package-lock.json"),
+                        Collections.singletonList(lockJson.toJson()));
+            } catch (IOException e) {
+                getLogger().warn("Couldn't create temporary package.json");
+            }
+            LoggerFactory.getLogger("dev-updater")
+                    .info("Installing pnpm v{} locally. It is suggested to install it globally using 'npm add -g pnpm@{}'",
+                            DEFAULT_PNPM_VERSION, DEFAULT_PNPM_VERSION);
             // install pnpm locally using npm
             installPnpm(baseDir, getNpmExecutable(baseDir));
 
@@ -869,7 +888,7 @@ public class FrontendUtils {
         List<String> command = new ArrayList<>();
         command.addAll(installCommand);
         command.add("install");
-        command.add("pnpm@4.5.0");
+        command.add("pnpm@" + DEFAULT_PNPM_VERSION);
 
         ProcessBuilder builder = createProcessBuilder(command);
         builder.environment().put("ADBLOCK", "1");
