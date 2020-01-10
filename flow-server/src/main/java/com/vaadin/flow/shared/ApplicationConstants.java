@@ -21,6 +21,8 @@ import com.vaadin.flow.component.internal.UIInternals;
 
 /**
  * A utility class providing static constants. Mostly for internal use.
+ * <p>
+ * Also available for the client side part of the framework.
  *
  * @author Vaadin Ltd
  * @since 1.0

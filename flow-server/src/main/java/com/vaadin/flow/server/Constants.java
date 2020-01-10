@@ -19,7 +19,10 @@ import java.io.Serializable;
 
 /**
  * Constants used by the server side framework.
- *
+ * <p>
+ * Not available on the client side, for that use
+ * {@link com.vaadin.flow.shared.ApplicationConstants}.
+ * 
  * @since 1.0
  */
 public final class Constants implements Serializable {
@@ -233,6 +236,21 @@ public final class Constants implements Serializable {
      * Default location to look for the external stats.json.
      */
     public static final String DEFAULT_EXTERNAL_STATS_URL = "/vaadin-static/VAADIN/config/stats.json";
+
+    /**
+     * A request parameter that can be given in browser to force the Vaadin
+     * application to create a new UI and session instance, thus overriding
+     * {@code @PreserveOnRefresh} annotation.
+     */
+    public static final String URL_PARAMETER_RESTART_APPLICATION = "restartApplication";
+
+    /**
+     * A request parameter that can be given in browser to force the Vaadin
+     * application to close an existing UI and session. Unlike
+     * {@link #URL_PARAMETER_RESTART_APPLICATION}, this will not create a new
+     * session.
+     */
+    public static final String URL_PARAMETER_CLOSE_APPLICATION = "closeApplication";
 
     private Constants() {
         // prevent instantiation constants class only
