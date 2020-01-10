@@ -13,17 +13,18 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.testcategory;
+package com.vaadin.flow.uitest.ui.dependencies;
 
 /**
- * Tests that should not be run in NPM mode should be annotated with @
- * {@code Category(IgnoreNPM.class)} so they can be optionally excluded from the
- * build.
+ * The test for {@link AnnotatedContextInlineView}.
+ * <p>
+ * The test code is inside superclass.
+ *
  *
  * @author Vaadin Ltd
  * @since 1.0
  *
  */
-public interface IgnoreNPM extends TestCategory {
+public class AnnotatedContextInlineIT extends AbstractContextInlineIT {
 
 }

@@ -15,23 +15,20 @@
  */
 package com.vaadin.flow.uitest.ui.dependencies;
 
-import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.JavaScript;
-import com.vaadin.flow.component.dependency.StyleSheet;
-import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.ui.LoadMode;
-import com.vaadin.flow.templatemodel.TemplateModel;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
-@Route(value = "com.vaadin.flow.uitest.ui.dependencies.AnnotatedFrontendInlineView", layout = ViewTestLayout.class)
-@Tag("frontend-inline")
-@JavaScript(value = "components/frontend-inline.js", loadMode = LoadMode.INLINE)
-@StyleSheet(value = "components/frontend-inline.css", loadMode = LoadMode.INLINE)
-public class AnnotatedFrontendInlineView
-        extends PolymerTemplate<TemplateModel> {
+@Route(value = "com.vaadin.flow.uitest.ui.dependencies.ContextInlineApiView", layout = ViewTestLayout.class)
+public class ContextInlineApiView extends Div {
 
-    public AnnotatedFrontendInlineView() {
+    public ContextInlineApiView() {
         setId("template");
+        UI.getCurrent().getPage().addJavaScript("components/frontend-inline.js",
+                LoadMode.INLINE);
+        UI.getCurrent().getPage().addStyleSheet(
+                "components/frontend-inline.css", LoadMode.INLINE);
     }
 }

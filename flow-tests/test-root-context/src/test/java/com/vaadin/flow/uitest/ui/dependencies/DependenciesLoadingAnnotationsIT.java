@@ -1,5 +1,16 @@
 package com.vaadin.flow.uitest.ui.dependencies;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
+
+import com.vaadin.flow.testutil.ChromeBrowserTest;
+
 import static com.vaadin.flow.uitest.ui.dependencies.DependenciesLoadingBaseView.DOM_CHANGE_TEXT;
 import static com.vaadin.flow.uitest.ui.dependencies.DependenciesLoadingBaseView.PRELOADED_DIV_ID;
 import static org.hamcrest.CoreMatchers.both;
@@ -12,19 +23,6 @@ import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
-
-import com.vaadin.flow.testcategory.IgnoreNPM;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 /**
  * A test that ensures correct order of dependencies loaded. Test corresponds to
@@ -43,7 +41,6 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
  * @see DependenciesLoadingPageApiView
  * @see DependenciesLoadingPageApiIT
  */
-@Category(IgnoreNPM.class)
 public class DependenciesLoadingAnnotationsIT extends ChromeBrowserTest {
     private static final String EAGER_PREFIX = "eager.";
     private static final String INLINE_PREFIX = "inline.";

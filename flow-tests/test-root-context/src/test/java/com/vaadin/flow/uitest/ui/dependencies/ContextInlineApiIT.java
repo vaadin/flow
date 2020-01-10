@@ -13,17 +13,18 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.testcategory;
+package com.vaadin.flow.uitest.ui.dependencies;
 
 /**
- * Tests that should not be run with IE11 should be annotated with @
- * {@code Category(IgnoreIE11.class)} so they can be optionally excluded from
- * the build when running with IE11.
- * 
+ * The test for {@link ContextInlineApiView}.
+ * <p>
+ * The test code is inside superclass.
+ *
+ *
  * @author Vaadin Ltd
  * @since 1.0
  *
  */
-public interface IgnoreIE11 extends TestCategory {
+public class ContextInlineApiIT extends AbstractContextInlineIT {
 
 }

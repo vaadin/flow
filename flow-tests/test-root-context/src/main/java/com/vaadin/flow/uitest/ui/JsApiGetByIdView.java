@@ -21,7 +21,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.JsApiGetByIdView", layout = ViewTestLayout.class)
-@JavaScript("frontend://js-get-by-id.js")
+@JavaScript("./js-get-by-id.js")
 public class JsApiGetByIdView extends AbstractDivView {
 
     public JsApiGetByIdView() {
