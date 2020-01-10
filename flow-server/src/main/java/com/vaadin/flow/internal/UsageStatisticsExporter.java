@@ -18,7 +18,7 @@ public class UsageStatisticsExporter {
 
     /**
      * Export {@link UsageStatistics} entries to a document. It appends a
-     * <code><script></code> element to the <code><body></code>
+     * {@code <script>} element to the {@code <body>} element.
      *
      * @param document the document where the statistic entries to be exported to.
      */
