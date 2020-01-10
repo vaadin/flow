@@ -278,8 +278,6 @@ public abstract class VaadinService implements Serializable {
             logger.debug("The application has the following routes: ");
             getRouteRegistry().getRegisteredRoutes().stream()
                     .map(Object::toString).forEach(logger::debug);
-
-            UsageStatistics.markAsUsed("flow/npm", null);
         }
 
         initialized = true;

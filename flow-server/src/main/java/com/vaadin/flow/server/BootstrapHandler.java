@@ -507,7 +507,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                             head, initialPageSettings));
 
             if (!config.isProductionMode()) {
-                exportNpmUsageStatistics(document);
+                exportUsageStatistics(document);
             }
 
             setupPwa(document, context);
@@ -529,7 +529,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return clientEngineFile.get();
         }
 
-        private void exportNpmUsageStatistics(Document document) {
+        private void exportUsageStatistics(Document document) {
             String entries = UsageStatistics.getEntries()
                     .map(BootstrapPageBuilder::createUsageStatisticsJson)
                     .collect(Collectors.joining(","));
