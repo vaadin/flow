@@ -26,13 +26,13 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonType;
-
 import static elemental.json.JsonType.ARRAY;
 import static elemental.json.JsonType.OBJECT;
 import static elemental.json.JsonType.STRING;
@@ -91,9 +91,6 @@ public final class BundleParser {
             .compile("\"hash\"\\s*:\\s*\"([^\"]+)\"\\s*,");
 
     private static final String TEMPLATE_TAG_NAME = "template";
-
-    private static final Pattern COMMENTS_PATTERN = Pattern
-            .compile("(?:/\\*(?:[^*]|(?:\\*+[^*/]))*\\*+/)|(?://.*)");
 
     private BundleParser() {
     }
@@ -161,7 +158,7 @@ public final class BundleParser {
      */
     public static Element parseTemplateElement(String fileName, String source) {
         Document templateDocument = null;
-        String content = removeComments(source);
+        String content = StringUtil.removeComments(source);
         Matcher templateMatcher = TEMPLATE_PATTERN.matcher(content);
         Matcher noTemplateMatcher = NO_TEMPLATE_PATTERN.matcher(content);
 
@@ -295,19 +292,5 @@ public final class BundleParser {
         boolean validKey = o != null && o.hasKey(k)
                 && o.get(k).getType().equals(t);
         return validKey && (!t.equals(STRING) || !o.getString(k).isEmpty());
-    }
-
-    /**
-     * Removes comments (block comments and line comments) from the JS code.
-     * <p>
-     * Note that this is not really a correct way to do this: this will remove
-     * comments also if they are inside strings. But this is not important here
-     * in this class since we care only about import statements where this is
-     * fine.
-     *
-     * @return the code with removed comments
-     */
-    private static String removeComments(String content) {
-        return COMMENTS_PATTERN.matcher(content).replaceAll("");
     }
 }
