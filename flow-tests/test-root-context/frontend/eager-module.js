@@ -6,7 +6,7 @@ function attachTestDiv(textContent) {
 }
 
 // Attach any existing message to the DOM
-if (window.messages) {
+if (window.messages && window.messages.forEach) {
   window.messages.forEach(attachTestDiv);
 }
 
