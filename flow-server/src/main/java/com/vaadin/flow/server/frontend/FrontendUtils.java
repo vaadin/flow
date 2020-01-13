@@ -15,10 +15,12 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -33,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
@@ -48,9 +51,9 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
 
+import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
-
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
@@ -62,6 +65,8 @@ import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
  * @since 2.0
  */
 public class FrontendUtils {
+
+    protected static final String DEFAULT_PNPM_VERSION = "4.5.0";
 
     private static final String PNMP_INSTALLED_BY_NPM_FOLDER = "node_modules/pnpm/";
 
@@ -810,6 +815,24 @@ public class FrontendUtils {
                 }
                 packageJson.delete();
             }
+            try {
+                JsonObject pkgJson = Json.createObject();
+                pkgJson.put("name", "temp");
+                pkgJson.put("license", "UNLICENSED");
+                pkgJson.put("repository", "npm/npm");
+                pkgJson.put("description", "Temporary package for pnpm installation");
+                FileUtils.writeLines(packageJson,
+                        Collections.singletonList(pkgJson.toJson()));
+                JsonObject lockJson = Json.createObject();
+                lockJson.put("lockfileVersion", 1);
+                FileUtils.writeLines(new File(baseDir, "package-lock.json"),
+                        Collections.singletonList(lockJson.toJson()));
+            } catch (IOException e) {
+                getLogger().warn("Couldn't create temporary package.json");
+            }
+            LoggerFactory.getLogger("dev-updater")
+                    .info("Installing pnpm v{} locally. It is suggested to install it globally using 'npm add -g pnpm@{}'",
+                            DEFAULT_PNPM_VERSION, DEFAULT_PNPM_VERSION);
             // install pnpm locally using npm
             installPnpm(baseDir, getNpmExecutable(baseDir));
 
@@ -869,15 +892,29 @@ public class FrontendUtils {
         List<String> command = new ArrayList<>();
         command.addAll(installCommand);
         command.add("install");
-        command.add("pnpm@4.5.0");
+        command.add("pnpm@" + DEFAULT_PNPM_VERSION);
 
         ProcessBuilder builder = createProcessBuilder(command);
         builder.environment().put("ADBLOCK", "1");
         builder.directory(new File(baseDir));
 
+        builder.redirectInput(ProcessBuilder.Redirect.INHERIT);
+        builder.redirectError(ProcessBuilder.Redirect.INHERIT);
+
         Process process = null;
         try {
-            process = builder.inheritIO().start();
+            process = builder.start();
+            getLogger().debug("Output of `{}`:", command.stream().collect(
+                    Collectors.joining(" ")));
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(process.getInputStream(),
+                            StandardCharsets.UTF_8))) {
+                String stdoutLine;
+                while ((stdoutLine = reader.readLine()) != null) {
+                    getLogger().debug(stdoutLine);
+                }
+            }
+
             int errorCode = process.waitFor();
             if (errorCode != 0) {
                 getLogger().error("Couldn't install 'pnpm'");
