@@ -13,6 +13,7 @@ module.exports = {
         "sourceType": "module"
     },
     "rules": {
+        "linebreak-style": "off"
     },
     "overrides": [{
         "files": ["FlowClient.js"],
