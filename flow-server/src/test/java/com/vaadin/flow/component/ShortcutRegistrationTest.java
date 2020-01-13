@@ -42,19 +42,19 @@ public class ShortcutRegistrationTest {
 
     private UI ui;
     private Component lifecycleOwner;
-    private Component listenOn;
+    private Component[] listenOn = new Component[1];
 
     @Before
     public void initTests() {
         ui = mock(UI.class);
         lifecycleOwner = mock(Component.class);
-        listenOn = mock(Component.class);
+        listenOn[0] = mock(Component.class);
 
         when(lifecycleOwner.getUI()).thenReturn(Optional.of(ui));
         when(lifecycleOwner.addAttachListener(any())).thenReturn(mock(Registration.class));
         when(lifecycleOwner.addDetachListener(any())).thenReturn(mock(Registration.class));
 
-        when(listenOn.getUI()).thenReturn(Optional.of(ui));
+        when(listenOn[0].getUI()).thenReturn(Optional.of(ui));
     }
 
     @Test
@@ -169,12 +169,12 @@ public class ShortcutRegistrationTest {
                 lifecycleOwner, () -> listenOn, event -> {}, Key.KEY_A);
 
         // No response, no listenOn component
-        assertNull(registration.getOwner());
+        assertNull(registration.getOwners());
 
         clientResponse();
 
         // listenOn component should be set after client response
-        assertEquals(listenOn, registration.getOwner());
+        assertEquals(listenOn, registration.getOwners());
 
         // Change the listenOn component
         Component newListenOn = mock(Component.class);
@@ -228,9 +228,9 @@ public class ShortcutRegistrationTest {
             components, but it did help catch a bug so here it is!
          */
 
-        when(listenOn.getElement()).thenReturn(new Element("tag"));
-        when(listenOn.getEventBus()).thenReturn(new ComponentEventBus(
-                listenOn));
+        when(listenOn[0].getElement()).thenReturn(new Element("tag"));
+        when(listenOn[0].getEventBus()).thenReturn(new ComponentEventBus(
+                listenOn[0]));
 
         ArgumentCaptor<SerializableConsumer> captor =
                 ArgumentCaptor.forClass(SerializableConsumer.class);
