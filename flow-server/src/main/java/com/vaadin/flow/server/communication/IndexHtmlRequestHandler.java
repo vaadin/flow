@@ -27,7 +27,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.AppShellRegistry;
+import com.vaadin.flow.internal.UsageStatisticsExporter;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -51,6 +53,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
     private static final Pattern PATH_WITH_EXTENSION = Pattern
             .compile("\\.[A-z][A-z\\d]+$");
+
     private transient IndexHtmlResponse indexHtmlResponse;
 
     @Override
@@ -81,6 +84,11 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         VaadinContext context = session.getService().getContext();
         AppShellRegistry registry = AppShellRegistry.getInstance(context);
+
+        DeploymentConfiguration config = session.getConfiguration();
+        if (!config.isProductionMode()) {
+            UsageStatisticsExporter.exportUsageStatisticsToDocument(indexDocument);
+        }
 
         // modify the page based on the @PWA annotation
         setupPwa(indexDocument, session.getService());

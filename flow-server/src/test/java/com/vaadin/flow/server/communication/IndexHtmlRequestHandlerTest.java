@@ -22,10 +22,12 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.sun.net.httpserver.HttpServer;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
+import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.AppShellRegistry.AppShellRegistryWrapper;
 import com.vaadin.flow.server.DevModeHandler;
@@ -37,8 +39,15 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWithConfigurator;
 import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWithMultipleAnnotations;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
+
+import elemental.json.Json;
+import elemental.json.JsonObject;
 import org.jsoup.Jsoup;
+import org.jsoup.internal.StringUtil;
+import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 import org.junit.After;
 import org.junit.Assert;
@@ -52,6 +61,7 @@ import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_RO
 import static com.vaadin.flow.server.DevModeHandlerTest.createStubWebpackTcpListener;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubWebpackServer;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class IndexHtmlRequestHandlerTest {
     private MockServletServiceSessionSetup mocks;
@@ -401,7 +411,7 @@ public class IndexHtmlRequestHandlerTest {
         assertEquals("body,#outlet{width:my-width;height:my-height;}", headInlineAndStyleElements.get(2).childNode(0).toString());
 
         Elements bodyInlineElements = document.body().getElementsByTag("script");
-        assertEquals(3, bodyInlineElements.size());
+        assertEquals(4, bodyInlineElements.size());
     }
 
     @Test
@@ -441,7 +451,54 @@ public class IndexHtmlRequestHandlerTest {
         assertEquals("body,#outlet{width:my-width;height:my-height;}", headInlineAndStyleElements.get(2).childNode(0).toString());
 
         Elements bodyInlineElements = document.body().getElementsByTag("script");
+        assertEquals(3, bodyInlineElements.size());
+    }
+
+    @Test
+    public void should_export_usage_statistics_in_development_mode() throws IOException {
+        deploymentConfiguration.setProductionMode(false);
+
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+
+        String indexHtml = responseOutput
+                .toString(StandardCharsets.UTF_8.name());
+        Document document = Jsoup.parse(indexHtml);
+
+        Elements bodyInlineElements = document.body().getElementsByTag("script");
         assertEquals(2, bodyInlineElements.size());
+
+        String entries = UsageStatistics.getEntries().map(entry -> {
+            JsonObject json = Json.createObject();
+
+            json.put("is", entry.getName());
+            json.put("version", entry.getVersion());
+
+            return json.toString();
+        }).collect(Collectors.joining(","));
+
+        String expected = StringUtil.normaliseWhitespace(
+                    "window.Vaadin = window.Vaadin || {}; " +
+                            "window.Vaadin.registrations = window.Vaadin.registrations || [];\n"
+                            + "window.Vaadin.registrations.push(" + entries
+                            + ");");
+
+        assertEquals(StringUtil.normaliseWhitespace(expected), bodyInlineElements.get(1).childNode(0).outerHtml());
+    }
+
+    @Test
+    public void should_NOT_export_usage_statistics_in_production_mode() throws IOException {
+        deploymentConfiguration.setProductionMode(true);
+
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+
+        String indexHtml = responseOutput
+                .toString(StandardCharsets.UTF_8.name());
+        Document document = Jsoup.parse(indexHtml);
+
+        Elements bodyInlineElements = document.body().getElementsByTag("script");
+        assertEquals(1, bodyInlineElements.size());
     }
 
     @After

@@ -57,7 +57,6 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.LocaleUtil;
-import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
@@ -278,8 +277,6 @@ public abstract class VaadinService implements Serializable {
             logger.debug("The application has the following routes: ");
             getRouteRegistry().getRegisteredRoutes().stream()
                     .map(Object::toString).forEach(logger::debug);
-
-            UsageStatistics.markAsUsed("flow/npm", null);
         }
 
         initialized = true;
