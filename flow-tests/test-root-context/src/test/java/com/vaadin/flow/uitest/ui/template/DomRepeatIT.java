@@ -18,9 +18,7 @@ package com.vaadin.flow.uitest.ui.template;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 

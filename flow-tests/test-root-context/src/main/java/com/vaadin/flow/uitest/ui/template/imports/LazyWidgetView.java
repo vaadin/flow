@@ -18,17 +18,14 @@ package com.vaadin.flow.uitest.ui.template.imports;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.templatemodel.TemplateModel;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.imports.LazyWidgetView", layout = ViewTestLayout.class)
 @Tag("x-lazy-widget")
-@HtmlImport(value = "frontend://com/vaadin/flow/uitest/ui/template/imports/x-lazy-widget.html", loadMode = LoadMode.LAZY)
 @JsModule("x-lazy-widget.js")
 public class LazyWidgetView extends PolymerTemplate<LazyWidgetView.Model> {
     static final String GREETINGS_TEMPLATE = "Greetings from server, %s!";

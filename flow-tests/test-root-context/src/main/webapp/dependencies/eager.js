@@ -1,17 +1,17 @@
 function attachTestDiv(textContent) {
   const div = document.createElement("div");
-  div.className = "dependenciesTest";
+  div.className = "dependenciesTestWebRes";
   div.textContent = textContent;
   document.body.appendChild(div);
 }
 
 // Attach any existing message to the DOM
-if (window.messages) {
-  window.messages.forEach(attachTestDiv);
+if (window.webResourcesMessages && window.webResourcesMessages.forEach) {
+  window.webResourcesMessages.forEach(attachTestDiv);
 }
 
 // Swap out implementation with one that directly attaches to the DOM
-window.messages = {
+window.webResourcesMessages = {
   push: attachTestDiv
 };
 

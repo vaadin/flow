@@ -13,17 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.testcategory;
 
-/**
- * Tests that should not be run in NPM mode should be annotated with @
- * {@code Category(IgnoreNPM.class)} so they can be optionally excluded from the
- * build.
- *
- * @author Vaadin Ltd
- * @since 1.0
- *
- */
-public interface IgnoreNPM extends TestCategory {
-
-}
+// document.body might not yet be accessible, so just leave a message
+window.webResourcesMessages = window.webResourcesMessages || [];
+window.webResourcesMessages.push("inline.js");

@@ -11,6 +11,7 @@ import com.vaadin.flow.router.Route;
 public class DependencyFilterView extends DependenciesLoadingBaseView {
 
     public DependencyFilterView() {
+        super("");
         Div filtered = new Div();
         filtered.setText("filtered");
         filtered.setId("filtered-css");

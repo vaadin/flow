@@ -13,11 +13,6 @@
     <packaging>war</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
-        <exclude.it.tests>LazyLoadingTemplateIT,
-            DependenciesLoadingPageApiIT, AnnotatedFrontendInlineIT,
-            DependenciesLoadingAnnotationsIT, FrontendInlineApiIT,
-            RouteNotFoundProdModeIT
-        </exclude.it.tests>
     </properties>
 
     <dependencies>

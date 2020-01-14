@@ -17,7 +17,6 @@ package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
@@ -38,7 +37,6 @@ public class RestoreViewWithAttachedByIdView extends AbstractDivView {
     private Component current;
 
     @Tag("template-with-injected-id")
-    @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/TemplateWithInjectedId.html")
     @JsModule("TemplateWithInjectedId.js")
     public static class TemplateWithInjectedId
             extends PolymerTemplate<TemplateModel> {

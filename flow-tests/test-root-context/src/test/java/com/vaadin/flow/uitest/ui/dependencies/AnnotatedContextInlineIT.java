@@ -15,12 +15,10 @@
  */
 package com.vaadin.flow.uitest.ui.dependencies;
 
-import org.junit.experimental.categories.Category;
-
-import com.vaadin.flow.testcategory.IgnoreNPM;
+import org.junit.Ignore;
 
 /**
- * The test for {@link FrontendInlineApiView}.
+ * The test for {@link AnnotatedContextInlineView}.
  * <p>
  * The test code is inside superclass.
  *
@@ -29,7 +27,7 @@ import com.vaadin.flow.testcategory.IgnoreNPM;
  * @since 1.0
  *
  */
-@Category(IgnoreNPM.class)
-public class FrontendInlineApiIT extends AbstractFrontendInlineIT {
+@Ignore("Doesn't work in NPM mode, see https://github.com/vaadin/flow/issues/7328")
+public class AnnotatedContextInlineIT extends AbstractContextInlineIT {
 
 }

@@ -13,26 +13,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui.scroll;
+package com.vaadin.flow.uitest.ui.dependencies;
 
-import com.vaadin.flow.component.ClientCallable;
-import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.templatemodel.TemplateModel;
+import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
-@Route(value = "com.vaadin.flow.uitest.ui.scroll.ServerRequestScrollView", layout = ViewTestLayout.class)
-@Tag("server-request")
-@JsModule("ServerRequest.js")
-public class ServerRequestScrollView extends PolymerTemplate<TemplateModel> {
+@Route(value = "com.vaadin.flow.uitest.ui.dependencies.ContextInlineApiView", layout = ViewTestLayout.class)
+public class ContextInlineApiView extends Div {
 
-    public ServerRequestScrollView() {
+    public ContextInlineApiView() {
         setId("template");
-    }
-
-    @ClientCallable
-    private void requestServer() {
+        UI.getCurrent().getPage().addJavaScript("/components/context-inline.js",
+                LoadMode.INLINE);
+        UI.getCurrent().getPage().addStyleSheet(
+                "/components/context-inline.css", LoadMode.INLINE);
     }
 }
