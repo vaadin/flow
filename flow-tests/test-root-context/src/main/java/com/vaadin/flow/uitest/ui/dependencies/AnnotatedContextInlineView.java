@@ -23,8 +23,8 @@ import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.dependencies.AnnotatedFrontendInlineView", layout = ViewTestLayout.class)
-@JavaScript(value = "/components/frontend-inline.js", loadMode = LoadMode.INLINE)
-@StyleSheet(value = "/components/frontend-inline.css", loadMode = LoadMode.INLINE)
+@JavaScript(value = "/components/context-inline.js", loadMode = LoadMode.INLINE)
+@StyleSheet(value = "/components/context-inline.css", loadMode = LoadMode.INLINE)
 public class AnnotatedContextInlineView extends Div {
 
     public AnnotatedContextInlineView() {

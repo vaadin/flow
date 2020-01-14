@@ -19,7 +19,7 @@ import com.vaadin.flow.shared.ui.LoadMode;
 @StyleSheet(value = "./dependencies/lazy.css", loadMode = LoadMode.LAZY)
 @JavaScript("./dependencies/eager.js")
 @StyleSheet("./dependencies/eager.css")
-@JsModule("./eager-module.js")
+@JsModule("./dependencies/eager-module.js")
 public class DependenciesLoadingAnnotationsView
         extends DependenciesLoadingBaseView {
 
