@@ -187,8 +187,8 @@ public abstract class BeforeEvent extends EventObject {
     }
 
     /**
-     * Gets the forward target to use if the user should be forwarded to some
-     * other view.
+     * Gets the forward target handler to use if the user should be forwarded to
+     * some other view.
      *
      * @return navigation handler
      */
@@ -197,8 +197,8 @@ public abstract class BeforeEvent extends EventObject {
     }
 
     /**
-     * Gets the reroute target to use if the user should be rerouted to some
-     * other view.
+     * Gets the reroute target handler to use if the user should be rerouted to
+     * some other view.
      *
      * @return an navigation handler
      */
@@ -411,9 +411,9 @@ public abstract class BeforeEvent extends EventObject {
     }
 
     /**
-     * Get the forward target for forwarding.
+     * Get the forward target type for forwarding.
      *
-     * @return forward target
+     * @return forward target type
      */
     public Class<? extends Component> getForwardTargetType() {
         return forwardTargetState.getNavigationTarget();
@@ -430,12 +430,34 @@ public abstract class BeforeEvent extends EventObject {
     }
 
     /**
-     * Get the route target for rerouting.
+     * Get the route target type for rerouting.
      *
-     * @return route target
+     * @return route target type
+     *
+     * @deprecated use {@link #getRerouteTargetType()} instead.
      */
+    @Deprecated
     public Class<? extends Component> getRouteTargetType() {
+        return getRerouteTargetType();
+    }
+
+    /**
+     * Get the route target type for rerouting.
+     *
+     * @return route target type
+     */
+    public Class<? extends Component> getRerouteTargetType() {
         return rerouteTargetState.getNavigationTarget();
+    }
+
+    /**
+     * Get the URL parameters of the reroute target.
+     *
+     * @return URL parameters of reroute target
+     */
+    public List<String> getRerouteTargetParameters() {
+        return rerouteTargetState.getUrlParameters()
+                .orElse(Collections.emptyList());
     }
 
     /**
