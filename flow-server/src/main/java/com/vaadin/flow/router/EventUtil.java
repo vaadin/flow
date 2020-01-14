@@ -126,10 +126,12 @@ public final class EventUtil {
             Collection<? extends HasElement> chain,
             Collection<? extends HasElement> childrenExclusions) {
 
+        final Collection<Element> childrenExclusionElements = getElements(
+                childrenExclusions);
+
         return chain.stream()
                 .flatMap(chainRoot -> collectBeforeEnterObserversStream(
-                        chainRoot.getElement(),
-                        getElements(childrenExclusions)))
+                        chainRoot.getElement(), childrenExclusionElements))
                 .collect(Collectors.toList());
     }
 

@@ -79,7 +79,7 @@ public abstract class AbstractNavigationStateRenderer
 
     private Postpone postponed = null;
 
-    private LocationChangeEvent locationChangeEvent;
+    private LocationChangeEvent locationChangeEvent = null;
 
     /**
      * Creates a new renderer for the given navigation state.
@@ -193,9 +193,9 @@ public abstract class AbstractNavigationStateRenderer
             if (!maybeChain.isPresent()) {
                 // We're returning because the preserved chain is not ready to
                 // be used as is, and requires client data requested within
-                // `createOrRehandlePreserveOnRefreshComponent`. Once the data
-                // is retrieved from the client, `handle` method will be invoked
-                // with the same `NavigationEvent` argument.
+                // `getPreservedChain`. Once the data is retrieved from the
+                // client, `handle` method will be invoked with the same
+                // `NavigationEvent` argument.
                 return HttpServletResponse.SC_OK;
             } else {
                 chain = maybeChain.get();
@@ -537,7 +537,7 @@ public abstract class AbstractNavigationStateRenderer
             // sending the event to the navigation target or any of its
             // children.
             if (notifyNavigationTarget
-                    && (isEqualsOrChild(eventHandler, componentInstance))) {
+                    && (isComponentElementEqualsOrChild(eventHandler, componentInstance))) {
 
                 Optional<TransitionOutcome> transitionOutcome = notifyNavigationTarget(
                         event, beforeNavigation, locationChangeEvent,
@@ -590,10 +590,11 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     /*
-     * Check whether the eventHandler is the component itself ot a child of it.
+     * Check whether the eventHandler is a HasElement and its Element is equals
+     * with the component's Element or a child of it.
      */
-    private boolean isEqualsOrChild(BeforeEnterHandler eventHandler,
-            Component component) {
+    private static boolean isComponentElementEqualsOrChild(
+            BeforeEnterHandler eventHandler, Component component) {
         if (eventHandler instanceof HasElement) {
             HasElement hasElement = (HasElement) eventHandler;
 
