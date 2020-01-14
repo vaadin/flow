@@ -278,8 +278,7 @@ export class ConnectClient {
     };
 
     // @ts-ignore
-    const csrfToken = (typeof Vaadin !== 'undefined') && Vaadin.Flow && Vaadin.Flow.csrfToken || '';
-    headers['X-CSRF-Token'] = csrfToken;
+    headers['X-CSRF-Token'] = window.Vaadin && window.Vaadin.Flow && window.Vaadin.Flow.csrfToken || '';
 
     // helper to keep the undefined value in object after JSON.stringify
     const nullForUndefined = (obj: any): any => {

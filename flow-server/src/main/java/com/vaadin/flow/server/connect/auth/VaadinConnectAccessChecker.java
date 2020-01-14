@@ -135,8 +135,7 @@ public class VaadinConnectAccessChecker {
     private boolean requestForbidden(HttpServletRequest request) {
         String csrfToken = (String) request.getSession()
                 .getAttribute(VaadinService.getCsrfTokenAttributeName());
-        assert csrfToken != null;
-        return !csrfToken.equals(request.getHeader("X-CSRF-Token"));
+        return csrfToken != null && !csrfToken.equals(request.getHeader("X-CSRF-Token"));
     }
 
     private boolean entityForbidden(AnnotatedElement entity,
