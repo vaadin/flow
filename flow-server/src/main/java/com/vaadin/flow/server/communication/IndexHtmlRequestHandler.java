@@ -61,12 +61,11 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         prependBaseHref(request, indexDocument);
 
-        JsonObject flowJson = Json.createObject();
-        includeCsrfToken(session, flowJson);
+        JsonObject initialJson = Json.createObject();
 
         if (request.getService().getBootstrapInitialPredicate()
                 .includeInitialUidl(request)) {
-            includeInitialUidl(session, request, response, flowJson);
+            includeInitialUidl(initialJson, session, request, response);
 
             indexHtmlResponse = new IndexHtmlResponse(request, response, indexDocument, UI.getCurrent());
 
@@ -77,12 +76,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             indexHtmlResponse = new IndexHtmlResponse(request, response, indexDocument);
         }
 
-        Element elm = new Element("script");
-        elm.attr("initial", "");
-        elm.appendChild(new DataNode(
-                "window.Vaadin = {Flow: " + JsonUtil.stringify(flowJson) + "};"
-        ));
-        indexDocument.head().insertChildren(0, elm);
+        addInitialFlow(initialJson, indexDocument, session);
 
         configureErrorDialogStyles(indexDocument);
 
@@ -113,18 +107,26 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         return true;
     }
 
-    private void includeInitialUidl(VaadinSession session,
-            VaadinRequest request, VaadinResponse response,
-            JsonObject flowJson) {
-        JsonObject initial = getInitialJson(request, response, session);
-        flowJson.put("initial", initial);
-    }
-
-    private void includeCsrfToken(VaadinSession session, JsonObject flowJson) {
+    private void addInitialFlow(JsonObject initialJson, Document indexDocument,
+                                VaadinSession session) {
         String csrfToken = session.getCsrfToken();
         if (csrfToken != null) {
-            flowJson.put("csrfToken", csrfToken);
+            initialJson.put("csrfToken", csrfToken);
         }
+
+        Element elm = new Element("script");
+        elm.attr("initial", "");
+        elm.appendChild(new DataNode(
+                "window.Vaadin = {Flow: " + JsonUtil.stringify(initialJson) + "};"
+        ));
+        indexDocument.head().insertChildren(0, elm);
+    }
+
+    private void includeInitialUidl(
+            JsonObject initialJson, VaadinSession session,
+            VaadinRequest request, VaadinResponse response) {
+        JsonObject initial = getInitialJson(request, response, session);
+        initialJson.put("initial", initial);
     }
 
     @Override
