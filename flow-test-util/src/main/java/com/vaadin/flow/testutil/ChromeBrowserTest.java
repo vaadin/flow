@@ -72,9 +72,8 @@ public class ChromeBrowserTest extends ViewOrUITest {
     }
 
     private WebDriver createHeadlessChromeDriver() {
-        ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless", "--disable-gpu");
-        return TestBench.createDriver(new ChromeDriver(options));
+        return TestBench
+            .createDriver(new ChromeDriver(createHeadlessChromeOptions()));
     }
 
     @Override
@@ -85,5 +84,28 @@ public class ChromeBrowserTest extends ViewOrUITest {
         }
 
         return getBrowserCapabilities(Browser.CHROME);
+    }
+
+    @Override
+    protected List<DesiredCapabilities> getBrowserCapabilities(
+        Browser... browsers) {
+        return customizeCapabilities(super.getBrowserCapabilities(browsers));
+    }
+
+    protected List<DesiredCapabilities> customizeCapabilities(
+        List<DesiredCapabilities> capabilities) {
+
+        capabilities.stream()
+            .filter(cap -> "chrome".equalsIgnoreCase(cap.getBrowserName()))
+            .forEach(cap -> cap.setCapability(ChromeOptions.CAPABILITY,
+                createHeadlessChromeOptions()));
+
+        return capabilities;
+    }
+
+    protected ChromeOptions createHeadlessChromeOptions() {
+        final ChromeOptions options = new ChromeOptions();
+        options.addArguments("--headless", "--disable-gpu");
+        return options;
     }
 }
