@@ -36,7 +36,7 @@ public class PaperSlider extends Component implements HasValue {
     }
 
     public PaperSlider() {
-        getElement().synchronizeProperty("value", "value-change");
+        getElement().addPropertyChangeListener("value", "value-change", event -> {});
     }
 
     public void setPin(boolean pin) {

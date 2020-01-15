@@ -15,13 +15,12 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
+import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
-
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-import com.vaadin.testbench.TestBenchElement;
 
 public class PolymerDefaultPropertyValueIT extends ChromeBrowserTest {
 

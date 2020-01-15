@@ -24,7 +24,7 @@ import com.vaadin.flow.component.dependency.JsModule;
 public class TemplateWithConnectedCallbacks extends Component {
 
     public TemplateWithConnectedCallbacks() {
-        getElement().synchronizeProperty("connected", "connected-changed");
+        getElement().addPropertyChangeListener("connected", "connected-changed", event -> {});
 
         getElement().addPropertyChangeListener("connected", evt -> {
             if (evt.isUserOriginated()) {

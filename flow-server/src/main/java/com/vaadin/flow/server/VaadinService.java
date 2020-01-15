@@ -578,7 +578,7 @@ public abstract class VaadinService implements Serializable {
      *            The object containing all relevant info needed by listeners to
      *            change the bootstrap page.
      *
-     * @deprecated This API is deprecated in favor of
+     * @deprecated Since 3.0, this API is deprecated in favor of
      *             {@link VaadinService#modifyIndexHtmlResponse(IndexHtmlResponse)}
      *             when using client-side bootstrapping
      */

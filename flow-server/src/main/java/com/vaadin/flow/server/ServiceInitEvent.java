@@ -75,7 +75,7 @@ public class ServiceInitEvent extends EventObject {
      *
      * @param bootstrapListener
      *            the bootstrap listener to add, not <code>null</code>
-     * @deprecated This API is deprecated in favor of
+     * @deprecated Since 3.0, this API is deprecated in favor of
      *             {@link ServiceInitEvent#addIndexHtmlRequestListener} when
      *             using client-side bootstrapping
      */
@@ -138,7 +138,7 @@ public class ServiceInitEvent extends EventObject {
      * service.
      *
      * @return the stream of added bootstrap listeners
-     * @deprecated This API is deprecated in favor of
+     * @deprecated Since 3.0, this API is deprecated in favor of
      *             {@link ServiceInitEvent#getAddedIndexHtmlRequestListeners()}
      *             when using client-side bootstrapping
      */
