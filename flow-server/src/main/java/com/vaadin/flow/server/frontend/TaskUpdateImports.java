@@ -101,13 +101,11 @@ public class TaskUpdateImports extends NodeUpdater {
         @Override
         protected void writeImportLines(List<String> lines) {
             if (fallBackImports != null) {
+                lines.add("const thisScript;");
                 lines.add(
-                        "var scripts = document.getElementsByTagName('script');");
-                lines.add("var thisScript;");
-                lines.add(
-                        "var elements = document.getElementsByTagName('script');");
-                lines.add("for (var i = 0; i < elements.length; i++) {");
-                lines.add("    var script = elements[i];");
+                        "const elements = document.getElementsByTagName('script');");
+                lines.add("for (let i = 0; i < elements.length; i++) {");
+                lines.add("    const script = elements[i];");
                 lines.add(
                         "    if (script.getAttribute('type')=='module' && script.getAttribute('data-app-id') && !script['vaadin-bundle']) {");
                 lines.add("        thisScript = script;break;");
@@ -120,7 +118,7 @@ public class TaskUpdateImports extends NodeUpdater {
                 lines.add("thisScript['vaadin-bundle'] = true;");
                 lines.add(
                         "if (!window.Vaadin.Flow.fallbacks) { window.Vaadin.Flow.fallbacks={}; }");
-                lines.add("var fallbacks = window.Vaadin.Flow.fallbacks;");
+                lines.add("const fallbacks = window.Vaadin.Flow.fallbacks;");
                 lines.add(
                         "fallbacks[thisScript.getAttribute('data-app-id')] = {}");
                 lines.add(
