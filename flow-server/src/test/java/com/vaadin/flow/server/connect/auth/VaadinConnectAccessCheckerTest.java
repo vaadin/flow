@@ -4,10 +4,11 @@ import javax.annotation.security.DenyAll;
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.servlet.http.HttpServletRequest;
-
+import javax.servlet.http.HttpSession;
 import java.lang.reflect.Method;
 import java.security.Principal;
 
+import com.vaadin.flow.server.VaadinService;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -28,19 +29,34 @@ public class VaadinConnectAccessCheckerTest {
 
     private VaadinConnectAccessChecker checker;
     private HttpServletRequest requestMock;
+    private HttpSession sessionMock;
 
     @Before
     public void before() {
         checker = new VaadinConnectAccessChecker();
         requestMock = mock(HttpServletRequest.class);
+        sessionMock = mock(HttpSession.class);
+        when(sessionMock.getAttribute(VaadinService.getCsrfTokenAttributeName()))
+                .thenReturn("Vaadin CCDM");
+        when(requestMock.getSession()).thenReturn(sessionMock);
         when(requestMock.getUserPrincipal()).thenReturn(mock(Principal.class));
-        when(requestMock.getHeader("X-Requested-With"))
+        when(requestMock.getHeader("X-CSRF-Token"))
                 .thenReturn("Vaadin CCDM");
         when(requestMock.isUserInRole("ROLE_USER")).thenReturn(true);
     }
 
     private void createAnonymousContext() {
         when(requestMock.getUserPrincipal()).thenReturn(null);
+    }
+
+    private void createDifferentSessionToken() {
+        when(sessionMock.getAttribute(VaadinService.getCsrfTokenAttributeName()))
+                .thenReturn("CCDM Token");
+    }
+
+    private void createNullTokenContextInHeaderRequest() {
+        when(requestMock.getHeader("X-CSRF-Token"))
+                .thenReturn(null);
     }
 
     private void shouldPass(Class<?> test) throws Exception {
@@ -54,6 +70,26 @@ public class VaadinConnectAccessCheckerTest {
     }
 
     @Test
+    public void should_fail_When_not_having_token_in_headerRequest() throws Exception {
+        class Test {
+            public void test() {
+            }
+        }
+        createNullTokenContextInHeaderRequest();
+        shouldFail(Test.class);
+    }
+
+    @Test
+    public void should_fail_When_having_different_token_between_session_and_headerRequest() throws Exception {
+        class Test {
+            public void test() {
+            }
+        }
+        createDifferentSessionToken();
+        shouldFail(Test.class);
+    }
+
+    @Test
     public void should_Fail_When_NoAuthentication() throws Exception {
         class Test {
             public void test() {
@@ -64,7 +100,7 @@ public class VaadinConnectAccessCheckerTest {
     }
 
     @Test
-    public void should_Pass_When_Authentication() throws Exception {
+    public void should_Pass_When_Authentication_And_matching_token() throws Exception {
         class Test {
             public void test() {
             }

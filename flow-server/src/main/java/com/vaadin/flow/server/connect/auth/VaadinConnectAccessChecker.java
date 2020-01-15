@@ -16,6 +16,8 @@
 
 package com.vaadin.flow.server.connect.auth;
 
+import com.vaadin.flow.server.VaadinService;
+
 import javax.annotation.security.DenyAll;
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
@@ -131,7 +133,9 @@ public class VaadinConnectAccessChecker {
     }
 
     private boolean requestForbidden(HttpServletRequest request) {
-        return !"Vaadin CCDM".equals(request.getHeader("X-Requested-With"));
+        String csrfToken = (String) request.getSession()
+                .getAttribute(VaadinService.getCsrfTokenAttributeName());
+        return csrfToken != null && !csrfToken.equals(request.getHeader("X-CSRF-Token"));
     }
 
     private boolean entityForbidden(AnnotatedElement entity,

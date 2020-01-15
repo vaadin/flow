@@ -4,6 +4,7 @@ import javax.annotation.security.DenyAll;
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
@@ -162,7 +163,12 @@ public class VaadinConnectControllerTest {
     public void setUp() {
         requestMock = mock(HttpServletRequest.class);
         when(requestMock.getUserPrincipal()).thenReturn(mock(Principal.class));
-        when(requestMock.getHeader("X-Requested-With")).thenReturn("Vaadin CCDM");
+        when(requestMock.getHeader("X-CSRF-Token")).thenReturn("Vaadin CCDM");
+
+        HttpSession sessionMock = mock(HttpSession.class);
+        when(sessionMock.getAttribute(com.vaadin.flow.server.VaadinService.getCsrfTokenAttributeName()))
+                .thenReturn("Vaadin CCDM");
+        when(requestMock.getSession()).thenReturn(sessionMock);
     }
 
     @Test
@@ -327,7 +333,7 @@ public class VaadinConnectControllerTest {
 
     @Test
     public void should_NotCallMethod_When_a_CSRF_request() {
-        when(requestMock.getHeader("X-Requested-With")).thenReturn(null);
+        when(requestMock.getHeader("X-CSRF-Token")).thenReturn(null);
 
         VaadinConnectController vaadinController = createVaadinControllerWithoutPrincipal();
         ResponseEntity<String> response = vaadinController.serveVaadinService(

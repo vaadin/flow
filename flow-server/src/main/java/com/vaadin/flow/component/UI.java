@@ -21,7 +21,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 
@@ -113,14 +112,6 @@ public class UI extends Component
     private final UIInternals internals;
 
     private final Page page = new Page(this);
-
-    /*
-     * Despite section 6 of RFC 4122, this particular use of UUID *is* adequate
-     * for security capabilities. Type 4 UUIDs contain 122 bits of random data,
-     * and UUID.randomUUID() is defined to use a cryptographically secure random
-     * generator.
-     */
-    private final String csrfToken = UUID.randomUUID().toString();
 
     /**
      * Creates a new empty UI.
@@ -1110,7 +1101,7 @@ public class UI extends Component
      * @since 2.0
      */
     public String getCsrfToken() {
-        return csrfToken;
+        return getSession().getCsrfToken();
     }
 
 }

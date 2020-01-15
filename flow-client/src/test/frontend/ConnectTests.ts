@@ -134,8 +134,25 @@ describe('ConnectClient', () => {
 
       const headers = fetchMock.lastOptions().headers;
       expect(headers).to.deep.include({
-        'x-requested-with': 'Vaadin CCDM'
+        'x-csrf-token': ''
       });
+    });
+
+    it('should set header for preventing CSRF using Flow csrfToken', async() => {
+      // @ts-ignore
+      const OriginalVaadin = window.Vaadin;
+      // @ts-ignore
+      window.Vaadin = {Flow: {csrfToken: 'foo'}};
+
+      await client.call('FooService', 'fooMethod');
+
+      const headers = fetchMock.lastOptions().headers;
+      expect(headers).to.deep.include({
+        'x-csrf-token': 'foo'
+      });
+
+      // @ts-ignore
+      window.Vaadin = OriginalVaadin;
     });
 
     it('should resolve to response JSON data', async() => {

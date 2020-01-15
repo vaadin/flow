@@ -29,7 +29,6 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.AppShellRegistry;
-import com.vaadin.flow.server.AppShellRegistry.AppShellRegistryWrapper;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinResponse;
@@ -232,7 +231,9 @@ public class IndexHtmlRequestHandlerTest {
         Document document = Jsoup.parse(indexHtml);
 
         Elements scripts = document.head().getElementsByTag("script");
-        Assert.assertEquals(0, scripts.size());
+        Assert.assertEquals(1, scripts.size());
+        Assert.assertEquals("window.Vaadin = {Flow: {}};", scripts.get(0).childNode(0).toString());
+        Assert.assertEquals("", scripts.get(0).attr("initial"));
 
         Mockito.verify(session, Mockito.times(0)).setAttribute(SERVER_ROUTING,
                 Boolean.TRUE);
@@ -281,7 +282,9 @@ public class IndexHtmlRequestHandlerTest {
         Document document = Jsoup.parse(indexHtml);
 
         Elements scripts = document.head().getElementsByTag("script");
-        Assert.assertEquals(0, scripts.size());
+        Assert.assertEquals(1, scripts.size());
+        Assert.assertEquals("window.Vaadin = {Flow: {}};", scripts.get(0).childNode(0).toString());
+        Assert.assertEquals("", scripts.get(0).attr("initial"));
         Assert.assertNull(UI.getCurrent());
     }
 
@@ -303,6 +306,39 @@ public class IndexHtmlRequestHandlerTest {
                 createVaadinRequest("/"), response);
 
         Assert.assertEquals(Optional.empty(), indexHtmlRequestHandler.getIndexHtmlResponse().getUI());
+    }
+
+    @Test
+    public void should_include_token_in_dom_when_return_not_null_csrfToken_in_session()
+            throws IOException {
+        Mockito.when(session.getCsrfToken()).thenReturn("foo");
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+
+        String indexHtml = responseOutput
+                .toString(StandardCharsets.UTF_8.name());
+        Document document = Jsoup.parse(indexHtml);
+
+        Elements scripts = document.head().getElementsByTag("script");
+        Assert.assertEquals(1, scripts.size());
+        Assert.assertTrue(scripts.get(0).childNode(0).toString().contains("window.Vaadin = {Flow: {\"csrfToken\":\"foo\""));
+        Assert.assertEquals("", scripts.get(0).attr("initial"));
+    }
+
+    @Test
+    public void should_not_include_token_in_dom_when_return_null_csrfToken_in_session()
+            throws IOException {
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+
+        String indexHtml = responseOutput
+                .toString(StandardCharsets.UTF_8.name());
+        Document document = Jsoup.parse(indexHtml);
+
+        Elements scripts = document.head().getElementsByTag("script");
+        Assert.assertEquals(1, scripts.size());
+        Assert.assertFalse(scripts.get(0).childNode(0).toString().contains("window.Vaadin = {Flow: {\"csrfToken\":"));
+        Assert.assertEquals("", scripts.get(0).attr("initial"));
     }
 
     @Test
