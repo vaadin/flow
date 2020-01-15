@@ -81,7 +81,7 @@ public final class Shortcuts {
         if (key == null) {
             throw new IllegalArgumentException(String.format(NULL, "key"));
         }
-        return new ShortcutRegistration(lifecycleOwner, () -> new Component[] { UI.getCurrent() },
+        return new ShortcutRegistration(lifecycleOwner, () -> new Component[] { lifecycleOwner.getUI().get() },
                 event -> command.execute(), key).withModifiers(keyModifiers);
     }
 
@@ -125,7 +125,7 @@ public final class Shortcuts {
         if (key == null) {
             throw new IllegalArgumentException(String.format(NULL, "key"));
         }
-        return new ShortcutRegistration(lifecycleOwner, () -> new Component[] { UI.getCurrent() },
+        return new ShortcutRegistration(lifecycleOwner, () -> new Component[] { lifecycleOwner.getUI().get() },
                 listener, key).withModifiers(keyModifiers);
     }
 }
