@@ -40,8 +40,21 @@ public class HasOrderedComponentsTest {
 
     }
 
+    @Tag("div")
+    static class TestComponentContianer extends Component
+            implements HasOrderedComponents {
+
+    }
+
+    @Tag(Tag.A)
+    static class Anchor extends Component {
+
+    }
+
     private HasOrderedComponents components = Mockito
             .spy(TestOrderedComponents.class);
+
+    private TestComponentContianer contianer = new TestComponentContianer();
 
     @Test
     public void indexOf_componentIsChild_returnsIndexOfChild() {
@@ -51,6 +64,11 @@ public class HasOrderedComponentsTest {
                         Mockito.mock(Component.class)).stream());
 
         Assert.assertEquals(1, components.indexOf(comp));
+
+        contianer = new TestComponentContianer();
+        comp = new Anchor();
+        contianer.add(new Text(""), comp);
+        Assert.assertEquals(1, contianer.indexOf(comp));
     }
 
     @Test
@@ -76,6 +94,10 @@ public class HasOrderedComponentsTest {
                 .thenReturn(Arrays.asList(Mockito.mock(Component.class),
                         Mockito.mock(Component.class)).stream());
         Assert.assertEquals(2, components.getComponentCount());
+
+        contianer = new TestComponentContianer();
+        contianer.add(new Text(""), new Anchor());
+        Assert.assertEquals(2, contianer.getComponentCount());
     }
 
     @Test
@@ -86,6 +108,11 @@ public class HasOrderedComponentsTest {
                         Mockito.mock(Component.class)).stream());
 
         Assert.assertSame(comp, components.getComponentAt(1));
+
+        contianer = new TestComponentContianer();
+        comp = new Anchor();
+        contianer.add(new Text(""), comp);
+        Assert.assertSame(comp, contianer.getComponentAt(1));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -102,6 +129,6 @@ public class HasOrderedComponentsTest {
         Mockito.when(components.getChildren())
                 .thenReturn(Stream.of(Mockito.mock(Component.class)));
 
-        components.getComponentAt(-2);
+        components.getComponentAt(2);
     }
 }
