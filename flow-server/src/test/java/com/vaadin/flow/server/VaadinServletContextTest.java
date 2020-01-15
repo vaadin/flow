@@ -34,6 +34,11 @@ public class VaadinServletContextTest {
         Mockito.when(servletContext.getAttribute(Mockito.anyString()))
                 .then(invocationOnMock -> attributeMap
                         .get(invocationOnMock.getArguments()[0].toString()));
+        Mockito.doAnswer(invocationOnMock -> {
+            attributeMap.remove(invocationOnMock.getArguments()[0].toString());
+            return null;
+        }).when(servletContext).removeAttribute(Mockito.anyString());
+
         Mockito.doAnswer(invocationOnMock -> attributeMap.put(
                 invocationOnMock.getArguments()[0].toString(),
                 invocationOnMock.getArguments()[1])).when(servletContext)
@@ -89,6 +94,46 @@ public class VaadinServletContextTest {
             throw new AssertionError("Should not be called");
         });
         Assert.assertEquals(newValue, result);
+    }
+
+    @Test
+    public void setValueBasedOnSuperType_implicitClass_notFound() {
+        String value = testAttributeProvider();
+        context.setAttribute(value);
+
+        CharSequence retrieved = context.getAttribute(CharSequence.class);
+        Assert.assertNull(
+                "Value set base on its own type should not be found based on a super type",
+                retrieved);
+    }
+
+    @Test
+    public void setValueBasedOnSuperType_explicitClass_found() {
+        String value = testAttributeProvider();
+        context.setAttribute(CharSequence.class, value);
+
+        CharSequence retrieved = context.getAttribute(CharSequence.class);
+        Assert.assertSame(
+                "Value should be found based on the type used when setting",
+                value, retrieved);
+    }
+
+    @Test
+    public void removeValue_removeMethod_valueIsRemoved() {
+        context.setAttribute(testAttributeProvider());
+        context.removeAttribute(String.class);
+
+        Assert.assertNull("Value should be removed",
+                context.getAttribute(String.class));
+    }
+
+    @Test
+    public void removeValue_setWithClass_valueIsRemoved() {
+        context.setAttribute(testAttributeProvider());
+        context.setAttribute(String.class, null);
+
+        Assert.assertNull("Value should be removed",
+                context.getAttribute(String.class));
     }
 
     @Test

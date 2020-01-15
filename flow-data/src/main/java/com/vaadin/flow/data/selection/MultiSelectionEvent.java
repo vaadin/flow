@@ -84,12 +84,18 @@ public class MultiSelectionEvent<C extends Component, T> extends
      * <p>
      * The result is the current selection of the source listing. So it's always
      * exactly the same as {@link #getValue()}.
+     * <p>
+     * The method will be removed in a later major version.
      *
      * @see #getValue()
+     * @see #getAllSelectedItems()
      *
      * @return an unmodifiable set of items selected after the selection was
      *         changed
+     * @deprecated Use {@link #getValue()} or {@link #getAllSelectedItems()}
+     *             instead which are the exact replacements for this method.
      */
+    @Deprecated
     public Set<T> getNewSelection() {
         return getValue();
     }

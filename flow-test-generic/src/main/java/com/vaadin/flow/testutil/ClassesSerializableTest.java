@@ -94,6 +94,7 @@ public abstract class ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.component\\.PropertyDescriptors(\\$.*)?",
                 "com\\.vaadin\\.flow\\.component\\.Shortcuts",
                 "com\\.vaadin\\.flow\\.component\\.dnd\\.osgi\\.DndConnectorResource",
+                "com\\.vaadin\\.flow\\.component\\.internal\\.DeadlockDetectingCompletableFuture",
                 "com\\.vaadin\\.flow\\.internal\\.JsonSerializer",
                 "com\\.vaadin\\.flow\\.internal\\.JsonCodec",
                 "com\\.vaadin\\.flow\\.internal\\.UsageStatistics(\\$.*)?",

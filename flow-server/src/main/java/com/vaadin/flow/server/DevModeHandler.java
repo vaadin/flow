@@ -84,7 +84,7 @@ public final class DevModeHandler {
     private static final String DEFAULT_ERROR_PATTERN = ": Failed to compile.";
     private static final String FAILED_MSG = "\n------------------ Frontend compilation failed. ------------------\n\n";
     private static final String SUCCEED_MSG = "\n----------------- Frontend compiled successfully. -----------------\n\n";
-    private static final String START = "\n------------------ Starting Frontend compilation. ------------------\n\n";
+    private static final String START = "\n------------------ Starting Frontend compilation. ------------------\n";
     private static final String END = "\n------------------------- Webpack stopped  -------------------------\n";
 
     // If after this time in millisecs, the pattern was not found, we unlock the
