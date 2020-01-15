@@ -17,6 +17,8 @@ package com.vaadin.flow.shared;
 
 import java.io.Serializable;
 
+import com.vaadin.flow.component.page.ExtendedClientDetails;
+
 /**
  * Parses the user agent string from the browser and provides information about
  * the browser.
