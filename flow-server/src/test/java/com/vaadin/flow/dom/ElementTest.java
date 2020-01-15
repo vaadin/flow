@@ -19,11 +19,17 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+import net.jcip.annotations.NotThreadSafe;
+import org.easymock.EasyMock;
+import org.junit.Assert;
+import org.junit.Test;
+
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
+import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.internal.NullOwner;
 import com.vaadin.flow.internal.StateNode;
@@ -42,10 +48,6 @@ import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
 import com.vaadin.tests.util.TestUtil;
-import net.jcip.annotations.NotThreadSafe;
-import org.easymock.EasyMock;
-import org.junit.Assert;
-import org.junit.Test;
 
 import elemental.json.Json;
 import elemental.json.JsonValue;
@@ -2385,6 +2387,60 @@ public class ElementTest extends AbstractNodeTest {
         parent.appendVirtualChild(child1);
 
         child1.removeFromParent();
+    }
+
+    @Test
+    public void executeJavaScript_delegatesToExecJs() {
+        AtomicReference<String> invokedExpression = new AtomicReference<>();
+        AtomicReference<Serializable[]> invokedParams = new AtomicReference<>();
+
+        Element element = new Element("div") {
+            @Override
+            public PendingJavaScriptResult executeJs(String expression,
+                    Serializable... parameters) {
+                String oldExpression = invokedExpression.getAndSet(expression);
+                Assert.assertNull("There should be no old expression",
+                        oldExpression);
+
+                Serializable[] oldParams = invokedParams.getAndSet(parameters);
+                Assert.assertNull("There should be no old params", oldParams);
+
+                return null;
+            }
+        };
+
+        element.executeJavaScript("foo", 1, true);
+
+        Assert.assertEquals("foo", invokedExpression.get());
+        Assert.assertEquals(Integer.valueOf(1), invokedParams.get()[0]);
+        Assert.assertEquals(Boolean.TRUE, invokedParams.get()[1]);
+    }
+
+    @Test
+    public void callFunction_delegatesToCallJsFunction() {
+        AtomicReference<String> invokedFuction = new AtomicReference<>();
+        AtomicReference<Serializable[]> invokedParams = new AtomicReference<>();
+
+        Element element = new Element("div") {
+            @Override
+            public PendingJavaScriptResult callJsFunction(String functionName,
+                    Serializable... arguments) {
+                String oldExpression = invokedFuction.getAndSet(functionName);
+                Assert.assertNull("There should be no old function name",
+                        oldExpression);
+
+                Serializable[] oldParams = invokedParams.getAndSet(arguments);
+                Assert.assertNull("There should be no old params", oldParams);
+
+                return null;
+            }
+        };
+
+        element.callFunction("foo", 1, true);
+
+        Assert.assertEquals("foo", invokedFuction.get());
+        Assert.assertEquals(Integer.valueOf(1), invokedParams.get()[0]);
+        Assert.assertEquals(Boolean.TRUE, invokedParams.get()[1]);
     }
 
     @Override
