@@ -211,6 +211,30 @@ public class Binder<BEAN> implements Serializable {
          * @return the setter
          */
         Setter<BEAN, TARGET> getSetter();
+
+        /**
+         * Enable or disable asRequired validator.
+         * The validator is enabled by default.
+         *
+         * @see BindingBuilder#asRequired(String)
+         * @see BindingBuilder#asRequired(ErrorMessageProvider)
+         *
+         * @param asRequiredEnabled
+         *            {@code false} if asRequired validator should
+         *            be disabled, {@code true} otherwise (default)
+         */
+        public void setAsRequiredEnabled(boolean asRequiredEnabled);
+
+        /**
+         * Returns whether asRequired validator is currently enabled or not.
+         *
+         * @see BindingBuilder#asRequired(String)
+         * @see BindingBuilder#asRequired(ErrorMessageProvider)
+         *
+         * @return {@code false} if asRequired validator is disabled
+         *         {@code true} otherwise (default)
+         */
+        public boolean isAsRequiredEnabled();
     }
 
     /**
@@ -741,6 +765,8 @@ public class Binder<BEAN> implements Serializable {
          */
         private Converter<FIELDVALUE, ?> converterValidatorChain;
 
+        private boolean asRequiredSet;
+
         /**
          * Creates a new binding builder associated with the given field.
          * Initializes the builder with the given converter chain and status
@@ -886,8 +912,15 @@ public class Binder<BEAN> implements Serializable {
         public BindingBuilder<BEAN, TARGET> asRequired(
                 Validator<TARGET> customRequiredValidator) {
             checkUnbound();
+            this.asRequiredSet = true;
             field.setRequiredIndicatorVisible(true);
-            return withValidator(customRequiredValidator);
+            return withValidator((value, context) -> {
+                if (!field.isRequiredIndicatorVisible()) {
+                    return ValidationResult.ok();
+                } else {
+                    return customRequiredValidator.apply(value, context);
+                }
+            });
         }
 
         /**
@@ -993,12 +1026,15 @@ public class Binder<BEAN> implements Serializable {
          */
         private final Converter<FIELDVALUE, TARGET> converterValidatorChain;
 
+        private final boolean asRequiredSet;
+
         public BindingImpl(BindingBuilderImpl<BEAN, FIELDVALUE, TARGET> builder,
                 ValueProvider<BEAN, TARGET> getter,
                 Setter<BEAN, TARGET> setter) {
             binder = builder.getBinder();
             field = builder.field;
             statusHandler = builder.statusHandler;
+            this.asRequiredSet = builder.asRequiredSet;
             converterValidatorChain = ((Converter<FIELDVALUE, TARGET>) builder.converterValidatorChain);
 
             onValueChange = getField().addValueChangeListener(
@@ -1253,6 +1289,24 @@ public class Binder<BEAN> implements Serializable {
         @Override
         public Setter<BEAN, TARGET> getSetter() {
             return setter;
+        }
+
+        @Override
+        public void setAsRequiredEnabled(boolean asRequiredEnabled) {
+            if (!asRequiredSet) {
+                throw new IllegalStateException(
+                 "Unable to toggle asRequired validation since " 
+                         + "asRequired has not been set.");
+            }
+            if (asRequiredEnabled != isAsRequiredEnabled()) {
+                field.setRequiredIndicatorVisible(asRequiredEnabled);
+                validate();
+            }
+        }
+
+        @Override
+        public boolean isAsRequiredEnabled() {
+            return field.isRequiredIndicatorVisible();
         }
     }
 

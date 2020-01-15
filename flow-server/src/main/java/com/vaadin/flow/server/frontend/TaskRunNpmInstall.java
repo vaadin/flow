@@ -58,7 +58,9 @@ public class TaskRunNpmInstall implements FallibleCommand {
     public void execute() throws ExecutionFailedException {
         String toolName = disablePnpm ? "npm" : "pnpm";
         if (packageUpdater.modified || shouldRunNpmInstall()) {
-            packageUpdater.log().info("Running `" + toolName + " install` ...");
+            packageUpdater.log().info("Running `" + toolName + " install` to "
+                    + "resolve and optionally download frontend dependencies. "
+                    + "This may take a moment, please stand by...");
             runNpmInstall();
         } else {
             packageUpdater.log().info("Skipping `" + toolName + " install`.");
@@ -101,7 +103,11 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
         ProcessBuilder builder = FrontendUtils.createProcessBuilder(command);
         builder.environment().put("ADBLOCK", "1");
+        builder.environment().put("NO_UPDATE_NOTIFIER", "1");
         builder.directory(packageUpdater.npmFolder);
+
+        builder.redirectInput(ProcessBuilder.Redirect.INHERIT);
+        builder.redirectError(ProcessBuilder.Redirect.INHERIT);
 
         String toolName = disablePnpm ? "npm" : "pnpm";
 
@@ -122,7 +128,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
                                 + toolName + " command output");
             } else {
                 packageUpdater.log().info(
-                        "package.json updated and dependencies are installed. ");
+                        "Frontend dependencies resolved successfully.");
             }
         } catch (InterruptedException | IOException e) {
             packageUpdater.log().error("Error when running `{} install`",
