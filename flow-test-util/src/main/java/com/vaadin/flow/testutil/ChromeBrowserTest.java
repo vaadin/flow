@@ -18,16 +18,12 @@ package com.vaadin.flow.testutil;
 import java.lang.management.ManagementFactory;
 import java.util.List;
 
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.experimental.categories.Category;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
 import com.vaadin.flow.testcategory.ChromeTests;
-import com.vaadin.testbench.TestBench;
 import com.vaadin.testbench.parallel.Browser;
 
 /**
@@ -56,25 +52,9 @@ public class ChromeBrowserTest extends ViewOrUITest {
         ChromeDriverLocator.fillEnvironmentProperty();
     }
 
-    @Before
-    @Override
-    public void setup() throws Exception {
-        if (Browser.CHROME == getRunLocallyBrowser() && !isJavaInDebugMode()) {
-            setDriver(createHeadlessChromeDriver());
-        } else {
-            super.setup();
-        }
-    }
-
     private boolean isJavaInDebugMode() {
         return ManagementFactory.getRuntimeMXBean().getInputArguments()
                 .toString().contains("jdwp");
-    }
-
-    private WebDriver createHeadlessChromeDriver() {
-        ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless", "--disable-gpu");
-        return TestBench.createDriver(new ChromeDriver(options));
     }
 
     @Override
@@ -85,5 +65,33 @@ public class ChromeBrowserTest extends ViewOrUITest {
         }
 
         return getBrowserCapabilities(Browser.CHROME);
+    }
+
+    @Override
+    protected List<DesiredCapabilities> getBrowserCapabilities(
+        Browser... browsers) {
+        return customizeCapabilities(super.getBrowserCapabilities(browsers));
+    }
+
+    protected List<DesiredCapabilities> customizeCapabilities(
+        List<DesiredCapabilities> capabilities) {
+
+        final boolean isLocalDebugMode =
+            getLocalExecution().isPresent() && isJavaInDebugMode();
+
+        if (!isLocalDebugMode) {
+            capabilities.stream()
+                .filter(cap -> "chrome".equalsIgnoreCase(cap.getBrowserName()))
+                .forEach(cap -> cap.setCapability(ChromeOptions.CAPABILITY,
+                    createHeadlessChromeOptions()));
+        }
+
+        return capabilities;
+    }
+
+    protected ChromeOptions createHeadlessChromeOptions() {
+        final ChromeOptions options = new ChromeOptions();
+        options.addArguments("--headless", "--disable-gpu");
+        return options;
     }
 }
