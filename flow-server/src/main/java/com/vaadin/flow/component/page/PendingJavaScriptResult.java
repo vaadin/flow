@@ -18,9 +18,11 @@ package com.vaadin.flow.component.page;
 import java.io.Serializable;
 import java.util.concurrent.CompletableFuture;
 
+import com.vaadin.flow.component.internal.DeadlockDetectingCompletableFuture;
 import com.vaadin.flow.component.page.Page.ExecutionCanceler;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JsonCodec;
+import com.vaadin.flow.server.VaadinSession;
 
 import elemental.json.JsonValue;
 
@@ -139,7 +141,10 @@ public interface PendingJavaScriptResult
     /**
      * Creates a typed completable future that will be completed with the result
      * of the execution. It will be completed asynchronously when the result of
-     * the execution is sent back to the server.
+     * the execution is sent back to the server. It is not possible to
+     * synchronously wait for the result of the execution while holding the
+     * session lock since the request handling thread that makes the result
+     * available will also need to lock the session.
      * <p>
      * A completable future can only be created before the execution has been
      * sent to the browser.
@@ -156,7 +161,19 @@ public interface PendingJavaScriptResult
             throw new IllegalArgumentException("Target type cannot be null");
         }
 
-        CompletableFuture<T> completableFuture = new CompletableFuture<>();
+        /*
+         * Assuming that subscription is only done for the currently locked
+         * session. This is quite safe since you cannot subscribe any more after
+         * the request has been sent to the client.
+         *
+         * This is the only way of catching the potentially common case of
+         * blocking on a pending result for an element that hasn't yet even been
+         * attached to a session.
+         */
+        VaadinSession session = VaadinSession.getCurrent();
+
+        CompletableFuture<T> completableFuture = new DeadlockDetectingCompletableFuture<>(
+                session);
 
         then(value -> {
             T convertedValue = JsonCodec.decodeAs(value, targetType);
@@ -173,7 +190,10 @@ public interface PendingJavaScriptResult
      * Adds an untyped handler that will be run for a successful exception and a
      * handler that will be run for a failed execution. One of the handlers will
      * be invoked asynchronously when the result of the execution is sent back
-     * to the server.
+     * to the server. It is not possible to synchronously wait for the result of
+     * the execution while holding the session lock since the request handling
+     * thread that makes the result available will also need to lock the
+     * session.
      * <p>
      * Handlers can only be added before the execution has been sent to the
      * browser.
