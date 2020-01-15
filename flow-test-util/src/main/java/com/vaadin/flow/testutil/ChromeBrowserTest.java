@@ -18,12 +18,16 @@ package com.vaadin.flow.testutil;
 import java.lang.management.ManagementFactory;
 import java.util.List;
 
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.experimental.categories.Category;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
 import com.vaadin.flow.testcategory.ChromeTests;
+import com.vaadin.testbench.TestBench;
 import com.vaadin.testbench.parallel.Browser;
 
 /**
@@ -52,9 +56,24 @@ public class ChromeBrowserTest extends ViewOrUITest {
         ChromeDriverLocator.fillEnvironmentProperty();
     }
 
+    @Before
+    @Override
+    public void setup() throws Exception {
+        if (Browser.CHROME == getRunLocallyBrowser() && !isJavaInDebugMode()) {
+            setDriver(createHeadlessChromeDriver());
+        } else {
+            super.setup();
+        }
+    }
+
     private boolean isJavaInDebugMode() {
         return ManagementFactory.getRuntimeMXBean().getInputArguments()
                 .toString().contains("jdwp");
+    }
+
+    private WebDriver createHeadlessChromeDriver() {
+        return TestBench
+            .createDriver(new ChromeDriver(createHeadlessChromeOptions()));
     }
 
     @Override
@@ -76,15 +95,10 @@ public class ChromeBrowserTest extends ViewOrUITest {
     protected List<DesiredCapabilities> customizeCapabilities(
         List<DesiredCapabilities> capabilities) {
 
-        final boolean isLocalDebugMode =
-            getLocalExecution().isPresent() && isJavaInDebugMode();
-
-        if (!isLocalDebugMode) {
-            capabilities.stream()
-                .filter(cap -> "chrome".equalsIgnoreCase(cap.getBrowserName()))
-                .forEach(cap -> cap.setCapability(ChromeOptions.CAPABILITY,
-                    createHeadlessChromeOptions()));
-        }
+        capabilities.stream()
+            .filter(cap -> "chrome".equalsIgnoreCase(cap.getBrowserName()))
+            .forEach(cap -> cap.setCapability(ChromeOptions.CAPABILITY,
+                createHeadlessChromeOptions()));
 
         return capabilities;
     }
