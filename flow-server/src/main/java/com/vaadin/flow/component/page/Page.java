@@ -128,6 +128,25 @@ public class Page implements Serializable {
 
     private ResizeEventReceiver resizeReceiver;
 
+    /**
+     * Callback method for canceling executable javascript set with
+     * {@link Page#executeJs(String, Serializable...)}.
+     *
+     * @deprecated superseded by {@link PendingJavaScriptResult}
+     */
+    @FunctionalInterface
+    @Deprecated
+    public interface ExecutionCanceler extends Serializable {
+        /**
+         * Cancel the javascript execution, if it was not yet sent to the
+         * browser for execution.
+         *
+         * @return <code>true</code> if the execution was canceled,
+         *         <code>false</code> if not
+         */
+        boolean cancelExecution();
+    }
+
     private final UI ui;
     private final History history;
 
@@ -282,6 +301,42 @@ public class Page implements Serializable {
      */
     public void addDynamicImport(String expression) {
         addDependency(new Dependency(Type.DYNAMIC_IMPORT, expression));
+    }
+
+    // When updating JavaDocs here, keep in sync with Element.executeJavaScript
+    /**
+     * Asynchronously runs the given JavaScript expression in the browser. The
+     * given parameters will be available to the expression as variables named
+     * <code>$0</code>, <code>$1</code>, and so on. Supported parameter types
+     * are:
+     * <ul>
+     * <li>{@link String}
+     * <li>{@link Integer}
+     * <li>{@link Double}
+     * <li>{@link Boolean}
+     * <li>{@link JsonValue}
+     * <li>{@link Element} (will be sent as <code>null</code> if the server-side
+     * element instance is not attached when the invocation is sent to the
+     * client)
+     * </ul>
+     * Note that the parameter variables can only be used in contexts where a
+     * JavaScript variable can be used. You should for instance do
+     * <code>'prefix' + $0</code> instead of <code>'prefix$0'</code> and
+     * <code>value[$0]</code> instead of <code>value.$0</code> since JavaScript
+     * variables aren't evaluated inside strings or property names.
+     *
+     * @param expression
+     *            the JavaScript expression to invoke
+     * @param parameters
+     *            parameters to pass to the expression
+     * @return a callback for canceling the execution if not yet sent to browser
+     * @deprecated Use {@link #executeJs(String,Serializable...)} instead since
+     *             it also allows getting return value back.
+     */
+    @Deprecated
+    public ExecutionCanceler executeJavaScript(String expression,
+            Serializable... parameters) {
+        return executeJs(expression, parameters);
     }
 
     // When updating JavaDocs here, keep in sync with Element.executeJavaScript
