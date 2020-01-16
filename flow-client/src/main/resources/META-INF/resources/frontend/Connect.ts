@@ -1,5 +1,16 @@
 /* tslint:disable:max-classes-per-file */
 
+// @ts-ignore
+window.Vaadin = window.Vaadin || {};
+// @ts-ignore
+window.Vaadin.registrations = window.Vaadin.registratios || [];
+
+// @ts-ignore
+window.Vaadin.registrations.push({
+  is: '@vaadin/flow-frontend/Connect',
+  version: '3.0-SNAPSHOT'
+});
+
 interface ConnectExceptionData {
   message: string;
   type: string;
