@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -162,7 +163,13 @@ public class AppShellSettings implements Serializable {
      *            title
      */
     public void setPageTitle(String title) {
-        getHeadElements(Position.APPEND).add(createElement("title", title));
+        ListIterator<Element> iter = getHeadElements(Position.APPEND).listIterator();
+        while (iter.hasNext()) {
+            if ("title".equals(iter.next().normalName())) {
+                iter.remove();
+            }
+        }
+        iter.add(createElement("title", title));
     }
 
     /**

@@ -2,6 +2,7 @@ package com.vaadin.flow.component.internal;
 
 import java.util.Collections;
 
+import org.jsoup.nodes.Document;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -11,8 +12,8 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.Page;
-import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.StateNode;
@@ -22,6 +23,7 @@ import com.vaadin.flow.router.BeforeLeaveObserver;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinRequest;
 
@@ -36,6 +38,10 @@ import static org.junit.Assert.assertTrue;
 public class JavaScriptBootstrapUITest  {
     private MockServletServiceSessionSetup mocks;
     private JavaScriptBootstrapUI ui;
+
+    @PageTitle("app-shell-title")
+    public static class AppShell implements AppShellConfigurator {
+    }
 
     @Tag(Tag.H2)
     public static class CleanChild extends Component implements BeforeLeaveObserver {
@@ -237,6 +243,8 @@ public class JavaScriptBootstrapUITest  {
         Mockito.when(internals.getLastHandledLocation()).thenReturn(lastLocation);
         StateTree stateTree = Mockito.mock(StateTree.class);
         Mockito.when(internals.getStateTree()).thenReturn(stateTree);
+        Mockito.when(internals.getTitle()).thenReturn("");
+
         StateNode stateNode = BasicElementStateProvider.createStateNode("foo-element");
         Mockito.when(stateTree.getRootNode()).thenReturn(stateNode);
 
@@ -295,6 +303,48 @@ public class JavaScriptBootstrapUITest  {
         assertNull(ui.getInternals().getTitle());
         ui.navigate("product");
         assertEquals("my-product", ui.getInternals().getTitle());
+    }
+
+    @Test
+    public void should_removeTitle_when_noAppShellTitle() {
+        ui.navigate("empty");
+        assertNull(ui.getInternals().getTitle());
+        ui.navigate("dirty");
+        assertEquals("", ui.getInternals().getTitle());
+    }
+
+    @Test
+    public void should_restoreAppShellTitle() {
+        AppShellRegistry registry = new AppShellRegistry();
+        registry.setShell(AppShell.class);
+        mocks.setAppShellRegistry(registry);
+
+        registry.modifyIndexHtml(Document.createShell(""),
+                mocks.createRequest(mocks, "/foo"));
+
+        ui.navigate("empty");
+        assertNull(ui.getInternals().getTitle());
+        ui.navigate("dirty");
+        assertEquals("app-shell-title", ui.getInternals().getTitle());
+    }
+
+    @Test
+    public void should_restoreIndexHtmlTitle() {
+        AppShellRegistry registry = new AppShellRegistry();
+        mocks.setAppShellRegistry(registry);
+        VaadinRequest request = mocks.createRequest(mocks, "/foo");
+
+        Document document = Document.createShell("");
+        org.jsoup.nodes.Element title = document.createElement("title");
+        title.appendText("index-html-title");
+        document.head().appendChild(title);
+
+        registry.modifyIndexHtml(document, request);
+
+        ui.navigate("empty");
+        assertNull(ui.getInternals().getTitle());
+        ui.navigate("dirty");
+        assertEquals("index-html-title", ui.getInternals().getTitle());
     }
 
 }
