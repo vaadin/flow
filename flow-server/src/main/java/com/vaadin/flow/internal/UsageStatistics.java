@@ -38,8 +38,8 @@ public class UsageStatistics {
      * A usage statistics entry.
      */
     public static class UsageEntry {
-        private String name;
-        private String version;
+        final private String name;
+        final private String version;
 
         private UsageEntry(String name, String version) {
             this.name = name;
