@@ -77,6 +77,8 @@ public class AppShellRegistry implements Serializable {
 
     private Class<? extends AppShellConfigurator> appShellClass;
 
+    private String title = "";
+
     /**
      * A wrapper class for storing the {@link AppShellRegistry} instance
      * in the servlet context.
@@ -166,6 +168,15 @@ public class AppShellRegistry implements Serializable {
         } catch (ClassNotFoundException e) {
             throw new IllegalArgumentException(e);
         }
+    }
+
+    /**
+     * Return the text content of the title tag in the application shell.
+     *
+     * @return title;
+     */
+    public String getTitle() {
+        return title;
     }
 
     /**
@@ -259,6 +270,11 @@ public class AppShellRegistry implements Serializable {
         settings.getInlineElements(request, TargetElement.BODY, Position.APPEND)
                 .forEach(elm -> insertInlineElement(elm,
                         document.body()::appendChild));
+
+        Element elm = document.head().selectFirst("title");
+        if (elm != null) {
+            title = elm.text().isEmpty() ? elm.data() : elm.text();
+        }
     }
 
     /**
@@ -279,7 +295,6 @@ public class AppShellRegistry implements Serializable {
             pushConfiguration.setTransport(push.transport());
         }
     }
-
 
     private void insertElement(Element elm, Consumer<Element> action) {
         action.accept(elm);
