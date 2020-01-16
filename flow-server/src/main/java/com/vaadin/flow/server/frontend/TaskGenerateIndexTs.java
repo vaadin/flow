@@ -18,6 +18,8 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 
+import com.vaadin.flow.internal.UsageStatistics;
+import com.vaadin.flow.server.Version;
 import org.apache.commons.io.IOUtils;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_JS;
@@ -63,6 +65,7 @@ public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
     protected boolean shouldGenerate() {
         File indexTs = new File(frontendDirectory, INDEX_TS);
         File indexJs = new File(frontendDirectory, INDEX_JS);
+        compareActualIndexTsOrJsWithIndexTempalate(indexTs, indexJs);
         return !indexTs.exists() && !indexJs.exists();
     }
 
@@ -98,6 +101,23 @@ public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
             relativePath = "./" + relativePath;
         }
         return relativePath;
+    }
+
+    private void compareActualIndexTsOrJsWithIndexTempalate(File indexTs, File indexJs) {
+        if(indexTs.exists() || indexJs.exists()) {
+            File indexFileExist = indexTs.exists() ? indexTs : indexJs;
+            String indexContent = null;
+            String indexTemplate = null;
+            try {
+                indexContent = IOUtils.toString(indexFileExist.toURI(), UTF_8);
+                indexTemplate = getFileContent();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if(!indexContent.equals(indexTemplate)) {
+                UsageStatistics.markAsUsed("routing/client", Version.getFullVersion());
+            }
+        }
     }
 
 }
