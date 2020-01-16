@@ -329,6 +329,49 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     }
 
     @Test
+    public void save_bound_beanAsDraft() {
+        do_test_save_bound_beanAsDraft(false);
+    }
+
+    @Test
+    public void save_bound_beanAsDraft_setBean() {
+        do_test_save_bound_beanAsDraft(true);
+    }
+
+    private void do_test_save_bound_beanAsDraft(boolean setBean) {
+        Binder<Person> binder = new Binder<>();
+        binder.forField(nameField)
+            .withValidator((value,context) -> {
+                if (value.equals("Mike")) return ValidationResult.ok();
+                else return ValidationResult.error("value must be Mike");
+            })
+            .bind(Person::getFirstName, Person::setFirstName);
+        binder.forField(ageField)
+                .withConverter(new StringToIntegerConverter(""))
+                .bind(Person::getAge, Person::setAge);
+
+        Person person = new Person();
+        if (setBean) binder.setBean(person);
+
+        String fieldValue = "John";
+        nameField.setValue(fieldValue);
+
+        int age = 10;
+        ageField.setValue("10");
+
+        person.setFirstName("Mark");
+
+        binder.writeBeanAsDraft(person);
+
+        // name is not written to draft as validation / conversion
+        // does not pass
+        assertNotEquals(fieldValue, person.getFirstName());
+        // age is written to draft even if firstname validation
+        // fails
+        assertEquals(age, person.getAge());
+    }
+    
+    @Test
     public void load_bound_fieldValueIsUpdated() {
         binder.bind(nameField, Person::getFirstName, Person::setFirstName);
 
