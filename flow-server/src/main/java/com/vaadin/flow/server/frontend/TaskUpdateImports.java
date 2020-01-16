@@ -76,10 +76,6 @@ public class TaskUpdateImports extends NodeUpdater {
     private final boolean disablePnpm;
 
     private class UpdateMainImportsFile extends AbstractUpdateImports {
-
-        private static final String LOAD_FALLBACK = "\nwindow.Vaadin.Flow.loadFallback = () => import('./"
-                + FALLBACK_IMPORTS_NAME + "');";
-
         private static final String EXPORT_MODULES_DEF = "export declare const addCssBlock: (block: string, before?: boolean) => void;";
 
         private final File generatedFlowImports;
