@@ -232,7 +232,7 @@ public class IndexHtmlRequestHandlerTest {
 
         Elements scripts = document.head().getElementsByTag("script");
         Assert.assertEquals(1, scripts.size());
-        Assert.assertEquals("window.Vaadin = {Flow: {}};", scripts.get(0).childNode(0).toString());
+        Assert.assertEquals("window.Vaadin = {TypeScript: {}};", scripts.get(0).childNode(0).toString());
         Assert.assertEquals("", scripts.get(0).attr("initial"));
 
         Mockito.verify(session, Mockito.times(0)).setAttribute(SERVER_ROUTING,
@@ -283,7 +283,7 @@ public class IndexHtmlRequestHandlerTest {
 
         Elements scripts = document.head().getElementsByTag("script");
         Assert.assertEquals(1, scripts.size());
-        Assert.assertEquals("window.Vaadin = {Flow: {}};", scripts.get(0).childNode(0).toString());
+        Assert.assertEquals("window.Vaadin = {TypeScript: {}};", scripts.get(0).childNode(0).toString());
         Assert.assertEquals("", scripts.get(0).attr("initial"));
         Assert.assertNull(UI.getCurrent());
     }
@@ -321,7 +321,7 @@ public class IndexHtmlRequestHandlerTest {
 
         Elements scripts = document.head().getElementsByTag("script");
         Assert.assertEquals(1, scripts.size());
-        Assert.assertTrue(scripts.get(0).childNode(0).toString().contains("window.Vaadin = {Flow: {\"csrfToken\":\"foo\""));
+        Assert.assertTrue(scripts.get(0).childNode(0).toString().contains("window.Vaadin = {TypeScript: {\"csrfToken\":\"foo\""));
         Assert.assertEquals("", scripts.get(0).attr("initial"));
     }
 

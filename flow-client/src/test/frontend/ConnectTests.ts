@@ -142,7 +142,7 @@ describe('ConnectClient', () => {
       // @ts-ignore
       const OriginalVaadin = window.Vaadin;
       // @ts-ignore
-      window.Vaadin = {Flow: {csrfToken: 'foo'}};
+      window.Vaadin = {TypeScript: {csrfToken: 'foo'}};
 
       await client.call('FooService', 'fooMethod');
 

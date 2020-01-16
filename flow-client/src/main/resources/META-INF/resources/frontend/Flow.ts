@@ -257,9 +257,9 @@ export class Flow {
   // Returns the `appConfig` object
   private async flowInitUi(serverSideRouting: boolean): Promise<AppInitResponse> {
     // appConfig was sent in the index.html request
-    const initial = $wnd.Vaadin && $wnd.Vaadin.Flow && $wnd.Vaadin.Flow.initial;
+    const initial = $wnd.Vaadin && $wnd.Vaadin.TypeScript && $wnd.Vaadin.TypeScript.initial;
     if (initial) {
-      $wnd.Vaadin.Flow.initial = undefined;
+      $wnd.Vaadin.TypeScript.initial = undefined;
       return Promise.resolve(initial);
     }
 
