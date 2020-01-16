@@ -28,13 +28,13 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
 /**
- * Component used for checking role-based ACL in Vaadin Services.
+ * Component used for checking role-based ACL in Vaadin Exports.
  * <p>
  * For each request that is trying to access the method in the corresponding
- * Vaadin Connect Service, the permission check is carried on.
+ * Vaadin Connect Export, the permission check is carried on.
  * <p>
  * It looks for {@link AnonymousAllowed} {@link PermitAll}, {@link DenyAll} and
- * {@link RolesAllowed} annotations in service methods and classes containing
+ * {@link RolesAllowed} annotations in export methods and classes containing
  * these methods (no super classes' annotations are taken into account).
  * <p>
  * Method-level annotation override Class-level ones.
@@ -46,9 +46,9 @@ import java.lang.reflect.Modifier;
  * token in their requests.
  *
  * <pre class="code">
- * &#64;VaadinService
+ * &#64;Export
  * &#64;DenyAll
- * public class DemoVaadinService {
+ * public class DemoExport {
  *
  *     public void method1() {
  *     }
@@ -71,10 +71,10 @@ import java.lang.reflect.Modifier;
 public class VaadinConnectAccessChecker {
 
     /**
-     * Check that the service is accessible for the current user.
+     * Check that the export is accessible for the current user.
      *
      * @param method
-     *            the vaadin service method to check ACL
+     *            the Vaadin export method to check ACL
      * @return an error String with an issue description, if any validation
      *         issues occur, {@code null} otherwise
      * @param request
@@ -121,7 +121,7 @@ public class VaadinConnectAccessChecker {
     private String verifyAuthenticatedUser(Method method,
             HttpServletRequest request) {
         if (cannotAccessMethod(method, request)) {
-            return "Unauthorized access to vaadin service";
+            return "Unauthorized access to Vaadin export";
         }
         return null;
     }

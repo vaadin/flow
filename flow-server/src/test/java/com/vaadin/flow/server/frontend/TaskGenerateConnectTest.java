@@ -28,14 +28,15 @@ public class TaskGenerateConnectTest {
         properties = temporaryFolder
                 .newFile("application.properties");
         openApiJson = new File(getClass().getResource(
-                "../connect/generator/openapi/esmodule-generator-TwoServicesThreeMethods.json")
+                "../connect/generator/openapi/esmodule-generator" +
+                        "-TwoExportsThreeMethods.json")
                 .getPath());
     }
 
     @Test
     public void should_generate_Two_TypeScriptFiles() throws Exception {
-        File ts1 = new File(outputDirectory, "FooBarService.ts");
-        File ts2 = new File(outputDirectory, "FooFooService.ts");
+        File ts1 = new File(outputDirectory, "FooBarExport.ts");
+        File ts2 = new File(outputDirectory, "FooFooExport.ts");
         File client = new File(outputDirectory, "connect-client.default.ts");
 
         assertFalse(ts1.exists());

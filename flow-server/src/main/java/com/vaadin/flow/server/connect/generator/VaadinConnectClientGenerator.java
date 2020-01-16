@@ -41,7 +41,7 @@ public class VaadinConnectClientGenerator {
     public static final String CONNECT_CLIENT_NAME = CLIENT_FILE_NAME + TS;
     public static final String CONNECT_CLIENT_IMPORT_PATH = "./" + CLIENT_FILE_NAME;
 
-    private final String serviceEndpoint;
+    private final String exportEndpoint;
 
     private static final Logger log = LoggerFactory
             .getLogger(VaadinConnectClientGenerator.class);
@@ -55,7 +55,8 @@ public class VaadinConnectClientGenerator {
      */
     public VaadinConnectClientGenerator(
             Properties applicationProperties) {
-        this.serviceEndpoint = (String)applicationProperties.getOrDefault(ENDPOINT,
+        this.exportEndpoint =
+                (String)applicationProperties.getOrDefault(ENDPOINT,
                 DEFAULT_ENDPOINT);
     }
 
@@ -67,7 +68,7 @@ public class VaadinConnectClientGenerator {
      */
     public void generateVaadinConnectClientFile(Path outputFilePath) {
         String generatedDefaultClientTs = getDefaultClientTsTemplate()
-                .replace("{{ENDPOINT}}", serviceEndpoint);
+                .replace("{{ENDPOINT}}", exportEndpoint);
         try {
             log.info("writing file {}", outputFilePath);
             FileUtils.writeStringToFile(outputFilePath.toFile(),

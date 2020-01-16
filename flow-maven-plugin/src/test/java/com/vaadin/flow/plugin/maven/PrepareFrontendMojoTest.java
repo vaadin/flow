@@ -17,7 +17,7 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.plugin.TestUtils;
-import com.vaadin.flow.server.connect.VaadinService;
+import com.vaadin.flow.server.connect.Export;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -203,8 +203,8 @@ public class PrepareFrontendMojoTest {
                 "html-webpack-plugin");
     }
 
-    @VaadinService
-    public class MyVaadinServices {
+    @Export
+    public class MyExports {
         public void foo(String bar) {
         }
 

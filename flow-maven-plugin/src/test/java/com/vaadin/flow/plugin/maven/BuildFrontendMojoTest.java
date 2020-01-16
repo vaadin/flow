@@ -403,14 +403,14 @@ public class BuildFrontendMojoTest {
     public void mavenGoal_generateTsFiles_when_enabled() throws Exception {
         File connectClientApi = new File(generatedTsFolder,
                 "connect-client.default.ts");
-        File serviceClientApi = new File(generatedTsFolder,
-                "MyVaadinServices.ts");
+        File exportClientApi = new File(generatedTsFolder,
+                "MyExports.ts");
 
         Assert.assertFalse(connectClientApi.exists());
-        Assert.assertFalse(serviceClientApi.exists());
+        Assert.assertFalse(exportClientApi.exists());
         mojo.execute();
         Assert.assertTrue(connectClientApi.exists());
-        Assert.assertTrue(serviceClientApi.exists());
+        Assert.assertTrue(exportClientApi.exists());
     }
 
     static void assertContainsPackage(JsonObject dependencies,

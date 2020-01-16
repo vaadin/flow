@@ -92,12 +92,12 @@ import io.swagger.v3.oas.models.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.server.connect.VaadinService;
-import com.vaadin.flow.server.connect.VaadinServiceNameChecker;
+import com.vaadin.flow.server.connect.Export;
+import com.vaadin.flow.server.connect.ExportNameChecker;
 import com.vaadin.flow.server.connect.auth.AnonymousAllowed;
 
 /**
- * Java parser class which scans for all {@link VaadinService} classes and
+ * Java parser class which scans for all {@link Export} classes and
  * produces OpenApi json.
  */
 public class OpenApiObjectGenerator {
@@ -110,13 +110,13 @@ public class OpenApiObjectGenerator {
     private List<Path> javaSourcePaths = new ArrayList<>();
     private OpenApiConfiguration configuration;
     private Map<String, ResolvedReferenceType> usedTypes;
-    private Map<ClassOrInterfaceDeclaration, String> servicesJavadoc;
-    private Map<String, ClassOrInterfaceDeclaration> nonServiceMap;
+    private Map<ClassOrInterfaceDeclaration, String> exportsJavadoc;
+    private Map<String, ClassOrInterfaceDeclaration> nonExportMap;
     private Map<String, String> qualifiedNameToPath;
     private Map<String, PathItem> pathItems;
     private Set<String> generatedSchema;
     private OpenAPI openApiModel;
-    private final VaadinServiceNameChecker serviceNameChecker = new VaadinServiceNameChecker();
+    private final ExportNameChecker exportNameChecker = new ExportNameChecker();
     private ClassLoader typeResolverClassLoader;
     private SchemaResolver schemaResolver;
 
@@ -182,12 +182,12 @@ public class OpenApiObjectGenerator {
                     "Java source path and configuration should not be null");
         }
         openApiModel = createBasicModel();
-        nonServiceMap = new HashMap<>();
+        nonExportMap = new HashMap<>();
         qualifiedNameToPath = new HashMap<>();
         pathItems = new TreeMap<>();
         usedTypes = new HashMap<>();
         generatedSchema = new HashSet<>();
-        servicesJavadoc = new HashMap<>();
+        exportsJavadoc = new HashMap<>();
         schemaResolver = new SchemaResolver();
         ParserConfiguration parserConfiguration = createParserConfiguration();
 
@@ -233,16 +233,16 @@ public class OpenApiObjectGenerator {
     }
 
     private void addTagsInformation() {
-        for (Map.Entry<ClassOrInterfaceDeclaration, String> serviceJavadoc : servicesJavadoc
+        for (Map.Entry<ClassOrInterfaceDeclaration, String> exportJavadoc : exportsJavadoc
                 .entrySet()) {
             Tag tag = new Tag();
-            ClassOrInterfaceDeclaration serviceDeclaration = serviceJavadoc
+            ClassOrInterfaceDeclaration exportDeclaration = exportJavadoc
                     .getKey();
-            String simpleClassName = serviceDeclaration.getNameAsString();
+            String simpleClassName = exportDeclaration.getNameAsString();
             tag.name(simpleClassName);
-            tag.description(serviceJavadoc.getValue());
+            tag.description(exportJavadoc.getValue());
             tag.addExtension(EXTENSION_VAADIN_FILE_PATH,
-                    qualifiedNameToPath.get(serviceDeclaration
+                    qualifiedNameToPath.get(exportDeclaration
                             .getFullyQualifiedName().orElse(simpleClassName)));
             openApiModel.addTagsItem(tag);
         }
@@ -305,33 +305,33 @@ public class OpenApiObjectGenerator {
 
     private void parseClass(ClassOrInterfaceDeclaration classDeclaration,
             CompilationUnit compilationUnit) {
-        Optional<AnnotationExpr> serviceAnnotation = classDeclaration
-                .getAnnotationByClass(VaadinService.class);
+        Optional<AnnotationExpr> exportAnnotation = classDeclaration
+                .getAnnotationByClass(Export.class);
         compilationUnit.getStorage().ifPresent(storage -> {
             String className = classDeclaration.getFullyQualifiedName()
                     .orElse(classDeclaration.getNameAsString());
             qualifiedNameToPath.put(className, storage.getPath().toString());
         });
-        if (!serviceAnnotation.isPresent()) {
-            nonServiceMap.put(classDeclaration.resolve().getQualifiedName(),
+        if (!exportAnnotation.isPresent()) {
+            nonExportMap.put(classDeclaration.resolve().getQualifiedName(),
                     classDeclaration);
         } else {
             Optional<Javadoc> javadoc = classDeclaration.getJavadoc();
             if (javadoc.isPresent()) {
-                servicesJavadoc.put(classDeclaration,
+                exportsJavadoc.put(classDeclaration,
                         javadoc.get().getDescription().toText());
             } else {
-                servicesJavadoc.put(classDeclaration, "");
+                exportsJavadoc.put(classDeclaration, "");
             }
             pathItems.putAll(createPathItems(
-                    getServiceName(classDeclaration, serviceAnnotation.get()),
+                    getExportName(classDeclaration, exportAnnotation.get()),
                     classDeclaration));
         }
     }
 
-    private String getServiceName(ClassOrInterfaceDeclaration classDeclaration,
-            AnnotationExpr serviceAnnotation) {
-        String serviceName = Optional.ofNullable(serviceAnnotation)
+    private String getExportName(ClassOrInterfaceDeclaration classDeclaration,
+            AnnotationExpr exportAnnotation) {
+        String exportName = Optional.ofNullable(exportAnnotation)
                 .filter(Expression::isSingleMemberAnnotationExpr)
                 .map(Expression::asSingleMemberAnnotationExpr)
                 .map(SingleMemberAnnotationExpr::getMemberValue)
@@ -340,18 +340,18 @@ public class OpenApiObjectGenerator {
                 .filter(GeneratorUtils::isNotBlank)
                 .orElse(classDeclaration.getNameAsString());
 
-        String validationError = serviceNameChecker.check(serviceName);
+        String validationError = exportNameChecker.check(exportName);
         if (validationError != null) {
             throw new IllegalStateException(
-                    String.format("Service name '%s' is invalid, reason: '%s'",
-                            serviceName, validationError));
+                    String.format("Export name '%s' is invalid, reason: '%s'",
+                            exportName, validationError));
         }
-        return serviceName;
+        return exportName;
     }
 
-    private List<Schema> parseNonServiceClassAsSchema(
+    private List<Schema> parseNonExportClassAsSchema(
             String fullQualifiedName) {
-        ClassOrInterfaceDeclaration typeDeclaration = nonServiceMap
+        ClassOrInterfaceDeclaration typeDeclaration = nonExportMap
                 .get(fullQualifiedName);
         if (typeDeclaration == null) {
             return Collections.emptyList();
@@ -410,7 +410,7 @@ public class OpenApiObjectGenerator {
 
     private List<Schema> createSchemasFromQualifiedNameAndType(
             String qualifiedName, ResolvedReferenceType resolvedReferenceType) {
-        List<Schema> list = parseNonServiceClassAsSchema(qualifiedName);
+        List<Schema> list = parseNonExportClassAsSchema(qualifiedName);
         if (list.isEmpty()) {
             return parseReferencedTypeAsSchema(resolvedReferenceType);
         } else {
@@ -485,11 +485,11 @@ public class OpenApiObjectGenerator {
 
     private boolean isReservedWord(String word) {
         return word != null
-                && VaadinServiceNameChecker.ECMA_SCRIPT_RESERVED_WORDS
+                && ExportNameChecker.ECMA_SCRIPT_RESERVED_WORDS
                         .contains(word.toLowerCase());
     }
 
-    private Map<String, PathItem> createPathItems(String serviceName,
+    private Map<String, PathItem> createPathItems(String exportName,
             ClassOrInterfaceDeclaration typeDeclaration) {
         Map<String, PathItem> newPathItems = new HashMap<>();
         for (MethodDeclaration methodDeclaration : typeDeclaration
@@ -501,7 +501,7 @@ public class OpenApiObjectGenerator {
 
             if (isReservedWord(methodName)) {
                 throw new IllegalStateException("The method name '" + methodName
-                        + "' in the service class '"
+                        + "' in the export class '"
                         + typeDeclaration.getNameAsString()
                         + "' is a JavaScript reserved word");
             }
@@ -518,10 +518,10 @@ public class OpenApiObjectGenerator {
                     .singletonList(typeDeclaration.getNameAsString()));
             PathItem pathItem = new PathItem().post(post);
 
-            String pathName = "/" + serviceName + "/" + methodName;
+            String pathName = "/" + exportName + "/" + methodName;
             pathItem.readOperationsMap()
                     .forEach((httpMethod, operation) -> operation
-                            .setOperationId(String.join("_", serviceName,
+                            .setOperationId(String.join("_", exportName,
                                     methodName, httpMethod.name())));
             newPathItems.put(pathName, pathItem);
         }

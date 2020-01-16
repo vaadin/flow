@@ -1,0 +1,104 @@
+{
+  "openapi" : "3.0.1",
+  "info" : {
+    "title" : "My super application",
+    "version" : "1.1.1"
+  },
+  "servers" : [ {
+    "url" : "https://myhost.com/myendpoint",
+    "description" : "Vaadin connect backend server"
+  } ],
+  "tags" : [ {
+    "name" : "FooBarExport",
+    "description" : "FooBar Export description"
+  }, {
+    "name" : "FooFooExport",
+    "description" : "FooFoo Export description"
+  } ],
+  "paths" : {
+    "/FooBarExport/firstMethod" : {
+      "post" : {
+        "tags" : [ "FooBarExport" ],
+        "operationId" : "FooBarExport_firstMethod_POST",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "value" : {
+                    "type" : "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : ""
+          }
+        },
+        "security" : [ {
+          "vaadin-connect-oauth2" : [ ]
+        } ]
+      }
+    },
+    "/FooBarExport/secondMethod" : {
+      "post" : {
+        "tags" : [ "FooBarExport" ],
+        "operationId" : "FooBarExport_secondMethod_POST",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "value" : {
+                    "type" : "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : ""
+          }
+        },
+        "security" : [ {
+          "vaadin-connect-oauth2" : [ ]
+        } ]
+      }
+    },
+    "/FooFooExport/foofooMethod" : {
+      "post" : {
+        "tags" : [ "FooFooExport" ],
+        "operationId" : "FooFooExport_foofooMethod_POST",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "value" : {
+                    "type" : "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : ""
+          }
+        },
+        "security" : [ {
+          "vaadin-connect-oauth2" : [ ]
+        } ]
+      }
+    }
+  }
+}

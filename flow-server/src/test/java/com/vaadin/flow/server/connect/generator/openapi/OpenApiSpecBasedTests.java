@@ -120,20 +120,20 @@ public class OpenApiSpecBasedTests {
                 .generateVaadinConnectClientFile(defaultConnectClient);
         VaadinConnectTsGenerator.launch(
                 getResourcePath(
-                        "esmodule-generator-TwoServicesThreeMethods.json"),
+                        "esmodule-generator-TwoExportsThreeMethods.json"),
                 outputDirectory.getRoot());
         assertEquals(
                 "Expect to have 2 generated TS files and a connect-client.default.ts",
                 3, outputDirectory.getRoot().list().length);
         // Second generating round
         VaadinConnectTsGenerator.launch(new File(getClass()
-                .getResource("esmodule-generator-OneServiceOneMethod.json")
+                .getResource("esmodule-generator-OneExportOneMethod.json")
                 .getPath()), outputDirectory.getRoot());
         assertEquals(
                 "Expected to have 1 generated TS files and a connect-client.default.ts",
                 2, outputDirectory.getRoot().list().length);
 
-        assertClassGeneratedTs("FooBarService");
+        assertClassGeneratedTs("FooBarExport");
     }
 
     @Test

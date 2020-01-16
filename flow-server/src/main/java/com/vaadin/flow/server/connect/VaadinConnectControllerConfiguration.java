@@ -49,7 +49,7 @@ public class VaadinConnectControllerConfiguration {
     /**
      * Registers {@link VaadinConnectController} to use
      * {@link VaadinConnectProperties#getVaadinConnectEndpoint()} as an endpoint
-     * for all Vaadin Connect services.
+     * for all Vaadin Connect exports.
      *
      * @return updated configuration for {@link VaadinConnectController}
      */
@@ -93,25 +93,26 @@ public class VaadinConnectControllerConfiguration {
      */
     private RequestMappingInfo prependConnectEndpointUrl(
             RequestMappingInfo mapping) {
-        PatternsRequestCondition connectServicePattern = new PatternsRequestCondition(
+        PatternsRequestCondition connectExportPattern =
+                new PatternsRequestCondition(
                 vaadinConnectProperties.getVaadinConnectEndpoint())
                         .combine(mapping.getPatternsCondition());
 
-        return new RequestMappingInfo(mapping.getName(), connectServicePattern,
+        return new RequestMappingInfo(mapping.getName(), connectExportPattern,
                 mapping.getMethodsCondition(), mapping.getParamsCondition(),
                 mapping.getHeadersCondition(), mapping.getConsumesCondition(),
                 mapping.getProducesCondition(), mapping.getCustomCondition());
     }
 
     /**
-     * Registers a service name checker responsible for validating the service
+     * Registers a export name checker responsible for validating the export
      * names.
      *
-     * @return the service name checker
+     * @return the export name checker
      */
     @Bean
-    public VaadinServiceNameChecker serviceNameChecker() {
-        return new VaadinServiceNameChecker();
+    public ExportNameChecker exportNameChecker() {
+        return new ExportNameChecker();
     }
 
     /**
