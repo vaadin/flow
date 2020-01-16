@@ -40,7 +40,10 @@ import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.router.internal.ErrorStateRenderer;
 import com.vaadin.flow.router.internal.NavigationStateRenderer;
+import com.vaadin.flow.server.AppShellRegistry;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
+import com.vaadin.flow.server.connect.VaadinService;
 
 /**
  * Custom UI for {@link JavaScriptBootstrapHandler}. This class is intended for
@@ -195,11 +198,30 @@ public class JavaScriptBootstrapUI extends UI {
             NavigationState navigationState) {
         NavigationEvent navigationEvent = new NavigationEvent(getRouter(),
                 location, this, NavigationTrigger.CLIENT_SIDE);
+
         NavigationStateRenderer clientNavigationStateRenderer = new NavigationStateRenderer(
                 navigationState);
+
         clientNavigationStateRenderer.handle(navigationEvent);
 
+        adjustPageTitle();
+
         return getInternals().getContinueNavigationAction() != null;
+    }
+
+    private void adjustPageTitle() {
+        // new title is empty if the flow route does not have a title
+        String newTitle = getInternals().getTitle();
+        // app shell title is computed from the title tag in index.html
+        String appTitle = AppShellRegistry
+                .getInstance(
+                        VaadinSession.getCurrent().getService().getContext())
+                .getTitle();
+        // restore the app shell title when there is no one for the route
+        if ((newTitle == null || newTitle.isEmpty()) && !appTitle.isEmpty()) {
+            getInternals().cancelPendingTitleUpdate();
+            getInternals().setTitle(appTitle);
+        }
     }
 
     private void handleErrorNavigation(Location location) {
