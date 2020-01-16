@@ -15,7 +15,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import com.vaadin.flow.server.ExecutionFailedException;
-import com.vaadin.flow.server.connect.VaadinService;
+import com.vaadin.flow.server.connect.Export;
 import com.vaadin.flow.server.frontend.NodeTasks.Builder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 
@@ -31,7 +31,7 @@ import static org.junit.Assert.assertTrue;
 
 public class NodeTasksTest {
 
-    @VaadinService
+    @Export
     public static class ConnectServicesForTesting {
     }
 
@@ -138,7 +138,7 @@ public class NodeTasksTest {
                 "api-file.json",
                 // withConnectClientTsApiFolder
                 "api/connect-client.default.ts",
-                "api/MyVaadinServices.ts")
+                "api/MyExports.ts")
                 .forEach(name -> assertTrue(name + " not created.", new File(dir, name).exists()));
     }
 

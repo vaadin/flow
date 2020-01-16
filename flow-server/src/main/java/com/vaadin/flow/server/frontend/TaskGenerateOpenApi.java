@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.Objects;
 
 import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.connect.Export;
 import com.vaadin.flow.server.connect.generator.OpenApiSpecGenerator;
 
 /**
@@ -35,8 +36,7 @@ public class TaskGenerateOpenApi extends AbstractTaskConnectGenerator {
      * Create a task for generating OpenAPI spec.
      *
      * @param javaSourceFolder
-     *            source paths of the project containing
-     *            {@link com.vaadin.flow.server.connect.VaadinService}
+     *            source paths of the project containing {@link Export}
      * @param classLoader
      *            The class loader which should be used to resolved types in the
      *            source paths.

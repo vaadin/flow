@@ -22,10 +22,10 @@ import java.lang.annotation.Target;
 
 /**
  * A security annotation, granting anonymous access to the Vaadin Connect
- * service (or its method) it is placed onto.
+ * export (or its method) it is placed onto.
  * <p>
- * This means that any user will be able to trigger an service method (if placed
- * on a service class) or the particular service method (if placed on a service
+ * This means that any user will be able to trigger an export method (if placed
+ * on a export class) or the particular export method (if placed on a export
  * method) without providing an authentication token.
  * <p>
  * If there are other supported security annotations present on the same class

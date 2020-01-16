@@ -33,11 +33,11 @@ public class VaadinConnectProperties {
     private String vaadinConnectTokenSigningKey;
 
     /**
-     * Customize the endpoint for all Vaadin Connect services. See default value
+     * Customize the endpoint for all Vaadin Connect exports. See default value
      * in the {@link VaadinConnectProperties#vaadinConnectEndpoint} field
      * annotation.
      *
-     * @return endpoint that should be used to access any Vaadin Connect service
+     * @return endpoint that should be used to access any Vaadin Connect export
      */
     public String getVaadinConnectEndpoint() {
         return vaadinConnectEndpoint;

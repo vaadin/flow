@@ -374,7 +374,7 @@ public class NodeTasks implements FallibleCommand {
 
         /**
          * Set source paths that OpenAPI generator searches for connect
-         * services.
+         * exports.
          *
          * @param connectJavaSourceFolder
          *            java source folder

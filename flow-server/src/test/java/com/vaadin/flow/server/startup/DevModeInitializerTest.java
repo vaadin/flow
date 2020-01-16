@@ -1,7 +1,6 @@
 package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletException;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -200,11 +199,11 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     }
 
     @Test
-    public void should_generateOpenApi_when_VaadinServicePresents()
+    public void should_generateOpenApi_when_ExportPresents()
             throws Exception {
 
-        // Configure a folder that has .java classes with valid services
-        // Not using `src/test/java` because there are invalid service names
+        // Configure a folder that has .java classes with valid exports
+        // Not using `src/test/java` because there are invalid export names
         // in some tests
         File src = new File(
                 getClass().getClassLoader().getResource("java").getFile());
@@ -218,27 +217,27 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         DevModeInitializer devModeInitializer = new DevModeInitializer();
         devModeInitializer.onStartup(classes, servletContext);
         Assert.assertTrue(
-                "Should generate OpenAPI spec if VaadinService is used.",
+                "Should generate OpenAPI spec if Export is used.",
                 generatedOpenApiJson.exists());
     }
 
     @Test
-    public void should_notGenerateOpenApi_when_VaadinServiceIsNotUsed()
+    public void should_notGenerateOpenApi_when_ExportIsNotUsed()
             throws Exception {
         File generatedOpenApiJson = Paths
                 .get(baseDir, DEFAULT_CONNECT_OPENAPI_JSON_FILE).toFile();
         Assert.assertFalse(generatedOpenApiJson.exists());
         devModeInitializer.onStartup(classes, servletContext);
         Assert.assertFalse(
-                "Should not generate OpenAPI spec if VaadinService is not used.",
+                "Should not generate OpenAPI spec if Export is not used.",
                 generatedOpenApiJson.exists());
     }
 
     @Test
     public void should_generateTs_files() throws Exception {
 
-        // Configure a folder that has .java classes with valid services
-        // Not using `src/test/java` because there are invalid service names
+        // Configure a folder that has .java classes with valid exports
+        // Not using `src/test/java` because there are invalid export names
         // in some tests
         File src = new File(
                 getClass().getClassLoader().getResource("java").getFile());
@@ -248,7 +247,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         DevModeInitializer devModeInitializer = new DevModeInitializer();
 
         File ts1 = new File(baseDir,
-                DEFAULT_CONNECT_GENERATED_TS_DIR + "MyVaadinServices.ts");
+                DEFAULT_CONNECT_GENERATED_TS_DIR + "MyExports.ts");
         File ts2 = new File(baseDir, DEFAULT_CONNECT_GENERATED_TS_DIR
                 + VaadinConnectClientGenerator.CONNECT_CLIENT_NAME);
 
