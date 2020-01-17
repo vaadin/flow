@@ -138,9 +138,9 @@ export class ValidationErrorData {
  */
 export interface ConnectClientOptions {
   /**
-   * The `endpoint` property value.
+   * The `prefix` property value.
    */
-  endpoint?: string;
+  prefix?: string;
 
   /**
    * The `middlewares` property value.
@@ -205,7 +205,7 @@ export type Middleware = (context: MiddlewareContext, next: MiddlewareNext) =>
 
 /**
  * Vaadin Connect client class is a low-level network calling utility. It stores
- * an endpoint and facilitates remote calls to services and methods
+ * an prefix and facilitates remote calls to services and methods
  * on the Vaadin Connect backend.
  *
  * Example usage:
@@ -215,21 +215,21 @@ export type Middleware = (context: MiddlewareContext, next: MiddlewareNext) =>
  * const responseData = await client.call('MyVaadinService', 'myMethod');
  * ```
  *
- * ### Endpoint
+ * ### Prefix
  *
- * The client supports an `endpoint` constructor option:
+ * The client supports an `prefix` constructor option:
  * ```js
- * const client = new ConnectClient({endpoint: '/my-connect-endpoint'});
+ * const client = new ConnectClient({prefix: '/my-connect-prefix'});
  * ```
  *
- * The default endpoint is '/connect'.
+ * The default prefix is '/connect'.
  *
  */
 export class ConnectClient {
   /**
-   * The Vaadin Connect backend endpoint
+   * The Vaadin Connect backend prefix
    */
-  endpoint: string = '/connect';
+  prefix: string = '/connect';
 
   /**
    * The array of middlewares that are invoked during a call.
@@ -240,8 +240,8 @@ export class ConnectClient {
    * @param options Constructor options.
    */
   constructor(options: ConnectClientOptions = {}) {
-    if (options.endpoint) {
-      this.endpoint = options.endpoint;
+    if (options.prefix) {
+      this.prefix = options.prefix;
     }
 
     if (options.middlewares) {
@@ -250,7 +250,7 @@ export class ConnectClient {
   }
 
   /**
-   * Makes a JSON HTTP request to the `${endpoint}/${service}/${method}` URL,
+   * Makes a JSON HTTP request to the `${prefix}/${service}/${method}` URL,
    * optionally supplying the provided params as a JSON request body,
    * and asynchronously returns the parsed JSON response data.
    *
@@ -291,7 +291,7 @@ export class ConnectClient {
     }
 
     const request = new Request(
-       `${this.endpoint}/${service}/${method}`, {
+       `${this.prefix}/${service}/${method}`, {
          method: 'POST',
          headers,
          body: params !== undefined ? JSON.stringify(nullForUndefined(params)) : undefined
