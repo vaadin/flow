@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
+import com.vaadin.flow.internal.UsageStatistics;
+import com.vaadin.flow.server.Constants;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Before;
@@ -50,6 +52,29 @@ public class TaskGenerateIndexTsTest {
         generatedImports.createNewFile();
         taskGenerateIndexTs = new TaskGenerateIndexTs(frontendFolder,
                 generatedImports, outputFolder);
+    }
+
+    @Test
+    public void should_reported_routing_client_when_IndexJsExists() throws Exception {
+        Files.createFile(new File(frontendFolder, INDEX_JS).toPath());
+        taskGenerateIndexTs.execute();
+        Assert.assertTrue(UsageStatistics.getEntries().anyMatch(
+                e -> Constants.STATISTIC_ROUTING_CLIENT.equals(e.getName())));
+    }
+
+    @Test
+    public void should_reported_routing_client_when_IndexTsExists() throws Exception {
+        Files.createFile(new File(frontendFolder, INDEX_TS).toPath());
+        taskGenerateIndexTs.execute();
+        Assert.assertTrue(UsageStatistics.getEntries().anyMatch(
+                e -> Constants.STATISTIC_ROUTING_CLIENT.equals(e.getName())));
+    }
+
+    @Test
+    public void should_not_reported_routing_client() throws Exception {
+        taskGenerateIndexTs.execute();
+        Assert.assertFalse(UsageStatistics.getEntries().anyMatch(
+                e -> Constants.STATISTIC_ROUTING_CLIENT.equals(e.getName())));
     }
 
     @Test
