@@ -280,9 +280,9 @@ public abstract class VaadinService implements Serializable {
             List<RouteData> routeDataList = getRouteRegistry().getRegisteredRoutes();
             if(!routeDataList.isEmpty()) {
                 routingServerAndHybrid();
-                routeDataList.stream()
-                        .map(Object::toString).forEach(logger::debug);
             }
+            routeDataList.stream()
+                    .map(Object::toString).forEach(logger::debug);
         }
 
         initialized = true;
