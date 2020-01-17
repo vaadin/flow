@@ -163,7 +163,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         // fallback chunk load function is generated
         Assert.assertThat(mainContent, CoreMatchers.containsString(
-                "fallbacks[thisScript.getAttribute('data-app-id')].loadFallback = function loadFallback(){"));
+                "fallbacks[thisScript.getAttribute('data-app-id')].loadFallback = function loadFallback() {"));
 
         Assert.assertThat(mainContent, CoreMatchers.containsString(
                 "return import('./generated-flow-imports-fallback.js');"));
@@ -273,7 +273,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         // fallback chunk load function is generated
         Assert.assertThat(mainContent, CoreMatchers.containsString(
-                "fallbacks[thisScript.getAttribute('data-app-id')].loadFallback = function loadFallback(){"));
+                "fallbacks[thisScript.getAttribute('data-app-id')].loadFallback = function loadFallback() {"));
 
         Assert.assertThat(mainContent, CoreMatchers.containsString(
                 "return import('./generated-flow-imports-fallback.js');"));
