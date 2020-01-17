@@ -33,7 +33,7 @@ import com.vaadin.flow.server.VaadinSession;
  * there isn't any sensible way of also intercepting for instances derived using
  * e.g. <code>thenAccept</code>.
  *
- * @since
+ * @since 2.1.4
  */
 public class DeadlockDetectingCompletableFuture<T>
         extends CompletableFuture<T> {
