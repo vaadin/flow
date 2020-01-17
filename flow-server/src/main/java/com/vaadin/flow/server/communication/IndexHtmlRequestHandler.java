@@ -42,6 +42,7 @@ import elemental.json.impl.JsonUtil;
 
 import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
 import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8;
+import static com.vaadin.flow.shared.ApplicationConstants.CSRF_TOKEN;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -119,13 +120,13 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                                 VaadinSession session) {
         String csrfToken = session.getCsrfToken();
         if (csrfToken != null) {
-            initialJson.put("csrfToken", csrfToken);
+            initialJson.put(CSRF_TOKEN, csrfToken);
         }
 
         Element elm = new Element("script");
         elm.attr("initial", "");
         elm.appendChild(new DataNode(
-                "window.Vaadin = {Flow: " + JsonUtil.stringify(initialJson) + "};"
+                "window.Vaadin = {TypeScript: " + JsonUtil.stringify(initialJson) + "};"
         ));
         indexDocument.head().insertChildren(0, elm);
     }

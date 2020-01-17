@@ -154,7 +154,7 @@ suite("Flow", () => {
     assert.isUndefined($wnd.Vaadin);
 
     const initial = createInitResponse('FooBar-12345');
-    $wnd.Vaadin = {Flow: {initial: JSON.parse(initial)}};
+    $wnd.Vaadin = {TypeScript: {initial: JSON.parse(initial)}};
 
     const flow = new Flow();
     return (flow as any).flowInit(true)
@@ -188,7 +188,7 @@ suite("Flow", () => {
       assert.isUndefined($wnd.Vaadin);
 
       const initial = createInitResponse('FooBar-12345');
-      $wnd.Vaadin = {Flow: {initial: JSON.parse(initial)}};
+      $wnd.Vaadin = {TypeScript: {initial: JSON.parse(initial)}};
 
       const flow = new Flow({
         imports: () => {}
@@ -476,8 +476,8 @@ suite("Flow", () => {
 
   test("should load pushScript on flowInit(true) with initial response", async() => {
     const initial = createInitResponse('FooBar-12345');
-    $wnd.Vaadin = {Flow: {initial: JSON.parse(initial)}};
-    $wnd.Vaadin.Flow.initial.pushScript = stubVaadinPushSrc;
+    $wnd.Vaadin = {TypeScript: {initial: JSON.parse(initial)}};
+    $wnd.Vaadin.TypeScript.initial.pushScript = stubVaadinPushSrc;
 
     const flow = new Flow();
     await (flow as any).flowInit(true);
