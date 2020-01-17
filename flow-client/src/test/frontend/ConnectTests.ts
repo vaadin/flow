@@ -1,4 +1,4 @@
-const {describe, it, beforeEach, afterEach} = intern.getPlugin('interface.bdd');
+const {describe, it, beforeEach, afterEach, after} = intern.getPlugin('interface.bdd');
 const {expect} = intern.getPlugin('chai');
 const {fetchMock} = intern.getPlugin('fetchMock');
 const {sinon} = intern.getPlugin('sinon');
@@ -17,6 +17,11 @@ describe('ConnectClient', () => {
   }
 
   beforeEach(() => localStorage.clear());
+
+  after(() => {
+    // @ts-ignore
+    delete window.Vaadin;
+  });
 
   it('should be exported', () => {
     expect(ConnectClient).to.be.ok;
