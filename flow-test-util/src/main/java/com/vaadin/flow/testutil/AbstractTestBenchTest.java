@@ -31,6 +31,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestName;
+import org.openqa.selenium.By;
 import org.openqa.selenium.Platform;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
@@ -114,6 +115,7 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
         String url = getTestURL(parameters);
 
         getDriver().get(url);
+        waitForElementPresent(By.xpath("//div[@id='outlet']/*"));
     }
 
     protected void openProduction(String... parameters) {
@@ -143,6 +145,11 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
         }
         url = url.replace("/view/", builder.toString());
         getDriver().get(url);
+        try {
+            waitForElementPresent(By.xpath("//div[@id='outlet']/*"));
+        } catch (Exception e) {
+            // This happens in one or two tests which do not actually test server side routes, e.g. IdTestIT
+        }
     }
 
     /**
