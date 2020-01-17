@@ -26,7 +26,7 @@ import java.util.Set;
  * Class for setting the direction on the document element.
  *
  * @author Vaadin Ltd
- * @since
+ * @since 2.1.4
  */
 class Direction implements Serializable {
 
