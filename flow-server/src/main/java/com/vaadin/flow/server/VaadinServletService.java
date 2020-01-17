@@ -28,6 +28,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 
+import com.vaadin.flow.internal.UsageStatistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -107,6 +108,7 @@ public class VaadinServletService extends VaadinService {
             handlers.add(0, new BootstrapHandler());
             getLogger().debug("Using '{}' in default mode",
                     BootstrapHandler.class.getName());
+            UsageStatistics.markAsUsed(Constants.STATISTIC_FLOW_BOOTSTRAPHANDLER, Version.getFullVersion());
         }
     }
 

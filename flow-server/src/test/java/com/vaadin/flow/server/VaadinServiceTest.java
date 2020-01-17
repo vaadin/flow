@@ -26,6 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.internal.UsageStatistics;
 import net.jcip.annotations.NotThreadSafe;
 import org.easymock.EasyMock;
 import org.junit.Assert;
@@ -71,6 +72,43 @@ public class VaadinServiceTest {
             String details, String url) {
         return VaadinService.createCriticalNotificationJSON(caption, message,
                 details, url);
+    }
+
+    @Test
+    public void should_reported_routing_server() {
+        VaadinServiceInitListener initListener = event -> {
+            RouteConfiguration.forApplicationScope().setRoute("test",
+                    TestView.class);
+        };
+        MockInstantiator instantiator = new MockInstantiator(initListener);
+
+        MockVaadinServletService service = new MockVaadinServletService();
+
+        service.init(instantiator);
+
+        Assert.assertTrue(UsageStatistics.getEntries().anyMatch(
+                e -> Constants.STATISTIC_ROUTING_SERVER.equals(e.getName())));
+    }
+
+    @Test
+    public void should_reported_routing_hybrid() {
+        VaadinServiceInitListener initListener = event -> {
+            RouteConfiguration.forApplicationScope().setRoute("test",
+                    TestView.class);
+        };
+        UsageStatistics.markAsUsed(Constants.STATISTIC_ROUTING_CLIENT, Version.getFullVersion());
+        MockInstantiator instantiator = new MockInstantiator(initListener);
+
+        MockVaadinServletService service = new MockVaadinServletService();
+
+        service.init(instantiator);
+
+        Assert.assertTrue(UsageStatistics.getEntries().anyMatch(
+                e -> Constants.STATISTIC_ROUTING_HYBRID.equals(e.getName())));
+        Assert.assertFalse(UsageStatistics.getEntries().anyMatch(
+                e -> Constants.STATISTIC_ROUTING_CLIENT.equals(e.getName())));
+        Assert.assertFalse(UsageStatistics.getEntries().anyMatch(
+                e -> Constants.STATISTIC_ROUTING_SERVER.equals(e.getName())));
     }
 
     @Test

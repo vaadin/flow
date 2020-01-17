@@ -47,6 +47,8 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import com.vaadin.flow.internal.UsageStatistics;
+import com.vaadin.flow.router.RouteData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -275,11 +277,26 @@ public abstract class VaadinService implements Serializable {
         if (!configuration.isProductionMode()) {
             Logger logger = getLogger();
             logger.debug("The application has the following routes: ");
-            getRouteRegistry().getRegisteredRoutes().stream()
+            List<RouteData> routeDataList = getRouteRegistry().getRegisteredRoutes();
+            if(!routeDataList.isEmpty()) {
+                addUsageStatistics();
+            }
+            routeDataList.stream()
                     .map(Object::toString).forEach(logger::debug);
         }
 
         initialized = true;
+    }
+
+    private void addUsageStatistics() {
+        if(UsageStatistics.getEntries().anyMatch(
+                e -> Constants.STATISTIC_ROUTING_CLIENT.equals(e.getName()))) {
+            UsageStatistics.removeEntry(Constants.STATISTIC_ROUTING_CLIENT);
+            UsageStatistics.markAsUsed(Constants.STATISTIC_ROUTING_HYBRID, Version.getFullVersion());
+        } else if(UsageStatistics.getEntries().noneMatch(
+                e -> Constants.STATISTIC_FLOW_BOOTSTRAPHANDLER.equals(e.getName()))) {
+            UsageStatistics.markAsUsed(Constants.STATISTIC_ROUTING_SERVER, Version.getFullVersion());
+        }
     }
 
     /**

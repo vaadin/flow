@@ -5,6 +5,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import com.vaadin.flow.internal.UsageStatistics;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -115,6 +116,14 @@ public class VaadinServletServiceTest {
                 "/servlet", "/extra/stuff");
         Assert.assertEquals("./../", location);
 
+    }
+
+    @Test
+    public void should_report_flow_bootstrapHandler() {
+        mocks.getDeploymentConfiguration().setClientSideMode(false);
+
+        Assert.assertTrue(UsageStatistics.getEntries().anyMatch(
+                e -> Constants.STATISTIC_FLOW_BOOTSTRAPHANDLER.equals(e.getName())));
     }
 
     private String testLocation(String base, String contextPath,
