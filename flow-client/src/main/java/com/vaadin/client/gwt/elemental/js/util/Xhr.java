@@ -72,7 +72,8 @@ public class Xhr {
         @Override
         public void onReadyStateChange(XMLHttpRequest xhr) {
             if (xhr.getReadyState() == XMLHttpRequest.DONE) {
-                ApplicationConnection.fireDomEventEvent(VAADIN_REQUEST_RECEIVED_EVENT, true, false);
+                ApplicationConnection.fireDomEventEvent(
+                        VAADIN_REQUEST_RECEIVED_EVENT, true, false);
                 if (xhr.getStatus() == 200) {
                     callback.onSuccess(xhr);
                     xhr.clearOnReadyStateChange();
@@ -210,7 +211,8 @@ public class Xhr {
             Callback callback) {
         try {
             xhr.setOnReadyStateChange(new Handler(callback));
-            ApplicationConnection.fireDomEventEvent(VAADIN_REQUEST_START_EVENT, true, false);
+            ApplicationConnection.fireDomEventEvent(VAADIN_REQUEST_START_EVENT,
+                    true, false);
             xhr.open(method, url);
             xhr.setRequestHeader("Content-type", contentType);
             xhr.setWithCredentials(true);

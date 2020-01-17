@@ -99,19 +99,26 @@ public class ApplicationConnection {
         }
 
         registry.getLoadingIndicator().show();
-        if(Scheduler.get() instanceof TrackingScheduler) {
-            ((TrackingScheduler) Scheduler.get()).addEmptyQueueListener(this::fireAllProcessingDoneEventIfIdle);
+        if (Scheduler.get() instanceof TrackingScheduler) {
+            ((TrackingScheduler) Scheduler.get()).addEmptyQueueListener(
+                    this::fireAllProcessingDoneEventIfIdle);
         }
 
     }
 
     /**
-     * Helper method to fire Custom DOM events that can be listened to from JS code. Will always be fired from the document
-     * @param eventTypeArg - the custom event type for the event
-     * @param canBubble - true if the event can bubble
-     * @param canCancel - true if the event can be cancelled
+     * Helper method to fire Custom DOM events that can be listened to from JS
+     * code. Will always be fired from the document
+     * 
+     * @param eventTypeArg
+     *            the custom event type for the event
+     * @param canBubble
+     *            <code>true</code> if the event can bubble
+     * @param canCancel
+     *            <code>true</code> if the event can be cancelled
      */
-    public static void fireDomEventEvent(String eventTypeArg, boolean canBubble, boolean canCancel) {
+    public static void fireDomEventEvent(String eventTypeArg, boolean canBubble,
+            boolean canCancel) {
         Document document = Browser.getDocument();
         Event requestStartNativeEvent = document.createEvent(Events.CUSTOM);
         requestStartNativeEvent.initEvent(eventTypeArg, canBubble, canCancel);
@@ -119,15 +126,16 @@ public class ApplicationConnection {
     }
 
     /**
-     * Checks if the client-side engine is still marked as active, i.e. tasks are still pending.
-     * If no tasks are pending, this will fire a DOM event informing any listeners that Vaadin is done.
+     * Checks if the client-side engine is still marked as active, i.e. tasks
+     * are still pending. If no tasks are pending, this will fire a DOM event
+     * informing any listeners that Vaadin is done.
      */
-    public void fireAllProcessingDoneEventIfIdle(){
-        if(!isActive()){
-            fireDomEventEvent(Xhr.VAADIN_ALL_REQUEST_PROCESSING_DONE_EVENT, true, false);
+    public void fireAllProcessingDoneEventIfIdle() {
+        if (!isActive()) {
+            fireDomEventEvent(Xhr.VAADIN_ALL_REQUEST_PROCESSING_DONE_EVENT,
+                    true, false);
         }
     }
-
 
     /**
      * Starts this application.
@@ -220,12 +228,12 @@ public class ApplicationConnection {
             var ur = ap.@ApplicationConnection::registry.@com.vaadin.client.Registry::getURIResolver()();
             return ur.@com.vaadin.client.URIResolver::resolveVaadinUri(Ljava/lang/String;)(uriToResolve);
         });
-
+    
         client.sendEventMessage = $entry(function(nodeId, eventType, eventData) {
             var sc = ap.@ApplicationConnection::registry.@com.vaadin.client.Registry::getServerConnector()();
             sc.@com.vaadin.client.communication.ServerConnector::sendEventMessage(ILjava/lang/String;Lelemental/json/JsonObject;)(nodeId,eventType,eventData);
         });
-
+    
         client.initializing = false;
         client.exportedWebComponents = exportedWebComponents;
         $wnd.Vaadin.Flow.clients[applicationId] = client;
@@ -253,7 +261,7 @@ public class ApplicationConnection {
         client.getVersionInfo = $entry(function(parameter) {
             return { "flow": servletVersion};
         });
-
+    
     }-*/;
 
     /**
@@ -271,7 +279,7 @@ public class ApplicationConnection {
     private boolean isExecutingDeferredCommands() {
         Scheduler s = Scheduler.get();
         if (s instanceof TrackingScheduler) {
-            return  ((TrackingScheduler) s).hasWorkQueued();
+            return ((TrackingScheduler) s).hasWorkQueued();
         } else {
             return false;
         }
