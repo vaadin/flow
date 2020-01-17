@@ -25,7 +25,7 @@ import com.vaadin.flow.server.connect.generator.VaadinConnectTsGenerator;
 import static com.vaadin.flow.server.connect.generator.VaadinConnectClientGenerator.CONNECT_CLIENT_NAME;
 
 /**
- * Generate the Vaadin Connect TS files for services, and the Client API file.
+ * Generate the Vaadin Connect TS files for endpoints, and the Client API file.
  */
 public class TaskGenerateConnect extends AbstractTaskConnectGenerator {
 

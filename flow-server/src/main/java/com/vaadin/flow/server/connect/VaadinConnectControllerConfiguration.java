@@ -49,7 +49,7 @@ public class VaadinConnectControllerConfiguration {
     /**
      * Registers {@link VaadinConnectController} to use
      * {@link VaadinConnectProperties#getVaadinConnectPrefix()} as a prefix
-     * for all Vaadin Connect services.
+     * for all Vaadin Connect endpoints.
      *
      * @return updated configuration for {@link VaadinConnectController}
      */
@@ -93,26 +93,26 @@ public class VaadinConnectControllerConfiguration {
      */
     private RequestMappingInfo prependConnectPrefixUrl(
             RequestMappingInfo mapping) {
-        PatternsRequestCondition connectServicePattern =
+        PatternsRequestCondition connectEndpointPattern =
                 new PatternsRequestCondition(
                 vaadinConnectProperties.getVaadinConnectPrefix())
                         .combine(mapping.getPatternsCondition());
 
-        return new RequestMappingInfo(mapping.getName(), connectServicePattern,
+        return new RequestMappingInfo(mapping.getName(), connectEndpointPattern,
                 mapping.getMethodsCondition(), mapping.getParamsCondition(),
                 mapping.getHeadersCondition(), mapping.getConsumesCondition(),
                 mapping.getProducesCondition(), mapping.getCustomCondition());
     }
 
     /**
-     * Registers a service name checker responsible for validating the service
+     * Registers a endpoint name checker responsible for validating the endpoint
      * names.
      *
-     * @return the service name checker
+     * @return the endpoint name checker
      */
     @Bean
-    public VaadinServiceNameChecker serviceNameChecker() {
-        return new VaadinServiceNameChecker();
+    public EndpointNameChecker endpointNameChecker() {
+        return new EndpointNameChecker();
     }
 
     /**

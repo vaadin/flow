@@ -161,12 +161,12 @@ export interface CallOptions {
  */
 export interface MiddlewareContext {
   /**
-   * The service class name.
+   * The endpoint class name.
    */
-  service: string;
+  endpointClass: string;
 
   /**
-   * The method name to call on in the service class.
+   * The method name to call on in the endpoint class.
    */
   method: string;
 
@@ -205,14 +205,14 @@ export type Middleware = (context: MiddlewareContext, next: MiddlewareNext) =>
 
 /**
  * Vaadin Connect client class is a low-level network calling utility. It stores
- * an prefix and facilitates remote calls to services and methods
+ * a prefix and facilitates remote calls to endpoint class methods
  * on the Vaadin Connect backend.
  *
  * Example usage:
  *
  * ```js
  * const client = new ConnectClient();
- * const responseData = await client.call('MyVaadinService', 'myMethod');
+ * const responseData = await client.call('MyEndpoint', 'myMethod');
  * ```
  *
  * ### Prefix
@@ -250,18 +250,18 @@ export class ConnectClient {
   }
 
   /**
-   * Makes a JSON HTTP request to the `${prefix}/${service}/${method}` URL,
+   * Makes a JSON HTTP request to the `${prefix}/${endpointClass}/${method}` URL,
    * optionally supplying the provided params as a JSON request body,
    * and asynchronously returns the parsed JSON response data.
    *
-   * @param service Service class name.
-   * @param method Method name to call in the service class.
+   * @param endpointClass Endpoint class name.
+   * @param method Method name to call in the endpoint class.
    * @param params Optional object to be send in JSON request body.
    * @param options Optional client options for this call.
    * @returns {} Decoded JSON response data.
    */
   async call(
-    service: string,
+    endpointClass: string,
     method: string,
     params?: any,
     options: CallOptions = {}
@@ -291,7 +291,7 @@ export class ConnectClient {
     }
 
     const request = new Request(
-       `${this.prefix}/${service}/${method}`, {
+       `${this.prefix}/${endpointClass}/${method}`, {
          method: 'POST',
          headers,
          body: params !== undefined ? JSON.stringify(nullForUndefined(params)) : undefined
@@ -300,7 +300,7 @@ export class ConnectClient {
     // The middleware `context`, includes the call arguments and the request
     // constructed from them
     const initialContext: MiddlewareContext = {
-      service,
+      endpointClass,
       method,
       params,
       options,

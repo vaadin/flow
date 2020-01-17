@@ -23,14 +23,14 @@ import java.util.Optional;
 import com.vaadin.flow.server.connect.VaadinConnectController;
 
 /**
- * An exception that is intended to be thrown by any Vaadin Connect service
+ * An exception that is intended to be thrown by any Vaadin Connect endpoint
  * method to propagate exception details to the client side. When an exception
- * is thrown by a service method, a particular response is constructed based on
+ * is thrown by a endpoint method, a particular response is constructed based on
  * the data of the exception and sent to the client side. When a client library
  * receives the response, it raises the corresponding exception using the
  * response data.
  *
- * By default, if any Vaadin Connect service method throws an exception when
+ * By default, if any Vaadin Connect endpoint method throws an exception when
  * being invoked by the client request, the exception details are concealed due
  * to security reasons. When there's a need to pass some information about the
  * failure on the client side, this exception or any of its subclasses can be

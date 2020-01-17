@@ -25,7 +25,7 @@ public class VaadinConnectTestBean {
     public String address;
     public int age;
     public boolean isAdmin;
-    public VaadinConnectTypeConversionServices.TestEnum testEnum;
+    public VaadinConnectTypeConversionEndpoints.TestEnum testEnum;
     public Collection<String> roles;
     private String customProperty;
 

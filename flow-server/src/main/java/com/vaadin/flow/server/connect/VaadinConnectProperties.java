@@ -33,11 +33,11 @@ public class VaadinConnectProperties {
     private String vaadinConnectTokenSigningKey;
 
     /**
-     * Customize the prefix for all Vaadin Connect services. See default value
+     * Customize the prefix for all Vaadin Connect endpoints. See default value
      * in the {@link VaadinConnectProperties#vaadinConnectPrefix} field
      * annotation.
      *
-     * @return prefix that should be used to access any Vaadin Connect service
+     * @return prefix that should be used to access any Vaadin Connect endpoint
      */
     public String getVaadinConnectPrefix() {
         return vaadinConnectPrefix;

@@ -67,11 +67,10 @@ import com.vaadin.flow.server.connect.exception.VaadinConnectValidationException
 
 /**
  * The controller that is responsible for processing Vaadin Connect requests.
- * Each class that is annotated with {@link VaadinService} gets its public
- * methods exposed so that those can be triggered by a correct POST request,
- * including the methods inherited from the other classes, excluding
- * {@link Object} class ones. Other methods (non-public) are not considered by
- * the controller.
+ * Each class that is annotated with {@link Endpoint} gets its public methods
+ * exposed so that those can be triggered by a correct POST request, including
+ * the methods inherited from the other classes, excluding {@link Object} class
+ * ones. Other methods (non-public) are not considered by the controller.
  * <p>
  * For example, if a class with name {@code TestClass} that has the only public
  * method {@code testMethod} was annotated with the annotation, it can be called
@@ -90,14 +89,15 @@ public class VaadinConnectController {
      * A qualifier to override the request and response default json mapper.
      *
      * @see #VaadinConnectController(ObjectMapper, VaadinConnectAccessChecker,
-     *      VaadinServiceNameChecker, ExplicitNullableTypeChecker,
+     *      EndpointNameChecker, ExplicitNullableTypeChecker,
      *      ApplicationContext)
      */
-    public static final String VAADIN_SERVICE_MAPPER_BEAN_QUALIFIER = "vaadinServiceMapper";
+    public static final String VAADIN_ENDPOINT_MAPPER_BEAN_QUALIFIER =
+            "vaadinEndpointMapper";
 
-    final Map<String, VaadinServiceData> vaadinServices = new HashMap<>();
+    final Map<String, VaadinEndpointData> vaadinEndpoints = new HashMap<>();
 
-    private final ObjectMapper vaadinServiceMapper;
+    private final ObjectMapper vaadinEndpointMapper;
     private final VaadinConnectAccessChecker accessChecker;
     private final Validator validator = Validation
             .buildDefaultValidatorFactory().getValidator();
@@ -106,75 +106,76 @@ public class VaadinConnectController {
     /**
      * A constructor used to initialize the controller.
      *
-     * @param vaadinServiceMapper
+     * @param vaadinEndpointMapper
      *            optional bean to override the default {@link ObjectMapper}
      *            that is used for serializing and deserializing request and
      *            response bodies Use
-     *            {@link VaadinConnectController#VAADIN_SERVICE_MAPPER_BEAN_QUALIFIER}
+     *            {@link VaadinConnectController#VAADIN_ENDPOINT_MAPPER_BEAN_QUALIFIER}
      *            qualifier to override the mapper.
      * @param accessChecker
-     *            the ACL checker to verify the service method access
+     *            the ACL checker to verify the endpoint method access
      *            permissions
-     * @param serviceNameChecker
-     *            the service name checker to verify custom Vaadin Connect
-     *            service names
+     * @param endpointNameChecker
+     *            the endpoint name checker to verify custom Vaadin Connect
+     *            endpoint names
      * @param explicitNullableTypeChecker
      *            the method parameter and return value type checker to verify
      *            that null values are explicit
      * @param context
-     *            Spring context to extract beans annotated with
-     *            {@link VaadinService} from
+     *            Spring context to extract beans annotated with {@link Endpoint}
+     *            from
      */
     public VaadinConnectController(
-            @Autowired(required = false) @Qualifier(VAADIN_SERVICE_MAPPER_BEAN_QUALIFIER) ObjectMapper vaadinServiceMapper,
+            @Autowired(required = false) @Qualifier(VAADIN_ENDPOINT_MAPPER_BEAN_QUALIFIER) ObjectMapper vaadinEndpointMapper,
             VaadinConnectAccessChecker accessChecker,
-            VaadinServiceNameChecker serviceNameChecker,
+            EndpointNameChecker endpointNameChecker,
             ExplicitNullableTypeChecker explicitNullableTypeChecker,
             ApplicationContext context) {
-        this.vaadinServiceMapper = vaadinServiceMapper != null
-                ? vaadinServiceMapper
+        this.vaadinEndpointMapper = vaadinEndpointMapper != null
+                ? vaadinEndpointMapper
                 : getDefaultObjectMapper(context);
         this.accessChecker = accessChecker;
         this.explicitNullableTypeChecker = explicitNullableTypeChecker;
 
-        context.getBeansWithAnnotation(VaadinService.class).forEach(
-                (name, serviceBean) -> validateServiceBean(serviceNameChecker,
-                        name, serviceBean));
+        context.getBeansWithAnnotation(Endpoint.class).forEach(
+                (name, endpointBean) -> validateEndpointBean(endpointNameChecker,
+                        name, endpointBean));
     }
 
     private static Logger getLogger() {
         return LoggerFactory.getLogger(VaadinConnectController.class);
     }
 
-    void validateServiceBean(VaadinServiceNameChecker serviceNameChecker,
-            String name, Object serviceBean) {
+    void validateEndpointBean(EndpointNameChecker endpointNameChecker,
+            String name, Object endpointBean) {
         // Check the bean type instead of the implementation type in
         // case of e.g. proxies
-        Class<?> beanType = ClassUtils.getUserClass(serviceBean.getClass());
+        Class<?> beanType = ClassUtils.getUserClass(endpointBean.getClass());
 
-        String serviceName = Optional
-                .ofNullable(beanType.getAnnotation(VaadinService.class))
-                .map(VaadinService::value).filter(value -> !value.isEmpty())
+        String endpointName = Optional
+                .ofNullable(beanType.getAnnotation(Endpoint.class))
+                .map(Endpoint::value).filter(value -> !value.isEmpty())
                 .orElse(beanType.getSimpleName());
-        if (serviceName.isEmpty()) {
+        if (endpointName.isEmpty()) {
             throw new IllegalStateException(String.format(
                     "A bean with name '%s' and type '%s' is annotated with '%s' "
                             + "annotation but is an anonymous class hence has no name. ",
-                    name, beanType, VaadinService.class)
+                    name, beanType, Endpoint.class)
                     + String.format(
                             "Either modify the bean declaration so that it is not an "
-                                    + "anonymous class or specify a service name in the '%s' annotation",
-                            VaadinService.class));
+                                    + "anonymous class or specify an endpoint " +
+                                    "name in the '%s' annotation",
+                            Endpoint.class));
         }
-        String validationError = serviceNameChecker.check(serviceName);
+        String validationError = endpointNameChecker.check(endpointName);
         if (validationError != null) {
             throw new IllegalStateException(
-                    String.format("Service name '%s' is invalid, reason: '%s'",
-                            serviceName, validationError));
+                    String.format("Endpoint name '%s' is invalid, reason: '%s'",
+                            endpointName, validationError));
         }
 
-        vaadinServices.put(serviceName.toLowerCase(Locale.ENGLISH),
-                new VaadinServiceData(serviceBean, beanType.getMethods()));
+        vaadinEndpoints.put(endpointName.toLowerCase(Locale.ENGLISH),
+                new VaadinEndpointData(endpointBean, beanType.getMethods()));
     }
 
     private ObjectMapper getDefaultObjectMapper(ApplicationContext context) {
@@ -192,14 +193,14 @@ public class VaadinConnectController {
                     "Auto configured jackson object mapper is not found."
                             + "Please define your own object mapper with '@Qualifier(%s)' or "
                             + "make sure that the auto configured jackson object mapper is available.",
-                    VAADIN_SERVICE_MAPPER_BEAN_QUALIFIER), e);
+                    VAADIN_ENDPOINT_MAPPER_BEAN_QUALIFIER), e);
         }
     }
 
     /**
      * Captures and processes the Vaadin Connect requests.
      * <p>
-     * Matches the service name and a method name with the corresponding Java
+     * Matches the endpoint name and a method name with the corresponding Java
      * class and a public method in the class. Extracts parameters from a
      * request body if the Java method requires any and applies in the same
      * order. After the method call, serializes the Java method execution result
@@ -208,51 +209,52 @@ public class VaadinConnectController {
      * If an issue occurs during the request processing, an error response is
      * returned instead of the serialized Java method return value.
      *
-     * @param serviceName
-     *            the name of a service to address the calls to, not case
+     * @param endpointName
+     *            the name of an endpoint to address the calls to, not case
      *            sensitive
      * @param methodName
-     *            the method name to execute on a service, not case sensitive
+     *            the method name to execute on an endpoint, not case sensitive
      * @param body
      *            optional request body, that should be specified if the method
      *            called has parameters
      * @param request
-     *            the current request which triggers the service call
+     *            the current request which triggers the endpoint call
      * @return execution result as a JSON string or an error message string
      */
-    @PostMapping(path = "/{service}/{method}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<String> serveVaadinService(
-            @PathVariable("service") String serviceName,
+    @PostMapping(path = "/{endpoint}/{method}", produces =
+            MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<String> serveEndpoint(
+            @PathVariable("endpoint") String endpointName,
             @PathVariable("method") String methodName,
             @RequestBody(required = false) ObjectNode body,
             HttpServletRequest request) {
-        getLogger().debug("Service: {}, method: {}, request body: {}",
-                serviceName, methodName, body);
+        getLogger().debug("Endpoint: {}, method: {}, request body: {}",
+                endpointName, methodName, body);
 
-        VaadinServiceData vaadinServiceData = vaadinServices
-                .get(serviceName.toLowerCase(Locale.ENGLISH));
-        if (vaadinServiceData == null) {
-            getLogger().debug("Service '{}' not found", serviceName);
+        VaadinEndpointData vaadinEndpointData = vaadinEndpoints
+                .get(endpointName.toLowerCase(Locale.ENGLISH));
+        if (vaadinEndpointData == null) {
+            getLogger().debug("Endpoint '{}' not found", endpointName);
             return ResponseEntity.notFound().build();
         }
 
-        Method methodToInvoke = vaadinServiceData
+        Method methodToInvoke = vaadinEndpointData
                 .getMethod(methodName.toLowerCase(Locale.ENGLISH)).orElse(null);
         if (methodToInvoke == null) {
-            getLogger().debug("Method '{}' not found in service '{}'",
-                    methodName, serviceName);
+            getLogger().debug("Method '{}' not found in endpoint '{}'",
+                    methodName, endpointName);
             return ResponseEntity.notFound().build();
         }
 
         try {
-            return invokeVaadinServiceMethod(serviceName, methodName,
-                    methodToInvoke, body, vaadinServiceData, request);
+            return invokeVaadinEndpointMethod(endpointName, methodName,
+                    methodToInvoke, body, vaadinEndpointData, request);
         } catch (JsonProcessingException e) {
             String errorMessage = String.format(
-                    "Failed to serialize service '%s' method '%s' response. "
+                    "Failed to serialize endpoint '%s' method '%s' response. "
                             + "Double check method's return type or specify a custom mapper bean with qualifier '%s'",
-                    serviceName, methodName,
-                    VAADIN_SERVICE_MAPPER_BEAN_QUALIFIER);
+                    endpointName, methodName,
+                    VAADIN_ENDPOINT_MAPPER_BEAN_QUALIFIER);
             getLogger().error(errorMessage, e);
             try {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -266,16 +268,16 @@ public class VaadinConnectController {
         }
     }
 
-    private ResponseEntity<String> invokeVaadinServiceMethod(String serviceName,
+    private ResponseEntity<String> invokeVaadinEndpointMethod(String endpointName,
             String methodName, Method methodToInvoke, ObjectNode body,
-            VaadinServiceData vaadinServiceData, HttpServletRequest request)
+            VaadinEndpointData vaadinEndpointData, HttpServletRequest request)
             throws JsonProcessingException {
         String checkError = accessChecker.check(methodToInvoke, request);
         if (checkError != null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(createResponseErrorObject(String.format(
-                            "Service '%s' method '%s' request cannot be accessed, reason: '%s'",
-                            serviceName, methodName, checkError)));
+                            "Endpoint '%s' method '%s' request cannot be accessed, reason: '%s'",
+                            endpointName, methodName, checkError)));
         }
 
         Map<String, JsonNode> requestParameters = getRequestParameters(body);
@@ -283,34 +285,34 @@ public class VaadinConnectController {
         if (javaParameters.length != requestParameters.size()) {
             return ResponseEntity.badRequest()
                     .body(createResponseErrorObject(String.format(
-                            "Incorrect number of parameters for service '%s' method '%s', "
+                            "Incorrect number of parameters for endpoint '%s' method '%s', "
                                     + "expected: %s, got: %s",
-                            serviceName, methodName, javaParameters.length,
+                            endpointName, methodName, javaParameters.length,
                             requestParameters.size())));
         }
 
-        Object[] vaadinServiceParameters;
+        Object[] vaadinEndpointParameters;
         try {
-            vaadinServiceParameters = getVaadinServiceParameters(
-                    requestParameters, javaParameters, methodName, serviceName);
+            vaadinEndpointParameters = getVaadinEndpointParameters(
+                    requestParameters, javaParameters, methodName, endpointName);
         } catch (VaadinConnectValidationException e) {
             getLogger().debug(
-                    "Service '{}' method '{}' received invalid response",
-                    serviceName, methodName, e);
-            return ResponseEntity.badRequest().body(vaadinServiceMapper
+                    "Endpoint '{}' method '{}' received invalid response",
+                    endpointName, methodName, e);
+            return ResponseEntity.badRequest().body(vaadinEndpointMapper
                     .writeValueAsString(e.getSerializationData()));
         }
 
         Set<ConstraintViolation<Object>> methodParameterConstraintViolations = validator
                 .forExecutables()
-                .validateParameters(vaadinServiceData.getServiceObject(),
-                        methodToInvoke, vaadinServiceParameters);
+                .validateParameters(vaadinEndpointData.getEndpointObject(),
+                        methodToInvoke, vaadinEndpointParameters);
         if (!methodParameterConstraintViolations.isEmpty()) {
-            return ResponseEntity.badRequest().body(vaadinServiceMapper
+            return ResponseEntity.badRequest().body(vaadinEndpointMapper
                     .writeValueAsString(new VaadinConnectValidationException(
                             String.format(
-                                    "Validation error in service '%s' method '%s'",
-                                    serviceName, methodName),
+                                    "Validation error in endpoint '%s' method '%s'",
+                                    endpointName, methodName),
                             createMethodValidationErrors(
                                     methodParameterConstraintViolations))
                                             .getSerializationData()));
@@ -319,26 +321,26 @@ public class VaadinConnectController {
         Object returnValue;
         try {
             returnValue = methodToInvoke.invoke(
-                    vaadinServiceData.getServiceObject(),
-                    vaadinServiceParameters);
+                    vaadinEndpointData.getEndpointObject(),
+                    vaadinEndpointParameters);
         } catch (IllegalArgumentException e) {
             String errorMessage = String.format(
-                    "Received incorrect arguments for service '%s' method '%s'. "
+                    "Received incorrect arguments for endpoint '%s' method '%s'. "
                             + "Expected parameter types (and their order) are: '[%s]'",
-                    serviceName, methodName,
+                    endpointName, methodName,
                     listMethodParameterTypes(javaParameters));
             getLogger().debug(errorMessage, e);
             return ResponseEntity.badRequest()
                     .body(createResponseErrorObject(errorMessage));
         } catch (IllegalAccessException e) {
             String errorMessage = String.format(
-                    "Service '%s' method '%s' access failure", serviceName,
+                    "Endpoint '%s' method '%s' access failure", endpointName,
                     methodName);
             getLogger().error(errorMessage, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(createResponseErrorObject(errorMessage));
         } catch (InvocationTargetException e) {
-            return handleMethodExecutionError(serviceName, methodName, e);
+            return handleMethodExecutionError(endpointName, methodName, e);
         }
 
         String implicitNullError = this.explicitNullableTypeChecker
@@ -346,43 +348,43 @@ public class VaadinConnectController {
         if (implicitNullError != null) {
             VaadinConnectException returnValueException = new VaadinConnectException(
                     String.format(
-                            "Unexpected return value in service '%s' method '%s'. %s",
-                            serviceName, methodName, implicitNullError));
+                            "Unexpected return value in endpoint '%s' method '%s'. %s",
+                            endpointName, methodName, implicitNullError));
 
             getLogger().error(returnValueException.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(vaadinServiceMapper.writeValueAsString(
+                    .body(vaadinEndpointMapper.writeValueAsString(
                             returnValueException.getSerializationData()));
         }
 
         Set<ConstraintViolation<Object>> returnValueConstraintViolations = validator
                 .forExecutables()
-                .validateReturnValue(vaadinServiceData.getServiceObject(),
+                .validateReturnValue(vaadinEndpointData.getEndpointObject(),
                         methodToInvoke, returnValue);
         if (!returnValueConstraintViolations.isEmpty()) {
             getLogger().error(
-                    "Service '{}' method '{}' had returned a value that has validation errors: '{}', this might cause bugs on the client side. Fix the method implementation.",
-                    serviceName, methodName, returnValueConstraintViolations);
+                    "Endpoint '{}' method '{}' had returned a value that has validation errors: '{}', this might cause bugs on the client side. Fix the method implementation.",
+                    endpointName, methodName, returnValueConstraintViolations);
         }
         return ResponseEntity
-                .ok(vaadinServiceMapper.writeValueAsString(returnValue));
+                .ok(vaadinEndpointMapper.writeValueAsString(returnValue));
     }
 
     private ResponseEntity<String> handleMethodExecutionError(
-            String serviceName, String methodName, InvocationTargetException e)
+            String endpointName, String methodName, InvocationTargetException e)
             throws JsonProcessingException {
         if (VaadinConnectException.class
                 .isAssignableFrom(e.getCause().getClass())) {
-            VaadinConnectException serviceException = ((VaadinConnectException) e
+            VaadinConnectException endpointException = ((VaadinConnectException) e
                     .getCause());
-            getLogger().debug("Service '{}' method '{}' aborted the execution",
-                    serviceName, methodName, serviceException);
+            getLogger().debug("Endpoint '{}' method '{}' aborted the execution",
+                    endpointName, methodName, endpointException);
             return ResponseEntity.badRequest()
-                    .body(vaadinServiceMapper.writeValueAsString(
-                            serviceException.getSerializationData()));
+                    .body(vaadinEndpointMapper.writeValueAsString(
+                            endpointException.getSerializationData()));
         } else {
             String errorMessage = String.format(
-                    "Service '%s' method '%s' execution failure", serviceName,
+                    "Endpoint '%s' method '%s' execution failure", endpointName,
                     methodName);
             getLogger().error(errorMessage, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -392,7 +394,7 @@ public class VaadinConnectController {
 
     private String createResponseErrorObject(String errorMessage)
             throws JsonProcessingException {
-        return vaadinServiceMapper.writeValueAsString(Collections.singletonMap(
+        return vaadinEndpointMapper.writeValueAsString(Collections.singletonMap(
                 VaadinConnectException.ERROR_MESSAGE_FIELD, errorMessage));
     }
 
@@ -401,10 +403,10 @@ public class VaadinConnectController {
                 .map(Class::getName).collect(Collectors.joining(", "));
     }
 
-    private Object[] getVaadinServiceParameters(
+    private Object[] getVaadinEndpointParameters(
             Map<String, JsonNode> requestParameters, Parameter[] javaParameters,
-            String methodName, String serviceName) {
-        Object[] serviceParameters = new Object[javaParameters.length];
+            String methodName, String endpointName) {
+        Object[] endpointParameters = new Object[javaParameters.length];
         String[] parameterNames = new String[requestParameters.size()];
         requestParameters.keySet().toArray(parameterNames);
         Map<String, String> errorParams = new HashMap<>();
@@ -413,12 +415,12 @@ public class VaadinConnectController {
         for (int i = 0; i < javaParameters.length; i++) {
             Type expectedType = javaParameters[i].getParameterizedType();
             try {
-                Object parameter = vaadinServiceMapper
-                        .readerFor(vaadinServiceMapper.getTypeFactory()
+                Object parameter = vaadinEndpointMapper
+                        .readerFor(vaadinEndpointMapper.getTypeFactory()
                                 .constructType(expectedType))
                         .readValue(requestParameters.get(parameterNames[i]));
 
-                serviceParameters[i] = parameter;
+                endpointParameters[i] = parameter;
 
                 if (parameter != null) {
                     constraintViolations.addAll(validator.validate(parameter));
@@ -433,14 +435,14 @@ public class VaadinConnectController {
         }
 
         if (errorParams.isEmpty() && constraintViolations.isEmpty()) {
-            return serviceParameters;
+            return endpointParameters;
         }
-        throw getInvalidServiceParametersException(methodName, serviceName,
+        throw getInvalidEndpointParametersException(methodName, endpointName,
                 errorParams, constraintViolations);
     }
 
-    private VaadinConnectValidationException getInvalidServiceParametersException(
-            String methodName, String serviceName,
+    private VaadinConnectValidationException getInvalidEndpointParametersException(
+            String methodName, String endpointName,
             Map<String, String> deserializationErrors,
             Set<ConstraintViolation<Object>> constraintViolations) {
         List<ValidationErrorData> validationErrorData = new ArrayList<>(
@@ -449,7 +451,7 @@ public class VaadinConnectController {
         for (Map.Entry<String, String> deserializationError : deserializationErrors
                 .entrySet()) {
             String message = String.format(
-                    "Unable to deserialize a service method parameter into type '%s'",
+                    "Unable to deserialize an endpoint method parameter into type '%s'",
                     deserializationError.getValue());
             validationErrorData.add(new ValidationErrorData(message,
                     deserializationError.getKey()));
@@ -459,7 +461,7 @@ public class VaadinConnectController {
                 .addAll(createBeanValidationErrors(constraintViolations));
 
         String message = String.format(
-                "Validation error in service '%s' method '%s'", serviceName,
+                "Validation error in endpoint '%s' method '%s'", endpointName,
                 methodName);
         return new VaadinConnectValidationException(message,
                 validationErrorData);
@@ -501,14 +503,14 @@ public class VaadinConnectController {
         return parametersData;
     }
 
-    static class VaadinServiceData {
+    static class VaadinEndpointData {
         final Map<String, Method> methods = new HashMap<>();
-        private final Object vaadinServiceObject;
+        private final Object vaadinEndpointObject;
 
-        private VaadinServiceData(Object vaadinServiceObject,
-                Method... serviceMethods) {
-            this.vaadinServiceObject = vaadinServiceObject;
-            Stream.of(serviceMethods)
+        private VaadinEndpointData(Object vaadinEndpointObject,
+                Method... endpointMethods) {
+            this.vaadinEndpointObject = vaadinEndpointObject;
+            Stream.of(endpointMethods)
                     .filter(method -> method.getDeclaringClass() != Object.class
                             && !method.isBridge())
                     .forEach(method -> methods.put(
@@ -520,8 +522,8 @@ public class VaadinConnectController {
             return Optional.ofNullable(methods.get(methodName));
         }
 
-        private Object getServiceObject() {
-            return vaadinServiceObject;
+        private Object getEndpointObject() {
+            return vaadinEndpointObject;
         }
     }
 }

@@ -44,7 +44,7 @@ import com.vaadin.flow.server.connect.auth.AnonymousAllowed;
 import com.vaadin.flow.server.connect.auth.VaadinConnectAccessChecker;
 import com.vaadin.flow.server.connect.exception.VaadinConnectException;
 import com.vaadin.flow.server.connect.exception.VaadinConnectValidationException;
-import com.vaadin.flow.server.connect.testservice.BridgeMethodTestService;
+import com.vaadin.flow.server.connect.testendpoint.BridgeMethodTestEndpoint;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -61,24 +61,24 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class VaadinConnectControllerTest {
-    private static final TestClass TEST_SERVICE = new TestClass();
-    private static final String TEST_SERVICE_NAME = TEST_SERVICE.getClass()
+    private static final TestClass TEST_ENDPOINT = new TestClass();
+    private static final String TEST_ENDPOINT_NAME = TEST_ENDPOINT.getClass()
             .getSimpleName();
     private static final Method TEST_METHOD;
     private static final Method TEST_VALIDATION_METHOD;
     private HttpServletRequest requestMock;
 
     static {
-        TEST_METHOD = Stream.of(TEST_SERVICE.getClass().getDeclaredMethods())
+        TEST_METHOD = Stream.of(TEST_ENDPOINT.getClass().getDeclaredMethods())
                 .filter(method -> "testMethod".equals(method.getName()))
                 .findFirst().orElseThrow(() -> new AssertionError(
-                        "Failed to find a test service method"));
+                        "Failed to find a test endpoint method"));
         TEST_VALIDATION_METHOD = Stream
-                .of(TEST_SERVICE.getClass().getDeclaredMethods())
+                .of(TEST_ENDPOINT.getClass().getDeclaredMethods())
                 .filter(method -> "testValidationMethod"
                         .equals(method.getName()))
                 .findFirst().orElseThrow(() -> new AssertionError(
-                        "Failed to find a test validation service method"));
+                        "Failed to find a test validation endpoint method"));
     }
 
     private static class TestValidationParameter {
@@ -90,7 +90,7 @@ public class VaadinConnectControllerTest {
         }
     }
 
-    @VaadinService
+    @Endpoint
     public static class TestClass {
         public String testMethod(int parameter) {
             return parameter + "-test";
@@ -129,21 +129,21 @@ public class VaadinConnectControllerTest {
         }
     }
 
-    @VaadinService("CustomService")
-    public static class TestClassWithCustomServiceName {
+    @Endpoint("CustomEndpoint")
+    public static class TestClassWithCustomEndpointName {
         public String testMethod(int parameter) {
             return parameter + "-test";
         }
     }
 
-    @VaadinService("my service")
-    public static class TestClassWithIllegalServiceName {
+    @Endpoint("my endpoint")
+    public static class TestClassWithIllegalEndpointName {
         public String testMethod(int parameter) {
             return parameter + "-test";
         }
     }
 
-    @VaadinService
+    @Endpoint
     public static class NullCheckerTestClass {
         public static final String OK_RESPONSE = "ok";
 
@@ -172,10 +172,10 @@ public class VaadinConnectControllerTest {
     }
 
     @Test
-    public void should_ThrowException_When_NoServiceNameCanBeReceived() {
+    public void should_ThrowException_When_NoEndpointNameCanBeReceived() {
         TestClass anonymousClass = new TestClass() {
         };
-        assertEquals("Service to test should have no name",
+        assertEquals("Endpoint to test should have no name",
                 anonymousClass.getClass().getSimpleName(), "");
 
         exception.expect(IllegalStateException.class);
@@ -185,11 +185,12 @@ public class VaadinConnectControllerTest {
     }
 
     @Test
-    public void should_ThrowException_When_IncorrectServiceNameProvided() {
-        TestClassWithIllegalServiceName serviceWithIllegalName = new TestClassWithIllegalServiceName();
-        String incorrectName = serviceWithIllegalName.getClass()
-                .getAnnotation(VaadinService.class).value();
-        VaadinServiceNameChecker nameChecker = new VaadinServiceNameChecker();
+    public void should_ThrowException_When_IncorrectEndpointNameProvided() {
+        TestClassWithIllegalEndpointName endpointWithIllegalName =
+                new TestClassWithIllegalEndpointName();
+        String incorrectName = endpointWithIllegalName.getClass()
+                .getAnnotation(Endpoint.class).value();
+        EndpointNameChecker nameChecker = new EndpointNameChecker();
         String expectedCheckerMessage = nameChecker.check(incorrectName);
         assertNotNull(expectedCheckerMessage);
 
@@ -197,28 +198,28 @@ public class VaadinConnectControllerTest {
         exception.expectMessage(incorrectName);
         exception.expectMessage(expectedCheckerMessage);
 
-        createVaadinController(serviceWithIllegalName, mock(ObjectMapper.class),
+        createVaadinController(endpointWithIllegalName, mock(ObjectMapper.class),
                 null, nameChecker, null);
     }
 
     @Test
-    public void should_Return404_When_ServiceNotFound() {
-        String missingServiceName = "whatever";
-        assertNotEquals(missingServiceName, TEST_SERVICE_NAME);
+    public void should_Return404_When_EndpointNotFound() {
+        String missingEndpointName = "whatever";
+        assertNotEquals(missingEndpointName, TEST_ENDPOINT_NAME);
 
-        ResponseEntity<?> response = createVaadinController(TEST_SERVICE)
-                .serveVaadinService(missingServiceName, null, null, requestMock);
+        ResponseEntity<?> response = createVaadinController(TEST_ENDPOINT)
+                .serveEndpoint(missingEndpointName, null, null, requestMock);
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
     @Test
     public void should_Return404_When_MethodNotFound() {
-        String missingServiceMethod = "whatever";
-        assertNotEquals(TEST_METHOD.getName(), missingServiceMethod);
+        String missingEndpointMethod = "whatever";
+        assertNotEquals(TEST_METHOD.getName(), missingEndpointMethod);
 
-        ResponseEntity<?> response = createVaadinController(TEST_SERVICE)
-                .serveVaadinService(TEST_SERVICE_NAME, missingServiceMethod,
+        ResponseEntity<?> response = createVaadinController(TEST_ENDPOINT)
+                .serveEndpoint(TEST_ENDPOINT_NAME, missingEndpointMethod,
                         null, requestMock);
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
@@ -234,22 +235,22 @@ public class VaadinConnectControllerTest {
         when(restrictingCheckerMock.check(TEST_METHOD, requestMock))
                 .thenReturn(accessErrorMessage);
 
-        VaadinServiceNameChecker nameCheckerMock = mock(
-                VaadinServiceNameChecker.class);
-        when(nameCheckerMock.check(TEST_SERVICE_NAME)).thenReturn(null);
+        EndpointNameChecker nameCheckerMock = mock(
+                EndpointNameChecker.class);
+        when(nameCheckerMock.check(TEST_ENDPOINT_NAME)).thenReturn(null);
 
         ExplicitNullableTypeChecker explicitNullableTypeCheckerMock = mock(
                 ExplicitNullableTypeChecker.class);
 
-        ResponseEntity<String> response = createVaadinController(TEST_SERVICE,
+        ResponseEntity<String> response = createVaadinController(TEST_ENDPOINT,
                 new ObjectMapper(), restrictingCheckerMock, nameCheckerMock,
                 explicitNullableTypeCheckerMock)
-                        .serveVaadinService(TEST_SERVICE_NAME,
+                        .serveEndpoint(TEST_ENDPOINT_NAME,
                                 TEST_METHOD.getName(), null, requestMock);
 
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
         String responseBody = response.getBody();
-        assertServiceInfoPresent(responseBody);
+        assertEndpointInfoPresent(responseBody);
         assertTrue(String.format("Invalid response body: '%s'", responseBody),
                 responseBody.contains(accessErrorMessage));
 
@@ -259,13 +260,13 @@ public class VaadinConnectControllerTest {
 
     @Test
     public void should_Return400_When_LessParametersSpecified1() {
-        ResponseEntity<String> response = createVaadinController(TEST_SERVICE)
-                .serveVaadinService(TEST_SERVICE_NAME, TEST_METHOD.getName(),
+        ResponseEntity<String> response = createVaadinController(TEST_ENDPOINT)
+                .serveEndpoint(TEST_ENDPOINT_NAME, TEST_METHOD.getName(),
                         null, requestMock);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         String responseBody = response.getBody();
-        assertServiceInfoPresent(responseBody);
+        assertEndpointInfoPresent(responseBody);
         assertTrue(String.format("Invalid response body: '%s'", responseBody),
                 responseBody.contains("0"));
         assertTrue(String.format("Invalid response body: '%s'", responseBody),
@@ -275,14 +276,14 @@ public class VaadinConnectControllerTest {
 
     @Test
     public void should_Return400_When_MoreParametersSpecified() {
-        ResponseEntity<String> response = createVaadinController(TEST_SERVICE)
-                .serveVaadinService(TEST_SERVICE_NAME, TEST_METHOD.getName(),
+        ResponseEntity<String> response = createVaadinController(TEST_ENDPOINT)
+                .serveEndpoint(TEST_ENDPOINT_NAME, TEST_METHOD.getName(),
                         createRequestParameters(
                                 "{\"value1\": 222, \"value2\": 333}"), requestMock);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         String responseBody = response.getBody();
-        assertServiceInfoPresent(responseBody);
+        assertEndpointInfoPresent(responseBody);
         assertTrue(String.format("Invalid response body: '%s'", responseBody),
                 responseBody.contains("2"));
         assertTrue(String.format("Invalid response body: '%s'", responseBody),
@@ -292,13 +293,13 @@ public class VaadinConnectControllerTest {
 
     @Test
     public void should_Return400_When_IncorrectParameterTypesAreProvided() {
-        ResponseEntity<String> response = createVaadinController(TEST_SERVICE)
-                .serveVaadinService(TEST_SERVICE_NAME, TEST_METHOD.getName(),
+        ResponseEntity<String> response = createVaadinController(TEST_ENDPOINT)
+                .serveEndpoint(TEST_ENDPOINT_NAME, TEST_METHOD.getName(),
                         createRequestParameters("{\"value\": [222]}"), requestMock);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         String responseBody = response.getBody();
-        assertServiceInfoPresent(responseBody);
+        assertEndpointInfoPresent(responseBody);
         assertTrue(String.format("Invalid response body: '%s'", responseBody),
                 responseBody.contains(
                         TEST_METHOD.getParameterTypes()[0].getSimpleName()));
@@ -307,8 +308,8 @@ public class VaadinConnectControllerTest {
     @Test
     public void should_NotCallMethod_When_UserPrincipalIsNull() {
         VaadinConnectController vaadinController = createVaadinControllerWithoutPrincipal();
-        ResponseEntity<String> response = vaadinController.serveVaadinService(
-                TEST_SERVICE_NAME, TEST_METHOD.getName(),
+        ResponseEntity<String> response = vaadinController.serveEndpoint(
+                TEST_ENDPOINT_NAME, TEST_METHOD.getName(),
                 createRequestParameters("{\"value\": 222}"), requestMock);
 
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
@@ -321,8 +322,8 @@ public class VaadinConnectControllerTest {
     @Test
     public void should_CallMethodAnonymously_When_UserPrincipalIsNullAndAnonymousAllowed() {
         VaadinConnectController vaadinController = createVaadinControllerWithoutPrincipal();
-        ResponseEntity<String> response = vaadinController.serveVaadinService(
-                TEST_SERVICE_NAME, "testAnonymousMethod",
+        ResponseEntity<String> response = vaadinController.serveEndpoint(
+                TEST_ENDPOINT_NAME, "testAnonymousMethod",
                 createRequestParameters("{}"), requestMock);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -336,8 +337,8 @@ public class VaadinConnectControllerTest {
         when(requestMock.getHeader("X-CSRF-Token")).thenReturn(null);
 
         VaadinConnectController vaadinController = createVaadinControllerWithoutPrincipal();
-        ResponseEntity<String> response = vaadinController.serveVaadinService(
-                TEST_SERVICE_NAME, "testAnonymousMethod",
+        ResponseEntity<String> response = vaadinController.serveEndpoint(
+                TEST_ENDPOINT_NAME, "testAnonymousMethod",
                 createRequestParameters("{}"), requestMock);
 
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
@@ -350,14 +351,14 @@ public class VaadinConnectControllerTest {
     @Test
     public void should_NotCallMethodAnonymously_When_UserPrincipalIsNotInRole() {
         VaadinConnectController vaadinController = createVaadinController(
-                TEST_SERVICE, new VaadinConnectAccessChecker());
+                TEST_ENDPOINT, new VaadinConnectAccessChecker());
 
-        ResponseEntity<String> response = vaadinController.serveVaadinService(
-                TEST_SERVICE_NAME, "testRoleAllowed",
+        ResponseEntity<String> response = vaadinController.serveEndpoint(
+                TEST_ENDPOINT_NAME, "testRoleAllowed",
                 createRequestParameters("{}"), requestMock);
 
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-        assertTrue(response.getBody().contains("Unauthorized access to vaadin service"));
+        assertTrue(response.getBody().contains("Unauthorized access to Vaadin endpoint"));
     }
 
     @Test
@@ -365,10 +366,10 @@ public class VaadinConnectControllerTest {
         when(requestMock.isUserInRole("FOO_ROLE")).thenReturn(true);
 
         VaadinConnectController vaadinController = createVaadinController(
-                TEST_SERVICE, new VaadinConnectAccessChecker());
+                TEST_ENDPOINT, new VaadinConnectAccessChecker());
 
-        ResponseEntity<String> response = vaadinController.serveVaadinService(
-                TEST_SERVICE_NAME, "testRoleAllowed",
+        ResponseEntity<String> response = vaadinController.serveEndpoint(
+                TEST_ENDPOINT_NAME, "testRoleAllowed",
                 createRequestParameters("{}"), requestMock);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -380,10 +381,10 @@ public class VaadinConnectControllerTest {
     @Test
     public void should_CallMethodAnonymously_When_AnonymousOverridesRoles() {
         VaadinConnectController vaadinController = createVaadinController(
-                TEST_SERVICE, new VaadinConnectAccessChecker());
+                TEST_ENDPOINT, new VaadinConnectAccessChecker());
 
-        ResponseEntity<String> response = vaadinController.serveVaadinService(
-                TEST_SERVICE_NAME, "anonymousOverrides",
+        ResponseEntity<String> response = vaadinController.serveEndpoint(
+                TEST_ENDPOINT_NAME, "anonymousOverrides",
                 createRequestParameters("{}"), requestMock);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -393,8 +394,8 @@ public class VaadinConnectControllerTest {
     @Test
     public void should_NotCallMethod_When_DenyAll() {
         VaadinConnectController vaadinController = createVaadinControllerWithoutPrincipal();
-        ResponseEntity<String> response = vaadinController.serveVaadinService(
-                TEST_SERVICE_NAME, "denyAll",
+        ResponseEntity<String> response = vaadinController.serveEndpoint(
+                TEST_ENDPOINT_NAME, "denyAll",
                 createRequestParameters("{}"), requestMock);
 
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
@@ -403,113 +404,113 @@ public class VaadinConnectControllerTest {
 
     @Test
     @Ignore("requires mockito version with plugin for final classes")
-    public void should_Return400_When_ServiceMethodThrowsIllegalArgumentException()
+    public void should_Return400_When_EndpointMethodThrowsIllegalArgumentException()
             throws Exception {
         int inputValue = 222;
 
-        Method serviceMethodMock = createServiceMethodMockThatThrows(inputValue,
+        Method endpointMethodMock = createEndpointMethodMockThatThrows(inputValue,
                 new IllegalArgumentException("OOPS"));
 
         VaadinConnectController controller = createVaadinController(
-                TEST_SERVICE);
-        controller.vaadinServices.get(TEST_SERVICE_NAME.toLowerCase()).methods
-                .put(TEST_METHOD.getName().toLowerCase(), serviceMethodMock);
+                TEST_ENDPOINT);
+        controller.vaadinEndpoints.get(TEST_ENDPOINT_NAME.toLowerCase()).methods
+                .put(TEST_METHOD.getName().toLowerCase(), endpointMethodMock);
 
-        ResponseEntity<String> response = controller.serveVaadinService(
-                TEST_SERVICE_NAME, TEST_METHOD.getName(),
+        ResponseEntity<String> response = controller.serveEndpoint(
+                TEST_ENDPOINT_NAME, TEST_METHOD.getName(),
                 createRequestParameters(
                         String.format("{\"value\": %s}", inputValue)), requestMock);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         String responseBody = response.getBody();
-        assertServiceInfoPresent(responseBody);
+        assertEndpointInfoPresent(responseBody);
         assertTrue(String.format("Invalid response body: '%s'", responseBody),
                 responseBody.contains(
                         TEST_METHOD.getParameterTypes()[0].getSimpleName()));
 
-        verify(serviceMethodMock, times(1)).invoke(TEST_SERVICE, inputValue);
-        verify(serviceMethodMock, times(1)).getParameters();
+        verify(endpointMethodMock, times(1)).invoke(TEST_ENDPOINT, inputValue);
+        verify(endpointMethodMock, times(1)).getParameters();
     }
 
     @Test
     @Ignore("requires mockito version with plugin for final classes")
-    public void should_Return500_When_ServiceMethodThrowsIllegalAccessException()
+    public void should_Return500_When_EndpointMethodThrowsIllegalAccessException()
             throws Exception {
         int inputValue = 222;
 
-        Method serviceMethodMock = createServiceMethodMockThatThrows(inputValue,
+        Method endpointMethodMock = createEndpointMethodMockThatThrows(inputValue,
                 new IllegalAccessException("OOPS"));
 
         VaadinConnectController controller = createVaadinController(
-                TEST_SERVICE);
-        controller.vaadinServices.get(TEST_SERVICE_NAME.toLowerCase()).methods
-                .put(TEST_METHOD.getName().toLowerCase(), serviceMethodMock);
+                TEST_ENDPOINT);
+        controller.vaadinEndpoints.get(TEST_ENDPOINT_NAME.toLowerCase()).methods
+                .put(TEST_METHOD.getName().toLowerCase(), endpointMethodMock);
 
-        ResponseEntity<String> response = controller.serveVaadinService(
-                TEST_SERVICE_NAME, TEST_METHOD.getName(),
+        ResponseEntity<String> response = controller.serveEndpoint(
+                TEST_ENDPOINT_NAME, TEST_METHOD.getName(),
                 createRequestParameters(
                         String.format("{\"value\": %s}", inputValue)), requestMock);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR,
                 response.getStatusCode());
         String responseBody = response.getBody();
-        assertServiceInfoPresent(responseBody);
+        assertEndpointInfoPresent(responseBody);
         assertTrue(String.format("Invalid response body: '%s'", responseBody),
                 responseBody.contains("access failure"));
 
-        verify(serviceMethodMock, times(1)).invoke(TEST_SERVICE, inputValue);
-        verify(serviceMethodMock, times(1)).getParameters();
+        verify(endpointMethodMock, times(1)).invoke(TEST_ENDPOINT, inputValue);
+        verify(endpointMethodMock, times(1)).getParameters();
     }
 
     @Test
     @Ignore("requires mockito version with plugin for final classes")
-    public void should_Return500_When_ServiceMethodThrowsInvocationTargetException()
+    public void should_Return500_When_EndpointMethodThrowsInvocationTargetException()
             throws Exception {
         int inputValue = 222;
 
-        Method serviceMethodMock = createServiceMethodMockThatThrows(inputValue,
+        Method endpointMethodMock = createEndpointMethodMockThatThrows(inputValue,
                 new InvocationTargetException(
                         new IllegalStateException("OOPS")));
 
         VaadinConnectController controller = createVaadinController(
-                TEST_SERVICE);
-        controller.vaadinServices.get(TEST_SERVICE_NAME.toLowerCase()).methods
-                .put(TEST_METHOD.getName().toLowerCase(), serviceMethodMock);
+                TEST_ENDPOINT);
+        controller.vaadinEndpoints.get(TEST_ENDPOINT_NAME.toLowerCase()).methods
+                .put(TEST_METHOD.getName().toLowerCase(), endpointMethodMock);
 
-        ResponseEntity<String> response = controller.serveVaadinService(
-                TEST_SERVICE_NAME, TEST_METHOD.getName(),
+        ResponseEntity<String> response = controller.serveEndpoint(
+                TEST_ENDPOINT_NAME, TEST_METHOD.getName(),
                 createRequestParameters(
                         String.format("{\"value\": %s}", inputValue)), requestMock);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR,
                 response.getStatusCode());
         String responseBody = response.getBody();
-        assertServiceInfoPresent(responseBody);
+        assertEndpointInfoPresent(responseBody);
         assertTrue(String.format("Invalid response body: '%s'", responseBody),
                 responseBody.contains("execution failure"));
 
-        verify(serviceMethodMock, times(1)).invoke(TEST_SERVICE, inputValue);
-        verify(serviceMethodMock, times(1)).getParameters();
+        verify(endpointMethodMock, times(1)).invoke(TEST_ENDPOINT, inputValue);
+        verify(endpointMethodMock, times(1)).getParameters();
     }
 
     @Test
     @Ignore("requires mockito version with plugin for final classes")
-    public void should_Return400_When_ServiceMethodThrowsVaadinConnectException()
+    public void should_Return400_When_EndpointMethodThrowsVaadinConnectException()
             throws Exception {
         int inputValue = 222;
         String expectedMessage = "OOPS";
 
-        Method serviceMethodMock = createServiceMethodMockThatThrows(inputValue,
+        Method endpointMethodMock = createEndpointMethodMockThatThrows(inputValue,
                 new InvocationTargetException(
                         new VaadinConnectException(expectedMessage)));
 
         VaadinConnectController controller = createVaadinController(
-                TEST_SERVICE);
-        controller.vaadinServices.get(TEST_SERVICE_NAME.toLowerCase()).methods
-                .put(TEST_METHOD.getName().toLowerCase(), serviceMethodMock);
+                TEST_ENDPOINT);
+        controller.vaadinEndpoints.get(TEST_ENDPOINT_NAME.toLowerCase()).methods
+                .put(TEST_METHOD.getName().toLowerCase(), endpointMethodMock);
 
-        ResponseEntity<String> response = controller.serveVaadinService(
-                TEST_SERVICE_NAME, TEST_METHOD.getName(),
+        ResponseEntity<String> response = controller.serveEndpoint(
+                TEST_ENDPOINT_NAME, TEST_METHOD.getName(),
                 createRequestParameters(
                         String.format("{\"value\": %s}", inputValue)), requestMock);
 
@@ -520,13 +521,13 @@ public class VaadinConnectControllerTest {
         assertTrue(String.format("Invalid response body: '%s'", responseBody),
                 responseBody.contains(expectedMessage));
 
-        verify(serviceMethodMock, times(1)).invoke(TEST_SERVICE, inputValue);
-        verify(serviceMethodMock, times(1)).getParameters();
+        verify(endpointMethodMock, times(1)).invoke(TEST_ENDPOINT, inputValue);
+        verify(endpointMethodMock, times(1)).getParameters();
     }
 
     @Test
     @Ignore("requires mockito version with plugin for final classes")
-    public void should_Return400_When_ServiceMethodThrowsVaadinConnectExceptionSubclass()
+    public void should_Return400_When_EndpointMethodThrowsVaadinConnectExceptionSubclass()
             throws Exception {
         int inputValue = 222;
         String expectedMessage = "OOPS";
@@ -537,16 +538,16 @@ public class VaadinConnectControllerTest {
             }
         }
 
-        Method serviceMethodMock = createServiceMethodMockThatThrows(inputValue,
+        Method endpointMethodMock = createEndpointMethodMockThatThrows(inputValue,
                 new InvocationTargetException(new MyCustomException()));
 
         VaadinConnectController controller = createVaadinController(
-                TEST_SERVICE);
-        controller.vaadinServices.get(TEST_SERVICE_NAME.toLowerCase()).methods
-                .put(TEST_METHOD.getName().toLowerCase(), serviceMethodMock);
+                TEST_ENDPOINT);
+        controller.vaadinEndpoints.get(TEST_ENDPOINT_NAME.toLowerCase()).methods
+                .put(TEST_METHOD.getName().toLowerCase(), endpointMethodMock);
 
-        ResponseEntity<String> response = controller.serveVaadinService(
-                TEST_SERVICE_NAME, TEST_METHOD.getName(),
+        ResponseEntity<String> response = controller.serveEndpoint(
+                TEST_ENDPOINT_NAME, TEST_METHOD.getName(),
                 createRequestParameters(
                         String.format("{\"value\": %s}", inputValue)), requestMock);
 
@@ -557,8 +558,8 @@ public class VaadinConnectControllerTest {
         assertTrue(String.format("Invalid response body: '%s'", responseBody),
                 responseBody.contains(expectedMessage));
 
-        verify(serviceMethodMock, times(1)).invoke(TEST_SERVICE, inputValue);
-        verify(serviceMethodMock, times(1)).getParameters();
+        verify(endpointMethodMock, times(1)).invoke(TEST_ENDPOINT, inputValue);
+        verify(endpointMethodMock, times(1)).getParameters();
     }
 
     @Test
@@ -581,8 +582,8 @@ public class VaadinConnectControllerTest {
                 .thenThrow(new JsonMappingException(null, "sss"))
                 .thenReturn(expectedError);
 
-        ResponseEntity<String> response = createVaadinController(TEST_SERVICE,
-                mapperMock).serveVaadinService(TEST_SERVICE_NAME,
+        ResponseEntity<String> response = createVaadinController(TEST_ENDPOINT,
+                mapperMock).serveEndpoint(TEST_ENDPOINT_NAME,
                         TEST_METHOD.getName(),
                         createRequestParameters("{\"value\": 222}"), requestMock);
 
@@ -594,10 +595,10 @@ public class VaadinConnectControllerTest {
         List<Object> passedErrors = serializingErrorsCapture.getAllValues();
         assertEquals(2, passedErrors.size());
         String lastError = passedErrors.get(1).toString();
-        assertServiceInfoPresent(lastError);
+        assertEndpointInfoPresent(lastError);
         assertTrue(String.format("Invalid response body: '%s'", lastError),
                 lastError.contains(
-                        VaadinConnectController.VAADIN_SERVICE_MAPPER_BEAN_QUALIFIER));
+                        VaadinConnectController.VAADIN_ENDPOINT_MAPPER_BEAN_QUALIFIER));
 
         verify(mapperMock, times(1))
                 .readerFor(SimpleType.constructUnsafe(int.class));
@@ -621,18 +622,18 @@ public class VaadinConnectControllerTest {
 
         exception.expect(IllegalStateException.class);
         exception.expectMessage("Unexpected");
-        createVaadinController(TEST_SERVICE, mapperMock).serveVaadinService(
-                TEST_SERVICE_NAME, TEST_METHOD.getName(),
+        createVaadinController(TEST_ENDPOINT, mapperMock).serveEndpoint(
+                TEST_ENDPOINT_NAME, TEST_METHOD.getName(),
                 createRequestParameters("{\"value\": 222}"), requestMock);
     }
 
     @Test
     public void should_ReturnCorrectResponse_When_EverythingIsCorrect() {
         int inputValue = 222;
-        String expectedOutput = TEST_SERVICE.testMethod(inputValue);
+        String expectedOutput = TEST_ENDPOINT.testMethod(inputValue);
 
-        ResponseEntity<String> response = createVaadinController(TEST_SERVICE)
-                .serveVaadinService(TEST_SERVICE_NAME, TEST_METHOD.getName(),
+        ResponseEntity<String> response = createVaadinController(TEST_ENDPOINT)
+                .serveEndpoint(TEST_ENDPOINT_NAME, TEST_METHOD.getName(),
                         createRequestParameters(
                                 String.format("{\"value\": %s}", inputValue)), requestMock);
 
@@ -642,25 +643,25 @@ public class VaadinConnectControllerTest {
     }
 
     @Test
-    public void should_ReturnCorrectResponse_When_ServiceClassIsProxied() {
+    public void should_ReturnCorrectResponse_When_EndpointClassIsProxied() {
 
         ApplicationContext contextMock = mock(ApplicationContext.class);
-        TestClass service = new TestClass();
+        TestClass endpoint = new TestClass();
         TestClass proxy = mock(TestClass.class, CALLS_REAL_METHODS);
-        when(contextMock.getBeansWithAnnotation(VaadinService.class))
+        when(contextMock.getBeansWithAnnotation(Endpoint.class))
                 .thenReturn(Collections.singletonMap(
-                        service.getClass().getSimpleName(), proxy));
+                        endpoint.getClass().getSimpleName(), proxy));
 
         VaadinConnectController vaadinConnectController = new VaadinConnectController(
                 new ObjectMapper(), mock(VaadinConnectAccessChecker.class),
-                mock(VaadinServiceNameChecker.class),
+                mock(EndpointNameChecker.class),
                 mock(ExplicitNullableTypeChecker.class), contextMock);
 
         int inputValue = 222;
-        String expectedOutput = service.testMethod(inputValue);
+        String expectedOutput = endpoint.testMethod(inputValue);
 
         ResponseEntity<String> response = vaadinConnectController
-                .serveVaadinService("TestClass", "testMethod",
+                .serveEndpoint("TestClass", "testMethod",
                         createRequestParameters(
                                 String.format("{\"value\": %s}", inputValue)),
                         requestMock);
@@ -671,26 +672,26 @@ public class VaadinConnectControllerTest {
     }
 
     @Test
-    public void should_NotUseBridgeMethod_When_ServiceHasBridgeMethodFromInterface() {
+    public void should_NotUseBridgeMethod_When_EndpointHasBridgeMethodFromInterface() {
         String inputId = "2222";
         String expectedResult = String.format("{\"id\":\"%s\"}", inputId);
-        BridgeMethodTestService.InheritedClass testService = new BridgeMethodTestService.InheritedClass();
+        BridgeMethodTestEndpoint.InheritedClass testEndpoint = new BridgeMethodTestEndpoint.InheritedClass();
         String testMethodName = "testMethodFromInterface";
-        ResponseEntity<String> response = createVaadinController(testService)
-                .serveVaadinService(testService.getClass().getSimpleName(),
+        ResponseEntity<String> response = createVaadinController(testEndpoint)
+                .serveEndpoint(testEndpoint.getClass().getSimpleName(),
                         testMethodName, createRequestParameters(String.format(
                                 "{\"value\": {\"id\": \"%s\"}}", inputId)), requestMock);
         assertEquals(expectedResult, response.getBody());
     }
 
     @Test
-    public void should_NotUseBridgeMethod_When_ServiceHasBridgeMethodFromParentClass() {
+    public void should_NotUseBridgeMethod_When_EndpointHasBridgeMethodFromParentClass() {
         String inputId = "2222";
-        BridgeMethodTestService.InheritedClass testService = new BridgeMethodTestService.InheritedClass();
+        BridgeMethodTestEndpoint.InheritedClass testEndpoint = new BridgeMethodTestEndpoint.InheritedClass();
         String testMethodName = "testMethodFromClass";
 
-        ResponseEntity<String> response = createVaadinController(testService)
-                .serveVaadinService(testService.getClass().getSimpleName(),
+        ResponseEntity<String> response = createVaadinController(testEndpoint)
+                .serveEndpoint(testEndpoint.getClass().getSimpleName(),
                         testMethodName, createRequestParameters(
                                 String.format("{\"value\": %s}", inputId)), requestMock);
         assertEquals(inputId, response.getBody());
@@ -699,34 +700,34 @@ public class VaadinConnectControllerTest {
     @Test
     public void should_ReturnCorrectResponse_When_CallingNormalOverriddenMethod() {
         String inputId = "2222";
-        BridgeMethodTestService.InheritedClass testService = new BridgeMethodTestService.InheritedClass();
+        BridgeMethodTestEndpoint.InheritedClass testEndpoint = new BridgeMethodTestEndpoint.InheritedClass();
         String testMethodName = "testNormalMethod";
 
-        ResponseEntity<String> response = createVaadinController(testService)
-                .serveVaadinService(testService.getClass().getSimpleName(),
+        ResponseEntity<String> response = createVaadinController(testEndpoint)
+                .serveEndpoint(testEndpoint.getClass().getSimpleName(),
                         testMethodName, createRequestParameters(
                                 String.format("{\"value\": %s}", inputId)), requestMock);
         assertEquals(inputId, response.getBody());
     }
 
     @Test
-    public void should_UseCustomServiceName_When_ItIsDefined() {
+    public void should_UseCustomEndpointName_When_ItIsDefined() {
         int input = 111;
-        String expectedOutput = new TestClassWithCustomServiceName()
+        String expectedOutput = new TestClassWithCustomEndpointName()
                 .testMethod(input);
-        String beanName = TestClassWithCustomServiceName.class.getSimpleName();
+        String beanName = TestClassWithCustomEndpointName.class.getSimpleName();
 
         ApplicationContext contextMock = mock(ApplicationContext.class);
-        when(contextMock.getBeansWithAnnotation(VaadinService.class))
+        when(contextMock.getBeansWithAnnotation(Endpoint.class))
                 .thenReturn(Collections.singletonMap(beanName,
-                        new TestClassWithCustomServiceName()));
+                        new TestClassWithCustomEndpointName()));
 
         VaadinConnectController vaadinConnectController = new VaadinConnectController(
                 new ObjectMapper(), mock(VaadinConnectAccessChecker.class),
-                mock(VaadinServiceNameChecker.class),
+                mock(EndpointNameChecker.class),
                 mock(ExplicitNullableTypeChecker.class), contextMock);
         ResponseEntity<String> response = vaadinConnectController
-                .serveVaadinService("CustomService", "testMethod",
+                .serveEndpoint("CustomEndpoint", "testMethod",
                         createRequestParameters(
                                 String.format("{\"value\": %s}", input)), requestMock);
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -735,26 +736,26 @@ public class VaadinConnectControllerTest {
     }
 
     @Test
-    public void should_UseCustomServiceName_When_ServiceClassIsProxied() {
+    public void should_UseCustomEndpointName_When_EndpointClassIsProxied() {
 
         ApplicationContext contextMock = mock(ApplicationContext.class);
-        TestClassWithCustomServiceName service = new TestClassWithCustomServiceName();
-        TestClassWithCustomServiceName proxy = mock(
-                TestClassWithCustomServiceName.class, CALLS_REAL_METHODS);
-        when(contextMock.getBeansWithAnnotation(VaadinService.class))
+        TestClassWithCustomEndpointName endpoint = new TestClassWithCustomEndpointName();
+        TestClassWithCustomEndpointName proxy = mock(
+                TestClassWithCustomEndpointName.class, CALLS_REAL_METHODS);
+        when(contextMock.getBeansWithAnnotation(Endpoint.class))
                 .thenReturn(Collections.singletonMap(
-                        service.getClass().getSimpleName(), proxy));
+                        endpoint.getClass().getSimpleName(), proxy));
 
         VaadinConnectController vaadinConnectController = new VaadinConnectController(
                 new ObjectMapper(), mock(VaadinConnectAccessChecker.class),
-                mock(VaadinServiceNameChecker.class),
+                mock(EndpointNameChecker.class),
                 mock(ExplicitNullableTypeChecker.class), contextMock);
 
         int input = 111;
-        String expectedOutput = service.testMethod(input);
+        String expectedOutput = endpoint.testMethod(input);
 
         ResponseEntity<String> response = vaadinConnectController
-                .serveVaadinService("CustomService", "testMethod",
+                .serveEndpoint("CustomEndpoint", "testMethod",
                         createRequestParameters(
                                 String.format("{\"value\": %s}", input)),
                         requestMock);
@@ -776,7 +777,7 @@ public class VaadinConnectControllerTest {
                 .thenReturn(Collections.emptyMap());
         new VaadinConnectController(null,
                 mock(VaadinConnectAccessChecker.class),
-                mock(VaadinServiceNameChecker.class),
+                mock(EndpointNameChecker.class),
                 mock(ExplicitNullableTypeChecker.class), contextMock);
 
         verify(contextMock, times(1)).getBean(ObjectMapper.class);
@@ -799,7 +800,7 @@ public class VaadinConnectControllerTest {
                         JsonAutoDetect.Visibility.PUBLIC_ONLY));
         new VaadinConnectController(null,
                 mock(VaadinConnectAccessChecker.class),
-                mock(VaadinServiceNameChecker.class),
+                mock(EndpointNameChecker.class),
                 mock(ExplicitNullableTypeChecker.class), contextMock);
 
         verify(contextMock, times(1)).getBean(ObjectMapper.class);
@@ -819,7 +820,7 @@ public class VaadinConnectControllerTest {
 
         new VaadinConnectController(null,
                 mock(VaadinConnectAccessChecker.class),
-                mock(VaadinServiceNameChecker.class),
+                mock(EndpointNameChecker.class),
                 mock(ExplicitNullableTypeChecker.class), contextMock);
     }
 
@@ -828,10 +829,10 @@ public class VaadinConnectControllerTest {
             throws IOException {
         String inputValue = "\"string\"";
         String expectedErrorMessage = String.format(
-                "Validation error in service '%s' method '%s'",
-                TEST_SERVICE_NAME, TEST_METHOD.getName());
-        ResponseEntity<String> response = createVaadinController(TEST_SERVICE)
-                .serveVaadinService(TEST_SERVICE_NAME, TEST_METHOD.getName(),
+                "Validation error in endpoint '%s' method '%s'",
+                TEST_ENDPOINT_NAME, TEST_METHOD.getName());
+        ResponseEntity<String> response = createVaadinController(TEST_ENDPOINT)
+                .serveEndpoint(TEST_ENDPOINT_NAME, TEST_METHOD.getName(),
                         createRequestParameters(
                                 String.format("{\"value\": %s}", inputValue)), requestMock);
 
@@ -860,10 +861,10 @@ public class VaadinConnectControllerTest {
                 "\"NotANumber\"", "\"ValidText\"", "\"NotADate\"");
         String testMethodName = "testMethodWithMultipleParameter";
         String expectedErrorMessage = String.format(
-                "Validation error in service '%s' method '%s'",
-                TEST_SERVICE_NAME, testMethodName);
-        ResponseEntity<String> response = createVaadinController(TEST_SERVICE)
-                .serveVaadinService(TEST_SERVICE_NAME, testMethodName,
+                "Validation error in endpoint '%s' method '%s'",
+                TEST_ENDPOINT_NAME, testMethodName);
+        ResponseEntity<String> response = createVaadinController(TEST_ENDPOINT)
+                .serveEndpoint(TEST_ENDPOINT_NAME, testMethodName,
                         createRequestParameters(inputValue), requestMock);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
@@ -884,14 +885,14 @@ public class VaadinConnectControllerTest {
     }
 
     @Test
-    public void should_ReturnValidationError_When_ServiceMethodParameterIsInvalid()
+    public void should_ReturnValidationError_When_EndpointMethodParameterIsInvalid()
             throws IOException {
         String expectedErrorMessage = String.format(
-                "Validation error in service '%s' method '%s'",
-                TEST_SERVICE_NAME, TEST_VALIDATION_METHOD.getName());
+                "Validation error in endpoint '%s' method '%s'",
+                TEST_ENDPOINT_NAME, TEST_VALIDATION_METHOD.getName());
 
-        ResponseEntity<String> response = createVaadinController(TEST_SERVICE)
-                .serveVaadinService(TEST_SERVICE_NAME,
+        ResponseEntity<String> response = createVaadinController(TEST_ENDPOINT)
+                .serveEndpoint(TEST_ENDPOINT_NAME,
                         TEST_VALIDATION_METHOD.getName(),
                         createRequestParameters("{\"parameter\": null}"), requestMock);
 
@@ -913,21 +914,21 @@ public class VaadinConnectControllerTest {
         assertTrue(validationErrorMessage
                 .contains(TEST_VALIDATION_METHOD.getName()));
         assertTrue(validationErrorMessage
-                .contains(TEST_SERVICE.getClass().toString()));
+                .contains(TEST_ENDPOINT.getClass().toString()));
         assertTrue(validationErrorMessage.contains("null"));
     }
 
     @Test
-    public void should_ReturnValidationError_When_ServiceMethodBeanIsInvalid()
+    public void should_ReturnValidationError_When_EndpointMethodBeanIsInvalid()
             throws IOException {
         int invalidPropertyValue = 5;
         String propertyName = "count";
         String expectedErrorMessage = String.format(
-                "Validation error in service '%s' method '%s'",
-                TEST_SERVICE_NAME, TEST_VALIDATION_METHOD.getName());
+                "Validation error in endpoint '%s' method '%s'",
+                TEST_ENDPOINT_NAME, TEST_VALIDATION_METHOD.getName());
 
-        ResponseEntity<String> response = createVaadinController(TEST_SERVICE)
-                .serveVaadinService(TEST_SERVICE_NAME,
+        ResponseEntity<String> response = createVaadinController(TEST_ENDPOINT)
+                .serveEndpoint(TEST_ENDPOINT_NAME,
                         TEST_VALIDATION_METHOD.getName(),
                         createRequestParameters(String.format(
                                 "{\"parameter\": {\"count\": %d}}",
@@ -968,7 +969,7 @@ public class VaadinConnectControllerTest {
         String testOkMethod = "testOkMethod";
         ResponseEntity<String> response = createVaadinController(
                 new NullCheckerTestClass(), null, null, null,
-                explicitNullableTypeChecker).serveVaadinService(
+                explicitNullableTypeChecker).serveEndpoint(
                         NullCheckerTestClass.class.getSimpleName(),
                         testOkMethod, createRequestParameters("{}"),
                         requestMock);
@@ -998,7 +999,7 @@ public class VaadinConnectControllerTest {
 
         ResponseEntity<String> response = createVaadinController(
                 new NullCheckerTestClass(), null, null, null,
-                explicitNullableTypeChecker).serveVaadinService(
+                explicitNullableTypeChecker).serveEndpoint(
                         NullCheckerTestClass.class.getSimpleName(),
                 testNullMethodName, createRequestParameters("{}"),
                         requestMock);
@@ -1019,12 +1020,12 @@ public class VaadinConnectControllerTest {
         assertTrue(message.contains(errorMessage));
     }
 
-    private void assertServiceInfoPresent(String responseBody) {
+    private void assertEndpointInfoPresent(String responseBody) {
         assertTrue(String.format(
-                "Response body '%s' should have service information in it",
-                responseBody), responseBody.contains(TEST_SERVICE_NAME));
+                "Response body '%s' should have endpoint information in it",
+                responseBody), responseBody.contains(TEST_ENDPOINT_NAME));
         assertTrue(String.format(
-                "Response body '%s' should have service information in it",
+                "Response body '%s' should have endpoint information in it",
                 responseBody), responseBody.contains(TEST_METHOD.getName()));
     }
 
@@ -1037,34 +1038,34 @@ public class VaadinConnectControllerTest {
         }
     }
 
-    private <T> VaadinConnectController createVaadinController(T service) {
-        return createVaadinController(service, null, null, null, null);
+    private <T> VaadinConnectController createVaadinController(T endpoint) {
+        return createVaadinController(endpoint, null, null, null, null);
     }
 
-    private <T> VaadinConnectController createVaadinController(T service,
-            ObjectMapper vaadinServiceMapper) {
-        return createVaadinController(service, vaadinServiceMapper, null, null, null);
+    private <T> VaadinConnectController createVaadinController(T endpoint,
+            ObjectMapper vaadinEndpointMapper) {
+        return createVaadinController(endpoint, vaadinEndpointMapper, null, null, null);
     }
 
-    private <T> VaadinConnectController createVaadinController(T service,
+    private <T> VaadinConnectController createVaadinController(T endpoint,
             VaadinConnectAccessChecker accessChecker) {
-        return createVaadinController(service, null, accessChecker, null, null);
+        return createVaadinController(endpoint, null, accessChecker, null, null);
     }
 
-    private <T> VaadinConnectController createVaadinController(T service,
-            ObjectMapper vaadinServiceMapper,
+    private <T> VaadinConnectController createVaadinController(T endpoint,
+            ObjectMapper vaadinEndpointMapper,
             VaadinConnectAccessChecker accessChecker,
-            VaadinServiceNameChecker serviceNameChecker,
+            EndpointNameChecker endpointNameChecker,
             ExplicitNullableTypeChecker explicitNullableTypeChecker) {
-        Class<?> serviceClass = service.getClass();
+        Class<?> endpointClass = endpoint.getClass();
 
         ApplicationContext contextMock = mock(ApplicationContext.class);
-        when(contextMock.getBeansWithAnnotation(VaadinService.class))
-                .thenReturn(Collections.singletonMap(serviceClass.getName(),
-                        service));
+        when(contextMock.getBeansWithAnnotation(Endpoint.class))
+                .thenReturn(Collections.singletonMap(endpointClass.getName(),
+                        endpoint));
 
-        if (vaadinServiceMapper == null) {
-            vaadinServiceMapper = new ObjectMapper();
+        if (vaadinEndpointMapper == null) {
+            vaadinEndpointMapper = new ObjectMapper();
         }
 
         if (accessChecker == null) {
@@ -1073,9 +1074,9 @@ public class VaadinConnectControllerTest {
             when(accessChecker.check(TEST_METHOD, requestMock)).thenReturn(null);
         }
 
-        if (serviceNameChecker == null) {
-            serviceNameChecker = mock(VaadinServiceNameChecker.class);
-            when(serviceNameChecker.check(TEST_SERVICE_NAME)).thenReturn(null);
+        if (endpointNameChecker == null) {
+            endpointNameChecker = mock(EndpointNameChecker.class);
+            when(endpointNameChecker.check(TEST_ENDPOINT_NAME)).thenReturn(null);
         }
 
         if (explicitNullableTypeChecker == null) {
@@ -1085,27 +1086,27 @@ public class VaadinConnectControllerTest {
                     .thenReturn(null);
         }
 
-        return new VaadinConnectController(vaadinServiceMapper, accessChecker,
-                serviceNameChecker, explicitNullableTypeChecker, contextMock);
+        return new VaadinConnectController(vaadinEndpointMapper, accessChecker,
+                endpointNameChecker, explicitNullableTypeChecker, contextMock);
     }
 
     private VaadinConnectController createVaadinControllerWithoutPrincipal() {
         when(requestMock.getUserPrincipal()).thenReturn(null);
-        return createVaadinController(TEST_SERVICE, new VaadinConnectAccessChecker());
+        return createVaadinController(TEST_ENDPOINT, new VaadinConnectAccessChecker());
     }
 
-    private Method createServiceMethodMockThatThrows(Object argument,
+    private Method createEndpointMethodMockThatThrows(Object argument,
             Exception exceptionToThrow) throws Exception {
-        Method serviceMethodMock = mock(Method.class);
-        when(serviceMethodMock.invoke(TEST_SERVICE, argument))
+        Method endpointMethodMock = mock(Method.class);
+        when(endpointMethodMock.invoke(TEST_ENDPOINT, argument))
                 .thenThrow(exceptionToThrow);
-        when(serviceMethodMock.getParameters())
+        when(endpointMethodMock.getParameters())
                 .thenReturn(TEST_METHOD.getParameters());
-        doReturn(TEST_METHOD.getDeclaringClass()).when(serviceMethodMock)
+        doReturn(TEST_METHOD.getDeclaringClass()).when(endpointMethodMock)
                 .getDeclaringClass();
-        when(serviceMethodMock.getParameterTypes())
+        when(endpointMethodMock.getParameterTypes())
                 .thenReturn(TEST_METHOD.getParameterTypes());
-        when(serviceMethodMock.getName()).thenReturn(TEST_METHOD.getName());
-        return serviceMethodMock;
+        when(endpointMethodMock.getName()).thenReturn(TEST_METHOD.getName());
+        return endpointMethodMock;
     }
 }
