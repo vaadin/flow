@@ -244,6 +244,11 @@ public class DefaultDeploymentConfiguration
         return pushURL;
     }
 
+    @Override
+    public int getCleanupPollingInterval() {
+        return cleanupPollingInterval;
+    }
+
     /**
      * Log a warning if Vaadin is not running in production mode.
      */
