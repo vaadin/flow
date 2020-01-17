@@ -63,6 +63,11 @@ public class DefaultDeploymentConfiguration
             + "in web.xml. The permitted values are \"disabled\", \"manual\",\n"
             + "and \"automatic\". The default of \"disabled\" will be used."
             + SEPARATOR;
+
+    public static final String WARNING_CLEANUP_POLLING_INTERVAL_NOT_NUMERIC = SEPARATOR
+            + "\nWARNING: cleanupPollingIntervsal has been set to a non integer value "
+            + "in web.xml. The default of 0sec will be used." + SEPARATOR;
+
     /**
      * Default value for {@link #getHeartbeatInterval()} = {@value} .
      */
@@ -86,6 +91,8 @@ public class DefaultDeploymentConfiguration
 
     public static final boolean DEFAULT_SEND_URLS_AS_PARAMETERS = true;
 
+    public static final int DEFAULT_CLEANUP_POLLING_INTERVAL = 0;
+
     private boolean productionMode;
     private boolean compatibilityMode;
     private boolean xsrfProtectionEnabled;
@@ -97,6 +104,7 @@ public class DefaultDeploymentConfiguration
     private boolean syncIdCheck;
     private boolean sendUrlsAsParameters;
     private boolean requestTiming;
+    private int cleanupPollingInterval;
 
     private static AtomicBoolean loggWarning = new AtomicBoolean(true);
 
@@ -111,7 +119,7 @@ public class DefaultDeploymentConfiguration
      *            this configuration
      */
     public DefaultDeploymentConfiguration(Class<?> systemPropertyBaseClass,
-            Properties initParameters) {
+                                          Properties initParameters) {
         super(systemPropertyBaseClass, initParameters);
 
         boolean log = loggWarning.getAndSet(false);
@@ -127,6 +135,7 @@ public class DefaultDeploymentConfiguration
         checkPushURL();
         checkSyncIdCheck();
         checkSendUrlsAsParameters();
+        checkCleanupPollingInterval();
     }
 
     /**
@@ -355,6 +364,17 @@ public class DefaultDeploymentConfiguration
         sendUrlsAsParameters = getBooleanProperty(
                 Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
                 DEFAULT_SEND_URLS_AS_PARAMETERS);
+    }
+
+    private void checkCleanupPollingInterval() {
+        try {
+            cleanupPollingInterval = getApplicationOrSystemProperty(
+                    Constants.SERVLET_PARAMETER_CLEANUP_POLLING_INTERVAL,
+                    DEFAULT_CLEANUP_POLLING_INTERVAL, Integer::parseInt);
+        } catch (NumberFormatException e) {
+            getLogger().warn(WARNING_CLEANUP_POLLING_INTERVAL_NOT_NUMERIC);
+            cleanupPollingInterval = DEFAULT_CLEANUP_POLLING_INTERVAL;
+        }
     }
 
     private Logger getLogger() {

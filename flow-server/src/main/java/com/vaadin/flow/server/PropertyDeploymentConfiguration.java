@@ -54,14 +54,14 @@ public class PropertyDeploymentConfiguration
      *            this configuration
      */
     public PropertyDeploymentConfiguration(Class<?> systemPropertyBaseClass,
-            Properties initParameters) {
+                                           Properties initParameters) {
         this.initParameters = initParameters;
         this.systemPropertyBaseClass = systemPropertyBaseClass;
     }
 
     @Override
     public <T> T getApplicationOrSystemProperty(String propertyName,
-            T defaultValue, Function<String, T> converter) {
+                                                T defaultValue, Function<String, T> converter) {
         // Try system properties
         String val = getSystemProperty(propertyName);
         if (val != null) {
@@ -216,4 +216,8 @@ public class PropertyDeploymentConfiguration
         return initParameters;
     }
 
+    @Override
+    public int getCleanupPollingInterval() {
+        return DefaultDeploymentConfiguration.DEFAULT_CLEANUP_POLLING_INTERVAL;
+    }
 }

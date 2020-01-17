@@ -178,7 +178,7 @@ public interface DeploymentConfiguration extends Serializable {
      *         value is found
      */
     <T> T getApplicationOrSystemProperty(String propertyName, T defaultValue,
-            Function<String, T> converter);
+                                         Function<String, T> converter);
 
     /**
      * A shorthand of
@@ -224,7 +224,7 @@ public interface DeploymentConfiguration extends Serializable {
      *             if property value string is not a boolean value
      */
     default boolean getBooleanProperty(String propertyName,
-            boolean defaultValue) throws IllegalArgumentException {
+                                       boolean defaultValue) throws IllegalArgumentException {
         String booleanString = getStringProperty(propertyName, null);
         if (booleanString == null) {
             return defaultValue;
@@ -278,7 +278,7 @@ public interface DeploymentConfiguration extends Serializable {
     default String getEs6FrontendPrefix() {
         return useCompiledFrontendResources()
                 ? getStringProperty(Constants.FRONTEND_URL_ES6,
-                        Constants.FRONTEND_URL_ES6_DEFAULT_VALUE)
+                Constants.FRONTEND_URL_ES6_DEFAULT_VALUE)
                 : getDevelopmentFrontendPrefix();
     }
 
@@ -291,7 +291,7 @@ public interface DeploymentConfiguration extends Serializable {
     default String getEs5FrontendPrefix() {
         return useCompiledFrontendResources()
                 ? getStringProperty(Constants.FRONTEND_URL_ES5,
-                        Constants.FRONTEND_URL_ES5_DEFAULT_VALUE)
+                Constants.FRONTEND_URL_ES5_DEFAULT_VALUE)
                 : getDevelopmentFrontendPrefix();
     }
 
@@ -420,4 +420,11 @@ public interface DeploymentConfiguration extends Serializable {
         return getStringProperty(Constants.EXTERNAL_STATS_URL,
                 Constants.DEFAULT_EXTERNAL_STATS_URL);
     }
+
+    /**
+     * Returns the number of seconds
+     *
+     * @return second polling interval
+     */
+    int getCleanupPollingInterval();
 }
