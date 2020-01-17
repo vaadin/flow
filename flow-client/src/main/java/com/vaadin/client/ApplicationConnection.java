@@ -18,17 +18,20 @@ package com.vaadin.client;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
-
 import com.vaadin.client.communication.LoadingIndicatorConfigurator;
 import com.vaadin.client.communication.PollConfigurator;
 import com.vaadin.client.communication.ReconnectDialogConfiguration;
 import com.vaadin.client.flow.RouterLinkHandler;
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.binding.Binder;
+import com.vaadin.client.gwt.elemental.js.util.Xhr;
 
 import elemental.client.Browser;
+import elemental.dom.Document;
+import elemental.dom.Document.Events;
 import elemental.dom.Element;
 import elemental.dom.Node;
+import elemental.events.Event;
 
 /**
  * Main class for an application / UI.
@@ -96,7 +99,35 @@ public class ApplicationConnection {
         }
 
         registry.getLoadingIndicator().show();
+        if(Scheduler.get() instanceof TrackingScheduler) {
+            ((TrackingScheduler) Scheduler.get()).addEmptyQueueListener(this::fireAllProcessingDoneEventIfIdle);
+        }
+
     }
+
+    /**
+     * Helper method to fire Custom DOM events that can be listened to from JS code. Will always be fired from the document
+     * @param eventTypeArg - the custom event type for the event
+     * @param canBubble - true if the event can bubble
+     * @param canCancel - true if the event can be cancelled
+     */
+    public static void fireDomEventEvent(String eventTypeArg, boolean canBubble, boolean canCancel) {
+        Document document = Browser.getDocument();
+        Event requestStartNativeEvent = document.createEvent(Events.CUSTOM);
+        requestStartNativeEvent.initEvent(eventTypeArg, canBubble, canCancel);
+        document.dispatchEvent(requestStartNativeEvent);
+    }
+
+    /**
+     * Checks if the client-side engine is still marked as active, i.e. tasks are still pending.
+     * If no tasks are pending, this will fire a DOM event informing any listeners that Vaadin is done.
+     */
+    public void fireAllProcessingDoneEventIfIdle(){
+        if(!isActive()){
+            fireDomEventEvent(Xhr.VAADIN_ALL_REQUEST_PROCESSING_DONE_EVENT, true, false);
+        }
+    }
+
 
     /**
      * Starts this application.
@@ -240,7 +271,7 @@ public class ApplicationConnection {
     private boolean isExecutingDeferredCommands() {
         Scheduler s = Scheduler.get();
         if (s instanceof TrackingScheduler) {
-            return ((TrackingScheduler) s).hasWorkQueued();
+            return  ((TrackingScheduler) s).hasWorkQueued();
         } else {
             return false;
         }

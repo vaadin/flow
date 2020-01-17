@@ -18,6 +18,7 @@ package com.vaadin.client.gwt.elemental.js.util;
 import com.google.gwt.core.client.JavaScriptException;
 import com.google.gwt.xhr.client.ReadyStateChangeHandler;
 import com.google.gwt.xhr.client.XMLHttpRequest;
+import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.Console;
 
 import elemental.client.Browser;
@@ -31,6 +32,12 @@ import elemental.html.Window;
  * @since 1.0
  */
 public class Xhr {
+
+    // Native DOM event identifiers for request related events
+    public static final String VAADIN_REQUEST_START_EVENT = "vaadin-request-start";
+    public static final String VAADIN_REQUEST_RECEIVED_EVENT = "vaadin-request-received";
+    public static final String VAADIN_ALL_REQUEST_PROCESSING_DONE_EVENT = "vaadin-all-request-processing-done";
+
     /**
      * Notifies when an XHR successfully completes, or errors out.
      */
@@ -65,6 +72,7 @@ public class Xhr {
         @Override
         public void onReadyStateChange(XMLHttpRequest xhr) {
             if (xhr.getReadyState() == XMLHttpRequest.DONE) {
+                ApplicationConnection.fireDomEventEvent(VAADIN_REQUEST_RECEIVED_EVENT, true, false);
                 if (xhr.getStatus() == 200) {
                     callback.onSuccess(xhr);
                     xhr.clearOnReadyStateChange();
@@ -202,6 +210,7 @@ public class Xhr {
             Callback callback) {
         try {
             xhr.setOnReadyStateChange(new Handler(callback));
+            ApplicationConnection.fireDomEventEvent(VAADIN_REQUEST_START_EVENT, true, false);
             xhr.open(method, url);
             xhr.setRequestHeader("Content-type", contentType);
             xhr.setWithCredentials(true);

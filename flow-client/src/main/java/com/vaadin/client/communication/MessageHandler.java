@@ -443,6 +443,7 @@ public class MessageHandler {
                 }
 
                 bootstrapTime = calculateBootstrapTime();
+                registry.getApplicationConnection().fireAllProcessingDoneEventIfIdle();
                 if (Profiler.isEnabled() && bootstrapTime != -1) {
                     Profiler.logBootstrapTimings();
                 }
