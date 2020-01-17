@@ -19,6 +19,8 @@ import java.util.Scanner;
 
 /**
  * Utility class for special string handling.
+ *
+ * @since 2.1.4
  */
 public final class StringUtil {
 
@@ -74,8 +76,8 @@ public final class StringUtil {
                 }
                 break;
             case IN_BLOCK_COMMENT:
-                if (character.equals("*") && scanner.hasNext() && scanner
-                        .next().equals("/")) {
+                if (character.equals("*") && scanner.hasNext()
+                        && scanner.next().equals("/")) {
                     state = State.NORMAL;
                     break;
                 }
