@@ -83,7 +83,7 @@ public class TaskGenerateOpenApiTest {
                 servers.size());
         Assert.assertEquals("Generated OpenAPI should have default url server",
                 OpenApiSpecGenerator.DEFAULT_SERVER
-                        + OpenApiSpecGenerator.DEFAULT_ENDPOINT,
+                        + OpenApiSpecGenerator.DEFAULT_PREFIX,
                 servers.get(0).getUrl());
 
         Assert.assertEquals(
@@ -99,7 +99,7 @@ public class TaskGenerateOpenApiTest {
         String applicationTitle = "My title";
         String applicationAPIVersion = "1.1.1";
         String applicationServer = "https://example.com";
-        String applicationEndpoint = "/api";
+        String applicationPrefix = "/api";
         String applicationServerDescription = "Example API server";
         StringBuilder applicationPropertiesBuilder = new StringBuilder();
         applicationPropertiesBuilder
@@ -109,8 +109,8 @@ public class TaskGenerateOpenApiTest {
                 .append("=").append(applicationAPIVersion).append("\n")
                 .append(OpenApiSpecGenerator.SERVER).append("=")
                 .append(applicationServer).append("\n")
-                .append(OpenApiSpecGenerator.ENDPOINT).append("=")
-                .append(applicationEndpoint).append("\n")
+                .append(OpenApiSpecGenerator.PREFIX).append("=")
+                .append(applicationPrefix).append("\n")
                 .append(OpenApiSpecGenerator.SERVER_DESCRIPTION).append("=")
                 .append(applicationServerDescription);
         FileUtils.writeStringToFile(applicationPropertiesFile,
@@ -137,7 +137,7 @@ public class TaskGenerateOpenApiTest {
         Assert.assertEquals("Generated OpenAPI should a defined server", 1,
                 servers.size());
         Assert.assertEquals("Generated OpenAPI should use given url server",
-                applicationServer + applicationEndpoint,
+                applicationServer + applicationPrefix,
                 servers.get(0).getUrl());
 
         Assert.assertEquals(

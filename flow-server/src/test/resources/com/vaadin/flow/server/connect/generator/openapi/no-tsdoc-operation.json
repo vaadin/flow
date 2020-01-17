@@ -5,7 +5,7 @@
     "version" : "1.1.1"
   },
   "servers" : [ {
-    "url" : "https://myhost.com/myendpoint",
+    "url" : "https://myhost.com/myprefix",
     "description" : "Vaadin connect backend server"
   } ],
   "tags" : [ {

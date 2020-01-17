@@ -33,9 +33,9 @@ describe('ConnectClient', () => {
   });
 
   describe('constructor options', () => {
-    it('should support endpoint', () => {
-      const client = new ConnectClient({endpoint: '/foo'});
-      expect(client).to.have.property('endpoint', '/foo');
+    it('should support prefix', () => {
+      const client = new ConnectClient({prefix: '/foo'});
+      expect(client).to.have.property('prefix', '/foo');
     });
 
     it('should support middlewares', () => {
@@ -45,16 +45,16 @@ describe('ConnectClient', () => {
     });
   });
 
-  describe('endpoint', () => {
-    it('should have default endpoint', () => {
+  describe('prefix', () => {
+    it('should have default prefix', () => {
       const client = new ConnectClient();
-      expect(client).to.have.property('endpoint', '/connect');
+      expect(client).to.have.property('prefix', '/connect');
     });
 
-    it('should allow setting new endpoint', () => {
+    it('should allow setting new prefix', () => {
       const client = new ConnectClient();
-      client.endpoint = '/foo';
-      expect(client).to.have.property('endpoint', '/foo');
+      client.prefix = '/foo';
+      expect(client).to.have.property('prefix', '/foo');
     });
   });
 
@@ -104,7 +104,7 @@ describe('ConnectClient', () => {
       }
     });
 
-    it('should fetch service and method from default endpoint', async() => {
+    it('should fetch service and method from default prefix', async() => {
       expect(fetchMock.calls()).to.have.lengthOf(0); // no premature requests
 
       await client.call('FooService', 'fooMethod');
@@ -235,14 +235,14 @@ describe('ConnectClient', () => {
       }
     });
 
-    it('should fetch from custom endpoint', async() => {
-      fetchMock.post(base + '/fooEndpoint/BarService/barMethod', {barData: 'bar'});
+    it('should fetch from custom prefix', async() => {
+      fetchMock.post(base + '/fooPrefix/BarService/barMethod', {barData: 'bar'});
 
-      client.endpoint = '/fooEndpoint';
+      client.prefix = '/fooPrefix';
       const data = await client.call('BarService', 'barMethod');
 
       expect(data).to.deep.equal({barData: 'bar'});
-      expect(fetchMock.lastUrl()).to.equal(base + '/fooEndpoint/BarService/barMethod');
+      expect(fetchMock.lastUrl()).to.equal(base + '/fooPrefix/BarService/barMethod');
     });
 
     it('should pass 3rd argument as JSON request body', async() => {

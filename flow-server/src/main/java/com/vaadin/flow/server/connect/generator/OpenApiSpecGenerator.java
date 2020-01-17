@@ -41,12 +41,12 @@ public class OpenApiSpecGenerator {
     public static final String APPLICATION_API_VERSION = "vaadin.connect.api.version";
     public static final String SERVER = "vaadin.connect.server";
     public static final String SERVER_DESCRIPTION = "vaadin.connect.server.description";
-    public static final String ENDPOINT = "vaadin.connect.endpoint";
+    public static final String PREFIX = "vaadin.connect.prefix";
     public static final String DEFAULT_SERVER = "http://localhost:8080";
     public static final String DEFAULT_SERVER_DESCRIPTION = "Vaadin Connect backend";
     public static final String DEFAULT_APPLICATION_TITLE = "Vaadin Connect Application";
     public static final String DEFAULT_APPLICATION_API_VERSION = "0.0.1";
-    public static final String DEFAULT_ENDPOINT = "/connect";
+    public static final String DEFAULT_PREFIX = "/connect";
 
     private static final Logger log = LoggerFactory
             .getLogger(OpenApiSpecGenerator.class);
@@ -114,8 +114,8 @@ public class OpenApiSpecGenerator {
 
     private OpenApiConfiguration extractOpenApiConfiguration(
             Properties applicationProperties) {
-        String endpoint = (String) applicationProperties.getOrDefault(ENDPOINT,
-                DEFAULT_ENDPOINT);
+        String prefix = (String) applicationProperties.getOrDefault(PREFIX,
+                DEFAULT_PREFIX);
         String server = GeneratorUtils.removeEnd((String) applicationProperties
                 .getOrDefault(SERVER, DEFAULT_SERVER), "/");
         String serverDescription = (String) applicationProperties
@@ -126,6 +126,6 @@ public class OpenApiSpecGenerator {
                 .getOrDefault(APPLICATION_API_VERSION,
                         DEFAULT_APPLICATION_API_VERSION);
         return new OpenApiConfiguration(applicationTitle, applicationApiVersion,
-                server + endpoint, serverDescription);
+                server + prefix, serverDescription);
     }
 }
