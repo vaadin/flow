@@ -253,12 +253,24 @@ public final class Constants implements Serializable {
     public static final String URL_PARAMETER_CLOSE_APPLICATION = "closeApplication";
 
     /**
-     * Stats name for UsageStatistics entries
+     * UsageEntry name for UsageStatistics BootstrapHandler.
      */
-    public static String STATISTIC_FLOW_BOOTSTRAPHANDLER = "flow/BootstrapHandler";
-    public static String STATISTIC_ROUTING_SERVER = "routing/server";
-    public static String STATISTIC_ROUTING_CLIENT = "routing/client";
-    public static String STATISTIC_ROUTING_HYBRID = "routing/hybrid";
+    public static final String STATISTIC_FLOW_BOOTSTRAPHANDLER = "flow/BootstrapHandler";
+
+    /**
+     * UsageEntry name for UsageStatistics Routing Server.
+     */
+    public static final String STATISTIC_ROUTING_SERVER = "routing/server";
+
+    /**
+     * UsageEntry name for UsageStatistics Routing Client.
+     */
+    public static final String STATISTIC_ROUTING_CLIENT = "routing/client";
+
+    /**
+     * UsageEntry name for UsageStatistics Hybrid.
+     */
+    public static final String STATISTIC_ROUTING_HYBRID = "routing/hybrid";
 
     private Constants() {
         // prevent instantiation constants class only
