@@ -108,7 +108,7 @@ public class VaadinServletService extends VaadinService {
             handlers.add(0, new BootstrapHandler());
             getLogger().debug("Using '{}' in default mode",
                     BootstrapHandler.class.getName());
-            UsageStatistics.markAsUsed("flow/BootstrapHandler", Version.getFullVersion());
+            UsageStatistics.markAsUsed(Constants.STATISTIC_FLOW_BOOTSTRAPHANDLER, Version.getFullVersion());
         }
     }
 

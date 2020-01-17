@@ -290,12 +290,12 @@ public abstract class VaadinService implements Serializable {
 
     private void addUsageStatisticsRoutingServerAndHybrid() {
         if(UsageStatistics.getEntries().anyMatch(
-                e -> e.getName().equals("routing/client"))) {
-            UsageStatistics.removeEntry("routing/client");
-            UsageStatistics.markAsUsed("routing/hybrid", Version.getFullVersion());
+                e -> Constants.STATISTIC_ROUTING_CLIENT.equals(e.getName()))) {
+            UsageStatistics.removeEntry(Constants.STATISTIC_ROUTING_CLIENT);
+            UsageStatistics.markAsUsed(Constants.STATISTIC_ROUTING_HYBRID, Version.getFullVersion());
         } else if(UsageStatistics.getEntries().noneMatch(
-                e -> e.getName().equals("flow/BootstrapHandler"))) {
-            UsageStatistics.markAsUsed("routing/server", Version.getFullVersion());
+                e -> Constants.STATISTIC_FLOW_BOOTSTRAPHANDLER.equals(e.getName()))) {
+            UsageStatistics.markAsUsed(Constants.STATISTIC_ROUTING_SERVER, Version.getFullVersion());
         }
     }
 

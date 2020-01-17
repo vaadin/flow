@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 
 import com.vaadin.flow.internal.UsageStatistics;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.Version;
 import org.apache.commons.io.IOUtils;
 
@@ -112,10 +113,10 @@ public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
                 indexContent = IOUtils.toString(indexFileExist.toURI(), UTF_8);
                 indexTemplate = getFileContent();
             } catch (IOException e) {
-                e.printStackTrace();
+                log().warn("Failed to read file content", e);
             }
-            if(!indexContent.equals(indexTemplate)) {
-                UsageStatistics.markAsUsed("routing/client", Version.getFullVersion());
+            if(indexContent != null && !indexContent.equals(indexTemplate)) {
+                UsageStatistics.markAsUsed(Constants.STATISTIC_ROUTING_CLIENT, Version.getFullVersion());
             }
         }
     }

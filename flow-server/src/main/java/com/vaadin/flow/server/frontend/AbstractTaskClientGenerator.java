@@ -75,7 +75,7 @@ public abstract class AbstractTaskClientGenerator implements FallibleCommand {
         }
     }
 
-    private Logger log() {
+    Logger log() {
         return LoggerFactory.getLogger(getClass());
     }
 }
