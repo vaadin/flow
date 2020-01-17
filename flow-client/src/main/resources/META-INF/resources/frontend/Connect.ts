@@ -7,8 +7,7 @@ window.Vaadin.registrations = window.Vaadin.registratios || [];
 
 // @ts-ignore
 window.Vaadin.registrations.push({
-  is: '@vaadin/flow-frontend/Connect',
-  version: '3.0-SNAPSHOT'
+  is: '@vaadin/flow-frontend/Connect'
 });
 
 interface ConnectExceptionData {

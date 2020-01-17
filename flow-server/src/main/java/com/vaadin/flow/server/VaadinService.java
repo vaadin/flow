@@ -279,7 +279,7 @@ public abstract class VaadinService implements Serializable {
             logger.debug("The application has the following routes: ");
             List<RouteData> routeDataList = getRouteRegistry().getRegisteredRoutes();
             if(!routeDataList.isEmpty()) {
-                addUsageStatisticsRoutingServerAndHybrid();
+                routingServerAndHybrid();
                 routeDataList.stream()
                         .map(Object::toString).forEach(logger::debug);
             }
@@ -288,7 +288,7 @@ public abstract class VaadinService implements Serializable {
         initialized = true;
     }
 
-    private void addUsageStatisticsRoutingServerAndHybrid() {
+    private void routingServerAndHybrid() {
         if(UsageStatistics.getEntries().anyMatch(
                 e -> Constants.STATISTIC_ROUTING_CLIENT.equals(e.getName()))) {
             UsageStatistics.removeEntry(Constants.STATISTIC_ROUTING_CLIENT);
