@@ -84,7 +84,7 @@ public class OpenApiSpecGenerator {
                 FileUtils.writeStringToFile(specOutputFile.toFile(),
                         Json.pretty(openAPI), StandardCharsets.UTF_8);
             } else {
-                log.info("There are no connect services to genertate.");
+                log.info("There are no connect endpoints to genertate.");
                 FileUtils.deleteQuietly(specOutputFile.toFile());
             }
         } catch (IOException e) {

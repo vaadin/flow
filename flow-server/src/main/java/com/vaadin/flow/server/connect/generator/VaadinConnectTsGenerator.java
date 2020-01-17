@@ -67,7 +67,7 @@ import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.server.connect.VaadinServiceNameChecker;
+import com.vaadin.flow.server.connect.EndpointNameChecker;
 
 /**
  * Vaadin connect JavaScript generator implementation for swagger-codegen. Some
@@ -82,7 +82,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
     private static final String EXTENSION_VAADIN_CONNECT_PARAMETERS = "x-vaadin-connect-parameters";
     private static final String EXTENSION_VAADIN_CONNECT_SHOW_TSDOC = "x-vaadin-connect-show-tsdoc";
     private static final String EXTENSION_VAADIN_CONNECT_METHOD_NAME = "x-vaadin-connect-method-name";
-    private static final String EXTENSION_VAADIN_CONNECT_SERVICE_NAME = "x-vaadin-connect-service-name";
+    private static final String EXTENSION_VAADIN_CONNECT_SERVICE_NAME = "x-vaadin-connect-endpoint-name";
     private static final String VAADIN_CONNECT_CLASS_DESCRIPTION = "vaadinConnectClassDescription";
     private static final String VAADIN_FILE_PATH = "vaadinFilePath";
     private static final String CLIENT_PATH_TEMPLATE_PROPERTY = "vaadinConnectDefaultClientPath";
@@ -139,7 +139,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
          * https://www.w3schools.com/js/js_reserved.asp
          */
         reservedWords
-                .addAll(VaadinServiceNameChecker.ECMA_SCRIPT_RESERVED_WORDS);
+                .addAll(EndpointNameChecker.ECMA_SCRIPT_RESERVED_WORDS);
         reservedWords.addAll(languageSpecificPrimitives);
         typeMapping.put("BigDecimal", "number");
         typeMapping.put("map", "Map");
@@ -320,7 +320,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
     private static IllegalStateException getUnexpectedOpenAPIException(
             String inputFile, String errorMessage) {
         return new IllegalStateException(
-                "Unexpected error while generating vaadin-connect JavaScript service wrappers."
+                "Unexpected error while generating vaadin-connect JavaScript endpoint wrappers."
                         + " The input file " + inputFile
                         + " might be corrupted, please try running the generating tasks again. "
                         + errorMessage);
@@ -339,7 +339,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
                     authorizationValues, options);
         } catch (Exception e) {
             throw new IllegalStateException(
-                    "Unexpected error while generating vaadin-connect TypeScript service wrappers. "
+                    "Unexpected error while generating vaadin-connect TypeScript endpoint wrappers. "
                             + String.format("Can't read file '%s'",
                                     configurator.getInputSpecURL()),
                     e);
@@ -382,7 +382,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
      * @return A string value for the help message
      */
     public String getHelp() {
-        return "Generates a Vaadin Connect service wrappers.";
+        return "Generates a Vaadin Connect endpoint wrappers.";
     }
 
     /**
@@ -456,16 +456,16 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         Matcher matcher = PATH_REGEX.matcher(path);
         if (!matcher.matches()) {
             throw getGeneratorException(
-                    "Path must be in form of \"/<ServiceName>/<MethodName>\".");
+                    "Path must be in form of \"/<EndpointName>/<MethodName>\".");
         }
         CodegenOperation codegenOperation = super.fromOperation(path,
                 httpMethod, operation, schemas, openAPI);
-        String serviceName = matcher.group(1);
+        String endpointName = matcher.group(1);
         String methodName = matcher.group(2);
         codegenOperation.getVendorExtensions()
                 .put(EXTENSION_VAADIN_CONNECT_METHOD_NAME, methodName);
         codegenOperation.getVendorExtensions()
-                .put(EXTENSION_VAADIN_CONNECT_SERVICE_NAME, serviceName);
+                .put(EXTENSION_VAADIN_CONNECT_SERVICE_NAME, endpointName);
         validateOperationTags(path, httpMethod, operation);
         return codegenOperation;
     }
@@ -541,7 +541,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         List<String> operationTags = operation.getTags();
         if (operationTags == null || operationTags.isEmpty()) {
             getLogger().warn(
-                    "The '{}' operation with path '{}' does not have any tag. The generated method will be included in 'Default' Service.",
+                    "The '{}' operation with path '{}' does not have any tag. The generated method will be included in 'Default' Endpoint.",
                     httpMethod, path);
         } else if (operationTags.size() > 1) {
             String fileList = String.join(", ", operationTags);
@@ -578,7 +578,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
                 objs);
         List<Map<String, Object>> imports = (List<Map<String, Object>>) objs
                 .get("imports");
-        adjustImportInformationForServices(imports);
+        adjustImportInformationForEndpoints(imports);
 
         printDebugMessage(postProcessOperations, "=== All operations data ===");
         return postProcessOperations;
@@ -637,7 +637,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         }
     }
 
-    private void adjustImportInformationForServices(
+    private void adjustImportInformationForEndpoints(
             List<Map<String, Object>> imports) {
         adjustImportInformation(imports, ".");
     }

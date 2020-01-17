@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.server.connect.typeconversion;
 
-import com.vaadin.flow.server.connect.ExplicitNullableTypeChecker;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.runner.RunWith;
@@ -31,15 +30,16 @@ import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import com.vaadin.flow.server.connect.ExplicitNullableTypeChecker;
+import com.vaadin.flow.server.connect.EndpointNameChecker;
 import com.vaadin.flow.server.connect.VaadinConnectController;
-import com.vaadin.flow.server.connect.VaadinServiceNameChecker;
 import com.vaadin.flow.server.connect.auth.VaadinConnectAccessChecker;
 
 import static org.mockito.Mockito.mock;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest
-@Import(VaadinConnectTypeConversionServices.class)
+@Import(VaadinConnectTypeConversionEndpoints.class)
 public abstract class BaseTypeConversionIT {
 
     private MockMvc mockMvc;
@@ -51,7 +51,7 @@ public abstract class BaseTypeConversionIT {
     public void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(new VaadinConnectController(
                 null, mock(VaadinConnectAccessChecker.class),
-                mock(VaadinServiceNameChecker.class),
+                mock(EndpointNameChecker.class),
                 mock(ExplicitNullableTypeChecker.class), applicationContext))
                 .build();
         Assert.assertNotEquals(null, applicationContext);
@@ -82,9 +82,9 @@ public abstract class BaseTypeConversionIT {
 
     protected MockHttpServletResponse callMethod(String methodName,
             String requestValue) throws Exception {
-        String serviceName = VaadinConnectTypeConversionServices.class
+        String endpointName = VaadinConnectTypeConversionEndpoints.class
                 .getSimpleName();
-        String requestUrl = String.format("/%s/%s", serviceName, methodName);
+        String requestUrl = String.format("/%s/%s", endpointName, methodName);
         String body = String.format("{\"value\": %s}", requestValue);
         RequestBuilder requestBuilder = MockMvcRequestBuilders.post(requestUrl)
                 .accept(MediaType.APPLICATION_JSON_UTF8_VALUE).content(body)

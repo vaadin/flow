@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * A validation exception class that is intended to be thrown when any service
+ * A validation exception class that is intended to be thrown when any endpoint
  * method receives invalid parameter(s).
  *
  * Behaves similar to the {@link VaadinConnectException} and contains additional
