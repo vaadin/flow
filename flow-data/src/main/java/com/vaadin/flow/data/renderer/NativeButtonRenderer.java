@@ -27,12 +27,12 @@ import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.shared.Registration;
 
 /**
- * 
+ *
  * A template renderer to create a clickable button.
  * <p>
  * {@link ItemClickListener}s are notified when the rendered buttons are either
  * clicked or tapped (in touch devices).
- * 
+ *
  * @author Vaadin Ltd
  * @since 1.0.
  *
@@ -50,7 +50,7 @@ public class NativeButtonRenderer<SOURCE> extends BasicRenderer<SOURCE, String>
      * <p>
      * Item click listeners can be added via
      * {@link #addItemClickListener(ItemClickListener)}.
-     * 
+     *
      * @param label
      *            the label of the rendered button, not <code>null</code>
      */
@@ -65,7 +65,7 @@ public class NativeButtonRenderer<SOURCE> extends BasicRenderer<SOURCE, String>
      * <p>
      * More click listeners can be added via
      * {@link #addItemClickListener(ItemClickListener)}.
-     * 
+     *
      * @param label
      *            the label for the rendered button, not <code>null</code>
      * @param clickListener
@@ -82,7 +82,7 @@ public class NativeButtonRenderer<SOURCE> extends BasicRenderer<SOURCE, String>
      * <p>
      * Item click listeners can be added via
      * {@link #addItemClickListener(ItemClickListener)}.
-     * 
+     *
      * @param labelProvider
      *            the provider for the labels of the rendered buttons, not
      *            <code>null</code>
@@ -97,7 +97,7 @@ public class NativeButtonRenderer<SOURCE> extends BasicRenderer<SOURCE, String>
      * <p>
      * More click listeners can be added via
      * {@link #addItemClickListener(ItemClickListener)}.
-     * 
+     *
      * @param labelProvider
      *            the provider for the labels of the rendered buttons, not
      *            <code>null</code>
@@ -113,9 +113,7 @@ public class NativeButtonRenderer<SOURCE> extends BasicRenderer<SOURCE, String>
     @Override
     public Registration addItemClickListener(
             ItemClickListener<SOURCE> listener) {
-
-        listeners.add(listener);
-        return () -> listeners.remove(listener);
+        return Registration.addAndRemove(listeners, listener);
     }
 
     @Override
