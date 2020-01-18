@@ -133,8 +133,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
                     key -> new ArrayList<>(1));
         }
 
-        propertyListeners.add(listener);
-        return () -> propertyListeners.remove(listener);
+        return Registration.addAndRemove(propertyListeners, listener);
     }
 
     @Override
