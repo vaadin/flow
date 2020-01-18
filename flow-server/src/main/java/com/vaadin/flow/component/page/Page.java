@@ -73,7 +73,10 @@ public class Page implements Serializable {
             Registration registration = addListener(ResizeEvent.class,
                     event -> listener
                             .browserWindowResized(event.getApiEvent()));
-            return new ResizeRegistration(this, registration);
+
+            return Registration.combine(
+                    Registration.once(this::listenerIsUnregistered),
+                    registration);
         }
 
         private void listenerIsUnregistered() {
@@ -99,31 +102,6 @@ public class Page implements Serializable {
         private BrowserWindowResizeEvent getApiEvent() {
             return apiEvent;
         }
-    }
-
-    private static class ResizeRegistration implements Registration {
-        private boolean isInvoked;
-
-        private final Registration origin;
-        private final ResizeEventReceiver receiver;
-
-        private ResizeRegistration(ResizeEventReceiver receiver,
-                                   Registration origin) {
-            this.origin = origin;
-            this.receiver = receiver;
-        }
-
-        @Override
-        public void remove() {
-            if (isInvoked) {
-                return;
-            }
-            origin.remove();
-            receiver.listenerIsUnregistered();
-
-            isInvoked = true;
-        }
-
     }
 
     private ResizeEventReceiver resizeReceiver;

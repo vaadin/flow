@@ -2316,8 +2316,7 @@ public class Binder<BEAN> implements Serializable {
             SerializableConsumer<T> method) {
         List<SerializableConsumer<?>> list = listeners
                 .computeIfAbsent(eventType, key -> new ArrayList<>());
-        list.add(method);
-        return () -> list.remove(method);
+        return Registration.addAndRemove(list, method);
     }
 
     /**
