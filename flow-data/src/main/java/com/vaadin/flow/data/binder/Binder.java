@@ -1295,7 +1295,7 @@ public class Binder<BEAN> implements Serializable {
         public void setAsRequiredEnabled(boolean asRequiredEnabled) {
             if (!asRequiredSet) {
                 throw new IllegalStateException(
-                 "Unable to toggle asRequired validation since " 
+                 "Unable to toggle asRequired validation since "
                          + "asRequired has not been set.");
             }
             if (asRequiredEnabled != isAsRequiredEnabled()) {
@@ -2317,8 +2317,7 @@ public class Binder<BEAN> implements Serializable {
             SerializableConsumer<T> method) {
         List<SerializableConsumer<?>> list = listeners
                 .computeIfAbsent(eventType, key -> new ArrayList<>());
-        list.add(method);
-        return () -> list.remove(method);
+        return Registration.addAndRemove(list, method);
     }
 
     /**
