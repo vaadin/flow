@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.dom.impl;
 
+import java.io.ObjectStreamException;
 import java.util.Collections;
 
 import com.vaadin.flow.dom.Node;
@@ -42,7 +43,7 @@ public class BasicTextElementStateProvider
      * Creates a compatible text state node using the given text.
      *
      * @param text
-     *            the text to use
+     *            the text to use, not <code>null</code>
      * @return a initialized and compatible state node
      */
     public static StateNode createStateNode(String text) {
@@ -90,4 +91,7 @@ public class BasicTextElementStateProvider
         return BasicElementStateProvider.get().getParent(node);
     }
 
+    protected Object readResolve() throws ObjectStreamException {
+        return INSTANCE;
+    }    
 }

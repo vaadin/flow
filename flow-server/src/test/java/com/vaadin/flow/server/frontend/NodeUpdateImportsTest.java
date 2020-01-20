@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2019 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -112,7 +112,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 finder -> new FrontendDependenciesScannerFactory()
                         .createScanner(true, finder, true),
                 tmpRoot, generatedPath, frontendDirectory, tokenFile,
-                fallBackData) {
+                fallBackData, false) {
             @Override
             Logger log() {
                 return logger;
@@ -230,7 +230,8 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                         classFinder, true),
                 finder -> new FrontendDependenciesScannerFactory()
                         .createScanner(true, finder, true),
-                tmpRoot, generatedPath, frontendDirectory, tokenFile, null) {
+                tmpRoot, generatedPath, frontendDirectory, tokenFile, null,
+                false) {
             @Override
             Logger log() {
                 return logger;
@@ -299,7 +300,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 new FrontendDependenciesScannerFactory().createScanner(false,
                         classFinder, true),
                 finder -> null, tmpRoot, generatedPath, frontendDirectory,
-                tokenFile, null) {
+                tokenFile, null, false) {
             @Override
             Logger log() {
                 return logger;
@@ -344,7 +345,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 new FrontendDependenciesScannerFactory().createScanner(false,
                         classFinder, true),
                 finder -> null, tmpRoot, generatedPath, frontendDirectory,
-                tokenFile, null) {
+                tokenFile, null, false) {
             @Override
             Logger log() {
                 return logger;

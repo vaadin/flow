@@ -19,10 +19,11 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.plugin.TestUtils;
+
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
-
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.assertContainsPackage;
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.getPackageJson;
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.setProject;
@@ -52,6 +53,7 @@ public class PrepareFrontendMojoTest {
     private File projectBase;
     private File webpackOutputDirectory;
     private File tokenFile;
+    private MavenProject project;
 
     @Before
     public void setup() throws Exception {
@@ -60,7 +62,7 @@ public class PrepareFrontendMojoTest {
         tokenFile = new File(temporaryFolder.getRoot(),
                 VAADIN_SERVLET_RESOURCES + TOKEN_FILE);
 
-        MavenProject project = Mockito.mock(MavenProject.class);
+        project = Mockito.mock(MavenProject.class);
         Mockito.when(project.getBasedir()).thenReturn(projectBase);
 
         nodeModulesPath = new File(projectBase, NODE_MODULES);
@@ -148,14 +150,29 @@ public class PrepareFrontendMojoTest {
     @Test
     public void should_keepDependencies_when_packageJsonExists()
             throws Exception {
-        FileUtils.fileWrite(packageJson,
-                "{\"dependencies\":{\"foo\":\"bar\"}}");
+        JsonObject json = TestUtils.getInitalPackageJson();
+        json.put("dependencies", Json.createObject());
+        json.getObject("dependencies").put("foo", "bar");
+        FileUtils.fileWrite(packageJson, json.toJson());
         mojo.execute();
         assertPackageJsonContent();
 
         JsonObject packageJsonObject = getPackageJson(packageJson);
         assertContainsPackage(packageJsonObject.getObject("dependencies"),
                 "foo");
+    }
+
+    @Test
+    public void jarPackaging_copyProjectFrontendResources()
+            throws MojoExecutionException, MojoFailureException,
+            IllegalAccessException {
+        Mockito.when(project.getPackaging()).thenReturn("jar");
+
+        ReflectionUtils.setVariableValueInObject(mojo, "project", project);
+
+        mojo.execute();
+
+        Mockito.verify(project, Mockito.atLeastOnce()).getArtifacts();
     }
 
     private void assertPackageJsonContent() throws IOException {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -1238,17 +1238,38 @@ public class ComponentTest {
 
     @Test // 3818
     public void enabledStateChangeOnAttachCalledForParentState() {
-        enabledStateChangeOnAttachCalledForParentState(
+        enabledStateChangeOnAttachCalledForParentState(false,
                 (parent, child) -> parent.add(child));
+    }
+
+    @Test // 7085
+    public void enabledStateChangeOnDisableParent() {
+        enabledStateChangeOnAttachCalledForParentState(true,
+                (parent, child) -> {
+                    parent.add(child);
+                    parent.setEnabled(false);
+                });
     }
 
     @Test
     public void enabledStateChangeOnAttachCalledForParentOfVirtualChildState() {
-        enabledStateChangeOnAttachCalledForParentState((parent, child) -> {
-            Element wrapper = new Element("div");
-            parent.getElement().appendVirtualChild(wrapper);
-            wrapper.appendChild(child.getElement());
-        });
+        enabledStateChangeOnAttachCalledForParentState(false,
+                (parent, child) -> {
+                    Element wrapper = ElementFactory.createAnchor();
+                    parent.getElement().appendVirtualChild(wrapper);
+                    wrapper.appendChild(child.getElement());
+                });
+    }
+
+    @Test
+    public void enabledStateChangeOnDisableParentOfVirtualChild() {
+        enabledStateChangeOnAttachCalledForParentState(true,
+                (parent, child) -> {
+                    Element wrapper = ElementFactory.createAnchor();
+                    parent.getElement().appendVirtualChild(wrapper);
+                    wrapper.appendChild(child.getElement());
+                    parent.setEnabled(false);
+                });
     }
 
     @Test // 3818
@@ -1299,7 +1320,7 @@ public class ComponentTest {
     @Test
     public void enabledStateChangeOnParentOfVirtualChildDetachReturnsOldState() {
         enabledStateChangeOnParentDetachReturnsOldState((parent, child) -> {
-            Element wrapper = new Element("div");
+            Element wrapper = ElementFactory.createAnchor();
             parent.getElement().appendVirtualChild(wrapper);
             wrapper.appendChild(child.getElement());
         });
@@ -1601,11 +1622,12 @@ public class ComponentTest {
     }
 
     private void enabledStateChangeOnAttachCalledForParentState(
+            boolean initiallyEnabled,
             BiConsumer<EnabledDiv, Component> modificationStartegy) {
         UI ui = new UI();
 
         EnabledDiv parent = new EnabledDiv();
-        parent.setEnabled(false);
+        parent.setEnabled(initiallyEnabled);
         ui.add(parent);
 
         AtomicReference<Boolean> stateChange = new AtomicReference<>();
@@ -1618,7 +1640,8 @@ public class ComponentTest {
             }
         };
 
-        Assert.assertFalse("Parent should be disabled", parent.isEnabled());
+        Assert.assertEquals("Parent should be disabled", initiallyEnabled,
+                parent.isEnabled());
         Assert.assertTrue("Child should be enabled.", child.isEnabled());
         Assert.assertNull(child.getElement().getAttribute("disabled"));
 

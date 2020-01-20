@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.dom.impl;
 
+import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -239,4 +240,8 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
     public boolean isVisible(StateNode node) {
         throw new UnsupportedOperationException();
     }
+    
+    protected Object readResolve() throws ObjectStreamException {
+        return INSTANCE;
+    }    
 }

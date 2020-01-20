@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
@@ -378,9 +379,11 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * Sets the session error handler.
      *
      * @param errorHandler
-     *            the new error handler
+     *            the new error handler, not <code>null</code>
      */
     public void setErrorHandler(ErrorHandler errorHandler) {
+        Objects.requireNonNull(errorHandler, "errorHandler can not be null!");
+
         checkHasLock();
         this.errorHandler = errorHandler;
     }

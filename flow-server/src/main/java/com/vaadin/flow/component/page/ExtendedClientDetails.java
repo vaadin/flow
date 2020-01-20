@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,6 +19,9 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.TimeZone;
 
+import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.WebBrowser;
+
 /**
  * Provides extended information about the web browser, such as screen
  * resolution and time zone.
@@ -32,10 +35,10 @@ import java.util.TimeZone;
  * @since 2.0
  */
 public class ExtendedClientDetails implements Serializable {
-    private int screenHeight = -1;
     private int screenWidth = -1;
-    private int windowInnerHeight = -1;
+    private int screenHeight = -1;
     private int windowInnerWidth = -1;
+    private int windowInnerHeight = -1;
     private int bodyClientWidth = -1;
     private int bodyClientHeight = -1;
     private int timezoneOffset = 0;
@@ -43,10 +46,11 @@ public class ExtendedClientDetails implements Serializable {
     private int dstSavings;
     private boolean dstInEffect;
     private String timeZoneId;
+    private long clientServerTimeDelta;
     private boolean touchDevice;
     private double devicePixelRatio = -1.0D;
-    private long clientServerTimeDelta;
     private String windowName;
+    private String navigatorPlatform;
 
     /**
      * For internal use only. Updates all properties in the class according to
@@ -83,13 +87,16 @@ public class ExtendedClientDetails implements Serializable {
      *            the resolution in CSS pixels
      * @param windowName
      *            a unique browser window name which persists on reload
+     * @param navigatorPlatform
+     *            navigation platform received from the browser
      */
     ExtendedClientDetails(String screenWidth, String screenHeight,
             String windowInnerWidth, String windowInnerHeight,
             String bodyClientWidth, String bodyClientHeight, String tzOffset,
             String rawTzOffset, String dstShift, String dstInEffect,
             String tzId, String curDate, String touchDevice,
-            String devicePixelRatio, String windowName) {
+            String devicePixelRatio, String windowName,
+            String navigatorPlatform) {
         if (screenWidth != null) {
             try {
                 this.screenWidth = Integer.parseInt(screenWidth);
@@ -164,6 +171,7 @@ public class ExtendedClientDetails implements Serializable {
         }
 
         this.windowName = windowName;
+        this.navigatorPlatform = navigatorPlatform;
     }
 
     /**
@@ -199,7 +207,7 @@ public class ExtendedClientDetails implements Serializable {
     /**
      * Gets the inner width of the browser window {@code window.innerWidth} in
      * pixels. This includes the scrollbar, if it is visible.
-     * 
+     *
      * @return the browser window inner width in pixels
      */
     public int getWindowInnerWidth() {
@@ -208,7 +216,7 @@ public class ExtendedClientDetails implements Serializable {
 
     /**
      * Gets the height of the body element in the document in pixels.
-     * 
+     *
      * @return the height of the body element
      */
     public int getBodyClientHeight() {
@@ -330,11 +338,13 @@ public class ExtendedClientDetails implements Serializable {
 
     /**
      * Gets the device pixel ratio, {@code window.devicePixelRatio}. See more
-     * from <a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio">MDN web docs</a>.
+     * from <a href=
+     * "https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio">MDN
+     * web docs</a>.
      * <p>
      * A value of -1 indicates that the value was not reported by the browser
      * correctly.
-     * 
+     *
      * @return double-precision floating-point value indicating the ratio of the
      *         display's resolution in physical pixels to the resolution in CSS
      *         pixels
@@ -353,4 +363,27 @@ public class ExtendedClientDetails implements Serializable {
         return windowName;
     }
 
+    /**
+     * Check if the browser is run on IPad.
+     *
+     * @return true if run on IPad false if the user is not using IPad or if no
+     *         information from the browser is present
+     */
+    public boolean isIPad() {
+        if (navigatorPlatform != null) {
+            return navigatorPlatform.startsWith("iPad");
+        }
+        WebBrowser browser = VaadinSession.getCurrent().getBrowser();
+        return browser.isIPad() || (browser.isMacOSX() && isTouchDevice());
+    }
+
+    /**
+     * Check if the browser is run on IOS.
+     *
+     * @return {@code true} if run on IOS , {@code false} if the user is not
+     *         using IOS or if no information from the browser is present
+     */
+    public boolean isIOS() {
+        return isIPad() || VaadinSession.getCurrent().getBrowser().isIOS();
+    }
 }

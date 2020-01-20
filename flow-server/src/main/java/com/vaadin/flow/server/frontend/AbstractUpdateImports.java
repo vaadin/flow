@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,7 +17,6 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -35,7 +34,6 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.Constants;
@@ -57,7 +55,7 @@ import static com.vaadin.flow.shared.ApplicationConstants.FRONTEND_PROTOCOL_PREF
  * @author Vaadin Ltd
  *
  */
-abstract class AbstractUpdateImports implements Runnable, Serializable {
+abstract class AbstractUpdateImports implements Runnable {
 
     private static final String CSS_PREPARE = "function addCssBlock(block) {\n"
             + " const tpl = document.createElement('template');\n"
@@ -179,7 +177,7 @@ abstract class AbstractUpdateImports implements Runnable, Serializable {
     List<String> resolveModules(Collection<String> modules,
             boolean isJsModule) {
         return modules.stream()
-                .map(module -> resolveResource(module, isJsModule))
+                .map(module -> resolveResource(module, isJsModule)).sorted()
                 .collect(Collectors.toList());
     }
 
@@ -273,6 +271,8 @@ abstract class AbstractUpdateImports implements Runnable, Serializable {
         lines.addAll(Arrays.asList(content.split("\\R")));
     }
 
+    protected abstract String getImportsNotFoundMessage();
+
     private void collectModules(List<String> lines) {
         Set<String> modules = new LinkedHashSet<>();
         modules.addAll(resolveModules(getModules(), true));
@@ -359,9 +359,7 @@ abstract class AbstractUpdateImports implements Runnable, Serializable {
         if (!npmNotFound.isEmpty() && getLogger().isInfoEnabled()) {
             getLogger().info(notFoundMessage(npmNotFound,
                     "Failed to find the following imports in the `node_modules` tree:",
-                    "If the build fails, check that npm packages are installed.\n\n"
-                            + "  To fix the build remove `node_modules` directory to reset modules.\n"
-                            + "  In addition you may run `npm install` to fix `node_modules` tree structure."));
+                    getImportsNotFoundMessage()));
         }
 
         return es6ImportPaths;
@@ -538,10 +536,10 @@ abstract class AbstractUpdateImports implements Runnable, Serializable {
             visitImportsRecursively(filePath, path, theme, imports,
                     visitedImports);
         } catch (IOException exception) {
-            LoggerFactory.getLogger(TaskUpdateImports.class)
-                    .warn("Could not read file {}. Skipping "
-                            + "applying theme for its imports", file.getPath(),
-                            exception);
+            getLogger().warn(
+                    "Could not read file {}. Skipping "
+                            + "applying theme for its imports",
+                    file.getPath(), exception);
         }
     }
 

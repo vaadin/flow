@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -224,20 +224,6 @@ public class DevModeHandlerTest {
     public void shouldNot_CreateInstance_When_WebpackNotConfigured() {
         new File(baseDir, FrontendUtils.WEBPACK_CONFIG).delete();
         assertNull(DevModeHandler.start(configuration, npmFolder));
-    }
-
-    @Test
-    public void should_HandleJavaScriptRequests() {
-        HttpServletRequest request = prepareRequest("/foo.js");
-        assertTrue(DevModeHandler.start(configuration, npmFolder)
-                .isDevModeRequest(request));
-    }
-
-    @Test
-    public void shouldNot_HandleOtherRequests() {
-        HttpServletRequest request = prepareRequest("/foo.bar");
-        assertFalse(DevModeHandler.start(configuration, npmFolder)
-                .isDevModeRequest(request));
     }
 
     @Test(expected = ConnectException.class)

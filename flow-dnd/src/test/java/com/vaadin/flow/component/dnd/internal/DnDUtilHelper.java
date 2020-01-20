@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -14,19 +14,13 @@
  * the License.
  */
 
-package src.com.vaadin.flow.webcomponent;
+package com.vaadin.flow.component.dnd.internal;
 
-import javax.servlet.annotation.WebServlet;
-import java.io.PrintWriter;
-import java.util.function.Consumer;
+public class DnDUtilHelper {
 
-import com.vaadin.flow.component.dependency.NpmPackage;
-import com.vaadin.flow.webcomponent.servlets.AbstractPlainServlet;
+    public static final String MOBILE_DND_INJECT_SCRIPT = DndUtil.MOBILE_POLYFILL_INJECT_SCRIPT;
 
-@WebServlet(urlPatterns = { "/items/*"}, asyncSupported = true)
-public class NpmPlainServlet extends AbstractPlainServlet {
-    @Override
-    protected Consumer<PrintWriter> getImportsWriter() {
-        return this::writeNpmImports;
+    private DnDUtilHelper() {
+        // sonarqube
     }
 }

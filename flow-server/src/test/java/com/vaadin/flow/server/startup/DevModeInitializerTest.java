@@ -5,12 +5,15 @@ import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EventListener;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
@@ -25,6 +28,9 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.frontend.FallbackChunk;
+
+import elemental.json.Json;
+import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
@@ -102,21 +108,18 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     public void should_Run_Updaters_when_NoNodeConfFiles() throws Exception {
         webpackFile.delete();
         mainPackageFile.delete();
-        appPackageFile.delete();
         runOnStartup();
         assertNotNull(getDevModeHandler());
     }
 
     @Test
-    public void should_Not_Run_Updaters_when_NoMainPackageFile()
-            throws Exception {
+    public void should_Not_Run_Updaters_when_NoMainPackageFile() {
         mainPackageFile.delete();
         assertNull(getDevModeHandler());
     }
 
     @Test
     public void should_Run_Updaters_when_NoAppPackageFile() throws Exception {
-        appPackageFile.delete();
         runOnStartup();
         assertNotNull(getDevModeHandler());
     }
@@ -171,7 +174,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
     @Test
     public void shouldUseByteCodeScannerIfPropertySet() throws Exception {
-        System.setProperty(Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
+        initParams.put(Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
                 "true");
         DevModeInitializer devModeInitializer = new DevModeInitializer();
         final Set<Class<?>> classes = new HashSet<>();
@@ -185,6 +188,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
                 Mockito.eq(FallbackChunk.class.getName()), arg.capture());
         FallbackChunk fallbackChunk = arg.getValue();
         Assert.assertFalse(fallbackChunk.getModules().contains("foo"));
+
         Assert.assertTrue(fallbackChunk.getModules().contains("bar"));
     }
 

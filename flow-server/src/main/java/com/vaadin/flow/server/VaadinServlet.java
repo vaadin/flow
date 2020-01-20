@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,6 +20,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -29,7 +30,7 @@ import java.util.Properties;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.server.ServletHelper.RequestType;
+import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.webjar.WebJarServer;
 import com.vaadin.flow.shared.JsonConstants;
 
@@ -50,7 +51,6 @@ import com.vaadin.flow.shared.JsonConstants;
 public class VaadinServlet extends HttpServlet {
     private VaadinServletService servletService;
     private StaticFileHandler staticFileHandler;
-    private DevModeHandler devmodeHandler;
     private WebJarServer webJarServer;
 
     /**
@@ -81,7 +81,6 @@ public class VaadinServlet extends HttpServlet {
         if (deploymentConfiguration.areWebJarsEnabled()) {
             webJarServer = new WebJarServer(deploymentConfiguration);
         }
-        devmodeHandler = DevModeHandler.getDevModeHandler();
 
         // Sets current service even though there are no request and response
         servletService.setCurrentInstances(null, null);
@@ -140,16 +139,17 @@ public class VaadinServlet extends HttpServlet {
      * frameworks.
      *
      * @return the created deployment configuration
-     *
-     * @throws ServletException
-     *             if construction of the {@link Properties} for
-     *             {@link DeploymentConfigurationFactory#createInitParameters(Class, ServletConfig)}
-     *             fails
      */
     protected DeploymentConfiguration createDeploymentConfiguration()
             throws ServletException {
-        return createDeploymentConfiguration(DeploymentConfigurationFactory
-                .createInitParameters(getClass(), getServletConfig()));
+        try {
+            return createDeploymentConfiguration(DeploymentConfigurationFactory
+                    .createInitParameters(getClass(),
+                            new VaadinServletConfig(getServletConfig())));
+        } catch (VaadinConfigurationException e) {
+            throw new ServletException(
+                    "Failed to construct DeploymentConfiguration.", e);
+        }
     }
 
     /**
@@ -225,7 +225,8 @@ public class VaadinServlet extends HttpServlet {
     protected void service(HttpServletRequest request,
             HttpServletResponse response) throws ServletException, IOException {
 
-        // Handle context root request without trailing slash, see #9921
+        // Handle context root request without trailing slash, see
+        // https://github.com/vaadin/framework/issues/2991
         if (handleContextOrServletRootWithoutSlash(request, response)) {
             return;
         }
@@ -274,9 +275,10 @@ public class VaadinServlet extends HttpServlet {
      */
     protected boolean serveStaticOrWebJarRequest(HttpServletRequest request,
             HttpServletResponse response) throws IOException {
+        DevModeHandler handler = DevModeHandler.getDevModeHandler();
 
-        if (devmodeHandler != null && devmodeHandler.isDevModeRequest(request)
-                && devmodeHandler.serveDevModeRequest(request, response)) {
+        if (handler != null && handler.isDevModeRequest(request)
+                && handler.serveDevModeRequest(request, response)) {
             return true;
         }
 
@@ -408,14 +410,14 @@ public class VaadinServlet extends HttpServlet {
      */
     private boolean ensureCookiesEnabled(VaadinServletRequest request,
             VaadinServletResponse response) throws IOException {
-        if (ServletHelper.isRequestType(request, RequestType.UIDL)) {
+        if (HandlerHelper.isRequestType(request, RequestType.UIDL)) {
             // In all other but the first UIDL request a cookie should be
             // returned by the browser.
             // This can be removed if cookieless mode (#3228) is supported
             if (request.getRequestedSessionId() == null) {
                 // User has cookies disabled
                 SystemMessages systemMessages = getService().getSystemMessages(
-                        ServletHelper.findLocale(null, request), request);
+                        HandlerHelper.findLocale(null, request), request);
                 getService().writeUncachedStringResponse(response,
                         JsonConstants.JSON_CONTENT_TYPE,
                         VaadinService.createCriticalNotificationJSON(
@@ -437,8 +439,7 @@ public class VaadinServlet extends HttpServlet {
      *             if the application is denied access to the persistent data
      *             store represented by the given URL.
      *
-     * @deprecated As of 7.0. Will likely change or be removed in a future
-     *             version
+     * @deprecated As of 1.0. Will be removed in 3.0. 
      *
      * @return current application URL
      */
@@ -493,8 +494,8 @@ public class VaadinServlet extends HttpServlet {
      *            non-escaped string
      * @return a safe string to be added inside an html tag
      *
-     * @deprecated As of 7.0. Will likely change or be removed in a future
-     *             version
+     * @deprecated As of 1.0. Will be removed in 3.0. Use
+     * {@link org.jsoup.nodes.Entities#escape(String)} instead.
      */
     @Deprecated
     public static String safeEscapeForHtml(String unsafe) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,7 +20,6 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
-import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,7 +36,9 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DeploymentConfigurationFactory;
 import com.vaadin.flow.server.FrontendVaadinServlet;
+import com.vaadin.flow.server.VaadinConfigurationException;
 import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinServletConfig;
 import com.vaadin.flow.server.VaadinServletConfiguration;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
@@ -142,8 +143,8 @@ public class ServletDeployer implements ServletContextListener {
                         registration);
                 return DeploymentConfigurationFactory
                         .createPropertyDeploymentConfiguration(servletClass,
-                                servletConfig);
-            } catch (ServletException e) {
+                                new VaadinServletConfig(servletConfig));
+            } catch (VaadinConfigurationException e) {
                 throw new IllegalStateException(String.format(
                         "Failed to get deployment configuration data for servlet with name '%s' and class '%s'",
                         registration.getName(), servletClass), e);

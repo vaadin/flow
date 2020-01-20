@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,10 +25,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.Comment;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -141,36 +139,18 @@ public final class DefaultTemplateParser implements TemplateParser {
         try {
             Document parsedDocument = Jsoup.parse(content,
                     StandardCharsets.UTF_8.name(), "");
-            Optional<Element> optionalDomModule = getDomModule(parsedDocument,
-                    tag);
+            Optional<Element> optionalDomModule = JsoupUtils
+                    .getDomModule(parsedDocument, tag);
             if (!optionalDomModule.isPresent()) {
                 return null;
             }
             Element domModule = optionalDomModule.get();
-            removeCommentsRecursively(domModule);
+            JsoupUtils.removeCommentsRecursively(domModule);
             return domModule;
         } catch (IOException exception) {
             throw new RuntimeException(String.format(
                     "Can't parse the template declared using '%s' path", path),
                     exception);
-        }
-    }
-
-    private static Optional<Element> getDomModule(Element parent, String id) {
-        return parent.getElementsByTag("dom-module").stream()
-                .filter(element -> id.equals(element.id())).findFirst();
-    }
-
-    private static void removeCommentsRecursively(Node node) {
-        int i = 0;
-        while (i < node.childNodeSize()) {
-            Node child = node.childNode(i);
-            if (child instanceof Comment) {
-                child.remove();
-            } else {
-                removeCommentsRecursively(child);
-                i++;
-            }
         }
     }
 

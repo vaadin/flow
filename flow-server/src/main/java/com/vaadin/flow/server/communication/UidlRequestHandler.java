@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,8 +16,6 @@
 
 package com.vaadin.flow.server.communication;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringWriter;
@@ -27,8 +25,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.server.ServletHelper;
-import com.vaadin.flow.server.ServletHelper.RequestType;
+import com.vaadin.flow.server.HandlerHelper;
+import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.SessionExpiredHandler;
 import com.vaadin.flow.server.SynchronizedRequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
@@ -36,10 +34,13 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.ServerRpcHandler.InvalidUIDLSecurityKeyException;
+import com.vaadin.flow.server.communication.ServerRpcHandler.ResynchronizationRequiredException;
 import com.vaadin.flow.shared.JsonConstants;
 
 import elemental.json.JsonException;
 import elemental.json.JsonObject;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Processes a UIDL request from the client.
@@ -58,7 +59,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
-        return ServletHelper.isRequestType(request, RequestType.UIDL);
+        return HandlerHelper.isRequestType(request, RequestType.UIDL);
     }
 
     /**
@@ -77,7 +78,8 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         if (uI == null) {
             // This should not happen but it will if the UI has been closed. We
             // really don't want to see it in the server logs though
-            commitJsonResponse(response, VaadinService.createUINotFoundJSON());
+            commitJsonResponse(response,
+                    VaadinService.createUINotFoundJSON(false));
             return true;
         }
 
@@ -85,8 +87,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
 
         try {
             getRpcHandler(session).handleRpc(uI, request.getReader(), request);
-
-            writeUidl(uI, stringWriter);
+            writeUidl(uI, stringWriter, false);
         } catch (JsonException e) {
             getLogger().error("Error writing JSON to response", e);
             // Refresh on client side
@@ -98,6 +99,9 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
             // Refresh on client side
             writeRefresh(response);
             return true;
+        } catch (ResynchronizationRequiredException e) { // NOSONAR
+            // Resync on the client side
+            writeUidl(uI, stringWriter, true);
         } finally {
             stringWriter.close();
         }
@@ -112,8 +116,9 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         commitJsonResponse(response, json);
     }
 
-    private static void writeUidl(UI ui, Writer writer) throws IOException {
-        JsonObject uidl = new UidlWriter().createUidl(ui, false);
+    private static void writeUidl(UI ui, Writer writer, boolean resync)
+            throws IOException {
+        JsonObject uidl = new UidlWriter().createUidl(ui, false, resync);
 
         // some dirt to prevent cross site scripting
         String responseString = "for(;;);[" + uidl.toJson() + "]";
@@ -134,13 +139,13 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
     @Override
     public boolean handleSessionExpired(VaadinRequest request,
             VaadinResponse response) throws IOException {
-        if (!ServletHelper.isRequestType(request, RequestType.UIDL)) {
+        if (!HandlerHelper.isRequestType(request, RequestType.UIDL)) {
             return false;
         }
         VaadinService service = request.getService();
         service.writeUncachedStringResponse(response,
                 JsonConstants.JSON_CONTENT_TYPE,
-                VaadinService.createSessionExpiredJSON());
+                VaadinService.createSessionExpiredJSON(false));
 
         return true;
     }

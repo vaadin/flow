@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,7 +22,10 @@ import java.io.Serializable;
  *
  * @author Vaadin Ltd
  * @since 2.0
+ * @deprecated this command is an internal command and is not supposed to be
+ *             used in application code
  */
+@Deprecated
 public interface FallibleCommand extends Serializable {
 
     /**

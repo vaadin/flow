@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -35,9 +35,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.internal.ExportsWebComponent;
+import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinServiceInitListener;
@@ -92,7 +94,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         try {
             computeEndpoints();
             if (generateEmbeddableWebComponents) {
-                computeExporterEndpoints();
+                computeExporterEndpoints(WebComponentExporter.class);
+                computeExporterEndpoints(WebComponentExporterFactory.class);
             }
             computeApplicationTheme();
             computePackages();
@@ -231,6 +234,11 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                 .loadClass(VaadinServiceInitListener.class.getName()))) {
             collectEndpoints(initListener);
         }
+
+        for (Class<?> errorParameters : getFinder().getSubTypesOf(
+                getFinder().loadClass(HasErrorParameter.class.getName()))) {
+            collectEndpoints(errorParameters);
+        }
     }
 
     private void collectEndpoints(Class<?> entry) throws IOException {
@@ -247,9 +255,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      * If no theme is found and the application has endpoints, it uses lumo if
      * found in the class-path
      */
-    private void computeApplicationTheme()
-            throws ClassNotFoundException, InstantiationException,
-            IllegalAccessException, IOException {
+    private void computeApplicationTheme() throws ClassNotFoundException,
+            InstantiationException, IllegalAccessException, IOException {
 
         // Re-visit theme related classes, because they might be skipped
         // when they where already added to the visited list during other
@@ -369,8 +376,10 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
 
     /**
      * Visits all classes extending
-     * {@link com.vaadin.flow.component.WebComponentExporter} and update an
-     * {@link EndPointData} object with the info found.
+     * {@link com.vaadin.flow.component.WebComponentExporter} or
+     * {@link WebComponentExporterFactory} and update an {@link EndPointData}
+     * object with the info found.
+     *
      * <p>
      * The limitation with {@code WebComponentExporters} is that only one theme
      * can be defined. If the more than one {@code @Theme} annotation is found
@@ -379,21 +388,23 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      * annotations. However, if no theme is found, {@code Lumo} is used, if
      * available.
      *
+     * @param clazz
+     *            the exporter endpoint class
+     *
      * @throws ClassNotFoundException
      *             if unable to load a class by class name
      * @throws IOException
      *             if unable to scan the class byte code
      */
     @SuppressWarnings("unchecked")
-    private void computeExporterEndpoints()
+    private void computeExporterEndpoints(Class<?> clazz)
             throws ClassNotFoundException, IOException {
         // Because of different classLoaders we need compare against class
         // references loaded by the specific class finder loader
         Class<? extends Annotation> routeClass = getFinder()
                 .loadClass(Route.class.getName());
-        Class<ExportsWebComponent<? extends Component>> exporterClass = getFinder()
-                .loadClass(ExportsWebComponent.class.getName());
-        Set<? extends Class<? extends ExportsWebComponent<? extends Component>>> exporterClasses = getFinder()
+        Class<?> exporterClass = getFinder().loadClass(clazz.getName());
+        Set<? extends Class<?>> exporterClasses = getFinder()
                 .getSubTypesOf(exporterClass);
 
         // if no exporters in the project, return

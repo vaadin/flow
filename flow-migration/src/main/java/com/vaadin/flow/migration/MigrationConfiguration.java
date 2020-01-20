@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -50,6 +50,8 @@ public class MigrationConfiguration {
     private File[] javaSourceDirectories;
 
     private File compiledClassDirectory;
+
+    private boolean disablePnpm;
 
     private MigrationConfiguration(File baseDir) {
         baseDirectory = baseDir;
@@ -163,6 +165,15 @@ public class MigrationConfiguration {
      */
     public AnnotationsRewriteStrategy getAnnotationRewriteStrategy() {
         return annotationRewriteStrategy;
+    }
+
+    /**
+     * Checks whether pnpm tool is disabled and npm should be used instead.
+     *
+     * @return whether PNPM should be disabled
+     */
+    public boolean isPnpmDisabled() {
+        return disablePnpm;
     }
 
     /**
@@ -331,14 +342,26 @@ public class MigrationConfiguration {
         }
 
         /**
+         * Disables default "pnpm" tool so that "npm" will be used instead to
+         * install frontend resources.
+         *
+         * @param disable
+         *            disables pnpm
+         */
+        public void setDisablePnpm(boolean disable) {
+            config.disablePnpm = disable;
+        }
+
+        /**
          * Builds the immutable configuration based on the builder.
          *
          * @return the resulting configuration
          */
         public MigrationConfiguration build() {
             // return an immutable instance
-            return  new MigrationConfiguration(config);
+            return new MigrationConfiguration(config);
         }
+
     }
 
 }

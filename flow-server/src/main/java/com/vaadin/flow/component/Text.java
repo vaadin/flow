@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -29,7 +29,7 @@ public class Text extends Component implements HasText {
      * Creates an instance using the given text.
      *
      * @param text
-     *            the text to show
+     *            the text to show, not <code>null</code>
      */
     public Text(String text) {
         super(Element.createText(text));

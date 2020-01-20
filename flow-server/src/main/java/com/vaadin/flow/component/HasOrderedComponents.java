@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,6 +16,7 @@
 package com.vaadin.flow.component;
 
 import java.util.Iterator;
+import java.util.stream.Stream;
 
 import com.vaadin.flow.dom.Element;
 
@@ -85,7 +86,7 @@ public interface HasOrderedComponents<T extends Component>
             throw new IllegalArgumentException(
                     "The 'component' parameter cannot be null");
         }
-        Iterator<Component> it = ((T) this).getChildren().sequential()
+        Iterator<Component> it = this.getChildren().sequential()
                 .iterator();
         int index = 0;
         while (it.hasNext()) {
@@ -104,7 +105,7 @@ public interface HasOrderedComponents<T extends Component>
      * @return the number of components
      */
     default int getComponentCount() {
-        return (int) ((T) this).getChildren().count();
+        return (int) this.getChildren().count();
     }
 
     /**
@@ -125,10 +126,19 @@ public interface HasOrderedComponents<T extends Component>
                     "The 'index' argument should be greater than or equal to 0. It was: "
                             + index);
         }
-        return ((T) this).getChildren().sequential().skip(index).findFirst()
+        return this.getChildren().sequential().skip(index).findFirst()
                 .orElseThrow(() -> new IllegalArgumentException(
                         "The 'index' argument should not be greater than or equals to the number of children components. It was: "
                                 + index));
     }
+
+    /**
+     * Gets the child components of this component.
+     *
+     * @see Component#getChildren()
+     *
+     * @return the child components of this component
+     */
+     Stream<Component> getChildren();
 
 }

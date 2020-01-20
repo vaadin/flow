@@ -9,8 +9,18 @@ window.Vaadin.Flow.dndConnector = {
     if (effect) {
       event.dataTransfer.dropEffect = effect;
     }
+
     if (effect && effect !== 'none') {
-      event.currentTarget.classList.add("v-drag-over-target");
+      /* #7108: if drag moves on top of drop target's children, first another ondragenter event
+       * is fired and then a ondragleave event. This happens again once the drag
+       * moves on top of another children, or back on top of the drop target element.
+       * Thus need to "cancel" the following ondragleave, to not remove class name.
+       * Drop event will happen even when dropped to a child element. */
+      if (event.currentTarget.classList.contains("v-drag-over-target")) {
+        event.currentTarget['__skip-leave'] = true;
+      } else {
+        event.currentTarget.classList.add("v-drag-over-target");
+      }
       // enables browser specific pseudo classes (at least FF)
       event.preventDefault();
       event.stopPropagation(); // don't let parents know
@@ -30,7 +40,14 @@ window.Vaadin.Flow.dndConnector = {
   },
 
   __ondragleaveListener: function (event) {
-    event.currentTarget.classList.remove("v-drag-over-target");
+    if (event.currentTarget['__skip-leave']) {
+      event.currentTarget['__skip-leave'] = false;
+    } else {
+      event.currentTarget.classList.remove("v-drag-over-target");
+    }
+    // #7109 need to stop or any parent drop target might not get highlighted,
+    // as ondragenter for it is fired before the child gets dragleave.
+    event.stopPropagation();
   },
 
   __ondropListener: function (event) {

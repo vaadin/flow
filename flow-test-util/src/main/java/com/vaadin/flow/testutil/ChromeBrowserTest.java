@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -72,9 +72,8 @@ public class ChromeBrowserTest extends ViewOrUITest {
     }
 
     private WebDriver createHeadlessChromeDriver() {
-        ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless", "--disable-gpu");
-        return TestBench.createDriver(new ChromeDriver(options));
+        return TestBench
+            .createDriver(new ChromeDriver(createHeadlessChromeOptions()));
     }
 
     @Override
@@ -85,5 +84,28 @@ public class ChromeBrowserTest extends ViewOrUITest {
         }
 
         return getBrowserCapabilities(Browser.CHROME);
+    }
+
+    @Override
+    protected List<DesiredCapabilities> getBrowserCapabilities(
+        Browser... browsers) {
+        return customizeCapabilities(super.getBrowserCapabilities(browsers));
+    }
+
+    protected List<DesiredCapabilities> customizeCapabilities(
+        List<DesiredCapabilities> capabilities) {
+
+        capabilities.stream()
+            .filter(cap -> "chrome".equalsIgnoreCase(cap.getBrowserName()))
+            .forEach(cap -> cap.setCapability(ChromeOptions.CAPABILITY,
+                createHeadlessChromeOptions()));
+
+        return capabilities;
+    }
+
+    protected ChromeOptions createHeadlessChromeOptions() {
+        final ChromeOptions options = new ChromeOptions();
+        options.addArguments("--headless", "--disable-gpu");
+        return options;
     }
 }

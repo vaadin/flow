@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -47,7 +47,6 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
-
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 
 /**
@@ -74,6 +73,8 @@ public class TaskUpdateImports extends NodeUpdater {
     private final ClassFinder finder;
     private final File tokenFile;
     private final JsonObject tokenFileData;
+
+    private final boolean disablePnpm;
 
     private class UpdateMainImportsFile extends AbstractUpdateImports {
 
@@ -193,6 +194,11 @@ public class TaskUpdateImports extends NodeUpdater {
         protected Logger getLogger() {
             return log();
         }
+
+        @Override
+        protected String getImportsNotFoundMessage() {
+            return getAbsentPackagesMessage();
+        }
     }
 
     private class UpdateFallBackImportsFile extends AbstractUpdateImports {
@@ -274,6 +280,11 @@ public class TaskUpdateImports extends NodeUpdater {
             return log();
         }
 
+        @Override
+        protected String getImportsNotFoundMessage() {
+            return getAbsentPackagesMessage();
+        }
+
         File getGeneratedFallbackFile() {
             return generatedFallBack;
         }
@@ -296,14 +307,17 @@ public class TaskUpdateImports extends NodeUpdater {
      *            a directory with project's frontend files
      * @param tokenFile
      *            the token (flow-build-info.json) path, may be {@code null}
+     * @param disablePnpm
+     *            if {@code true} then npm is used instead of pnpm, otherwise
+     *            pnpm is used
      */
     TaskUpdateImports(ClassFinder finder,
             FrontendDependenciesScanner frontendDepScanner,
             SerializableFunction<ClassFinder, FrontendDependenciesScanner> fallBackScannerProvider,
             File npmFolder, File generatedPath, File frontendDirectory,
-            File tokenFile) {
+            File tokenFile, boolean disablePnpm) {
         this(finder, frontendDepScanner, fallBackScannerProvider, npmFolder,
-                generatedPath, frontendDirectory, tokenFile, null);
+                generatedPath, frontendDirectory, tokenFile, null, disablePnpm);
     }
 
     /**
@@ -325,18 +339,22 @@ public class TaskUpdateImports extends NodeUpdater {
      *            the token (flow-build-info.json) path, may be {@code null}
      * @param tokenFileData
      *            object to fill with token file data, may be {@code null}
+     * @param disablePnpm
+     *            if {@code true} then npm is used instead of pnpm, otherwise
+     *            pnpm is used
      */
     TaskUpdateImports(ClassFinder finder,
             FrontendDependenciesScanner frontendDepScanner,
             SerializableFunction<ClassFinder, FrontendDependenciesScanner> fallBackScannerProvider,
             File npmFolder, File generatedPath, File frontendDirectory,
-            File tokenFile, JsonObject tokenFileData) {
+            File tokenFile, JsonObject tokenFileData, boolean disablePnpm) {
         super(finder, frontendDepScanner, npmFolder, generatedPath);
         this.frontendDirectory = frontendDirectory;
         fallbackScanner = fallBackScannerProvider.apply(finder);
         this.finder = finder;
         this.tokenFile = tokenFile;
         this.tokenFileData = tokenFileData;
+        this.disablePnpm = disablePnpm;
     }
 
     @Override
@@ -464,6 +482,21 @@ public class TaskUpdateImports extends NodeUpdater {
             object.put("value", data.getValue());
         }
         return object;
+    }
+
+    private String getAbsentPackagesMessage() {
+        String lockFile = disablePnpm ? "package-lock.json" : "pnpm-lock.yaml";
+        String command = disablePnpm ? "npm" : "pnpm";
+        String note = "";
+        if (!disablePnpm) {
+            note = "\nMake sure first that `pnpm` command is installed, otherwise you should install it using npm: `npm add -g pnpm@"
+                    + FrontendUtils.DEFAULT_PNPM_VERSION + "`";
+        }
+        return String.format(
+                "If the build fails, check that npm packages are installed.\n\n"
+                        + "  To fix the build remove `%s` and `node_modules` directory to reset modules.\n"
+                        + "  In addition you may run `%s install` to fix `node_modules` tree structure.%s",
+                lockFile, command, note);
     }
 
 }

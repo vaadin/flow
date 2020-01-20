@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,26 +15,32 @@
  */
 package com.vaadin.flow.server.webcomponent;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.WebComponentExporter;
-import com.vaadin.flow.component.page.Push;
-import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
-import com.vaadin.flow.internal.AnnotationReader;
-import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.osgi.OSGiAccess;
-import com.vaadin.flow.theme.Theme;
-
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
+
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.page.Push;
+import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.ElementData;
+import com.vaadin.flow.internal.nodefeature.TextNodeMap;
+import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.osgi.OSGiAccess;
+import com.vaadin.flow.theme.Theme;
 
 /**
  * Registry for storing available web component configuration implementations.
@@ -57,6 +63,7 @@ public class WebComponentConfigurationRegistry implements Serializable {
             new HashMap<>();
 
     private HashMap<Class<? extends Annotation>, Annotation> embeddedAppAnnotations;
+    private ArrayList<Element> bootstrapElements;
 
     /**
      * Protected constructor for internal OSGi extensions.
@@ -216,6 +223,43 @@ public class WebComponentConfigurationRegistry implements Serializable {
     }
 
     /**
+     * Set the elements that should be added to each shadow dom hosting an
+     * embedded web component.
+     * 
+     * @param elements
+     *            list of shadow dom elements
+     */
+    public void setShadowDomElements(List<Element> elements) {
+        lock();
+        try {
+            this.bootstrapElements = new ArrayList<>(elements);
+        } finally {
+            unlock();
+        }
+    }
+
+    /**
+     * Get a copy of the elements that should be added to the shadow dom hosting
+     * the embedded web component.
+     * 
+     * @return copy of shadow dom elements
+     */
+    public List<Element> getShadowDomElements() {
+        lock();
+        try {
+            if (bootstrapElements != null) {
+                return Collections.unmodifiableList(bootstrapElements.stream()
+                        .map(WebComponentConfigurationRegistry::copyElementTree)
+                        .collect(Collectors.toList()));
+            } else {
+                return Collections.emptyList();
+            }
+        } finally {
+            unlock();
+        }
+    }
+
+    /**
      * Get WebComponentRegistry instance for given servlet context.
      *
      * @param context
@@ -300,5 +344,55 @@ public class WebComponentConfigurationRegistry implements Serializable {
 
     private void assertLockHeld() {
         assert configurationLock.isHeldByCurrentThread();
+    }
+
+    /**
+     * Creates a partial copy of the element sub-tree, with the given
+     * {@code rootElement} as the root element of the created tree. The copy
+     * cares only about the HTML structure of the element and by-passes state
+     * information where possible. The copying is done on element-level:
+     * tags, attributes, and contents.
+     * <p>
+     * This is used create copies from elements
+     * which should be moved from document head to each embedded web component
+     * on the page.
+     * <p>
+     * Copies the following
+     * {@link com.vaadin.flow.internal.nodefeature.NodeFeature}:
+     * <ul>
+     * <li>{@link com.vaadin.flow.internal.nodefeature.ElementData}</li>
+     * </ul>
+     * 
+     * @param rootElement
+     *            element to copy and make the root node of the new element tree
+     * @return copy of the given {@code rootElement} with copied child hierarchy
+     * @see com.vaadin.flow.dom.ElementUtil#fromJsoup(org.jsoup.nodes.Node) for
+     *      the source of the elements being copied
+     */
+    private static Element copyElementTree(Element rootElement) {
+        // exception case for text node
+        if (rootElement.getNode().hasFeature(TextNodeMap.class)) {
+            return Element.createText(rootElement.getText());
+        }
+
+        StateNode copyNode = new StateNode(rootElement.getNode());
+        // copy ElementData
+        ElementData originalData =
+                rootElement.getNode().getFeature(ElementData.class);
+        ElementData copyData = copyNode.getFeature(ElementData.class);
+        copyData.setTag(originalData.getTag());
+        copyData.setPayload(originalData.getPayload());
+        copyData.setVisible(originalData.isVisible());
+
+        Element copyElement = Element.get(copyNode);
+
+        // copy relevant attributes
+        rootElement.getAttributeNames().forEach(name -> copyElement
+                .setAttribute(name, rootElement.getAttribute(name)));
+        rootElement.getChildren().forEach(
+                child -> copyElement.appendChild(copyElementTree(child)));
+
+        // Element created from the copied StateNode
+        return copyElement;
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.demo;
 
+import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.dom.Element;
@@ -27,6 +28,7 @@ import com.vaadin.flow.dom.Element;
  * @since 1.0
  */
 @StyleSheet("src/css/sources.css")
+@JavaScript("src/script/prism.js")
 public class SourceContent extends Div {
 
     /**
@@ -85,5 +87,6 @@ public class SourceContent extends Div {
         code.getClassList().add(className);
         code.setText(text);
         getElement().appendChild(pre);
+        code.executeJs("Prism.highlightElement(this);");
     }
 }

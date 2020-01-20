@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2019 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -53,7 +53,6 @@ import com.vaadin.flow.plugin.TestUtils;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
-
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
@@ -81,8 +80,7 @@ public class BuildFrontendMojoTest {
     private File nodeModulesPath;
     private File flowPackagPath;
     private File projectFrontendResourcesDirectory;
-    private String mainPackage;
-    private String appPackage;
+    private String packageJson;
     private String webpackConfig;
 
     private File tokenFile;
@@ -105,8 +103,7 @@ public class BuildFrontendMojoTest {
         flowPackagPath = new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME);
         File frontendDirectory = new File(npmFolder, DEFAULT_FRONTEND_DIR);
 
-        mainPackage = new File(npmFolder, PACKAGE_JSON).getAbsolutePath();
-        appPackage = new File(generatedFolder, PACKAGE_JSON).getAbsolutePath();
+        packageJson = new File(npmFolder, PACKAGE_JSON).getAbsolutePath();
         webpackConfig = new File(npmFolder, WEBPACK_CONFIG).getAbsolutePath();
 
         projectFrontendResourcesDirectory = new File(npmFolder,
@@ -134,8 +131,7 @@ public class BuildFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "runNpmInstall", false);
         ReflectionUtils.setVariableValueInObject(mojo, "compatibilityMode",
                 "false");
-        ReflectionUtils.setVariableValueInObject(mojo, "optimizeBundle",
-                true);
+        ReflectionUtils.setVariableValueInObject(mojo, "optimizeBundle", true);
 
         flowPackagPath.mkdirs();
         generatedFolder.mkdirs();
@@ -145,17 +141,14 @@ public class BuildFrontendMojoTest {
         // Install all imports used in the tests on node_modules so as we don't
         // need to run `npm install`
         createExpectedImports(frontendDirectory, nodeModulesPath);
-        FileUtils.fileWrite(mainPackage, "UTF-8", "{}");
-        FileUtils.fileWrite(appPackage, "UTF-8", "{}");
+        FileUtils.fileWrite(packageJson, "UTF-8",
+                TestUtils.getInitalPackageJson().toJson());
     }
 
     @After
     public void teardown() throws IOException {
-        if (FileUtils.fileExists(mainPackage)) {
-            FileUtils.fileDelete(mainPackage);
-        }
-        if (FileUtils.fileExists(appPackage)) {
-            FileUtils.fileDelete(appPackage);
+        if (FileUtils.fileExists(packageJson)) {
+            FileUtils.fileDelete(packageJson);
         }
         if (FileUtils.fileExists(webpackConfig)) {
             FileUtils.fileDelete(webpackConfig);
@@ -294,17 +287,27 @@ public class BuildFrontendMojoTest {
     }
 
     @Test
-    public void mavenGoal_when_packageJsonExists() throws Exception {
-        FileUtils.fileWrite(appPackage, "{\"dependencies\":{\"foo\":\"bar\"}}");
+    public void mavenGoalWhenPackageJsonContainsDependencies_onlyFrameworkHandledDependencyIsTouched()
+            throws Exception {
+        JsonObject json = TestUtils.getInitalPackageJson();
+        JsonObject dependencies = Json.createObject();
+        // Add dependencies foo-bar and bar-foo
+        dependencies.put("foo", "bar");
+        dependencies.put("bar", "foo");
+        // Make foo framework handled
+        json.getObject("vaadin").getObject("dependencies").put("foo", "bar");
+        json.put("dependencies", dependencies);
+        FileUtils.fileWrite(packageJson, "UTF-8", json.toJson());
 
         mojo.execute();
-        JsonObject packageJsonObject = getPackageJson(appPackage);
-        JsonObject dependencies = packageJsonObject.getObject("dependencies");
+        JsonObject packageJsonObject = getPackageJson(packageJson);
+        dependencies = packageJsonObject.getObject("dependencies");
 
         assertContainsPackage(dependencies, "@vaadin/vaadin-button",
                 "@vaadin/vaadin-element-mixin");
 
-        Assert.assertFalse("Has foo", dependencies.hasKey("foo"));
+        Assert.assertFalse("Foo should have been removed", dependencies.hasKey("foo"));
+        Assert.assertTrue("Bar should remain", dependencies.hasKey("bar"));
     }
 
     @Test

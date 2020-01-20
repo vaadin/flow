@@ -13,33 +13,38 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package com.vaadin.flow.webcomponent;
+
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
-public class InterfaceBasedIT extends ChromeBrowserTest {
+public class NpmOnlyIndexIT extends ChromeBrowserTest {
 
     @Override
     protected String getTestPath() {
-        return Constants.PAGE_CONTEXT + "/interfaceBased.html";
+        return Constants.PAGE_CONTEXT + "/index.html";
     }
 
+    // test for #7005
     @Test
-    public void webComponentExportedByExportsWebComponentInterfaceShouldBeDisplayedAndUpgraded() {
+    public void globalStylesAreUnderTheWebComponent() {
         open();
 
-        waitForElementVisible(By.id("interface"));
-        WebElement webComponent = findElement(By.id("interface"));
-        WebElement paragraph = webComponent.findElement(By.id("paragraph"));
+        waitForElementVisible(By.tagName("themed-web-component"));
 
-        Assert.assertNotNull("Correct tag should have been found",
-                webComponent);
-        Assert.assertNotNull("Web component exported by interface based "
-                + "exporter should have been upgraded", paragraph);
+        TestBenchElement webComponent = $("themed-web-component").first();
+
+        List<TestBenchElement> styles = webComponent.$("style").all();
+        System.out.println(styles.size());
+
+        // getAttribute wouldn't work, so we are counting the elements
+        Assert.assertEquals(2, styles.size());
     }
 }

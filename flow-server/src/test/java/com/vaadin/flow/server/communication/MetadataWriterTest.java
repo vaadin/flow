@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,9 +15,6 @@
  */
 package com.vaadin.flow.server.communication;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import java.io.IOException;
 
 import org.junit.Assert;
@@ -28,10 +25,13 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.SystemMessages;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.VaadinSessionState;
 import com.vaadin.flow.server.WrappedSession;
-import com.vaadin.flow.server.communication.MetadataWriter;
 
 import elemental.json.JsonObject;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class MetadataWriterTest {
 
@@ -55,33 +55,25 @@ public class MetadataWriterTest {
 
     @Test
     public void writeAsyncTag() throws Exception {
-        JsonObject meta = new MetadataWriter().createMetadata(ui, false, true,
-                messages);
-        Assert.assertEquals("{\"async\":true}", meta.toJson());
+        assertMetadataOutput(false, true, "{\"async\":true}");
     }
 
     @Test
     public void writeRepaintTag() throws Exception {
-        JsonObject meta = new MetadataWriter().createMetadata(ui, true, false,
-                messages);
-        Assert.assertEquals("{\"repaintAll\":true}", meta.toJson());
+        assertMetadataOutput(true, false, "{\"repaintAll\":true}");
     }
 
     @Test
     public void writeRepaintAndAsyncTag() throws Exception {
-        JsonObject meta = new MetadataWriter().createMetadata(ui, true, true,
-                messages);
-        Assert.assertEquals("{\"repaintAll\":true,\"async\":true}",
-                meta.toJson());
+        assertMetadataOutput(true, true,
+                "{\"repaintAll\":true,\"async\":true}");
     }
 
     @Test
     public void writeRedirectWithExpiredSession() throws Exception {
         disableSessionExpirationMessages(messages);
 
-        JsonObject meta = new MetadataWriter().createMetadata(ui, false, false,
-                messages);
-        Assert.assertEquals("{}", meta.toJson());
+        assertMetadataOutput(false, false, "{}");
     }
 
     @Test
@@ -91,11 +83,8 @@ public class MetadataWriterTest {
 
         disableSessionExpirationMessages(messages);
 
-        JsonObject meta = new MetadataWriter().createMetadata(ui, false, false,
-                messages);
-        Assert.assertEquals(
-                "{\"timedRedirect\":{\"interval\":15,\"url\":\"\"}}",
-                meta.toJson());
+        assertMetadataOutput(false, false,
+                "{\"timedRedirect\":{\"interval\":15,\"url\":\"\"}}");
     }
 
     @Test
@@ -105,10 +94,36 @@ public class MetadataWriterTest {
 
         disableSessionExpirationMessages(messages);
 
-        JsonObject meta = new MetadataWriter().createMetadata(ui, false, true,
-                messages);
-        Assert.assertEquals(
-                "{\"async\":true,\"timedRedirect\":{\"interval\":15,\"url\":\"\"}}",
-                meta.toJson());
+        assertMetadataOutput(false, true,
+                "{\"async\":true,\"timedRedirect\":{\"interval\":15,\"url\":\"\"}}");
     }
+
+    @Test
+    public void writeSessionExpiredTag_sessionIsOpen() throws Exception {
+        Mockito.when(session.getState()).thenReturn(VaadinSessionState.OPEN);
+        assertMetadataOutput(false, false, "{}");
+    }
+
+    @Test
+    public void writeSessionExpiredTag_sessionIsClosing() throws Exception {
+        Mockito.when(session.getState()).thenReturn(VaadinSessionState.CLOSING);
+        assertMetadataOutput(false, false, "{\"sessionExpired\":true}");
+
+        Mockito.when(session.getState()).thenReturn(VaadinSessionState.CLOSED);
+        assertMetadataOutput(false, false, "{\"sessionExpired\":true}");
+    }
+
+    @Test
+    public void writeSessionExpiredTag_sessionIsClosed() throws Exception {
+        Mockito.when(session.getState()).thenReturn(VaadinSessionState.CLOSED);
+        assertMetadataOutput(false, false, "{\"sessionExpired\":true}");
+    }
+
+    private void assertMetadataOutput(boolean repaintAll, boolean async,
+            String expectedOutput) {
+        JsonObject meta = new MetadataWriter().createMetadata(ui, repaintAll,
+                async, messages);
+        Assert.assertEquals(expectedOutput, meta.toJson());
+    }
+
 }

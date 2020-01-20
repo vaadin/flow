@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2019 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,14 +17,17 @@
 package com.vaadin.flow.component.dnd;
 
 import java.util.Collection;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.dnd.internal.DnDUtilHelper;
 import com.vaadin.flow.component.internal.DependencyList;
+import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.WebBrowser;
@@ -52,9 +55,14 @@ public abstract class AbstractDnDUnitTest {
         WebBrowser browser = Mockito.mock(WebBrowser.class);
         Mockito.when(browser.isIOS()).then(invocation -> iOS);
 
+        VaadinService service = Mockito.mock(VaadinService.class);
+        Mockito.when(service.resolveResource(Mockito.anyString(),
+                Mockito.any(WebBrowser.class))).thenReturn("");
+
         VaadinSession session = Mockito.mock(VaadinSession.class);
         Mockito.when(session.getConfiguration()).thenReturn(configuration);
         Mockito.when(session.getBrowser()).thenReturn(browser);
+        Mockito.when(session.getService()).thenReturn(service);
 
         ui = new MockUI(session);
     }
@@ -106,31 +114,26 @@ public abstract class AbstractDnDUnitTest {
     }
 
     @Test
-    public void testExtension_iOS_mobileDnDpolyfillLoaded() {
+    public void testExtension_iOS_mobileDnDpolyfillScriptInjected() {
         iOS = true;
-        ui.getInternals().getDependencyList().clearPendingSendToClient();
+        ui.getInternals().dumpPendingJavaScriptInvocations();
 
         RouterLink component = new RouterLink();
         ui.add(component);
         runStaticCreateMethodForExtension(component);
 
-        DependencyList dependencyList = ui.getInternals().getDependencyList();
-        Collection<Dependency> pendingSendToClient = dependencyList
-                .getPendingSendToClient();
+        List<PendingJavaScriptInvocation> pendingJavaScriptInvocations = ui
+                .getInternals().dumpPendingJavaScriptInvocations();
 
-        Assert.assertEquals("No dependency added", 2,
-                pendingSendToClient.size());
+        Assert.assertEquals(1, pendingJavaScriptInvocations.size());
 
-        Iterator<Dependency> iterator = pendingSendToClient.iterator();
-        Dependency dependency = iterator.next();
-        Assert.assertEquals("Wrong dependency loaded",
-                "context://webjars/mobile-drag-drop/2.3.0-rc.1/index.min.js",
-                dependency.getUrl());
-        dependency = iterator.next();
-        Assert.assertEquals("Wrong dependency loaded",
-                "context://webjars/vaadin__vaadin-mobile-drag-drop/1.0.0/index.min.js",
-                dependency.getUrl());
-
+        PendingJavaScriptInvocation pendingJavaScriptInvocation = pendingJavaScriptInvocations
+                .get(0);
+        // the urls are switched to "" by the mocked service method
+        String fake = String.format(DnDUtilHelper.MOBILE_DND_INJECT_SCRIPT, "",
+                "");
+        Assert.assertEquals(fake,
+                pendingJavaScriptInvocation.getInvocation().getExpression());
     }
 
     protected abstract void runStaticCreateMethodForExtension(

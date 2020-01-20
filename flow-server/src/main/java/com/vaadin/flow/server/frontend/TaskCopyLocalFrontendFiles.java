@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,8 +23,6 @@ import java.util.Objects;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.vaadin.flow.server.FallibleCommand;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
@@ -85,8 +83,9 @@ public class TaskCopyLocalFrontendFiles implements FallibleCommand {
         try {
             FileUtils.forceMkdir(Objects.requireNonNull(target));
         } catch (IOException e) {
-            throw new UncheckedIOException(String.format(
-                    "Failed to create directory '%s'", target), e);
+            throw new UncheckedIOException(
+                    String.format("Failed to create directory '%s'", target),
+                    e);
         }
     }
 

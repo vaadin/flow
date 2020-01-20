@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2019 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -31,11 +31,12 @@ public class StartupPerformanceIT {
     public void devModeInitializerToWebpackUpIsBelow5500ms() {
         int startupTime = measureLogEntryTimeDistance(
                 "com.vaadin.flow.server.startup.DevModeInitializer - Starting dev-mode updaters in",
-                "dev-webpack.*Time: [0-9]+ms", true);
+                "dev-webpack.*Webpack startup and compilation completed in [0-9]+ms",
+                true);
 
         int npmInstallTime = measureLogEntryTimeDistance(
-                "dev-updater - Running `npm install`",
-                "dev-updater - package.json updated and npm dependencies installed",
+                "dev-updater - Running `pnpm install`",
+                "dev-updater - Frontend dependencies resolved successfully",
                 false);
 
         int startupTimeWithoutNpmInstallTime = startupTime - npmInstallTime;

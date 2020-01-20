@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,6 +24,7 @@ import com.google.gwt.xhr.client.XMLHttpRequest;
 
 import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
+import com.vaadin.client.UILifecycle;
 import com.vaadin.client.UILifecycle.UIState;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.communication.AtmospherePushConnection.AtmosphereResponse;
@@ -297,7 +298,10 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
      */
     protected final void giveUp() {
         reconnectionCause = null;
-        endRequest();
+
+        if (registry.getRequestResponseTracker().hasActiveRequest()) {
+            endRequest();
+        }
 
         stopDialogTimer();
         if (!isDialogVisible()) {
@@ -468,7 +472,12 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     private void stopApplication() {
         // Consider application not running any more and prevent all
         // future requests
-        registry.getUILifecycle().setState(UIState.TERMINATED);
+
+        UILifecycle uiLifecycle = registry.getUILifecycle();
+
+        if (uiLifecycle.getState() != UIState.TERMINATED) {
+            uiLifecycle.setState(UIState.TERMINATED);
+        }
     }
 
     private void handleUnrecoverableCommunicationError(String details,

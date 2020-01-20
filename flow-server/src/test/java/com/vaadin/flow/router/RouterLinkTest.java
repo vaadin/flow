@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -110,6 +110,30 @@ public class RouterLinkTest extends HasCurrentService {
         Assert.assertTrue(link.getElement().hasAttribute("href"));
 
         Assert.assertEquals("bar/foo", link.getElement().getAttribute("href"));
+    }
+
+    @Test
+    public void setRoute_withoutRouter() {
+        RouterLink link = new RouterLink();
+
+        ui.add(link);
+        link.setRoute(FooNavigationTarget.class);
+
+        Assert.assertTrue(link.getElement().hasAttribute("href"));
+
+        Assert.assertEquals("foo", link.getElement().getAttribute("href"));
+    }
+
+    @Test
+    public void setRoute_withoutRouterWithParameter() {
+        RouterLink link = new RouterLink();
+
+        ui.add(link);
+        link.setRoute(GreetingNavigationTarget.class, "foo");
+
+        Assert.assertTrue(link.getElement().hasAttribute("href"));
+
+        Assert.assertEquals("greeting/foo", link.getElement().getAttribute("href"));
     }
 
     @Test

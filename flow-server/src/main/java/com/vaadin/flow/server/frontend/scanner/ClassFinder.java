@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,6 +23,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import com.googlecode.gentyref.GenericTypeReflector;
 
 /**
  * Interface for annotated and subclass class searches.
@@ -96,7 +98,8 @@ public interface ClassFinder extends Serializable {
         @SuppressWarnings("unchecked")
         public <T> Set<Class<? extends T>> getSubTypesOf(Class<T> type) {
             return this.classes.stream()
-                    .filter(cl -> type.isAssignableFrom(cl) && !type.equals(cl))
+                    .filter(cl -> GenericTypeReflector.isSuperType(type, cl)
+                            && !type.equals(cl))
                     .map(cl -> (Class<T>) cl).collect(Collectors.toSet());
         }
     }
@@ -200,7 +203,7 @@ public interface ClassFinder extends Serializable {
 
     /**
      * Gets all subtypes in hierarchy of a given type, using FQN string.
-     * 
+     *
      * @param name
      *            Fully qualified name of the type to search subtypes of
      * @param <T>

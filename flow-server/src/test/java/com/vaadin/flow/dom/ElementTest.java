@@ -19,11 +19,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-import org.easymock.EasyMock;
-import org.junit.Assert;
-import org.junit.Test;
-import org.mockito.Mockito;
-
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
@@ -39,8 +34,10 @@ import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.internal.nodefeature.ElementListenersTest;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.ElementStylePropertyMap;
+import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.internal.nodefeature.SynchronizedPropertiesList;
 import com.vaadin.flow.internal.nodefeature.SynchronizedPropertyEventsList;
+import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinSession;
@@ -49,11 +46,15 @@ import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
 import com.vaadin.tests.util.TestUtil;
+import net.jcip.annotations.NotThreadSafe;
+import org.easymock.EasyMock;
+import org.junit.Assert;
+import org.junit.Test;
+import org.mockito.Mockito;
 
 import elemental.json.Json;
 import elemental.json.JsonValue;
 import elemental.json.impl.JreJsonObject;
-import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class ElementTest extends AbstractNodeTest {
@@ -2068,6 +2069,23 @@ public class ElementTest extends AbstractNodeTest {
         Assert.assertEquals(null, child.getParent());
     }
 
+    @Test
+    public void testRemoveFromTree_isVirtualChild_removedFromParent() {
+        Element body = new UI().getElement();
+        Element child = ElementFactory.createDiv();
+
+        body.getNode().getFeature(VirtualChildrenList.class)
+                .append(child.getNode(), "");
+
+        Assert.assertTrue(child.isVirtualChild());
+
+        child.removeFromTree();
+
+        Assert.assertFalse(child.isVirtualChild());
+        Assert.assertEquals(0,
+                body.getNode().getFeature(VirtualChildrenList.class).size());
+    }
+
     private StreamResource createEmptyResource(String resName) {
         return new StreamResource(resName,
                 () -> new ByteArrayInputStream(new byte[0]));
@@ -2480,6 +2498,43 @@ public class ElementTest extends AbstractNodeTest {
 
         // Should not trigger assert in the listener
         element.setProperty("property", "value");
+    }
+
+    @Test
+    public void removingVirtualChildrenIsPossible() {
+        Element parent = new Element("root");
+        Element child1 = new Element("main");
+        Element child2 = new Element("menu");
+
+        parent.appendVirtualChild(child1, child2);
+
+        parent.removeVirtualChild(child2, child1);
+
+        Assert.assertNull(child1.getParent());
+        Assert.assertFalse(child1.isVirtualChild());
+
+        Assert.assertNull(child2.getParent());
+        Assert.assertFalse(child2.isVirtualChild());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void removeVirtualChildren_notVirtualChild_fails() {
+        Element parent = new Element("root");
+        Element child1 = new Element("main");
+
+        parent.appendChild(child1);
+
+        parent.removeVirtualChild(child1);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void removeFromParent_virtualChild_fails() {
+        Element parent = new Element("root");
+        Element child1 = new Element("main");
+
+        parent.appendVirtualChild(child1);
+
+        child1.removeFromParent();
     }
 
     @Override

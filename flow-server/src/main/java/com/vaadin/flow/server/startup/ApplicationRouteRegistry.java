@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,6 +17,7 @@ package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletContext;
 import java.io.Serializable;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -302,6 +303,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
         errorNavigationTargets.stream()
                 .filter(target -> !defaultErrorHandlers.contains(target))
                 .filter(this::allErrorFiltersMatch)
+                .filter(handler -> !Modifier.isAbstract(handler.getModifiers()))
                 .forEach(target -> addErrorTarget(target, exceptionTargetsMap));
 
         initErrorTargets(exceptionTargetsMap);

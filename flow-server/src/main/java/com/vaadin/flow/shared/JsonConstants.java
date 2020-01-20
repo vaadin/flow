@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -278,6 +278,11 @@ public class JsonConstants implements Serializable {
      * Key used when informing the client side that the session has expired.
      */
     public static final String META_SESSION_EXPIRED = "sessionExpired";
+
+    /**
+     * Key used when the message is sent asynchronously via push channel.
+     */
+    public static final String META_ASYNC = "async";
 
     /**
      * Key holding the debounce phase for an event data map from the client.

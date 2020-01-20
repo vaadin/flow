@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,9 +19,9 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -220,7 +220,7 @@ public class Element extends Node<Element> {
      * Creates a text node with the given text.
      *
      * @param text
-     *            the text in the node
+     *            the text in the node, not <code>null</code>
      * @return an element representing the text node
      */
     public static Element createText(String text) {
@@ -585,10 +585,15 @@ public class Element extends Node<Element> {
      * @return this element
      */
     public Element removeFromTree() {
+
         Node<?> parent = getParentNode();
-        if (parent != null
-                && parent.getChildren().anyMatch(Predicate.isEqual(this))) {
-            parent.removeChild(this);
+        if (parent != null) {
+            if (parent.getChildren().anyMatch(Predicate.isEqual(this))) {
+                parent.removeChild(this);
+            }
+            if (isVirtualChild()) {
+                parent.removeVirtualChild(this);
+            }
         }
         getNode().removeFromTree();
         return this;
@@ -779,7 +784,12 @@ public class Element extends Node<Element> {
         verifySetPropertyName(name);
 
         if ("innerHTML".equals(name)) {
-            removeAllChildren();
+            Serializable oldValue = getStateProvider()
+                    .getProperty(getNode(), name);
+            if(!Objects.equals(value, oldValue)) {
+                // Only remove all children for value change
+                removeAllChildren();
+            }
         }
         getStateProvider().setProperty(getNode(), name, value, true);
 
@@ -1669,9 +1679,10 @@ public class Element extends Node<Element> {
     // When updating JavaDocs here, keep in sync with Page.executeJavaScript
     /**
      * Asynchronously runs the given JavaScript expression in the browser in the
-     * context of this element. It is possible to get access to the return value
-     * of the execution by registering a handler with the returned pending
-     * result. If no handler is registered, the return value will be ignored.
+     * context of this element. The returned
+     * <code>PendingJavaScriptResult</code> can be used to retrieve any
+     * <code>return</code> value from the JavaScript expression. If no return
+     * value handler is registered, the return value will be ignored.
      * <p>
      * This element will be available to the expression as <code>this</code>.
      * The given parameters will be available as variables named
@@ -1794,41 +1805,8 @@ public class Element extends Node<Element> {
     public Element setEnabled(final boolean enabled) {
         getNode().setEnabled(enabled);
 
-        Optional<Component> componentOptional = getComponent();
-        if (componentOptional.isPresent()) {
-            Component component = componentOptional.get();
-            component.onEnabledStateChanged(enabled);
-            informChildrenOfStateChange(enabled, component);
-        }
+        informEnabledStateChange(enabled, this);
         return getSelf();
-    }
-
-    private void informChildrenOfStateChange(boolean enabled,
-            Component component) {
-        component.getChildren().forEach(child -> {
-            child.onEnabledStateChanged(
-                    enabled ? child.getElement().isEnabled() : false);
-            informChildrenOfStateChange(enabled, child);
-        });
-        if (component.getElement().getNode()
-                .hasFeature(VirtualChildrenList.class)) {
-            component.getElement().getNode()
-                    .getFeatureIfInitialized(VirtualChildrenList.class)
-                    .ifPresent(list -> {
-                        final Consumer<Component> stateChangeInformer = virtual -> {
-                            virtual.onEnabledStateChanged(
-                                    enabled ? virtual.getElement().isEnabled()
-                                            : false);
-
-                            informChildrenOfStateChange(enabled, virtual);
-                        };
-                        final Consumer<StateNode> childNodeConsumer = childNode -> Element
-                                .get(childNode).getComponent()
-                                .ifPresent(stateChangeInformer);
-
-                        list.forEachChild(childNodeConsumer);
-                    });
-        }
     }
 
     /**
@@ -1847,6 +1825,28 @@ public class Element extends Node<Element> {
     @Override
     protected Element getSelf() {
         return this;
+    }
+
+    private void informEnabledStateChange(boolean enabled, Element element) {
+        Optional<Component> componentOptional = element.getComponent();
+        if (componentOptional.isPresent()) {
+            Component component = componentOptional.get();
+            component.onEnabledStateChanged(
+                    enabled ? element.isEnabled() : false);
+        }
+        informChildrenOfStateChange(enabled, element);
+    }
+
+    private void informChildrenOfStateChange(boolean enabled, Element element) {
+        element.getChildren().forEach(child -> {
+            informEnabledStateChange(enabled, child);
+        });
+        if (element.getNode().hasFeature(VirtualChildrenList.class)) {
+            element.getNode().getFeatureIfInitialized(VirtualChildrenList.class)
+                    .ifPresent(list -> list.forEachChild(
+                            node -> informEnabledStateChange(enabled,
+                                    Element.get(node))));
+        }
     }
 
 }

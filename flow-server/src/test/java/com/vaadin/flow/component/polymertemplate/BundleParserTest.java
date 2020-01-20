@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
+import org.jsoup.nodes.Element;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -60,5 +61,21 @@ public class BundleParserTest {
         final String source = BundleParser.getSourceFromStatistics(
                 "a/frontend/src/hello-world.js", module);
         Assert.assertNull("Source not expected in module", source);
+    }
+
+    @Test
+    public void parseTemplateElement_stringContentNotSeenAsComment() {
+        String source = "static get template() { return html`<vaadin-text-field label=\"Nats Url(s)\" placeholder=\"nats://server:port\" id=\"natsUrlTxt\" style=\"width:100%\"></vaadin-text-field>`;}";
+        Element element = BundleParser.parseTemplateElement("nats.js", source);
+
+        Element natsElement = element.getElementById("natsUrlTxt");
+        Assert.assertNotNull("Found element by Id", natsElement);
+        Assert.assertEquals("Invalid tag for element", "vaadin-text-field",
+                natsElement.tagName());
+
+        Assert.assertEquals(
+                "Parsed value for attribute 'placeholder' was wrong.",
+                "nats://server:port", natsElement.attr("placeholder"));
+
     }
 }

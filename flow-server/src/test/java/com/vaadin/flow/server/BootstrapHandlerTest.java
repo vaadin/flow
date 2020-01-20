@@ -1,7 +1,7 @@
 package com.vaadin.flow.server;
 
 import javax.servlet.http.HttpServletRequest;
-
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -1095,17 +1095,16 @@ public class BootstrapHandlerTest {
                                 "<script type=\"text/javascript\" src=\"./"
                                         + VAADIN_MAPPING
                                         + "build/webcomponentsjs/webcomponents-loader.js\"></script>")));
-        System.out.println(allElements);
 
         Assert.assertTrue(
-                "index.js should be added to head for ES6 browsers. (deferred and type module)",
+                "index.js should be added to head for ES6 browsers. (type module with crossorigin)",
                 allElements.stream().map(Object::toString)
                         .anyMatch(element -> element
-                                .equals("<script type=\"module\" defer src=\"./"
+                                .equals("<script type=\"module\" src=\"./"
                                         + VAADIN_MAPPING
                                         + "build/index-1111.cache.js\" data-app-id=\""
                                         + testUI.getInternals().getAppId()
-                                        + "\"></script>")));
+                                        + "\" crossorigin></script>")));
 
         Assert.assertTrue(
                 "index.js should be added to head for ES5 browsers. (deferred and nomodule)",
@@ -1688,6 +1687,73 @@ public class BootstrapHandlerTest {
                 session, testUI, this::contextRootRelativePath));
     }
 
+    @Test
+    public void getBootstrapPage_jsModulesDoNotContainDeferAttribute()
+            throws ServiceException {
+        List<DependencyFilter> filters = (List<DependencyFilter>) service
+                .getDependencyFilters();
+        filters.add((list, context) -> {
+            list.clear(); // remove everything
+            return list;
+        });
+        filters.add((list, context) -> {
+            list.add(new Dependency(Dependency.Type.JS_MODULE, "//module.js",
+                    LoadMode.EAGER));
+            return list;
+        });
+
+        initUI(testUI);
+
+        BootstrapContext bootstrapContext = new BootstrapContext(request, null,
+                session, testUI, this::contextRootRelativePath);
+        Document page = pageBuilder.getBootstrapPage(bootstrapContext);
+
+        Elements scripts = page.head().getElementsByTag("script");
+        Element element = scripts.stream()
+                .filter(elem -> elem.attr("src").equals("//module.js"))
+                .findFirst().get();
+        Assert.assertFalse(element.hasAttr("defer"));
+
+        Element bundle = scripts.stream()
+                .filter(el -> el.attr("src")
+                        .equals("./VAADIN/build/index-1111.cache.js"))
+                .findFirst().get();
+        Assert.assertFalse(bundle.hasAttr("defer"));
+    }
+
+    @Test // #7158
+    public void getBootstrapPage_assetChunksIsAnARRAY_bootstrapParsesOk()
+            throws ServiceException {
+
+        initUI(testUI);
+
+        ClassLoader classLoader = Mockito.mock(ClassLoader.class);
+        service.setClassLoader(classLoader);
+
+        String statsJson = "{\n" + " \"errors\": [],\n" + " \"warnings\": [],\n"
+                + " \"assetsByChunkName\": {\n" + "  \"bundle\": [\n"
+                + "    \"build/vaadin-bundle-e77008557c8d410bf0dc.cache.js\",\n"
+                + "    \"build/vaadin-bundle-e77008557c8d410bf0dc.cache.js.map\"\n"
+                + "  ],\n" + "  \"bundle.es5\": [\n"
+                + "    \"build/vaadin-bundle.es5-e71a5a09679e828010c4.cache.js\",\n"
+                + "    \"build/vaadin-bundle.es5-e71a5a09679e828010c4.cache.js.map\"\n"
+                + "  ]" + " }" + "}";
+
+        Mockito.when(classLoader.getResourceAsStream(Mockito.anyString()))
+                .thenReturn(new ByteArrayInputStream(statsJson.getBytes()));
+
+        BootstrapContext bootstrapContext = new BootstrapContext(request, null,
+                session, testUI, this::contextRootRelativePath);
+        Document page = pageBuilder.getBootstrapPage(bootstrapContext);
+
+        Elements scripts = page.head().getElementsByTag("script");
+
+        Element bundle = scripts.stream().filter(el -> el.attr("src")
+                .equals("./VAADIN/build/vaadin-bundle-e77008557c8d410bf0dc.cache.js"))
+                .findFirst().get();
+        Assert.assertFalse(bundle.hasAttr("defer"));
+    }
+
     private void assertStringEquals(String message, String expected,
             String actual) {
         Assert.assertThat(message,
@@ -1710,8 +1776,10 @@ public class BootstrapHandlerTest {
     }
 
     private String contextRootRelativePath(VaadinRequest request) {
-        return ServletHelper.getContextRootRelativePath(
-                (VaadinServletRequest) request) + "/";
+        VaadinServletService service = Mockito.mock(VaadinServletService.class);
+        Mockito.doCallRealMethod().when(service)
+                .getContextRootRelativePath(Mockito.any());
+        return service.getContextRootRelativePath(request);
     }
 
     private VaadinServletRequest createVaadinRequest() {
@@ -1806,5 +1874,28 @@ public class BootstrapHandlerTest {
 
         Assert.assertTrue(
                 testUI.getReconnectDialogConfiguration().isDialogModal());
+    }
+
+    @Test
+    public void safari_10_1_script_nomodule_fix_index_appended_to_head_in_npm()
+            throws InvalidRouteConfigurationException {
+        WebBrowser mockedWebBrowser = Mockito.mock(WebBrowser.class);
+        Mockito.when(session.getBrowser()).thenReturn(mockedWebBrowser);
+        Mockito.when(mockedWebBrowser.isEs6Supported()).thenReturn(true);
+        Mockito.when(mockedWebBrowser.isSafari()).thenReturn(true);
+        Mockito.when(mockedWebBrowser.getBrowserMajorVersion()).thenReturn(10);
+        Mockito.when(mockedWebBrowser.getBrowserMinorVersion()).thenReturn(1);
+
+        initUI(testUI, createVaadinRequest(),
+                Collections.singleton(MyThemeTest.class));
+
+        Document page = pageBuilder.getBootstrapPage(new BootstrapContext(
+                request, null, session, testUI, this::contextRootRelativePath));
+
+        Elements allElements = page.head().getAllElements();
+        Assert.assertTrue("fix for Safari 10.1 script nomodule should be added",
+                allElements.stream().map(Object::toString)
+                        .anyMatch(element -> element.contains(
+                                BootstrapHandler.SAFARI_10_1_SCRIPT_NOMODULE_FIX)));
     }
 }

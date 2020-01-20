@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,6 +16,8 @@
 package com.vaadin.flow.shared;
 
 import java.io.Serializable;
+
+import com.vaadin.flow.component.page.ExtendedClientDetails;
 
 /**
  * Parses the user agent string from the browser and provides information about
@@ -440,9 +442,12 @@ public class BrowserDetails implements Serializable {
     /**
      * Tests if the browser is Safari or runs on IOS (covering also Chrome on
      * iOS).
-     *
+     * 
      * @return true if it is Safari or running on IOS, false otherwise
+     * @deprecated will return the wrong value for iOS 13 and later. Use
+     *             {@link ExtendedClientDetails#isIOS()} instead.
      */
+    @Deprecated
     public boolean isSafariOrIOS() {
         return isSafari() || isIOS();
     }
@@ -567,7 +572,9 @@ public class BrowserDetails implements Serializable {
      * Tests if the browser is run in iOS.
      *
      * @return true if run in iOS, false otherwise
+     * @deprecated isIOS will return the wrong value for iOS 13 and later
      */
+    @Deprecated
     public boolean isIOS() {
         return os == OperatingSystem.IOS;
     }
@@ -594,7 +601,10 @@ public class BrowserDetails implements Serializable {
      * Tests if the browser is run on iPad.
      *
      * @return true if run on iPad, false otherwise
+     *
+     * @deprecated isIPad will return the wrong value for iOS 13 and later
      */
+    @Deprecated
     public boolean isIPad() {
         return isIPad;
     }

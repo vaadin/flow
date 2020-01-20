@@ -100,7 +100,7 @@ public class DeploymentConfigurationFactoryTest {
 
         DeploymentConfiguration config = DeploymentConfigurationFactory
                 .createDeploymentConfiguration(servlet,
-                        createServletConfigMock(servletConfigParams,
+                        createVaadinConfigMock(servletConfigParams,
                                 Collections.singletonMap(PARAM_TOKEN_FILE,
                                         tokenFile.getPath())));
 
@@ -123,7 +123,7 @@ public class DeploymentConfigurationFactoryTest {
                 defaultServletParams);
 
         DeploymentConfiguration config = DeploymentConfigurationFactory
-                .createDeploymentConfiguration(servlet, createServletConfigMock(
+                .createDeploymentConfiguration(servlet, createVaadinConfigMock(
                         servletConfigParams, emptyMap()));
 
         Class<?> notUiClass = servlet.getEnclosingClass();
@@ -143,7 +143,7 @@ public class DeploymentConfigurationFactoryTest {
                 defaultServletParams);
 
         DeploymentConfiguration config = DeploymentConfigurationFactory
-                .createDeploymentConfiguration(servlet, createServletConfigMock(
+                .createDeploymentConfiguration(servlet, createVaadinConfigMock(
                         servletConfigParams, emptyMap()));
 
         assertTrue(String.format(
@@ -170,7 +170,7 @@ public class DeploymentConfigurationFactoryTest {
                 Integer.toString(overridingHeartbeatIntervalValue));
 
         DeploymentConfiguration config = DeploymentConfigurationFactory
-                .createDeploymentConfiguration(servlet, createServletConfigMock(
+                .createDeploymentConfiguration(servlet, createVaadinConfigMock(
                         servletConfigParams, emptyMap()));
 
         assertEquals(
@@ -198,7 +198,7 @@ public class DeploymentConfigurationFactoryTest {
                 Integer.toString(overridingHeartbeatIntervalValue));
 
         DeploymentConfiguration config = DeploymentConfigurationFactory
-                .createDeploymentConfiguration(servlet, createServletConfigMock(
+                .createDeploymentConfiguration(servlet, createVaadinConfigMock(
                         emptyMap(), servletContextParams));
 
         assertEquals(
@@ -235,7 +235,7 @@ public class DeploymentConfigurationFactoryTest {
                 Integer.toString(servletContextHeartbeatIntervalValue));
 
         DeploymentConfiguration config = DeploymentConfigurationFactory
-                .createDeploymentConfiguration(servlet, createServletConfigMock(
+                .createDeploymentConfiguration(servlet, createVaadinConfigMock(
                         servletConfigParams, servletContextParams));
 
         assertEquals(
@@ -266,7 +266,7 @@ public class DeploymentConfigurationFactoryTest {
 
         DeploymentConfigurationFactory.createDeploymentConfiguration(
                 VaadinServlet.class,
-                createServletConfigMock(Collections.singletonMap(
+                createVaadinConfigMock(Collections.singletonMap(
                         Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
                         Boolean.FALSE.toString()), emptyMap()));
     }
@@ -285,7 +285,7 @@ public class DeploymentConfigurationFactoryTest {
         FileUtils.writeLines(webPack, Arrays.asList("./webpack.generated.js"));
 
         DeploymentConfigurationFactory.createDeploymentConfiguration(
-                VaadinServlet.class, createServletConfigMock(map, emptyMap()));
+                VaadinServlet.class, createVaadinConfigMock(map, emptyMap()));
     }
 
     @Test
@@ -309,14 +309,16 @@ public class DeploymentConfigurationFactoryTest {
         webPack.createNewFile();
 
         DeploymentConfigurationFactory.createDeploymentConfiguration(
-                VaadinServlet.class, createServletConfigMock(map, emptyMap()));
+                VaadinServlet.class, createVaadinConfigMock(map, emptyMap()));
     }
 
     @Test
     public void should_readConfigurationFromTokenFile() throws Exception {
         FileUtils.writeLines(tokenFile,
-                Arrays.asList("{", "\"compatibilityMode\": false,",
-                        "\"productionMode\": true", "}"));
+                Arrays.asList("{",
+                        "\"compatibilityMode\": false,",
+                        "\"productionMode\": true",
+                        "}"));
 
         DeploymentConfiguration config = createConfig(Collections
                 .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
@@ -331,10 +333,13 @@ public class DeploymentConfigurationFactoryTest {
         exception.expectMessage(
                 String.format(DEV_FOLDER_MISSING_MESSAGE, "npm"));
         FileUtils.writeLines(tokenFile,
-                Arrays.asList("{", "\"compatibilityMode\": false,",
-                        "\"productionMode\": false,", "\"npmFolder\": \"npm\",",
+                Arrays.asList("{",
+                        "\"compatibilityMode\": false,",
+                        "\"productionMode\": false,",
+                        "\"npmFolder\": \"npm\",",
                         "\"generatedFolder\": \"generated\",",
-                        "\"frontendFolder\": \"frontend\"", "}"));
+                        "\"frontendFolder\": \"frontend\"",
+                        "}"));
 
         createConfig(Collections.singletonMap(PARAM_TOKEN_FILE,
                 tokenFile.getPath()));
@@ -347,9 +352,11 @@ public class DeploymentConfigurationFactoryTest {
         exception.expectMessage(
                 String.format(DEV_FOLDER_MISSING_MESSAGE, "frontend"));
         FileUtils.writeLines(tokenFile,
-                Arrays.asList("{", "\"compatibilityMode\": false,",
+                Arrays.asList("{",
+                        "\"compatibilityMode\": false,",
                         "\"productionMode\": false,",
-                        "\"frontendFolder\": \"frontend\"", "}"));
+                        "\"frontendFolder\": \"frontend\"",
+                        "}"));
 
         createConfig(Collections.singletonMap(PARAM_TOKEN_FILE,
                 tokenFile.getPath()));
@@ -365,10 +372,12 @@ public class DeploymentConfigurationFactoryTest {
         String tempFolder = temporaryFolder.getRoot().getAbsolutePath()
                 .replace("\\", "/");
         FileUtils.writeLines(tokenFile,
-                Arrays.asList("{", "\"compatibilityMode\": false,",
+                Arrays.asList("{",
+                        "\"compatibilityMode\": false,",
                         "\"productionMode\": false,",
                         "\"npmFolder\": \"" + tempFolder + "/npm\",",
-                        "\"frontendFolder\": \"frontend\"", "}"));
+                        "\"frontendFolder\": \"frontend\"",
+                        "}"));
 
         createConfig(Collections.singletonMap(PARAM_TOKEN_FILE,
                 tokenFile.getPath()));
@@ -381,7 +390,8 @@ public class DeploymentConfigurationFactoryTest {
         String tempFolder = temporaryFolder.getRoot().getAbsolutePath()
                 .replace("\\", "/");
         FileUtils.writeLines(tokenFile, Arrays.asList("{",
-                "\"compatibilityMode\": false,", "\"productionMode\": false,",
+                "\"compatibilityMode\": false,",
+                "\"productionMode\": false,",
                 "\"npmFolder\": \"" + tempFolder + "/npm\",",
                 "\"frontendFolder\": \"" + tempFolder + "/npm/frontend\"",
                 "}"));
@@ -397,17 +407,74 @@ public class DeploymentConfigurationFactoryTest {
         String tempFolder = temporaryFolder.getRoot().getAbsolutePath()
                 .replace("\\", "/");
         FileUtils.writeLines(tokenFile, Arrays.asList("{",
-                "\"compatibilityMode\": false,", "\"productionMode\": false,",
+                "\"compatibilityMode\": false,",
+                "\"productionMode\": false,",
                 "\"npmFolder\": \"" + tempFolder + "/npm\",",
-                "\"frontendFolder\": \"" + tempFolder + "/frontend\"", "}"));
+                "\"frontendFolder\": \"" + tempFolder + "/frontend\"",
+                "}"));
 
         createConfig(Collections.singletonMap(PARAM_TOKEN_FILE,
                 tokenFile.getPath()));
     }
 
     @Test
+    public void externalStatsFileTrue_predefinedContext() throws Exception {
+        FileUtils.writeLines(tokenFile, Arrays.asList("{",
+                "\"externalStatsFile\": true",
+                "}"));
+
+        DeploymentConfiguration config = createConfig(Collections
+                .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
+
+        assertEquals(false, config.isProductionMode());
+        assertEquals(false, config.isCompatibilityMode());
+        assertEquals(false, config.enableDevServer());
+        assertEquals(true, config.isStatsExternal());
+        assertEquals(Constants.DEFAULT_EXTERNAL_STATS_URL, config.getExternalStatsUrl());
+    }
+
+    @Test
+    public void externalStatsUrlGiven_predefinedContext() throws Exception {
+        FileUtils.writeLines(tokenFile, Arrays.asList("{",
+                "\"externalStatsUrl\": \"http://my.server/static/stats.json\"",
+                "}"));
+
+        DeploymentConfiguration config = createConfig(Collections
+                .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
+
+        assertEquals(false, config.isProductionMode());
+        assertEquals(false, config.isCompatibilityMode());
+        assertEquals(false, config.enableDevServer());
+        assertEquals(true, config.isStatsExternal());
+        assertEquals("http://my.server/static/stats.json", config.getExternalStatsUrl());
+    }
+
+    @Test
+    public void externalStatsFileTrue_predefinedValuesAreNotOverridden() throws Exception {
+        // note that this situation shouldn't happen that the other settings
+        // would be against the external usage.
+        FileUtils.writeLines(tokenFile, Arrays.asList("{",
+                "\"compatibilityMode\": true,",
+                "\"enableDevServer\": true,",
+                // production mode can be altered even when external stats
+                // are used
+                "\"productionMode\": true,",
+                "\"externalStatsFile\": true",
+                "}"));
+
+        DeploymentConfiguration config = createConfig(Collections
+                .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
+
+        assertEquals(true, config.isProductionMode());
+        assertEquals(false, config.isCompatibilityMode());
+        assertEquals(false, config.enableDevServer());
+        assertEquals(true, config.isStatsExternal());
+        assertEquals(Constants.DEFAULT_EXTERNAL_STATS_URL, config.getExternalStatsUrl());
+    }
+
+    @Test
     public void createInitParameters_fallbackChunkObjectIsInInitParams()
-            throws ServletException, IOException {
+            throws VaadinConfigurationException, IOException {
         ServletContext context = Mockito.mock(ServletContext.class);
         ServletConfig config = Mockito.mock(ServletConfig.class);
         Mockito.when(config.getServletContext()).thenReturn(context);
@@ -431,7 +498,7 @@ public class DeploymentConfigurationFactoryTest {
                 .thenReturn(tokenFile.getPath());
 
         Properties properties = DeploymentConfigurationFactory
-                .createInitParameters(Object.class, config);
+                .createInitParameters(Object.class, new VaadinServletConfig(config));
 
         Object object = properties
                 .get(DeploymentConfigurationFactory.FALLBACK_CHUNK);
@@ -454,7 +521,13 @@ public class DeploymentConfigurationFactoryTest {
     private DeploymentConfiguration createConfig(Map<String, String> map)
             throws Exception {
         return DeploymentConfigurationFactory.createDeploymentConfiguration(
-                VaadinServlet.class, createServletConfigMock(map, emptyMap()));
+                VaadinServlet.class, createVaadinConfigMock(map, emptyMap()));
+    }
+
+    private VaadinConfig createVaadinConfigMock(
+            Map<String, String> servletConfigParameters,
+            Map<String, String> servletContextParameters) throws Exception {
+        return new VaadinServletConfig(createServletConfigMock(servletConfigParameters,servletContextParameters));
     }
 
     private ServletConfig createServletConfigMock(

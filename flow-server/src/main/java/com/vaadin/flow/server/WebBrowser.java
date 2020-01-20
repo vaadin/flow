@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,6 +19,7 @@ package com.vaadin.flow.server;
 import java.io.Serializable;
 import java.util.Locale;
 
+import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.shared.BrowserDetails;
 
 /**
@@ -26,20 +27,20 @@ import com.vaadin.flow.shared.BrowserDetails;
  * available in the request, for instance browser name and version and IP
  * address.
  *
+ * Note! browser details rely on the user agent from the browser and thus the
+ * details are not always correct.
+ *
  * @author Vaadin Ltd
  * @since 1.0.
  */
 public class WebBrowser implements Serializable {
-
 
     private String browserApplication = null;
     private Locale locale;
     private String address;
     private boolean secureConnection;
 
-
     private BrowserDetails browserDetails;
-
 
     /**
      * Get the browser user-agent string.
@@ -254,7 +255,10 @@ public class WebBrowser implements Serializable {
      *
      * @return true if run in iOS false if the user is not using iOS or if no
      *         information on the browser is present
+     * @deprecated isIOS will return the wrong value for iOS 13 and later. Use
+     *             instead {@link ExtendedClientDetails#isIOS()}
      */
+    @Deprecated
     public boolean isIOS() {
         return browserDetails.isIOS();
     }
@@ -274,7 +278,10 @@ public class WebBrowser implements Serializable {
      *
      * @return true if run on IPad false if the user is not using IPad or if no
      *         information on the browser is present
+     * @deprecated isIPad will return the wrong value for iOS 13 and later. Use
+     *             instead {@link ExtendedClientDetails#isIPad()}
      */
+    @Deprecated
     public boolean isIPad() {
         return browserDetails.isIPad();
     }
@@ -288,7 +295,6 @@ public class WebBrowser implements Serializable {
     public boolean isChromeOS() {
         return browserDetails.isChromeOS();
     }
-
 
     /**
      * For internal use only. Updates all properties in the class according to

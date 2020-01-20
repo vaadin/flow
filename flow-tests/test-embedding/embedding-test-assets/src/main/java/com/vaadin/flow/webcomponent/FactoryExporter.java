@@ -16,35 +16,38 @@
 
 package com.vaadin.flow.webcomponent;
 
+import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Paragraph;
-import com.vaadin.flow.component.internal.ExportsWebComponent;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 
-public class InterfaceBasedExporter implements ExportsWebComponent<InterfaceBasedExporter.InterfaceBasedComponent> {
-    @Override
-    public String getTag() {
-        return "interface-based";
+public class FactoryExporter implements
+        WebComponentExporterFactory<FactoryExporter.InterfaceBasedComponent> {
+
+    private class NotEligibleExporter extends
+            WebComponentExporter<FactoryExporter.InterfaceBasedComponent> {
+
+        private NotEligibleExporter() {
+            super("interface-based");
+        }
+
+        @Override
+        public Class<InterfaceBasedComponent> getComponentClass() {
+            return InterfaceBasedComponent.class;
+        }
+
+        @Override
+        protected void configureInstance(
+                WebComponent<InterfaceBasedComponent> webComponent,
+                InterfaceBasedComponent component) {
+        }
+
     }
 
     @Override
-    public Class<InterfaceBasedComponent> getComponentClass() {
-        return InterfaceBasedComponent.class;
-    }
-
-    @Override
-    public void configure(WebComponent<InterfaceBasedComponent> webComponent, InterfaceBasedComponent component) {
-
-    }
-
-    @Override
-    public void preConfigure() {
-
-    }
-
-    @Override
-    public void postConfigure() {
-
+    public WebComponentExporter<InterfaceBasedComponent> create() {
+        return new NotEligibleExporter();
     }
 
     public static class InterfaceBasedComponent extends Div {

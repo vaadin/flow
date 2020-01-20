@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -29,9 +29,9 @@ import org.apache.maven.project.MavenProject;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.migration.AnnotationsRewriteStrategy;
+import com.vaadin.flow.migration.Migration;
 import com.vaadin.flow.migration.MigrationConfiguration;
 import com.vaadin.flow.migration.MigrationConfiguration.Builder;
-import com.vaadin.flow.migration.Migration;
 import com.vaadin.flow.migration.MigrationFailureException;
 import com.vaadin.flow.migration.MigrationToolsException;
 import com.vaadin.flow.plugin.common.FlowPluginFrontendUtils;
@@ -82,6 +82,9 @@ public class MigrateMojo extends AbstractMojo {
     @Parameter(defaultValue = "true")
     private boolean ignoreModulizerErrors;
 
+    @Parameter(property = "disable.pnpm", defaultValue = "false")
+    private boolean disablePnpm;
+
     /**
      * Allows to specify the strategy to use to rewrite
      * {@link HtmlImport}/{@link StyleSheet} annotations in Java files.
@@ -113,6 +116,7 @@ public class MigrateMojo extends AbstractMojo {
         builder.setResourceDirectories(getResources());
         builder.setTargetDirectory(frontendDirectory);
         builder.setTemporaryMigrationFolder(migrateFolder);
+        builder.setDisablePnpm(disablePnpm);
 
         MigrationConfiguration configuration = builder.build();
         Migration migration = new Migration(configuration);

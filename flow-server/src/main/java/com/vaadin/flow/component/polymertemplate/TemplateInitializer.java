@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -116,8 +116,6 @@ public class TemplateInitializer {
         if (idMapper.isMapped(id)) {
             return;
         }
-        // make sure that shadow root is available
-        idMapper.getOrCreateShadowRoot();
 
         Element element = new Element(tag);
         VirtualChildrenList list = getElement().getNode()

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,8 +17,10 @@ package com.vaadin.client;
 
 import java.util.Objects;
 
-import com.google.gwt.core.client.JsDate;
 import com.google.web.bindery.event.shared.HandlerRegistration;
+
+import com.google.gwt.core.client.JsDate;
+
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
 
@@ -115,6 +117,14 @@ public class ScrollPositionHandler {
                 this::onBeforeUnload);
 
         readAndRestoreScrollPositionsFromHistoryAndSessionStorage(true);
+    }
+
+    /**
+     * Default constructor to use in subclasses to override all functionality
+     * from this class.
+     */
+    protected ScrollPositionHandler() {
+        this.registry = null;
     }
 
     private void readAndRestoreScrollPositionsFromHistoryAndSessionStorage(

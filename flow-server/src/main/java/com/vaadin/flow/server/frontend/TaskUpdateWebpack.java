@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -27,8 +27,6 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.server.FallibleCommand;
-
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
 
@@ -44,10 +42,10 @@ public class TaskUpdateWebpack implements FallibleCommand {
      */
     private final String webpackTemplate;
     private final String webpackGeneratedTemplate;
-    private final transient Path webpackOutputPath;
-    private final transient Path flowImportsFilePath;
-    private final transient Path webpackConfigPath;
-    private final transient Path frontendDirectory;
+    private final Path webpackOutputPath;
+    private final Path flowImportsFilePath;
+    private final Path webpackConfigPath;
+    private final Path frontendDirectory;
 
     /**
      * Create an instance of the updater given all configurable parameters.

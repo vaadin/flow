@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,7 +24,6 @@ import java.util.Objects;
 import java.util.Set;
 
 import com.vaadin.flow.server.ExecutionFailedException;
-import com.vaadin.flow.server.FallibleCommand;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
@@ -82,6 +81,8 @@ public class NodeTasks implements FallibleCommand {
         private JsonObject tokenFileData;
 
         private File tokenFile;
+
+        private boolean disablePnpm;
 
         /**
          * Directory for for npm and folders and files.
@@ -328,6 +329,20 @@ public class NodeTasks implements FallibleCommand {
             this.tokenFile = tokenFile;
             return this;
         }
+
+        /**
+         * Disables pnpm tool.
+         * <p>
+         * "npm" will be used instead of "pnpm".
+         *
+         * @param disable
+         *            disables pnpm.
+         * @return the builder, for chaining
+         */
+        public Builder disablePnpm(boolean disable) {
+            disablePnpm = disable;
+            return this;
+        }
     }
 
     private final Collection<FallibleCommand> commands = new ArrayList<>();
@@ -361,11 +376,13 @@ public class NodeTasks implements FallibleCommand {
         if (builder.enablePackagesUpdate) {
             TaskUpdatePackages packageUpdater = new TaskUpdatePackages(
                     classFinder, frontendDependencies, builder.npmFolder,
-                    builder.generatedFolder, builder.cleanNpmFiles);
+                    builder.generatedFolder, builder.cleanNpmFiles,
+                    builder.disablePnpm);
             commands.add(packageUpdater);
 
             if (builder.runNpmInstall) {
-                commands.add(new TaskRunNpmInstall(packageUpdater));
+                commands.add(new TaskRunNpmInstall(packageUpdater,
+                        builder.disablePnpm));
             }
         }
 
@@ -393,7 +410,7 @@ public class NodeTasks implements FallibleCommand {
                             finder -> getFallbackScanner(builder, finder),
                             builder.npmFolder, builder.generatedFolder,
                             builder.frontendDirectory, builder.tokenFile,
-                            builder.tokenFileData));
+                            builder.tokenFileData, builder.disablePnpm));
 
         }
     }

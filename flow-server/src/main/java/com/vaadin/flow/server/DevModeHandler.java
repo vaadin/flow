@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,7 +24,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.lang.management.ManagementFactory;
 import java.net.HttpURLConnection;
@@ -45,6 +44,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS;
@@ -52,7 +52,6 @@ import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.getNodeExecutable;
-import static com.vaadin.flow.server.frontend.FrontendUtils.validateNodeAndNpmVersion;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 
@@ -69,7 +68,7 @@ import static java.net.HttpURLConnection.HTTP_OK;
  *
  * @since 2.0
  */
-public final class DevModeHandler implements Serializable {
+public final class DevModeHandler {
 
     private static final AtomicReference<DevModeHandler> atomicHandler = new AtomicReference<>();
 
@@ -103,9 +102,9 @@ public final class DevModeHandler implements Serializable {
     public static final String WEBPACK_SERVER = "node_modules/webpack-dev-server/bin/webpack-dev-server.js";
 
     private int port;
-    private transient Process webpackProcess;
+    private Process webpackProcess;
     private final boolean reuseDevServer;
-    private transient DevServerWatchDog watchDog;
+    private DevServerWatchDog watchDog;
 
     private DevModeHandler(DeploymentConfiguration config, int runningPort,
             File npmFolder, File webpack, File webpackConfig) {
@@ -137,7 +136,7 @@ public final class DevModeHandler implements Serializable {
         ProcessBuilder processBuilder = new ProcessBuilder()
                 .directory(npmFolder);
 
-        validateNodeAndNpmVersion(npmFolder.getAbsolutePath());
+        FrontendUtils.validateNodeAndNpmVersion(npmFolder.getAbsolutePath());
 
         List<String> command = new ArrayList<>();
         command.add(getNodeExecutable(npmFolder.getAbsolutePath()));
@@ -152,12 +151,15 @@ public final class DevModeHandler implements Serializable {
                         "-d --inline=false")
                 .split(" +")));
 
-        if (getLogger().isInfoEnabled()) {
-            getLogger().info(
+        if (getLogger().isDebugEnabled()) {
+            getLogger().debug(
                     "Starting webpack-dev-server, port: {} dir: {}\n   {}",
                     port, npmFolder, String.join(" ", command));
+        } else {
+            getLogger().info("Starting webpack-dev-server, port: {} dir: {}",
+                    port, npmFolder);
         }
-
+        long start = System.currentTimeMillis();
         processBuilder.command(command);
         try {
             webpackProcess = processBuilder
@@ -187,6 +189,8 @@ public final class DevModeHandler implements Serializable {
 
             logStream(webpackProcess.getInputStream(), succeed, failure);
 
+            getLogger()
+                    .info("Waiting for webpack compilation before proceeding.");
             synchronized (this) {
                 this.wait(Integer.parseInt(config.getStringProperty( // NOSONAR
                         SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT,
@@ -196,6 +200,9 @@ public final class DevModeHandler implements Serializable {
             if (!webpackProcess.isAlive()) {
                 throw new IllegalStateException("Webpack exited prematurely");
             }
+            getLogger().info(
+                    "Webpack startup and compilation completed in {}ms",
+                    (System.currentTimeMillis() - start));
         } catch (IOException | InterruptedException e) {
             getLogger().error("Failed to start the webpack process", e);
         }
@@ -441,10 +448,11 @@ public final class DevModeHandler implements Serializable {
 
     private void readLinesLoop(Pattern success, Pattern failure,
             BufferedReader reader) throws IOException {
-        StringBuilder output = new StringBuilder();
-        Consumer<String> info = s -> getLogger().info(GREEN, s);
+        StringBuilder output = getOutputBuilder();
+
+        Consumer<String> info = s -> getLogger().debug(GREEN, s);
         Consumer<String> error = s -> getLogger().error(RED, s);
-        Consumer<String> warn = s -> getLogger().warn(YELLOW, s);
+        Consumer<String> warn = s -> getLogger().debug(YELLOW, s);
         Consumer<String> log = info;
         for (String line; ((line = reader.readLine()) != null);) {
             String cleanLine = line
@@ -458,8 +466,11 @@ public final class DevModeHandler implements Serializable {
                     : line.contains("ERROR") ? error : log;
             log.accept(cleanLine);
 
-            // save output so as it can be used to alert user in browser.
-            output.append(cleanLine).append('\n');
+            // Only store webpack errors to be shown in the browser.
+            if (line.contains("ERROR")) {
+                // save output so as it can be used to alert user in browser.
+                output.append(cleanLine).append(System.lineSeparator());
+            }
 
             boolean succeed = success.matcher(line).find();
             boolean failed = failure.matcher(line).find();
@@ -469,12 +480,18 @@ public final class DevModeHandler implements Serializable {
                 // save output in case of failure
                 failedOutput = failed ? output.toString() : null;
                 // reset output and logger for the next compilation
-                output = new StringBuilder();
+                output = getOutputBuilder();
                 log = info;
                 // Notify DevModeHandler to continue
                 doNotify();
             }
         }
+    }
+
+    private StringBuilder getOutputBuilder() {
+        StringBuilder output = new StringBuilder();
+        output.append(String.format("Webpack build failed with errors:%n"));
+        return output;
     }
 
     private void writeStream(ServletOutputStream outputStream,

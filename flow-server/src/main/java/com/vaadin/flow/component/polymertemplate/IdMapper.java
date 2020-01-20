@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,7 +20,6 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -74,25 +73,7 @@ public class IdMapper implements Serializable {
      */
     public void mapComponentOrElement(Field field, String id, String tag,
             Consumer<Element> beforeComponentInject) {
-        Element element = getElementById(id).orElse(null);
-
-        if (element == null) {
-            injectClientSideElement(tag, id, field, beforeComponentInject);
-        } else {
-            injectServerSideElement(element, field, beforeComponentInject);
-        }
-    }
-
-    private void injectServerSideElement(Element element, Field field,
-            Consumer<Element> beforeComponentInject) {
-        if (getElement().equals(element)) {
-            throw new IllegalArgumentException(
-                    "Cannot map the root element of the template. "
-                            + "This is always mapped to the template instance itself ("
-                            + getContainerClass().getName() + ')');
-        } else if (element != null) {
-            injectTemplateElement(element, field, beforeComponentInject);
-        }
+        injectClientSideElement(tag, id, field, beforeComponentInject);
     }
 
     private Class<? extends Component> getContainerClass() {
@@ -130,20 +111,6 @@ public class IdMapper implements Serializable {
 
     private Element getElement() {
         return template.getElement();
-    }
-
-    private Optional<Element> getElementById(String id) {
-        return getOrCreateShadowRoot().getChildren()
-                .flatMap(this::flattenChildren)
-                .filter(element -> id.equals(element.getAttribute("id")))
-                .findFirst();
-    }
-
-    private Stream<Element> flattenChildren(Element node) {
-        if (node.getChildCount() > 0) {
-            return node.getChildren().flatMap(this::flattenChildren);
-        }
-        return Stream.of(node);
     }
 
     /**

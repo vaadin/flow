@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -350,6 +350,19 @@ public class UidlWriterTest {
                     expectedDependency, actualDependency, expectedClass),
                     expectedDependency.jsEquals(actualDependency));
         }
+    }
+
+    @Test
+    public void resynchronizationRequested_responseFieldContainsResynchronize()
+            throws Exception {
+        UI ui = initializeUIForDependenciesTest(new TestUI());
+        UidlWriter uidlWriter = new UidlWriter();
+
+        JsonObject response = uidlWriter.createUidl(ui, false, true);
+        assertTrue("Response contains resynchronize field",
+                response.hasKey(ApplicationConstants.RESYNCHRONIZE_ID));
+        assertTrue("Response resynchronize field is set to true",
+               response.getBoolean(ApplicationConstants.RESYNCHRONIZE_ID));
     }
 
     private void assertInlineDependencies(List<JsonObject> inlineDependencies,
