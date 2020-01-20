@@ -34,7 +34,6 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 public class MigrationTest {
@@ -122,13 +121,13 @@ public class MigrationTest {
             MigrationToolsException, IOException {
         Mockito.when(configuration.isPnpmDisabled()).thenReturn(true);
         // Expected execution calls:
-        // 1 - npm --no-update-notifier install polymer-modulizer
+        // 1 - npm --no-update-notifier --no-audit install polymer-modulizer
         // 2 - node {tempFolder} i -F --confid.interactive=false -S
         // polymer#2.8.0
-        // 3 - npm --no-update-notifier i
+        // 3 - npm --no-update-notifier --no-audit i
         // 4 - node node_modules/polymer-modulizer/bin/modulizer.js --force
         // --out , --import-style=name
-        migratePassesHappyPath(Stream.of(4, 7, 3, 6)
+        migratePassesHappyPath(Stream.of(5, 7, 4, 6)
                 .collect(Collectors.toCollection(LinkedList::new)));
     }
 
@@ -143,7 +142,8 @@ public class MigrationTest {
         new File(pnpmBin.toFile(), "pnpm.js").createNewFile();
 
         // Expected execution calls:
-        // 1 - node node_modules/pnpm/bin/pnpm.js --shamefully-hoist=true install polymer-modulizer
+        // 1 - node node_modules/pnpm/bin/pnpm.js --shamefully-hoist=true
+        // install polymer-modulizer
         // 2 - node {tempFolder} i -F --confid.interactive=false -S
         // polymer#2.8.0
         // 3 - node node_modules/pnpm/bin/pnpm.js --shamefully-hoist=true i
@@ -226,7 +226,7 @@ public class MigrationTest {
 
     private File makeTempDirectoryStructure() throws IOException {
         File folder;
-        if(targetFolder == null) {
+        if (targetFolder == null) {
             folder = temporaryFolder.newFolder();
             folder.mkdirs();
         } else {

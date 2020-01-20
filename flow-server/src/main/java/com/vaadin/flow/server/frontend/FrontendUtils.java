@@ -54,6 +54,7 @@ import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
@@ -345,6 +346,7 @@ public class FrontendUtils {
                     getExecutable(baseDir, command, null).getAbsolutePath());
         }
         returnCommand.add("--no-update-notifier");
+        returnCommand.add("--no-audit");
         return returnCommand;
     }
 
@@ -768,7 +770,7 @@ public class FrontendUtils {
         try {
             List<String> nodeVersionCommand = new ArrayList<>();
             nodeVersionCommand.add(FrontendUtils.getNodeExecutable(baseDir));
-            nodeVersionCommand.add("--version"); //NOSONAR
+            nodeVersionCommand.add("--version"); // NOSONAR
             FrontendVersion nodeVersion = getVersion("node",
                     nodeVersionCommand);
             validateToolVersion("node", nodeVersion, SUPPORTED_NODE_VERSION,
@@ -780,7 +782,7 @@ public class FrontendUtils {
         try {
             List<String> npmVersionCommand = new ArrayList<>(
                     FrontendUtils.getNpmExecutable(baseDir));
-            npmVersionCommand.add("--version"); //NOSONAR
+            npmVersionCommand.add("--version"); // NOSONAR
             FrontendVersion npmVersion = getVersion("npm", npmVersionCommand);
             validateToolVersion("npm", npmVersion, SUPPORTED_NPM_VERSION,
                     SHOULD_WORK_NPM_VERSION);
@@ -820,7 +822,8 @@ public class FrontendUtils {
                 pkgJson.put("name", "temp");
                 pkgJson.put("license", "UNLICENSED");
                 pkgJson.put("repository", "npm/npm");
-                pkgJson.put("description", "Temporary package for pnpm installation");
+                pkgJson.put("description",
+                        "Temporary package for pnpm installation");
                 FileUtils.writeLines(packageJson,
                         Collections.singletonList(pkgJson.toJson()));
                 JsonObject lockJson = Json.createObject();
@@ -830,9 +833,9 @@ public class FrontendUtils {
             } catch (IOException e) {
                 getLogger().warn("Couldn't create temporary package.json");
             }
-            LoggerFactory.getLogger("dev-updater")
-                    .info("Installing pnpm v{} locally. It is suggested to install it globally using 'npm add -g pnpm@{}'",
-                            DEFAULT_PNPM_VERSION, DEFAULT_PNPM_VERSION);
+            LoggerFactory.getLogger("dev-updater").info(
+                    "Installing pnpm v{} locally. It is suggested to install it globally using 'npm add -g pnpm@{}'",
+                    DEFAULT_PNPM_VERSION, DEFAULT_PNPM_VERSION);
             // install pnpm locally using npm
             installPnpm(baseDir, getNpmExecutable(baseDir));
 
@@ -859,7 +862,7 @@ public class FrontendUtils {
             // check whether globally or locally installed pnpm is new enough
             try {
                 List<String> versionCmd = new ArrayList<>(pnpmCommand);
-                versionCmd.add("--version"); //NOSONAR
+                versionCmd.add("--version"); // NOSONAR
                 FrontendVersion pnpmVersion = getVersion("pnpm", versionCmd);
                 if (isVersionAtLeast(pnpmVersion, SUPPORTED_PNPM_VERSION)) {
                     return false;
@@ -904,8 +907,8 @@ public class FrontendUtils {
         Process process = null;
         try {
             process = builder.start();
-            getLogger().debug("Output of `{}`:", command.stream().collect(
-                    Collectors.joining(" ")));
+            getLogger().debug("Output of `{}`:",
+                    command.stream().collect(Collectors.joining(" ")));
             try (BufferedReader reader = new BufferedReader(
                     new InputStreamReader(process.getInputStream(),
                             StandardCharsets.UTF_8))) {
