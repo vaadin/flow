@@ -17,13 +17,7 @@
 package com.vaadin.flow.component;
 
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
@@ -231,7 +225,7 @@ public class ShortcutRegistration implements Registration, Serializable {
      * @return this <code>ShortcutRegistration</code>
      */
     public ShortcutRegistration listenOn(Component... listenOnComponents) {
-        assert listenOnComponents != null;
+        Objects.requireNonNull(listenOnComponents);
         removeAllListenerRegistrations();
         this.listenOnSuppliers = () -> listenOnComponents;
         prepareForClientResponse();
