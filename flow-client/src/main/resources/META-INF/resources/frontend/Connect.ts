@@ -161,9 +161,9 @@ export interface CallOptions {
  */
 export interface MiddlewareContext {
   /**
-   * The endpoint class name.
+   * The endpoint name.
    */
-  endpointClass: string;
+  endpoint: string;
 
   /**
    * The method name to call on in the endpoint class.
@@ -250,18 +250,18 @@ export class ConnectClient {
   }
 
   /**
-   * Makes a JSON HTTP request to the `${prefix}/${endpointClass}/${method}` URL,
+   * Makes a JSON HTTP request to the `${prefix}/${endpoint}/${method}` URL,
    * optionally supplying the provided params as a JSON request body,
    * and asynchronously returns the parsed JSON response data.
    *
-   * @param endpointClass Endpoint class name.
+   * @param endpoint Endpoint name.
    * @param method Method name to call in the endpoint class.
    * @param params Optional object to be send in JSON request body.
    * @param options Optional client options for this call.
    * @returns {} Decoded JSON response data.
    */
   async call(
-    endpointClass: string,
+    endpoint: string,
     method: string,
     params?: any,
     options: CallOptions = {}
@@ -291,7 +291,7 @@ export class ConnectClient {
     }
 
     const request = new Request(
-       `${this.prefix}/${endpointClass}/${method}`, {
+       `${this.prefix}/${endpoint}/${method}`, {
          method: 'POST',
          headers,
          body: params !== undefined ? JSON.stringify(nullForUndefined(params)) : undefined
@@ -300,7 +300,7 @@ export class ConnectClient {
     // The middleware `context`, includes the call arguments and the request
     // constructed from them
     const initialContext: MiddlewareContext = {
-      endpointClass,
+      endpoint,
       method,
       params,
       options,
