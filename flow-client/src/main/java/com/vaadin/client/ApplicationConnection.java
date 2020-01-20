@@ -104,6 +104,9 @@ public class ApplicationConnection {
                     this::fireAllProcessingDoneEventIfIdle);
         }
 
+        registry.getRequestResponseTracker().addResponseHandlingEndedHandler(
+                event -> fireAllProcessingDoneEventIfIdle());
+
     }
 
     /**

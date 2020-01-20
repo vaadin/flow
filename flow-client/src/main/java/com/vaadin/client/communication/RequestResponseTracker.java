@@ -128,7 +128,6 @@ public class RequestResponseTracker {
         });
 
         fireEvent(new ResponseHandlingEndedEvent());
-        registry.getApplicationConnection().fireAllProcessingDoneEventIfIdle();
     }
 
     /**
