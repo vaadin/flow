@@ -64,7 +64,7 @@ public class ConnectEndpointsValidator
                         "ERROR: Vaadin Connect Endpoints only work for Spring "
                                 + "enabled projects.\n"
                                 + "This is not a spring application but there are connect endpoints in these classes: "
-                                + endpoints.stream().map(clazz -> clazz.getName())
+                                + endpoints.stream().map(Class::getName)
                                         .collect(
                                                 Collectors.joining("\n    - ")),
                         e);
