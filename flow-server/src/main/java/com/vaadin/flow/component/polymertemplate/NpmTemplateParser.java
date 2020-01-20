@@ -59,14 +59,13 @@ import elemental.json.JsonObject;
  */
 public class NpmTemplateParser implements TemplateParser {
 
-    private static TemplateParser INSTANCE = new NpmTemplateParser();
+    private static final TemplateParser INSTANCE = new NpmTemplateParser();
 
     private final HashMap<String, String> cache = new HashMap<>();
     private final ReentrantLock lock = new ReentrantLock();
     private JsonObject jsonStats;
 
     protected NpmTemplateParser() {
-        // Doesn't allow external instantiation
     }
 
     public static TemplateParser getInstance() {
