@@ -26,7 +26,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.function.SerializableConsumer;
@@ -370,6 +369,7 @@ public class ShortcutRegistration implements Registration, Serializable {
      * {@link Component} which owns the first shortcuts key event listener.
      *
      * @return Component
+     * @deprecated This component has now multiple owners so this method has been replaced by #getOwners().
      */
     @Deprecated
     public Component getOwner() {
@@ -696,7 +696,6 @@ public class ShortcutRegistration implements Registration, Serializable {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        boolean isFirst = true;
         builder.append("[");
         builder.append(Arrays.stream(listenOnComponents).map(component -> component.getClass().getSimpleName()).collect(Collectors.joining(",")));
         builder.append("]");

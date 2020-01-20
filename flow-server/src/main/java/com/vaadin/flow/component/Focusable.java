@@ -160,7 +160,9 @@ public interface Focusable<T extends Component>
                     String.format(Shortcuts.NULL, "key"));
         }
 
-        return new ShortcutRegistration((Component) this, () -> new Component[] {UI.getCurrent()},
+        final Component thisComponent = (Component) this;
+
+        return new ShortcutRegistration((Component) this, () -> new Component[] {thisComponent.getUI().get()},
                 event -> this.focus(), key).withModifiers(keyModifiers);
     }
 }
