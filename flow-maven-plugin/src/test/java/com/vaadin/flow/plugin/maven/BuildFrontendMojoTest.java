@@ -392,7 +392,7 @@ public class BuildFrontendMojoTest {
     @Test
     public void mavenGoal_notGenerateOpenApiJson_when_itIsNotInClientSideMode()
             throws Exception {
-        ReflectionUtils.setVariableValueInObject(mojo, "clientSideMode",
+        ReflectionUtils.setVariableValueInObject(mojo, "useDeprecatedV14Bootstrapping",
                 "false");
         Assert.assertFalse(FileUtils.fileExists(openApiJsonFile));
         mojo.execute();

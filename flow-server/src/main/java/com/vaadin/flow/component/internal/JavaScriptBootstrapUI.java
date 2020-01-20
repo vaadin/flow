@@ -47,7 +47,7 @@ import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
 
 /**
  * Custom UI for {@link JavaScriptBootstrapHandler}. This class is intended for
- * internal use in clientSideMode.
+ * internal use in useDeprecatedV14Bootstrapping.
  */
 public class JavaScriptBootstrapUI extends UI {
     public static final String SERVER_ROUTING = "clientRoutingMode";
@@ -60,7 +60,7 @@ public class JavaScriptBootstrapUI extends UI {
     private boolean navigationInProgress = false;
 
     /**
-     * Create UI for clientSideMode.
+     * Create UI for useDeprecatedV14Bootstrapping.
      */
     public JavaScriptBootstrapUI() {
         super(new JavaScriptUIInternalUpdater());
@@ -285,7 +285,7 @@ public class JavaScriptBootstrapUI extends UI {
     }
 
     /**
-     * An UIInternalsHandler implementation for clientSideMode.
+     * An UIInternalsHandler implementation for useDeprecatedV14Bootstrapping.
      */
     private static class JavaScriptUIInternalUpdater
             implements UIInternalUpdater {

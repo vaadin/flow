@@ -158,17 +158,17 @@ public class FrontendUtils {
     public static final String IMPORTS_D_TS_NAME = "generated-flow-imports.d.ts";
 
     /**
-     * File name of the index.html in clientSideMode.
+     * File name of the index.html in useDeprecatedV14Bootstrapping.
      */
     public static final String INDEX_HTML = "index.html";
 
     /**
-     * File name of the index.ts in clientSideMode.
+     * File name of the index.ts in useDeprecatedV14Bootstrapping.
      */
     public static final String INDEX_TS = "index.ts";
 
     /**
-     * File name of the index.js in clientSideMode.
+     * File name of the index.js in useDeprecatedV14Bootstrapping.
      */
     public static final String INDEX_JS = "index.js";
 
