@@ -5,7 +5,7 @@ const {sinon} = intern.getPlugin('sinon');
 
 import { ConnectClient, VaadinConnectError, VaadinConnectValidationError } from "../../main/resources/META-INF/resources/frontend/Connect";
 
-// `connectClient.call` adds the host and context to the endpointClass request.
+// `connectClient.call` adds the host and context to the endpoint request.
 // we need to add this origin when configuring fetch-mock
 const base = window.location.origin;
 
@@ -104,7 +104,7 @@ describe('ConnectClient', () => {
       }
     });
 
-    it('should fetch endpointClass and method from default prefix', async() => {
+    it('should fetch endpoint and method from default prefix', async() => {
       expect(fetchMock.calls()).to.have.lengthOf(0); // no premature requests
 
       await client.call('FooEndpoint', 'fooMethod');
@@ -265,7 +265,7 @@ describe('ConnectClient', () => {
 
       it('should invoke middleware during call', async() => {
         const spyMiddleware = sinon.spy(async(context: any, next?: any) => {
-          expect(context.endpointClass).to.equal('FooEndpoint');
+          expect(context.endpoint).to.equal('FooEndpoint');
           expect(context.method).to.equal('fooMethod');
           expect(context.params).to.deep.equal({fooParam: 'foo'});
           expect(context.options)
