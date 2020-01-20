@@ -404,7 +404,7 @@ public class BuildFrontendMojoTest {
         File connectClientApi = new File(generatedTsFolder,
                 "connect-client.default.ts");
         File endpointClientApi = new File(generatedTsFolder,
-                "MyEndpoints.ts");
+                "MyEndpoint.ts");
 
         Assert.assertFalse(connectClientApi.exists());
         Assert.assertFalse(endpointClientApi.exists());

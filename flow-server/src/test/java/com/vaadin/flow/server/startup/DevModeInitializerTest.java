@@ -247,7 +247,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         DevModeInitializer devModeInitializer = new DevModeInitializer();
 
         File ts1 = new File(baseDir,
-                DEFAULT_CONNECT_GENERATED_TS_DIR + "MyEndpoints.ts");
+                DEFAULT_CONNECT_GENERATED_TS_DIR + "MyEndpoint.ts");
         File ts2 = new File(baseDir, DEFAULT_CONNECT_GENERATED_TS_DIR
                 + VaadinConnectClientGenerator.CONNECT_CLIENT_NAME);
 
