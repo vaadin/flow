@@ -69,8 +69,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
      * Whether or not we are running in client-side bootstrap mode (CCDM). True
      * if not defined.
      */
-    @Parameter(defaultValue = "${vaadin.clientSideMode}")
-    private String clientSideMode;
+    @Parameter(defaultValue = "${vaadin.useDeprecatedV14Bootstrapping}")
+    private String useDeprecatedV14Bootstrapping;
 
     /**
      * Whether or not insert the initial Uidl object in the bootstrap index.html
@@ -112,15 +112,15 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
     protected File generatedTsFolder;
 
     /**
-     * Check if the plugin is running in `clientSideMode` or not. Default: true.
+     * Check if the plugin is running in `useDeprecatedV14Bootstrapping` or not. Default: true.
      *
-     * @return true if the `clientSideMode` property is not defined or empty.
+     * @return true if the `useDeprecatedV14Bootstrapping` property is not defined or empty.
      */
     public boolean isClientSideMode() {
-        if (clientSideMode == null || clientSideMode.isEmpty()) {
+        if (useDeprecatedV14Bootstrapping == null || useDeprecatedV14Bootstrapping.isEmpty()) {
             return true;
         }
-        return Boolean.parseBoolean(clientSideMode);
+        return Boolean.parseBoolean(useDeprecatedV14Bootstrapping);
     }
 
 }

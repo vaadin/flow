@@ -98,7 +98,7 @@ public class DefaultDeploymentConfiguration
     public static final boolean DEFAULT_SEND_URLS_AS_PARAMETERS = true;
 
     private boolean productionMode;
-    private boolean clientSideMode;
+    private boolean useDeprecatedV14Bootstrapping;
     private boolean xsrfProtectionEnabled;
     private int heartbeatInterval;
     private int webComponentDisconnect;
@@ -156,7 +156,7 @@ public class DefaultDeploymentConfiguration
      */
     @Override
     public boolean isClientSideMode() {
-        return clientSideMode;
+        return useDeprecatedV14Bootstrapping;
     }
 
     /**
@@ -257,18 +257,18 @@ public class DefaultDeploymentConfiguration
     }
 
     /**
-     * Log a message if Vaadin is running in clientSideMode.
+     * Log a message if Vaadin is running in useDeprecatedV14Bootstrapping.
      */
     private void checkClientSideMode(boolean loggWarning) {
-        clientSideMode = getBooleanProperty(
+        useDeprecatedV14Bootstrapping = getBooleanProperty(
                 Constants.SERVLET_PARAMETER_CLIENT_SIDE_MODE, true);
-        if (clientSideMode && loggWarning && !productionMode) {
+        if (useDeprecatedV14Bootstrapping && loggWarning && !productionMode) {
             String frontendDir = getStringProperty(PARAM_FRONTEND_DIR, System
                     .getProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR));
             String indexHTMLMessage = getIndexHTMLMessage(frontendDir);
             String entryPointMessage = getEntryPointMessage(frontendDir);
             String outputMessage = SEPARATOR
-                    + "\nRunning the application in 'clientSideMode'.\n"
+                    + "\nRunning the application in 'useDeprecatedV14Bootstrapping'.\n"
                     + indexHTMLMessage + entryPointMessage + SEPARATOR;
             getLogger().info(outputMessage);
         }

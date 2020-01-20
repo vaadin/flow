@@ -46,7 +46,7 @@ import static com.vaadin.flow.shared.ApplicationConstants.CSRF_TOKEN;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
- * In clientSideMode, this class is responsible for serving
+ * In useDeprecatedV14Bootstrapping, this class is responsible for serving
  * <code>index.html</code> according to the template provided in frontend
  * folder. The handler will calculate and inject baseHref as well as the bundle
  * scripts into the template.
@@ -181,7 +181,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         String message = String
                 .format("Failed to load content of '%1$sindex.html'."
                         + "It is required to have '%1$sindex.html' file in "
-                        + "clientSideMode.", frontendDir);
+                        + "useDeprecatedV14Bootstrapping.", frontendDir);
         throw new IOException(message);
     }
 
