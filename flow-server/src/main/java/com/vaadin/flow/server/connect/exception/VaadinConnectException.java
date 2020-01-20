@@ -25,10 +25,10 @@ import com.vaadin.flow.server.connect.VaadinConnectController;
 /**
  * An exception that is intended to be thrown by any Vaadin Connect endpoint
  * method to propagate exception details to the client side. When an exception
- * is thrown by a endpoint method, a particular response is constructed based on
- * the data of the exception and sent to the client side. When a client library
- * receives the response, it raises the corresponding exception using the
- * response data.
+ * is thrown by an endpoint method, a particular response is constructed based
+ * on the data of the exception and sent to the client side. When a client
+ * library receives the response, it raises the corresponding exception using
+ * the response data.
  *
  * By default, if any Vaadin Connect endpoint method throws an exception when
  * being invoked by the client request, the exception details are concealed due

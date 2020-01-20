@@ -105,8 +105,8 @@ public class VaadinConnectControllerConfiguration {
     }
 
     /**
-     * Registers a endpoint name checker responsible for validating the endpoint
-     * names.
+     * Registers an endpoint name checker responsible for validating the
+     * endpoint names.
      *
      * @return the endpoint name checker
      */

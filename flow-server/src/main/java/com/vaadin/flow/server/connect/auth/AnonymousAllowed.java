@@ -24,9 +24,9 @@ import java.lang.annotation.Target;
  * A security annotation, granting anonymous access to the Vaadin Connect
  * endpoint (or its method) it is placed onto.
  * <p>
- * This means that any user will be able to trigger an endpoint method (if placed
- * on a endpoint class) or the particular endpoint method (if placed on an endpoint
- * method) without providing an authentication token.
+ * This means that any user will be able to trigger an endpoint method (if
+ * placed on an endpoint class) or the particular endpoint method (if placed on
+ * an endpoint method) without providing an authentication token.
  * <p>
  * If there are other supported security annotations present on the same class
  * or method:
