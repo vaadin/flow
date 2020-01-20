@@ -138,7 +138,7 @@ public class NodeTasksTest {
                 "api-file.json",
                 // withConnectClientTsApiFolder
                 "api/connect-client.default.ts",
-                "api/MyEndpoints.ts")
+                "api/MyEndpoint.ts")
                 .forEach(name -> assertTrue(name + " not created.", new File(dir, name).exists()));
     }
 

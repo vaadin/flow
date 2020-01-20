@@ -204,7 +204,7 @@ public class PrepareFrontendMojoTest {
     }
 
     @Endpoint
-    public class MyEndpoints {
+    public class MyEndpoint {
         public void foo(String bar) {
         }
 

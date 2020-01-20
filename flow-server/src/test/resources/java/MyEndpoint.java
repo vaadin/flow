@@ -4,7 +4,7 @@ import com.vaadin.flow.server.connect.Endpoint;
  * A test class.
  */
 @Endpoint
-public class MyEndpoints {
+public class MyEndpoint {
 
     /**
      * Foo endpoint.
