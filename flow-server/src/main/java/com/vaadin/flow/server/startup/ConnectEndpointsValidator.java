@@ -50,7 +50,7 @@ public class ConnectEndpointsValidator
             // We cannot check anything here to give a message.
             // Continue with the initialization, java will throw
             // the proper exception if application tries to use
-            // a endpoint and dependencies are not added to the project.
+            // an endpoint and dependencies are not added to the project.
             return;
         }
 

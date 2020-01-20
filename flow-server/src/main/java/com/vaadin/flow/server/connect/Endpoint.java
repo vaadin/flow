@@ -42,7 +42,7 @@ import org.springframework.stereotype.Component;
 @Component
 public @interface Endpoint {
     /**
-     * The name of a endpoint to use. If nothing is specified, the name of the
+     * The name of an endpoint to use. If nothing is specified, the name of the
      * annotated class is taken.
      * <p>
      * Note: custom names are not allowed to be blank, be equal to any of the
