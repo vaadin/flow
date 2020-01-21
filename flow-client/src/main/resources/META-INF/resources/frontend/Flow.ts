@@ -265,19 +265,24 @@ export class Flow {
 
     // send a request to the `JavaScriptBootstrapHandler`
     return new Promise((resolve, reject) => {
-      const httpRequest = new (window as any).XMLHttpRequest();
+      const xhr = new XMLHttpRequest();
+      const httpRequest = xhr as any;
       const currentPath = location.pathname || '/';
       const requestPath = `${currentPath}?v-r=init` +
-                                  (serverSideRouting ? `&location=${encodeURI(this.getFlowRoute(location))}` : '');
+            (serverSideRouting ? `&location=${encodeURI(this.getFlowRoute(location))}` : '');
+
       httpRequest.open('GET', requestPath);
+
+      httpRequest.onerror = () => reject(new Error(
+        `Invalid server response when initializing Flow UI.
+        ${httpRequest.status}
+        ${httpRequest.responseText}`));
+
       httpRequest.onload = () => {
         if (httpRequest.getResponseHeader('content-type') === 'application/json') {
           resolve(JSON.parse(httpRequest.responseText));
         } else {
-          reject(new Error(
-            `Invalid server response when initializing Flow UI.
-            ${httpRequest.status}
-            ${httpRequest.responseText}`));
+          httpRequest.onerror();
         }
       };
       httpRequest.send();
