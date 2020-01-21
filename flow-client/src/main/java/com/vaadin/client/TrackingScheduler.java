@@ -56,7 +56,7 @@ public class TrackingScheduler extends SchedulerImpl {
     }
 
     /**
-     * Adds a handler that will be fired if the deferred queue becomes empty
+     * Adds a handler that will be fired if the deferred queue becomes empty.
      * 
      * @param handler
      *            - the handler to register
@@ -86,13 +86,13 @@ public class TrackingScheduler extends SchedulerImpl {
 
         /**
          * Handler interface for observing {@link TrackingSchedulerEmptyEvent}
-         * events
+         * events.
          */
         public interface Handler extends EventHandler {
 
             /**
              * Invoked when the {@link TrackingSchedulerEmptyEvent} is fired
-             * from {@link TrackingScheduler}
+             * from {@link TrackingScheduler}.
              */
             void onQueueEmpty();
         }
