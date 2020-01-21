@@ -25,7 +25,8 @@ import com.vaadin.testbench.TestBenchElement;
 
 public class InvisibleDefaultPropertyValueIT extends ChromeBrowserTest {
 
-    @Ignore("Worked due to a side effect that was removed in 3.0 due to not all synchronized " +
+    @Ignore("https://github.com/vaadin/flow/issues/7356 "+
+            "Worked due to a side effect that was removed in 3.0 due to not all synchronized " +
             "properties being updated for all sync-events. Also related (but not same): " +
             "https://github.com/vaadin/flow/issues/3556")
     @Test
