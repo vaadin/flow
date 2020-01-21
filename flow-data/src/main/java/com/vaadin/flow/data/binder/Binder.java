@@ -213,15 +213,15 @@ public class Binder<BEAN> implements Serializable {
         Setter<BEAN, TARGET> getSetter();
 
         /**
-         * Enable or disable asRequired validator.
-         * The validator is enabled by default.
+         * Enable or disable asRequired validator. The validator is enabled by
+         * default.
          *
          * @see BindingBuilder#asRequired(String)
          * @see BindingBuilder#asRequired(ErrorMessageProvider)
          *
          * @param asRequiredEnabled
-         *            {@code false} if asRequired validator should
-         *            be disabled, {@code true} otherwise (default)
+         *            {@code false} if asRequired validator should be disabled,
+         *            {@code true} otherwise (default)
          */
         public void setAsRequiredEnabled(boolean asRequiredEnabled);
 
@@ -590,11 +590,9 @@ public class Binder<BEAN> implements Serializable {
                 TARGET nullRepresentation) {
             return withConverter(
                     fieldValue -> Objects.equals(fieldValue, nullRepresentation)
-                            ? null
-                            : fieldValue,
+                            ? null : fieldValue,
                     modelValue -> Objects.isNull(modelValue)
-                            ? nullRepresentation
-                            : modelValue);
+                            ? nullRepresentation : modelValue);
         }
 
         /**
@@ -1295,8 +1293,8 @@ public class Binder<BEAN> implements Serializable {
         public void setAsRequiredEnabled(boolean asRequiredEnabled) {
             if (!asRequiredSet) {
                 throw new IllegalStateException(
-                 "Unable to toggle asRequired validation since " 
-                         + "asRequired has not been set.");
+                        "Unable to toggle asRequired validation since "
+                                + "asRequired has not been set.");
             }
             if (asRequiredEnabled != isAsRequiredEnabled()) {
                 field.setRequiredIndicatorVisible(asRequiredEnabled);
@@ -1835,7 +1833,7 @@ public class Binder<BEAN> implements Serializable {
     public void writeBeanAsDraft(BEAN bean) {
         doWriteDraft(bean, new ArrayList<>(bindings));
     }
-    
+
     /**
      * Writes changes from the bound fields to the given bean if all validators
      * (binding and bean level) pass.
@@ -1933,13 +1931,14 @@ public class Binder<BEAN> implements Serializable {
      *            the set of bindings to write to the bean
      */
     @SuppressWarnings({ "unchecked" })
-    private void doWriteDraft(BEAN bean, Collection<Binding<BEAN, ?>> bindings) {
+    private void doWriteDraft(BEAN bean,
+            Collection<Binding<BEAN, ?>> bindings) {
         Objects.requireNonNull(bean, "bean cannot be null");
 
         bindings.forEach(binding -> ((BindingImpl<BEAN, ?, ?>) binding)
-                    .writeFieldValue(bean));
+                .writeFieldValue(bean));
     }
-    
+
     /**
      * Restores the state of the bean from the given values.
      *
@@ -2579,10 +2578,11 @@ public class Binder<BEAN> implements Serializable {
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private void fireEvent(Object event) {
-        listeners.entrySet().stream().filter(
+        new HashMap<>(listeners).entrySet().stream().filter(
                 entry -> entry.getKey().isAssignableFrom(event.getClass()))
                 .forEach(entry -> {
-                    for (Consumer consumer : entry.getValue()) {
+                    for (Consumer consumer : new ArrayList<>(
+                            entry.getValue())) {
                         consumer.accept(event);
                     }
                 });
@@ -2593,8 +2593,7 @@ public class Binder<BEAN> implements Serializable {
         Converter<FIELDVALUE, FIELDVALUE> nullRepresentationConverter = Converter
                 .from(fieldValue -> fieldValue,
                         modelValue -> Objects.isNull(modelValue)
-                                ? field.getEmptyValue()
-                                : modelValue,
+                                ? field.getEmptyValue() : modelValue,
                         Throwable::getMessage);
         ConverterDelegate<FIELDVALUE> converter = new ConverterDelegate<>(
                 nullRepresentationConverter);
