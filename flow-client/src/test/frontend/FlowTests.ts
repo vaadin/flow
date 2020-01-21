@@ -95,6 +95,7 @@ function createInitResponse(appId: string, changes = '[]', pushScript?: string):
 suite("Flow", () => {
 
   beforeEach(() => {
+    delete $wnd.Vaadin;
     mock.setup();
   });
 
@@ -224,7 +225,7 @@ suite("Flow", () => {
 
   test("should throw when an incorrect server response is received", () => {
     // Configure an invalid server response
-    mock.get(/^.*\?v-r=init&location=.+/, (req, res) => {
+    mock.get(/^.*\?v-r=init&location=.*/, (req, res) => {
       assert.equal('GET', req.method());
       return res
         .status(500)
