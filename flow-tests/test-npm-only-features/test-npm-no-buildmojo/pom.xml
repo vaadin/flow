@@ -124,7 +124,7 @@
 <!--                            <goal>build-frontend</goal>-->
                         </goals>
                         <configuration>
-                            <clientSideMode>false</clientSideMode>
+                            <useDeprecatedV14Bootstrapping>false</useDeprecatedV14Bootstrapping>
                         </configuration>
                     </execution>
                 </executions>

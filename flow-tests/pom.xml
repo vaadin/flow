@@ -22,7 +22,7 @@
             concurrent running of test modules. -->
         <server.port>8888</server.port>
         <server.stop.port>8889</server.stop.port>
-        <vaadin.clientSideMode>false</vaadin.clientSideMode>
+        <vaadin.useDeprecatedV14Bootstrapping>false</vaadin.useDeprecatedV14Bootstrapping>
     </properties>
 
     <dependencies>
@@ -200,8 +200,8 @@
                         <stopWait>5</stopWait>
                         <systemProperties>
                             <systemProperty>
-                                <name>vaadin.clientSideMode</name>
-                                <value>${vaadin.clientSideMode}</value>
+                                <name>vaadin.useDeprecatedV14Bootstrapping</name>
+                                <value>${vaadin.useDeprecatedV14Bootstrapping}</value>
                             </systemProperty>
                         </systemProperties>
                     </configuration>

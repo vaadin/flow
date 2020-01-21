@@ -62,8 +62,8 @@
                 <configuration>
                     <systemProperties>
                         <systemProperty>
-                            <name>vaadin.clientSideMode</name>
-                            <value>${vaadin.clientSideMode}</value>
+                            <name>vaadin.useDeprecatedV14Bootstrapping</name>
+                            <value>${vaadin.useDeprecatedV14Bootstrapping}</value>
                         </systemProperty>
                     </systemProperties>
                 </configuration>

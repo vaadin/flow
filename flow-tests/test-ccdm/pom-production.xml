@@ -16,7 +16,7 @@
 
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
-        <vaadin.clientSideMode>true</vaadin.clientSideMode>
+        <vaadin.useDeprecatedV14Bootstrapping>true</vaadin.useDeprecatedV14Bootstrapping>
     </properties>
 
     <dependencies>
@@ -40,7 +40,7 @@
                             <value>false</value>
                         </systemProperty>
                         <systemProperty>
-                            <name>vaadin.clientSideMode</name>
+                            <name>vaadin.useDeprecatedV14Bootstrapping</name>
                             <value>true</value>
                         </systemProperty>
                     </systemProperties>

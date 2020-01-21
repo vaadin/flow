@@ -105,7 +105,7 @@ public class NodeTasks implements FallibleCommand {
         /**
          * Is in client-side bootstrapping mode.
          */
-        private boolean clientSideMode;
+        private boolean useDeprecatedV14Bootstrapping;
 
         /**
          * Create a builder instance given an specific npm folder.
@@ -321,15 +321,15 @@ public class NodeTasks implements FallibleCommand {
         }
 
         /**
-         * Enable clientSideMode which uses `frontend/index` as the entry
+         * Enable useDeprecatedV14Bootstrapping which uses `frontend/index` as the entry
          * point.
          *
-         * @param clientSideMode
+         * @param useDeprecatedV14Bootstrapping
          *            <code>true</code> to enable the mode, false otherwise.
          * @return the builder, for chaining
          */
-        public Builder enableClientSideMode(boolean clientSideMode) {
-            this.clientSideMode = clientSideMode;
+        public Builder enableClientSideMode(boolean useDeprecatedV14Bootstrapping) {
+            this.useDeprecatedV14Bootstrapping = useDeprecatedV14Bootstrapping;
             return this;
         }
 
@@ -467,7 +467,7 @@ public class NodeTasks implements FallibleCommand {
             commands.add(packageCreator);
         }
 
-        if (builder.clientSideMode) {
+        if (builder.useDeprecatedV14Bootstrapping) {
             addBootstrapTasks(builder);
 
             if (builder.connectJavaSourceFolder != null
@@ -509,7 +509,7 @@ public class NodeTasks implements FallibleCommand {
             commands.add(new TaskUpdateWebpack(builder.frontendDirectory,
                     builder.npmFolder, builder.webpackOutputDirectory,
                     builder.webpackTemplate, builder.webpackGeneratedTemplate,
-                    new File(builder.generatedFolder, IMPORTS_NAME), builder.clientSideMode));
+                    new File(builder.generatedFolder, IMPORTS_NAME), builder.useDeprecatedV14Bootstrapping));
         }
 
         if (builder.enableImportsUpdate) {

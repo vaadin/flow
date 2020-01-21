@@ -36,8 +36,6 @@
     "tslint-eslint-rules": "^5.4.0",
     "webpack": "^4.39.1",
     "webpack-cli": "^3.3.6",
-    "ncp": "^2.0.0",
-    "replace-in-files-cli": "^0.2.0",
     "xhr-mock": "^2.5.0",
     "abort-controller": "^2.0.0",
     "chai": "^4.2.0",

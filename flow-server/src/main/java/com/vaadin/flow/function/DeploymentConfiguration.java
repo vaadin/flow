@@ -47,9 +47,9 @@ public interface DeploymentConfiguration extends Serializable {
     boolean isProductionMode();
 
     /**
-     * Returns whether Vaadin is running in clientSideMode.
+     * Returns whether Vaadin is running in useDeprecatedV14Bootstrapping.
      *
-     * @return true if in clientSideMode, false otherwise.
+     * @return true if in useDeprecatedV14Bootstrapping, false otherwise.
      */
     default boolean isClientSideMode() {
         return getBooleanProperty(SERVLET_PARAMETER_CLIENT_SIDE_MODE, true);
