@@ -6,7 +6,7 @@
     <parent>
         <artifactId>flow-test-multi-war</artifactId>
         <groupId>com.vaadin</groupId>
-        <version>2.2-SNAPSHOT</version>
+        <version>2.3-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-multi-war1</artifactId>
     <name>First war for multi war tests</name>
