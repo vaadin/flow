@@ -1394,6 +1394,64 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         binder.readBean(new AtomicReference<>(null));
     }
 
+    @Test
+    public void addStatusListenerFromStatusListener_listenerAdded() {
+        AtomicBoolean outerListenerInvoked = new AtomicBoolean();
+        AtomicBoolean innerListenerInvoked = new AtomicBoolean();
+
+        binder.addStatusChangeListener(event -> {
+            if (!outerListenerInvoked.getAndSet(true)) {
+                binder.addStatusChangeListener(event2 -> {
+                    innerListenerInvoked.set(true);
+                });
+            }
+        });
+
+        // Trigger status change event
+        binder.setBean(new Person());
+
+        Assert.assertTrue("Outer listener should be invoked",
+                outerListenerInvoked.get());
+        Assert.assertFalse("Inner listener should not (yet) be invoked",
+                innerListenerInvoked.get());
+
+        // Trigger status change event
+        binder.setBean(new Person());
+
+        Assert.assertTrue("Inner listener should be invoked",
+                innerListenerInvoked.get());
+    }
+
+    @Test
+    public void addValueListenerFromStatusListener_listenerAdded() {
+        binder.bind(nameField, Person::getFirstName, Person::setFirstName);
+
+        AtomicBoolean outerListenerInvoked = new AtomicBoolean();
+        AtomicBoolean innerListenerInvoked = new AtomicBoolean();
+
+        binder.addStatusChangeListener(event -> {
+            if (!outerListenerInvoked.getAndSet(true)) {
+                binder.addValueChangeListener(event2 -> {
+                    innerListenerInvoked.set(true);
+                });
+            }
+        });
+
+        // Trigger status change event
+        binder.setBean(new Person());
+
+        Assert.assertTrue("Outer listener should be invoked",
+                outerListenerInvoked.get());
+        Assert.assertFalse("Inner listener should not (yet) be invoked",
+                innerListenerInvoked.get());
+
+        // Trigger value change event
+        nameField.setValue("foo");
+
+        Assert.assertTrue("Inner listener should be invoked",
+                innerListenerInvoked.get());
+    }
+
     private TestTextField createNullRejectingFieldWithEmptyValue(
             String emptyValue) {
         return new TestTextField() {

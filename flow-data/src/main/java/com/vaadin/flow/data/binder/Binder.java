@@ -566,11 +566,9 @@ public class Binder<BEAN> implements Serializable {
                 TARGET nullRepresentation) {
             return withConverter(
                     fieldValue -> Objects.equals(fieldValue, nullRepresentation)
-                            ? null
-                            : fieldValue,
+                            ? null : fieldValue,
                     modelValue -> Objects.isNull(modelValue)
-                            ? nullRepresentation
-                            : modelValue);
+                            ? nullRepresentation : modelValue);
         }
 
         /**
@@ -2491,10 +2489,11 @@ public class Binder<BEAN> implements Serializable {
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private void fireEvent(Object event) {
-        listeners.entrySet().stream().filter(
+        new HashMap<>(listeners).entrySet().stream().filter(
                 entry -> entry.getKey().isAssignableFrom(event.getClass()))
                 .forEach(entry -> {
-                    for (Consumer consumer : entry.getValue()) {
+                    for (Consumer consumer : new ArrayList<>(
+                            entry.getValue())) {
                         consumer.accept(event);
                     }
                 });
@@ -2505,8 +2504,7 @@ public class Binder<BEAN> implements Serializable {
         Converter<FIELDVALUE, FIELDVALUE> nullRepresentationConverter = Converter
                 .from(fieldValue -> fieldValue,
                         modelValue -> Objects.isNull(modelValue)
-                                ? field.getEmptyValue()
-                                : modelValue,
+                                ? field.getEmptyValue() : modelValue,
                         Throwable::getMessage);
         ConverterDelegate<FIELDVALUE> converter = new ConverterDelegate<>(
                 nullRepresentationConverter);
