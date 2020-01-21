@@ -148,9 +148,9 @@ export class ValidationErrorData {
  */
 export interface ConnectClientOptions {
   /**
-   * The `endpoint` property value.
+   * The `prefix` property value.
    */
-  endpoint?: string;
+  prefix?: string;
 
   /**
    * The `middlewares` property value.
@@ -171,12 +171,12 @@ export interface CallOptions {
  */
 export interface MiddlewareContext {
   /**
-   * The service class name.
+   * The endpoint name.
    */
-  service: string;
+  endpoint: string;
 
   /**
-   * The method name to call on in the service class.
+   * The method name to call on in the endpoint class.
    */
   method: string;
 
@@ -215,31 +215,31 @@ export type Middleware = (context: MiddlewareContext, next: MiddlewareNext) =>
 
 /**
  * Vaadin Connect client class is a low-level network calling utility. It stores
- * an endpoint and facilitates remote calls to services and methods
+ * a prefix and facilitates remote calls to endpoint class methods
  * on the Vaadin Connect backend.
  *
  * Example usage:
  *
  * ```js
  * const client = new ConnectClient();
- * const responseData = await client.call('MyVaadinService', 'myMethod');
+ * const responseData = await client.call('MyEndpoint', 'myMethod');
  * ```
  *
- * ### Endpoint
+ * ### Prefix
  *
- * The client supports an `endpoint` constructor option:
+ * The client supports an `prefix` constructor option:
  * ```js
- * const client = new ConnectClient({endpoint: '/my-connect-endpoint'});
+ * const client = new ConnectClient({prefix: '/my-connect-prefix'});
  * ```
  *
- * The default endpoint is '/connect'.
+ * The default prefix is '/connect'.
  *
  */
 export class ConnectClient {
   /**
-   * The Vaadin Connect backend endpoint
+   * The Vaadin Connect backend prefix
    */
-  endpoint: string = '/connect';
+  prefix: string = '/connect';
 
   /**
    * The array of middlewares that are invoked during a call.
@@ -250,8 +250,8 @@ export class ConnectClient {
    * @param options Constructor options.
    */
   constructor(options: ConnectClientOptions = {}) {
-    if (options.endpoint) {
-      this.endpoint = options.endpoint;
+    if (options.prefix) {
+      this.prefix = options.prefix;
     }
 
     if (options.middlewares) {
@@ -260,18 +260,18 @@ export class ConnectClient {
   }
 
   /**
-   * Makes a JSON HTTP request to the `${endpoint}/${service}/${method}` URL,
+   * Makes a JSON HTTP request to the `${prefix}/${endpoint}/${method}` URL,
    * optionally supplying the provided params as a JSON request body,
    * and asynchronously returns the parsed JSON response data.
    *
-   * @param service Service class name.
-   * @param method Method name to call in the service class.
+   * @param endpoint Endpoint name.
+   * @param method Method name to call in the endpoint class.
    * @param params Optional object to be send in JSON request body.
    * @param options Optional client options for this call.
    * @returns {} Decoded JSON response data.
    */
   async call(
-    service: string,
+    endpoint: string,
     method: string,
     params?: any,
     options: CallOptions = {}
@@ -301,7 +301,7 @@ export class ConnectClient {
     }
 
     const request = new Request(
-       `${this.endpoint}/${service}/${method}`, {
+       `${this.prefix}/${endpoint}/${method}`, {
          method: 'POST',
          headers,
          body: params !== undefined ? JSON.stringify(nullForUndefined(params)) : undefined
@@ -310,7 +310,7 @@ export class ConnectClient {
     // The middleware `context`, includes the call arguments and the request
     // constructed from them
     const initialContext: MiddlewareContext = {
-      service,
+      endpoint,
       method,
       params,
       options,

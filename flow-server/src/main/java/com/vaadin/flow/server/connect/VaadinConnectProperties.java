@@ -26,21 +26,21 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties("vaadin.connect")
 public class VaadinConnectProperties {
 
-    @Value("${vaadin.connect.endpoint:/connect}")
-    private String vaadinConnectEndpoint;
+    @Value("${vaadin.connect.prefix:/connect}")
+    private String vaadinConnectPrefix;
 
     @Value("${vaadin.connect.auth.token-signing-key:}")
     private String vaadinConnectTokenSigningKey;
 
     /**
-     * Customize the endpoint for all Vaadin Connect services. See default value
-     * in the {@link VaadinConnectProperties#vaadinConnectEndpoint} field
+     * Customize the prefix for all Vaadin Connect endpoints. See default value
+     * in the {@link VaadinConnectProperties#vaadinConnectPrefix} field
      * annotation.
      *
-     * @return endpoint that should be used to access any Vaadin Connect service
+     * @return prefix that should be used to access any Vaadin Connect endpoint
      */
-    public String getVaadinConnectEndpoint() {
-        return vaadinConnectEndpoint;
+    public String getVaadinConnectPrefix() {
+        return vaadinConnectPrefix;
     }
 
     /**

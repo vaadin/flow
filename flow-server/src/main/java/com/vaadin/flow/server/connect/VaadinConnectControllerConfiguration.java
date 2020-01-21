@@ -48,8 +48,8 @@ public class VaadinConnectControllerConfiguration {
 
     /**
      * Registers {@link VaadinConnectController} to use
-     * {@link VaadinConnectProperties#getVaadinConnectEndpoint()} as an endpoint
-     * for all Vaadin Connect services.
+     * {@link VaadinConnectProperties#getVaadinConnectPrefix()} as a prefix
+     * for all Vaadin Connect endpoints.
      *
      * @return updated configuration for {@link VaadinConnectController}
      */
@@ -72,7 +72,7 @@ public class VaadinConnectControllerConfiguration {
 
                         if (VaadinConnectController.class
                                 .equals(method.getDeclaringClass())) {
-                            mapping = prependConnectEndpointUrl(mapping);
+                            mapping = prependConnectPrefixUrl(mapping);
                         }
 
                         super.registerHandlerMethod(handler, method, mapping);
@@ -83,35 +83,36 @@ public class VaadinConnectControllerConfiguration {
     }
 
     /**
-     * Prepends the Connect endpoint URL from the Vaadin Connect properties to
+     * Prepends the Connect prefix URL from the Vaadin Connect properties to
      * the {@code pattern} of a {@link RequestMappingInfo} object, and returns
      * the updated mapping as a new object (not modifying the given
      * {@param mapping} parameter).
      *
-     * @return a new mapping with the Connect endpoint URL prepended to the
+     * @return a new mapping with the Connect prefix URL prepended to the
      *         mapping pattern
      */
-    private RequestMappingInfo prependConnectEndpointUrl(
+    private RequestMappingInfo prependConnectPrefixUrl(
             RequestMappingInfo mapping) {
-        PatternsRequestCondition connectServicePattern = new PatternsRequestCondition(
-                vaadinConnectProperties.getVaadinConnectEndpoint())
+        PatternsRequestCondition connectEndpointPattern =
+                new PatternsRequestCondition(
+                vaadinConnectProperties.getVaadinConnectPrefix())
                         .combine(mapping.getPatternsCondition());
 
-        return new RequestMappingInfo(mapping.getName(), connectServicePattern,
+        return new RequestMappingInfo(mapping.getName(), connectEndpointPattern,
                 mapping.getMethodsCondition(), mapping.getParamsCondition(),
                 mapping.getHeadersCondition(), mapping.getConsumesCondition(),
                 mapping.getProducesCondition(), mapping.getCustomCondition());
     }
 
     /**
-     * Registers a service name checker responsible for validating the service
-     * names.
+     * Registers an endpoint name checker responsible for validating the
+     * endpoint names.
      *
-     * @return the service name checker
+     * @return the endpoint name checker
      */
     @Bean
-    public VaadinServiceNameChecker serviceNameChecker() {
-        return new VaadinServiceNameChecker();
+    public EndpointNameChecker endpointNameChecker() {
+        return new EndpointNameChecker();
     }
 
     /**

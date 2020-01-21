@@ -34,14 +34,14 @@ import static com.vaadin.flow.server.connect.generator.VaadinConnectTsGenerator.
  * properties, if provided.
  */
 public class VaadinConnectClientGenerator {
-    static final String ENDPOINT = "vaadin.connect.endpoint";
-    static final String DEFAULT_ENDPOINT = "connect";
+    static final String PREFIX = "vaadin.connect.prefix";
+    static final String DEFAULT_PREFIX = "connect";
 
     private static final String CLIENT_FILE_NAME = "connect-client.default";
     public static final String CONNECT_CLIENT_NAME = CLIENT_FILE_NAME + TS;
     public static final String CONNECT_CLIENT_IMPORT_PATH = "./" + CLIENT_FILE_NAME;
 
-    private final String serviceEndpoint;
+    private final String endpointPrefix;
 
     private static final Logger log = LoggerFactory
             .getLogger(VaadinConnectClientGenerator.class);
@@ -55,8 +55,9 @@ public class VaadinConnectClientGenerator {
      */
     public VaadinConnectClientGenerator(
             Properties applicationProperties) {
-        this.serviceEndpoint = (String)applicationProperties.getOrDefault(ENDPOINT,
-                DEFAULT_ENDPOINT);
+        this.endpointPrefix =
+                (String)applicationProperties.getOrDefault(PREFIX,
+                DEFAULT_PREFIX);
     }
 
     /**
@@ -67,7 +68,7 @@ public class VaadinConnectClientGenerator {
      */
     public void generateVaadinConnectClientFile(Path outputFilePath) {
         String generatedDefaultClientTs = getDefaultClientTsTemplate()
-                .replace("{{ENDPOINT}}", serviceEndpoint);
+                .replace("{{PREFIX}}", endpointPrefix);
         try {
             log.info("writing file {}", outputFilePath);
             FileUtils.writeStringToFile(outputFilePath.toFile(),
