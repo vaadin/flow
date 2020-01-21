@@ -162,6 +162,8 @@ public class NpmTemplateParser implements TemplateParser {
      *            e.g. `my-component`
      * @param url the URL resolved according to the {@link com.vaadin.flow.component.dependency.JsModule}
      *            spec, for example {@code ./view/my-view.js} or {@code @vaadin/vaadin-button.js}.
+     * @return the .js source which declares given custom element, or null if no
+     *         such source can be found.
      */
     protected String getSourcesFromTemplate(String tag, String url) {
         InputStream content = getClass().getClassLoader()
