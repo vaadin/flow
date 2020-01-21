@@ -40,7 +40,6 @@ export interface NavigationCommands {
 }
 
 const $wnd = window as any;
-let isActive = false;
 
 /**
  * Client API for flow UI operations.
@@ -54,8 +53,10 @@ export class Flow {
   // @ts-ignore
   container : HTMLRouterContainer;
 
-  private baseRegex = /^\//;
+  // flag used to inform Testbench whether a server route is in progress
+  private isActive = false;
 
+  private baseRegex = /^\//;
 
   constructor(config?: FlowConfig) {
     this.flowRoot.$ = this.flowRoot.$ || {};
@@ -68,7 +69,7 @@ export class Flow {
       $wnd.Vaadin.Flow = {
         clients: {
           TypeScript: {
-            isActive: () => isActive
+            isActive: () => this.isActive
           }
         }
       };
@@ -103,9 +104,6 @@ export class Flow {
     // the syntax `...serverSideRoutes` in vaadin-router.
     // @ts-ignore
     return async (params: NavigationParameters) => {
-      // flag used to inform Testbench whether a server route is in progress
-      isActive = true;
-
       // Store last action pathname so as we can check it in events
       this.pathname = params.pathname;
 
@@ -131,11 +129,12 @@ export class Flow {
     }
     // 'server -> client'
     return new Promise(resolve => {
+      this.isActive = true;
       // The callback to run from server side to cancel navigation
       this.container.serverConnected = cancel => {
         resolve(cmd && cancel ? cmd.prevent() : {});
         // Make Testbench know that server request has finished
-        isActive = false;
+        this.isActive = false;
       }
 
       // Call server side to check whether we can leave the view
@@ -147,6 +146,7 @@ export class Flow {
   // route specified by the context
   private async flowNavigate(ctx: NavigationParameters, cmd?: NavigationCommands): Promise<HTMLElement> {
     return new Promise(resolve => {
+      this.isActive = true;
       // The callback to run from server side once the view is ready
       this.container.serverConnected = cancel => {
         if (cmd && cancel) {
@@ -156,7 +156,7 @@ export class Flow {
           resolve(this.container);
         }
         // Make Testbench know that navigation finished
-        isActive = false;
+        this.isActive = false;
       };
 
       // Call server side to navigate to the given route
@@ -173,6 +173,7 @@ export class Flow {
   private async flowInit(serverSideRouting = false): Promise<AppInitResponse> {
     // Do not start flow twice
     if (!this.response) {
+      this.isActive = true;
       // Initialize server side UI
       this.response = await this.flowInitUi(serverSideRouting);
 
@@ -213,6 +214,7 @@ export class Flow {
         this.container.style.display = 'none';
         document.body.appendChild(this.container);
       }
+      this.isActive = false;
     }
     return this.response;
   }

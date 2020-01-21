@@ -251,6 +251,11 @@ suite("Flow", () => {
     assert.isFalse($wnd.Vaadin.Flow.clients.TypeScript.isActive());
 
     const route = flow.serverSideRoutes[0];
+
+    // Check the `isAcive` flag at the time the action is being executed
+    let wasActive = false;
+    setTimeout(() => wasActive = $wnd.Vaadin.Flow.clients.TypeScript.isActive(), 5);
+
     return route
       .action({pathname: "Foo/Bar.baz"})
       .then(() => {
@@ -271,9 +276,10 @@ suite("Flow", () => {
         assert.isDefined(flowRoot.$);
         assert.isDefined(flowRoot.$['foobar-1111111']);
 
-        // When calling action TypeScript.isActive should be true,
-        // since navigation has not been called yet
-        assert.isTrue($wnd.Vaadin.Flow.clients.TypeScript.isActive());
+        // Check that `isActive` flag was active during the action
+        assert.isTrue(wasActive);
+        // Check that `isActive` flag is set to false after the action
+        assert.isFalse($wnd.Vaadin.Flow.clients.foobar.isActive());
       });
   });
 
@@ -514,6 +520,7 @@ suite("Flow", () => {
 
 function stubServerRemoteFunction(id: string, cancel: boolean = false, routeRegex?: RegExp) {
   let container : any;
+
   // Stub remote function exported in JavaScriptBootstrapUI.
   flowRoot.$server = {
     connectClient: (localName: string, elemId: string, route: string) => {
@@ -539,15 +546,15 @@ function stubServerRemoteFunction(id: string, cancel: boolean = false, routeRege
 
       container.appendChild(document.createElement('div'));
 
-      // Resolve the promise
-      flowRoot.$[elemId].serverConnected(cancel);
+      // asynchronously resolve the promise
+      setTimeout(() => container.serverConnected(cancel), 10);
 
       // container should be visible when not cancelled
       assert.equal(cancel ? 'none' : '', container.style.display);
     },
     leaveNavigation: () => {
-      // Resolve the promise
-      container.serverConnected(cancel);
+      // asynchronously resolve the promise
+      setTimeout(() => container.serverConnected(cancel), 10);
     }
   };
 }
