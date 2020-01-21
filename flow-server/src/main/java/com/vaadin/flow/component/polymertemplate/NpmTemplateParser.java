@@ -155,6 +155,14 @@ public class NpmTemplateParser implements TemplateParser {
         return url.endsWith("/" + tag + ".js");
     }
 
+    /**
+     * Finds the JavaScript sources for given tag.
+     *
+     * @param tag the value of the {@link com.vaadin.flow.component.Tag} annotation,
+     *            e.g. `my-component`
+     * @param url the URL resolved according to the {@link com.vaadin.flow.component.dependency.JsModule}
+     *            spec, for example {@code ./view/my-view.js} or {@code @vaadin/vaadin-button.js}.
+     */
     protected String getSourcesFromTemplate(String tag, String url) {
         InputStream content = getClass().getClassLoader()
                 .getResourceAsStream(url);
