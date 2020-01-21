@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.server.startup.RouteTarget;
 
 /**
  * Configuration class for editing routes. After editing the class should

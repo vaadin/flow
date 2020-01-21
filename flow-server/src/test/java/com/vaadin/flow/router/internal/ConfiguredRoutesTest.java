@@ -9,7 +9,6 @@ import org.junit.Test;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.server.startup.RouteTarget;
 
 public class ConfiguredRoutesTest {
 
