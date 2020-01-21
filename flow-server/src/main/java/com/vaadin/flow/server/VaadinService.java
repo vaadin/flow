@@ -49,9 +49,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import com.vaadin.flow.component.polymertemplate.DefaultTemplateParser;
-import com.vaadin.flow.component.polymertemplate.NpmTemplateParser;
-import com.vaadin.flow.component.polymertemplate.TemplateParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -2346,17 +2343,6 @@ public abstract class VaadinService implements Serializable {
             vaadinContext = constructVaadinContext();
         }
         return vaadinContext;
-    }
-
-    /**
-     * Returns {@link TemplateParser} for this service.
-     *
-     * @return A non-null template parser.
-     */
-    public TemplateParser getTemplateParser() {
-        return getDeploymentConfiguration().isCompatibilityMode()
-                ? DefaultTemplateParser.getInstance()
-                : NpmTemplateParser.getInstance();
     }
 
     /**
