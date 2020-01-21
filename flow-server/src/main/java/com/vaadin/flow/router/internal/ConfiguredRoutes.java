@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.server.startup.RouteTarget;
 
 /**
  * Route configuration class that is used as a value object.

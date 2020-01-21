@@ -28,6 +28,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -3415,6 +3417,71 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertEquals(
                 "AfterNavigation events aren't triggered in correct order",
                 expectedAfterNavigation, ProcessEventsBase.afterNavigation);
+    }
+
+    class RouteDetails {
+        String urlPattern;
+
+        String[] urlParameters;
+
+        public RouteDetails(String urlPattern, String... urlParameters) {
+            this.urlPattern = urlPattern;
+            this.urlParameters = urlParameters;
+        }
+    }
+
+    @Test
+    public void test_url_regex() {
+        List<RouteDetails> routesDetails = Arrays.asList(
+                new RouteDetails("^/tree/branch/(?<id>[^/]*?)/edit$", "id"),
+
+//                new RouteDetails("^/tree/branch/(?<id>[^/]*?)/(?<name>[^/]*?)?/?edit$", "id", "name"),
+                new RouteDetails("^/tree/branch/(?<id>[^/]*?)/(?<name>[^/]*?)?/?(?<color>[^/]*?(?=/))?/?edit$", "id", "name", "color"),
+
+                // GOOD new RouteDetails("^/tree/branch/(?<id>[^/]*?)/(?<name>[^/]*?)/edit$", "id", "name"),
+
+//                new RouteDetails("/tree/branch/(?<id>.*?(?=/))/(?<name>.*)?/?(?<user>.*)?/?edit", "id", "name", "user"),
+                new RouteDetails("tree/branch/edit"));
+
+        String url = "/tree/branch/12/bogdan/edit";
+
+        for (RouteDetails routeDetails : routesDetails) {
+
+            System.out.println(routeDetails.urlPattern);
+
+            Pattern pattern = Pattern.compile(routeDetails.urlPattern);
+
+            final Matcher matcher = pattern.matcher(url);
+            if (matcher.find()) {
+
+                System.out.println("FOUND " + matcher.groupCount());
+
+                for (String urlParameter : routeDetails.urlParameters) {
+                    final String group = matcher.group(urlParameter);
+                    System.out.println(urlParameter + ": " + group);
+                }
+
+                for (int i = 1; i <= matcher.groupCount(); i++) {
+                    System.out.println(matcher.group(i));
+                }
+
+            }
+
+            System.out.println("---");
+        }
+    }
+
+    @Test
+    public void test_regex() {
+
+        Pattern pattern = Pattern.compile("");
+
+        final Matcher matcher = pattern.matcher("abcXabcXabcX");
+
+        if (matcher.matches()) {
+//            matcher.
+        }
+
     }
 
     private void setNavigationTargets(
