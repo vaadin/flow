@@ -43,12 +43,93 @@ class RouteSegment implements Serializable {
 
         private boolean optional;
 
+        // Same name as with the segment's name which is extracted by
+        // ParameterDetails constructor and provided to the RouteSegment.
+        private String name;
+
+        // In case the eligible type is a primitive this is set to the type of
+        // the primitive.
+        private String eligiblePrimitiveType;
+
+        /**
+         * Creates the parameter details using the input segmentPattern pattern.
+         * 
+         * @param segmentPattern
+         *            segment pattern without the preceding colon (:).
+         */
+        private ParameterDetails(String segmentPattern) {
+            optional = segmentPattern.startsWith("[")
+                    && segmentPattern.endsWith("]");
+
+            if (optional) {
+                segmentPattern = segmentPattern.substring(1,
+                        segmentPattern.length() - 1);
+            }
+
+            // Extract the pattern defining the value of the parameter.
+            final int defStartIndex = segmentPattern.indexOf("<");
+            if (defStartIndex != -1 && segmentPattern.endsWith(">")) {
+
+                name = segmentPattern.substring(0, defStartIndex);
+
+                String typeDefPattern = segmentPattern.substring(
+                        defStartIndex + 1, segmentPattern.length() - 1);
+
+                extractTypeDef(typeDefPattern);
+
+            } else {
+                name = segmentPattern;
+            }
+
+        }
+
         boolean isOptional() {
             return optional;
         }
+
+        boolean isEligible(String value) {
+            // We only expect primitive types or as is for now.
+            return true;// isPrimitiveEligible(value);
+        }
+
+        private boolean isPrimitiveEligible(String value) {
+            if (eligiblePrimitiveType != null) {
+
+                if (eligiblePrimitiveType.equals("int")) {
+
+                    try {
+                        Integer.valueOf(value);
+
+                        return true;
+                    } catch (NumberFormatException e) {
+                    }
+
+                } else if (eligiblePrimitiveType.equals("bool")) {
+                    if (value.equalsIgnoreCase("true")
+                            || value.equalsIgnoreCase("false")) {
+                        return true;
+                    }
+                }
+
+            }
+
+            return false;
+        }
+
+        private void extractTypeDef(String patternDef) {
+            // This implementation may be updated for more type options,
+            // including regex eventually.
+            extractPrimitiveTypeDef(patternDef);
+        }
+
+        private void extractPrimitiveTypeDef(String patternDef) {
+            // We expect only primitives for now.
+            eligiblePrimitiveType = patternDef;
+        }
+
     }
 
-    class RouteResult {
+    class RouteSearchResult {
 
         // Processed path.
         private String path;
@@ -73,8 +154,9 @@ class RouteSegment implements Serializable {
 
         @Override
         public String toString() {
-            return "[path: " + path + ", target: " + target.getRoutes()
-                    + ", parameters: " + urlParameters + "]";
+            return "[path: \"" + path + "\", target: " + (target != null
+                    ? target.getRoutes().toString()
+                    : null) + ", parameters: " + urlParameters + "]";
         }
     }
 
@@ -130,16 +212,13 @@ class RouteSegment implements Serializable {
         if (isParameter(segment)) {
             segment = segment.substring(1);
 
-            parameterDetails = new ParameterDetails();
-            parameterDetails.optional = segment.startsWith("[")
-                    && segment.endsWith("]");
+            parameterDetails = new ParameterDetails(segment);
 
-            if (parameterDetails.optional) {
-                segment = segment.substring(1, segment.length() - 1);
-            }
+            name = parameterDetails.name;
+
+        } else {
+            name = segment;
         }
-
-        name = segment;
     }
 
     String getName() {
@@ -186,11 +265,20 @@ class RouteSegment implements Serializable {
     private void addPath(List<String> segmentPatterns,
             Supplier<RouteTarget> payloadSupplier) {
 
-        String segmentPattern = segmentPatterns.get(0);
+        RouteSegment routeSegment;
+        String segmentPattern = null;
+        Map<String, RouteSegment> children = null;
 
-        Map<String, RouteSegment> children = getChildren(segmentPattern);
+        if (segmentPatterns.isEmpty()) {
+            // This should happen only on root.
+            routeSegment = this;
 
-        RouteSegment routeSegment = children.get(segmentPattern);
+        } else {
+            segmentPattern = segmentPatterns.get(0);
+
+            children = getChildren(segmentPattern);
+            routeSegment = children.get(segmentPattern);
+        }
 
         if (routeSegment == null) {
             routeSegment = new RouteSegment(segmentPattern);
@@ -218,39 +306,38 @@ class RouteSegment implements Serializable {
      * @return a route result containing the target and parameter values mapped
      *         by their ids.
      */
-    Optional<RouteResult> findRoute(String path) {
-        RouteResult result = new RouteResult();
+    RouteSearchResult getRoute(String path) {
+        RouteSearchResult result = new RouteSearchResult();
         result.path = path;
         result.target = findRouteTarget(getSegmentsList(path),
                 result.urlParameters);
-
-        if (result.target == null) {
-            return Optional.empty();
-        } else {
-            return Optional.of(result);
-        }
+        return result;
     }
 
     private RouteTarget findRouteTarget(List<String> segments,
             Map<String, String> urlParameters) {
 
-        String segment = segments.get(0);
-
-        RouteSegment routeSegment = getSegments().get(segment);
+        // First try with a static segment (non a parameter). An empty segments
+        // list should happen only on root, so this instance should resemble
+        // only the root.
+        RouteSegment routeSegment = segments.isEmpty() ? this
+                : getSegments().get(segments.get(0));
 
         if (routeSegment != null) {
-
             RouteTarget target = findRouteTarget(routeSegment, segments,
                     urlParameters);
             if (target != null) {
                 return target;
             }
+        }
 
-        } else {
-            // Try parameter.
+        // If no route following a static segment was found try through
+        // parameters.
+        if (!segments.isEmpty()) {
+
             for (RouteSegment parameter : getParameters().values()) {
 
-                RouteTarget target = findRouteTarget(routeSegment, segments,
+                RouteTarget target = findRouteTarget(parameter, segments,
                         urlParameters);
                 if (target != null) {
                     return target;
@@ -268,9 +355,7 @@ class RouteSegment implements Serializable {
                     }
 
                 }
-
             }
-
         }
 
         return null;
@@ -282,12 +367,20 @@ class RouteSegment implements Serializable {
         HashMap<String, String> outputParameters = new HashMap<>();
 
         if (potentialSegment.isParameter()) {
-            outputParameters.put(potentialSegment.getName(), segments.get(0));
+            final String value = segments.get(0);
+
+            if (potentialSegment.parameterDetails.isEligible(value)) {
+                outputParameters.put(potentialSegment.getName(), value);
+
+            } else {
+                // If the value is not eligible we don't want to go any further.
+                return null;
+            }
         }
 
         RouteTarget target;
 
-        segments = segments.size() == 1 ? Collections.emptyList()
+        segments = segments.size() <= 1 ? Collections.emptyList()
                 : segments.subList(1, segments.size());
 
         if (segments.size() > 0) {
@@ -342,7 +435,14 @@ class RouteSegment implements Serializable {
             path = path.substring(0, path.length() - 1);
         }
 
-        return Arrays.asList(path.split("/"));
+        final String[] segments = path.split("/");
+        if (segments.length == 1 && segments[0].isEmpty()) {
+            // This happens on root.
+            return Collections.emptyList();
+
+        } else {
+            return Arrays.asList(segments);
+        }
     }
 
     private boolean isParameter(String segment) {
