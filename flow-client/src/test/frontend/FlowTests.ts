@@ -358,13 +358,16 @@ suite("Flow", () => {
         // When using router API, it should expose the onBeforeEnter handler
         assert.isDefined(elem.onBeforeEnter);
 
-        // inform TB that a server action is in progress
-        assert.isTrue($wnd.Vaadin.Flow.clients.TypeScript.isActive());
+        // after action TB isActive flag should be false
+        assert.isFalse($wnd.Vaadin.Flow.clients.TypeScript.isActive());
 
+        // Store `isAcive` flag when the onBeforeEnter is being executed
+        let wasActive = false;
+        setTimeout(() => wasActive = $wnd.Vaadin.Flow.clients.TypeScript.isActive(), 5);
         // @ts-ignore
-        elem.onBeforeEnter({pathname: 'Foo/Bar.baz'}, {})
-
-        // inform TB that server action has finished
+        await elem.onBeforeEnter({pathname: 'Foo/Bar.baz'}, {});
+        // TB should be informed when the server call was in progress and when it is finished
+        assert.isTrue(wasActive);
         assert.isFalse($wnd.Vaadin.Flow.clients.TypeScript.isActive());
 
         // Assert server side has put content in the container
@@ -418,7 +421,7 @@ suite("Flow", () => {
         assert.isDefined(elem.onBeforeLeave);
         assert.equal('Foo', flow.pathname);
 
-        elem.onBeforeEnter({pathname: 'Foo'}, {prevent: () => {
+        return elem.onBeforeEnter({pathname: 'Foo'}, {prevent: () => {
           // set cancel to false even though server is cancelling
           return {cancel: false};
         }})
@@ -546,11 +549,12 @@ function stubServerRemoteFunction(id: string, cancel: boolean = false, routeRege
 
       container.appendChild(document.createElement('div'));
 
-      // asynchronously resolve the promise
-      setTimeout(() => container.serverConnected(cancel), 10);
-
-      // container should be visible when not cancelled
-      assert.equal(cancel ? 'none' : '', container.style.display);
+      // asynchronously resolve the remote server call
+      setTimeout(() => {
+        container.serverConnected(cancel);
+        // container should be visible when not cancelled
+        assert.equal(cancel ? 'none' : '', container.style.display);
+      }, 10);
     },
     leaveNavigation: () => {
       // asynchronously resolve the promise

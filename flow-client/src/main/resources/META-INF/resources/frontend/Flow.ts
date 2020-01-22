@@ -39,6 +39,8 @@ export interface NavigationCommands {
   prevent: () => any;
 }
 
+// flow uses body for keeping references
+const flowRoot: FlowRoot = window.document.body as any;
 const $wnd = window as any;
 
 /**
@@ -48,8 +50,7 @@ export class Flow {
   config: FlowConfig;
   response ?: AppInitResponse;
   pathname = '';
-  // flow uses body for keeping references
-  flowRoot : FlowRoot = document.body as any;
+
   // @ts-ignore
   container : HTMLRouterContainer;
 
@@ -59,7 +60,7 @@ export class Flow {
   private baseRegex = /^\//;
 
   constructor(config?: FlowConfig) {
-    this.flowRoot.$ = this.flowRoot.$ || {};
+    flowRoot.$ = flowRoot.$ || [];
     this.config = config || {};
 
     // TB checks for the existence of window.Vaadin.Flow in order
@@ -138,7 +139,7 @@ export class Flow {
       }
 
       // Call server side to check whether we can leave the view
-      this.flowRoot.$server.leaveNavigation(this.getFlowRoute(ctx));
+      flowRoot.$server.leaveNavigation(this.getFlowRoute(ctx));
     });
   }
 
@@ -160,7 +161,7 @@ export class Flow {
       };
 
       // Call server side to navigate to the given route
-      this.flowRoot.$server
+      flowRoot.$server
         .connectClient(this.container.localName, this.container.id, this.getFlowRoute(ctx));
     });
   }
@@ -205,7 +206,7 @@ export class Flow {
       if (!serverSideRouting) {
         // we use a custom tag for the flow app container
         const tag = `flow-container-${appId.toLowerCase()}`;
-        this.container = this.flowRoot.$[appId] = document.createElement(tag);
+        this.container = flowRoot.$[appId] = document.createElement(tag);
         this.container.id = appId;
 
         // It might be that components created from server expect that their content has been rendered.
